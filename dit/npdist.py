@@ -137,10 +137,13 @@ class Distribution(BaseDistribution):
 
     Meta Properties
     ---------------
+    is_numeric
+        Boolean specifying if the pmf represents numerical values or not.
+        The values could be symbolic, for example.
+
     is_sparse : bool
         `True` if `events` and `pmf` contain only non-null events and
         probabilities.
-
 
     Private Attributes
     ------------------
@@ -153,13 +156,57 @@ class Distribution(BaseDistribution):
     _eventspace_set : set
         The set of the event space.
 
-    Methods
-    -------
-    is_sparse
-        Returns `True` if the distribution is sparse.
+    _meta : dict
+        A dictionary containing the meta information, described above.
+
+    Public Attributes
+    -----------------
+    events : tuple
+        The events of the probability distribution.
+
+    ops : Operations instance
+        A class which manages addition and multiplication operations for log
+        and linear probabilities.
+
+    pmf : array-like
+        The probability mass function for the distribution.  The elements of
+        this array are in a one-to-one correspondence with those in `events`.
+
+    prng : RandomState
+        A pseudo-random number generator with a `rand` method which can
+        generate random numbers. For now, this is assumed to be something
+        with an API compatibile to NumPy's RandomState class. This attribute
+        is initialized to equal dit.math.prng.
+
+    Public Methods
+    --------------
+    copy
+        Returns a deep copy of the distribution.
+
+    eventprobs
+        Returns an iterator over (event, probability) tuples.  The probability
+        could be a log probability or a linear probability.
+
+    eventspace
+        Returns an iterator over the events in the eventspace.
+
+    get_base
+        Returns the base of the distribution.
 
     is_dense
         Returns `True` if the distribution is dense.
+
+    is_event
+        Returns `True` is the event exists in the event space.
+
+    is_log
+        Returns `True` if the distribution values are log probabilities.
+
+    is_numeric
+        Returns `True` if the distribution values are numerical.
+
+    is_sparse
+        Returns `True` if the distribution is sparse.
 
     make_dense
         Add all null events to the pmf.
@@ -167,13 +214,28 @@ class Distribution(BaseDistribution):
     make_sparse
         Remove all null events from the pmf.
 
+    normalize
+        Normalizes the distribution.
+
+    sample
+        Returns a sample from the distribution.
+
+    set_base
+        Changes the base of the distribution, in-place.
+
+    to_string
+        Returns a string representation of the distribution.
+
+    validate
+        A method to validate that the distribution is valid.
+
     Implementation Notes
     --------------------
     The events and pmf of the distribution are stored as a tuple and a NumPy
     array.  The sequences can be either sparse or dense.  By sparse, we do not
     mean that the representation is a NumPy sparse array.  Rather, we mean that
-    the sequences will contain only the non-null events. The order of the
-    events and probabilities will always match the order of the eventspace,
+    the sequences need not contain every event in the eventspace. The order of 
+    the events and probabilities will always match the order of the eventspace,
     even though their length might not equal the length of the eventspace.
 
     """
