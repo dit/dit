@@ -328,7 +328,7 @@ class Distribution(BaseDistribution):
         d = self.copy()
         for event, prob in other.eventprobs():
             d[event] = d.ops.add(d[event], prob)
-            
+
         return d
 
     def __radd__(self, other):
@@ -511,11 +511,19 @@ class Distribution(BaseDistribution):
 
     def copy(self):
         """
-        Returns a deep copy of the distribution.
+        Returns a (deep) copy of the distribution.
 
         """
+        # For some reason, we can't just return a deepcopy of self.
+        # It works for linear distributions but not for log distributions.
+
         from copy import deepcopy
-        return deepcopy(self)
+        d = _make_distribution(pmf=np.array(self.pmf, copy=True),
+                               events=deepcopy(self.events),
+                               eventspace=deepcopy(self._eventspace),
+                               logbase=self.ops.base,
+                               sparse=self._meta['is_sparse'])
+        return d
 
     def eventspace(self):
         """
@@ -642,7 +650,7 @@ class Distribution(BaseDistribution):
         """
         Make pmf contain all events in the eventspace.
 
-        This does not change the eventspae.
+        This does not change the eventspace.
 
         Returns
         -------

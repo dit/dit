@@ -22,12 +22,13 @@ orderable.
 The joint event type must be: hashable and orderable.
 
 """
+from __future__ import print_function
 
 from itertools import izip
 
 import numpy as np
 
-from .math import close, prng
+from .math import close, prng, approximate_fraction
 
 from .exceptions import (
     InvalidBase,
@@ -68,7 +69,7 @@ class BaseDistribution(object):
         this array are in a one-to-one correspondence with those in `events`.
 
     prng : RandomState
-        A pseudo-random number generator with a `rand` method which can 
+        A pseudo-random number generator with a `rand` method which can
         generate random numbers. For now, this is assumed to be something
         with an API compatibile to NumPy's RandomState class. This attribute
         is initialized to equal dit.math.prng.
@@ -105,6 +106,9 @@ class BaseDistribution(object):
 
     set_base
         Changes the base of the distribution, in-place.
+
+    to_string
+        Returns a string representation of the distribution.
 
     validate
         A method to validate that the distribution is valid.
@@ -153,6 +157,13 @@ class BaseDistribution(object):
 
         """
         return len(self.events)
+
+    def __repr__(self):
+        """
+        Returns a string representation of the distribution.
+
+        """
+        return self.to_string()
 
     def __reversed__(self):
         """
@@ -235,6 +246,17 @@ class BaseDistribution(object):
         """
         raise NotImplementedError
 
+    def get_base(self):
+        """
+        Returns the base of the distribution.
+
+        If the distribution represents linear probabilities, then the string
+        'linear' will be returned.  If the base of log probabilities is e,
+        then the returned base could be the string 'e' or its numerical value.
+
+        """
+        return self.ops.base
+
     def is_event(self, event):
         """
         Returns `True` if `event` is a valid event in the distribution.
@@ -265,17 +287,6 @@ class BaseDistribution(object):
         """
         raise NotImplementedError
 
-    def get_base(self):
-        """
-        Returns the base of the distribution.
-
-        If the distribution represents linear probabilities, then the string
-        'linear' will be returned.  If the base of log probabilities is e,
-        then the returned base could be the string 'e' or its numerical value.
-
-        """
-        return self.ops.base
-
     def sample(self, size=None, rand=None, prng=None):
         """
         Returns a sample from a discrete distribution.
@@ -283,7 +294,7 @@ class BaseDistribution(object):
         Parameters
         ----------
         size : int or None
-            The number of samples to draw from the distribution. If `None`, 
+            The number of samples to draw from the distribution. If `None`,
             then a single sample is returned.  Otherwise, a list of samples is
             returned.
         rand : float or NumPy array or None
@@ -293,9 +304,9 @@ class BaseDistribution(object):
             `None`, then the random number will be drawn from a pseudo random
             number generator.
         prng : random number generator
-            A random number generator with a `rand' method that returns a 
-            random number between 0 and 1 when called with no arguments. If 
-            unspecified, then we use the random number generator on the 
+            A random number generator with a `rand' method that returns a
+            random number between 0 and 1 when called with no arguments. If
+            unspecified, then we use the random number generator on the
             distribution.
 
         Returns
@@ -330,6 +341,76 @@ class BaseDistribution(object):
 
         """
         raise NotImplementedError
+
+    def to_string(self, digits=None, exact=False, tol=1e-9):
+        """
+        Returns a string representation of the distribution.
+
+        Parameters
+        ----------
+        digits : int or None
+            The probabilities will be rounded to the specified number of
+            digits, using NumPy's around function. If `None`, then no rounding
+            is performed. Note, if the number of digits is greater than the
+            precision of the floats, then the resultant number of digits will
+            match that smaller precision.
+        exact : bool
+            If `True`, then linear probabilities will be displayed, even if
+            the underlying pmf contains log probabilities.  The closest
+            rational fraction within a tolerance specified by `tol` is used
+            as the display value.
+        tol : float
+            If `exact` is `True`, then the probabilities will be displayed
+            as the closest rational fraction within `tol`.
+
+        Returns
+        -------
+        s : str
+            A string representation of the distribution.
+
+        """
+        from itertools import izip
+        from StringIO import StringIO
+        s = StringIO()
+
+        colsep = '   '
+        events = map(str, self.events)
+        max_length = max(map(len, events))
+
+        # 1) Convert to linear probabilities, if necessary.
+        if exact:
+            # Copy to avoid precision loss
+            d = self.copy()
+            d.set_base('linear')
+        else:
+            d = self
+
+        # 2) Round, if necessary.
+        if digits is not None and digits is not False:
+            pmf = d.pmf.round(digits)
+        else:
+            pmf = d.pmf
+
+        # 3) Construct fractions, in necessary.
+        if exact:
+            pmf = [approximate_fraction(x, tol) for x in pmf]
+
+        # 4) Write a header
+        if d.is_log():
+            pstr = 'log p(x)'
+        else:
+            pstr = 'p(x)'
+
+        s.write("Eventspace: {}\n".format(tuple(d.eventspace())))
+        s.write("Log Base: {}\n\n".format(d.get_base()))
+        s.write(''.join([ 'x'.ljust(max_length), colsep, pstr, "\n" ]))
+
+        for e,p in izip(events, pmf):
+            s.write(''.join( [e.ljust(max_length), colsep, str(p), "\n"] ))
+        s.seek(0)
+        s = s.read()
+
+        return s
 
     def validate(self, **kwargs):
         """
