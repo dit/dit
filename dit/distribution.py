@@ -26,7 +26,8 @@ The joint event type must be: hashable and orderable.
 from itertools import izip
 
 import numpy as np
-from cmpy.math import close
+
+from .math import close, prng
 
 from .exceptions import (
     InvalidBase,
@@ -66,6 +67,12 @@ class BaseDistribution(object):
         The probability mass function for the distribution.  The elements of
         this array are in a one-to-one correspondence with those in `events`.
 
+    prng : RandomState
+        A pseudo-random number generator with a `rand` method which can 
+        generate random numbers. For now, this is assumed to be something
+        with an API compatibile to NumPy's RandomState class. This attribute
+        is initialized to equal dit.math.prng.
+
     Methods
     -------
     copy
@@ -93,6 +100,9 @@ class BaseDistribution(object):
     normalize
         Normalizes the distribution.
 
+    sample
+        Returns a sample from the distribution.
+
     set_base
         Changes the base of the distribution, in-place.
 
@@ -112,7 +122,14 @@ class BaseDistribution(object):
     pmf = None
 
     def __init__(self):
-        raise NotImplementedError
+        """
+        Common initialization for all distribution types.
+
+        """
+        # We set the prng to match the global dit.math prng.
+        # Usually, this should be good enough.  If something more exotic
+        # is desired, the user can change the prng manually.
+        self.prng = prng
 
     def __contains__(self, event):
         raise NotImplementedError
@@ -259,6 +276,38 @@ class BaseDistribution(object):
         """
         return self.ops.base
 
+    def sample(self, size=None, rand=None, prng=None):
+        """
+        Returns a sample from a discrete distribution.
+
+        Parameters
+        ----------
+        size : int or None
+            The number of samples to draw from the distribution. If `None`, 
+            then a single sample is returned.  Otherwise, a list of samples is
+            returned.
+        rand : float or NumPy array or None
+            When `size` is `None`, `rand` should be a random number from the
+            interval [0,1]. When `size` is not `None`, then `rand` should be
+            a NumPy array of random numbers.  In either situation, if `rand` is
+            `None`, then the random number will be drawn from a pseudo random
+            number generator.
+        prng : random number generator
+            A random number generator with a `rand' method that returns a 
+            random number between 0 and 1 when called with no arguments. If 
+            unspecified, then we use the random number generator on the 
+            distribution.
+
+        Returns
+        -------
+        s : sample or list
+            The sample(s) drawn from the distribution.
+
+        """
+        import dit.math
+        s = dit.math.sample(self, size, rand, prng)
+        return s
+
     def set_base(self, base):
         """
         Changes the base of the distribution.
@@ -322,8 +371,9 @@ class BaseDistribution(object):
         return True
 
     ### We choose to implement only scalar multiplication and distribution
-    ### addition.  While other operations could be defined, their usage is
-    ### likely uncommon and the implementation slower as well.
+    ### addition, as they will be useful for constructing convex combinations.
+    ### While other operations could be defined, their usage is likely uncommon
+    ### and the implementation slower as well.
 
     def __add__(self, other):
         """

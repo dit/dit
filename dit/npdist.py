@@ -28,6 +28,10 @@ Note:
             d[e] will raise an InvalidEvent if e is not in the eventspace.
         d[e] does not describe the underlying data structure.
             It provides a view of the dense data structure.
+            With defaultdict, if e not in d, then d[e] will add it.
+            With distributions, we don't want the pmf changing size
+            just because we queried it.  The size will change only on
+            assignment.
         __in__ describes the underlying data structure.
         __iter__ describes the underlying data structure.
         __len__ describes the underlying data structure.
@@ -237,6 +241,8 @@ class Distribution(BaseDistribution):
         See :meth:`validate` for a list of other potential exceptions.
 
         """
+        super(Distribution, self).__init__()
+
         pmf, events, eventspace = self._init(pmf, events, eventspace, logbase)
 
         # Sort everything to match the order of the eventspace.

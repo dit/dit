@@ -45,6 +45,7 @@ def sample(dist, size=None, rand=None, prng=None):
         The sample drawn from the distribution.
 
     """
+    ### This works for NumPy-base distributions (in npdist.py)
     if size is None:
         n = 1
     else:
@@ -64,8 +65,8 @@ def sample(dist, size=None, rand=None, prng=None):
         e = dit.exceptions.ditException(msg)
         raise(e)
 
-    indexes = _samples(dist._pmf, rand)
-    events = dist._events
+    indexes = _samples(dist.pmf, rand)
+    events = dist.events
     s = [events[i] for i in indexes]
     if size is None:
         s = s[0]

@@ -18,9 +18,6 @@ def close(double x, double y, double rtol, double atol):
     The absolute error atol usually comes into play when y is very small or
     zero; it says how small x must be also.
 
-    If rtol or atol are unspecified, they are taken from cmpyParams['rtol']
-    and cmpyParams['atol'].
-
     """
     # Test for nan
     if isnan(x) or isnan(y):
