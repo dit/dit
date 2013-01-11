@@ -105,7 +105,7 @@ def set_params():
 defaultParams = {'rtol': (1e-7, validate_float),
                  'atol': (1e-9, validate_float),
                  'logs': (True, validate_boolean),
-                 'logbase': (2, validate_base),
+                 'base': (2, validate_base),
                  'text.usetex': (False, validate_boolean),
                  'text.font': ('ascii', validate_text),
                 }

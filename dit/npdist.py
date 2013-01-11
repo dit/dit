@@ -59,7 +59,7 @@ from .params import ditParams
 
 import numpy as np
 
-def _make_distribution(pmf, events=None, eventspace=None, logbase=None, sparse=True):
+def _make_distribution(pmf, events=None, eventspace=None, base=None, sparse=True):
     """
     An unsafe, but faster, initialization for distributions.
 
@@ -87,12 +87,12 @@ def _make_distribution(pmf, events=None, eventspace=None, logbase=None, sparse=T
     d = Distribution.__new__(Distribution)
 
     # Determine if the pmf represents log probabilities or not.
-    if logbase is None:
-        logbase = ditParams['logbase']
-    if logbase == 'linear':
+    if base is None:
+        base = ditParams['base']
+    if base == 'linear':
         ops = LinearOperations()
     else:
-        ops = LogOperations(logbase)
+        ops = LogOperations(base)
     d.ops = ops
 
     if events is None:
@@ -142,8 +142,7 @@ class Distribution(BaseDistribution):
         The values could be symbolic, for example.
 
     is_sparse : bool
-        `True` if `events` and `pmf` contain only non-null events and
-        probabilities.
+        `True` if `events` and `pmf` represent a sparse distribution.
 
     Private Attributes
     ------------------
@@ -245,7 +244,7 @@ class Distribution(BaseDistribution):
         'is_sparse': None
     }
 
-    def __init__(self, pmf, events=None, eventspace=None, logbase=None,
+    def __init__(self, pmf, events=None, eventspace=None, base=None,
                             validate=True, sort=True, sparse=True):
         """
         Initialize the distribution.
@@ -270,11 +269,11 @@ class Distribution(BaseDistribution):
             `events` is used to specify all possible events.  The order of the
             events is important, so sort beforehand if necessary.
 
-        logbase : float, None
-            If `pmf` specifies log probabilities, then `logbase` should specify
+        base : float, None
+            If `pmf` specifies log probabilities, then `base` should specify
             the base of the logarithm.  If 'linear', then `pmf` is assumed to
             represent linear probabilities.  If `None`, then the value for
-            `logbase` is taken from ditParams['logbase'].
+            `base` is taken from ditParams['base'].
 
         validate : bool
             If `True`, then validate the distribution.  If `False`, then assume
@@ -305,7 +304,7 @@ class Distribution(BaseDistribution):
         """
         super(Distribution, self).__init__()
 
-        pmf, events, eventspace = self._init(pmf, events, eventspace, logbase)
+        pmf, events, eventspace = self._init(pmf, events, eventspace, base)
 
         # Sort everything to match the order of the eventspace.
         if sort:
@@ -333,18 +332,18 @@ class Distribution(BaseDistribution):
         if validate:
             self.validate()
 
-    def _init(self, pmf, events, eventspace, logbase):
+    def _init(self, pmf, events, eventspace, base):
         """
         The barebones initialization.
 
         """
         # Determine if the pmf represents log probabilities or not.
-        if logbase is None:
-            logbase = ditParams['logbase']
-        if logbase == 'linear':
+        if base is None:
+            base = ditParams['base']
+        if base == 'linear':
             ops = LinearOperations()
         else:
-            ops = LogOperations(logbase)
+            ops = LogOperations(base)
         self.ops = ops
 
         ## pmf
@@ -583,7 +582,7 @@ class Distribution(BaseDistribution):
         d = _make_distribution(pmf=np.array(self.pmf, copy=True),
                                events=deepcopy(self.events),
                                eventspace=deepcopy(self._eventspace),
-                               logbase=self.ops.base,
+                               base=self.ops.base,
                                sparse=self._meta['is_sparse'])
         return d
 

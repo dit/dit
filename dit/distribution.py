@@ -402,7 +402,7 @@ class BaseDistribution(object):
             pstr = 'p(x)'
 
         s.write("Eventspace: {}\n".format(tuple(d.eventspace())))
-        s.write("Log Base: {}\n\n".format(d.get_base()))
+        s.write("Base: {}\n\n".format(d.get_base()))
         s.write(''.join([ 'x'.ljust(max_length), colsep, pstr, "\n" ]))
 
         for e,p in izip(events, pmf):
