@@ -19,7 +19,7 @@ The most basic type of event must be: hashable and equality comparable. If the
 distribution's eventspace is to be ordered, then the events must also be
 orderable.
 
-The joint event type must be: hashable and orderable.
+The joint event type must be: hashable, orderable, and a sequence.
 
 """
 from __future__ import print_function
@@ -89,18 +89,15 @@ class BaseDistribution(object):
     get_base
         Returns the base of the distribution.
 
+    has_event
+        Returns `True` is the distribution has `event` in the eventspace.
+
     is_approx_equal
         Returns `True` if the distribution is approximately equal to another
         distribution.
 
-    is_event
-        Returns `True` is the event exists in the event space.
-
     is_log
         Returns `True` if the distribution values are log probabilities.
-
-    is_nonnull
-        Returns `True` if the event occurs with non-null probability.
 
     is_numeric
         Returns `True` if the distribution values are numerical.
@@ -264,6 +261,13 @@ class BaseDistribution(object):
         """
         return self.ops.base
 
+    def has_event(self, event, null=True):
+        """
+        Returns `True` if `event` is a valid event (exists in the eventspace).
+
+        """
+        raise NotImplementedError
+
     def is_approx_equal(self, other):
         """
         Returns `True` is `other` is approximately equal to this distribution.
@@ -276,15 +280,6 @@ class BaseDistribution(object):
         Notes
         -----
         The distributions need not have the same base or even same length.
-
-        """
-        raise NotImplementedError
-
-    def is_event(self, event):
-        """
-        Returns `True` if `event` is a valid event in the distribution.
-
-        The event may be a null-probability event.
 
         """
         raise NotImplementedError

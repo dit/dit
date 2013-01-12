@@ -48,7 +48,9 @@ is always equal to the length of the eventspace.
 
 When a distribution is sparse, del d[e] will make the pmf smaller.  But d[e] = 0
 will simply set the element to zero.
-When a distribution is dense, del d[e] will set the element to zero.
+
+When a distribution is dense, del d[e] will set the element to zero, and 
+d[e] = 0 still sets the element to zero.
 
 """
 
@@ -133,7 +135,7 @@ def reorder(events, pmf, eventspace, index=None):
 
 class Distribution(BaseDistribution):
     """
-    A numerical distribution with linear probabilities.
+    A numerical distribution.
 
     Meta Properties
     ---------------
@@ -192,11 +194,11 @@ class Distribution(BaseDistribution):
     get_base
         Returns the base of the distribution.
 
+    has_event
+        Returns `True` is the distribution has `event` in the eventspace.
+
     is_dense
         Returns `True` if the distribution is dense.
-
-    is_event
-        Returns `True` is the event exists in the event space.
 
     is_log
         Returns `True` if the distribution values are log probabilities.
@@ -631,23 +633,44 @@ class Distribution(BaseDistribution):
         else:
             return True
 
+    def has_event(self, event, null=True):
+        """
+        Returns `True` if `event` is a valid event (exists in the eventspace).
+
+        Parameters
+        ----------
+        event : event
+            The event to be tested.
+        null : bool
+            Specifies if null events are acceptable.  If `True`, then null
+            events are acceptable.  Thus, the only requirement on `event` is 
+            that it exist in the distribution's eventspace. If `False`, then 
+            null events are not acceptable.  Thus, `event` must exist in the 
+            distribution's eventspace and also correspond to be nonnull.
+
+        Notes
+        -----
+        This is an O(1) operation.
+
+        """
+        if null:
+            # No additional restrictions.
+            z = event in self._eventspace_set
+        else:
+            # Must be valid and have positive probability.
+            try:
+                z = not close(self[event], self.ops.zero)
+            except InvalidEvent:
+                z = False
+
+        return z
+
     def is_dense(self):
         """
         Returns `True` if the distribution is dense and `False` otherwise.
 
         """
         return not self.is_sparse()
-
-    def is_event(self, event):
-        """
-        Returns `True` if `event` is a valid event (exists in the eventspace).
-
-        The event may be a null-probability event.
-
-        This is an O(1) operation.
-
-        """
-        return event in self._eventspace_set
 
     def is_sparse(self):
         """
