@@ -89,11 +89,18 @@ class BaseDistribution(object):
     get_base
         Returns the base of the distribution.
 
+    is_approx_equal
+        Returns `True` if the distribution is approximately equal to another
+        distribution.
+
     is_event
         Returns `True` is the event exists in the event space.
 
     is_log
         Returns `True` if the distribution values are log probabilities.
+
+    is_nonnull
+        Returns `True` if the event occurs with non-null probability.
 
     is_numeric
         Returns `True` if the distribution values are numerical.
@@ -153,7 +160,7 @@ class BaseDistribution(object):
 
     def __len__(self):
         """
-        Returns the number of non-null events in the distribution.
+        Returns the number of events in the distribution's pmf.
 
         """
         return len(self.events)
@@ -257,6 +264,22 @@ class BaseDistribution(object):
         """
         return self.ops.base
 
+    def is_approx_equal(self, other):
+        """
+        Returns `True` is `other` is approximately equal to this distribution.
+
+        Parameters
+        ----------
+        other : distribution
+            The distribution to compare against.
+
+        Notes
+        -----
+        The distributions need not have the same base or even same length.
+
+        """
+        raise NotImplementedError
+
     def is_event(self, event):
         """
         Returns `True` if `event` is a valid event in the distribution.
@@ -272,6 +295,13 @@ class BaseDistribution(object):
 
         """
         return self.ops.base != 'linear'
+
+    def is_nonnull(self, event):
+        """
+        Returns `True` if `event` occurs with non-null probability.
+
+        """
+        return self[event] > self.ops.zero
 
     def is_numeric(self):
         """
@@ -409,7 +439,8 @@ class BaseDistribution(object):
             s.write(''.join( [e.ljust(max_length), colsep, str(p), "\n"] ))
         s.seek(0)
         s = s.read()
-
+        # Remove the last \n
+        s = s[:-1]
         return s
 
     def validate(self, **kwargs):

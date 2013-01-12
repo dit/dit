@@ -233,7 +233,7 @@ class Distribution(BaseDistribution):
     The events and pmf of the distribution are stored as a tuple and a NumPy
     array.  The sequences can be either sparse or dense.  By sparse, we do not
     mean that the representation is a NumPy sparse array.  Rather, we mean that
-    the sequences need not contain every event in the eventspace. The order of 
+    the sequences need not contain every event in the eventspace. The order of
     the events and probabilities will always match the order of the eventspace,
     even though their length might not equal the length of the eventspace.
 
@@ -411,9 +411,11 @@ class Distribution(BaseDistribution):
 
     def __contains__(self, event):
         """
-        Returns `True` if `event` is a non-null event in the distribution.
+        Returns `True` if `event` is in self.events.
 
-        If `event` is not in the eventspace, then `False` is returned.
+        Note, the event could correspond to a null-event. Also, if `event` is
+        not in the eventspace, then an exception is not raised. Instead,
+        `False` is returned.
 
         """
         return event in self._events_index
@@ -593,6 +595,42 @@ class Distribution(BaseDistribution):
         """
         return iter(self._eventspace)
 
+    def is_approx_equal(self, other):
+        """
+        Returns `True` is `other` is approximately equal to this distribution.
+
+        For two distributions to be equal, they must have the same eventspace
+        and must also agree on the probabilities of each event.
+
+        Parameters
+        ----------
+        other : distribution
+            The distribution to compare against.
+
+        Notes
+        -----
+        The distributions need not have the same base or even same length.
+
+        """
+        # Event spaces must be equal.
+        es1, es2 = tuple(self.eventspace()), tuple(other.eventspace())
+        if  es1 != es2:
+            return False
+
+        # The set of all specified events (some may be null events).
+        if self.is_dense() or other.is_dense():
+            events = es1
+        else:
+            events = set(self.events)
+            events.update(other.events)
+
+        # Potentially nonzero probabilities must be equal.
+        for event in events:
+            if not close(self[event], other[event]):
+                return False
+        else:
+            return True
+
     def is_dense(self):
         """
         Returns `True` if the distribution is dense and `False` otherwise.
@@ -602,7 +640,7 @@ class Distribution(BaseDistribution):
 
     def is_event(self, event):
         """
-        Returns `True` if `event` is a valid event in the distribution.
+        Returns `True` if `event` is a valid event (exists in the eventspace).
 
         The event may be a null-probability event.
 
