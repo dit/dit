@@ -46,7 +46,7 @@ class BaseDistribution(object):
 
     Meta Properties
     ---------------
-    is_numeric
+    is_numerical
         Boolean specifying if the pmf represents numerical values or not.
         The values could be symbolic, for example.
 
@@ -99,7 +99,7 @@ class BaseDistribution(object):
     is_log
         Returns `True` if the distribution values are log probabilities.
 
-    is_numeric
+    is_numerical
         Returns `True` if the distribution values are numerical.
 
     normalize
@@ -121,7 +121,7 @@ class BaseDistribution(object):
     # Subclasses should update these meta attributes *before* calling the base
     # distribution's __init__ function.
     _meta = {
-        'is_numeric': None,
+        'is_numerical': None,
     }
 
     # These should be set in the subclass's init function.
@@ -298,12 +298,12 @@ class BaseDistribution(object):
         """
         return self[event] > self.ops.zero
 
-    def is_numeric(self):
+    def is_numerical(self):
         """
         Returns `True` if the distribution values are numerical.
 
         """
-        return self._meta['is_numeric']
+        return self._meta['is_numerical']
 
     def normalize(self):
         """

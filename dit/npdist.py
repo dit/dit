@@ -139,7 +139,7 @@ class Distribution(BaseDistribution):
 
     Meta Properties
     ---------------
-    is_numeric
+    is_numerical
         Boolean specifying if the pmf represents numerical values or not.
         The values could be symbolic, for example.
 
@@ -203,7 +203,7 @@ class Distribution(BaseDistribution):
     is_log
         Returns `True` if the distribution values are log probabilities.
 
-    is_numeric
+    is_numerical
         Returns `True` if the distribution values are numerical.
 
     is_sparse
@@ -242,7 +242,7 @@ class Distribution(BaseDistribution):
     """
 
     _meta = {
-        'is_numeric': True,
+        'is_numerical': True,
         'is_sparse': None
     }
 
