@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """
     Define miscellaneous utilities.
 """
@@ -18,6 +21,8 @@ __all__ = ('Property',
            'len_cmp',
            'partition_set',
            'require_keys',
+           'str_product',
+           'product_maker',
            'xzip')
 
 def Property( fcn ):
@@ -321,4 +326,32 @@ def partition_set(elements, relation=None, innerset=False, reflexive=False, tran
         eqclasses = [tuple(c) for c in eqclasses]
 
     return eqclasses, lookup
+
+def product_maker(func):
+    """
+    Returns a customized product function.
+
+    itertools.product yields tuples.  Sometimes, one desires some other type
+    of object---for example, strings.  This function transforms the output
+    of itertools.product, returning a customized product function.
+
+    Parameters
+    ----------
+    func : callable
+        Any function which accepts an iterable as the single input argument.
+        The iterates of itertools.product are transformed by this callable.
+
+    Returns
+    -------
+    _product : callable
+        A customized itertools.product function.
+
+    """
+    from itertools import product
+    def _product(*args):
+        for prod in product(*args):
+            yield func(prod)
+    return _product
+
+str_product = product_maker(''.join)
 

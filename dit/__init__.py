@@ -9,4 +9,4 @@ dit is a Python project for discrete-valued information theory.
 # Order is important!
 from .params import ditParams
 from .npdist import Distribution
-
+from .npjdist import JointDistribution
