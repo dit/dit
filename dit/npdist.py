@@ -4,6 +4,34 @@
 """
 Module defining NumPy array-based distribution classes.
 
+Definitions
+-----------
+See http://docs.python.org/3/library/collections.abc.html#collections-abstract-base-classes
+
+A sequence is a sized, iterable container.
+
+`None` is not a valid event, as it is used by dit to signify that an event
+was not found in the list of events.  This is not enforced in the data
+structures---things will simply not work as expected.
+
+The most basic type of event must be hashable and equality comparable.
+Thus, the events should be immutable.  If the distribution's eventspace is
+to be sorted, then the events must also be orderable.  Regular events need
+not be sequences.
+
+The joint event type must be a hashable, orderable, and a sequence. Thus, joint
+events must be hashable, orderable, sized, iterable containers.
+
+One of the features of joint distributions is that we can marginalize them.
+This requires that we are able to construct smaller events from larger events.
+For example, an event like '10101' might become '010' if the first and last
+random variables are marginalized.  Given the alphabet of the joint
+distribution, we can construct a tuple ('0','1','0') for any smaller event
+using itertools.product, but how do we create an event of the same type?
+For tuples and other similar containers, we just pass the tuple to the
+event constructor.  This technique does not work for strings, as
+str(('0','1','0')) yields "('0', '1', '0')".  So we have to handle strings
+separately.
 
 Note:
     For dictionaries...
@@ -49,33 +77,38 @@ is always equal to the length of the eventspace.
 When a distribution is sparse, del d[e] will make the pmf smaller.  But d[e] = 0
 will simply set the element to zero.
 
-When a distribution is dense, del d[e] will set the element to zero, and 
+When a distribution is dense, del d[e] will set the element to zero, and
 d[e] = 0 still sets the element to zero.
+
+For distributions, the eventspace is the alphabet and the alphabet is a single tuple.
+For joint distributions, the eventspace is the Cartestian product of the alphabets
+for each random variable, and the alphabet for the joint distribution is a tuple
+of alphabets for each random variable.
+
 
 """
 
 from .distribution import BaseDistribution
-from .exceptions import InvalidEvent, InvalidProbability
+from .exceptions import InvalidDistribution, InvalidEvent, InvalidProbability
 from .math import LinearOperations, LogOperations, close
 from .params import ditParams
 
 import numpy as np
 
-def _make_distribution(pmf, events=None, eventspace=None, base=None, sparse=True):
+def _make_distribution(pmf, events=None, alphabet=None, base=None, sparse=True):
     """
     An unsafe, but faster, initialization for distributions.
 
     If used incorrectly, the data structure will be inconsistent.
 
     This function can be useful when you are creating many distributions
-    and in loop and can guarantee that:
+    in a loop and can guarantee that:
 
-        1) the event space is in the desired order.
-        2) events and pmf are in the same order as the eventspace.
+        0) the alphabet is in the desired order.
+        1) events and pmf are in the same order as the eventspace.
            [Thus, `pmf` should not be a dictionary.]
-        3) events and pmf are either sparse xor dense (and not something else).
 
-    This function will not order the eventspace, nor will it reorder events
+    This function will not order the alphabet, nor will it reorder events
     or pmf.  It will not forcibly make events and pmf to be sparse or dense.
     It will simply declare the distribution to be sparse or dense. The
     distribution is not validated either.
@@ -99,9 +132,20 @@ def _make_distribution(pmf, events=None, eventspace=None, base=None, sparse=True
 
     if events is None:
         events = range(len(pmf))
+    elif len(pmf) != len(events):
+        msg = "Unequal lengths for `values` and `events`"
+        raise InvalidDistribution(msg)
 
-    if eventspace is None:
-        eventspace = events
+    ## alphabets
+    # Use events to obtain the alphabets.
+    if alphabet is None:
+
+        if len(events) == 0:
+            msg = '`events` cannot have zero length if `alphabet` is `None`'
+            raise InvalidDistribution(msg)
+
+        # The event length.
+        alphabet = events
 
     # Force the distribution to be numerical and a NumPy array.
     d.pmf = np.asarray(pmf, dtype=float)
@@ -111,14 +155,14 @@ def _make_distribution(pmf, events=None, eventspace=None, base=None, sparse=True
     d._events_index = dict(zip(events, range(len(events))))
 
     # Tuple eventspace and its set.
-    d._eventspace = tuple(eventspace)
-    d._eventspace_set = set(eventspace)
+    d.alphabet = tuple(alphabet)
+    d._alphabet_set = set(alphabet)
 
     d._meta['is_sparse'] = sparse
 
     return d
 
-def reorder(events, pmf, eventspace, index=None):
+def reorder(pmf, events, alphabet, index=None):
     """
     Helper function to reorder events and pmf to match eventspace.
 
@@ -126,12 +170,15 @@ def reorder(events, pmf, eventspace, index=None):
     if index is None:
         index = dict(zip(events, range(len(events))))
 
-    evts = set(events)
-    order = [index[event] for event in eventspace if event in evts]
+    eventspace = alphabet
+    order = [index[event] for event in eventspace if event in index]
+    if len(order) != len(events):
+        raise InvalidDistribution('Events and eventspace are not compatible.')
+
     events = [events[i] for i in order]
     pmf = [pmf[i] for i in order]
     new_index = dict(zip(events, range(len(events))))
-    return events, pmf, new_index
+    return pmf, events, new_index
 
 class Distribution(BaseDistribution):
     """
@@ -139,6 +186,9 @@ class Distribution(BaseDistribution):
 
     Meta Properties
     ---------------
+    is_joint
+        Boolean specifying if the pmf represents a joint distribution.
+
     is_numerical
         Boolean specifying if the pmf represents numerical values or not.
         The values could be symbolic, for example.
@@ -148,20 +198,21 @@ class Distribution(BaseDistribution):
 
     Private Attributes
     ------------------
+    _alphabet_set : tuple
+        A tuple representing the alphabet of the random variable.
+
     _events_index : dict
         A dictionary mapping events to their index in self.events.
-
-    _eventspace : tuple
-        The ordered event space.
-
-    _eventspace_set : set
-        The set of the event space.
 
     _meta : dict
         A dictionary containing the meta information, described above.
 
     Public Attributes
     -----------------
+    alphabet : tuple
+        A tuple representing the alphabet of the random variable.  The
+        eventspace, for distributions, equals the alphabet.
+
     events : tuple
         The events of the probability distribution.
 
@@ -199,6 +250,9 @@ class Distribution(BaseDistribution):
 
     is_dense
         Returns `True` if the distribution is dense.
+
+    is_joint
+        Returns `True` if the distribution is a joint distribution.
 
     is_log
         Returns `True` if the distribution values are log probabilities.
@@ -241,12 +295,21 @@ class Distribution(BaseDistribution):
 
     """
 
+    _alphabet_set = None
+    _events_index = None
     _meta = {
+        'is_joint': False,
         'is_numerical': True,
         'is_sparse': None
     }
 
-    def __init__(self, pmf, events=None, eventspace=None, base=None,
+    alphabet = None
+    events = None
+    ops = None
+    pmf = None
+    prng = None
+
+    def __init__(self, pmf, events=None, alphabet=None, base=None,
                             validate=True, sort=True, sparse=True):
         """
         Initialize the distribution.
@@ -266,10 +329,11 @@ class Distribution(BaseDistribution):
             object which is equality comparable.  If `sort` is `True`, then
             events must also be orderable.
 
-        eventspace : sequence
-            The complete listing of possible events.  If `None`, the value of
-            `events` is used to specify all possible events.  The order of the
-            events is important, so sort beforehand if necessary.
+        alphabet : sequence
+            A sequence representing the alphabet of the random variable. For
+            distributions, this corresponds to the complete set of possible
+            events. The order of the alphabet is important. If `None`, the
+            value of `events` is used to determine the alphabet.
 
         base : float, None
             If `pmf` specifies log probabilities, then `base` should specify
@@ -290,11 +354,11 @@ class Distribution(BaseDistribution):
 
         sparse : bool
             Specifies the form of the pmf.  If `True`, then `events` and `pmf`
-            will only contain entries for non-null events and probabilities.
-            The order of these entries will always obey the order of
-            `eventspace`, even if their number is not equal to the size of
-            the eventspace.  If `False`, then the pmf will be dense and every
-            event in the eventspace will be represented.
+            will only contain entries for non-null events and probabilities,
+            after initialization.  The order of these entries will always obey
+            the order of `eventspace`, even if their number is not equal to the
+            size of the eventspace.  If `False`, then the pmf will be dense and
+            every event in the eventspace will be represented.
 
         Raises
         ------
@@ -306,12 +370,11 @@ class Distribution(BaseDistribution):
         """
         super(Distribution, self).__init__()
 
-        pmf, events, eventspace = self._init(pmf, events, eventspace, base)
+        pmf, events, alphabet = self._init(pmf, events, alphabet, base)
 
-        # Sort everything to match the order of the eventspace.
         if sort:
-            eventspace = tuple(sorted(eventspace))
-            events, pmf, index = reorder(events, pmf, eventspace)
+            alphabet = tuple(sorted(alphabet))
+            pmf, events, index = reorder(pmf, events, alphabet)
         else:
             index = dict(zip(events, range(len(events))))
 
@@ -323,8 +386,8 @@ class Distribution(BaseDistribution):
         self._events_index = index
 
         # Tuple eventspace and its set.
-        self._eventspace = tuple(eventspace)
-        self._eventspace_set = set(eventspace)
+        self.alphabet = tuple(alphabet)
+        self._alphabet_set = set(alphabet)
 
         if sparse:
             self.make_sparse(trim=True)
@@ -334,11 +397,57 @@ class Distribution(BaseDistribution):
         if validate:
             self.validate()
 
-    def _init(self, pmf, events, eventspace, base):
+    def _init(self, pmf, events, alphabet, base):
         """
         The barebones initialization.
 
         """
+        if isinstance(pmf, Distribution):
+            # Attempt a conversion from any NumPy based distribution.
+            d = pmf
+
+            events = d.events
+            pmf = d.pmf
+            if base is None:
+                # Allow the user to specify something strange if desired.
+                # Otherwise, use the existing base.
+                base = d.get_base()
+            if alphabet is None:
+                if d.is_joint():
+                    # Use the eventspace as the alphabet.
+                    alphabet = tuple(d.eventspace())
+                else:
+                    alphabet = pmf.alphabet
+
+        else:
+            ## pmf
+            # Attempt to grab events and pmf from a dictionary
+            try:
+                events_ = tuple(pmf.keys())
+                pmf_ = tuple(pmf.values())
+            except AttributeError:
+                pass
+            else:
+                events = events_
+                pmf = pmf_
+
+            ## events
+            # Make sure events and values have the same length.
+            if events is None:
+                events = range(len(pmf))
+            elif len(pmf) != len(events):
+                msg = "Unequal lengths for `values` and `events`"
+                raise InvalidDistribution(msg)
+
+            ## alphabets
+            # Use events to obtain the alphabets.
+            if alphabet is None:
+                if len(events) == 0:
+                    msg = '`events` cannot have zero length if `alphabet` is `None`'
+                    raise InvalidDistribution(msg)
+
+                alphabet = events
+
         # Determine if the pmf represents log probabilities or not.
         if base is None:
             base = ditParams['base']
@@ -348,28 +457,7 @@ class Distribution(BaseDistribution):
             ops = LogOperations(base)
         self.ops = ops
 
-        ## pmf
-        # Attempt to grab events and pmf from a dictionary
-        try:
-            events = tuple(pmf.keys())
-            pmf = tuple(pmf.values())
-        except AttributeError:
-            pass
-
-        ## events
-        # Make sure events and values have the same length.
-        if events is None:
-            events = range(len(pmf))
-        elif len(pmf) != len(events):
-            msg = "Unequal lengths for `values` and `events`"
-            raise InvalidDistribution(msg)
-
-        ## eventspace
-        # Use events as default eventspace.
-        if eventspace is None:
-            eventspace = events
-
-        return pmf, events, eventspace
+        return pmf, events, alphabet
 
     def __add__(self, other):
         """
@@ -379,8 +467,9 @@ class Distribution(BaseDistribution):
         same eventspace.  If not, raise an exception.
 
         """
-        if self._eventspace != other._eventspace:
-            raise IncompatibleDistribution()
+        for e1, e2 in zip(self.eventspace(), other.eventspace()):
+            if e1 != e2:
+                raise IncompatibleDistribution()
 
         # Copy to make sure we don't lose precision when converting.
         d2 = other.copy()
@@ -389,7 +478,7 @@ class Distribution(BaseDistribution):
         # If self is dense, the result will be dense.
         # If self is sparse, the result will be sparse.
         d = self.copy()
-        for event, prob in other.eventprobs():
+        for event, prob in d2.eventprobs():
             d[event] = d.ops.add(d[event], prob)
 
         return d
@@ -453,30 +542,27 @@ class Distribution(BaseDistribution):
         normalize, __setitem__
 
         """
+        if not self.has_event(event, null=True):
+            raise InvalidEvent(event)
+
         events = self.events
         events_index = self._events_index
+        if self.is_dense():
+            # Dense distribution, just set it to zero.
+            idx = events_index[event]
+            self.pmf[idx] = self.ops.zero
+        elif event in events_index:
+            # Remove the event from the sparse distribution.
+            # Since the pmf was already ordered, no need to reorder.
+            # Update the events and the events index.
+            idx = events_index[event]
+            new_indexes = [i for i in range(len(events)) if i != idx]
+            new_events = tuple([ events[i] for i in new_indexes])
+            self.events = new_events
+            self._events_index = dict(zip(new_events, range(len(new_events))))
 
-        ## Note, the event stays in the eventspace.
-
-        if event in self._eventspace_set:
-            if self.is_dense():
-                # Dense distribution, just set it to zero.
-                idx = events_index[event]
-                self.pmf[idx] = self.ops.zero
-            elif event in events_index:
-                # Remove the event from the sparse distribution.
-
-                # Update the events and the events index.
-                idx = events_index[event]
-                new_indexes = [i for i in range(len(events)) if i != idx]
-                new_events = tuple([ events[i] for i in new_indexes])
-                self.events = new_events
-                self._events_index = dict(zip(new_events, range(len(new_events))))
-
-                # Update the probabilities.
-                self.pmf = self.pmf[new_indexes]
-        else:
-            raise InvalidEvent(event)
+            # Update the probabilities.
+            self.pmf = self.pmf[new_indexes]
 
     def __getitem__(self, event):
         """
@@ -500,15 +586,15 @@ class Distribution(BaseDistribution):
             If `event` does not exist in the eventspace.
 
         """
-        if event not in self._eventspace_set:
+        if not self.has_event(event, null=True):
             raise InvalidEvent(event)
+
+        idx = self._events_index.get(event, None)
+        if idx is None:
+            p = self.ops.zero
         else:
-            idx = self._events_index.get(event, None)
-            if idx is None:
-                p = self.ops.zero
-            else:
-                p = self.pmf[idx]
-            return p
+            p = self.pmf[idx]
+        return p
 
     def __setitem__(self, event, value):
         """
@@ -539,12 +625,15 @@ class Distribution(BaseDistribution):
         value is equal to the null probabilty. After a setting operation,
         the event will always exist in `events` and `pmf`.
 
+        Setting a new event in a sparse distribution is costly. It is better
+        to know the non-null events before creating the distribution.
+
         See Also
         --------
         __delitem__
 
         """
-        if event not in self._eventspace_set:
+        if not self.has_event(event, null=True):
             raise InvalidEvent(event)
 
         idx = self._events_index.get(event, None)
@@ -566,13 +655,14 @@ class Distribution(BaseDistribution):
             pmf = [p for p in self.pmf] + [value]
 
             # 2. Reorder
-            events, pmf, index = reorder(self.events, pmf, self._eventspace,
+            pmf, events, index = reorder(pmf, self.events, self.alphabet,
                                          index=self._events_index)
 
             # 3. Store
             self.events = tuple(events)
             self._events_index = index
             self.pmf = np.array(pmf, dtype=float)
+
 
     def copy(self):
         """
@@ -585,7 +675,7 @@ class Distribution(BaseDistribution):
         from copy import deepcopy
         d = _make_distribution(pmf=np.array(self.pmf, copy=True),
                                events=deepcopy(self.events),
-                               eventspace=deepcopy(self._eventspace),
+                               alphabet=deepcopy(self.alphabet),
                                base=self.ops.base,
                                sparse=self._meta['is_sparse'])
         return d
@@ -595,7 +685,40 @@ class Distribution(BaseDistribution):
         Returns an iterator over the ordered event space.
 
         """
-        return iter(self._eventspace)
+        return iter(self.alphabet)
+
+    def has_event(self, event, null=True):
+        """
+        Returns `True` if `event` is a valid event (exists in the eventspace).
+
+        Parameters
+        ----------
+        event : event
+            The event to be tested.
+        null : bool
+            Specifies if null events are acceptable.  If `True`, then null
+            events are acceptable.  Thus, the only requirement on `event` is
+            that it exist in the distribution's eventspace. If `False`, then
+            null events are not acceptable.  Thus, `event` must exist in the
+            distribution's eventspace and also correspond to be nonnull.
+
+        Notes
+        -----
+        This is an O(1) operation.
+
+        """
+        if null:
+            # Make sure the event exists in the eventspace, which equals
+            # the alphabet for distributions.
+            z = event in self._alphabet_set
+        else:
+            # Must be valid and have positive probability.
+            try:
+                z = self[event] > self.ops.zero
+            except InvalidEvent:
+                z = False
+
+        return z
 
     def is_approx_equal(self, other):
         """
@@ -614,13 +737,10 @@ class Distribution(BaseDistribution):
         The distributions need not have the same base or even same length.
 
         """
-        # Event spaces must be equal.
-        es1, es2 = tuple(self.eventspace()), tuple(other.eventspace())
-        if  es1 != es2:
-            return False
-
         # The set of all specified events (some may be null events).
+        es1 = None
         if self.is_dense() or other.is_dense():
+            es1 = tuple(self.eventspace())
             events = es1
         else:
             events = set(self.events)
@@ -633,37 +753,12 @@ class Distribution(BaseDistribution):
         else:
             return True
 
-    def has_event(self, event, null=True):
-        """
-        Returns `True` if `event` is a valid event (exists in the eventspace).
-
-        Parameters
-        ----------
-        event : event
-            The event to be tested.
-        null : bool
-            Specifies if null events are acceptable.  If `True`, then null
-            events are acceptable.  Thus, the only requirement on `event` is 
-            that it exist in the distribution's eventspace. If `False`, then 
-            null events are not acceptable.  Thus, `event` must exist in the 
-            distribution's eventspace and also correspond to be nonnull.
-
-        Notes
-        -----
-        This is an O(1) operation.
-
-        """
-        if null:
-            # No additional restrictions.
-            z = event in self._eventspace_set
-        else:
-            # Must be valid and have positive probability.
-            try:
-                z = not close(self[event], self.ops.zero)
-            except InvalidEvent:
-                z = False
-
-        return z
+        # Event spaces must be equal.
+        if es1 is None:
+            es1 = tuple(self.eventspace())
+        es2 = tuple(other.eventspace())
+        if es1 != es2:
+            return False
 
     def is_dense(self):
         """
@@ -717,7 +812,7 @@ class Distribution(BaseDistribution):
             log probabilities with the specified base.
 
         """
-        from dit.math import LinearOperations, LogOperations
+        from .math import LinearOperations, LogOperations
         from .params import validate_base
 
         # Sanitize inputs
@@ -781,15 +876,16 @@ class Distribution(BaseDistribution):
 
         """
         L = len(self)
-
         # Recall, __getitem__ is a view to the dense distribution.
-        pmf = [ self[e] for e in self._eventspace ]
-        self.pmf = np.array(pmf)
-        self.events = self._eventspace
-        self._events_index = dict(zip(self.events, range(len(self.events))))
+        events = tuple(self.eventspace())
+        pmf = [ self[e] for e in events ]
+        self.pmf = np.array(pmf, dtype=float)
+        self.events = events
+        self._events_index = dict(zip(events, range(len(events))))
 
         self._meta['is_sparse'] = False
         n = len(self) - L
+
         return n
 
     def make_sparse(self, trim=True):

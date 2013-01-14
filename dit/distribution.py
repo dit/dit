@@ -36,6 +36,82 @@ from .exceptions import (
     InvalidNormalization
 )
 
+def prepare_string(dist, digits=None, exact=False, tol=1e-9):
+    """
+    Returns a string representation of the distribution.
+
+    Parameters
+    ----------
+    dist : distribution
+        The distribution to be stringified.
+    digits : int or None
+        The probabilities will be rounded to the specified number of
+        digits, using NumPy's around function. If `None`, then no rounding
+        is performed. Note, if the number of digits is greater than the
+        precision of the floats, then the resultant number of digits will
+        match that smaller precision.
+    exact : bool
+        If `True`, then linear probabilities will be displayed, even if
+        the underlying pmf contains log probabilities.  The closest
+        rational fraction within a tolerance specified by `tol` is used
+        as the display value.
+    tol : float
+        If `exact` is `True`, then the probabilities will be displayed
+        as the closest rational fraction within `tol`.
+
+    Returns
+    -------
+    pmf : sequence
+        The formatted pmf.  This could be a NumPy array (possibly rounded)
+        or a list of Fraction instances.
+    event : sequence
+        The formated events.
+    base : str or float
+        The base of the formatted pmf.
+    colsep : str
+        The column separation for printing.
+    max_length : int
+        The maximum length of the events, as strings.
+    pstr : str
+        A string representing the probabilit of an event: 'p(x)' or 'log p(x)'.
+
+    """
+    colsep = '   '
+    events = map(str, dist.events)
+
+    if  len(events):
+        max_length = max(map(len, events))
+    else:
+        max_length = 0
+
+    # 1) Convert to linear probabilities, if necessary.
+    if exact:
+        # Copy to avoid precision loss
+        d = dist.copy()
+        d.set_base('linear')
+    else:
+        d = dist
+
+    # 2) Round, if necessary, possibly after converting to linear probabilities.
+    if digits is not None and digits is not False:
+        pmf = d.pmf.round(digits)
+    else:
+        pmf = d.pmf
+
+    # 3) Construct fractions, in necessary.
+    if exact:
+        pmf = [approximate_fraction(x, tol) for x in pmf]
+
+    if d.is_log():
+        pstr = 'log p(x)'
+    else:
+        pstr = 'p(x)'
+
+    base = d.get_base()
+
+    return pmf, events, base, colsep, max_length, pstr
+
+
 class BaseDistribution(object):
     """
     The base class for all "distribution" classes.
@@ -46,6 +122,9 @@ class BaseDistribution(object):
 
     Meta Properties
     ---------------
+    is_joint
+        Boolean specifying if the pmf represents a joint distribution.
+
     is_numerical
         Boolean specifying if the pmf represents numerical values or not.
         The values could be symbolic, for example.
@@ -96,6 +175,9 @@ class BaseDistribution(object):
         Returns `True` if the distribution is approximately equal to another
         distribution.
 
+    is_joint
+        Returns `True` if the distribution is a joint distribution.
+
     is_log
         Returns `True` if the distribution values are log probabilities.
 
@@ -121,6 +203,7 @@ class BaseDistribution(object):
     # Subclasses should update these meta attributes *before* calling the base
     # distribution's __init__ function.
     _meta = {
+        'is_joint': False,
         'is_numerical': None,
     }
 
@@ -128,6 +211,7 @@ class BaseDistribution(object):
     events = None
     ops = None
     pmf = None
+    prng = None
 
     def __init__(self):
         """
@@ -162,13 +246,6 @@ class BaseDistribution(object):
         """
         return len(self.events)
 
-    def __repr__(self):
-        """
-        Returns a string representation of the distribution.
-
-        """
-        return self.to_string()
-
     def __reversed__(self):
         """
         Returns a reverse iterator over the non-null events.
@@ -178,6 +255,13 @@ class BaseDistribution(object):
 
     def __setitem__(self, key, value):
         raise NotImplementedError
+
+    def __str__(self):
+        """
+        Returns a string representation of the distribution.
+
+        """
+        return self.to_string()
 
     def _validate_events(self):
         """
@@ -198,8 +282,11 @@ class BaseDistribution(object):
         events = set(self.events)
         eventspace = set(self.eventspace())
         bad = events.difference(eventspace)
-        if len(bad) > 0:
-            raise InvalidEvent(bad)
+        L = len(bad)
+        if L == 1:
+            raise InvalidEvent(bad, single=True)
+        elif L:
+            raise InvalidEvent(bad, single=False)
 
         return True
 
@@ -284,19 +371,19 @@ class BaseDistribution(object):
         """
         raise NotImplementedError
 
+    def is_joint(self):
+        """
+        Returns `True` if the distribution is a joint distribution.
+
+        """
+        return self._meta["is_joint"]
+
     def is_log(self):
         """
         Returns `True` if the distribution values are log probabilities.
 
         """
         return self.ops.base != 'linear'
-
-    def is_nonnull(self, event):
-        """
-        Returns `True` if `event` occurs with non-null probability.
-
-        """
-        return self[event] > self.ops.zero
 
     def is_numerical(self):
         """
@@ -398,36 +485,12 @@ class BaseDistribution(object):
         from StringIO import StringIO
         s = StringIO()
 
-        colsep = '   '
-        events = map(str, self.events)
-        max_length = max(map(len, events))
+        x = prepare_string(self, digits, exact, tol)
+        pmf, events, base, colsep, max_length, pstr = x
 
-        # 1) Convert to linear probabilities, if necessary.
-        if exact:
-            # Copy to avoid precision loss
-            d = self.copy()
-            d.set_base('linear')
-        else:
-            d = self
-
-        # 2) Round, if necessary.
-        if digits is not None and digits is not False:
-            pmf = d.pmf.round(digits)
-        else:
-            pmf = d.pmf
-
-        # 3) Construct fractions, in necessary.
-        if exact:
-            pmf = [approximate_fraction(x, tol) for x in pmf]
-
-        # 4) Write a header
-        if d.is_log():
-            pstr = 'log p(x)'
-        else:
-            pstr = 'p(x)'
-
-        s.write("Eventspace: {}\n".format(tuple(d.eventspace())))
-        s.write("Base: {}\n\n".format(d.get_base()))
+        s.write("Class: {}\n".format(self.__class__.__name__))
+        s.write("Alphabet: {}\n".format(self.alphabet))
+        s.write("Base: {}\n\n".format(base))
         s.write(''.join([ 'x'.ljust(max_length), colsep, pstr, "\n" ]))
 
         for e,p in izip(events, pmf):

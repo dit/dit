@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """
 Information Theory Exceptions
 =============================
@@ -76,7 +79,7 @@ class InvalidEvent(ditException):
     Exception for an invalid event.
 
     """
-    def __init__(self, *args):
+    def __init__(self, *args, **kwargs):
         """
         Initialize the exception.
 
@@ -84,14 +87,14 @@ class InvalidEvent(ditException):
         ----------
         event: sequence
             The invalid events.
-        eventspace : sequence
-            The event space.
 
         """
-        if len(args) == 1:
-            msg = "Event {0} is not in the event space.".format(args[0])
+        single = kwargs.get('single', True)
+        bad = args[0]
+        if single:
+            msg = "Event {0} is not in the event space.".format(repr(bad))
         else:
-            msg = "Events {0} are not in the event space.".format(args)
+            msg = "Events {0} are not in the event space.".format(bad)
         args = (msg,) + args
         ditException.__init__(self, *args)
 
