@@ -86,7 +86,9 @@ import itertools
 import numpy as np
 
 from .npdist import Distribution
-from .exceptions import InvalidDistribution, InvalidEvent, InvalidProbability
+from .exceptions import (
+    InvalidDistribution, InvalidEvent, InvalidProbability, ditException
+)
 from .math import LinearOperations, LogOperations
 from .utils import str_product, product_maker
 from .params import ditParams
@@ -189,6 +191,10 @@ def _make_distribution(pmf, events, alphabet=None, base=None, sparse=True):
     # Tuple eventspace and its set.
     d.alphabet = tuple(alphabet)
     d._alphabet_set = map(set, d.alphabet)
+
+    # Provide a default set of names for the random variables.
+    rv_names = range(len(alphabet))
+    d._rvs = dict(zip(rv_names, rv_names))
 
     d._meta['is_sparse'] = sparse
 
@@ -316,6 +322,10 @@ class JointDistribution(Distribution):
         primary difference is that instead of yielding tuples, this product
         function will yield objects which are of the same type as the events.
 
+    _rvs : dict
+        A dictionary mapping random variable names to their index into the
+        events of the distribution.
+
     Public Attributes
     -----------------
     alphabet : tuple
@@ -359,6 +369,9 @@ class JointDistribution(Distribution):
     get_base
         Returns the base of the distribution.
 
+    get_rv_names
+        Returns the names of the random variables.
+
     has_event
         Returns `True` is the distribution has `event` in the eventspace.
 
@@ -395,6 +408,9 @@ class JointDistribution(Distribution):
     set_base
         Changes the base of the distribution, in-place.
 
+    set_rv_names
+        Sets the names of the random variables.
+
     to_string
         Returns a string representation of the distribution.
 
@@ -423,6 +439,7 @@ class JointDistribution(Distribution):
         'is_heterogenous': None,
     }
     _product = None
+    _rv_map = None
 
     alphabet = None
     events = None
@@ -517,6 +534,10 @@ class JointDistribution(Distribution):
         # Tuple alphabet and its set.
         self.alphabet = tuple(alphabet)
         self._alphabet_set = map(set, self.alphabet)
+
+        # Provide a default set of names for the random variables.
+        rv_names = range(len(alphabet))
+        self._rvs = dict(zip(rv_names, rv_names))
 
         if sparse:
             self.make_sparse(trim=True)
@@ -707,6 +728,23 @@ class JointDistribution(Distribution):
         """
         return self._product(*self.alphabet)
 
+    def get_rv_names(self):
+        """
+        Returns the names of the random variables.
+
+        Returns
+        -------
+        rv_names : tuple
+            A tuple with length equal to the event length, containing the names
+            of the random variables in the distribution.
+
+        """
+        from operator import itemgetter
+        rv_names = [x for x in self._rvs.items()]
+        rv_names.sort(key=itemgetter(1))
+        rv_names = tuple(map(itemgetter(0), rv_names))
+        return rv_names
+
     def has_event(self, event, null=True):
         """
         Returns `True` if `event` exists  in the eventspace.
@@ -784,6 +822,22 @@ class JointDistribution(Distribution):
             h = True
 
         return h
+
+    def set_rv_names(self, rv_names):
+        """
+        Sets the names of the random variables.
+
+        Returns
+        -------
+        rv_names : tuple
+            A tuple with length equal to the event length, containing the names
+            of the random variables in the distribution.
+
+        """
+        L = self.event_length()
+        if len(set(rv_names)) != L:
+            raise ditException('Random variable names must be unique.')
+        self._rvs = dict(zip(rv_names, range(L)))
 
     def to_string(self, digits=None, exact=False, tol=1e-9):
         """
