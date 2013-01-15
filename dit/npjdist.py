@@ -83,6 +83,7 @@ d[e] = 0 still sets the element to zero.
 """
 
 import itertools
+from collections import defaultdict
 import numpy as np
 
 from .npdist import Distribution
@@ -115,6 +116,60 @@ def get_product_func(events):
             product = product_maker(event.__class__)
 
     return product
+
+def parse_rvs(dist, rvs, rv_names=True):
+    """
+    Returns the indexes of the random variables in `rvs`.
+
+    Parameters
+    ----------
+    dist : joint distribution
+        The joint distribution.
+    rvs : list
+        The list of random variables. This is either a list of random
+        variable indexes or a list of random variable names.
+    rv_names : bool
+        If `True`, then the elements of `rvs` are treated as random variable
+        names. If `False`, then the elements of `rvs` are treated as random
+        variable indexes.
+
+    Returns
+    -------
+    indexes : tuple
+        The random variable indexes corresponding to those listed in `rvs`.
+
+    Raises
+    ------
+    ditException
+        If `rvs` cannot be converted properly into indexes.
+
+    """
+    # Make sure all random variables are unique.
+    if len(set(rvs)) != len(rvs):
+        msg = '`rvs` contained duplicates.'
+        raise ditException(msg)
+
+    if rv_names:
+        # Convert names to indexes.
+        indexes = []
+        for rv in rvs:
+            if rv in dist._rvs:
+                indexes.append( dist._rvs[rv])
+
+        if len(indexes) != len(rvs):
+            msg ='`rvs` contains invalid random variable names.'
+            raise ditException(msg)
+    else:
+        indexes = rvs
+
+    # Make sure all indexes are valid
+    all_indexes = set(range(dist.event_length()))
+    good_indexes = all_indexes.intersection(indexes)
+    if len(good_indexes) != len(indexes):
+        msg = '`rvs` contains invalid random variables'
+        raise ditException(msg)
+
+    return indexes
 
 def _make_distribution(pmf, events, alphabet=None, base=None, sparse=True):
     """
@@ -191,6 +246,9 @@ def _make_distribution(pmf, events, alphabet=None, base=None, sparse=True):
     # Tuple eventspace and its set.
     d.alphabet = tuple(alphabet)
     d._alphabet_set = map(set, d.alphabet)
+
+    # Set the mask
+    d._mask = tuple(False for _ in range(len(alphabet)))
 
     # Provide a default set of names for the random variables.
     rv_names = range(len(alphabet))
@@ -314,6 +372,10 @@ class JointDistribution(Distribution):
     _events_index : dict
         A dictionary mapping events to their index in self.events.
 
+    _mask : tuple
+        A tuple of booleans specifying if the corresponding random variable
+        has been masked or not.
+
     _meta : dict
         A dictionary containing the meta information, described above.
 
@@ -427,11 +489,10 @@ class JointDistribution(Distribution):
     even though their length might not equal the length of the eventspace.
 
     """
-
-
     _alphabet_set = None
     _event_class = None
     _events_index = None
+    _mask = None # Not initialize-able
     _meta = {
         'is_joint': True,
         'is_numerical': True,
@@ -439,7 +500,7 @@ class JointDistribution(Distribution):
         'is_heterogenous': None,
     }
     _product = None
-    _rv_map = None
+    _rv_map = None # Not initialize-able
 
     alphabet = None
     events = None
@@ -448,7 +509,7 @@ class JointDistribution(Distribution):
     prng = None
 
     def __init__(self, pmf, events=None, alphabet=None, base=None,
-                            validate=True, sort=True, sparse=True):
+                            sort=True, sparse=True, validate=True):
         """
         Initialize the distribution.
 
@@ -482,10 +543,6 @@ class JointDistribution(Distribution):
             represent linear probabilities.  If `None`, then the value for
             `base` is taken from ditParams['base'].
 
-        validate : bool
-            If `True`, then validate the distribution.  If `False`, then assume
-            the distribution is valid, and perform no checks.
-
         sort : bool
             If `True`, then each random variable's alphabets are sorted.
             Usually, this is desirable, as it normalizes the behavior of
@@ -500,6 +557,10 @@ class JointDistribution(Distribution):
             the order of `eventspace`, even if their number is not equal to the
             size of the eventspace.  If `False`, then the pmf will be dense and
             every event in the eventspace will be represented.
+
+        validate : bool
+            If `True`, then validate the distribution.  If `False`, then assume
+            the distribution is valid, and perform no checks.
 
         Raises
         ------
@@ -534,6 +595,9 @@ class JointDistribution(Distribution):
         # Tuple alphabet and its set.
         self.alphabet = tuple(alphabet)
         self._alphabet_set = map(set, self.alphabet)
+
+        # Mask
+        self._mask = tuple(False for _ in range(len(alphabet)))
 
         # Provide a default set of names for the random variables.
         rv_names = range(len(alphabet))
@@ -574,7 +638,7 @@ class JointDistribution(Distribution):
             events = d.events
             pmf = d.pmf
             if len(events):
-                self.event_class = events[0].__class__
+                self._event_class = events[0].__class__
             if base is None:
                 # Allow the user to specify something strange if desired.
                 # Otherwise, use the existing base.
@@ -612,6 +676,8 @@ class JointDistribution(Distribution):
             # Use events to obtain the alphabets.
             if alphabet is None:
                 alphabet = construct_alphabet(events)
+            elif len(events):
+                self._event_class = events[0].__class__
 
         # Determine if the pmf represents log probabilities or not.
         if base is None:
@@ -626,6 +692,19 @@ class JointDistribution(Distribution):
         self._product = get_product_func(events)
 
         return pmf, events, alphabet
+
+    def _get_event_constructor(self):
+        """
+        Internal function to return the constructor for events.
+
+        """
+        c = self._event_class
+
+        # Special cases
+        if c == str:
+            c = lambda x: ''.join(x)
+
+        return c
 
     def __setitem__(self, event, value):
         """
@@ -667,6 +746,7 @@ class JointDistribution(Distribution):
             self._event_class = event.__class__
             # Reset the product function.
             self._product = get_product_func([event])
+            self._mask = tuple(False for _ in range(self.event_length()))
 
         if not self.has_event(event, null=True):
             raise InvalidEvent(event)
@@ -698,6 +778,24 @@ class JointDistribution(Distribution):
             self.events = tuple(events)
             self._events_index = index
             self.pmf = np.array(pmf, dtype=float)
+
+    def copy(self):
+        """
+        Returns a (deep) copy of the distribution.
+
+        """
+        from copy import deepcopy
+        d = _make_distribution(pmf=np.array(self.pmf, copy=True),
+                               events=deepcopy(self.events),
+                               alphabet=deepcopy(self.alphabet),
+                               base=self.ops.base,
+                               sparse=self._meta['is_sparse'])
+
+        # The following are not initialize-able from the constructor.
+        d.set_rv_names(self.get_rv_names())
+        d._mask = tuple(self._mask)
+
+        return d
 
     def event_length(self, masked=False):
         """
@@ -823,6 +921,89 @@ class JointDistribution(Distribution):
 
         return h
 
+    def marginal(self, rvs, rv_names=True):
+        """
+        Returns a new marginal distribution.
+
+        Parameters
+        ----------
+        rvs : list
+            The random variables to keep. All others are marginalized.
+        rv_names : bool
+            If `True`, then the elements of `rvs` are treated as names of
+            random variables. If `False`, then the elements of `rvs` are
+            treated as indexes of random variables.
+
+        Returns
+        -------
+        d : joint distribution
+            A new joint distribution with the random variables in `rvs`
+            kept and all others marginalized.
+
+        """
+        indexes = parse_rvs(self, rvs, rv_names)
+        ctor = self._get_event_constructor()
+
+        ## Eventually, add in a method specialized for dense distributions.
+        ## This one would work only with pmf, and not events.
+
+        d = defaultdict(list)
+        for event, p in self.eventprobs():
+            m_event = ctor([s for i,s in enumerate(event) if i in indexes])
+            d[m_event].append(p)
+
+        events = tuple(d.keys())
+        pmf = map(np.array, d.values())
+        pmf = map(self.ops.add_reduce, pmf)
+        alphabet = [self.alphabet[i] for i in indexes]
+
+        d = JointDistribution(pmf, events,
+                              alphabet=alphabet,
+                              base=self.get_base(),
+                              sort=True,
+                              sparse=self.is_sparse(),
+                              validate=False)
+
+        # Pass along the random variable names
+        if rv_names:
+            names = rvs
+        else:
+            names_, indexes_ = self._rvs.keys(), self._rvs.values()
+            rev = dict(zip(indexes_, names_))
+            names = [rev[i] for i in indexes]
+        d.set_rv_names(names)
+
+        # Set the mask
+        L = self.event_length()
+        d._mask = tuple(False if i in indexes else True for i in range(L))
+        return d
+
+    def marginalize(self, rvs, rv_names=True):
+        """
+        Returns a new distribution after marginalizing random variables.
+
+        Parameters
+        ----------
+        rvs : list
+            The random variables to marginalize. All others are kept.
+        rv_names : bool
+            If `True`, then the elements of `rvs` are treated as names of
+            random variables. If `False`, then the elements of `rvs` are
+            treated as indexes of random variables.
+
+        Returns
+        -------
+        d : joint distribution
+            A new joint distribution with the random variables in `rvs`
+            marginalized and all others kept.
+
+        """
+        indexes = set(parse_rvs(self, rvs, rv_names))
+        all_indexes = range(self.event_length())
+        marginal_indexes = [i for i in all_indexes if i not in indexes]
+        d = self.marginal(marginal_indexes, rv_names=False)
+        return d
+
     def set_rv_names(self, rv_names):
         """
         Sets the names of the random variables.
@@ -835,11 +1016,13 @@ class JointDistribution(Distribution):
 
         """
         L = self.event_length()
-        if len(set(rv_names)) != L:
-            raise ditException('Random variable names must be unique.')
+        if len(set(rv_names)) < L:
+            raise ditException('Too few unique random variable names.')
+        elif len(set(rv_names)) > L:
+            raise ditException('Too many unique random variable names.')
         self._rvs = dict(zip(rv_names, range(L)))
 
-    def to_string(self, digits=None, exact=False, tol=1e-9):
+    def to_string(self, digits=None, exact=False, tol=1e-9, str_events=False):
         """
         Returns a string representation of the distribution.
 
@@ -859,6 +1042,9 @@ class JointDistribution(Distribution):
         tol : float
             If `exact` is `True`, then the probabilities will be displayed
             as the closest rational fraction within `tol`.
+        str_events
+            If `True`, then attempt to convert events which are tuples to just
+            strings.  This is just a dislplay technique.
 
         Returns
         -------
@@ -873,7 +1059,7 @@ class JointDistribution(Distribution):
 
         s = StringIO()
 
-        x = prepare_string(self, digits, exact, tol)
+        x = prepare_string(self, digits, exact, tol, str_events)
         pmf, events, base, colsep, max_length, pstr = x
 
         s.write("Class: {}\n".format(self.__class__.__name__))
@@ -883,7 +1069,10 @@ class JointDistribution(Distribution):
             alpha = str(self.alphabet)
         s.write("Alphabet: {}\n".format(alpha))
         s.write("Base: {}\n".format(base))
-        s.write("Event Class: {}\n".format(self._event_class.__name__))
+        event_class = self._event_class
+        if event_class is not None:
+            event_class = event_class.__name__
+        s.write("Event Class: {}\n".format(event_class))
         s.write("Event Length: {}\n\n".format(self.event_length()))
         s.write(''.join([ 'x'.ljust(max_length), colsep, pstr, "\n" ]))
 

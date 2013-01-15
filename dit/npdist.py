@@ -310,7 +310,7 @@ class Distribution(BaseDistribution):
     prng = None
 
     def __init__(self, pmf, events=None, alphabet=None, base=None,
-                            validate=True, sort=True, sparse=True):
+                            sort=True, sparse=True, validate=True):
         """
         Initialize the distribution.
 
@@ -341,10 +341,6 @@ class Distribution(BaseDistribution):
             represent linear probabilities.  If `None`, then the value for
             `base` is taken from ditParams['base'].
 
-        validate : bool
-            If `True`, then validate the distribution.  If `False`, then assume
-            the distribution is valid, and perform no checks.
-
         sort : bool
             If `True`, then the eventspace is sorted first. Usually, this is
             desirable, as it normalizes the behavior of distributions which
@@ -359,6 +355,10 @@ class Distribution(BaseDistribution):
             the order of `eventspace`, even if their number is not equal to the
             size of the eventspace.  If `False`, then the pmf will be dense and
             every event in the eventspace will be represented.
+
+        validate : bool
+            If `True`, then validate the distribution.  If `False`, then assume
+            the distribution is valid, and perform no checks.
 
         Raises
         ------

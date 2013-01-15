@@ -36,9 +36,9 @@ from .exceptions import (
     InvalidNormalization
 )
 
-def prepare_string(dist, digits=None, exact=False, tol=1e-9):
+def prepare_string(dist, digits=None, exact=False, tol=1e-9, str_events=False):
     """
-    Returns a string representation of the distribution.
+    Prepares a distribution for a string representation.
 
     Parameters
     ----------
@@ -58,6 +58,9 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9):
     tol : float
         If `exact` is `True`, then the probabilities will be displayed
         as the closest rational fraction within `tol`.
+    str_events
+        If `True`, then attempt to convert events which are tuples to just
+        strings.  This is just a dislplay technique.
 
     Returns
     -------
@@ -77,9 +80,16 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9):
 
     """
     colsep = '   '
-    events = map(str, dist.events)
+    if str_events:
+        try:
+            events = [map(str, event) for event in dist.events]
+            events = map(lambda e: ''.join(e), events)
+        except:
+            events = map(str, dist.events)
+    else:
+        events = map(str, dist.events)
 
-    if  len(events):
+    if len(events):
         max_length = max(map(len, events))
     else:
         max_length = 0
