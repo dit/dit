@@ -31,12 +31,14 @@ import numpy as np
 from .math import close, prng, approximate_fraction
 
 from .exceptions import (
+    ditException,
     InvalidBase,
     InvalidEvent,
     InvalidNormalization
 )
 
-def prepare_string(dist, digits=None, exact=False, tol=1e-9, str_events=False):
+def prepare_string(dist, digits=None, exact=False, tol=1e-9,
+                         show_mask=False, str_events=False):
     """
     Prepares a distribution for a string representation.
 
@@ -80,14 +82,55 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9, str_events=False):
 
     """
     colsep = '   '
+
+    # Create events with wildcards, if desired and possible.
+    if show_mask:
+        if not dist.is_joint():
+            msg = '`show_mask` can be `True` only for joint distributions'
+            raise ditException(msg)
+
+        if show_mask != True and show_mask != False:
+            wc = show_mask
+        else:
+            wc = '*'
+
+        ctor = dist._get_event_constructor()
+        is_masked = dict(zip(range(len(dist._mask)), dist._mask))
+
+        def eventwc(event):
+            """
+            Builds the wildcarded event.
+
+            """
+            i = 0
+            e = []
+            for is_masked in dist._mask:
+                if is_masked:
+                    symbol = wc
+                else:
+                    symbol = event[i]
+                    i += 1
+                e.append(symbol)
+
+            e = ctor(e)
+            return e
+        events = map(eventwc, dist.events)
+    else:
+        events = dist.events
+
+    # Convert events to strings, if desire and possible.
     if str_events:
+        if not dist.is_joint():
+            msg = '`str_events` can be `True` only for joint distributions'
+            raise ditException(msg)
+
         try:
-            events = [map(str, event) for event in dist.events]
+            events = [map(str, event) for event in events]
             events = map(lambda e: ''.join(e), events)
         except:
-            events = map(str, dist.events)
+            events = map(str, events)
     else:
-        events = map(str, dist.events)
+        events = map(str, events)
 
     if len(events):
         max_length = max(map(len, events))

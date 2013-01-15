@@ -1143,7 +1143,7 @@ class JointDistribution(Distribution):
             raise ditException('Too many unique random variable names.')
         self._rvs = dict(zip(rv_names, range(L)))
 
-    def to_string(self, digits=None, exact=False, tol=1e-9, str_events=False):
+    def to_string(self, digits=None, exact=False, tol=1e-9, show_mask=False, str_events=False):
         """
         Returns a string representation of the distribution.
 
@@ -1163,6 +1163,10 @@ class JointDistribution(Distribution):
         tol : float
             If `exact` is `True`, then the probabilities will be displayed
             as the closest rational fraction within `tol`.
+        show_mask : bool
+            If `True`, show the events in the proper context. Thus, masked
+            and unmasked random variables are shown. If `show_mask` is anything
+            other than `True` or `False`, it is used as the wildcard symbol.
         str_events
             If `True`, then attempt to convert events which are tuples to just
             strings.  This is just a dislplay technique.
@@ -1180,7 +1184,7 @@ class JointDistribution(Distribution):
 
         s = StringIO()
 
-        x = prepare_string(self, digits, exact, tol, str_events)
+        x = prepare_string(self, digits, exact, tol, show_mask, str_events)
         pmf, events, base, colsep, max_length, pstr = x
 
         s.write("Class: {}\n".format(self.__class__.__name__))
@@ -1191,12 +1195,19 @@ class JointDistribution(Distribution):
         s.write("Alphabet: {}\n".format(alpha))
         s.write("Base: {}\n".format(base))
         event_class = self._event_class
+
         if event_class is not None:
             event_class = event_class.__name__
         s.write("Event Class: {}\n".format(event_class))
-        s.write("Event Length: {}\n\n".format(self.event_length()))
-        s.write(''.join([ 'x'.ljust(max_length), colsep, pstr, "\n" ]))
 
+        if show_mask:
+            event_length = "{0} (in context, {1})".format(self.event_length(),
+                                                         len(self._mask))
+        else:
+            event_length = str(self.event_length())
+        s.write("Event Length: {}\n\n".format(event_length))
+
+        s.write(''.join([ 'x'.ljust(max_length), colsep, pstr, "\n" ]))
         for e,p in izip(events, pmf):
             s.write(''.join( [e.ljust(max_length), colsep, str(p), "\n"] ))
         s.seek(0)
