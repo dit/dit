@@ -87,7 +87,7 @@ import numpy as np
 
 from .npdist import Distribution
 from .exceptions import InvalidDistribution, InvalidEvent, InvalidProbability
-from .math import LinearOperations, LogOperations, close
+from .math import LinearOperations, LogOperations
 from .utils import str_product, product_maker
 from .params import ditParams
 
@@ -764,7 +764,7 @@ class JointDistribution(Distribution):
         else:
             # The event must be valid and have positive probability.
             try:
-                z = not close(self[event], self.ops.zero)
+                z = self[event] > self.ops.zero
             except InvalidEvent:
                 z = False
 
