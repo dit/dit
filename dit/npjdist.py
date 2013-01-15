@@ -85,6 +85,7 @@ d[e] = 0 still sets the element to zero.
 import itertools
 from collections import defaultdict
 import numpy as np
+from operator import itemgetter
 
 from .npdist import Distribution
 from .exceptions import (
@@ -117,7 +118,7 @@ def get_product_func(events):
 
     return product
 
-def parse_rvs(dist, rvs, rv_names=True):
+def parse_rvs(dist, rvs, rv_names=True, unique=True, sort=True):
     """
     Returns the indexes of the random variables in `rvs`.
 
@@ -132,11 +133,19 @@ def parse_rvs(dist, rvs, rv_names=True):
         If `True`, then the elements of `rvs` are treated as random variable
         names. If `False`, then the elements of `rvs` are treated as random
         variable indexes.
+    unique : bool
+        If `True`, then require that no random variable is repeated in `rvs`.
+        If there are any duplicates, an exception is raised. If `False`, random
+        variables can be repeated.
+    sort : bool
+        If `True`, then the output is sorted by the random variable indexes.
 
     Returns
     -------
+    rvs : tuple
+        The random variables, possibly sorted.
     indexes : tuple
-        The random variable indexes corresponding to those listed in `rvs`.
+        The corresponding indexes of the random variables, possibly sorted.
 
     Raises
     ------
@@ -145,7 +154,7 @@ def parse_rvs(dist, rvs, rv_names=True):
 
     """
     # Make sure all random variables are unique.
-    if len(set(rvs)) != len(rvs):
+    if unique and len(set(rvs)) != len(rvs):
         msg = '`rvs` contained duplicates.'
         raise ditException(msg)
 
@@ -162,14 +171,19 @@ def parse_rvs(dist, rvs, rv_names=True):
     else:
         indexes = rvs
 
-    # Make sure all indexes are valid
+    # Make sure all indexes are valid, even if there are duplicates.
     all_indexes = set(range(dist.event_length()))
     good_indexes = all_indexes.intersection(indexes)
-    if len(good_indexes) != len(indexes):
+    if len(good_indexes) != len(set(indexes)):
         msg = '`rvs` contains invalid random variables'
         raise ditException(msg)
 
-    return indexes
+    out = zip(rvs, indexes)
+    if sort:
+        out.sort(key=itemgetter(1))
+    rvs, indexes = zip(*out)
+
+    return rvs, indexes
 
 def _make_distribution(pmf, events, alphabet=None, base=None, sparse=True):
     """
@@ -415,6 +429,8 @@ class JointDistribution(Distribution):
 
     Public Methods
     --------------
+    coalesce
+        Returns a new joint distribution after coalescing random variables.
     copy
         Returns a deep copy of the distribution.
 
@@ -454,6 +470,12 @@ class JointDistribution(Distribution):
 
     is_sparse
         Returns `True` if the distribution is sparse.
+
+    marginal
+        Returns a marginal distribution of the specified random variables.
+
+    marginalize
+        Returns a marginal distribution after marginalizing random variables.
 
     make_dense
         Add all null events to the pmf.
@@ -779,6 +801,114 @@ class JointDistribution(Distribution):
             self._events_index = index
             self.pmf = np.array(pmf, dtype=float)
 
+    def coalesce(self, rvs, rv_names=True, extract=False):
+        """
+        Returns a new joint distribution after coalescing random variables.
+
+        Given n lists of random variables in the original joint distribution,
+        the coalesced distribution is a joint distribution over n random
+        variables.  Each random variable is a coalescing of random variables
+        in the original joint distribution.
+
+        Parameters
+        ----------
+        rvs : sequence
+            A sequence whose elements are also sequences.  Each inner sequence
+            defines a random variable in the new distribution as a combination
+            of random variables in the original distribution.  The length of
+            `rvs` must be at least one.  The inner sequences need not be
+            pairwise mutually exclusive with one another, and each can contain
+            repeated random variables.
+        extract : bool
+            If the length of `rvs` is 1 and `extract` is `True`, then instead
+            of the new events being 1-tuples, we extract the sole element to
+            create a joint distribution over the random variables in `rvs[0]`.
+
+        Returns
+        -------
+        d : distribution
+            The coalesced distribution.
+
+        Examples
+        --------
+        If we have a joint distribution over 3 random variables such as:
+            Z = X,Y,Z
+        and would like a new joint distribution over 6 random variables:
+            Z = X,Y,Z,X,Y,Z
+        then this is achieved as:
+            d.coalesce([[0,1,2,0,1,2]], extract=True)
+
+        If you want:
+            Z = ((X,Y), (Y,Z))
+        Then you do:
+            d.coalesce([[0,1],[1,2]])
+
+        Notes
+        -----
+        Generally, the events of the new distribution will be tuples instead
+        of matching the event class of the original distribution.  This is
+        because some event classes are not recursive containers.  For example,
+        one cannot have a string of strings where each string consists of more
+        than one character.  However, it is perfectly valid to have a tuple of
+        tuples.  The elements within each tuples of the new distribution will,
+        however, match the event class of the original distribution.
+
+        See Also
+        --------
+        marginal, marginalize
+
+        """
+        from array import array
+
+        # We don't need the names. We allow repeats and want to keep the order.
+        parse = lambda rv : parse_rvs(self, rv, rv_names=rv_names,
+                                                unique=False, sort=False)[1]
+        indexes = [parse(rv) for rv in rvs]
+
+        # Determine how new events are constructed.
+        if len(rvs) == 1 and extract:
+            ctor_o = lambda x: x[0]
+        else:
+            ctor_o = tuple
+        # Determine how elements of new events are constructed.
+        ctor_i = self._get_event_constructor()
+
+        # Build the distribution.
+        factory = lambda : array('d')
+        d = defaultdict(factory)
+        for event, p in self.eventprobs():
+            c_event = ctor_o([ctor_i([event[i] for i in rv]) for rv in indexes])
+            d[c_event].append(p)
+
+        events = tuple(d.keys())
+        pmf = map(np.frombuffer, d.values())
+        pmf = map(self.ops.add_reduce, pmf)
+
+        if len(rvs) == 1 and extract:
+            # The alphabet for each rv is the same as what it was originally.
+            alphabet = [self.alphabet[i] for i in indexes[0]]
+        else:
+            # Each rv is a Cartesian product of original random variables.
+            # So we want to use the distributions customized product to create
+            # all possible events. This will be the alphabet for each rv.
+            alphabet = [tuple(self._product(*[self.alphabet[i] for i in index]))
+                        for index in indexes]
+
+        d = JointDistribution(pmf, events,
+                              alphabet=alphabet,
+                              base=self.get_base(),
+                              sort=True,
+                              sparse=self.is_sparse(),
+                              validate=False)
+
+        # We do not set the rv names, since these are new random variables.
+
+        # Set the mask
+        L = len(indexes)
+        d._mask = tuple(False for _ in range(L))
+
+        return d
+
     def copy(self):
         """
         Returns a (deep) copy of the distribution.
@@ -837,7 +967,6 @@ class JointDistribution(Distribution):
             of the random variables in the distribution.
 
         """
-        from operator import itemgetter
         rv_names = [x for x in self._rvs.items()]
         rv_names.sort(key=itemgetter(1))
         rv_names = tuple(map(itemgetter(0), rv_names))
@@ -923,7 +1052,7 @@ class JointDistribution(Distribution):
 
     def marginal(self, rvs, rv_names=True):
         """
-        Returns a new marginal distribution.
+        Returns a marginal distribution.
 
         Parameters
         ----------
@@ -941,30 +1070,21 @@ class JointDistribution(Distribution):
             kept and all others marginalized.
 
         """
-        indexes = parse_rvs(self, rvs, rv_names)
-        ctor = self._get_event_constructor()
+        # Sorted names and indexes.
+        rvs, indexes = parse_rvs(self, rvs, rv_names, unique=True, sort=True)
 
         ## Eventually, add in a method specialized for dense distributions.
-        ## This one would work only with pmf, and not events.
+        ## This one would work only with the pmf, and not the events.
 
-        d = defaultdict(list)
-        for event, p in self.eventprobs():
-            m_event = ctor([s for i,s in enumerate(event) if i in indexes])
-            d[m_event].append(p)
+        # Marginalization is a special case of coalescing where there is only
+        # one new random variable and it is composed of a strict subset of
+        # the orignal random variables, with no duplicates, that maintains
+        # the order of the original random variables.
+        d = self.coalesce([indexes], extract=True)
 
-        events = tuple(d.keys())
-        pmf = map(np.array, d.values())
-        pmf = map(self.ops.add_reduce, pmf)
-        alphabet = [self.alphabet[i] for i in indexes]
+        # Handle parts of d that are not settable through initialization.
 
-        d = JointDistribution(pmf, events,
-                              alphabet=alphabet,
-                              base=self.get_base(),
-                              sort=True,
-                              sparse=self.is_sparse(),
-                              validate=False)
-
-        # Pass along the random variable names
+        # Set the random variable names
         if rv_names:
             names = rvs
         else:
@@ -998,7 +1118,8 @@ class JointDistribution(Distribution):
             marginalized and all others kept.
 
         """
-        indexes = set(parse_rvs(self, rvs, rv_names))
+        rvs, indexes = parse_rvs(self, rvs, rv_names)
+        indexes = set(indexes)
         all_indexes = range(self.event_length())
         marginal_indexes = [i for i in all_indexes if i not in indexes]
         d = self.marginal(marginal_indexes, rv_names=False)
