@@ -431,6 +431,7 @@ class JointDistribution(Distribution):
     --------------
     coalesce
         Returns a new joint distribution after coalescing random variables.
+
     copy
         Returns a deep copy of the distribution.
 
@@ -456,7 +457,7 @@ class JointDistribution(Distribution):
     is_dense
         Returns `True` if the distribution is dense.
 
-    is_heterogeneous
+    is_homogeneous
         Returns `True` if the alphabet for each random variable is the same.
 
     is_joint
@@ -764,7 +765,6 @@ class JointDistribution(Distribution):
         """
         if self._event_class is None:
             # The first __setitem__ call from an empty distribution.
-            # If there is no event class, make one.
             self._event_class = event.__class__
             # Reset the product function.
             self._product = get_product_func([event])
@@ -850,7 +850,7 @@ class JointDistribution(Distribution):
         because some event classes are not recursive containers.  For example,
         one cannot have a string of strings where each string consists of more
         than one character.  However, it is perfectly valid to have a tuple of
-        tuples.  The elements within each tuples of the new distribution will,
+        tuples.  The elements within each tuple of the new distribution will,
         however, match the event class of the original distribution.
 
         See Also
@@ -1035,7 +1035,7 @@ class JointDistribution(Distribution):
 
         return z
 
-    def is_heterogenous(self):
+    def is_homogeneous(self):
         """
         Returns `True` if the alphabet for each random variable is the same.
 
@@ -1088,6 +1088,7 @@ class JointDistribution(Distribution):
         if rv_names:
             names = rvs
         else:
+            # We only have the indexes...so reverse lookup to get the names.
             names_, indexes_ = self._rvs.keys(), self._rvs.values()
             rev = dict(zip(indexes_, names_))
             names = [rev[i] for i in indexes]
@@ -1143,7 +1144,8 @@ class JointDistribution(Distribution):
             raise ditException('Too many unique random variable names.')
         self._rvs = dict(zip(rv_names, range(L)))
 
-    def to_string(self, digits=None, exact=False, tol=1e-9, show_mask=False, str_events=False):
+    def to_string(self, digits=None, exact=False, tol=1e-9, show_mask=False, 
+                        str_events=False):
         """
         Returns a string representation of the distribution.
 
@@ -1187,33 +1189,57 @@ class JointDistribution(Distribution):
         x = prepare_string(self, digits, exact, tol, show_mask, str_events)
         pmf, events, base, colsep, max_length, pstr = x
 
-        s.write("Class: {}\n".format(self.__class__.__name__))
-        if self.is_heterogenous():
+        headers = ["Class",
+                   "Alphabet",
+                   "Base",
+                   "Event Class",
+                   "Event Length"]
+
+        vals = []
+
+        # Class
+        vals.append(self.__class__.__name__)
+
+        # Alphabet
+        if self.is_homogeneous():
             alpha = str(self.alphabet[0]) + " for all rvs"
         else:
             alpha = str(self.alphabet)
-        s.write("Alphabet: {}\n".format(alpha))
-        s.write("Base: {}\n".format(base))
-        event_class = self._event_class
+        vals.append(alpha)
 
+        # Base
+        vals.append(base)
+
+        # Event class
+        event_class = self._event_class
         if event_class is not None:
             event_class = event_class.__name__
-        s.write("Event Class: {}\n".format(event_class))
+        vals.append(event_class)
 
+        # Event length
         if show_mask:
             event_length = "{0} (in context, {1})".format(self.event_length(),
                                                          len(self._mask))
         else:
             event_length = str(self.event_length())
-        s.write("Event Length: {}\n\n".format(event_length))
+        vals.append(event_length)
 
+        # Info
+        L = max(map(len,headers))
+        for head, val in zip(headers, vals):
+            s.write("{0}{1}\n".format("{0}: ".format(head).ljust(L+2), val))
+        s.write("\n")
+
+        # Distribution
         s.write(''.join([ 'x'.ljust(max_length), colsep, pstr, "\n" ]))
         for e,p in izip(events, pmf):
             s.write(''.join( [e.ljust(max_length), colsep, str(p), "\n"] ))
         s.seek(0)
+
         s = s.read()
         # Remove the last \n
         s = s[:-1]
+
         return s
 
 

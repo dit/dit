@@ -541,17 +541,27 @@ class BaseDistribution(object):
         x = prepare_string(self, digits, exact, tol)
         pmf, events, base, colsep, max_length, pstr = x
 
-        s.write("Class: {}\n".format(self.__class__.__name__))
-        s.write("Alphabet: {}\n".format(self.alphabet))
-        s.write("Base: {}\n\n".format(base))
-        s.write(''.join([ 'x'.ljust(max_length), colsep, pstr, "\n" ]))
+        headers = ["Class: ",
+                   "Alphabet: ",
+                   "Base: "]
+        vals = [self.__class__.__name__,
+                self.alphabet,
+                base]
 
+        L = max(map(len,headers))
+        for head, val in zip(headers, vals):
+            s.write("{0}{1}\n".format(head.ljust(L), val))
+        s.write("\n")
+
+        s.write(''.join([ 'x'.ljust(max_length), colsep, pstr, "\n" ]))
         for e,p in izip(events, pmf):
             s.write(''.join( [e.ljust(max_length), colsep, str(p), "\n"] ))
+
         s.seek(0)
         s = s.read()
         # Remove the last \n
         s = s[:-1]
+
         return s
 
     def validate(self, **kwargs):
