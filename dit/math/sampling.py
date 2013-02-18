@@ -66,8 +66,8 @@ def sample(dist, size=None, rand=None, prng=None):
         raise(e)
 
     indexes = _samples(dist.pmf, rand)
-    events = dist.events
-    s = [events[i] for i in indexes]
+    outcomes = dist.outcomes
+    s = [outcomes[i] for i in indexes]
     if size is None:
         s = s[0]
 

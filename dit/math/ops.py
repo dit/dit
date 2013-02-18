@@ -66,7 +66,7 @@ def log_func(b):
 
 class Operations(object):
     """
-    Base class which implements certain math operations.  
+    Base class which implements certain math operations.
 
     For example, regular addition with log probabilities is handled specially.
 
@@ -92,7 +92,7 @@ class Operations(object):
     def add_inplace(self, x, y):
         raise NotImplementedError
     def add_reduce(self, x):
-        raise NotImplementedError    
+        raise NotImplementedError
     def mult(self, x, y):
         raise NotImplementedError
     def mult_inplace(self, x, y):
@@ -129,7 +129,7 @@ class LinearOperations(Operations):
 
         """
         z = x + y
-        return z 
+        return z
 
     def add_inplace(self, x, y):
         """
@@ -168,8 +168,8 @@ class LinearOperations(Operations):
 
         """
         z = x.sum()
-        return z 
-                
+        return z
+
     def mult(self, x, y):
         """
         Multiplies the arrays element-wise.  Neither x nor y will be modified.
@@ -222,7 +222,7 @@ class LinearOperations(Operations):
             The product of the elements in `x`.
 
         """
-        # The identity for addition in NumPy is zero. 
+        # The identity for addition in NumPy is zero.
         # This corresponds to an identity of 1 for log operations, and this is
         # exactly the desired identity for multiplying probabilities.
         z = np.prod(x)
@@ -250,8 +250,8 @@ class LinearOperations(Operations):
 
 class LogOperations(Operations):
 
-    one = 0
-    zero = -np.inf
+    one = None
+    zero = None
     base = None
     log = None
 
@@ -279,6 +279,8 @@ class LogOperations(Operations):
         """
         self.base = base
         self.log = log_func(base)
+        self.one = self.log(1)
+        self.zero = self.log(0)
 
     def add(self, x, y):
         """
@@ -363,7 +365,7 @@ class LogOperations(Operations):
             # Note, we are converting to a NumPy array, if necessary.
             base = self.base
             if base == 2:
-                z = np.logaddexp2.reduce(x, dtype=float)                        
+                z = np.logaddexp2.reduce(x, dtype=float)
             elif base == 'e' or close(base, np.e):
                 z = np.logaddexp.reduce(x, dtype=float)
             else:
@@ -373,7 +375,7 @@ class LogOperations(Operations):
                 z /= np.log2(base)
 
         return z
-                
+
     def mult(self, x, y):
         """
         Multiplies the arrays element-wise.  Neither x nor y will be modified.
@@ -420,7 +422,7 @@ class LogOperations(Operations):
             The product of the elements in `x`.
 
         """
-        # The identity for addition in NumPy is zero. 
+        # The identity for addition in NumPy is zero.
         # This corresponds to an identity of 1 for log operations, and this is
         # exactly the desired identity for multiplying probabilities.
         z = x.sum()

@@ -12,8 +12,8 @@ __all__ = ['ditException',
            'IncompatibleDistribution',
            'InvalidBase',
            'InvalidDistribution',
-           'InvalidEvent',
            'InvalidNormalization',
+           'InvalidOutcome',
            'InvalidProbability']
 
 class ditException(Exception):
@@ -74,9 +74,9 @@ class InvalidDistribution(ditException):
     """
     pass
 
-class InvalidEvent(ditException):
+class InvalidOutcome(ditException):
     """
-    Exception for an invalid event.
+    Exception for an invalid outcome.
 
     """
     def __init__(self, *args, **kwargs):
@@ -85,16 +85,18 @@ class InvalidEvent(ditException):
 
         Parameters
         ----------
-        event: sequence
-            The invalid events.
+        outcome : sequence
+            The invalid outcomess.
+        single : bool
+            Specifies whether `outcome` represents a single outcome or not.
 
         """
         single = kwargs.get('single', True)
         bad = args[0]
         if single:
-            msg = "Event {0} is not in the event space.".format(repr(bad))
+            msg = "Outcome {0} is not in the sample space.".format(repr(bad))
         else:
-            msg = "Events {0} are not in the event space.".format(bad)
+            msg = "Outcomes {0} are not in the sample space.".format(bad)
         args = (msg,) + args
         ditException.__init__(self, *args)
 
@@ -120,7 +122,7 @@ class InvalidProbability(ditException):
     Exception thrown when a probability is not in [0,1].
 
     """
-    def __init__(self, *args):
+    def __init__(self, *args, **kwargs):
         """
         Initialize the exception.
 
@@ -128,12 +130,19 @@ class InvalidProbability(ditException):
         ----------
         p : float | sequence
             The invalid probability.
+        ops : operations
+            The operation handler for the incoming probabilities.
 
         """
+        ops = kwargs['ops']
+        bounds = "[{0}, {1}]".format(ops.zero, ops.one)
+        prob = args[0]
         if len(args[0]) == 1:
-            msg = "Probability {0} is not in [0,1].".format(args[0])
+            msg = "Probability {0} is not in {1} (base: {2!r})."
         else:
-            msg = "Probabilities {0} are not in [0,1].".format(args[0])
+            prob = list(prob)
+            msg = "Probabilities {0} are not in {1} (base: {2!r})."
+        msg = msg.format(prob, bounds, ops.base)
         args = (msg,) + args
         ditException.__init__(self, *args)
 

@@ -4,75 +4,14 @@
 """
 Module defining NumPy array-based distribution classes.
 
-Definitions
------------
-See http://docs.python.org/3/library/collections.abc.html#collections-abstract-base-classes
-
-A sequence is a sized, iterable container.
-
-`None` is not a valid event, as it is used by dit to signify that an event
-was not found in the list of events.  This is not enforced in the data
-structures---things will simply not work as expected.
-
-The most basic type of event must be hashable and equality comparable.
-Thus, the events should be immutable.  If the distribution's eventspace is
-to be sorted, then the events must also be orderable.  Regular events need
-not be sequences.
-
-The joint event type must be a hashable, orderable, and a sequence. Thus, joint
-events must be hashable, orderable, sized, iterable containers.
-
-One of the features of joint distributions is that we can marginalize them.
-This requires that we are able to construct smaller events from larger events.
-For example, an event like '10101' might become '010' if the first and last
-random variables are marginalized.  Given the alphabet of the joint
-distribution, we can construct a tuple ('0','1','0') for any smaller event
-using itertools.product, but how do we create an event of the same type?
-For tuples and other similar containers, we just pass the tuple to the
-event constructor.  This technique does not work for strings, as
-str(('0','1','0')) yields "('0', '1', '0')".  So we have to handle strings
-separately.
-
-Note:
-    For dictionaries...
-        "k in d" being True means d[k] is a valid operation.
-        "k in d" being False means d[k] is a KeyError.
-        d[k] describes the underlying data structure.
-        __in__ describes the underlying data structure.
-        __iter__ describes the underlying data structure.
-        __len__ describes the underlying data structure.
-    For default dictionaries...
-        "k in d" being True means d[k] is a valid operation.
-        "k in d" being False means d[k] will modify the data structure to
-            make the operation valid. So "k in d" is True afterwards.
-        d[k] describes the underlying data structure.
-        __in__ describes the underlying data structure.
-        __iter__ describes the underlying data structure.
-        __len__ describes the underlying data structure.
-    For distributions...
-        "e in d" being True means d[e] is a valid operation.
-        "e in d" being False says nothing about d[e].
-            d[e] will be valid if e is in the eventspace.
-            d[e] will raise an InvalidEvent if e is not in the eventspace.
-        d[e] does not describe the underlying data structure.
-            It provides a view of the dense data structure.
-            With defaultdict, if e not in d, then d[e] will add it.
-            With distributions, we don't want the pmf changing size
-            just because we queried it.  The size will change only on
-            assignment.
-        __in__ describes the underlying data structure.
-        __iter__ describes the underlying data structure.
-        __len__ describes the underlying data structure.
-
-
-Sparse means the length of events and pmf need not equal the length of the
-eventspace. There are two important points to keep in mind.
+Sparse means the length of outcomes and pmf need not equal the length of the
+sample space. There are two important points to keep in mind.
     1) A sparse distribution is not necessarily trim. Recall, a distribution
-         is trim if its pmf does not contain null-events.
+         is trim if its pmf does not contain null-outcomes.
     2) The length of a sparse distribution's pmf can equal the length of the
-       eventspace.
+       sample space.
 If a distribution is dense, then we forcibly make sure the length of the pmf
-is always equal to the length of the eventspace.
+is always equal to the length of the sample space.
 
 When a distribution is sparse, del d[e] will make the pmf smaller.  But d[e] = 0
 will simply set the element to zero.
@@ -80,22 +19,21 @@ will simply set the element to zero.
 When a distribution is dense, del d[e] will set the element to zero, and
 d[e] = 0 still sets the element to zero.
 
-For distributions, the eventspace is the alphabet and the alphabet is a single tuple.
-For joint distributions, the eventspace is the Cartestian product of the alphabets
-for each random variable, and the alphabet for the joint distribution is a tuple
-of alphabets for each random variable.
-
+For distributions, the sample space is the alphabet and the alphabet is a single
+tuple. For joint distributions, the sample space is the Cartestian product of
+the alphabets for each random variable, and the alphabet for the joint
+distribution is a tuple of alphabets for each random variable.
 
 """
 
 from .distribution import BaseDistribution
-from .exceptions import InvalidDistribution, InvalidEvent, InvalidProbability
+from .exceptions import InvalidDistribution, InvalidOutcome, InvalidProbability
 from .math import LinearOperations, LogOperations, close
 from .params import ditParams
 
 import numpy as np
 
-def _make_distribution(pmf, events=None, alphabet=None, base=None, sparse=True):
+def _make_distribution(pmf, outcomes=None, alphabet=None, base=None, sparse=True):
     """
     An unsafe, but faster, initialization for distributions.
 
@@ -105,11 +43,11 @@ def _make_distribution(pmf, events=None, alphabet=None, base=None, sparse=True):
     in a loop and can guarantee that:
 
         0) the alphabet is in the desired order.
-        1) events and pmf are in the same order as the eventspace.
+        1) outcomes and pmf are in the same order as the sample space.
            [Thus, `pmf` should not be a dictionary.]
 
-    This function will not order the alphabet, nor will it reorder events
-    or pmf.  It will not forcibly make events and pmf to be sparse or dense.
+    This function will not order the alphabet, nor will it reorder outcomes
+    or pmf.  It will not forcibly make outcomes and pmf to be sparse or dense.
     It will simply declare the distribution to be sparse or dense. The
     distribution is not validated either.
 
@@ -130,31 +68,30 @@ def _make_distribution(pmf, events=None, alphabet=None, base=None, sparse=True):
         ops = LogOperations(base)
     d.ops = ops
 
-    if events is None:
-        events = range(len(pmf))
-    elif len(pmf) != len(events):
-        msg = "Unequal lengths for `values` and `events`"
+    if outcomes is None:
+        outcomes = range(len(pmf))
+    elif len(pmf) != len(outcomes):
+        msg = "Unequal lengths for `values` and `outcomes`"
         raise InvalidDistribution(msg)
 
     ## alphabets
-    # Use events to obtain the alphabets.
+    # Use outcomes to obtain the alphabets.
     if alphabet is None:
 
-        if len(events) == 0:
-            msg = '`events` cannot have zero length if `alphabet` is `None`'
+        if len(outcomes) == 0:
+            msg = '`outcomes` cannot have zero length if `alphabet` is `None`'
             raise InvalidDistribution(msg)
 
-        # The event length.
-        alphabet = events
+        alphabet = outcomes
 
     # Force the distribution to be numerical and a NumPy array.
     d.pmf = np.asarray(pmf, dtype=float)
 
-    # Tuple events, and an index.
-    d.events = tuple(events)
-    d._events_index = dict(zip(events, range(len(events))))
+    # Tuple outcomes, and an index.
+    d.outcomes = tuple(outcomes)
+    d._outcomes_index = dict(zip(outcomes, range(len(outcomes))))
 
-    # Tuple eventspace and its set.
+    # Tuple sample space and its set.
     d.alphabet = tuple(alphabet)
     d._alphabet_set = set(alphabet)
 
@@ -162,23 +99,23 @@ def _make_distribution(pmf, events=None, alphabet=None, base=None, sparse=True):
 
     return d
 
-def reorder(pmf, events, alphabet, index=None):
+def reorder(pmf, outcomes, alphabet, index=None):
     """
-    Helper function to reorder events and pmf to match eventspace.
+    Helper function to reorder outcomes and pmf to match sample_space.
 
     """
     if index is None:
-        index = dict(zip(events, range(len(events))))
+        index = dict(zip(outcomes, range(len(outcomes))))
 
-    eventspace = alphabet
-    order = [index[event] for event in eventspace if event in index]
-    if len(order) != len(events):
-        raise InvalidDistribution('Events and eventspace are not compatible.')
+    sample_space = alphabet
+    order = [index[outcome] for outcome in sample_space if outcome in index]
+    if len(order) != len(outcomes):
+        raise InvalidDistribution('outcomes and sample_space are not compatible.')
 
-    events = [events[i] for i in order]
+    outcomes = [outcomes[i] for i in order]
     pmf = [pmf[i] for i in order]
-    new_index = dict(zip(events, range(len(events))))
-    return pmf, events, new_index
+    new_index = dict(zip(outcomes, range(len(outcomes))))
+    return pmf, outcomes, new_index
 
 class Distribution(BaseDistribution):
     """
@@ -194,15 +131,15 @@ class Distribution(BaseDistribution):
         The values could be symbolic, for example.
 
     is_sparse : bool
-        `True` if `events` and `pmf` represent a sparse distribution.
+        `True` if `outcomes` and `pmf` represent a sparse distribution.
 
     Private Attributes
     ------------------
     _alphabet_set : tuple
         A tuple representing the alphabet of the random variable.
 
-    _events_index : dict
-        A dictionary mapping events to their index in self.events.
+    _outcomes_index : dict
+        A dictionary mapping outcomes to their index in self.outcomes.
 
     _meta : dict
         A dictionary containing the meta information, described above.
@@ -211,10 +148,10 @@ class Distribution(BaseDistribution):
     -----------------
     alphabet : tuple
         A tuple representing the alphabet of the random variable.  The
-        eventspace, for distributions, equals the alphabet.
+        sample space, for distributions, equals the alphabet.
 
-    events : tuple
-        The events of the probability distribution.
+    outcomes : tuple
+        The outcomes of the probability distribution.
 
     ops : Operations instance
         A class which manages addition and multiplication operations for log
@@ -222,7 +159,7 @@ class Distribution(BaseDistribution):
 
     pmf : array-like
         The probability mass function for the distribution.  The elements of
-        this array are in a one-to-one correspondence with those in `events`.
+        this array are in a one-to-one correspondence with those in `outcomes`.
 
     prng : RandomState
         A pseudo-random number generator with a `rand` method which can
@@ -235,18 +172,14 @@ class Distribution(BaseDistribution):
     copy
         Returns a deep copy of the distribution.
 
-    eventprobs
-        Returns an iterator over (event, probability) tuples.  The probability
-        could be a log probability or a linear probability.
-
-    eventspace
-        Returns an iterator over the events in the eventspace.
+    sample_space
+        Returns an iterator over the outcomes in the sample space.
 
     get_base
         Returns the base of the distribution.
 
-    has_event
-        Returns `True` is the distribution has `event` in the eventspace.
+    has_outcome
+        Returns `True` is the distribution has `outcome` in the sample space.
 
     is_dense
         Returns `True` if the distribution is dense.
@@ -264,16 +197,16 @@ class Distribution(BaseDistribution):
         Returns `True` if the distribution is sparse.
 
     make_dense
-        Add all null events to the pmf.
+        Add all null outcomes to the pmf.
 
     make_sparse
-        Remove all null events from the pmf.
+        Remove all null outcomes from the pmf.
 
     normalize
         Normalizes the distribution.
 
-    sample
-        Returns a sample from the distribution.
+    rand
+        Returns a random draw from the distribution.
 
     set_base
         Changes the base of the distribution, in-place.
@@ -284,19 +217,24 @@ class Distribution(BaseDistribution):
     validate
         A method to validate that the distribution is valid.
 
+    zipped
+        Returns an iterator over (outcome, probability) tuples.  The
+        probability could be a log probability or a linear probability.
+
     Implementation Notes
     --------------------
-    The events and pmf of the distribution are stored as a tuple and a NumPy
+    The outcomes and pmf of the distribution are stored as a tuple and a NumPy
     array.  The sequences can be either sparse or dense.  By sparse, we do not
     mean that the representation is a NumPy sparse array.  Rather, we mean that
-    the sequences need not contain every event in the eventspace. The order of
-    the events and probabilities will always match the order of the eventspace,
-    even though their length might not equal the length of the eventspace.
+    the sequences need not contain every outcome in the sample space. The order
+    of the outcomes and probabilities will always match the order of the sample
+    space, even though their length might not equal the length of the sample
+    space.
 
     """
 
     _alphabet_set = None
-    _events_index = None
+    _outcomes_index = None
     _meta = {
         'is_joint': False,
         'is_numerical': True,
@@ -304,12 +242,12 @@ class Distribution(BaseDistribution):
     }
 
     alphabet = None
-    events = None
+    outcomes = None
     ops = None
     pmf = None
     prng = None
 
-    def __init__(self, pmf, events=None, alphabet=None, base=None,
+    def __init__(self, pmf, outcomes=None, alphabet=None, base=None,
                             sort=True, sparse=True, validate=True):
         """
         Initialize the distribution.
@@ -317,23 +255,23 @@ class Distribution(BaseDistribution):
         Parameters
         ----------
         pmf : sequence, dict
-            The event probabilities or log probabilities. If `pmf` is a
-            dictionary, then the keys are used as `events`, and the values of
+            The outcome probabilities or log probabilities. If `pmf` is a
+            dictionary, then the keys are used as `outcomes`, and the values of
             the dictionary are used as `pmf` instead.  The keys take precedence
-            over any specification of them via `events`.
+            over any specification of them via `outcomes`.
 
-        events : sequence
-            The events of the distribution. If specified, then its length must
-            equal the length of `pmf`.  If `None`, then consecutive integers
-            beginning from 0 are used as the events. An event is any hashable
-            object which is equality comparable.  If `sort` is `True`, then
-            events must also be orderable.
+        outcomes : sequence
+            The outcomes of the distribution. If specified, then its length
+            must equal the length of `pmf`.  If `None`, then consecutive
+            integers beginning from 0 are used as the outcomes. An outcome is
+            any hashable object (except `None`) which is equality comparable.
+            If `sort` is `True`, then outcomes must also be orderable.
 
         alphabet : sequence
             A sequence representing the alphabet of the random variable. For
             distributions, this corresponds to the complete set of possible
-            events. The order of the alphabet is important. If `None`, the
-            value of `events` is used to determine the alphabet.
+            outcomes. The order of the alphabet is important. If `None`, the
+            value of `outcomes` is used to determine the alphabet.
 
         base : float, None
             If `pmf` specifies log probabilities, then `base` should specify
@@ -342,19 +280,19 @@ class Distribution(BaseDistribution):
             `base` is taken from ditParams['base'].
 
         sort : bool
-            If `True`, then the eventspace is sorted first. Usually, this is
+            If `True`, then the sample space is sorted first. Usually, this is
             desirable, as it normalizes the behavior of distributions which
-            have the same eventspace (when considered as a set).  Addition and
-            multiplication of distributions is defined only if the eventspace
+            have the same sample space (when considered as a set).  Addition and
+            multiplication of distributions is defined only if the sample space
             (as a tuple) is equal.
 
         sparse : bool
-            Specifies the form of the pmf.  If `True`, then `events` and `pmf`
-            will only contain entries for non-null events and probabilities,
+            Specifies the form of the pmf.  If `True`, then `outcomes` and `pmf`
+            will only contain entries for non-null outcomes and probabilities,
             after initialization.  The order of these entries will always obey
-            the order of `eventspace`, even if their number is not equal to the
-            size of the eventspace.  If `False`, then the pmf will be dense and
-            every event in the eventspace will be represented.
+            the order of `sample_space`, even if their number is not equal to
+            the size of the sample space.  If `False`, then the pmf will be
+            dense and every outcome in the sample space will be represented.
 
         validate : bool
             If `True`, then validate the distribution.  If `False`, then assume
@@ -363,29 +301,29 @@ class Distribution(BaseDistribution):
         Raises
         ------
         InvalidDistribution
-            If the length of `values` and `events` are unequal.
+            If the length of `values` and `outcomes` are unequal.
 
         See :meth:`validate` for a list of other potential exceptions.
 
         """
         super(Distribution, self).__init__()
 
-        pmf, events, alphabet = self._init(pmf, events, alphabet, base)
+        pmf, outcomes, alphabet = self._init(pmf, outcomes, alphabet, base)
 
         if sort:
             alphabet = tuple(sorted(alphabet))
-            pmf, events, index = reorder(pmf, events, alphabet)
+            pmf, outcomes, index = reorder(pmf, outcomes, alphabet)
         else:
-            index = dict(zip(events, range(len(events))))
+            index = dict(zip(outcomes, range(len(outcomes))))
 
         # Force the distribution to be numerical and a NumPy array.
         self.pmf = np.asarray(pmf, dtype=float)
 
-        # Tuple events, and an index.
-        self.events = tuple(events)
-        self._events_index = index
+        # Tuple outcomes, and an index.
+        self.outcomes = tuple(outcomes)
+        self._outcomes_index = index
 
-        # Tuple eventspace and its set.
+        # Tuple sample space and its set.
         self.alphabet = tuple(alphabet)
         self._alphabet_set = set(alphabet)
 
@@ -397,7 +335,7 @@ class Distribution(BaseDistribution):
         if validate:
             self.validate()
 
-    def _init(self, pmf, events, alphabet, base):
+    def _init(self, pmf, outcomes, alphabet, base):
         """
         The barebones initialization.
 
@@ -406,7 +344,7 @@ class Distribution(BaseDistribution):
             # Attempt a conversion from any NumPy based distribution.
             d = pmf
 
-            events = d.events
+            outcomes = d.outcomes
             pmf = d.pmf
             if base is None:
                 # Allow the user to specify something strange if desired.
@@ -414,39 +352,40 @@ class Distribution(BaseDistribution):
                 base = d.get_base()
             if alphabet is None:
                 if d.is_joint():
-                    # Use the eventspace as the alphabet.
-                    alphabet = tuple(d.eventspace())
+                    # Use the sample space as the alphabet.
+                    alphabet = tuple(d.sample_space())
                 else:
                     alphabet = pmf.alphabet
 
         else:
             ## pmf
-            # Attempt to grab events and pmf from a dictionary
+            # Attempt to grab outcomes and pmf from a dictionary
             try:
-                events_ = tuple(pmf.keys())
+                outcomes_ = tuple(pmf.keys())
                 pmf_ = tuple(pmf.values())
             except AttributeError:
                 pass
             else:
-                events = events_
+                outcomes = outcomes_
                 pmf = pmf_
 
-            ## events
-            # Make sure events and values have the same length.
-            if events is None:
-                events = range(len(pmf))
-            elif len(pmf) != len(events):
-                msg = "Unequal lengths for `values` and `events`"
+            ## outcomes
+            # Make sure outcomes and values have the same length.
+            if outcomes is None:
+                outcomes = range(len(pmf))
+            elif len(pmf) != len(outcomes):
+                msg = "Unequal lengths for `values` and `outcomes`"
                 raise InvalidDistribution(msg)
 
             ## alphabets
-            # Use events to obtain the alphabets.
+            # Use outcomes to obtain the alphabets.
             if alphabet is None:
-                if len(events) == 0:
-                    msg = '`events` cannot have zero length if `alphabet` is `None`'
+                if len(outcomes) == 0:
+                    msg = '`outcomes` cannot have zero length if '
+                    msg += ' `alphabet` is `None`'
                     raise InvalidDistribution(msg)
 
-                alphabet = events
+                alphabet = outcomes
 
         # Determine if the pmf represents log probabilities or not.
         if base is None:
@@ -457,18 +396,18 @@ class Distribution(BaseDistribution):
             ops = LogOperations(base)
         self.ops = ops
 
-        return pmf, events, alphabet
+        return pmf, outcomes, alphabet
 
     def __add__(self, other):
         """
         Addition of distributions of the same kind.
 
         The other distribution must have the same meta information and the
-        same eventspace.  If not, raise an exception.
+        same sample space.  If not, raise an exception.
 
         """
-        for e1, e2 in zip(self.eventspace(), other.eventspace()):
-            if e1 != e2:
+        for o1, o2 in zip(self.sample_space(), other.sample_space()):
+            if o1 != o2:
                 raise IncompatibleDistribution()
 
         # Copy to make sure we don't lose precision when converting.
@@ -478,8 +417,8 @@ class Distribution(BaseDistribution):
         # If self is dense, the result will be dense.
         # If self is sparse, the result will be sparse.
         d = self.copy()
-        for event, prob in d2.eventprobs():
-            d[event] = d.ops.add(d[event], prob)
+        for outcome, prob in d2.eventprobs():
+            d[outcome] = d.ops.add(d[outcome], prob)
 
         return d
 
@@ -500,41 +439,41 @@ class Distribution(BaseDistribution):
     def __rmul__(self, other):
         return self.__mul__(other)
 
-    def __contains__(self, event):
+    def __contains__(self, outcome):
         """
-        Returns `True` if `event` is in self.events.
+        Returns `True` if `outcome` is in self.outcomes.
 
-        Note, the event could correspond to a null-event. Also, if `event` is
-        not in the eventspace, then an exception is not raised. Instead,
-        `False` is returned.
+        Note, the outcome could correspond to a null-outcome. Also, if
+        `outcome` is not in the sample space, then an exception is not raised.
+        Instead, `False` is returned.
 
         """
-        return event in self._events_index
+        return outcome in self._outcomes_index
 
-    def __delitem__(self, event):
+    def __delitem__(self, outcome):
         """
-        Deletes `event` from the distribution.
+        Deletes `outcome` from the distribution.
 
         Parameters
         ----------
-        event : event
-            Any hashable and equality comparable object. If `event` exists
-            in the eventspace, then it is removed from the pmf.  If the event
-            did not already exist in the pmf, then no exception is raised. If
-            `event` does not exist in the eventspace, then an InvalidEvent
-            exception is raised.
+        outcome : outcome
+            Any hashable and equality comparable object. If `outcome` exists
+            in the sample space, then it is removed from the pmf.  If the
+            outcome did not already exist in the pmf, then no exception is
+            raised. If `outcome` does not exist in the sample space, then an
+            InvalidOutcome exception is raised.
 
         Raises
         ------
-        InvalidEvent
-            If `event` does not exist in the eventspace.
+        InvalidOutcome
+            If `outcome` does not exist in the sample space.
 
         Notes
         -----
-        If the distribution is dense, then the event's value is set to zero,
+        If the distribution is dense, then the outcome's value is set to zero,
         and the length of the pmf is left unchanged.
 
-        If the event was a non-null event, then the resulting distribution
+        If the outcome was a non-null outcome, then the resulting distribution
         will no longer be normalized (assuming it was in the first place).
 
         See Also
@@ -542,125 +481,126 @@ class Distribution(BaseDistribution):
         normalize, __setitem__
 
         """
-        if not self.has_event(event, null=True):
-            raise InvalidEvent(event)
+        if not self.has_outcome(outcome, null=True):
+            raise InvalidOutcome(outcome)
 
-        events = self.events
-        events_index = self._events_index
+        outcomes = self.outcomes
+        outcomes_index = self._outcomes_index
         if self.is_dense():
             # Dense distribution, just set it to zero.
-            idx = events_index[event]
+            idx = outcomes_index[outcome]
             self.pmf[idx] = self.ops.zero
-        elif event in events_index:
-            # Remove the event from the sparse distribution.
+        elif outcome in outcomes_index:
+            # Remove the outcome from the sparse distribution.
             # Since the pmf was already ordered, no need to reorder.
-            # Update the events and the events index.
-            idx = events_index[event]
-            new_indexes = [i for i in range(len(events)) if i != idx]
-            new_events = tuple([ events[i] for i in new_indexes])
-            self.events = new_events
-            self._events_index = dict(zip(new_events, range(len(new_events))))
+            # Update the outcomes and the outcomes index.
+            idx = outcomes_index[outcome]
+            new_indexes = [i for i in range(len(outcomes)) if i != idx]
+            new_outcomes = tuple([ outcomes[i] for i in new_indexes])
+            self.outcomes = new_outcomes
+            self._outcomes_index = dict(zip(new_outcomes,
+                                        range(len(new_outcomes))))
 
             # Update the probabilities.
             self.pmf = self.pmf[new_indexes]
 
-    def __getitem__(self, event):
+    def __getitem__(self, outcome):
         """
-        Returns the probability associated with `event`.
+        Returns the probability associated with `outcome`.
 
         Parameters
         ----------
-        event : event
-            Any hashable and equality comparable object in the eventspace.
-            If `event` does not exist in the eventspace, then an InvalidEvent
-            exception is raised.
+        outcome : outcome
+            Any hashable and equality comparable object in the sample space.
+            If `outcome` does not exist in the sample space, then an
+            InvalidOutcome exception is raised.
 
         Returns
         -------
         p : float
-            The probability (or log probability) of the event.
+            The probability (or log probability) of the outcome.
 
         Raises
         ------
-        InvalidEvent
-            If `event` does not exist in the eventspace.
+        InvalidOutcome
+            If `outcome` does not exist in the sample space.
 
         """
-        if not self.has_event(event, null=True):
-            raise InvalidEvent(event)
+        if not self.has_outcome(outcome, null=True):
+            raise InvalidOutcome(outcome)
 
-        idx = self._events_index.get(event, None)
+        idx = self._outcomes_index.get(outcome, None)
         if idx is None:
             p = self.ops.zero
         else:
             p = self.pmf[idx]
         return p
 
-    def __setitem__(self, event, value):
+    def __setitem__(self, outcome, value):
         """
-        Sets the probability associated with `event`.
+        Sets the probability associated with `outcome`.
 
         Parameters
         ----------
-        event : event
-            Any hashable and equality comparable object in the eventspace.
-            If `event` does not exist in the eventspace, then an InvalidEvent
-            exception is raised.
+        outcome : outcome
+            Any hashable and equality comparable object in the sample space.
+            If `outcome` does not exist in the sample space, then an
+            InvalidOutcome exception is raised.
         value : float
-            The probability or log probability of the event.
+            The probability or log probability of the outcome.
 
         Returns
         -------
         p : float
-            The probability (or log probability) of the event.
+            The probability (or log probability) of the outcome.
 
         Raises
         ------
-        InvalidEvent
-            If `event` does not exist in the eventspace.
+        InvalidOutcome
+            If `outcome` does not exist in the sample space.
 
         Notes
         -----
-        Setting the value of the event never deletes the event, even if the
+        Setting the value of the outcome never deletes the outcome, even if the
         value is equal to the null probabilty. After a setting operation,
-        the event will always exist in `events` and `pmf`.
+        the outcome will always exist in `outcomes` and `pmf`.
 
-        Setting a new event in a sparse distribution is costly. It is better
-        to know the non-null events before creating the distribution.
+        Setting a new outcome in a sparse distribution is costly. It is better
+        to know the non-null outcomes before creating the distribution.
 
         See Also
         --------
         __delitem__
 
         """
-        if not self.has_event(event, null=True):
-            raise InvalidEvent(event)
+        if not self.has_outcome(outcome, null=True):
+            raise InvalidOutcome(outcome)
 
-        idx = self._events_index.get(event, None)
-        new_event = idx is None
+        idx = self._outcomes_index.get(outcome, None)
+        new_outcome = idx is None
 
-        if not new_event:
+        if not new_outcome:
             # If the distribution is dense, we will be here.
             # We *could* delete if the value was zero, but we will make
             # setting always set, and deleting always deleting (when sparse).
             self.pmf[idx] = value
         else:
-            # A new event in a sparse distribution.
+            # A new outcome in a sparse distribution.
             # Sticking with the setting always setting...we add even if
             # the value is zero.
 
-            # 1. Add the new event and probability
-            self.events = self.events + (event,)
-            self._events_index[event] = len(self.events) - 1
+            # 1. Add the new outcome and probability
+            self.outcomes = self.outcomes + (outcome,)
+            self._outcomes_index[outcome] = len(self.outcomes) - 1
             pmf = [p for p in self.pmf] + [value]
 
             # 2. Reorder
-            pmf, events, index = reorder(pmf, self.events, self.alphabet,
-                                         index=self._events_index)
+            pmf, outcomes, index = reorder(pmf, self.outcomes, self.alphabet,
+                                           index=self._outcomes_index)
 
             # 3. Store
-            self.events = tuple(events)
-            self._events_index = index
+            self.outcomes = tuple(outcomes)
+            self._outcomes_index = index
             self.pmf = np.array(pmf, dtype=float)
 
 
@@ -674,33 +614,34 @@ class Distribution(BaseDistribution):
 
         from copy import deepcopy
         d = _make_distribution(pmf=np.array(self.pmf, copy=True),
-                               events=deepcopy(self.events),
+                               outcomes=deepcopy(self.outcomes),
                                alphabet=deepcopy(self.alphabet),
                                base=self.ops.base,
                                sparse=self._meta['is_sparse'])
         return d
 
-    def eventspace(self):
+    def sample_space(self):
         """
-        Returns an iterator over the ordered event space.
+        Returns an iterator over the ordered outcome space.
 
         """
         return iter(self.alphabet)
 
-    def has_event(self, event, null=True):
+    def has_outcome(self, outcome, null=True):
         """
-        Returns `True` if `event` is a valid event (exists in the eventspace).
+        Returns `True` if `outcome` exists in the sample space.
 
         Parameters
         ----------
-        event : event
-            The event to be tested.
+        outcome : outcome
+            The outcome to be tested.
         null : bool
-            Specifies if null events are acceptable.  If `True`, then null
-            events are acceptable.  Thus, the only requirement on `event` is
-            that it exist in the distribution's eventspace. If `False`, then
-            null events are not acceptable.  Thus, `event` must exist in the
-            distribution's eventspace and also correspond to be nonnull.
+            Specifies if null outcomes are acceptable.  If `True`, then null
+            outcomes are acceptable.  Thus, the only requirement on `outcome`
+            is that it exist in the distribution's sample space. If `False`,
+            then null outcomes are not acceptable.  Thus, `outcome` must exist
+            in the distribution's sample space and also correspond to be
+            nonnull.
 
         Notes
         -----
@@ -708,14 +649,14 @@ class Distribution(BaseDistribution):
 
         """
         if null:
-            # Make sure the event exists in the eventspace, which equals
+            # Make sure the outcome exists in the sample space, which equals
             # the alphabet for distributions.
-            z = event in self._alphabet_set
+            z = outcome in self._alphabet_set
         else:
             # Must be valid and have positive probability.
             try:
-                z = self[event] > self.ops.zero
-            except InvalidEvent:
+                z = self[outcome] > self.ops.zero
+            except InvalidOutcome:
                 z = False
 
         return z
@@ -724,8 +665,8 @@ class Distribution(BaseDistribution):
         """
         Returns `True` is `other` is approximately equal to this distribution.
 
-        For two distributions to be equal, they must have the same eventspace
-        and must also agree on the probabilities of each event.
+        For two distributions to be equal, they must have the same sample space
+        and must also agree on the probabilities of each outcome.
 
         Parameters
         ----------
@@ -737,27 +678,27 @@ class Distribution(BaseDistribution):
         The distributions need not have the same base or even same length.
 
         """
-        # The set of all specified events (some may be null events).
+        # The set of all specified outcomes (some may be null outcomes).
         es1 = None
         if self.is_dense() or other.is_dense():
-            es1 = tuple(self.eventspace())
-            events = es1
+            es1 = tuple(self.sample_space())
+            outcomes = es1
         else:
-            events = set(self.events)
-            events.update(other.events)
+            outcomes = set(self.outcomes)
+            outcomes.update(other.outcomes)
 
         # Potentially nonzero probabilities must be equal.
-        for event in events:
-            if not close(self[event], other[event]):
+        for outcome in outcomes:
+            if not close(self[outcome], other[outcome]):
                 return False
         else:
             return True
 
-        # Event spaces must be equal.
-        if es1 is None:
-            es1 = tuple(self.eventspace())
-        es2 = tuple(other.eventspace())
-        if es1 != es2:
+        # outcome spaces must be equal.
+        if ss1 is None:
+            ss1 = tuple(self.sample_space())
+        ss2 = tuple(other.sample_space())
+        if ss1 != ss2:
             return False
 
     def is_dense(self):
@@ -865,23 +806,23 @@ class Distribution(BaseDistribution):
 
     def make_dense(self):
         """
-        Make pmf contain all events in the eventspace.
+        Make pmf contain all outcomes in the sample space.
 
-        This does not change the eventspace.
+        This does not change the sample space.
 
         Returns
         -------
         n : int
-            The number of null events added.
+            The number of null outcomes added.
 
         """
         L = len(self)
         # Recall, __getitem__ is a view to the dense distribution.
-        events = tuple(self.eventspace())
-        pmf = [ self[e] for e in events ]
+        outcomes = tuple(self.sample_space())
+        pmf = [ self[o] for o in outcomes ]
         self.pmf = np.array(pmf, dtype=float)
-        self.events = events
-        self._events_index = dict(zip(events, range(len(events))))
+        self.outcomes = outcomes
+        self._outcomes_index = dict(zip(outcomes, range(len(outcomes))))
 
         self._meta['is_sparse'] = False
         n = len(self) - L
@@ -890,18 +831,18 @@ class Distribution(BaseDistribution):
 
     def make_sparse(self, trim=True):
         """
-        Allow the pmf to omit null events.
+        Allow the pmf to omit null outcomes.
 
-        This does not change the eventspace.
+        This does not change the sample space.
 
         Parameters
         ----------
         trim : bool
-            If `True`, then remove all null events from the pmf.
+            If `True`, then remove all null outcomes from the pmf.
 
         Notes
         -----
-        Sparse distributions need not be trim.  One can add a null event to
+        Sparse distributions need not be trim.  One can add a null outcome to
         the pmf and the distribution could still be sparse.  A sparse
         distribution can even appear dense.  Essentially, sparse means that
         the shape of the pmf can grow and shrink.
@@ -909,7 +850,7 @@ class Distribution(BaseDistribution):
         Returns
         -------
         n : int
-            The number of null events removed.
+            The number of null outcomes removed.
 
         """
         L = len(self)
@@ -917,16 +858,16 @@ class Distribution(BaseDistribution):
         if trim:
             ### Use np.isclose() when it is available (NumPy 1.7)
             zero = self.ops.zero
-            events = []
+            outcomes = []
             pmf = []
-            for event, prob in self.eventprobs():
+            for outcome, prob in self.zipped():
                 if not close(prob, zero):
-                    events.append(event)
+                    outcomes.append(outcome)
                     pmf.append(prob)
 
-            # Update the events and the events index.
-            self.events = tuple(events)
-            self._events_index = dict(zip(events, range(len(events))))
+            # Update the outcomes and the outcomes index.
+            self.outcomes = tuple(outcomes)
+            self._outcomes_index = dict(zip(outcomes, range(len(outcomes))))
 
             # Update the probabilities.
             self.pmf = np.array(pmf)
@@ -943,8 +884,8 @@ class Distribution(BaseDistribution):
 
         Parameters
         ----------
-        events : bool
-            If `True` verify that every event exists in the event space.
+        outcomes : bool
+            If `True` verify that every outcome exists in the outcome space.
             This is a sanity check on the data structure.
         norm : bool
             If `True`, verify that the distribution is properly normalized.
@@ -960,14 +901,14 @@ class Distribution(BaseDistribution):
 
         Raises
         ------
-        InvalidEvent
-            Raised if an event is not in the event space.
+        InvalidOutcome
+            Raised if an outcome is not in the sample space.
         InvalidNormalization
             Raised if the distribution is improperly normalized.
 
         """
         mapping = {
-            'events': '_validate_events',
+            'outcomes': '_validate_outcomes',
             'norm': '_validate_normalization',
             'probs': '_validate_probabilities'
         }
@@ -993,12 +934,13 @@ class Distribution(BaseDistribution):
         pmf = self.pmf
 
         # Make sure the values are in the correct range.
-        too_low = pmf < zero
-        too_high = pmf > one
+        # Recall ops.zero = +inf for bases less than 1.
+        #        ops.zero = -inf for bases greater than 1.
+        too_low = pmf < min(zero, one)
+        too_high = pmf > max(zero, one)
         if too_low.any() or too_high.any():
             bad = pmf[ np.logical_or(too_low, too_high) ]
-            raise InvalidProbability( bad )
+            raise InvalidProbability( bad, ops=self.ops )
 
         return True
-
 

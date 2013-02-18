@@ -4,34 +4,15 @@
 """
 Module defining NumPy array-based distribution classes.
 
-Definitions
------------
-See http://docs.python.org/3/library/collections.abc.html#collections-abstract-base-classes
-
-A sequence is a sized, iterable container.
-
-`None` is not a valid event, as it is used by dit to signify that an event
-was not found in the list of events.  This is not enforced in the data
-structures---things will simply not work as expected.
-
-The most basic type of event must be hashable and equality comparable.
-Thus, the events should be immutable.  If the distribution's eventspace is
-to be sorted, then the events must also be orderable.  Regular events need
-not be sequences.
-
-The joint event type must be a hashable, orderable, and a sequence. Thus, joint
-events must be hashable, orderable, sized, iterable containers.
-
-One of the features of joint distributions is that we can marginalize them.
-This requires that we are able to construct smaller events from larger events.
-For example, an event like '10101' might become '010' if the first and last
+One of the features of joint distributions is that we can marginalize them. This
+requires that we are able to construct smaller outcomes from larger outcomes.
+For example, an outcome like '10101' might become '010' if the first and last
 random variables are marginalized.  Given the alphabet of the joint
-distribution, we can construct a tuple ('0','1','0') for any smaller event
-using itertools.product, but how do we create an event of the same type?
-For tuples and other similar containers, we just pass the tuple to the
-event constructor.  This technique does not work for strings, as
-str(('0','1','0')) yields "('0', '1', '0')".  So we have to handle strings
-separately.
+distribution, we can construct a tuple ('0','1','0') for any smaller outcome
+using itertools.product, but how do we create an outcome of the same type? For
+tuples and other similar containers, we just pass the tuple to the outcome
+constructor.  This technique does not work for strings, as str(('0','1','0'))
+yields "('0', '1', '0')".  So we have to handle strings separately.
 
 Note:
     For dictionaries...
@@ -52,8 +33,8 @@ Note:
     For distributions...
         "e in d" being True means d[e] is a valid operation.
         "e in d" being False says nothing about d[e].
-            d[e] will be valid if e is in the eventspace.
-            d[e] will raise an InvalidEvent if e is not in the eventspace.
+            d[e] will be valid if e is in the sample space.
+            d[e] will raise an InvalidOutcome if e is not in the sample space.
         d[e] does not describe the underlying data structure.
             It provides a view of the dense data structure.
             With defaultdict, if e not in d, then d[e] will add it.
@@ -64,21 +45,10 @@ Note:
         __iter__ describes the underlying data structure.
         __len__ describes the underlying data structure.
 
-
-Sparse means the length of events and pmf need not equal the length of the
-eventspace. There are two important points to keep in mind.
-    1) A sparse distribution is not necessarily trim. Recall, a distribution
-         is trim if its pmf does not contain null-events.
-    2) The length of a sparse distribution's pmf can equal the length of the
-       eventspace.
-If a distribution is dense, then we forcibly make sure the length of the pmf
-is always equal to the length of the eventspace.
-
-When a distribution is sparse, del d[e] will make the pmf smaller.  But d[e] = 0
-will simply set the element to zero.
-
-When a distribution is dense, del d[e] will set the element to zero, and
-d[e] = 0 still sets the element to zero.
+For distributions, the sample space is the alphabet and the alphabet is a single
+tuple. For joint distributions, the sample space is the Cartestian product of
+the alphabets for each random variable, and the alphabet for the joint
+distribution is a tuple of alphabets for each random variable.
 
 """
 
@@ -89,32 +59,32 @@ from operator import itemgetter
 
 from .npdist import Distribution
 from .exceptions import (
-    InvalidDistribution, InvalidEvent, InvalidProbability, ditException
+    InvalidDistribution, InvalidOutcome, InvalidProbability, ditException
 )
 from .math import LinearOperations, LogOperations
 from .utils import str_product, product_maker
 from .params import ditParams
 
-def get_product_func(events):
+def get_product_func(outcomes):
     """
     Helper function to return a product function for the distribution.
 
     See the docstring for JointDistribution.
 
     """
-    # Every event must be of the same type.
-    if len(events) == 0:
+    # Every outcome must be of the same type.
+    if len(outcomes) == 0:
         # Any product will work, since there is nothing to iterate over.
         product = itertools.product
     else:
-        event = events[0]
-        if isinstance(event, basestring):
+        outcome = outcomes[0]
+        if isinstance(outcome, basestring):
             product = str_product
-        elif isinstance(event, tuple):
+        elif isinstance(outcome, tuple):
             product = itertools.product
         else:
             # Assume the sequence-like constructor can handle tuples as input.
-            product = product_maker(event.__class__)
+            product = product_maker(outcome.__class__)
 
     return product
 
@@ -163,7 +133,7 @@ def parse_rvs(dist, rvs, rv_names=True, unique=True, sort=True):
         indexes = []
         for rv in rvs:
             if rv in dist._rvs:
-                indexes.append( dist._rvs[rv])
+                indexes.append( dist._rvs[rv] )
 
         if len(indexes) != len(rvs):
             msg ='`rvs` contains invalid random variable names.'
@@ -172,7 +142,7 @@ def parse_rvs(dist, rvs, rv_names=True, unique=True, sort=True):
         indexes = rvs
 
     # Make sure all indexes are valid, even if there are duplicates.
-    all_indexes = set(range(dist.event_length()))
+    all_indexes = set(range(dist.outcome_length()))
     good_indexes = all_indexes.intersection(indexes)
     if len(good_indexes) != len(set(indexes)):
         msg = '`rvs` contains invalid random variables'
@@ -185,7 +155,7 @@ def parse_rvs(dist, rvs, rv_names=True, unique=True, sort=True):
 
     return rvs, indexes
 
-def _make_distribution(pmf, events, alphabet=None, base=None, sparse=True):
+def _make_distribution(pmf, outcomes, alphabet=None, base=None, sparse=True):
     """
     An unsafe, but faster, initialization for distributions.
 
@@ -194,13 +164,13 @@ def _make_distribution(pmf, events, alphabet=None, base=None, sparse=True):
     This function can be useful when you are creating many distributions
     in a loop and can guarantee that:
 
-        0) all events are of the same type (eg tuple, str) and length.
+        0) all outcomes are of the same type (eg tuple, str) and length.
         1) the alphabet is in the desired order.
-        2) events and pmf are in the same order as the eventspace.
+        2) outcomes and pmf are in the same order as the sample space.
            [Thus, `pmf` should not be a dictionary.]
 
-    This function will not order the eventspace, nor will it reorder events
-    or pmf.  It will not forcibly make events and pmf to be sparse or dense.
+    This function will not order the sample space, nor will it reorder outcomes
+    or pmf.  It will not forcibly make outcomes and pmf to be sparse or dense.
     It will simply declare the distribution to be sparse or dense. The
     distribution is not validated either.
 
@@ -221,43 +191,43 @@ def _make_distribution(pmf, events, alphabet=None, base=None, sparse=True):
         ops = LogOperations(base)
     d.ops = ops
 
-    ## events
-    # Unlike Distribution, we cannot use a default set of events when
-    # `events` is `None`.
-    if len(pmf) != len(events):
-        msg = "Unequal lengths for `values` and `events`"
+    ## outcomes
+    # Unlike Distribution, we cannot use a default set of outcomes when
+    # `outcomes` is `None`.
+    if len(pmf) != len(outcomes):
+        msg = "Unequal lengths for `values` and `outcomes`"
         raise InvalidDistribution(msg)
 
     ## alphabets
-    # Use events to obtain the alphabets.
+    # Use outcomes to obtain the alphabets.
     if alphabet is None:
 
-        if len(events) == 0:
-            msg = '`events` cannot have zero length if `alphabet` is `None`'
+        if len(outcomes) == 0:
+            msg = '`outcomes` cannot have zero length if `alphabet` is `None`'
             raise InvalidDistribution(msg)
 
-        # The event length.
-        event_length = len(events[0])
-        alphabet = [set([]) for i in range(event_length)]
-        for event in events:
-            for i,symbol in enumerate(event):
+        # The outcome length.
+        outcome_length = len(outcomes[0])
+        alphabet = [set([]) for i in range(outcome_length)]
+        for outcome in outcomes:
+            for i,symbol in enumerate(outcome):
                 alphabet[i].add(symbol)
         alphabet = map(tuple, alphabet)
 
-    if len(events):
-        d._event_class = events[0].__class__
+    if len(outcomes):
+        d._outcome_class = outcomes[0].__class__
 
     ## product
-    d._product = get_product_func(events)
+    d._product = get_product_func(outcomes)
 
     # Force the distribution to be numerical and a NumPy array.
     d.pmf = np.asarray(pmf, dtype=float)
 
-    # Tuple events, and an index.
-    d.events = tuple(events)
-    d._events_index = dict(zip(events, range(len(events))))
+    # Tuple outcomes, and an index.
+    d.outcomes = tuple(outcomes)
+    d._outcomes_index = dict(zip(outcomes, range(len(outcomes))))
 
-    # Tuple eventspace and its set.
+    # Tuple sample space and its set.
     d.alphabet = tuple(alphabet)
     d._alphabet_set = map(set, d.alphabet)
 
@@ -272,32 +242,32 @@ def _make_distribution(pmf, events, alphabet=None, base=None, sparse=True):
 
     return d
 
-def reorder(pmf, events, alphabet, product, index=None, method=None):
+def reorder(pmf, outcomes, alphabet, product, index=None, method=None):
     """
-    Helper function to reorder pmf and events so as to match the eventspace.
+    Helper function to reorder pmf and outcomes so as to match the sample space.
 
-    The Cartesian product of the alphabets defines the eventspace.
+    The Cartesian product of the alphabets defines the sample space.
 
     There are two ways to do this:
-        1) Determine the order by generating the entire eventspace.
-        2) Analytically calculate the sort order of each event.
+        1) Determine the order by generating the entire sample space.
+        2) Analytically calculate the sort order of each outcome.
 
-    If the eventspace is very large and sparsely populated, then method 2)
+    If the sample space is very large and sparsely populated, then method 2)
     is probably faster. However, it must calculate a number using
     (2**(symbol_orders)).sum().  Potentially, this could be costly. If the
-    eventspace is small, then method 1) is probably fastest. We'll experiment
+    sample space is small, then method 1) is probably fastest. We'll experiment
     and find a good heurestic.
 
     """
-    # A map of the elements in `events` to their index in `events`.
+    # A map of the elements in `outcomes` to their index in `outcomes`.
     if index is None:
-        index = dict(zip(events, range(len(events))))
+        index = dict(zip(outcomes, range(len(outcomes))))
 
-    # The number of elements in the eventspace?
-    eventspace_size = np.prod( map(len, alphabet) )
+    # The number of elements in the sample space?
+    sample_space_size = np.prod( map(len, alphabet) )
 
     if method is None:
-        if eventspace_size > 10000 and len(events) < 1000:
+        if sample_space_size > 10000 and len(outcomes) < 1000:
             # Large and sparse.
             method = 'analytic'
         else:
@@ -306,41 +276,43 @@ def reorder(pmf, events, alphabet, product, index=None, method=None):
     method = 'generate'
     if method == 'generate':
         # Obtain the order from the generated order.
-        eventspace = product(*alphabet)
-        order = [index[event] for event in eventspace if event in index]
-        if len(order) != len(events):
-            raise InvalidDistribution('Events and eventspace are not compatible.')
-        events_ = [events[i] for i in order]
+        sample_space = product(*alphabet)
+        order = [index[outcome] for outcome in sample_space if outcome in index]
+        if len(order) != len(outcomes):
+            msg = 'Outcomes and sample_space are not compatible.'
+            raise InvalidDistribution(msg)
+        outcomes_ = [outcomes[i] for i in order]
         pmf = [pmf[i] for i in order]
 
-        # We get this for free: Check that every event was in the eventspace.
-        # (Well, its costs us a bit in memory to keep events and events_.)
-        if len(events_) != len(events):
-            # We lost an event.
-            bad = set(events) - set(events_)
+        # We get this for free: Check that every outcome was in the sample
+        # space. Well, its costs us a bit in memory to keep outcomes and
+        # outcomes_.
+        if len(outcomes_) != len(outcomes):
+            # We lost an outcome.
+            bad = set(outcomes) - set(outcomes_)
             L = len(bad)
             if L == 1:
-                raise InvalidEvent(bad, single=True)
+                raise InvalidOutcome(bad, single=True)
             elif L:
-                raise InvalidEvent(bad, single=False)
+                raise InvalidOutcome(bad, single=False)
         else:
-            events = events_
+            outcomes = outcomes_
 
     elif method == 'analytic':
         # Analytically calculate the sort order.
-        # Note, this method does not verify that every event was in the
-        # eventspace.
+        # Note, this method does not verify that every outcome was in the
+        # sample space.
 
         # Construct a lookup from symbol to order in the alphabet.
         alphabet_size = map(len, alphabet)
         alphabet_index = [dict(zip(alph, range(size)))
                           for alph, size in zip(alphabet, alphabet_size)]
 
-        L = len(events[0]) - 1
+        L = len(outcomes[0]) - 1
         codes = []
-        for event in events:
+        for outcome in outcomes:
             idx = 0
-            for i,symbol in enumerate(event):
+            for i,symbol in enumerate(outcome):
                 idx += alphabet_index[i][symbol] * (alphabet_size[i])**(L-i)
             codes.append(idx)
 
@@ -348,14 +320,14 @@ def reorder(pmf, events, alphabet, product, index=None, method=None):
         order = zip(codes, range(len(codes)))
         order.sort()
         sorted_codes, order = zip(*order)
-        events = [events[i] for i in order]
+        outcomes = [outcomes[i] for i in order]
         pmf = [pmf[i] for i in order]
     else:
         raise Exception("Method must be 'generate' or 'analytic'")
 
-    new_index = dict(zip(events, range(len(events))))
+    new_index = dict(zip(outcomes, range(len(outcomes))))
 
-    return pmf, events, new_index
+    return pmf, outcomes, new_index
 
 class JointDistribution(Distribution):
     """
@@ -371,7 +343,7 @@ class JointDistribution(Distribution):
         The values could be symbolic, for example.
 
     is_sparse : bool
-        `True` if `events` and `pmf` represent a sparse distribution.
+        `True` if `outcomes` and `pmf` represent a sparse distribution.
 
     Private Attributes
     ------------------
@@ -380,11 +352,11 @@ class JointDistribution(Distribution):
         elements of the tuple are sets, each of which represents the unordered
         alphabet of a single random variable.
 
-    _event_class : class
-        The class of all events in the distribution.
+    _outcome_class : class
+        The class of all outcomes in the distribution.
 
-    _events_index : dict
-        A dictionary mapping events to their index in self.events.
+    _outcomes_index : dict
+        A dictionary mapping outcomes to their index in self.outcomes.
 
     _mask : tuple
         A tuple of booleans specifying if the corresponding random variable
@@ -396,11 +368,11 @@ class JointDistribution(Distribution):
     _product : function
         A specialized product function, similar to itertools.product.  The
         primary difference is that instead of yielding tuples, this product
-        function will yield objects which are of the same type as the events.
+        function will yield objects which are of the same type as the outcomes.
 
     _rvs : dict
         A dictionary mapping random variable names to their index into the
-        events of the distribution.
+        outcomes of the distribution.
 
     Public Attributes
     -----------------
@@ -408,10 +380,10 @@ class JointDistribution(Distribution):
         A tuple representing the alphabet of the joint random variable.  The
         elements of the tuple are tuples, each of which represents the ordered
         alphabet for a single random variable. The Cartesian product of these
-        alphabets defines the eventspace.
+        alphabets defines the sample space.
 
-    events : tuple
-        The events of the probability distribution.
+    outcomes : tuple
+        The outcomes of the probability distribution.
 
     ops : Operations instance
         A class which manages addition and multiplication operations for log
@@ -419,7 +391,7 @@ class JointDistribution(Distribution):
 
     pmf : array-like
         The probability mass function for the distribution.  The elements of
-        this array are in a one-to-one correspondence with those in `events`.
+        this array are in a one-to-one correspondence with those in `outcomes`.
 
     prng : RandomState
         A pseudo-random number generator with a `rand` method which can
@@ -435,15 +407,11 @@ class JointDistribution(Distribution):
     copy
         Returns a deep copy of the distribution.
 
-    event_length
-        Returns the length of the events in the distribution.
+    outcome_length
+        Returns the length of the outcomes in the distribution.
 
-    eventprobs
-        Returns an iterator over (event, probability) tuples.  The probability
-        could be a log probability or a linear probability.
-
-    eventspace
-        Returns an iterator over the events in the eventspace.
+    sample_space
+        Returns an iterator over the outcomes in the sample space.
 
     get_base
         Returns the base of the distribution.
@@ -451,8 +419,8 @@ class JointDistribution(Distribution):
     get_rv_names
         Returns the names of the random variables.
 
-    has_event
-        Returns `True` is the distribution has `event` in the eventspace.
+    has_outcome
+        Returns `True` is the distribution has `outcome` in the sample space.
 
     is_dense
         Returns `True` if the distribution is dense.
@@ -479,10 +447,10 @@ class JointDistribution(Distribution):
         Returns a marginal distribution after marginalizing random variables.
 
     make_dense
-        Add all null events to the pmf.
+        Add all null outcomes to the pmf.
 
     make_sparse
-        Remove all null events from the pmf.
+        Remove all null outcomes from the pmf.
 
     normalize
         Normalizes the distribution.
@@ -502,19 +470,24 @@ class JointDistribution(Distribution):
     validate
         A method to validate that the distribution is valid.
 
+    zipped
+        Returns an iterator over (outcome, probability) tuples. The probability
+        could be a log probability or a linear probability.
+
     Implementation Notes
     --------------------
-    The events and pmf of the distribution are stored as a tuple and a NumPy
+    The outcomes and pmf of the distribution are stored as a tuple and a NumPy
     array.  The sequences can be either sparse or dense.  By sparse, we do not
     mean that the representation is a NumPy sparse array.  Rather, we mean that
-    the sequences need not contain every event in the eventspace. The order of
-    the events and probabilities will always match the order of the eventspace,
-    even though their length might not equal the length of the eventspace.
+    the sequences need not contain every outcome in the sample space. The order
+    of the outcomes and probabilities will always match the order of the sample
+    space, even though their length might not equal the length of the sample
+    space.
 
     """
     _alphabet_set = None
-    _event_class = None
-    _events_index = None
+    _outcome_class = None
+    _outcomes_index = None
     _mask = None # Not initialize-able
     _meta = {
         'is_joint': True,
@@ -526,12 +499,12 @@ class JointDistribution(Distribution):
     _rv_map = None # Not initialize-able
 
     alphabet = None
-    events = None
+    outcomes = None
     ops = None
     pmf = None
     prng = None
 
-    def __init__(self, pmf, events=None, alphabet=None, base=None,
+    def __init__(self, pmf, outcomes=None, alphabet=None, base=None,
                             sort=True, sparse=True, validate=True):
         """
         Initialize the distribution.
@@ -539,26 +512,26 @@ class JointDistribution(Distribution):
         Parameters
         ----------
         pmf : sequence, dict
-            The event probabilities or log probabilities. If `pmf` is a
-            dictionary, then the keys are used as `events`, and the values of
+            The outcome probabilities or log probabilities. If `pmf` is a
+            dictionary, then the keys are used as `outcomes`, and the values of
             the dictionary are used as `pmf` instead.  The keys take precedence
-            over any specification of them via `events`.
+            over any specification of them via `outcomes`.
 
-        events : sequence
-            The events of the distribution. If specified, then its length must
-            equal the length of `pmf`.  If `None`, then the events must be
-            obtainable from `pmf`, otherwise an exception will be raised.
-            Events must be hashable, orderable, sized, iterable containers.
-            The length of an event must be the same for all events, and every
-            event must be of the same type.
+        outcomes : sequence
+            The outcomes of the distribution. If specified, then its length
+            must equal the length of `pmf`.  If `None`, then the outcomes must
+            be obtainable from `pmf`, otherwise an exception will be raised.
+            Outcomes must be hashable, orderable, sized, iterable containers
+            that are not `None`. The length of an outcome must be the same for
+            all outcomes, and every outcome must be of the same type.
 
         alphabet : sequence
             A sequence representing the alphabet of the joint random variable.
             The elements of the sequence are tuples, each of which represents
             the ordered alphabet for a single random variable. The Cartesian
-            product of these alphabets defines the eventspace. The order of the
-            alphabets and the order within each alphabet is important. If
-            `None`, the value of `events` is used to determine the alphabet.
+            product of these alphabets defines the sample space. The order of
+            the alphabets and the order within each alphabet is important. If
+            `None`, the value of `outcomes` is used to determine the alphabet.
 
         base : float, None
             If `pmf` specifies log probabilities, then `base` should specify
@@ -569,17 +542,17 @@ class JointDistribution(Distribution):
         sort : bool
             If `True`, then each random variable's alphabets are sorted.
             Usually, this is desirable, as it normalizes the behavior of
-            distributions which have the same eventspaces (when considered as
+            distributions which have the same sample spaces (when considered as
             a set).  NOte that addition and multiplication of distributions is
-            defined only if the eventspaces are equal.
+            defined only if the sample spaces are equal.
 
         sparse : bool
-            Specifies the form of the pmf.  If `True`, then `events` and `pmf`
-            will only contain entries for non-null events and probabilities,
+            Specifies the form of the pmf.  If `True`, then `outcomes` and `pmf`
+            will only contain entries for non-null outcomes and probabilities,
             after initialization.  The order of these entries will always obey
-            the order of `eventspace`, even if their number is not equal to the
-            size of the eventspace.  If `False`, then the pmf will be dense and
-            every event in the eventspace will be represented.
+            the order of `sample_space`, even if their number is not equal to
+            the size of the sample space.  If `False`, then the pmf will be
+            dense and every outcome in the sample space will be represented.
 
         validate : bool
             If `True`, then validate the distribution.  If `False`, then assume
@@ -588,8 +561,8 @@ class JointDistribution(Distribution):
         Raises
         ------
         InvalidDistribution
-            If the length of `values` and `events` are unequal.
-            If no events can be obtained from `pmf` and `events` is `None`.
+            If the length of `values` and `outcomes` are unequal.
+            If no outcomes can be obtained from `pmf` and `outcomes` is `None`.
 
         See :meth:`validate` for a list of other potential exceptions.
 
@@ -598,22 +571,23 @@ class JointDistribution(Distribution):
         # We want to call BaseDistribution.__init__
         super(Distribution, self).__init__()
 
-        pmf, events, alphabet = self._init(pmf, events, alphabet, base)
+        pmf, outcomes, alphabet = self._init(pmf, outcomes, alphabet, base)
 
-        # Sort everything to match the order of the eventspace.
+        # Sort everything to match the order of the sample space.
         if sort:
             alphabet = map(sorted, alphabet)
             alphabet = map(tuple, alphabet)
-            pmf, events, index = reorder(pmf, events, alphabet, self._product)
+            pmf, outcomes, index = reorder(pmf, outcomes,
+                                           alphabet, self._product)
         else:
-            index = dict(zip(events, range(len(events))))
+            index = dict(zip(outcomes, range(len(outcomes))))
 
         # Force the distribution to be numerical and a NumPy array.
         self.pmf = np.asarray(pmf, dtype=float)
 
-        # Tuple events, and an index.
-        self.events = tuple(events)
-        self._events_index = index
+        # Tuple outcomes, and an index.
+        self.outcomes = tuple(outcomes)
+        self._outcomes_index = index
 
         # Tuple alphabet and its set.
         self.alphabet = tuple(alphabet)
@@ -634,22 +608,23 @@ class JointDistribution(Distribution):
         if validate:
             self.validate()
 
-    def _init(self, pmf, events, alphabet, base):
+    def _init(self, pmf, outcomes, alphabet, base):
         """
         The barebones initialization.
 
         """
         def construct_alphabet(evts):
             if len(evts) == 0:
-                msg = '`events` cannot have zero length if `alphabet` is `None`'
+                msg = '`outcomes` cannot have zero length if '
+                msg += '`alphabet` is `None`'
                 raise InvalidDistribution(msg)
 
-            # The event length.
-            self._event_class = evts[0].__class__
-            event_length = len(evts[0])
-            alpha = [set([]) for i in range(event_length)]
-            for event in evts:
-                for i,symbol in enumerate(event):
+            # The outcome length.
+            self._outcome_class = evts[0].__class__
+            outcome_length = len(evts[0])
+            alpha = [set([]) for i in range(outcome_length)]
+            for outcome in evts:
+                for i,symbol in enumerate(outcome):
                     alpha[i].add(symbol)
             alpha = map(tuple, alpha)
             return alpha
@@ -658,10 +633,10 @@ class JointDistribution(Distribution):
             # Attempt a conversion.
             d = pmf
 
-            events = d.events
+            outcomes = d.outcomes
             pmf = d.pmf
-            if len(events):
-                self._event_class = events[0].__class__
+            if len(outcomes):
+                self._outcome_class = outcomes[0].__class__
             if base is None:
                 # Allow the user to specify something strange if desired.
                 # Otherwise, use the existing base.
@@ -671,36 +646,36 @@ class JointDistribution(Distribution):
                     # This will always work.
                     alphabet = d.alphabet
                 else:
-                    # We will assume the events are valid joint events.
+                    # We will assume the outcomes are valid joint outcomes.
                     # But we must construct the alphabet.
-                    alphabet = construct_alphabet(events)
+                    alphabet = construct_alphabet(outcomes)
 
         else:
             ## pmf
-            # Attempt to grab events and pmf from a dictionary
+            # Attempt to grab outcomes and pmf from a dictionary
             try:
-                events_ = tuple(pmf.keys())
+                outcomes_ = tuple(pmf.keys())
                 pmf_ = tuple(pmf.values())
             except AttributeError:
                 pass
             else:
-                events = events_
+                outcomes = outcomes_
                 pmf = pmf_
 
-            ## events
-            if events is None:
-                msg = "`events` must be specified or obtainable from `pmf`."
+            ## outcomes
+            if outcomes is None:
+                msg = "`outcomes` must be specified or obtainable from `pmf`."
                 raise InvalidDistribution(msg)
-            elif len(pmf) != len(events):
-                msg = "Unequal lengths for `values` and `events`"
+            elif len(pmf) != len(outcomes):
+                msg = "Unequal lengths for `values` and `outcomes`"
                 raise InvalidDistribution(msg)
 
             ## alphabets
-            # Use events to obtain the alphabets.
+            # Use outcomes to obtain the alphabets.
             if alphabet is None:
-                alphabet = construct_alphabet(events)
-            elif len(events):
-                self._event_class = events[0].__class__
+                alphabet = construct_alphabet(outcomes)
+            elif len(outcomes):
+                self._outcome_class = outcomes[0].__class__
 
         # Determine if the pmf represents log probabilities or not.
         if base is None:
@@ -712,16 +687,16 @@ class JointDistribution(Distribution):
         self.ops = ops
 
         ## product
-        self._product = get_product_func(events)
+        self._product = get_product_func(outcomes)
 
-        return pmf, events, alphabet
+        return pmf, outcomes, alphabet
 
-    def _get_event_constructor(self):
+    def _get_outcome_constructor(self):
         """
-        Internal function to return the constructor for events.
+        Internal function to return the constructor for outcomes.
 
         """
-        c = self._event_class
+        c = self._outcome_class
 
         # Special cases
         if c == str:
@@ -729,76 +704,76 @@ class JointDistribution(Distribution):
 
         return c
 
-    def __setitem__(self, event, value):
+    def __setitem__(self, outcome, value):
         """
-        Sets the probability associated with `event`.
+        Sets the probability associated with `outcome`.
 
         Parameters
         ----------
-        event : event
-            Any hashable and equality comparable object in the eventspace.
-            If `event` does not exist in the eventspace, then an InvalidEvent
-            exception is raised.
+        outcome : outcome
+            Any hashable and equality comparable object in the sample space.
+            If `outcome` does not exist in the sample space, then an
+            InvalidOutcome exception is raised.
         value : float
-            The probability or log probability of the event.
+            The probability or log probability of the outcome.
 
         Returns
         -------
         p : float
-            The probability (or log probability) of the event.
+            The probability (or log probability) of the outcome.
 
         Raises
         ------
-        InvalidEvent
-            If `event` does not exist in the eventspace.
+        InvalidOutcome
+            If `outcome` does not exist in the sample space.
 
         Notes
         -----
-        Setting the value of the event never deletes the event, even if the
+        Setting the value of the outcome never deletes the outcome, even if the
         value is equal to the null probabilty. After a setting operation,
-        the event will always exist in `events` and `pmf`.
+        the outcome will always exist in `outcomes` and `pmf`.
 
         See Also
         --------
         __delitem__
 
         """
-        if self._event_class is None:
+        if self._outcome_class is None:
             # The first __setitem__ call from an empty distribution.
-            self._event_class = event.__class__
+            self._outcome_class = outcome.__class__
             # Reset the product function.
-            self._product = get_product_func([event])
-            self._mask = tuple(False for _ in range(self.event_length()))
+            self._product = get_product_func([outcome])
+            self._mask = tuple(False for _ in range(self.outcome_length()))
 
-        if not self.has_event(event, null=True):
-            raise InvalidEvent(event)
+        if not self.has_outcome(outcome, null=True):
+            raise InvalidOutcome(outcome)
 
-        idx = self._events_index.get(event, None)
-        new_event = idx is None
+        idx = self._outcomes_index.get(outcome, None)
+        new_outcome = idx is None
 
-        if not new_event:
+        if not new_outcome:
             # If the distribution is dense, we will be here.
             # We *could* delete if the value was zero, but we will make
             # setting always set, and deleting always deleting (when sparse).
             self.pmf[idx] = value
         else:
-            # A new event in a sparse distribution.
+            # A new outcome in a sparse distribution.
             # Sticking with the setting always setting...we add even if
             # the value is zero.
 
-            # 1. Add the new event and probability
-            self.events = self.events + (event,)
-            self._events_index[event] = len(self.events) - 1
+            # 1. Add the new outcome and probability
+            self.outcomes = self.outcomes + (outcome,)
+            self._outcomes_index[outcome] = len(self.outcomes) - 1
             pmf = [p for p in self.pmf] + [value]
 
             # 2. Reorder  ### This call is different from Distribution
-            pmf, events, index = reorder(pmf, self.events, self.alphabet,
-                                         self._product,
-                                         index=self._events_index)
+            pmf, outcomes, index = reorder(pmf, self.outcomes, self.alphabet,
+                                           self._product,
+                                           index=self._outcomes_index)
 
             # 3. Store
-            self.events = tuple(events)
-            self._events_index = index
+            self.outcomes = tuple(outcomes)
+            self._outcomes_index = index
             self.pmf = np.array(pmf, dtype=float)
 
     def coalesce(self, rvs, rv_names=True, extract=False):
@@ -821,7 +796,7 @@ class JointDistribution(Distribution):
             repeated random variables.
         extract : bool
             If the length of `rvs` is 1 and `extract` is `True`, then instead
-            of the new events being 1-tuples, we extract the sole element to
+            of the new outcomes being 1-tuples, we extract the sole element to
             create a joint distribution over the random variables in `rvs[0]`.
 
         Returns
@@ -832,9 +807,9 @@ class JointDistribution(Distribution):
         Examples
         --------
         If we have a joint distribution over 3 random variables such as:
-            Z = X,Y,Z
+            Z = (X,Y,Z)
         and would like a new joint distribution over 6 random variables:
-            Z = X,Y,Z,X,Y,Z
+            Z = (X,Y,Z,X,Y,Z)
         then this is achieved as:
             d.coalesce([[0,1,2,0,1,2]], extract=True)
 
@@ -845,13 +820,14 @@ class JointDistribution(Distribution):
 
         Notes
         -----
-        Generally, the events of the new distribution will be tuples instead
-        of matching the event class of the original distribution.  This is
-        because some event classes are not recursive containers.  For example,
+        Generally, the outcomes of the new distribution will be tuples instead
+        of matching the outcome class of the original distribution. This is
+        because some outcome classes are not recursive containers. For example,
         one cannot have a string of strings where each string consists of more
-        than one character.  However, it is perfectly valid to have a tuple of
-        tuples.  The elements within each tuple of the new distribution will,
-        however, match the event class of the original distribution.
+        than one character. Note however, that it is perfectly valid to have
+        a tuple of tuples. Either way, the elements within each tuple of the
+        new distribution will still match the outcome class of the original
+        distribution.
 
         See Also
         --------
@@ -865,22 +841,25 @@ class JointDistribution(Distribution):
                                                 unique=False, sort=False)[1]
         indexes = [parse(rv) for rv in rvs]
 
-        # Determine how new events are constructed.
+        # Determine how new outcomes are constructed.
         if len(rvs) == 1 and extract:
             ctor_o = lambda x: x[0]
         else:
             ctor_o = tuple
-        # Determine how elements of new events are constructed.
-        ctor_i = self._get_event_constructor()
+        # Determine how elements of new outcomes are constructed.
+        ctor_i = self._get_outcome_constructor()
 
         # Build the distribution.
         factory = lambda : array('d')
         d = defaultdict(factory)
-        for event, p in self.eventprobs():
-            c_event = ctor_o([ctor_i([event[i] for i in rv]) for rv in indexes])
-            d[c_event].append(p)
+        for outcome, p in self.zipped():
+            # Build a list of inner outcomes.
+            c_outcome = [ctor_i([outcome[i] for i in rv]) for rv in indexes]
+            # Build the outer outcome from the inner outcomes.
+            c_outcome = ctor_o( c_outcome )
+            d[c_outcome].append(p)
 
-        events = tuple(d.keys())
+        outcomes = tuple(d.keys())
         pmf = map(np.frombuffer, d.values())
         pmf = map(self.ops.add_reduce, pmf)
 
@@ -889,12 +868,13 @@ class JointDistribution(Distribution):
             alphabet = [self.alphabet[i] for i in indexes[0]]
         else:
             # Each rv is a Cartesian product of original random variables.
-            # So we want to use the distributions customized product to create
-            # all possible events. This will be the alphabet for each rv.
+            # So we want to use the distribution's customized product function
+            # to create all possible outcomes. This will define the alphabet
+            # for each random variable.
             alphabet = [tuple(self._product(*[self.alphabet[i] for i in index]))
                         for index in indexes]
 
-        d = JointDistribution(pmf, events,
+        d = JointDistribution(pmf, outcomes,
                               alphabet=alphabet,
                               base=self.get_base(),
                               sort=True,
@@ -916,7 +896,7 @@ class JointDistribution(Distribution):
         """
         from copy import deepcopy
         d = _make_distribution(pmf=np.array(self.pmf, copy=True),
-                               events=deepcopy(self.events),
+                               outcomes=deepcopy(self.outcomes),
                                alphabet=deepcopy(self.alphabet),
                                base=self.ops.base,
                                sparse=self._meta['is_sparse'])
@@ -927,9 +907,9 @@ class JointDistribution(Distribution):
 
         return d
 
-    def event_length(self, masked=False):
+    def outcome_length(self, masked=False):
         """
-        Returns the length of events in the joint distribution.
+        Returns the length of outcomes in the joint distribution.
 
         This is also equal to the number of random variables in the joint
         distribution. This value is fixed once the distribution is initialized.
@@ -937,21 +917,23 @@ class JointDistribution(Distribution):
         Parameters
         ----------
         masked : bool
-            If `True`, then the event length additionally includes masked
-            random variables. If `False`, then the event length does not
+            If `True`, then the outcome length additionally includes masked
+            random variables. If `False`, then the outcome length does not
             include masked random variables. Including the masked random
-            variables is not usually helpful since that represents the event
+            variables is not usually helpful since that represents the outcome
             length of a different, unmarginalized distribution.
 
         """
         if masked:
-            return len(self.mask)
+            return len(self._mask)
         else:
+            # Equivalently: sum(self._mask)
+            # Recall, self.alphabet contains only the relevant/valid rvs.
             return len(self.alphabet)
 
-    def eventspace(self):
+    def sample_space(self):
         """
-        Returns an iterator over the ordered event space.
+        Returns an iterator over the ordered outcome space.
 
         """
         return self._product(*self.alphabet)
@@ -963,8 +945,8 @@ class JointDistribution(Distribution):
         Returns
         -------
         rv_names : tuple
-            A tuple with length equal to the event length, containing the names
-            of the random variables in the distribution.
+            A tuple with length equal to the outcome length, containing the
+            names of the random variables in the distribution.
 
         """
         rv_names = [x for x in self._rvs.items()]
@@ -972,65 +954,65 @@ class JointDistribution(Distribution):
         rv_names = tuple(map(itemgetter(0), rv_names))
         return rv_names
 
-    def has_event(self, event, null=True):
+    def has_outcome(self, outcome, null=True):
         """
-        Returns `True` if `event` exists  in the eventspace.
+        Returns `True` if `outcome` exists  in the sample space.
 
-        Whether or not an event is in the eventspace is a separate question
-        from whether or not an event currently appears in the pmf.
+        Whether or not an outcome is in the sample space is a separate question
+        from whether or not an outcome currently appears in the pmf.
         See __contains__ for this latter question.
 
         Parameters
         ----------
-        event : event
-            The event to be tested.
+        outcome : outcome
+            The outcome to be tested.
         null : bool
-            Specifies if null events are acceptable.  If `True`, then null
-            events are acceptable.  Thus, the only requirement on `event` is
-            that it exist in the distribution's eventspace. If `False`, then
-            null events are not acceptable.  Thus, `event` must exist in the
-            distribution's eventspace and also correspond to be nonnull.
+            Specifies if null outcomes are acceptable.  If `True`, then null
+            outcomes are acceptable.  Thus, the only requirement on `outcome`
+            is that it exist in the distribution's sample space. If `False`,
+            then null outcomes are not acceptable.  Thus, `outcome` must exist
+            in the distribution's sample space and be a nonnull outcome.
 
         Notes
         -----
         This is an O(1) operation.
 
         """
-        # Make sure the event exists in the eventspace.
+        # Make sure the outcome exists in the sample space.
 
         # Note, it is not sufficient to test if each symbol exists in the
         # the alphabet for its corresponding random variable. The reason is
         # that, for example, '111' and ('1', '1', '1') would both be seen
-        # as valid.  Thus, we must also verify that the event's class
-        # matches that of the other event's classes.
+        # as valid.  Thus, we must also verify that the outcome's class
+        # matches that of the other outcome's classes.
 
-        # Make sure the event class is correct.
-        if event.__class__ != self._event_class:
+        # Make sure the outcome class is correct.
+        if outcome.__class__ != self._outcome_class:
             # This test works even when the distribution was initialized empty
-            # and _event_class is None. In that case, we don't know the event
-            # space (since we don't know the event class), and we should return
-            # False.
+            # and _outcome_class is None. In that case, we don't know the
+            # sample space (since we don't know the outcome class), and we
+            # should return False.
             return False
 
-        # Make sure event has the correct length.
-        if len(event) != self.event_length(masked=False):
+        # Make sure outcome has the correct length.
+        if len(outcome) != self.outcome_length(masked=False):
             return False
 
         if null:
-            # The event must only be valid.
+            # The outcome must only be valid.
 
             # Make sure each symbol exists in its corresponding alphabet.
             z = False
-            for symbol, alphabet in zip(event, self.alphabet):
+            for symbol, alphabet in zip(outcome, self.alphabet):
                 if symbol not in alphabet:
                     break
             else:
                 z = True
         else:
-            # The event must be valid and have positive probability.
+            # The outcome must be valid and have positive probability.
             try:
-                z = self[event] > self.ops.zero
-            except InvalidEvent:
+                z = self[outcome] > self.ops.zero
+            except InvalidOutcome:
                 z = False
 
         return z
@@ -1074,7 +1056,7 @@ class JointDistribution(Distribution):
         rvs, indexes = parse_rvs(self, rvs, rv_names, unique=True, sort=True)
 
         ## Eventually, add in a method specialized for dense distributions.
-        ## This one would work only with the pmf, and not the events.
+        ## This one would work only with the pmf, and not the outcomes.
 
         # Marginalization is a special case of coalescing where there is only
         # one new random variable and it is composed of a strict subset of
@@ -1095,7 +1077,7 @@ class JointDistribution(Distribution):
         d.set_rv_names(names)
 
         # Set the mask
-        L = self.event_length()
+        L = self.outcome_length()
         d._mask = tuple(False if i in indexes else True for i in range(L))
         return d
 
@@ -1121,7 +1103,7 @@ class JointDistribution(Distribution):
         """
         rvs, indexes = parse_rvs(self, rvs, rv_names)
         indexes = set(indexes)
-        all_indexes = range(self.event_length())
+        all_indexes = range(self.outcome_length())
         marginal_indexes = [i for i in all_indexes if i not in indexes]
         d = self.marginal(marginal_indexes, rv_names=False)
         return d
@@ -1133,19 +1115,19 @@ class JointDistribution(Distribution):
         Returns
         -------
         rv_names : tuple
-            A tuple with length equal to the event length, containing the names
-            of the random variables in the distribution.
+            A tuple with length equal to the outcome length, containing the
+            names of the random variables in the distribution.
 
         """
-        L = self.event_length()
+        L = self.outcome_length()
         if len(set(rv_names)) < L:
             raise ditException('Too few unique random variable names.')
         elif len(set(rv_names)) > L:
             raise ditException('Too many unique random variable names.')
         self._rvs = dict(zip(rv_names, range(L)))
 
-    def to_string(self, digits=None, exact=False, tol=1e-9, show_mask=False, 
-                        str_events=False):
+    def to_string(self, digits=None, exact=False, tol=1e-9, show_mask=False,
+                        str_outcomes=False):
         """
         Returns a string representation of the distribution.
 
@@ -1166,12 +1148,12 @@ class JointDistribution(Distribution):
             If `exact` is `True`, then the probabilities will be displayed
             as the closest rational fraction within `tol`.
         show_mask : bool
-            If `True`, show the events in the proper context. Thus, masked
+            If `True`, show the outcomes in the proper context. Thus, masked
             and unmasked random variables are shown. If `show_mask` is anything
             other than `True` or `False`, it is used as the wildcard symbol.
-        str_events
-            If `True`, then attempt to convert events which are tuples to just
-            strings.  This is just a dislplay technique.
+        str_outcomes
+            If `True`, then attempt to convert outcomes which are tuples to
+            just strings.  This is just a dislplay technique.
 
         Returns
         -------
@@ -1186,14 +1168,14 @@ class JointDistribution(Distribution):
 
         s = StringIO()
 
-        x = prepare_string(self, digits, exact, tol, show_mask, str_events)
-        pmf, events, base, colsep, max_length, pstr = x
+        x = prepare_string(self, digits, exact, tol, show_mask, str_outcomes)
+        pmf, outcomes, base, colsep, max_length, pstr = x
 
         headers = ["Class",
                    "Alphabet",
                    "Base",
-                   "Event Class",
-                   "Event Length"]
+                   "Outcome Class",
+                   "Outcome Length"]
 
         vals = []
 
@@ -1210,19 +1192,20 @@ class JointDistribution(Distribution):
         # Base
         vals.append(base)
 
-        # Event class
-        event_class = self._event_class
-        if event_class is not None:
-            event_class = event_class.__name__
-        vals.append(event_class)
+        # Outcome class
+        outcome_class = self._outcome_class
+        if outcome_class is not None:
+            outcome_class = outcome_class.__name__
+        vals.append(outcome_class)
 
-        # Event length
+        # Outcome length
         if show_mask:
-            event_length = "{0} (in context, {1})".format(self.event_length(),
-                                                         len(self._mask))
+            outcome_length = "{0} (mask: {1})"
+            outcome_length = outcome_length.format(self.outcome_length(),
+                                                   len(self._mask))
         else:
-            event_length = str(self.event_length())
-        vals.append(event_length)
+            outcome_length = str(self.outcome_length())
+        vals.append(outcome_length)
 
         # Info
         L = max(map(len,headers))
@@ -1232,8 +1215,8 @@ class JointDistribution(Distribution):
 
         # Distribution
         s.write(''.join([ 'x'.ljust(max_length), colsep, pstr, "\n" ]))
-        for e,p in izip(events, pmf):
-            s.write(''.join( [e.ljust(max_length), colsep, str(p), "\n"] ))
+        for o,p in izip(outcomes, pmf):
+            s.write(''.join( [o.ljust(max_length), colsep, str(p), "\n"] ))
         s.seek(0)
 
         s = s.read()

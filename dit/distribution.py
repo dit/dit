@@ -4,22 +4,33 @@
 """
 Module defining base distribution class.
 
+The set of all possible outcomes is known as the sample space. An element of
+the sample space is known as an outcome or sample. Ambiguously, "sample" is
+also used to refer to a sequence of outcomes. For example, we often speak
+about the "sample size".  In general, `dit` will tend to use the term "outcome"
+over "sample".  The main exception will be that we still refer to the "sample
+space", instead of the "outcome space", as this is mostly a universal standard.
 
-Definitions
------------
-See http://docs.python.org/3/library/collections.abc.html#collections-abstract-base-classes
+Recall that an event is a subset of outcomes from the sample space. In `dit`
+distributions are specified by assigning probabilities to each outcome
+of the sample space.  This corresponds to assigning probabilities to each of
+the singleton events. Queries to the distribution using the [] operator return
+the probability of an outcome---it is not necessary to pass the outcome in as
+a singleton event.  Event probabilities are obtained through the
+`event_probability` method. There is a corresponding `outcome_probability`
+method as well.
 
-A sequence is a sized, iterable container.
+`None` is not an allowable outcome.  `dit` uses `None` to signify that an
+outcome does not exist in the sample space.  We do not enforce this rule.
+Rather, things will probably just break.
 
-`None` is not a valid event, as it is used by dit to signify that an event
-was not found in the list of events.  This is not enforced in the data
-structures---things will simply not work as expected.
+The most basic type of outcome must be: hashable and equality comparable.
+If the distribution's sample space is to be ordered, then the outcomes must
+also be orderable.
 
-The most basic type of event must be: hashable and equality comparable. If the
-distribution's eventspace is to be ordered, then the events must also be
-orderable.
-
-The joint event type must be: hashable, orderable, and a sequence.
+Joint outcomes must be: hashable, orderable, and also a sequence.
+Recall, a sequence is a sized, iterable container. See:
+http://docs.python.org/3/library/collections.abc.html#collections-abstract-base-classes
 
 """
 from __future__ import print_function
@@ -33,12 +44,12 @@ from .math import close, prng, approximate_fraction
 from .exceptions import (
     ditException,
     InvalidBase,
-    InvalidEvent,
-    InvalidNormalization
+    InvalidNormalization,
+    InvalidOutcome,
 )
 
 def prepare_string(dist, digits=None, exact=False, tol=1e-9,
-                         show_mask=False, str_events=False):
+                         show_mask=False, str_outcomes=False):
     """
     Prepares a distribution for a string representation.
 
@@ -60,30 +71,31 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9,
     tol : float
         If `exact` is `True`, then the probabilities will be displayed
         as the closest rational fraction within `tol`.
-    str_events
-        If `True`, then attempt to convert events which are tuples to just
-        strings.  This is just a dislplay technique.
+    str_outcomes
+        If `True`, then attempt to convert outcomes which are tuples to just
+        strings.  This is only a dislplay technique.
 
     Returns
     -------
     pmf : sequence
         The formatted pmf.  This could be a NumPy array (possibly rounded)
         or a list of Fraction instances.
-    event : sequence
-        The formated events.
+    outcomes : sequence
+        The formated outcomes.
     base : str or float
         The base of the formatted pmf.
     colsep : str
         The column separation for printing.
     max_length : int
-        The maximum length of the events, as strings.
+        The length of the largest outcome, as a string.
     pstr : str
-        A string representing the probabilit of an event: 'p(x)' or 'log p(x)'.
+        A informative string representing the probability of an outcome.
+        This will be 'p(x)' xor 'log p(x)'.
 
     """
     colsep = '   '
 
-    # Create events with wildcards, if desired and possible.
+    # Create outcomes with wildcards, if desired and possible.
     if show_mask:
         if not dist.is_joint():
             msg = '`show_mask` can be `True` only for joint distributions'
@@ -94,12 +106,12 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9,
         else:
             wc = '*'
 
-        ctor = dist._get_event_constructor()
+        ctor = dist._get_outcome_constructor()
         is_masked = dict(zip(range(len(dist._mask)), dist._mask))
 
-        def eventwc(event):
+        def outcome_wc(outcome):
             """
-            Builds the wildcarded event.
+            Builds the wildcarded outcome.
 
             """
             i = 0
@@ -108,32 +120,32 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9,
                 if is_masked:
                     symbol = wc
                 else:
-                    symbol = event[i]
+                    symbol = outcome[i]
                     i += 1
                 e.append(symbol)
 
             e = ctor(e)
             return e
-        events = map(eventwc, dist.events)
+        outcomes = map(outcome_wc, dist.outcomes)
     else:
-        events = dist.events
+        outcomes = dist.outcomes
 
-    # Convert events to strings, if desire and possible.
-    if str_events:
+    # Convert outcomes to strings, if desire and possible.
+    if str_outcomes:
         if not dist.is_joint():
-            msg = '`str_events` can be `True` only for joint distributions'
+            msg = '`str_outcomes` can be `True` only for joint distributions'
             raise ditException(msg)
 
         try:
-            events = [map(str, event) for event in events]
-            events = map(lambda e: ''.join(e), events)
+            outcomes = [map(str, outcome) for outcome in outcomes]
+            outcomes = map(lambda o: ''.join(o), outcomes)
         except:
-            events = map(str, events)
+            outcomes = map(str, outcomes)
     else:
-        events = map(str, events)
+        outcomes = map(str, outcomes)
 
-    if len(events):
-        max_length = max(map(len, events))
+    if len(outcomes):
+        max_length = max(map(len, outcomes))
     else:
         max_length = 0
 
@@ -162,16 +174,17 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9,
 
     base = d.get_base()
 
-    return pmf, events, base, colsep, max_length, pstr
+    return pmf, outcomes, base, colsep, max_length, pstr
 
 
 class BaseDistribution(object):
     """
     The base class for all "distribution" classes.
 
-    Generally, distributions are mutuable in that the events and probabilities
-    can be changed from zero to nonzero and back again. However, the eventspace
-    is not mutable and must remain fixed over the lifetime of the distribution.
+    Generally, distributions are mutuable in that the outcomes and probabilities
+    can be changed from zero to nonzero and back again. However, the sample
+    space is not mutable and must remain fixed over the lifetime of the
+    distribution.
 
     Meta Properties
     ---------------
@@ -189,8 +202,8 @@ class BaseDistribution(object):
 
     Public Attributes
     -----------------
-    events : tuple
-        The events of the probability distribution.
+    outcomes : tuple
+        The outcomes of the probability distribution.
 
     ops : Operations instance
         A class which manages addition and multiplication operations for log
@@ -198,7 +211,7 @@ class BaseDistribution(object):
 
     pmf : array-like
         The probability mass function for the distribution.  The elements of
-        this array are in a one-to-one correspondence with those in `events`.
+        this array are in a one-to-one correspondence with those in `outcomes`.
 
     prng : RandomState
         A pseudo-random number generator with a `rand` method which can
@@ -211,18 +224,14 @@ class BaseDistribution(object):
     copy
         Returns a deep copy of the distribution.
 
-    eventprobs
-        Returns an iterator over (event, probability) tuples.  The probability
-        could be a log probability or a linear probability.
-
-    eventspace
-        Returns an iterator over the events in the eventspace.
+    sample_space
+        Returns an iterator over the outcomes in the sample space.
 
     get_base
         Returns the base of the distribution.
 
-    has_event
-        Returns `True` is the distribution has `event` in the eventspace.
+    has_outcome
+        Returns `True` is the distribution has `outcome` in the sample space.
 
     is_approx_equal
         Returns `True` if the distribution is approximately equal to another
@@ -240,8 +249,8 @@ class BaseDistribution(object):
     normalize
         Normalizes the distribution.
 
-    sample
-        Returns a sample from the distribution.
+    rand
+        Returns a random draw from the distribution.
 
     set_base
         Changes the base of the distribution, in-place.
@@ -252,6 +261,10 @@ class BaseDistribution(object):
     validate
         A method to validate that the distribution is valid.
 
+    zipped
+        Returns an iterator over (outcome, probability) tuples. The probability
+        could be a log probability or a linear probability.
+
     """
     # Subclasses should update these meta attributes *before* calling the base
     # distribution's __init__ function.
@@ -261,7 +274,7 @@ class BaseDistribution(object):
     }
 
     # These should be set in the subclass's init function.
-    events = None
+    outcomes = None
     ops = None
     pmf = None
     prng = None
@@ -276,35 +289,35 @@ class BaseDistribution(object):
         # is desired, the user can change the prng manually.
         self.prng = prng
 
-    def __contains__(self, event):
+    def __contains__(self, outcome):
         raise NotImplementedError
 
-    def __delitem__(self, event):
+    def __delitem__(self, outcome):
         raise NotImplementedError
 
-    def __getitem__(self, event):
+    def __getitem__(self, outcome):
         raise NotImplementedError
 
     def __iter__(self):
         """
-        Returns an iterator over the non-null events in the distribution.
+        Returns an iterator over the non-null outcomes in the distribution.
 
         """
-        return iter(self.events)
+        return iter(self.outcomes)
 
     def __len__(self):
         """
-        Returns the number of events in the distribution's pmf.
+        Returns the number of outcomes in the distribution's pmf.
 
         """
-        return len(self.events)
+        return len(self.outcomes)
 
     def __reversed__(self):
         """
-        Returns a reverse iterator over the non-null events.
+        Returns a reverse iterator over the non-null outcomes.
 
         """
-        return reversed(self.events)
+        return reversed(self.outcomes)
 
     def __setitem__(self, key, value):
         raise NotImplementedError
@@ -316,30 +329,30 @@ class BaseDistribution(object):
         """
         return self.to_string()
 
-    def _validate_events(self):
+    def _validate_outcomes(self):
         """
-        Returns `True` if the events are in the event space.
+        Returns `True` if the outcomes are in the sample space.
 
         Returns
         -------
         v : bool
-            `True` if the events are in the event space.
+            `True` if the outcomes are in the sample space.
 
         Raises
         ------
-        InvalidEvent
-            When an event is not in the event space.
+        InvalidOutcome
+            When an outcome is not in the sasmple space.
 
         """
-        # Make sure the events are in the event space.
-        events = set(self.events)
-        eventspace = set(self.eventspace())
-        bad = events.difference(eventspace)
+        # Make sure the outcomes are in the outcome space.
+        outcomes = set(self.outcomes)
+        sample_space = set(self.sample_space())
+        bad = outcomes.difference(sample_space)
         L = len(bad)
         if L == 1:
-            raise InvalidEvent(bad, single=True)
+            raise InvalidOutcome(bad, single=True)
         elif L:
-            raise InvalidEvent(bad, single=False)
+            raise InvalidOutcome(bad, single=False)
 
         return True
 
@@ -376,16 +389,9 @@ class BaseDistribution(object):
         """
         raise NotImplementedError
 
-    def eventprobs(self):
+    def sample_space(self):
         """
-        Returns an iterator over (event, probability) tuples.
-
-        """
-        return izip(self.events, self.pmf)
-
-    def eventspace(self):
-        """
-        Returns an iterator over the ordered event space.
+        Returns an iterator over the ordered sample space.
 
         """
         raise NotImplementedError
@@ -401,9 +407,9 @@ class BaseDistribution(object):
         """
         return self.ops.base
 
-    def has_event(self, event, null=True):
+    def has_outcome(self, outcome, null=True):
         """
-        Returns `True` if `event` is a valid event (exists in the eventspace).
+        Returns `True` if `outcome` exists in the sample space).
 
         """
         raise NotImplementedError
@@ -452,9 +458,9 @@ class BaseDistribution(object):
         """
         raise NotImplementedError
 
-    def sample(self, size=None, rand=None, prng=None):
+    def rand(self, size=None, rand=None, prng=None):
         """
-        Returns a sample from a discrete distribution.
+        Returns a random sample from the distribution.
 
         Parameters
         ----------
@@ -539,7 +545,7 @@ class BaseDistribution(object):
         s = StringIO()
 
         x = prepare_string(self, digits, exact, tol)
-        pmf, events, base, colsep, max_length, pstr = x
+        pmf, outcomes, base, colsep, max_length, pstr = x
 
         headers = ["Class: ",
                    "Alphabet: ",
@@ -554,8 +560,8 @@ class BaseDistribution(object):
         s.write("\n")
 
         s.write(''.join([ 'x'.ljust(max_length), colsep, pstr, "\n" ]))
-        for e,p in izip(events, pmf):
-            s.write(''.join( [e.ljust(max_length), colsep, str(p), "\n"] ))
+        for o,p in izip(outcomes, pmf):
+            s.write(''.join( [o.ljust(max_length), colsep, str(p), "\n"] ))
 
         s.seek(0)
         s = s.read()
@@ -572,8 +578,8 @@ class BaseDistribution(object):
 
         Parameters
         ----------
-        events : bool
-            If `True` verify that every event exists in the event space.
+        outcomes : bool
+            If `True` verify that every outcome exists in the outcome space.
             This is a sanity check on the data structure.
 
         norm : bool
@@ -586,14 +592,14 @@ class BaseDistribution(object):
 
         Raises
         ------
-        InvalidEvent
-            Raised if an event is not in the event space.
+        Invalidoutcome
+            Raised if an outcome is not in the outcome space.
         InvalidNormalization
             Raised if the distribution is improperly normalized.
 
         """
         mapping = {
-            'events': '_validate_events',
+            'outcomes': '_validate_outcomes',
             'norm': '_validate_normalization',
         }
         for kw, method in mapping.iteritems():
@@ -602,6 +608,13 @@ class BaseDistribution(object):
                 getattr(self, method)()
 
         return True
+
+    def zipped(self):
+        """
+        Returns an iterator over (outcome, probability) tuples.
+
+        """
+        return izip(self.outcomes, self.pmf)
 
     ### We choose to implement only scalar multiplication and distribution
     ### addition, as they will be useful for constructing convex combinations.
@@ -613,7 +626,7 @@ class BaseDistribution(object):
         Addition of distributions of the same kind.
 
         The other distribution must have the same meta information and the
-        same eventspace.  If not, raise an exception.
+        same sample space.  If not, raise an exception.
 
         """
         raise NotImplementedError
