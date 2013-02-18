@@ -20,9 +20,10 @@ __all__ = ('Property',
            'is_string_like',
            'len_cmp',
            'partition_set',
+           'powerset',
+           'product_maker',
            'require_keys',
            'str_product',
-           'product_maker',
            'xzip')
 
 def Property( fcn ):
@@ -170,48 +171,7 @@ def is_string_like(obj):
     except (TypeError, ValueError):
         return False
     return True
-   
-def require_keys(keys, dikt):
-    """Verifies that keys appear in the specified dictionary.
 
-    Parameters
-    ----------
-    keys : list of str
-        List of required keys.
-
-    dikt : dict
-        The dictionary that is checked for keys.
-
-    Returns
-    -------
-    None
-
-    Raises
-    ------
-    Exception
-        Raised when a required key is not present.
-
-    """
-    dikt_keys = set(dikt)
-    for key in keys:
-        if key not in dikt_keys:
-           msg = "'%s' is required." % (key,)
-           raise Exception(msg)
-
-def xzip(*args):
-    """This is just like the zip function, except it is a generator.
-    
-    list(xzip(seq1 [, seq2 [...]])) -> [(seq1[0], seq2[0] ...), (...)]
-    
-    Return a list of tuples, where each tuple contains the i-th element
-    from each of the argument sequences.  The returned list is truncated
-    in length to the length of the shortest argument sequence.
-
-    """
-    iters = [iter(a) for a in args]
-    while 1:
-        yield tuple([i.next() for i in iters])
-    
 def len_cmp(x,y):
     """A comparison function which sorts shorter objects first."""
     lenx, leny = len(x), len(y)
@@ -221,7 +181,7 @@ def len_cmp(x,y):
         return 1
     else:
         return cmp(x,y)
-    
+
 def partition_set(elements, relation=None, innerset=False, reflexive=False, transitive=False):
     """Returns the equivlence classes from `elements`.
 
@@ -272,7 +232,7 @@ def partition_set(elements, relation=None, innerset=False, reflexive=False, tran
     if relation is None:
         from operator import eq
         relation = eq
-        
+
     lookup = []
     if reflexive and transitive:
         eqclasses = []
@@ -289,7 +249,7 @@ def partition_set(elements, relation=None, innerset=False, reflexive=False, tran
 
 
         eqclasses = [c for r,c in eqclasses]
-        
+
     else:
         def belongs(element, eqclass):
             for representative in eqclass:
@@ -303,10 +263,10 @@ def partition_set(elements, relation=None, innerset=False, reflexive=False, tran
                 else:
                     # Test against all members
                     continue
-                    
+
             # Then it equals all memembers symmetrically.
             return True
-            
+
         eqclasses = []
         for element_idx, element in enumerate(elements):
             for eqclass_idx, eqclass in enumerate(eqclasses):
@@ -319,13 +279,22 @@ def partition_set(elements, relation=None, innerset=False, reflexive=False, tran
                 lookup.append(len(eqclasses))
                 eqclasses.append([element])
 
-    
+
     if innerset:
         eqclasses = [frozenset(c) for c in eqclasses]
     else:
         eqclasses = [tuple(c) for c in eqclasses]
 
     return eqclasses, lookup
+
+def powerset(iterable):
+    """
+    powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)
+
+    """
+    from itertools import chain, combinations
+    s = list(iterable)
+    return chain.from_iterable(combinations(s, r) for r in range(len(s)+1))
 
 def product_maker(func):
     """
@@ -355,3 +324,43 @@ def product_maker(func):
 
 str_product = product_maker(''.join)
 
+def require_keys(keys, dikt):
+    """Verifies that keys appear in the specified dictionary.
+
+    Parameters
+    ----------
+    keys : list of str
+        List of required keys.
+
+    dikt : dict
+        The dictionary that is checked for keys.
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    Exception
+        Raised when a required key is not present.
+
+    """
+    dikt_keys = set(dikt)
+    for key in keys:
+        if key not in dikt_keys:
+           msg = "'%s' is required." % (key,)
+           raise Exception(msg)
+
+def xzip(*args):
+    """This is just like the zip function, except it is a generator.
+
+    list(xzip(seq1 [, seq2 [...]])) -> [(seq1[0], seq2[0] ...), (...)]
+
+    Return a list of tuples, where each tuple contains the i-th element
+    from each of the argument sequences.  The returned list is truncated
+    in length to the length of the shortest argument sequence.
+
+    """
+    iters = [iter(a) for a in args]
+    while 1:
+        yield tuple([i.next() for i in iters])

@@ -389,12 +389,35 @@ class BaseDistribution(object):
         """
         raise NotImplementedError
 
-    def sample_space(self):
+
+    def event_probability(self, event):
         """
-        Returns an iterator over the ordered sample space.
+        Returns the probability of an event.
+
+        Parameters
+        ----------
+        event : iterable
+            Any subset of outcomes from the sample space.
+
+        Returns
+        -------
+        p : float
+            The probability of the event.
 
         """
-        raise NotImplementedError
+        pvals = np.array([self[o] for o in event], dtype=float)
+        p = self.ops.add_reduce(pvals)
+        return p
+
+    def event_space(self):
+        """
+        Returns a generator over the event space.
+
+        The event space is the powerset of the sample space.
+
+        """
+        from dit.utils import powerset
+        return powerset( list(self.sample_space()) )
 
     def get_base(self):
         """
@@ -489,6 +512,13 @@ class BaseDistribution(object):
         import dit.math
         s = dit.math.sample(self, size, rand, prng)
         return s
+
+    def sample_space(self):
+        """
+        Returns an iterator over the ordered sample space.
+
+        """
+        raise NotImplementedError
 
     def set_base(self, base):
         """
