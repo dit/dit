@@ -975,7 +975,7 @@ class JointDistribution(Distribution):
 
         Notes
         -----
-        This is an O(1) operation.
+        This is an O( len(outcome) ) operation.
 
         """
         # Make sure the outcome exists in the sample space.

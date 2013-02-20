@@ -344,17 +344,9 @@ class BaseDistribution(object):
             When an outcome is not in the sasmple space.
 
         """
-        # Make sure the outcomes are in the outcome space.
-        outcomes = set(self.outcomes)
-        sample_space = set(self.sample_space())
-        bad = outcomes.difference(sample_space)
-        L = len(bad)
-        if L == 1:
-            raise InvalidOutcome(bad, single=True)
-        elif L:
-            raise InvalidOutcome(bad, single=False)
-
-        return True
+        from .validate import validate_outcomes
+        v = validate_outcomes(self.outcomes, self.sample_space())
+        return v
 
     def _validate_normalization(self):
         """
@@ -371,16 +363,9 @@ class BaseDistribution(object):
             When the distribution is not properly normalized.
 
         """
-        # log_func is the identity function for non-log distributions.
-        log = self.ops.log
-        one = self.ops.one
-
-        # Make sure the distribution is normalized properly.
-        total = self.ops.add_reduce( self.pmf )
-        if not close(total, one):
-            raise InvalidNormalization(total)
-
-        return True
+        from .validate import validate_normalization
+        v = validate_normalization(self.pmf, self.ops)
+        return v
 
     def copy(self):
         """
@@ -405,7 +390,7 @@ class BaseDistribution(object):
             The probability of the event.
 
         """
-        pvals = np.array([self[o] for o in event], dtype=float)
+        pvals = np.array([self[o] for o in event], dtype=floats)
         p = self.ops.add_reduce(pvals)
         return p
 
@@ -419,7 +404,7 @@ class BaseDistribution(object):
         from dit.utils import powerset
         return powerset( list(self.sample_space()) )
 
-    def get_base(self):
+    def get_base(self, numerical=False):
         """
         Returns the base of the distribution.
 
@@ -427,8 +412,13 @@ class BaseDistribution(object):
         'linear' will be returned.  If the base of log probabilities is e,
         then the returned base could be the string 'e' or its numerical value.
 
+        Parameters
+        ----------
+        numerical : bool
+            If `True`, then if the base is 'e', it is returned as a float.
+
         """
-        return self.ops.base
+        return self.ops.get_base(numerical=numerical)
 
     def has_outcome(self, outcome, null=True):
         """

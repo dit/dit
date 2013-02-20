@@ -87,6 +87,24 @@ class Operations(object):
     base = None
     log = None
 
+    def get_base(self, numerical=False):
+        """
+        Returns the base in which operations take place.
+
+        For linear-based operations, the result is 'linear'.
+
+        Parameters
+        ----------
+        numerical : bool
+            If `True`, then if the base is 'e', it is returned as a float.
+
+        """
+        if numerical and self.base == 'e':
+            base = np.exp(1)
+        else:
+            base = self.base
+        return base
+
     def add(self, x, y):
         raise NotImplementedError
     def add_inplace(self, x, y):
@@ -279,6 +297,7 @@ class LogOperations(Operations):
         """
         self.base = base
         self.log = log_func(base)
+        # Note: When base < 1, zero == +inf. When base > 1, zero == -inf.
         self.one = self.log(1)
         self.zero = self.log(0)
 

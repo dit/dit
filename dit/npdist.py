@@ -389,7 +389,13 @@ class Distribution(BaseDistribution):
 
         # Determine if the pmf represents log probabilities or not.
         if base is None:
-            base = ditParams['base']
+            # Provide help for obvious case of linear probabilities.
+            from .validate import is_pmf
+            if is_pmf(np.asarray(pmf, dtype=float), LinearOperations()):
+                base = 'linear'
+            else:
+                base = ditParams['base']
+
         if base == 'linear':
             ops = LinearOperations()
         else:
@@ -856,7 +862,7 @@ class Distribution(BaseDistribution):
         L = len(self)
 
         if trim:
-            ### Use np.isclose() when it is available (NumPy 1.7)
+            ### TODO: Use np.isclose() when it is available (NumPy 1.7)
             zero = self.ops.zero
             outcomes = []
             pmf = []
@@ -929,18 +935,6 @@ class Distribution(BaseDistribution):
             When a value is not between 0 and 1, inclusive.
 
         """
-        one = self.ops.one
-        zero = self.ops.zero
-        pmf = self.pmf
-
-        # Make sure the values are in the correct range.
-        # Recall ops.zero = +inf for bases less than 1.
-        #        ops.zero = -inf for bases greater than 1.
-        too_low = pmf < min(zero, one)
-        too_high = pmf > max(zero, one)
-        if too_low.any() or too_high.any():
-            bad = pmf[ np.logical_or(too_low, too_high) ]
-            raise InvalidProbability( bad, ops=self.ops )
-
-        return True
-
+        from .validate import validate_probabilities
+        v = validate_probabilities(self.pmf, self.ops)
+        return v
