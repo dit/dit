@@ -19,6 +19,8 @@ __all__ = ('Property',
            'get_fobj',
            'is_string_like',
            'len_cmp',
+           'ordered_partitions',
+           'partitions',
            'partition_set',
            'powerset',
            'product_maker',
@@ -364,3 +366,131 @@ def xzip(*args):
     iters = [iter(a) for a in args]
     while 1:
         yield tuple([i.next() for i in iters])
+
+def partitions(set_):
+    """
+    Generates partitions of elements in `set_'.
+
+    For set_ = range(12), this finishes in 52.37 seconds.
+
+    """
+    # Thomas Dybdahl Ahle (https://github.com/thomasahle)
+    # Source: http://compprog.wordpress.com/2007/10/15/generating-the-partitions-of-a-set
+    if not set_:
+        yield ()
+        return
+    for i in xrange(2**len(set_) / 2):
+        parts = [set(), set()]
+        for item in set_:
+            parts[i&1].add(item)
+            i >>= 1
+        for b in partitions(parts[1]):
+            yield (parts[0],) + b
+
+
+def partitions(set_):
+    """
+    Generates partitions of elements in `set_'.
+
+    For set_ = range(12), this finishes in 52.37 seconds.
+
+    Yields tuples of sets.
+
+    """
+    # Thomas Dybdahl Ahle (https://github.com/thomasahle)
+    # Source: http://compprog.wordpress.com/2007/10/15/generating-the-partitions-of-a-set
+    if not set_:
+        yield ()
+        return
+    for i in xrange(2**len(set_) / 2):
+        parts = [set(), set()]
+        for item in set_:
+            parts[i&1].add(item)
+            i >>= 1
+        for b in partitions(parts[1]):
+            yield (parts[0],) + b
+
+
+def _partitions(n):
+    """
+    Generates all partitions of {1,...,n}.
+
+    For n=12, this finishes in 4.48 seconds.
+
+    """
+    # Original source: George Hutchinson [CACM 6 (1963), 613--614]
+    #
+    # This implementation is:
+    #    Algorithm H (Restricted growth strings in lexicographic order)
+    # from pages 416--417 of Knuth's The Art of Computer Programming, Vol 4A:
+    # Combinatorial Problems, Part 1. 1st Edition (2011).
+    # ISBN-13: 978-0-201-03804-0
+    # ISBN-10:     0-201-03804-8
+    #
+
+    # To maintain notation with Knuth, we ignore the first element of
+    # each array so that a[j] == a_j, b[j] == b_j for j = 1,...,n.
+
+    # H1 [Initialize.]
+    # Per above, make lists larger by one element to give 1-based indexing.
+    a = [0] * (n+1)
+    b = [1] * (n)
+    m = 1
+
+    while True:
+        # H2 [Visit.]
+        yield a[1:]
+        if a[n] == m:
+            # H4 [Find $j$.]
+            j = n - 1
+            while a[j] == b[j]:
+                j -= 1
+
+            # H5 [Increase $a_j$.]
+            if j == 1:
+                break
+            else:
+                a[j] += 1
+
+            # H6 [Zero out $a_{j+1} \ldots a_n$]
+            m = b[j]
+            if a[j] == b[j]: # Iverson braket
+                m += 1
+            j += 1
+            while j < n:
+                a[j] = 0
+                b[j] = m
+                j += 1
+            a[n] = 0
+
+        else:
+            # H3
+            a[n] += 1
+
+def ordered_partitions(set_, tuples=False):
+    """
+    Generates ordered partitions of elements in `set_`.
+
+    Yields tuples of sets.
+
+    """
+    from itertools import permutations
+
+    if tuples:
+        for partition in partitions(set_):
+            # Convert the partition into a list of sorted tuples.
+            partition = map(tuple, map(sorted, partition))
+
+            # Convert the partition into a sorted tuple of sorted tuples. Note:
+            # Since we are generating all permutations, and since the order
+            # from partitions() isn't really intuitive, we can skip the sorting
+            # step.
+            #partition = tuple(sorted(partition, cmp=len_cmp))
+
+            for perm in permutations(partition):
+                    yield perm
+    else:
+        for partition in partitions(set_):
+            for perm in permutations(partition):
+                    yield perm
+

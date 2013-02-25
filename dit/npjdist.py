@@ -79,8 +79,12 @@ def get_product_func(outcomes):
     else:
         outcome = outcomes[0]
         if isinstance(outcome, basestring):
+            # If outcomes are strings, then certainly marginal outcomes should
+            # be strings as well.
             product = str_product
         elif isinstance(outcome, tuple):
+            # If outcomes are tuples, then no modification after itertools
+            # is necessary.
             product = itertools.product
         else:
             # Assume the sequence-like constructor can handle tuples as input.
@@ -215,6 +219,8 @@ def _make_distribution(pmf, outcomes, alphabet=None, base=None, sparse=True):
         alphabet = map(tuple, alphabet)
 
     if len(outcomes):
+        # This is the class of the outcome, not what creates an outcome
+        # from a tuple---which is self._product.
         d._outcome_class = outcomes[0].__class__
 
     ## product
