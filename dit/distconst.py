@@ -136,30 +136,55 @@ def uniform_joint_distribution(word_length, alphabet_size):
     word_length : int
         The length of the outcomes.
 
-    alphabet_size : int, list
-        The alphabet used to construct the outcomes of the distribution. If an
-        integer, then the alphabet will consist of integers from 0 to k-1 where
-        k is the alphabet size.  If a list, then the elements are used as the
-        alphabet.
+    alphabet_size : int, list of lists
+        The alphabets used to construct the outcomes of the distribution. If an
+        integer, then the alphabet for each random variable will be the same,
+        consisting of integers from 0 to k-1 where k is the alphabet size.
+        If a list, then the elements are used as the alphabet for each random
+        variable.  If the list has a single element, then it will be used
+        as the alphabet for each random variable.
 
     Returns
     -------
     d : JointDistribution.
         A uniform joint distribution.
 
+    Examples
+    --------
+    Each random variable has the same standardized alphabet.
+    >>> d = dit.uniform_joint_distribution(2, 2)
+
+    Each random variable has its own alphabet.
+    >>> d = dit.uniform_joint_distribution(2, [[0,1],[1,2]])
+
+    Both random variables have ['H','T'] as an alphabet.
+    >>> d = dit.uniform_joint_distribution(2, [[0,1]])
+
     """
     from itertools import product
 
     try:
-        nSymbols = len(alphabet_size)
-        alphabet = tuple(alphabet_size)
+        int(alphabet_size)
     except TypeError:
-        nSymbols = alphabet_size
-        alphabet = range(nSymbols)
+        # Assume it is a list of lists.
+        alphabet = alphabet_size
 
-    Z = nSymbols**word_length
+        # Autoextend if only one alphabet is provided.
+        if len(alphabet) == 1:
+            alphabet = [alphabet[0]] * word_length
+        elif len(alphabet) != word_length:
+            raise TypeError("word_length does not match number of rvs.")
+    else:
+        # Build the standard alphabet.
+        alphabet = [range(alphabet_size)] * word_length
+
+    try:
+        Z = np.prod(map(len, alphabet))
+    except TypeError:
+        raise TypeError("alphabet_size must be an int or list of lists.")
+
     pmf = [1/Z] * Z
-    outcomes = tuple( product(alphabet, repeat=word_length) )
+    outcomes = tuple( product(*alphabet) )
     d = JointDistribution(pmf, outcomes, base='linear')
 
     return d

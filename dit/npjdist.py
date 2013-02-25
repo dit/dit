@@ -842,7 +842,7 @@ class JointDistribution(Distribution):
         """
         from array import array
 
-        # We don't need the names. We allow repeats and want to keep the order.
+        # We allow repeats and want to keep the order. We don't need the names.
         parse = lambda rv : parse_rvs(self, rv, rv_names=rv_names,
                                                 unique=False, sort=False)[1]
         indexes = [parse(rv) for rv in rvs]
