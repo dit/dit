@@ -130,14 +130,16 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9,
     else:
         outcomes = dist.outcomes
 
-    # Convert outcomes to strings, if desire and possible.
+    # Convert outcomes to strings, if desired and possible.
     if str_outcomes:
         if not dist.is_joint():
             msg = '`str_outcomes` can be `True` only for joint distributions'
             raise ditException(msg)
 
         try:
+            # First, convert the elements of the outcome to strings.
             outcomes = [map(str, outcome) for outcome in outcomes]
+            # Now convert the entire outcome to a string
             outcomes = map(lambda o: ''.join(o), outcomes)
         except:
             outcomes = map(str, outcomes)
@@ -341,7 +343,7 @@ class BaseDistribution(object):
         Raises
         ------
         InvalidOutcome
-            When an outcome is not in the sasmple space.
+            When an outcome is not in the sample space.
 
         """
         from .validate import validate_outcomes
@@ -533,6 +535,13 @@ class BaseDistribution(object):
         """
         raise NotImplementedError
 
+    def to_dict(self):
+        """
+        Returns the distribution as a standard Python dictionary.
+
+        """
+        return dict(self.zipped())
+
     def to_string(self, digits=None, exact=False, tol=1e-9):
         """
         Returns a string representation of the distribution.
@@ -665,3 +674,4 @@ class BaseDistribution(object):
 
     def __rmul__(self, other):
         raise NotImplementedError
+
