@@ -46,6 +46,12 @@ def log_func(b):
         If the base is less than zero or equal to one.
 
     """
+    from dit.utils import is_string_like
+
+    acceptable_strings = set(['linear', 'e'])
+    if is_string_like(b) and b not in acceptable_strings:
+        raise InvalidBase(msg=b)
+
     if b == 'linear':
         log = lambda x : x
     elif b == 2:

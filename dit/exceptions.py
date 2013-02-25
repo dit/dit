@@ -21,12 +21,16 @@ class ditException(Exception):
     Base class for all `dit` exceptions.
 
     """
-    def __init__(self, *args):
-        if args:
+    def __init__(self, *args, **kwargs):
+        if 'msg' in kwargs:
+            # Override the message in the first argument.
+            self.msg = kwargs['msg']
+        elif args:
             self.msg = args[0]
         else:
             self.msg = ''
         self.args = args
+        self.kwargs = kwargs
 
     def __str__(self):
         return self.msg
@@ -39,21 +43,21 @@ class IncompatibleDistribution(ditException):
     Exception for an incompatible distribution.
 
     """
-    def __init__(self, *args):
+    def __init__(self, *args, **kwargs):
         """
         Initialize the exception.
 
         """
         msg = "The distribution is not compatible."
         args = (msg,) + args
-        ditException.__init__(self, *args)
+        ditException.__init__(self, *args, **kwargs)
 
 class InvalidBase(ditException):
     """
     Exception for an invalid logarithm base.
 
     """
-    def __init__(self, *args):
+    def __init__(self, *args, **kwargs):
         """
         Initialize the exception.
 
@@ -63,9 +67,10 @@ class InvalidBase(ditException):
             The invalid base.
 
         """
-        msg = "{0} is not a valid logarithm base.".format(args[0])
-        args = (msg,) + args
-        ditException.__init__(self, *args)
+        if args:
+            msg = "{0} is not a valid logarithm base.".format(args[0])
+            args = (msg,) + args
+        ditException.__init__(self, *args, **kwargs)
 
 class InvalidDistribution(ditException):
     """
@@ -98,14 +103,14 @@ class InvalidOutcome(ditException):
         else:
             msg = "Outcomes {0} are not in the sample space.".format(bad)
         args = (msg,) + args
-        ditException.__init__(self, *args)
+        ditException.__init__(self, *args, **kwargs)
 
 class InvalidNormalization(ditException):
     """
     Exception thrown when a distribution is not normalized.
 
     """
-    def __init__(self, *args):
+    def __init__(self, *args, **kwargs):
         """
         Initializes the exception.
 
@@ -115,7 +120,7 @@ class InvalidNormalization(ditException):
         msg = "Bad normalization: {0}".format(args[0])
         self.summation = args[0]
         args = (msg,) + args
-        ditException.__init__(self, *args)
+        ditException.__init__(self, *args, **kwargs)
 
 class InvalidProbability(ditException):
     """
@@ -144,5 +149,5 @@ class InvalidProbability(ditException):
             msg = "Probabilities {0} are not in {1} (base: {2!r})."
         msg = msg.format(prob, bounds, ops.base)
         args = (msg,) + args
-        ditException.__init__(self, *args)
+        ditException.__init__(self, *args, **kwargs)
 
