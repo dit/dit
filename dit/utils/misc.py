@@ -367,11 +367,13 @@ def xzip(*args):
     while 1:
         yield tuple([i.next() for i in iters])
 
-def partitions(set_):
+def partitions1(set_):
     """
     Generates partitions of elements in `set_'.
 
     For set_ = range(12), this finishes in 52.37 seconds.
+
+    Yields tuple of sets.
 
     """
     # Thomas Dybdahl Ahle (https://github.com/thomasahle)
@@ -384,34 +386,10 @@ def partitions(set_):
         for item in set_:
             parts[i&1].add(item)
             i >>= 1
-        for b in partitions(parts[1]):
+        for b in partitions1(parts[1]):
             yield (parts[0],) + b
 
-
-def partitions(set_):
-    """
-    Generates partitions of elements in `set_'.
-
-    For set_ = range(12), this finishes in 52.37 seconds.
-
-    Yields tuples of sets.
-
-    """
-    # Thomas Dybdahl Ahle (https://github.com/thomasahle)
-    # Source: http://compprog.wordpress.com/2007/10/15/generating-the-partitions-of-a-set
-    if not set_:
-        yield ()
-        return
-    for i in xrange(2**len(set_) / 2):
-        parts = [set(), set()]
-        for item in set_:
-            parts[i&1].add(item)
-            i >>= 1
-        for b in partitions(parts[1]):
-            yield (parts[0],) + b
-
-
-def _partitions(n):
+def partitions2(n):
     """
     Generates all partitions of {1,...,n}.
 
@@ -467,30 +445,77 @@ def _partitions(n):
             # H3
             a[n] += 1
 
-def ordered_partitions(set_, tuples=False):
+def partitions(seq, tuples=False):
     """
-    Generates ordered partitions of elements in `set_`.
+    Generates all partitions of `seq`.
 
-    Yields tuples of sets.
+    Parameters
+    ----------
+    seq : iterable
+        Any iterable.  Used to generate the partitions.
+    tuples : bool
+        If `True`, yields tuple of tuples. Otherwise, yields frozenset of
+        frozensets.
+
+    Yields
+    ------
+    partition : frozenset or tuple
+        A frozenset of frozensets, or a sorted tuple of sorted tuples.
+
+    """
+    # Handle iterators.
+    seq = list(seq)
+
+    if tuples:
+        for partition in partitions1( seq ):
+            # Convert the partition into a list of sorted tuples.
+            partition = map(tuple, map(sorted, partition))
+
+            # Convert the partition into a sorted tuple of sorted tuples.
+            # Sort by smallest parts first, then lexicographically.
+            partition = tuple(sorted(partition, cmp=len_cmp))
+
+            yield partition
+
+    else:
+        for partition in partitions1( seq ):
+            partition = frozenset( map(frozenset, partition) )
+            yield partition
+
+def ordered_partitions(seq, tuples=False):
+    """
+    Generates ordered partitions of elements in `seq`.
+
+    Parameters
+    ----------
+    seq : iterable
+        Any iterable.  Used to generate the partitions.
+    tuples : bool
+        If `True`, yields tuple of tuples. Otherwise, yields tuple of
+        frozensets.
+
+    Yields
+    ------
+    partition : tuple
+        A tuple of frozensets, or a tuple of sorted tuples.
 
     """
     from itertools import permutations
 
+    # Handle iterators.
+    seq = list(seq)
+
     if tuples:
-        for partition in partitions(set_):
+        for partition in partitions1(seq):
             # Convert the partition into a list of sorted tuples.
             partition = map(tuple, map(sorted, partition))
 
-            # Convert the partition into a sorted tuple of sorted tuples. Note:
-            # Since we are generating all permutations, and since the order
-            # from partitions() isn't really intuitive, we can skip the sorting
-            # step.
-            #partition = tuple(sorted(partition, cmp=len_cmp))
-
+            # Generate all permutations.
             for perm in permutations(partition):
                     yield perm
     else:
-        for partition in partitions(set_):
+        for partition in partitions1(seq):
+            partition = map(frozenset, partition)
             for perm in permutations(partition):
                     yield perm
 

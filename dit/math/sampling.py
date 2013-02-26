@@ -17,7 +17,6 @@ __all__ = (
     'sample',
 )
 
-
 def sample(dist, size=None, rand=None, prng=None):
     """Returns a sample from a discrete distribution.
 
