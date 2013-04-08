@@ -33,7 +33,7 @@ Recall, a sequence is a sized, iterable container. See:
 http://docs.python.org/3/library/collections.abc.html#collections-abstract-base-classes
 
 """
-from __future__ import print_function
+from __future__ import print_function, division
 
 from itertools import izip
 
@@ -392,7 +392,7 @@ class BaseDistribution(object):
             The probability of the event.
 
         """
-        pvals = np.array([self[o] for o in event], dtype=floats)
+        pvals = np.array([self[o] for o in event], dtype=float)
         p = self.ops.add_reduce(pvals)
         return p
 
