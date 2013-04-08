@@ -158,7 +158,7 @@ def uniform_joint_distribution(word_length, alphabet_size):
     >>> d = dit.uniform_joint_distribution(2, [[0,1],[1,2]])
 
     Both random variables have ['H','T'] as an alphabet.
-    >>> d = dit.uniform_joint_distribution(2, [[0,1]])
+    >>> d = dit.uniform_joint_distribution(2, [['H','T']])
 
     """
     from itertools import product
