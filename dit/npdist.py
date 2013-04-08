@@ -377,6 +377,15 @@ class Distribution(BaseDistribution):
                 msg = "Unequal lengths for `values` and `outcomes`"
                 raise InvalidDistribution(msg)
 
+            # reorder() and other functions require that outcomes be
+            # indexable. So we make sure it is.
+            if len(outcomes):
+                try:
+                    outcomes[0]
+                except TypeError:
+                    # For example, outcomes is a set or frozenset.
+                    outcomes = tuple(outcomes)
+
             ## alphabets
             # Use outcomes to obtain the alphabets.
             if alphabet is None:
