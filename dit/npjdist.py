@@ -685,7 +685,13 @@ class JointDistribution(Distribution):
 
         # Determine if the pmf represents log probabilities or not.
         if base is None:
-            base = ditParams['base']
+            # Provide help for obvious case of linear probabilities.
+            from .validate import is_pmf
+            if is_pmf(np.asarray(pmf, dtype=float), LinearOperations()):
+                base = 'linear'
+            else:
+                base = ditParams['base']
+
         if base == 'linear':
             ops = LinearOperations()
         else:
