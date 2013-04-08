@@ -413,6 +413,10 @@ class JointDistribution(Distribution):
     copy
         Returns a deep copy of the distribution.
 
+    extract
+        If the outcome length is equal to one, then single element from each
+        outcome is extracted to create Distribution object, which is returned.
+
     outcome_length
         Returns the length of the outcomes in the distribution.
 
@@ -917,6 +921,31 @@ class JointDistribution(Distribution):
         d.set_rv_names(self.get_rv_names())
         d._mask = tuple(self._mask)
 
+        return d
+
+    def extract(self):
+        """
+        Returns a Distribution after extracting the element of each outcome.
+
+        If the outcome length is equal to 1, then we extract the sole element
+        from each outcome and use them to create a Distribution object.
+
+        Raises
+        ------
+        ditException
+            If the outcome length is not equal to 1.
+
+        """
+        if self.outcome_length() != 1:
+            raise ditException("outcome length is not equal to 1")
+
+        outcomes = tuple( outcome[0] for outcome in self.outcomes )
+        d = Distribution(self.pmf, outcomes=outcomes,
+                                   alphabet=self.alphabet[0],
+                                   base=self.get_base(),
+                                   sort=False,
+                                   sparse=self.is_sparse(),
+                                   validate=False)
         return d
 
     def outcome_length(self, masked=False):
