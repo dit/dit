@@ -16,6 +16,60 @@ __all__ = [
     'LogOperations'
 ]
 
+def exp_func(b):
+    """
+    Returns a base-`b` exponential function.
+
+    Parameters
+    ----------
+    b : positive float or 'e'
+        The base of the desired exponential function.
+
+    Returns
+    -------
+    exp : function
+        The base-`b` exponential function. The returned function will operate
+        elementwise on NumPy arrays, but note, it is not a ufunc.
+
+    Examples
+    --------
+    >>> exp2 = exp_func(2)
+    >>> exp2(1)
+    2.0
+    >>> exp3 = exp_func(3)
+    >>> exp3(1)
+    3.0
+
+    Raises
+    ------
+    InvalidBase
+        If the base is less than zero or equal to one.
+
+    """
+    from dit.utils import is_string_like
+
+    acceptable_strings = set(['linear', 'e'])
+    if is_string_like(b) and b not in acceptable_strings:
+        raise InvalidBase(msg=b)
+
+    if b == 'linear':
+        exp = lambda x : x
+    elif b == 2:
+        exp = np.exp2
+    elif b == 10:
+        exp = lambda x: 10**x
+    elif b == 'e' or close(b, np.e):
+        exp = np.exp
+    else:
+        if b <= 0 or b == 1:
+            raise InvalidBase(b)
+
+        Z = np.exp(b)
+        def exp(x):
+            return np.exp(x) / Z
+
+    return exp
+
 def log_func(b):
     """
     Returns a base-`b` logarithm function.
@@ -87,10 +141,13 @@ class Operations(object):
 
     """
     ### Do we allow base == 'e' or should we convert to its numerical value?
+    ### Ans: We store whatever was specified but provide get_base() with an
+    ###      option to return a numerical base.
 
     one = None
     zero = None
     base = None
+    exp = None
     log = None
 
     def get_base(self, numerical=False):
@@ -131,7 +188,15 @@ class LinearOperations(Operations):
     one = 1
     zero = 0
     base = 'linear'
-    log = log_func(base)
+
+    # If the functions below are standard Python functions (as opposed to
+    # NumPy ufuncs), then they will be converted to bound methods.  One
+    # way around this is to set them in the __init__ function.  This is
+    # precisely what LogOperations does, which is why it does not have this
+    # issue.  Alternatively, we can explicitly declare these functions to be
+    # static methods.
+    exp = staticmethod( exp_func(base) ) 
+    log = staticmethod( log_func(base) )
 
     def add(self, x, y):
         """
@@ -277,6 +342,7 @@ class LogOperations(Operations):
     one = None
     zero = None
     base = None
+    exp = None
     log = None
 
     def __init__(self, base):
@@ -302,6 +368,7 @@ class LogOperations(Operations):
 
         """
         self.base = base
+        self.exp = exp_func(base)
         self.log = log_func(base)
         # Note: When base < 1, zero == +inf. When base > 1, zero == -inf.
         self.one = self.log(1)
