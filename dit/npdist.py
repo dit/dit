@@ -16,7 +16,8 @@ is always equal to the length of the sample space.
 When a distribution is sparse, del d[e] will make the pmf smaller.  But d[e] = 0
 will simply set the element to zero.
 
-When a distribution is dense, del d[e] will set the element to zero, and
+When a distribution is dense, del d[e] will only set the element to zero---the
+length of the pmf will still equal the length of the sample space. Using
 d[e] = 0 still sets the element to zero.
 
 For distributions, the sample space is the alphabet and the alphabet is a single
@@ -68,6 +69,9 @@ def _make_distribution(pmf, outcomes=None, alphabet=None, base=None, sparse=True
         ops = LogOperations(base)
     d.ops = ops
 
+    ## outcomes
+    #
+    # Grab default outcomes if needed, and make sure their lengths are equal.
     if outcomes is None:
         outcomes = range(len(pmf))
     elif len(pmf) != len(outcomes):
@@ -75,13 +79,15 @@ def _make_distribution(pmf, outcomes=None, alphabet=None, base=None, sparse=True
         raise InvalidDistribution(msg)
 
     ## alphabets
-    # Use outcomes to obtain the alphabets.
+    #
+    # During initialization, we must know the alphabet. This can be obtained
+    # via specification or through the outcomes.
+    #
     if alphabet is None:
-
+        # Use outcomes to obtain the alphabets.
         if len(outcomes) == 0:
             msg = '`outcomes` cannot have zero length if `alphabet` is `None`'
             raise InvalidDistribution(msg)
-
         alphabet = outcomes
 
     # Force the distribution to be numerical and a NumPy array.
@@ -107,9 +113,13 @@ def reorder(pmf, outcomes, alphabet, index=None):
     if index is None:
         index = dict(zip(outcomes, range(len(outcomes))))
 
+    # For distributions, the sample space is equal to the alphabet.
     sample_space = alphabet
+
     order = [index[outcome] for outcome in sample_space if outcome in index]
     if len(order) != len(outcomes):
+        # For example, `outcomes` contains an element not in `sample_space`.
+        # For example, `outcomes` contains duplicates.
         raise InvalidDistribution('outcomes and sample_space are not compatible.')
 
     outcomes = [outcomes[i] for i in order]
@@ -247,7 +257,7 @@ class Distribution(BaseDistribution):
     pmf = None
     prng = None
 
-    def __init__(self, pmf, outcomes=None, alphabet=None, base=None,
+    def __init__(self, pmf, outcomes=None, alphabet=None, base=None, prng=None,
                             sort=True, sparse=True, validate=True):
         """
         Initialize the distribution.
@@ -279,12 +289,18 @@ class Distribution(BaseDistribution):
             represent linear probabilities.  If `None`, then the value for
             `base` is taken from ditParams['base'].
 
+        prng : RandomState
+            A pseudo-random number generator with a `rand` method which can
+            generate random numbers. For now, this is assumed to be something
+            with an API compatibile to NumPy's RandomState class. This attribute
+            is initialized to equal dit.math.prng.
+
         sort : bool
             If `True`, then the sample space is sorted first. Usually, this is
             desirable, as it normalizes the behavior of distributions which
-            have the same sample space (when considered as a set).  Addition and
-            multiplication of distributions is defined only if the sample space
-            (as a tuple) is equal.
+            have the same sample space (when considered as a set).  Note that
+            addition and multiplication of distributions is defined only if the
+            sample spaces (as tuples) are equal.
 
         sparse : bool
             Specifies the form of the pmf.  If `True`, then `outcomes` and `pmf`
@@ -306,7 +322,7 @@ class Distribution(BaseDistribution):
         See :meth:`validate` for a list of other potential exceptions.
 
         """
-        super(Distribution, self).__init__()
+        super(Distribution, self).__init__(prng)
 
         pmf, outcomes, alphabet = self._init(pmf, outcomes, alphabet, base)
 
@@ -473,7 +489,7 @@ class Distribution(BaseDistribution):
         ----------
         outcome : outcome
             Any hashable and equality comparable object. If `outcome` exists
-            in the sample space, then it is removed from the pmf.  If the
+            in the sample space, then it is removed from the pmf---if the
             outcome did not already exist in the pmf, then no exception is
             raised. If `outcome` does not exist in the sample space, then an
             InvalidOutcome exception is raised.
@@ -601,8 +617,7 @@ class Distribution(BaseDistribution):
             self.pmf[idx] = value
         else:
             # A new outcome in a sparse distribution.
-            # Sticking with the setting always setting...we add even if
-            # the value is zero.
+            # We add the outcome and its value, regardless if the value is zero.
 
             # 1. Add the new outcome and probability
             self.outcomes = self.outcomes + (outcome,)
@@ -655,8 +670,8 @@ class Distribution(BaseDistribution):
             outcomes are acceptable.  Thus, the only requirement on `outcome`
             is that it exist in the distribution's sample space. If `False`,
             then null outcomes are not acceptable.  Thus, `outcome` must exist
-            in the distribution's sample space and also correspond to be
-            nonnull.
+            in the distribution's sample space and also have a nonnull
+            probability.
 
         Notes
         -----
@@ -694,11 +709,17 @@ class Distribution(BaseDistribution):
 
         """
         # The set of all specified outcomes (some may be null outcomes).
-        es1 = None
+        ss1 = None
         if self.is_dense() or other.is_dense():
-            es1 = tuple(self.sample_space())
-            outcomes = es1
+            # Note, we are not checking the outcomes which are in `other`
+            # but not in `self`.  However, this will be checked when we make
+            # sure that the sample spaces are the same.
+            ss1 = tuple(self.sample_space())
+            outcomes = ss1
         else:
+            # Note `self` and `other` could each have outcomes in the sample
+            # space that are not in their `outcomes` variable.  This will be
+            # checked when we verify that the sample spaces are the same.
             outcomes = set(self.outcomes)
             outcomes.update(other.outcomes)
 
@@ -706,15 +727,15 @@ class Distribution(BaseDistribution):
         for outcome in outcomes:
             if not close(self[outcome], other[outcome]):
                 return False
-        else:
-            return True
 
-        # outcome spaces must be equal.
+        # Outcome spaces must be equal.
         if ss1 is None:
             ss1 = tuple(self.sample_space())
         ss2 = tuple(other.sample_space())
         if ss1 != ss2:
             return False
+
+        return True
 
     def is_dense(self):
         """
@@ -790,16 +811,14 @@ class Distribution(BaseDistribution):
             # Then we are converting.
             old_ops = self.ops
 
-            # Use numerical value for base.
-            if old_ops.base == 'e':
-                old_base = np.e
-            else:
-                old_base = old_ops.base
+            # In order to do conversions, we need a numerical value for base.
+            old_base = old_ops.get_base(numerical=True)
 
             # Caution: The in-place multiplication ( *= ) below will work only
             # if pmf has a float dtype.  If not (e.g., dtype=int), then the
             # multiplication gives incorrect results due to coercion. The
             # __init__ function is responsible for guaranteeing the dtype.
+            # So we proceed assuming that in-place multiplication works for us.
 
             if from_log and to_log:
                 # Convert from one log base to another.

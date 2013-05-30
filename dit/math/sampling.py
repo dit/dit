@@ -23,7 +23,7 @@ def sample(dist, size=None, rand=None, prng=None):
     Parameters
     ----------
     dist : Dit distribution
-        The distribuion from which the sample is drawn.
+        The distribution from which the sample is drawn.
     size : int or None
         The number of samples to draw from the distribution. If `None`, then
         a single sample is returned.  Otherwise, a list of samples if returned.
@@ -36,7 +36,8 @@ def sample(dist, size=None, rand=None, prng=None):
     prng : random number generator
         A random number generator with a `rand' method that returns a random
         number between 0 and 1 when called with no arguments. If unspecified,
-        then we use the random number generator on the distribution.
+        then we use the random number generator on the distribution. Thus,
+        the `dist` must have a `prng` attribute if `prng` is None.
 
     Returns
     -------

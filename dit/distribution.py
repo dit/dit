@@ -71,7 +71,9 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9,
     tol : float
         If `exact` is `True`, then the probabilities will be displayed
         as the closest rational fraction within `tol`.
-    str_outcomes
+    show_mask : bool
+        If `True`, show the mask for marginal distributions.
+    str_outcomes : bool
         If `True`, then attempt to convert outcomes which are tuples to just
         strings.  This is only a dislplay technique.
 
@@ -102,13 +104,12 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9,
             raise ditException(msg)
 
         if show_mask != True and show_mask != False:
+            # The user is specifying what the mask should look like.
             wc = show_mask
         else:
             wc = '*'
 
         ctor = dist._get_outcome_constructor()
-        is_masked = dict(zip(range(len(dist._mask)), dist._mask))
-
         def outcome_wc(outcome):
             """
             Builds the wildcarded outcome.
@@ -271,7 +272,7 @@ class BaseDistribution(object):
     # Subclasses should update these meta attributes *before* calling the base
     # distribution's __init__ function.
     _meta = {
-        'is_joint': False,
+        'is_joint': None,
         'is_numerical': None,
     }
 
@@ -281,7 +282,7 @@ class BaseDistribution(object):
     pmf = None
     prng = None
 
-    def __init__(self):
+    def __init__(self, prng=None):
         """
         Common initialization for all distribution types.
 
@@ -289,6 +290,9 @@ class BaseDistribution(object):
         # We set the prng to match the global dit.math prng.
         # Usually, this should be good enough.  If something more exotic
         # is desired, the user can change the prng manually.
+        if prng is None:
+            import dit.math
+            prng = dit.math.prng
         self.prng = prng
 
     def __contains__(self, outcome):

@@ -196,8 +196,9 @@ def _make_distribution(pmf, outcomes, alphabet=None, base=None, sparse=True):
     d.ops = ops
 
     ## outcomes
+    #
     # Unlike Distribution, we cannot use a default set of outcomes when
-    # `outcomes` is `None`.
+    # `outcomes` is `None`. So we just make sure their lengths are equal.
     if len(pmf) != len(outcomes):
         msg = "Unequal lengths for `values` and `outcomes`"
         raise InvalidDistribution(msg)
