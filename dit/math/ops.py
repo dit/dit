@@ -5,6 +5,7 @@
 Classes to contextualize math operations in log vs linear space.
 
 """
+from types import MethodType
 
 import numpy as np
 
@@ -65,8 +66,8 @@ def exp_func(b):
             raise InvalidBase(b)
 
         Z = np.exp(b)
-        def exp(x):
-            return np.exp(x) / Z
+        def exp(x, func=np.exp):
+            return func(x) / Z
 
     return exp
 
@@ -119,8 +120,8 @@ def log_func(b):
             raise InvalidBase(b)
 
         Z = np.log(b)
-        def log(x):
-            return np.log(x) / Z
+        def log(x, func=np.log):
+            return func(x) / Z
 
     return log
 
@@ -190,12 +191,17 @@ class LinearOperations(Operations):
     base = 'linear'
 
     # If the functions below are standard Python functions (as opposed to
-    # NumPy ufuncs), then they will be converted to bound methods.  One
-    # way around this is to set them in the __init__ function.  This is
-    # precisely what LogOperations does, which is why it does not have this
-    # issue.  Alternatively, we can explicitly declare these functions to be
-    # static methods.
-    exp = staticmethod( exp_func(base) ) 
+    # NumPy ufuncs), then they will be treated as unbound methods for the class.
+    # During instantiation, they are bound to the instance (since before
+    # instantiation that are class methods) and thus, we are left with
+    # bound methods (undesirably). If we had modified these attributes in the
+    # __init__ function, then they would not be bound (or even unbound methods)
+    # but functions instead (desirably).  This is precisely what LogOperations
+    # does, which is why it does not have this issue. An alternative approach
+    # is to explicitly declare these functions to be static methods, as we
+    # do below.
+    #
+    exp = staticmethod( exp_func(base) )
     log = staticmethod( log_func(base) )
 
     def add(self, x, y):
@@ -311,9 +317,6 @@ class LinearOperations(Operations):
             The product of the elements in `x`.
 
         """
-        # The identity for addition in NumPy is zero.
-        # This corresponds to an identity of 1 for log operations, and this is
-        # exactly the desired identity for multiplying probabilities.
         z = np.prod(x)
         return z
 
@@ -336,6 +339,143 @@ class LinearOperations(Operations):
         """
         z = 1/x
         return z
+
+def set_add(ops):
+    """
+    Set the add method on the LogOperations instance.
+
+    """
+    # To preserve numerical accuracy, we must make use of a logaddexp
+    # function.  These functions only exist in Numpy for base-e and base-2.
+    # For all other bases, we must convert and then convert back.
+
+    # In each case, we use default arguments to make the function that we
+    # are calling 'local'.
+    base = ops.base
+    if base == 2:
+        def add(self, x, y, func=np.logaddexp2):
+            return func(x,y)
+    elif base == 'e' or close(base, np.e):
+        def add(self, x, y, func=np.logaddexp):
+            return func(x,y)
+    else:
+        # No need to optimize this...
+        def add(self, x, y):
+            # Convert log_b probabilities to log_2 probabilities.
+            x2 = x * np.log2(base)
+            y2 = y * np.log2(base)
+            z = np.logaddexp2(x2, y2)
+            # Convert log_2 probabilities to log_b probabilities.
+            z *= self.log(2)
+            return z
+
+    add.__doc__ = """
+    Add the arrays element-wise.  Neither x nor y will be modified.
+
+    Assumption: y <= 0.
+
+    Parameters
+    ----------
+    x, y : NumPy arrays, shape (n,)
+        The arrays to add.
+
+    Returns
+    -------
+    z : NumPy array, shape (n,)
+        The resultant array.
+
+    """
+    ops.add = MethodType(add, ops)
+
+def set_add_inplace(ops):
+    """
+    Set the add_inplace method on the LogOperations instance.
+
+    """
+    base = ops.base
+    if base == 2:
+        def add_inplace(self, x, y, func=np.logaddexp2):
+            return func(x,y,x)
+    elif base == 'e' or close(base, np.e):
+        def add_inplace(self, x, y, func=np.logaddexp):
+            return func(x,y,x)
+    else:
+        def add_inplace(self, x, y):
+            x *= np.log2(base)
+            y2 = y * np.log2(base)
+            np.logaddexp2(x, y2, x)
+            x *= self.log(2)
+            return x
+
+    add_inplace.__doc__ = """
+    Adds `y` to `x`, in-place.  `x` will be modified, but `y` will not.
+
+    Assumption: y <= 0.
+
+    Parameters
+    ----------
+    x, y : NumPy arrays, shape (n,)
+        The arrays to add.
+
+    Returns
+    -------
+    x : NumPy array, shape (n,)
+        The resultant array.
+
+    """
+    ops.add_inplace = MethodType(add_inplace, ops)
+
+def set_add_reduce(ops):
+    """
+    Set the add_reduce method on the LogOperations instance.
+
+    """
+    base = ops.base
+    if base == 2:
+        def add_reduce(self, x, func=np.logaddexp2):
+            if len(x) == 0:
+                # Since logaddexp.identity is None, we handle it separately.
+                z = self.zero
+            else:
+                # Note, we are converting to a NumPy array, if necessary.
+                z = func.reduce(x, dtype=float)
+            return z
+
+    elif base == 'e' or close(base, np.e):
+        def add_reduce(self, x, func=np.logaddexp):
+            if len(x) == 0:
+                # Since logaddexp.identity is None, we handle it separately.
+                z = self.zero
+            else:
+                # Note, we are converting to a NumPy array, if necessary.
+                z = func.reduce(x, dtype=float)
+            return z
+
+    else:
+        def add_reduce(self, x):
+            if len(x) == 0:
+                # Since logaddexp.identity is None, we handle it separately.
+                z = self.zero
+            else:
+                # Note, we are converting to a NumPy array, if necessary.
+                # Change the base-2, add, and then convert back.
+                x2 = x * np.log2(base)
+                z = np.logaddexp2.reduce(x2, dtype=float)
+                z /= np.log2(base)
+            return z
+
+    add_reduce.__doc__ = """
+    Performs an `addition' reduction on `x`.
+
+    Assumption: y <= 0.
+
+    Returns
+    -------
+    z : float
+        The summation of the elements in `x`.
+
+    """
+    ops.add_reduce = MethodType(add_reduce, ops)
 
 class LogOperations(Operations):
 
@@ -374,99 +514,10 @@ class LogOperations(Operations):
         self.one = self.log(1)
         self.zero = self.log(0)
 
-    def add(self, x, y):
-        """
-        Add the arrays element-wise.  Neither x nor y will be modified.
-
-        Assumption: y <= 0.
-
-        Parameters
-        ----------
-        x, y : NumPy arrays, shape (n,)
-            The arrays to add.
-
-        Returns
-        -------
-        z : NumPy array, shape (n,)
-            The resultant array.
-
-        """
-        # To preserve numerical accuracy, we must make use of a logaddexp
-        # function.  These functions only exist in Numpy for base-e and base-2.
-        # For all other bases, we must convert and then convert back.
-
-        base = self.base
-        if base == 2:
-            z = np.logaddexp2(x,y)
-        elif base == 'e' or close(base, np.e):
-            z = np.logaddexp2(x,y)
-        else:
-            # Convert log_b probabilities to log_2 probabilities.
-            x2 = x * np.log2(base)
-            y2 = y * np.log2(base)
-            z = np.logaddexp2(x2, y2)
-            # Convert log_2 probabilities to log_b probabilities.
-            z *= self.log(2)
-        return z
-
-    def add_inplace(self, x, y):
-        """
-        Adds `y` to `x`, in-place.  `x` will be modified, but `y` will not.
-
-        Assumption: y <= 0.
-
-        Parameters
-        ----------
-        x, y : NumPy arrays, shape (n,)
-            The arrays to add.
-
-        Returns
-        -------
-        x : NumPy array, shape (n,)
-            The resultant array.
-
-        """
-        base = self.base
-        if base == 2:
-            np.logaddexp2(x,y,x)
-        elif base == 'e' or close(base, np.e):
-            np.logaddexp(x,y,x)
-        else:
-            x *= np.log2(base)
-            y2 = y * np.log2(base)
-            np.logaddexp2(x, y2, x)
-            x *= self.log(2)
-        return x
-
-    def add_reduce(self, x):
-        """
-        Performs an `addition' reduction on `x`.
-
-        Assumption: y <= 0.
-
-        Returns
-        -------
-        z : float
-            The summation of the elements in `x`.
-
-        """
-        if len(x) == 0:
-            # Since logaddexp.identity is None, we must handle it separately.
-            z = self.zero
-        else:
-            # Note, we are converting to a NumPy array, if necessary.
-            base = self.base
-            if base == 2:
-                z = np.logaddexp2.reduce(x, dtype=float)
-            elif base == 'e' or close(base, np.e):
-                z = np.logaddexp.reduce(x, dtype=float)
-            else:
-                # Change the base-2, add, and then convert back.
-                x2 = x * np.log2(base)
-                z = np.logaddexp2.reduce(x2, dtype=float)
-                z /= np.log2(base)
-
-        return z
+        # Update the add methods.
+        set_add(self)
+        set_add_inplace(self)
+        set_add_reduce(self)
 
     def mult(self, x, y):
         """
@@ -537,4 +588,3 @@ class LogOperations(Operations):
         """
         z = -x
         return z
-
