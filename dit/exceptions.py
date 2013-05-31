@@ -150,4 +150,3 @@ class InvalidProbability(ditException):
         msg = msg.format(prob, bounds, ops.base)
         args = (msg,) + args
         ditException.__init__(self, *args, **kwargs)
-

@@ -32,6 +32,9 @@ Joint outcomes must be: hashable, orderable, and also a sequence.
 Recall, a sequence is a sized, iterable container. See:
 http://docs.python.org/3/library/collections.abc.html#collections-abstract-base-classes
 
+TODO: Examine thread-saftey issues.  Most of the methods will not function
+properly if interrupted midway through (and the distribution is modified).
+
 """
 from __future__ import print_function, division
 
@@ -155,8 +158,7 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9,
     # 1) Convert to linear probabilities, if necessary.
     if exact:
         # Copy to avoid precision loss
-        d = dist.copy()
-        d.set_base('linear')
+        d = dist.set_base('linear', copy=True)
     else:
         d = dist
 
@@ -256,7 +258,7 @@ class BaseDistribution(object):
         Returns a random draw from the distribution.
 
     set_base
-        Changes the base of the distribution, in-place.
+        Changes the base of the distribution, possibly in-place.
 
     to_string
         Returns a string representation of the distribution.
@@ -516,7 +518,7 @@ class BaseDistribution(object):
         """
         raise NotImplementedError
 
-    def set_base(self, base):
+    def set_base(self, base, copy=True):
         """
         Changes the base of the distribution.
 
@@ -527,6 +529,7 @@ class BaseDistribution(object):
         convert to a linear distribution by passing 'linear'. Note, conversions
         introduce errors, especially when converting from very negative log
         probabilities to linear probabilities (underflow is an issue).
+        For this reason, `copy` defaults to True.
 
         Parameters
         ----------
@@ -535,6 +538,19 @@ class BaseDistribution(object):
             distribution's pmf will represent linear probabilities. If any
             positive float (other than 1) or 'e', then the pmf will represent
             log probabilities with the specified base.
+        copy : bool
+            If `True`, a copy is made of the distribution first. Then the base
+            of the copied distribution is modified. Otherwise, the base is
+            changed in-place. Generally, it is dangerous to change the base
+            in-place, as numerical errors can be introduced.  Additionally,
+            functions or classes that hold references to the distribution may
+            not expect a change in base.
+
+        Returns
+        -------
+        dist : distribution
+            The distribution with the new base. If `inplace` was True, the
+            same distribution is returned, just modified.
 
         """
         raise NotImplementedError

@@ -13,7 +13,7 @@ sample space. There are two important points to keep in mind.
 If a distribution is dense, then we forcibly make sure the length of the pmf
 is always equal to the length of the sample space.
 
-When a distribution is sparse, del d[e] will make the pmf smaller.  But d[e] = 0
+When a distribution is sparse, del d[e] will make the pmf smaller. But d[e] = 0
 will simply set the element to zero.
 
 When a distribution is dense, del d[e] will only set the element to zero---the
@@ -28,13 +28,17 @@ distribution is a tuple of alphabets for each random variable.
 """
 
 from .distribution import BaseDistribution
-from .exceptions import InvalidDistribution, InvalidOutcome, InvalidProbability
+from .exceptions import (
+    InvalidDistribution, InvalidOutcome, InvalidProbability
+)
+
+import dit.math
 from .math import LinearOperations, LogOperations, close
 from .params import ditParams
 
 import numpy as np
 
-def _make_distribution(pmf, outcomes=None, alphabet=None, base=None, sparse=True):
+def _make_distribution(pmf, outcomes=None, alphabet=None, base=None, prng=None, sparse=True):
     """
     An unsafe, but faster, initialization for distributions.
 
@@ -59,6 +63,10 @@ def _make_distribution(pmf, outcomes=None, alphabet=None, base=None, sparse=True
 
     """
     d = Distribution.__new__(Distribution)
+    if prng is None:
+        import dit.math
+        prng = dit.math.prng
+    d.prng = prng
 
     # Determine if the pmf represents log probabilities or not.
     if base is None:
@@ -442,8 +450,7 @@ class Distribution(BaseDistribution):
                 raise IncompatibleDistribution()
 
         # Copy to make sure we don't lose precision when converting.
-        d2 = other.copy()
-        d2.set_base(self.get_base())
+        d2 = other.set_base(self.get_base(), copy=True)
 
         # If self is dense, the result will be dense.
         # If self is sparse, the result will be sparse.
@@ -506,10 +513,6 @@ class Distribution(BaseDistribution):
 
         If the outcome was a non-null outcome, then the resulting distribution
         will no longer be normalized (assuming it was in the first place).
-
-        See Also
-        --------
-        normalize, __setitem__
 
         """
         if not self.has_outcome(outcome, null=True):
@@ -599,10 +602,6 @@ class Distribution(BaseDistribution):
         Setting a new outcome in a sparse distribution is costly. It is better
         to know the non-null outcomes before creating the distribution.
 
-        See Also
-        --------
-        __delitem__
-
         """
         if not self.has_outcome(outcome, null=True):
             raise InvalidOutcome(outcome)
@@ -633,7 +632,6 @@ class Distribution(BaseDistribution):
             self._outcomes_index = index
             self.pmf = np.array(pmf, dtype=float)
 
-
     def copy(self):
         """
         Returns a (deep) copy of the distribution.
@@ -643,10 +641,16 @@ class Distribution(BaseDistribution):
         # It works for linear distributions but not for log distributions.
 
         from copy import deepcopy
+
+        # Make an exact copy of the PRNG.
+        prng = np.random.RandomState()
+        prng.set_state( self.prng.get_state() )
+
         d = _make_distribution(pmf=np.array(self.pmf, copy=True),
                                outcomes=deepcopy(self.outcomes),
                                alphabet=deepcopy(self.alphabet),
                                base=self.ops.base,
+                               prng=prng,
                                sparse=self._meta['is_sparse'])
         return d
 
@@ -768,7 +772,7 @@ class Distribution(BaseDistribution):
         ops.mult_inplace(pmf, ops.invert(z))
         return z
 
-    def set_base(self, base):
+    def set_base(self, base, copy=True):
         """
         Changes the base of the distribution.
 
@@ -779,6 +783,7 @@ class Distribution(BaseDistribution):
         convert to a linear distribution by passing 'linear'. Note, conversions
         introduce errors, especially when converting from very negative log
         probabilities to linear probabilities (underflow is an issue).
+        For this reason, `copy` defaults to True.
 
         Parameters
         ----------
@@ -787,8 +792,28 @@ class Distribution(BaseDistribution):
             distribution's pmf will represent linear probabilities. If any
             positive float (other than 1) or 'e', then the pmf will represent
             log probabilities with the specified base.
+        copy : bool
+            If `True`, a copy is made of the distribution first. Then the base
+            of the copied distribution is modified. Otherwise, the base is
+            changed in-place. Generally, it is dangerous to change the base
+            in-place, as numerical errors can be introduced.  Additionally,
+            functions or classes that hold references to the distribution may
+            not expect a change in base.
+
+        Returns
+        -------
+        dist : distribution
+            The distribution with the new base.  If `inplace` was True, the
+            same distribution is returned, just modified.
 
         """
+        if copy:
+            d = self.copy()
+            d.set_base(base, copy=False)
+            return d
+
+        # Otherwise, modify it inplace.
+
         from .math import LinearOperations, LogOperations
         from .params import validate_base
 
@@ -837,6 +862,8 @@ class Distribution(BaseDistribution):
                 self.pmf = new_ops.log(self.pmf)
 
         self.ops = new_ops
+
+        return self
 
     def make_dense(self):
         """
