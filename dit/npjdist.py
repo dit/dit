@@ -69,6 +69,8 @@ def get_product_func(outcomes):
     """
     Helper function to return a product function for the distribution.
 
+    The idea is to return something similar to itertools.product.
+
     See the docstring for JointDistribution.
 
     """
@@ -159,7 +161,8 @@ def parse_rvs(dist, rvs, rv_names=True, unique=True, sort=True):
 
     return rvs, indexes
 
-def _make_distribution(pmf, outcomes, alphabet=None, base=None, sparse=True):
+def _make_distribution(pmf, outcomes, alphabet=None, base=None, prng=None,
+                                      sparse=True):
     """
     An unsafe, but faster, initialization for distributions.
 
@@ -185,6 +188,11 @@ def _make_distribution(pmf, outcomes, alphabet=None, base=None, sparse=True):
 
     """
     d = JointDistribution.__new__(JointDistribution)
+
+    if prng is None:
+        import dit.math
+        prng = dit.math.prng
+    d.prng = prng
 
     # Determine if the pmf represents log probabilities or not.
     if base is None:
@@ -504,7 +512,6 @@ class JointDistribution(Distribution):
         'is_joint': True,
         'is_numerical': True,
         'is_sparse': None,
-        'is_heterogenous': None,
     }
     _product = None
     _rv_map = None # Not initialize-able
@@ -515,7 +522,7 @@ class JointDistribution(Distribution):
     pmf = None
     prng = None
 
-    def __init__(self, pmf, outcomes=None, alphabet=None, base=None,
+    def __init__(self, pmf, outcomes=None, alphabet=None, base=None, prng=None,
                             sort=True, sparse=True, validate=True):
         """
         Initialize the distribution.
@@ -550,6 +557,12 @@ class JointDistribution(Distribution):
             represent linear probabilities.  If `None`, then the value for
             `base` is taken from ditParams['base'].
 
+        prng : RandomState
+            A pseudo-random number generator with a `rand` method which can
+            generate random numbers. For now, this is assumed to be something
+            with an API compatibile to NumPy's RandomState class. This attribute
+            is initialized to equal dit.math.prng.
+
         sort : bool
             If `True`, then each random variable's alphabets are sorted.
             Usually, this is desirable, as it normalizes the behavior of
@@ -579,8 +592,8 @@ class JointDistribution(Distribution):
 
         """
         # Note, we are not calling Distribution.__init__
-        # We want to call BaseDistribution.__init__
-        super(Distribution, self).__init__()
+        # Instead, we want to call BaseDistribution.__init__.
+        super(Distribution, self).__init__(prng)
 
         pmf, outcomes, alphabet = self._init(pmf, outcomes, alphabet, base)
 
@@ -632,7 +645,12 @@ class JointDistribution(Distribution):
 
             # The outcome length.
             self._outcome_class = evts[0].__class__
-            outcome_length = len(evts[0])
+            try:
+                outcome_length = len(evts[0])
+            except TypeError:
+                msg = 'outcome is not a sequence'
+                raise InvalidOutcome(msg)
+
             alpha = [set([]) for i in range(outcome_length)]
             for outcome in evts:
                 for i,symbol in enumerate(outcome):
@@ -654,6 +672,7 @@ class JointDistribution(Distribution):
                 base = d.get_base()
             if alphabet is None:
                 if d.is_joint():
+                    # Creating a new JointDistribution from an existing one.
                     # This will always work.
                     alphabet = d.alphabet
                 else:
@@ -912,10 +931,16 @@ class JointDistribution(Distribution):
 
         """
         from copy import deepcopy
+
+        # Make an exact copy of the PRNG.
+        prng = np.random.RandomState()
+        prng.set_state( self.prng.get_state() )
+
         d = _make_distribution(pmf=np.array(self.pmf, copy=True),
                                outcomes=deepcopy(self.outcomes),
                                alphabet=deepcopy(self.alphabet),
                                base=self.ops.base,
+                               prng=prng,
                                sparse=self._meta['is_sparse'])
 
         # The following are not initialize-able from the constructor.
@@ -940,10 +965,15 @@ class JointDistribution(Distribution):
         if self.outcome_length() != 1:
             raise ditException("outcome length is not equal to 1")
 
+        # Make an exact copy of the PRNG.
+        prng = np.random.RandomState()
+        prng.set_state( self.prng.get_state() )
+
         outcomes = tuple( outcome[0] for outcome in self.outcomes )
         d = Distribution(self.pmf, outcomes=outcomes,
                                    alphabet=self.alphabet[0],
                                    base=self.get_base(),
+                                   prng=prng,
                                    sort=False,
                                    sparse=self.is_sparse(),
                                    validate=False)

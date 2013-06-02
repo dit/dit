@@ -26,7 +26,7 @@ Rather, things will probably just break.
 
 The most basic type of outcome must be: hashable and equality comparable.
 If the distribution's sample space is to be ordered, then the outcomes must
-also be orderable.
+also be orderable (which implies equality comparable).
 
 Joint outcomes must be: hashable, orderable, and also a sequence.
 Recall, a sequence is a sized, iterable container. See:

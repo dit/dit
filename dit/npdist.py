@@ -63,6 +63,7 @@ def _make_distribution(pmf, outcomes=None, alphabet=None, base=None, prng=None, 
 
     """
     d = Distribution.__new__(Distribution)
+
     if prng is None:
         import dit.math
         prng = dit.math.prng
