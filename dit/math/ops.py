@@ -13,9 +13,28 @@ from ..exceptions import InvalidBase
 from .equal import close
 
 __all__ = [
+    'get_ops',
     'LinearOperations',
     'LogOperations'
 ]
+
+acceptable_base_strings = set(['linear', 'e'])
+
+def get_ops(base):
+    """
+    Returns an *Operations instance, depending on the base.
+
+    Parameters
+    ----------
+    base : float, 'linear', 'e'
+        The base for the Operations instance.
+
+    """
+    if base == 'linear':
+        ops = LinearOperations()
+    else:
+        ops = LogOperations(base)
+    return ops
 
 def exp_func(b):
     """
@@ -49,8 +68,7 @@ def exp_func(b):
     """
     from dit.utils import is_string_like
 
-    acceptable_strings = set(['linear', 'e'])
-    if is_string_like(b) and b not in acceptable_strings:
+    if is_string_like(b) and b not in acceptable_base_strings:
         raise InvalidBase(msg=b)
 
     if b == 'linear':
@@ -103,8 +121,7 @@ def log_func(b):
     """
     from dit.utils import is_string_like
 
-    acceptable_strings = set(['linear', 'e'])
-    if is_string_like(b) and b not in acceptable_strings:
+    if is_string_like(b) and b not in acceptable_base_strings:
         raise InvalidBase(msg=b)
 
     if b == 'linear':

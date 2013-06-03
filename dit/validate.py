@@ -9,6 +9,7 @@ import numpy as np
 
 from .math import close
 from .exceptions import (
+    ditException,
     InvalidNormalization,
     InvalidOutcome,
     InvalidProbability,
@@ -19,6 +20,7 @@ __all__ = [
     'validate_normalization',
     'validate_outcomes',
     'validate_probabilities',
+    'validate_sequence'
 ]
 
 def is_pmf(pmf, ops):
@@ -94,6 +96,10 @@ def validate_outcomes(outcomes, sample_space):
     """
     Returns `True` if every outcome is in the sample space.
 
+    Implicitly, this also verifies that every outcome is of the same class
+    and that their lengths are the same too.  It does not verify that the
+    items are indexable though.
+
     Parameters
     ----------
     outcomes : list
@@ -159,3 +165,24 @@ def validate_probabilities(pmf, ops):
         raise InvalidProbability( bad, ops=ops )
 
     return True
+
+def validate_sequence(outcome):
+    """
+    Returns `True` if outcome is a sequence, and `False` otherwise.
+
+    Parameters
+    ----------
+    outcome : outcome
+        The outcome to be tested.
+
+    Raises
+    ------
+    InvalidOutcome
+        When the class of the outcome is not a sequence.
+
+    """
+    from collections import Sequence
+    if not isinstance(outcome, Sequence):
+        raise ditException('Outcome class is not a sequence.')
+    else:
+        return True

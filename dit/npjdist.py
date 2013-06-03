@@ -8,8 +8,8 @@ One of the features of joint distributions is that we can marginalize them. This
 requires that we are able to construct smaller outcomes from larger outcomes.
 For example, an outcome like '10101' might become '010' if the first and last
 random variables are marginalized.  Given the alphabet of the joint
-distribution, we can construct a tuple ('0','1','0') for any smaller outcome
-using itertools.product, but how do we create an outcome of the same type? For
+distribution, we can construct a tuple such as ('0','1','0') using
+itertools.product, but we really want an outcome which is a string. For
 tuples and other similar containers, we just pass the tuple to the outcome
 constructor.  This technique does not work for strings, as str(('0','1','0'))
 yields "('0', '1', '0')".  So we have to handle strings separately.
@@ -58,108 +58,20 @@ import numpy as np
 from operator import itemgetter
 
 from .npdist import Distribution
+
+from .helpers import (
+    construct_alphabets,
+    get_outcome_ctor,
+    get_product_func,
+    parse_rvs,
+    reorder
+)
+
 from .exceptions import (
     InvalidDistribution, InvalidOutcome, InvalidProbability, ditException
 )
-from .math import LinearOperations, LogOperations
-from .utils import str_product, product_maker
+from .math import get_ops, LinearOperations
 from .params import ditParams
-
-def get_product_func(outcomes):
-    """
-    Helper function to return a product function for the distribution.
-
-    The idea is to return something similar to itertools.product.
-
-    See the docstring for JointDistribution.
-
-    """
-    # Every outcome must be of the same type.
-    if len(outcomes) == 0:
-        # Any product will work, since there is nothing to iterate over.
-        product = itertools.product
-    else:
-        outcome = outcomes[0]
-        if isinstance(outcome, basestring):
-            # If outcomes are strings, then certainly marginal outcomes should
-            # be strings as well.
-            product = str_product
-        elif isinstance(outcome, tuple):
-            # If outcomes are tuples, then no modification after itertools
-            # is necessary.
-            product = itertools.product
-        else:
-            # Assume the sequence-like constructor can handle tuples as input.
-            product = product_maker(outcome.__class__)
-
-    return product
-
-def parse_rvs(dist, rvs, rv_names=True, unique=True, sort=True):
-    """
-    Returns the indexes of the random variables in `rvs`.
-
-    Parameters
-    ----------
-    dist : joint distribution
-        The joint distribution.
-    rvs : list
-        The list of random variables. This is either a list of random
-        variable indexes or a list of random variable names.
-    rv_names : bool
-        If `True`, then the elements of `rvs` are treated as random variable
-        names. If `False`, then the elements of `rvs` are treated as random
-        variable indexes.
-    unique : bool
-        If `True`, then require that no random variable is repeated in `rvs`.
-        If there are any duplicates, an exception is raised. If `False`, random
-        variables can be repeated.
-    sort : bool
-        If `True`, then the output is sorted by the random variable indexes.
-
-    Returns
-    -------
-    rvs : tuple
-        The random variables, possibly sorted.
-    indexes : tuple
-        The corresponding indexes of the random variables, possibly sorted.
-
-    Raises
-    ------
-    ditException
-        If `rvs` cannot be converted properly into indexes.
-
-    """
-    # Make sure all random variables are unique.
-    if unique and len(set(rvs)) != len(rvs):
-        msg = '`rvs` contained duplicates.'
-        raise ditException(msg)
-
-    if rv_names:
-        # Convert names to indexes.
-        indexes = []
-        for rv in rvs:
-            if rv in dist._rvs:
-                indexes.append( dist._rvs[rv] )
-
-        if len(indexes) != len(rvs):
-            msg ='`rvs` contains invalid random variable names.'
-            raise ditException(msg)
-    else:
-        indexes = rvs
-
-    # Make sure all indexes are valid, even if there are duplicates.
-    all_indexes = set(range(dist.outcome_length()))
-    good_indexes = all_indexes.intersection(indexes)
-    if len(good_indexes) != len(set(indexes)):
-        msg = '`rvs` contains invalid random variables'
-        raise ditException(msg)
-
-    out = zip(rvs, indexes)
-    if sort:
-        out.sort(key=itemgetter(1))
-    rvs, indexes = zip(*out)
-
-    return rvs, indexes
 
 def _make_distribution(pmf, outcomes, alphabet=None, base=None, prng=None,
                                       sparse=True):
@@ -197,11 +109,7 @@ def _make_distribution(pmf, outcomes, alphabet=None, base=None, prng=None,
     # Determine if the pmf represents log probabilities or not.
     if base is None:
         base = ditParams['base']
-    if base == 'linear':
-        ops = LinearOperations()
-    else:
-        ops = LogOperations(base)
-    d.ops = ops
+    d.ops = get_ops(base)
 
     ## outcomes
     #
@@ -211,9 +119,14 @@ def _make_distribution(pmf, outcomes, alphabet=None, base=None, prng=None,
         msg = "Unequal lengths for `values` and `outcomes`"
         raise InvalidDistribution(msg)
 
+    if len(outcomes) == 0:
+        msg = 'Neither `pmf` nor `outcomes` can have length zero.'
+        raise InvalidDistribution(msg)
+
     ## alphabets
     # Use outcomes to obtain the alphabets.
     if alphabet is None:
+        alphabet = construct_alphabets(outcomes)
 
         if len(outcomes) == 0:
             msg = '`outcomes` cannot have zero length if `alphabet` is `None`'
@@ -227,13 +140,12 @@ def _make_distribution(pmf, outcomes, alphabet=None, base=None, prng=None,
                 alphabet[i].add(symbol)
         alphabet = map(tuple, alphabet)
 
-    if len(outcomes):
-        # This is the class of the outcome, not what creates an outcome
-        # from a tuple---which is self._product.
-        d._outcome_class = outcomes[0].__class__
-
-    ## product
-    d._product = get_product_func(outcomes)
+    ## Set the outcome class, ctor, and product function.
+    ## Assumption: the class of each outcome is the same.
+    klass = outcomes[0].__class__
+    d._outcome_class = klass
+    d._outcome_ctor = get_outcome_ctor(klass)
+    d._product = get_product_func(klass)
 
     # Force the distribution to be numerical and a NumPy array.
     d.pmf = np.asarray(pmf, dtype=float)
@@ -249,100 +161,9 @@ def _make_distribution(pmf, outcomes, alphabet=None, base=None, prng=None,
     # Set the mask
     d._mask = tuple(False for _ in range(len(alphabet)))
 
-    # Provide a default set of names for the random variables.
-    rv_names = range(len(alphabet))
-    d._rvs = dict(zip(rv_names, rv_names))
-
     d._meta['is_sparse'] = sparse
 
     return d
-
-def reorder(pmf, outcomes, alphabet, product, index=None, method=None):
-    """
-    Helper function to reorder pmf and outcomes so as to match the sample space.
-
-    The Cartesian product of the alphabets defines the sample space.
-
-    There are two ways to do this:
-        1) Determine the order by generating the entire sample space.
-        2) Analytically calculate the sort order of each outcome.
-
-    If the sample space is very large and sparsely populated, then method 2)
-    is probably faster. However, it must calculate a number using
-    (2**(symbol_orders)).sum().  Potentially, this could be costly. If the
-    sample space is small, then method 1) is probably fastest. We'll experiment
-    and find a good heurestic.
-
-    """
-    # A map of the elements in `outcomes` to their index in `outcomes`.
-    if index is None:
-        index = dict(zip(outcomes, range(len(outcomes))))
-
-    # The number of elements in the sample space?
-    sample_space_size = np.prod( map(len, alphabet) )
-
-    if method is None:
-        if sample_space_size > 10000 and len(outcomes) < 1000:
-            # Large and sparse.
-            method = 'analytic'
-        else:
-            method = 'generate'
-
-    method = 'generate'
-    if method == 'generate':
-        # Obtain the order from the generated order.
-        sample_space = product(*alphabet)
-        order = [index[outcome] for outcome in sample_space if outcome in index]
-        if len(order) != len(outcomes):
-            msg = 'Outcomes and sample_space are not compatible.'
-            raise InvalidDistribution(msg)
-        outcomes_ = [outcomes[i] for i in order]
-        pmf = [pmf[i] for i in order]
-
-        # We get this for free: Check that every outcome was in the sample
-        # space. Well, its costs us a bit in memory to keep outcomes and
-        # outcomes_.
-        if len(outcomes_) != len(outcomes):
-            # We lost an outcome.
-            bad = set(outcomes) - set(outcomes_)
-            L = len(bad)
-            if L == 1:
-                raise InvalidOutcome(bad, single=True)
-            elif L:
-                raise InvalidOutcome(bad, single=False)
-        else:
-            outcomes = outcomes_
-
-    elif method == 'analytic':
-        # Analytically calculate the sort order.
-        # Note, this method does not verify that every outcome was in the
-        # sample space.
-
-        # Construct a lookup from symbol to order in the alphabet.
-        alphabet_size = map(len, alphabet)
-        alphabet_index = [dict(zip(alph, range(size)))
-                          for alph, size in zip(alphabet, alphabet_size)]
-
-        L = len(outcomes[0]) - 1
-        codes = []
-        for outcome in outcomes:
-            idx = 0
-            for i,symbol in enumerate(outcome):
-                idx += alphabet_index[i][symbol] * (alphabet_size[i])**(L-i)
-            codes.append(idx)
-
-        # We need to sort the codes now, keeping track of their indexes.
-        order = zip(codes, range(len(codes)))
-        order.sort()
-        sorted_codes, order = zip(*order)
-        outcomes = [outcomes[i] for i in order]
-        pmf = [pmf[i] for i in order]
-    else:
-        raise Exception("Method must be 'generate' or 'analytic'")
-
-    new_index = dict(zip(outcomes, range(len(outcomes))))
-
-    return pmf, outcomes, new_index
 
 class JointDistribution(Distribution):
     """
@@ -367,18 +188,21 @@ class JointDistribution(Distribution):
         elements of the tuple are sets, each of which represents the unordered
         alphabet of a single random variable.
 
-    _outcome_class : class
-        The class of all outcomes in the distribution.
-
-    _outcomes_index : dict
-        A dictionary mapping outcomes to their index in self.outcomes.
-
     _mask : tuple
         A tuple of booleans specifying if the corresponding random variable
         has been masked or not.
 
     _meta : dict
         A dictionary containing the meta information, described above.
+
+    _outcome_class : class
+        The class of all outcomes in the distribution.
+
+    _outcome_ctor : callable
+        A callable responsible for converting tuples to outcomes.
+
+    _outcomes_index : dict
+        A dictionary mapping outcomes to their index in self.outcomes.
 
     _product : function
         A specialized product function, similar to itertools.product.  The
@@ -496,26 +320,29 @@ class JointDistribution(Distribution):
     Implementation Notes
     --------------------
     The outcomes and pmf of the distribution are stored as a tuple and a NumPy
-    array.  The sequences can be either sparse or dense.  By sparse, we do not
-    mean that the representation is a NumPy sparse array.  Rather, we mean that
-    the sequences need not contain every outcome in the sample space. The order
-    of the outcomes and probabilities will always match the order of the sample
-    space, even though their length might not equal the length of the sample
-    space.
+    array, respectively. The sequences can both be sparse or dense.  By sparse,
+    we do not mean that the representation is a NumPy sparse array.  Rather,
+    we mean that the sequences need not contain every outcome in the sample
+    space. The order of the outcomes and probabilities will always match the
+    order of the sample space, even though their length might not equal the
+    length of the sample space.
 
     """
+    ## Unadvertised attributes
     _alphabet_set = None
-    _outcome_class = None
-    _outcomes_index = None
-    _mask = None # Not initialize-able
+    _mask = None
     _meta = {
         'is_joint': True,
         'is_numerical': True,
         'is_sparse': None,
     }
+    _outcome_class = None
+    _outcome_ctor = None
+    _outcomes_index = None
     _product = None
-    _rv_map = None # Not initialize-able
+    _rvs = None
 
+    ## Advertised attributes.
     alphabet = None
     outcomes = None
     ops = None
@@ -595,6 +422,7 @@ class JointDistribution(Distribution):
         # Instead, we want to call BaseDistribution.__init__.
         super(Distribution, self).__init__(prng)
 
+        # Do any checks/conversions necessary to get the parameters.
         pmf, outcomes, alphabet = self._init(pmf, outcomes, alphabet, base)
 
         # Sort everything to match the order of the sample space.
@@ -620,10 +448,6 @@ class JointDistribution(Distribution):
         # Mask
         self._mask = tuple(False for _ in range(len(alphabet)))
 
-        # Provide a default set of names for the random variables.
-        rv_names = range(len(alphabet))
-        self._rvs = dict(zip(rv_names, rv_names))
-
         if sparse:
             self.make_sparse(trim=True)
         else:
@@ -637,52 +461,33 @@ class JointDistribution(Distribution):
         The barebones initialization.
 
         """
-        def construct_alphabet(evts):
-            if len(evts) == 0:
-                msg = '`outcomes` cannot have zero length if '
-                msg += '`alphabet` is `None`'
-                raise InvalidDistribution(msg)
-
-            # The outcome length.
-            self._outcome_class = evts[0].__class__
-            try:
-                outcome_length = len(evts[0])
-            except TypeError:
-                msg = 'outcome is not a sequence'
-                raise InvalidOutcome(msg)
-
-            alpha = [set([]) for i in range(outcome_length)]
-            for outcome in evts:
-                for i,symbol in enumerate(outcome):
-                    alpha[i].add(symbol)
-            alpha = map(tuple, alpha)
-            return alpha
-
         if isinstance(pmf, Distribution):
-            # Attempt a conversion.
+            # Attempt a conversion from Distribution.
             d = pmf
 
             outcomes = d.outcomes
             pmf = d.pmf
-            if len(outcomes):
-                self._outcome_class = outcomes[0].__class__
-            if base is None:
-                # Allow the user to specify something strange if desired.
-                # Otherwise, use the existing base.
-                base = d.get_base()
+            if len(pmf) == 0:
+                msg = "Cannot convert from empty Distribution."
+                raise InvalidDistribution(msg)
+
+            # Override any specified base.
+            base = d.get_base()
+
             if alphabet is None:
                 if d.is_joint():
                     # Creating a new JointDistribution from an existing one.
                     # This will always work.
                     alphabet = d.alphabet
                 else:
+                    # Creating from a strict Distribution.
                     # We will assume the outcomes are valid joint outcomes.
                     # But we must construct the alphabet.
-                    alphabet = construct_alphabet(outcomes)
+                    alphabet = construct_alphabets(outcomes)
 
         else:
             ## pmf
-            # Attempt to grab outcomes and pmf from a dictionary
+            # Attempt to grab outcomes and pmf from a dict-like object.
             try:
                 outcomes_ = tuple(pmf.keys())
                 pmf_ = tuple(pmf.values())
@@ -697,15 +502,25 @@ class JointDistribution(Distribution):
                 msg = "`outcomes` must be specified or obtainable from `pmf`."
                 raise InvalidDistribution(msg)
             elif len(pmf) != len(outcomes):
-                msg = "Unequal lengths for `values` and `outcomes`"
+                msg = "`pmf` and `outcomes` do not have the same length."
+                raise InvalidDistribution(msg)
+            elif len(outcomes) == 0:
+                # To initialize a distribution, we must know the sample space.
+                # This means we must know the alphabet and the outcome class.
+                # From these we can obtain the customized product function
+                # (and thus, the sample space). So initialization requires at
+                # least one outcome. From there, we can build up a minimal
+                # alphabet, if necessary. Note, it might seems that having
+                # just an alphabet is sufficient, but then we would not know
+                # how to combine symbols to form an outcome.  So we must know
+                # the outcome class, and so, we must have at least one outcome.
+                msg = 'Neither `pmf` nor `outcomes` can have length zero.'
                 raise InvalidDistribution(msg)
 
-            ## alphabets
-            # Use outcomes to obtain the alphabets.
+            ## alphabet
             if alphabet is None:
-                alphabet = construct_alphabet(outcomes)
-            elif len(outcomes):
-                self._outcome_class = outcomes[0].__class__
+                # Use `outcomes` to obtain the alphabets.
+                alphabet = construct_alphabets(outcomes)
 
         # Determine if the pmf represents log probabilities or not.
         if base is None:
@@ -715,30 +530,16 @@ class JointDistribution(Distribution):
                 base = 'linear'
             else:
                 base = ditParams['base']
+        self.ops = get_ops(base)
 
-        if base == 'linear':
-            ops = LinearOperations()
-        else:
-            ops = LogOperations(base)
-        self.ops = ops
-
-        ## product
-        self._product = get_product_func(outcomes)
+        ## Set the outcome class, ctor, and product function.
+        ## Assumption: the class of each outcome is the same.
+        klass = outcomes[0].__class__
+        self._outcome_class = klass
+        self._outcome_ctor = get_outcome_ctor(klass)
+        self._product = get_product_func(klass)
 
         return pmf, outcomes, alphabet
-
-    def _get_outcome_constructor(self):
-        """
-        Internal function to return the constructor for outcomes.
-
-        """
-        c = self._outcome_class
-
-        # Special cases
-        if c == str:
-            c = lambda x: ''.join(x)
-
-        return c
 
     def __setitem__(self, outcome, value):
         """
@@ -774,28 +575,23 @@ class JointDistribution(Distribution):
         __delitem__
 
         """
-        if self._outcome_class is None:
-            # The first __setitem__ call from an empty distribution.
-            self._outcome_class = outcome.__class__
-            # Reset the product function.
-            self._product = get_product_func([outcome])
-            self._mask = tuple(False for _ in range(self.outcome_length()))
-
         if not self.has_outcome(outcome, null=True):
+            # Then, the outcome is not in the sample space.
             raise InvalidOutcome(outcome)
 
         idx = self._outcomes_index.get(outcome, None)
         new_outcome = idx is None
 
         if not new_outcome:
-            # If the distribution is dense, we will be here.
-            # We *could* delete if the value was zero, but we will make
-            # setting always set, and deleting always deleting (when sparse).
+            # If the distribution is dense, we will always be here.
+            # If the distribution is sparse, then we are here for an existing
+            # outcome.  In the sparse case, we *could* delete the outcome
+            # if the value was zero, but we have choosen to let setting always
+            # "set" and deleting always "delete".
             self.pmf[idx] = value
         else:
-            # A new outcome in a sparse distribution.
-            # Sticking with the setting always setting...we add even if
-            # the value is zero.
+            # Thus, the outcome is new in a sparse distribution. Even if the
+            # value is zero, we still set the value and add it to pmf.
 
             # 1. Add the new outcome and probability
             self.outcomes = self.outcomes + (outcome,)
@@ -812,7 +608,35 @@ class JointDistribution(Distribution):
             self._outcomes_index = index
             self.pmf = np.array(pmf, dtype=float)
 
-    def coalesce(self, rvs, rv_names=True, extract=False):
+    def _validate_outcomes(self):
+        """
+        Returns `True` if the outcomes are valid.
+
+        Valid means each outcome is in the sample space (and thus of the
+        proper class and proper length) and also that the outcome class
+        supports the Sequence idiom.
+
+        Returns
+        -------
+        v : bool
+            `True` if the outcomes are valid.
+
+        Raises
+        ------
+        InvalidOutcome
+            When an outcome is not in the sample space.
+
+        """
+        from .validate import validate_sequence
+
+        v = super(Distribution, self)._validate_outcomes()
+        # If we surived, then all outcomes have the same class.
+        # Now just make sure that class is a sequence.
+        v &= validate_sequence(self.outcomes[0])
+        return v
+
+
+    def coalesce(self, rvs, rv_names=None, extract=False):
         """
         Returns a new joint distribution after coalescing random variables.
 
@@ -883,13 +707,13 @@ class JointDistribution(Distribution):
         else:
             ctor_o = tuple
         # Determine how elements of new outcomes are constructed.
-        ctor_i = self._get_outcome_constructor()
+        ctor_i = self._outcome_ctor
 
         # Build the distribution.
         factory = lambda : array('d')
         d = defaultdict(factory)
         for outcome, p in self.zipped():
-            # Build a list of inner outcomes.
+            # Build a list of inner outcomes. "c" stands for "constructed".
             c_outcome = [ctor_i([outcome[i] for i in rv]) for rv in indexes]
             # Build the outer outcome from the inner outcomes.
             c_outcome = ctor_o( c_outcome )
@@ -1000,7 +824,8 @@ class JointDistribution(Distribution):
             return len(self._mask)
         else:
             # Equivalently: sum(self._mask)
-            # Recall, self.alphabet contains only the relevant/valid rvs.
+            # Equivalently: len(self.outcomes[0])
+            # Recall, self.alphabet contains only the unmasked/valid rvs.
             return len(self.alphabet)
 
     def sample_space(self):
@@ -1016,14 +841,21 @@ class JointDistribution(Distribution):
 
         Returns
         -------
-        rv_names : tuple
+        rv_names : tuple or None
             A tuple with length equal to the outcome length, containing the
-            names of the random variables in the distribution.
+            names of the random variables in the distribution.  If no random
+            variable names have been set, then None is returned.
 
         """
-        rv_names = [x for x in self._rvs.items()]
-        rv_names.sort(key=itemgetter(1))
-        rv_names = tuple(map(itemgetter(0), rv_names))
+        if self._rvs is None:
+            rv_names = None
+        else:
+            # _rvs is a dict mapping random variable names to indexes.
+            rv_names = [x for x in self._rvs.items()]
+            # Sort by index.
+            rv_names.sort(key=itemgetter(1))
+            # Keep only the sorted names.
+            rv_names = tuple(map(itemgetter(0), rv_names))
         return rv_names
 
     def has_outcome(self, outcome, null=True):
@@ -1094,6 +926,10 @@ class JointDistribution(Distribution):
         Returns `True` if the alphabet for each random variable is the same.
 
         """
+        if len(self.alphabet) == 0:
+            # Degenerate case: No random variables, no alphabet.
+            return True
+
         a1 = self._alphabet_set[0]
         h = False
         for a2 in self._alphabet_set[1:]:
@@ -1104,7 +940,7 @@ class JointDistribution(Distribution):
 
         return h
 
-    def marginal(self, rvs, rv_names=True):
+    def marginal(self, rvs, rv_names=None):
         """
         Returns a marginal distribution.
 
@@ -1115,7 +951,9 @@ class JointDistribution(Distribution):
         rv_names : bool
             If `True`, then the elements of `rvs` are treated as names of
             random variables. If `False`, then the elements of `rvs` are
-            treated as indexes of random variables.
+            treated as indexes of random variables. If `None`, then the value
+            `True` is used if the distribution has set names for its random
+            variables; otherwise it is set to `False`.
 
         Returns
         -------
@@ -1124,7 +962,10 @@ class JointDistribution(Distribution):
             kept and all others marginalized.
 
         """
-        # Sorted names and indexes.
+        # For marginals, we do must have unique indexes. Additionally, we do
+        # not allow the order of the random variables to change. So we sort.
+        # We parse the rv_names now, so that we can reassign their names
+        # after coalesce has finished.
         rvs, indexes = parse_rvs(self, rvs, rv_names, unique=True, sort=True)
 
         ## Eventually, add in a method specialized for dense distributions.
@@ -1134,7 +975,7 @@ class JointDistribution(Distribution):
         # one new random variable and it is composed of a strict subset of
         # the orignal random variables, with no duplicates, that maintains
         # the order of the original random variables.
-        d = self.coalesce([indexes], extract=True)
+        d = self.coalesce([indexes], rv_names=False, extract=True)
 
         # Handle parts of d that are not settable through initialization.
 
@@ -1142,10 +983,14 @@ class JointDistribution(Distribution):
         if rv_names:
             names = rvs
         else:
-            # We only have the indexes...so reverse lookup to get the names.
-            names_, indexes_ = self._rvs.keys(), self._rvs.values()
-            rev = dict(zip(indexes_, names_))
-            names = [rev[i] for i in indexes]
+            if self._rvs is None:
+                # There are no names...
+                names = None
+            else:
+                # We only have the indexes...so reverse lookup to get the names.
+                names_, indexes_ = self._rvs.keys(), self._rvs.values()
+                rev = dict(zip(indexes_, names_))
+                names = [rev[i] for i in indexes]
         d.set_rv_names(names)
 
         # Set the mask
@@ -1153,7 +998,7 @@ class JointDistribution(Distribution):
         d._mask = tuple(False if i in indexes else True for i in range(L))
         return d
 
-    def marginalize(self, rvs, rv_names=True):
+    def marginalize(self, rvs, rv_names=None):
         """
         Returns a new distribution after marginalizing random variables.
 
@@ -1191,12 +1036,23 @@ class JointDistribution(Distribution):
             names of the random variables in the distribution.
 
         """
-        L = self.outcome_length()
-        if len(set(rv_names)) < L:
-            raise ditException('Too few unique random variable names.')
-        elif len(set(rv_names)) > L:
-            raise ditException('Too many unique random variable names.')
-        self._rvs = dict(zip(rv_names, range(L)))
+        if rv_names is None:
+            # This is an explicit clearing of the rv names.
+            rvs = None
+        else:
+            L = self.outcome_length()
+            if len(set(rv_names)) < L:
+                raise ditException('Too few unique random variable names.')
+            elif len(set(rv_names)) > L:
+                raise ditException('Too many unique random variable names.')
+            if L > 0:
+                rvs = dict(zip(rv_names, range(L)))
+            else:
+                # This is a corner case of a distribution with 0 rvs.
+                # We keep rvs equal to None, instead of an empty dict.
+                rvs = None
+
+        self._rvs = rvs
 
     def to_string(self, digits=None, exact=False, tol=1e-9, show_mask=False,
                         str_outcomes=False):
@@ -1243,11 +1099,14 @@ class JointDistribution(Distribution):
         x = prepare_string(self, digits, exact, tol, show_mask, str_outcomes)
         pmf, outcomes, base, colsep, max_length, pstr = x
 
-        headers = ["Class",
-                   "Alphabet",
-                   "Base",
-                   "Outcome Class",
-                   "Outcome Length"]
+        headers = [
+            "Class",
+            "Alphabet",
+            "Base",
+            "Outcome Class",
+            "Outcome Length",
+            "RV Names"
+        ]
 
         vals = []
 
@@ -1255,7 +1114,9 @@ class JointDistribution(Distribution):
         vals.append(self.__class__.__name__)
 
         # Alphabet
-        if self.is_homogeneous():
+        if len(self.alphabet) == 0:
+            alpha = "()"
+        elif self.is_homogeneous():
             alpha = str(self.alphabet[0]) + " for all rvs"
         else:
             alpha = str(self.alphabet)
@@ -1279,6 +1140,10 @@ class JointDistribution(Distribution):
             outcome_length = str(self.outcome_length())
         vals.append(outcome_length)
 
+        # Random variable names
+        rv_names = self.get_rv_names()
+        vals.append(rv_names)
+
         # Info
         L = max(map(len,headers))
         for head, val in zip(headers, vals):
@@ -1287,6 +1152,8 @@ class JointDistribution(Distribution):
 
         # Distribution
         s.write(''.join([ 'x'.ljust(max_length), colsep, pstr, "\n" ]))
+        # Adjust for empty outcomes. Min length should be: len('x') == 1
+        max_length = max(1, max_length)
         for o,p in izip(outcomes, pmf):
             s.write(''.join( [o.ljust(max_length), colsep, str(p), "\n"] ))
         s.seek(0)

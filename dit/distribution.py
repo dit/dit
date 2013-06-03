@@ -112,7 +112,7 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9,
         else:
             wc = '*'
 
-        ctor = dist._get_outcome_constructor()
+        ctor = dist._outcome_ctor
         def outcome_wc(outcome):
             """
             Builds the wildcarded outcome.
