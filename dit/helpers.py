@@ -80,12 +80,19 @@ def construct_alphabets(outcomes):
         outcome_length = lengths[0]
 
     # Make sure each outcome has the same length.
-    expected_lengths = [lengths[0]] * len(outcomes)
-    equal_lengths = np.alltrue( np.equal( lengths, expected_lengths ) )
+    equal_lengths = np.alltrue( np.equal( lengths, outcome_length ) )
     if not equal_lengths:
         raise ditException('Not all outcomes have the same length.')
 
-    # Construct the alphabets.
+    alphabets = _construct_alphabets(outcomes)
+    return alphabets
+
+def _construct_alphabets(outcomes):
+    """
+    Core construction of alphabets. No sanity checks.
+
+    """
+    outcome_length = len(outcomes[0])
     alphabets = [set([]) for i in range(outcome_length)]
     for outcome in outcomes:
         for i,symbol in enumerate(outcome):
@@ -117,7 +124,7 @@ def get_product_func(klass):
     difference is that the iterables should not be tuples, necessarily.
     Rather, they should match whatever the class of the outcomes is.
 
-    See the docstring for JointDistribution.
+    See the docstring for Distribution.
 
     """
     ctor = get_outcome_ctor(klass)

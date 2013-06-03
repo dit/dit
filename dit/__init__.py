@@ -8,7 +8,7 @@ dit is a Python project for discrete-valued information theory.
 
 # Order is important!
 from .params import ditParams
+from .npscalardist import ScalarDistribution
 from .npdist import Distribution
-from .npjdist import JointDistribution
 
 from .distconst import *

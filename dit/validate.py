@@ -20,7 +20,10 @@ __all__ = [
     'validate_normalization',
     'validate_outcomes',
     'validate_probabilities',
-    'validate_sequence'
+    'validate_sequence',
+    #
+    'validate_outcome_class',
+    'validate_outcome_length',
 ]
 
 def is_pmf(pmf, ops):
@@ -186,3 +189,40 @@ def validate_sequence(outcome):
         raise ditException('Outcome class is not a sequence.')
     else:
         return True
+
+# These are used when you don't have a sample space yet.
+
+def validate_outcome_class(outcomes):
+    """
+    Validates that all outcomes have the same class.
+
+    """
+    # Make sure the class is the same for all outcomes.
+    classattr = lambda x : getattr(x, '__class__')
+    classes = map( classattr, outcomes )
+    equal_classes = np.alltrue( np.equal( classes, outcomes[0].__class__ ) )
+    if not equal_classes:
+        raise ditException('Not all outcomes have the same class.')
+    else:
+        return True
+
+def validate_outcome_length(outcomes):
+    """
+    Validates that all outcomes have the same length.
+
+    """
+    # Make sure each outcome is a container.
+    try:
+        lengths = map(len, outcomes)
+    except TypeError:
+        raise ditException('One or more outcomes is not a container.')
+    else:
+        outcome_length = lengths[0]
+
+    # Make sure each outcome has the same length.
+    equal_lengths = np.alltrue( np.equal( lengths, outcome_length ) )
+    if not equal_lengths:
+        raise ditException('Not all outcomes have the same length.')
+    else:
+        return True
+

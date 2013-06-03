@@ -6,14 +6,14 @@ from __future__ import division
 import numpy as np
 
 from .npdist import Distribution
-from .npjdist import JointDistribution
+from .npscalardist import ScalarDistribution
 
 __all__ = [
     'modify_outcomes',
+    'random_scalar_distribution',
     'random_distribution',
-    'random_joint_distribution',
     'uniform_distribution',
-    'uniform_joint_distribution',
+    'uniform_scalar_distribution',
 ]
 
 def modify_outcomes(dist, ctor):
@@ -22,7 +22,7 @@ def modify_outcomes(dist, ctor):
 
     Parameters
     ----------
-    dist : Distribution, JointDistribution
+    dist : Distribution, ScalarDistribution
         The distribution to be modified.
 
     ctor : callable
@@ -31,27 +31,26 @@ def modify_outcomes(dist, ctor):
 
     Returns
     -------
-    d : Distribution, JointDistribution
+    d : Distribution, ScalarDistribution
         The modified distribution.
 
     Examples
     --------
-    Increment the outcomes by 1.
-    >>> d = dit.uniform_distribution(5)
-    >>> d2 = dit.modify_outcomes(d, lambda x: x + 1)
-
-    Convert the outcomes to strings.
-    >>> d = dit.uniform_joint_distribution(3, ['0', '1'])
+    Convert joint tuple outcomes to strings.
+    >>> d = dit.uniform_distribution(3, ['0', '1'])
     >>> d2 = dit.modify_outcomes(d, lambda x: ''.join(x))
 
+    Increment scalar outcomes by 1.
+    >>> d = dit.uniform_scalar_distribution(5)
+    >>> d2 = dit.modify_outcomes(d, lambda x: x + 1)
     """
     outcomes = map(ctor, dist.outcomes)
     d = dist.__class__(dist.pmf, outcomes, base=dist.get_base())
     return d
 
-def random_distribution(n, prng=None):
+def random_scalar_distribution(n, prng=None):
     """
-    Returns a random distribution over `n` outcomes.
+    Returns a random scalar distribution over `n` outcomes.
 
     The distribution is sampled uniformly over the space of distributions.
 
@@ -66,15 +65,15 @@ def random_distribution(n, prng=None):
     d.pmf = pmf
     return d
 
-def random_joint_distribution(word_length, alphabet_size, prng=None):
+def random_distribution(outcome_length, alphabet_size, prng=None):
     """
-    Returns a uniform joint distribution.
+    Returns a uniform distribution.
 
     The distribution is sampled uniformly over the space of distributions.
 
     Parameters
     ----------
-    word_length : int
+    outcome_length : int
         The length of the outcomes.
 
     alphabet_size : int, list
@@ -85,8 +84,8 @@ def random_joint_distribution(word_length, alphabet_size, prng=None):
 
     Returns
     -------
-    d : JointDistribution.
-        A uniform joint distribution.
+    d : Distribution.
+        A uniform sampled distribution.
 
     """
     import dit.math
@@ -94,14 +93,14 @@ def random_joint_distribution(word_length, alphabet_size, prng=None):
     if prng is None:
         prng = dit.math.prng
 
-    d = uniform_joint_distribution(word_length, alphabet_size)
+    d = uniform_distribution(outcome_length, alphabet_size)
     pmf = prng.dirichlet( np.ones(len(d)) )
     d.pmf = pmf
     return d
 
-def uniform_distribution(n):
+def uniform_scalar_distribution(n):
     """
-    Returns a uniform distribution over `n` outcomes.
+    Returns a uniform scalar distribution over `n` outcomes.
 
     Parameters
     ----------
@@ -111,8 +110,8 @@ def uniform_distribution(n):
 
     Returns
     -------
-    d : Distribution
-        A uniform distribution.
+    d : ScalarDistribution
+        A uniform scalar distribution.
 
     """
     try:
@@ -123,17 +122,17 @@ def uniform_distribution(n):
         outcomes = range(n)
 
     pmf = [1/nOutcomes] * nOutcomes
-    d = Distribution(pmf, outcomes, base='linear')
+    d = ScalarDistribution(pmf, outcomes, base='linear')
 
     return d
 
-def uniform_joint_distribution(word_length, alphabet_size):
+def uniform_distribution(outcome_length, alphabet_size):
     """
-    Returns a uniform joint distribution.
+    Returns a uniform distribution.
 
     Parameters
     ----------
-    word_length : int
+    outcome_length : int
         The length of the outcomes.
 
     alphabet_size : int, list of lists
@@ -146,19 +145,19 @@ def uniform_joint_distribution(word_length, alphabet_size):
 
     Returns
     -------
-    d : JointDistribution.
-        A uniform joint distribution.
+    d : Distribution.
+        A uniform distribution.
 
     Examples
     --------
-    Each random variable has the same standardized alphabet.
-    >>> d = dit.uniform_joint_distribution(2, 2)
+    Each random variable has the same standardized alphabet: [0,1]
+    >>> d = dit.uniform_distribution(2, 2)
 
     Each random variable has its own alphabet.
-    >>> d = dit.uniform_joint_distribution(2, [[0,1],[1,2]])
+    >>> d = dit.uniform_distribution(2, [[0,1],[1,2]])
 
     Both random variables have ['H','T'] as an alphabet.
-    >>> d = dit.uniform_joint_distribution(2, [['H','T']])
+    >>> d = dit.uniform_distribution(2, [['H','T']])
 
     """
     from itertools import product
@@ -185,6 +184,6 @@ def uniform_joint_distribution(word_length, alphabet_size):
 
     pmf = [1/Z] * Z
     outcomes = tuple( product(*alphabet) )
-    d = JointDistribution(pmf, outcomes, base='linear')
+    d = Distribution(pmf, outcomes, base='linear')
 
     return d
