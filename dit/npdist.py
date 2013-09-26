@@ -394,6 +394,9 @@ class Distribution(ScalarDistribution):
         """
         # Note, we are not calling ScalarDistribution.__init__
         # Instead, we want to call BaseDistribution.__init__.
+        # And BaseDistribution is the parent of ScalarDistribution.
+        # We do this because we want to init the prng AND ignore everything
+        # that ScalarDistribution does.
         super(ScalarDistribution, self).__init__(prng)
 
         # Do any checks/conversions necessary to get the parameters.
@@ -517,15 +520,22 @@ class Distribution(ScalarDistribution):
             The new distribution.
 
         """
-        if isinstance(dist, Distribution):
-            # Easiest way is to just copy it and then override the prng.
-            d = dist.copy(base=base)
+        if dist.is_joint():
+            if not isinstance(dist, ScalarDistribution):
+                raise NotImplementedError
+            else:
+                # Assume it is a Distribution.
+                # Easiest way is to just copy it and then override the prng.
+                d = dist.copy(base=base)
         else:
-            # Assumption: `dist` is a ScalarDistribution.
-            from .convert import SDtoD
-            d = SDtoD(dist)
-            if base is not None:
-                d.set_base(base)
+            if not isinstance(dist, ScalarDistribution):
+                raise NotImplementedError
+            else:
+                # Assume it is a ScalarDistribution
+                from .convert import SDtoD
+                d = SDtoD(dist)
+                if base is not None:
+                    d.set_base(base)
 
         if prng is None:
             # Do not use copied prng.
@@ -808,6 +818,10 @@ class Distribution(ScalarDistribution):
         Returns an iterator over the ordered outcome space.
 
         """
+        # Note, this is a restriction of Distribution.
+        # It only deals with sigma-algebras whose sample space is equal to
+        # the Cartesian product of each random variable's sample space.
+        # We might generalize this in the future.
         return self._product(*self.alphabet)
 
     def get_rv_names(self):

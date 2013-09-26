@@ -2,7 +2,18 @@
 # -*- coding: utf-8 -*-
 
 """
-dit is a Python project for discrete-valued information theory.
+dit is a Python package for information theory on discrete random variables.
+
+d = discrete
+i = information
+t = theory
+
+However, the more precise statement (at this point) is that `dit` is a
+Python package for sigma-algebras defined on finite sets. Presently,
+a few assumptions are made which make `dit` unsuitable as a general
+sigma algebra package (on finite sets).  Some of these assumptions
+deal with how the sample space and sigma algebras are formed from
+the probability mass function (and its outcomes).
 
 """
 
