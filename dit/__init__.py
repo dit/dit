@@ -12,3 +12,5 @@ from .npscalardist import ScalarDistribution
 from .npdist import Distribution
 
 from .distconst import *
+
+import dit.algorithms
