@@ -14,3 +14,4 @@ from .equal import close, allclose
 from .sampling import sample, _sample, _samples
 from .ops import *
 from .fraction import approximate_fraction
+from .sigmaalgebra import sigma_algebra
