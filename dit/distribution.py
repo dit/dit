@@ -18,7 +18,7 @@ the singleton events. Queries to the distribution using the [] operator return
 the probability of an outcome---it is not necessary to pass the outcome in as
 a singleton event.  Event probabilities are obtained through the
 `event_probability` method. There is a corresponding `outcome_probability`
-method as well.
+method as well (which just uses the [] operator).
 
 `None` is not an allowable outcome.  `dit` uses `None` to signify that an
 outcome does not exist in the sample space.  We do not enforce this rule.
@@ -308,21 +308,21 @@ class BaseDistribution(object):
 
     def __iter__(self):
         """
-        Returns an iterator over the non-null outcomes in the distribution.
+        Returns an iterator over the outcomes in the distribution.
 
         """
         return iter(self.outcomes)
 
     def __len__(self):
         """
-        Returns the number of outcomes in the distribution's pmf.
+        Returns the number of outcomes in the distribution.
 
         """
         return len(self.outcomes)
 
     def __reversed__(self):
         """
-        Returns a reverse iterator over the non-null outcomes.
+        Returns a reverse iterator over the outcomes.
 
         """
         return reversed(self.outcomes)
@@ -685,6 +685,7 @@ class BaseDistribution(object):
         Scalar multiplication on distributions.
 
         Note, we do not implement distribution-to-distribution multiplication.
+        Perhaps we should?
 
         """
         raise NotImplementedError

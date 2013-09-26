@@ -71,11 +71,12 @@ def construct_alphabets(outcomes):
     # don't at least verify that each outcome is a container of the same
     # length.
 
-    # Make sure each outcome is a container.
+    # Make sure each outcome is sized.  They really should be sequences,
+    # but this check is sufficient for now.
     try:
         lengths = map(len, outcomes)
     except TypeError:
-        raise ditException('One or more outcomes is not a container.')
+        raise ditException('One or more outcomes is not sized. len() fails.')
     else:
         outcome_length = lengths[0]
 

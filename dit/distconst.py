@@ -170,12 +170,12 @@ def uniform_distribution(outcome_length, alphabet_size):
 
         # Autoextend if only one alphabet is provided.
         if len(alphabet) == 1:
-            alphabet = [alphabet[0]] * word_length
-        elif len(alphabet) != word_length:
-            raise TypeError("word_length does not match number of rvs.")
+            alphabet = [alphabet[0]] * outcome_length
+        elif len(alphabet) != outcome_length:
+            raise TypeError("outcome_length does not match number of rvs.")
     else:
         # Build the standard alphabet.
-        alphabet = [range(alphabet_size)] * word_length
+        alphabet = [range(alphabet_size)] * outcome_length
 
     try:
         Z = np.prod(map(len, alphabet))
