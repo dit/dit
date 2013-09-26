@@ -658,17 +658,51 @@ class BaseDistribution(object):
 
         return True
 
-    def zipped(self):
+    def zipped(self, null=False):
         """
         Returns an iterator over (outcome, probability) tuples.
 
+        Parameters
+        ----------
+        null : bool
+            If `True`, then we iterate over all outcomes in the sample space
+            even if they have zero probability.  Otherwise, we iterate over
+            nonnull events only.
+
         """
-        return izip(self.outcomes, self.pmf)
+        if null:
+            # Then we really want to iterate over the sample space.
+            #
+            # There are many ways to do this, but we need to do it in a way
+            # that does not rely on the particular implementation's storage
+            # mechanism.  Here is one way.
+            #
+            outcomes = list(self.sample_space())
+            zero = self.ops.zero
+            probs = [zero] * len(outcomes)
+
+            _outcomes = self.outcomes
+            _pmf = self.pmf
+            i, j = 0, 0
+            while j < len(_pmf):
+                if outcomes[i] == _outcomes[j]:
+                    probs[i] = _pmf[j]
+                    j += 1
+                i += 1
+        else:
+            outcomes = self.outcomes
+            probs = self.pmf
+
+        return izip(outcomes, probs)
+
+
 
     ### We choose to implement only scalar multiplication and distribution
     ### addition, as they will be useful for constructing convex combinations.
     ### While other operations could be defined, their usage is likely uncommon
     ### and the implementation slower as well.
+
+
 
     def __add__(self, other):
         """
