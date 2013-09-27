@@ -150,6 +150,7 @@ def main():
     packages = [
         'dit',
         'dit.algorithms',
+        'dit.example_dists',
         'dit.math',
         'dit.utils',
     ]
