@@ -115,21 +115,21 @@ def main():
     if opt['cython']:
         import Cython.Distutils
         cmdclass['build_ext'] = Cython.Distutils.build_ext
-        
+
         cython_modules = []
 
         close = Extension(
             "dit.math._close",
             ["dit/math/_close.pyx"]
         )
-                
+
         samplediscrete = Extension(
             "dit.math._samplediscrete",
             ["dit/math/_samplediscrete.pyx"],
             include_dirs=[np.get_include()]
         )
 
-        # Active Cython modules                
+        # Active Cython modules
         cython_modules = [
             close,
             samplediscrete,
@@ -142,13 +142,14 @@ def main():
 
     data_files = ()
 
-    requires = [                
+    requires = [
         'numpy(>1.6)',
         'networkx(>1.6)',
     ]
 
     packages = [
         'dit',
+        'dit.algorithms',
         'dit.math',
         'dit.utils',
     ]
