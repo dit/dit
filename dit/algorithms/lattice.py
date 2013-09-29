@@ -9,6 +9,11 @@ from ..helpers import parse_rvs
 from ..math import sigma_algebra, atom_set
 from ..utils import len_cmp
 
+def sigma_algebra_sort(sigalg):
+    sigalg = [tuple(sorted(cet)) for cet in sigalg]
+    sigalg.sort(cmp=len_cmp)
+    return sigalg
+
 def induced_sigalg(dist, rvs, rv_names=None):
     """
     Returns the induced sigma-algebra of the random variable defined by `rvs`.
