@@ -324,7 +324,7 @@ class Distribution(ScalarDistribution):
     prng = None
 
     def __init__(self, pmf, outcomes=None, alphabet=None, base=None, prng=None,
-                            sort=True, sparse=True, validate=True):
+                            sort=True, sparse=None, validate=True):
         """
         Initialize the distribution.
 
@@ -378,6 +378,9 @@ class Distribution(ScalarDistribution):
             the order of `sample_space`, even if their number is not equal to
             the size of the sample space.  If `False`, then the pmf will be
             dense and every outcome in the sample space will be represented.
+            If `None`, then `pmf` and `outcomes` will have the length they had
+            during initialization, but they will be reordered to match the order
+            of the sample space.
 
         validate : bool
             If `True`, then validate the distribution.  If `False`, then assume
@@ -425,10 +428,11 @@ class Distribution(ScalarDistribution):
         # Mask
         self._mask = tuple(False for _ in range(len(alphabet)))
 
-        if sparse:
-            self.make_sparse(trim=True)
-        else:
-            self.make_dense()
+        if sparse is not None:
+            if sparse:
+                self.make_sparse(trim=True)
+            else:
+                self.make_dense()
 
         if validate:
             self.validate()
