@@ -64,7 +64,7 @@ def abstract_method(f):
     return abstract_f
 
 def default_opener(filename):
-    """Opens *filename* using system's default program.
+    """Opens `filename` using system's default program.
 
     Parameters
     ----------
@@ -72,9 +72,11 @@ def default_opener(filename):
         The path of the file to be opened.
 
     """
-    cmds = {'darwin': ['open'],
-            'linux2': ['xdg-open'],
-            'win32': ['cmd.exe', '/c', 'start', '']}
+    cmds = {
+        'darwin': ['open'],
+        'linux2': ['xdg-open'],
+        'win32': ['cmd.exe', '/c', 'start', '']
+    }
     cmd = cmds[sys.platform] + [filename]
     subprocess.call(cmd)
 
