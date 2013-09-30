@@ -462,10 +462,14 @@ class ScalarDistribution(BaseDistribution):
         """
         Addition of distributions of the same kind.
 
+        `other` is assumed to have the same base as `self`.
+
         The other distribution must have the same meta information and the
         same sample space.  If not, raise an exception.
 
         """
+        # This is not going to scale well, in general.
+        # TODO: Need to check that the atom sets are the same.
         for o1, o2 in zip(self.sample_space(), other.sample_space()):
             if o1 != o2:
                 raise IncompatibleDistribution()
@@ -488,11 +492,17 @@ class ScalarDistribution(BaseDistribution):
         """
         Scalar multiplication on distributions.
 
+        `other` is assumed to have the same base as `self`.
+
+        The appropriate operation is performed assuming that the scalar
+        multiple is of the same base as `self`. If true scalar multiplication
+        is desired, perform the operation on `self.pmf` directly.
+
         Note, we do not implement distribution-to-distribution multiplication.
 
         """
         d = self.copy()
-        d.pmf *= other
+        d.ops.add_inplace(d.pmf, other)
         return d
 
     def __rmul__(self, other):
