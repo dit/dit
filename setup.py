@@ -5,18 +5,23 @@ Installation script for Dit.
 
 """
 
+from __future__ import print_function
+
 import os
 import sys
 import warnings
-from glob import glob
+
+try:
+    from setuptools import setup
+    has_setuptools = True
+except ImportError:
+    from distutils.core import setup
+    has_setuptools = False
 
 import distutils
-from distutils.core import setup, Extension
-from distutils.errors import DistutilsPlatformError
+from distutils.core import Extension
 from distutils.command import install_data
 from distutils.command.build_ext import build_ext
-
-import numpy as np
 
 class my_install_data(install_data.install_data):
     # A custom install_data command, which will install it's files
@@ -25,7 +30,7 @@ class my_install_data(install_data.install_data):
         if self.install_dir is None:
             installobj = self.distribution.get_command_obj('install')
             self.install_dir = installobj.install_lib
-        print 'Installing data files to %s' % self.install_dir
+        print('Installing data files to {0}'.format(self.install_dir))
         install_data.install_data.finalize_options(self)
 
 def has_cython():
@@ -95,25 +100,37 @@ def hack_distutils(debug=False, fast_link=True):
                     cvars[varname] = str.join(' ', ldsharedflags)
 
 def main():
+    ## Probably, we don't need this anymore?
     hack_distutils()
     #write_version()
 
+    # Handle optional extensions.
     opt = {}
-    for name in ['Cython']:
+    for name, option in [('Cython', 'nocython')]:
         lname = name.lower()
-        try:
-            idx = sys.argv.index("--{0}".format(lname))
-        except ValueError:
-            opt[lname] = False
+
+        # Determine if the Python module exists
+        opt[lname] = check_opt(name)
+
+        if not opt[lname]:
+            continue
         else:
-            opt[lname] = check_opt(name)
-            del sys.argv[idx]
+            # Disable installation of extensions, if user requested.
+            try:
+                idx = sys.argv.index("--{0}".format(option))
+            except ValueError:
+                pass
+            else:
+                opt[lname] = False
+                del sys.argv[idx]
 
     cmdclass = {'install_data': my_install_data}
 
     cython_modules = []
     if opt['cython']:
         import Cython.Distutils
+        import numpy as np
+
         cmdclass['build_ext'] = Cython.Distutils.build_ext
 
         cython_modules = []
@@ -142,9 +159,9 @@ def main():
 
     data_files = ()
 
-    requires = [
-        'numpy(>1.6)',
-        'networkx(>1.6)',
+    install_requires = [
+        'numpy >= 1.6',
+        'networkx >= 1.6',
     ]
 
     packages = [
@@ -155,36 +172,38 @@ def main():
         'dit.utils',
     ]
 
-    setup(
-          name             = "Dit",
-          provides         = ['dit'],
-          version          = "0.0.1dev", # need to use 'git describe'
-          author           = "The World",
-          author_email     = "",
-          description      = "Discrete Information Theory",
-          keywords         = "",
-          long_description = open('README.md').read(),
-          license          = "LICENSE.txt",
-          platforms        = "",
-          url              = "",
-          download_url     = "",
-          packages         = packages,
-          ext_modules      = ext_modules,
-          cmdclass         = cmdclass,
-          data_files       = data_files,
-          classifiers      = ""
-         )
+    kwds = {
+        'name':              "dit",
+        'version':           "0.0.1dev",
+        'url':               "http://dit.io",
 
+        'packages':          packages,
+        'provides':          ['dit'],
+        'install_requires':  install_requires,
+        'ext_modules':       ext_modules,
+        'cmdclass':          cmdclass,
+        'data_files':        data_files,
 
+        'author':            "Humans",
+        'description':       "Python package for information theory.",
+        'long_description':  open('README.md').read(),
+        'license':           "BSD",
+    }
+
+    # Automatic dependency resolution is supported only by setuptools.
+    if not has_setuptools:
+        del kwds['install_requires']
+
+    setup(**kwds)
 
 if __name__ == '__main__':
     if sys.argv[-1] == 'setup.py':
-        print "To install, run 'python setup.py install'\n"
+        print("To install, run 'python setup.py install'\n")
 
     v = sys.version_info[:2]
-    if v < (2, 6) and v >= (3,0):
-        msg = "Dit requires Python version >2.6 and <3.0 (%d.%d detected)."
-        print msg % v
+    if v < (2, 6):
+        msg = "Dit requires Python version >2.6"
+        print(msg.format(v))
         sys.exit(-1)
 
     main()
