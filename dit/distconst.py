@@ -5,16 +5,62 @@ from __future__ import division
 
 import numpy as np
 
+from .exceptions import ditException
 from .npdist import Distribution
 from .npscalardist import ScalarDistribution
+from .validate import validate_pmf
 
 __all__ = [
+    'mixture_distribution',
     'modify_outcomes',
     'random_scalar_distribution',
     'random_distribution',
     'uniform_distribution',
     'uniform_scalar_distribution',
 ]
+
+def mixture_distribution(dists, weights):
+    """
+    Create a mixture distribution: $\sum p_i d_i$
+
+    Parameters
+    ----------
+    dists: [Distribution]
+        List of distributions to mix.  Each distribution is assumed to have
+        the same base and sample space.  This means that the pmf for each
+        distribution is of the same length as well.
+
+    weights: [float]
+        List of weights to use while mixing `dists`.  The weights are assumed
+        to be probability represented in the base of the distributions.
+
+    Returns
+    -------
+    mix: Distribution
+        The mixture distribution.
+
+    Raises
+    ------
+    DitException
+        Raised if there `dists` and `weights` have unequal lengths.
+    InvalidNormalization
+        Raised if the weights do not sum to unity.
+    InvalidProbability
+        Raised if the weights are not valid probabilities.
+
+    """
+    weights = np.asarray(weights)
+    if len(dists) != len(weights):
+        msg = "Length of `dists` and `weights` must be equal."
+        raise ditException(msg)
+
+    ops = dists[0].ops
+    validate_pmf(weights, ops)
+
+    mix = dists[0].copy()
+    for dist, weight in zip(dists[1:], weights[1:]):
+        ops.add_inplace(mix.pmf, ops.mult(dist.pmf, weight))
+    return mix
 
 def modify_outcomes(dist, ctor):
     """
