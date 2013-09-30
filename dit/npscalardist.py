@@ -29,7 +29,10 @@ distribution is a tuple of alphabets for each random variable.
 
 from .distribution import BaseDistribution
 from .exceptions import (
-    InvalidDistribution, InvalidOutcome, InvalidProbability
+    IncompatibleDistribution,
+    InvalidDistribution,
+    InvalidOutcome,
+    InvalidProbability,
 )
 
 import dit.math
@@ -473,7 +476,7 @@ class ScalarDistribution(BaseDistribution):
         # If self is dense, the result will be dense.
         # If self is sparse, the result will be sparse.
         d = self.copy()
-        for outcome, prob in d2.eventprobs():
+        for outcome, prob in d2.zipped():
             d[outcome] = d.ops.add(d[outcome], prob)
 
         return d
