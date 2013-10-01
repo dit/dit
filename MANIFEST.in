@@ -5,5 +5,5 @@ include README.md
 
 include dit/tests/*.py
 include dit/*/tests/*.py
-invlufr fiy/*/*/tests/*.py
+include dit/*/*/tests/*.py
 
