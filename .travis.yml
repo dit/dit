@@ -1,0 +1,28 @@
+language: python
+python:
+  - "2.6"
+  - "2.7"
+  - "3.2"
+  - "3.3"
+  - "pypy"
+virtualenv:
+  system_site_packages: true
+before_install:
+  - sudo apt-get install -qq python-numpy python-scipy
+  - sudo apt-get install -qq python3-numpy python3-scipy
+  - sudo apt-get install python-matplotlib
+  - pip install coveralls --use-mirrors
+script:
+  # Install dit
+  - pip install .
+  # Move to new directory so that dit is not imported from repository.
+  # We need the full installation path.
+  - cd
+  # Move into the installation path.
+  - cd `python -c "from __future__ import print_function;import dit;import os;print(os.path.split(dit.__file__)[0])"`
+  # Export current directory for logs.
+  - printenv PWD
+  # Run nosetests.
+  - nosetests -v --with-coverage --cover-erase --cover-package=dit
+after_success:
+  - coveralls
