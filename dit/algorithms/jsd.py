@@ -12,7 +12,7 @@ from ..exceptions import ditException
 from ..distconst import mixture_distribution
 from .shannon import entropy as H
 
-def JSD(dists, weights=None):
+def jensen_shannon_divergence(dists, weights=None):
     """
     The Jensen-Shannon Divergence: H( sum(w_i*P_i) ) - sum(w_i*H(P_i)).
 
