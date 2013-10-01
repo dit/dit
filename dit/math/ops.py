@@ -186,6 +186,18 @@ class Operations(object):
             base = self.base
         return base
 
+    def is_null(self, p):
+        """
+        Returns `True` if `p` is a null probability.
+
+        Parameters
+        ----------
+        p : float
+            The probability to be tested.
+
+        """
+        return close(self.zero, p)
+
     def add(self, x, y):
         raise NotImplementedError
     def add_inplace(self, x, y):
