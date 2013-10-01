@@ -97,7 +97,7 @@ def _construct_alphabets(outcomes):
     # The sample space is given by the Cartesian product of the alphabets.
     # So if the user passes sort=False to the constructor of Distribution,
     # we must make sure to keep the order of the alphabet.
-    from collections import OrderedDict
+    from dit.utils import OrderedDict
 
     outcome_length = len(outcomes[0])
     alphabets = [OrderedDict() for i in range(outcome_length)]
