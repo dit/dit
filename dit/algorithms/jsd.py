@@ -14,7 +14,7 @@ from .shannon import entropy as H
 
 def jensen_shannon_divergence(dists, weights=None):
     """
-    The Jensen-Shannon Divergence: H( sum(w_i*P_i) ) - sum(w_i*H(P_i)).
+    The Jensen-Shannon Divergence: H(sum(w_i*P_i)) - sum(w_i*H(P_i)).
 
     Parameters
     ----------
@@ -39,11 +39,8 @@ def jensen_shannon_divergence(dists, weights=None):
         Raised if the weights are not valid probabilities.
     """
     if weights is None:
-        weights = [ 1/len(dists) ] * len(dists)
+        weights = np.array([ 1/len(dists) ] * len(dists))
 
-    weights = np.asarray(weights)
-    if len(dists) != len(weights):
-        msg = "Length of `dists` and `weights` must be equal."
-        raise ditException(msg)
-
+    # validation of `weights` is done in mixture_distribution,
+    # so we don't need to worry about it for the second part.
     return H(mixture_distribution(dists, weights, merge=True)) - sum(w*H(d) for w, d in zip(weights, dists))
