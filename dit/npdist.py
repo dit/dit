@@ -324,7 +324,7 @@ class Distribution(ScalarDistribution):
     prng = None
 
     def __init__(self, pmf, outcomes=None, alphabet=None, base=None, prng=None,
-                            sort=True, sparse=None, validate=True):
+                            sort=True, sparse=True, trim=False, validate=True):
         """
         Initialize the distribution.
 
@@ -368,8 +368,8 @@ class Distribution(ScalarDistribution):
             If `True`, then each random variable's alphabets are sorted.
             Usually, this is desirable, as it normalizes the behavior of
             distributions which have the same sample spaces (when considered as
-            a set).  NOte that addition and multiplication of distributions is
-            defined only if the sample spaces are equal.
+            a set).  Note that addition and multiplication of distributions is
+            defined only if the sample spaces are compatible.
 
         sparse : bool
             Specifies the form of the pmf.  If `True`, then `outcomes` and `pmf`
@@ -378,9 +378,11 @@ class Distribution(ScalarDistribution):
             the order of `sample_space`, even if their number is not equal to
             the size of the sample space.  If `False`, then the pmf will be
             dense and every outcome in the sample space will be represented.
-            If `None`, then `pmf` and `outcomes` will have the length they had
-            during initialization, but they will be reordered to match the order
-            of the sample space.
+
+        trim : bool
+            Specifies if null-outcomes should be removed from the sample space
+            before it is finalized.  In general, the sample space cannot be
+            changed once the distribution has been created.
 
         validate : bool
             If `True`, then validate the distribution.  If `False`, then assume
@@ -403,9 +405,14 @@ class Distribution(ScalarDistribution):
         super(ScalarDistribution, self).__init__(prng)
 
         # Do any checks/conversions necessary to get the parameters.
-        pmf, outcomes, alphabet = self._init(pmf, outcomes, alphabet, base)
+        pmf, outcomes, alphabet = self._init(pmf, outcomes,
+                                             alphabet, base, trim)
 
         # Sort everything to match the order of the sample space.
+        ## Question: Using sort=False seems very strange and supporting it
+        ##           makes things harder, since we can't assume the outcomes
+        ##           and sample space are sorted.  Is there a valid use case
+        ##           for an unsorted sample space?
         if sort:
             alphabet = map(sorted, alphabet)
             alphabet = map(tuple, alphabet)
@@ -428,16 +435,15 @@ class Distribution(ScalarDistribution):
         # Mask
         self._mask = tuple(False for _ in range(len(alphabet)))
 
-        if sparse is not None:
-            if sparse:
-                self.make_sparse(trim=True)
-            else:
-                self.make_dense()
+        if sparse:
+            self.make_sparse(trim=trim)
+        else:
+            self.make_dense()
 
         if validate:
             self.validate()
 
-    def _init(self, pmf, outcomes, alphabet, base):
+    def _init(self, pmf, outcomes, alphabet, base, trim):
         """
         Pre-initialization with various sanity checks.
 
@@ -467,15 +473,11 @@ class Distribution(ScalarDistribution):
             # least one outcome. From there, we can build up a minimal
             # alphabet, if necessary. Note, it might seems that having
             # just an alphabet is sufficient, but then we would not know
-            # how to combine symbols to form an outcome.  So we must know
-            # the outcome class, and so, we must have at least one outcome.
+            # how to combine symbols to form an outcome (e.g. during
+            # marginalization). So we must know the outcome class, and so,
+            # we must have at least one outcome.
             msg = 'Neither `pmf` nor `outcomes` can have length zero.'
             raise InvalidDistribution(msg)
-
-        ## alphabet
-        if alphabet is None:
-            # Use `outcomes` to obtain the alphabets.
-            alphabet = construct_alphabets(outcomes)
 
         # Determine if the pmf represents log probabilities or not.
         if base is None:
@@ -486,6 +488,18 @@ class Distribution(ScalarDistribution):
             else:
                 base = ditParams['base']
         self.ops = get_ops(base)
+
+        if trim:
+            # Remove any outcome probability if it is a null probability.
+            ops = self.ops
+            zipped = zip(pmf, outcomes)
+            pairs = [(p, o) for p, o in zipped if not ops.is_null(p)]
+            pmf, outcomes = zip(*pairs)
+
+        ## alphabet
+        if alphabet is None:
+            # Use `outcomes` to obtain the alphabets.
+            alphabet = construct_alphabets(outcomes)
 
         ## Set the outcome class, ctor, and product function.
         ## Assumption: the class of each outcome is the same.

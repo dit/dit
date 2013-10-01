@@ -252,7 +252,7 @@ class ScalarDistribution(BaseDistribution):
     prng = None
 
     def __init__(self, pmf, outcomes=None, alphabet=None, base=None, prng=None,
-                            sort=True, sparse=True, validate=True):
+                            sort=True, sparse=True, trim=False, validate=True):
         """
         Initialize the distribution.
 
@@ -304,6 +304,11 @@ class ScalarDistribution(BaseDistribution):
             the size of the sample space.  If `False`, then the pmf will be
             dense and every outcome in the sample space will be represented.
 
+        trim : bool
+            Specifies if null-outcomes should be removed from the sample space
+            before it is finalized.  In general, the sample space cannot be
+            changed once the distribution has been created.
+
         validate : bool
             If `True`, then validate the distribution.  If `False`, then assume
             the distribution is valid, and perform no checks.
@@ -318,8 +323,13 @@ class ScalarDistribution(BaseDistribution):
         """
         super(ScalarDistribution, self).__init__(prng)
 
-        pmf, outcomes, alphabet = self._init(pmf, outcomes, alphabet, base)
+        pmf, outcomes, alphabet = self._init(pmf, outcomes,
+                                             alphabet, base, trim)
 
+        ## Question: Using sort=False seems very strange and supporting it
+        ##           makes things harder, since we can't assume the outcomes
+        ##           and sample space are sorted.  Is there a valid use case
+        ##           for an unsorted sample space?
         if sort:
             alphabet = tuple(sorted(alphabet))
             pmf, outcomes, index = reorder(pmf, outcomes, alphabet)
@@ -338,14 +348,14 @@ class ScalarDistribution(BaseDistribution):
         self._alphabet_set = set(alphabet)
 
         if sparse:
-            self.make_sparse(trim=True)
+            self.make_sparse(trim=trim)
         else:
             self.make_dense()
 
         if validate:
             self.validate()
 
-    def _init(self, pmf, outcomes, alphabet, base):
+    def _init(self, pmf, outcomes, alphabet, base, trim):
         """
         Pre-initialization with various sanity checks.
 
@@ -378,6 +388,23 @@ class ScalarDistribution(BaseDistribution):
                 # For example, outcomes is a set or frozenset.
                 outcomes = tuple(outcomes)
 
+        # Determine if the pmf represents log probabilities or not.
+        if base is None:
+            # Provide help for obvious case of linear probabilities.
+            from .validate import is_pmf
+            if is_pmf(np.asarray(pmf, dtype=float), LinearOperations()):
+                base = 'linear'
+            else:
+                base = ditParams['base']
+        self.ops = get_ops(base)
+
+        if trim:
+            # Remove any outcome probability if it is a null probability.
+            ops = self.ops
+            zipped = zip(pmf, outcomes)
+            pairs = [(p, o) for p, o in zipped if not ops.is_null(p)]
+            pmf, outcomes = zip(*pairs)
+
         ## alphabets
         # Use outcomes to obtain the alphabets.
         if alphabet is None:
@@ -387,21 +414,6 @@ class ScalarDistribution(BaseDistribution):
                 raise InvalidDistribution(msg)
 
             alphabet = outcomes
-
-        # Determine if the pmf represents log probabilities or not.
-        if base is None:
-            # Provide help for obvious case of linear probabilities.
-            from .validate import is_pmf
-            if is_pmf(np.asarray(pmf, dtype=float), LinearOperations()):
-                base = 'linear'
-            else:
-                base = ditParams['base']
-
-        if base == 'linear':
-            ops = LinearOperations()
-        else:
-            ops = LogOperations(base)
-        self.ops = ops
 
         return pmf, outcomes, alphabet
 
@@ -462,10 +474,14 @@ class ScalarDistribution(BaseDistribution):
         """
         Addition of distributions of the same kind.
 
+        `other` is assumed to have the same base as `self`.
+
         The other distribution must have the same meta information and the
         same sample space.  If not, raise an exception.
 
         """
+        # This is not going to scale well, in general.
+        # TODO: Need to check that the atom sets are the same.
         for o1, o2 in zip(self.sample_space(), other.sample_space()):
             if o1 != o2:
                 raise IncompatibleDistribution()
@@ -488,11 +504,17 @@ class ScalarDistribution(BaseDistribution):
         """
         Scalar multiplication on distributions.
 
+        `other` is assumed to have the same base as `self`.
+
+        The appropriate operation is performed assuming that the scalar
+        multiple is of the same base as `self`. If true scalar multiplication
+        is desired, perform the operation on `self.pmf` directly.
+
         Note, we do not implement distribution-to-distribution multiplication.
 
         """
         d = self.copy()
-        d.pmf *= other
+        d.ops.mult_inplace(d.pmf, other)
         return d
 
     def __rmul__(self, other):

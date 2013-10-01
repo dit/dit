@@ -93,11 +93,17 @@ def _construct_alphabets(outcomes):
     Core construction of alphabets. No sanity checks.
 
     """
+    # Its important that we maintain the order of the sample space.
+    # The sample space is given by the Cartesian product of the alphabets.
+    # So if the user passes sort=False to the constructor of Distribution,
+    # we must make sure to keep the order of the alphabet.
+    from dit.utils import OrderedDict
+
     outcome_length = len(outcomes[0])
-    alphabets = [set([]) for i in range(outcome_length)]
+    alphabets = [OrderedDict() for i in range(outcome_length)]
     for outcome in outcomes:
         for i,symbol in enumerate(outcome):
-            alphabets[i].add(symbol)
+            alphabets[i][symbol] = True
 
     alphabets = tuple( map(tuple, alphabets) )
     return alphabets
