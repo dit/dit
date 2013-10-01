@@ -59,3 +59,11 @@ def test_mixture_distribution4():
     d3 = dit.mixture_distribution([d,d2], [.5, .5])
     assert_true(np.allclose(pmf, d3.pmf))
     assert_raises(ValueError, dit.mixture_distribution2, [d,d2], [.5,.5])
+
+def test_mixture_distribution5():
+    # Incompatible sample spaces.
+    d1 = dit.Distribution([.5, .5], ['A', 'B'])
+    d2 = dit.Distribution([.5, .5], ['B', 'C'])
+    d3 = dit.mixture_distribution([d1, d2], [.5, .5], merge=True)
+    pmf = np.array([.25, .5, .25])
+    assert_true(np.allclose(pmf, d3.pmf))

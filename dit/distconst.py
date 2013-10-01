@@ -20,7 +20,7 @@ __all__ = [
     'uniform_scalar_distribution',
 ]
 
-def mixture_distribution(dists, weights):
+def mixture_distribution(dists, weights, merge=False):
     """
     Create a mixture distribution: $\sum p_i d_i$
 
@@ -33,6 +33,12 @@ def mixture_distribution(dists, weights):
     weights: [float]
         List of weights to use while mixing `dists`.  The weights are assumed
         to be probability represented in the base of the distributions.
+
+    merge: bool
+        If `True` then distributions will be mixed even if they do not share
+        the same sample space. The idea is that each of the input distributions
+        is reinterpreted on a common, merged sample space. If `False`, then
+        an exception will be raised if incompatible distributions are mixed.
 
     Returns
     -------
@@ -47,7 +53,7 @@ def mixture_distribution(dists, weights):
         Raised if the weights do not sum to unity.
     InvalidProbability
         Raised if the weights are not valid probabilities.
-    IncompatibleDistribution
+    IncompatibleOutcome
         Raised if the sample spaces for each distribution are not compatible.
 
     """
@@ -59,8 +65,14 @@ def mixture_distribution(dists, weights):
     ops = dists[0].ops
     validate_pmf(weights, ops)
 
+    if merge:
+        vals = lambda o: [(ops.mult(w, d[o]) if o in d else 0)
+                          for w, d in zip(weights, dists)]
+    else:
+        vals = lambda o: [ops.mult(w, d[o])
+                          for w, d in zip(weights, dists)]
+
     outcomes = set().union(*[ d.outcomes for d in dists ])
-    vals = lambda o: [ops.mult(w, d[o]) for w, d in zip(weights, dists)]
     pmf = [ops.add_reduce(np.array(vals(o))) for o in outcomes]
     mix = Distribution(pmf, tuple(outcomes), base=ops.get_base())
     return mix
