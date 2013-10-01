@@ -56,6 +56,7 @@ __version__ = '%s'
     fh.close()
 
 def check_opt(name):
+    x = None
     exec('x = has_%s()' % name.lower())
     msg = "%(name)s not found. %(name)s extensions will not be built."
     if not x:
