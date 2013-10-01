@@ -46,7 +46,6 @@ def test_mixture_distribution3():
     d3 = dit.mixture_distribution([d,d2], [.5, .5])
     assert_true(np.allclose(pmf, d3.pmf))
     d3 = dit.mixture_distribution2([d,d2], [.5, .5])
-    print d3.pmf, d2.pmf, .5 * d.pmf + .5 * d2.pmf
     assert_false(np.allclose(pmf, d3.pmf))
 
 def test_mixture_distribution4():
