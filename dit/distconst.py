@@ -58,6 +58,7 @@ def mixture_distribution(dists, weights):
     validate_pmf(weights, ops)
 
     mix = dists[0].copy()
+    ops.mult_inplace(mix.pmf, weights[0])
     for dist, weight in zip(dists[1:], weights[1:]):
         ops.add_inplace(mix.pmf, ops.mult(dist.pmf, weight))
     return mix

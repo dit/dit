@@ -502,7 +502,7 @@ class ScalarDistribution(BaseDistribution):
 
         """
         d = self.copy()
-        d.ops.add_inplace(d.pmf, other)
+        d.ops.mult_inplace(d.pmf, other)
         return d
 
     def __rmul__(self, other):
