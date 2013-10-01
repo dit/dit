@@ -1,0 +1,9 @@
+include MANIFEST.in
+include setup.py
+include LICENSE.txt
+include README.md
+
+include dit/tests/*.py
+include dit/*/tests/*.py
+include dit/*/*/tests/*.py
+

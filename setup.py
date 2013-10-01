@@ -56,6 +56,7 @@ __version__ = '%s'
     fh.close()
 
 def check_opt(name):
+    x = None
     exec('x = has_%s()' % name.lower())
     msg = "%(name)s not found. %(name)s extensions will not be built."
     if not x:
@@ -172,22 +173,28 @@ def main():
         'dit.utils',
     ]
 
+    # Tests
+    package_data = dict(zip(packages, [['tests/*.py']]*len(packages)))
+
     kwds = {
-        'name':              "dit",
-        'version':           "0.0.1dev",
-        'url':               "http://dit.io",
+        'name':                 "dit",
+        'version':              "0.0.1dev",
+        'url':                  "http://dit.io",
 
-        'packages':          packages,
-        'provides':          ['dit'],
-        'install_requires':  install_requires,
-        'ext_modules':       ext_modules,
-        'cmdclass':          cmdclass,
-        'data_files':        data_files,
+        'packages':             packages,
+        'package_data':         package_data,
+        'provides':             ['dit'],
+        'install_requires':     install_requires,
+        'ext_modules':          ext_modules,
+        'cmdclass':             cmdclass,
+        'data_files':           data_files,
+        'include_package_data': True,
 
-        'author':            "Humans",
-        'description':       "Python package for information theory.",
-        'long_description':  open('README.md').read(),
-        'license':           "BSD",
+        'author':               "Humans",
+        'author_email':         "admin@dit.io",
+        'description':          "Python package for information theory.",
+        'long_description':     open('README.md').read(),
+        'license':              "BSD",
     }
 
     # Automatic dependency resolution is supported only by setuptools.

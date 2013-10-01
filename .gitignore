@@ -6,6 +6,8 @@
 # Creating during installation
 MANIFEST
 build/
+dist/
+dit.egg-info/
 
 # gedit
 *.*~
