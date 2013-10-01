@@ -19,6 +19,7 @@ __all__ = [
     'is_pmf',
     'validate_normalization',
     'validate_outcomes',
+    'validate_pmf',
     'validate_probabilities',
     'validate_sequence',
     #
@@ -28,7 +29,7 @@ __all__ = [
 
 def is_pmf(pmf, ops):
     """
-    Returns `True` if the pmf is valid.
+    Returns `True` if the pmf is valid and `False` otherwise.
 
     Parameters
     ----------
@@ -41,13 +42,6 @@ def is_pmf(pmf, ops):
     -------
     v : bool
         `True` if the pmf is valid.
-
-    Raises
-    ------
-    InvalidNormalization
-        When the distribution is not properly normalized.
-    InvalidProbability
-        When a pmf value is not between 0 and 1, inclusive.
 
     """
     try:
@@ -131,6 +125,34 @@ def validate_outcomes(outcomes, sample_space):
     elif L:
         raise InvalidOutcome(bad, single=False)
 
+    return True
+
+def validate_pmf(pmf, ops):
+    """
+    Returns `True` if the pmf is valid.
+
+    Parameters
+    ----------
+    pmf : array-like
+        The probability mass function of the distribution.
+    ops : operations
+        The object which abstracts log and non-log operations.
+
+    Returns
+    -------
+    v : bool
+        `True` if the pmf is valid.
+
+    Raises
+    ------
+    InvalidNormalization
+        When the distribution is not properly normalized.
+    InvalidProbability
+        When a pmf value is not between 0 and 1, inclusive.
+
+    """
+    validate_normalization(pmf, ops)
+    validate_probabilities(pmf, ops)
     return True
 
 def validate_probabilities(pmf, ops):

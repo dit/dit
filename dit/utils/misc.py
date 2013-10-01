@@ -20,6 +20,7 @@ __all__ = ('Property',
            'is_string_like',
            'len_cmp',
            'ordered_partitions',
+           'OrderedDict',
            'partitions',
            'partition_set',
            'powerset',
@@ -27,6 +28,11 @@ __all__ = ('Property',
            'require_keys',
            'str_product',
            'xzip')
+
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 
 def Property( fcn ):
     """Simple property decorator.

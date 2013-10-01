@@ -5,16 +5,137 @@ from __future__ import division
 
 import numpy as np
 
+from .exceptions import ditException
 from .npdist import Distribution
 from .npscalardist import ScalarDistribution
+from .validate import validate_pmf
 
 __all__ = [
+    'mixture_distribution',
+    'mixture_distribution2',
     'modify_outcomes',
     'random_scalar_distribution',
     'random_distribution',
     'uniform_distribution',
     'uniform_scalar_distribution',
 ]
+
+def mixture_distribution(dists, weights, merge=False):
+    """
+    Create a mixture distribution: $\sum p_i d_i$
+
+    Parameters
+    ----------
+    dists: [Distribution]
+        List of distributions to mix.  Each distribution is assumed to have
+        the same base and sample space.
+
+    weights: [float]
+        List of weights to use while mixing `dists`.  The weights are assumed
+        to be probability represented in the base of the distributions.
+
+    merge: bool
+        If `True` then distributions will be mixed even if they do not share
+        the same sample space. The idea is that each of the input distributions
+        is reinterpreted on a common, merged sample space. If `False`, then
+        an exception will be raised if incompatible distributions are mixed.
+
+    Returns
+    -------
+    mix: Distribution
+        The mixture distribution.
+
+    Raises
+    ------
+    DitException
+        Raised if there `dists` and `weights` have unequal lengths.
+    InvalidNormalization
+        Raised if the weights do not sum to unity.
+    InvalidProbability
+        Raised if the weights are not valid probabilities.
+    IncompatibleOutcome
+        Raised if the sample spaces for each distribution are not compatible.
+
+    """
+    weights = np.asarray(weights)
+    if len(dists) != len(weights):
+        msg = "Length of `dists` and `weights` must be equal."
+        raise ditException(msg)
+
+    ops = dists[0].ops
+    validate_pmf(weights, ops)
+
+    if merge:
+        vals = lambda o: [(ops.mult(w, d[o]) if o in d else 0)
+                          for w, d in zip(weights, dists)]
+    else:
+        vals = lambda o: [ops.mult(w, d[o])
+                          for w, d in zip(weights, dists)]
+
+    outcomes = set().union(*[ d.outcomes for d in dists ])
+    pmf = [ops.add_reduce(np.array(vals(o))) for o in outcomes]
+    mix = Distribution(pmf, tuple(outcomes), base=ops.get_base())
+    return mix
+
+def mixture_distribution2(dists, weights):
+    """
+    Create a mixture distribution: $\sum p_i d_i$
+
+    This version assumes that the pmf for each distribution is of the same
+    form, and as a result, will be faster than `mixture_distribution`.
+    Explicitly, it assumes that the sample space is ordered exactly the same
+    for each distribution and that the outcomes currently represented in the
+    pmf are the same as well. Using it in any other case will result in
+    incorrect output or an exception.
+
+    Parameters
+    ----------
+    dists: [Distribution]
+        List of distributions to mix.  Each distribution is assumed to have
+        the same base and sample space.
+
+    weights: [float]
+        List of weights to use while mixing `dists`.  The weights are assumed
+        to be probability represented in the base of the distributions.
+
+    Returns
+    -------
+    mix: Distribution
+        The mixture distribution.
+
+    Raises
+    ------
+    DitException
+        Raised if there `dists` and `weights` have unequal lengths.
+    InvalidNormalization
+        Raised if the weights do not sum to unity.
+    InvalidProbability
+        Raised if the weights are not valid probabilities.
+    IncompatibleDistribution
+        Raised if the sample spaces for each distribution are not compatible.
+
+    """
+    weights = np.asarray(weights)
+    if len(dists) != len(weights):
+        msg = "Length of `dists` and `weights` must be equal."
+        raise ditException(msg)
+
+    # Also just quickly make sure that the pmfs have the same length. In
+    # general, NumPy should give a value error complaining that it cannot
+    # broadcast the smaller array. But if a pmf has length 1, then it can
+    # be broadcast. This would make it harder to detect errors.
+    shapes = set([dist.pmf.shape for dist in dists])
+    if len(shapes) != 1:
+        raise ValueError('All pmfs must have the same length.')
+
+    ops = dists[0].ops
+    validate_pmf(weights, ops)
+
+    mix = dists[0].copy()
+    ops.mult_inplace(mix.pmf, weights[0])
+    for dist, weight in zip(dists[1:], weights[1:]):
+        ops.add_inplace(mix.pmf, ops.mult(dist.pmf, weight))
+    return mix
 
 def modify_outcomes(dist, ctor):
     """
