@@ -173,6 +173,9 @@ class ScalarDistribution(BaseDistribution):
     from_distribution
         Alternative constructor from an existing distribution.
 
+    atoms
+        Returns the atoms of the probability space.
+
     copy
         Returns a deep copy of the distribution.
 

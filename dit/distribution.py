@@ -226,6 +226,9 @@ class BaseDistribution(object):
 
     Methods
     -------
+    atoms
+        Returns the atoms of the probability space.
+
     copy
         Returns a deep copy of the distribution.
 
@@ -374,6 +377,26 @@ class BaseDistribution(object):
         from .validate import validate_normalization
         v = validate_normalization(self.pmf, self.ops)
         return v
+
+    def atoms(self, patoms=False):
+        """
+        Returns the atoms of the probability space.
+
+        Parameters
+        ----------
+        patoms : bool
+            If `True`, then return only the P-atoms, those atoms with positive
+            probability according to the probability measure P. If `False`,
+            then all atoms of the underlying measurable space are returned.
+            In this case, its behavior is synonymous with `sample_space()`.
+
+        """
+        mode = 'atoms'
+        if patoms:
+            mode = 'patoms'
+
+        for outcome, prob in self.zipped(mode):
+            yield outcome
 
     def copy(self):
         """
@@ -658,44 +681,48 @@ class BaseDistribution(object):
 
         return True
 
-    def zipped(self, null=False):
+    def zipped(self, mode='pmf'):
         """
         Returns an iterator over (outcome, probability) tuples.
 
         Parameters
         ----------
-        null : bool
-            If `True`, then we iterate over all outcomes in the sample space
-            even if they have zero probability.  Otherwise, we iterate over
-            nonnull events only.
+        mode : str
+            A string specifying the iteration mode. Three options are valid:
+            'pmf', 'atoms', 'patoms'.  With 'pmf', we iterate over every
+            outcome in and probability represented by the pmf.  Some of these
+            outcomes could be null probabilities or not.  Only if the
+            distribution is dense will every atom in the sample space be
+            yielded.  With 'atoms', we iterate over the entire sample space.
+            With 'patoms', we iterate over the entire sample space but yield
+            only on those atoms which are P-atoms, where P is the probability
+            measure on the probability space. That is, only atoms such that
+            P(atom) > 0 are yielded.
 
         """
-        if null:
-            # Then we really want to iterate over the sample space.
+        modes = ['pmf', 'atoms', 'patoms']
+        if mode not in modes:
+            raise ditException('Invalid mode.')
+
+        if mode == 'pmf':
+            for x in izip(self.outcomes, self.pmf):
+                yield x
+        elif mode == 'atoms':
+            # Then we want to iterate over the sample space.
             #
             # There are many ways to do this, but we need to do it in a way
             # that does not rely on the particular implementation's storage
             # mechanism.  Here is one way.
             #
-            outcomes = list(self.sample_space())
-            zero = self.ops.zero
-            probs = [zero] * len(outcomes)
-
-            _outcomes = self.outcomes
-            _pmf = self.pmf
-            i, j = 0, 0
-            while j < len(_pmf):
-                if outcomes[i] == _outcomes[j]:
-                    probs[i] = _pmf[j]
-                    j += 1
-                i += 1
+            for outcome in self.sample_space():
+                yield outcome, self[outcome]
         else:
-            outcomes = self.outcomes
-            probs = self.pmf
-
-        return izip(outcomes, probs)
-
-
+            is_null = self.ops.is_null
+            # Here we can shortcut and go through outcomes and pmf,
+            # while pruning null outcomes.
+            for outcome, prob in izip(self.outcomes, self.pmf):
+                if not is_null(prob):
+                    yield outcome, prob
 
     ### We choose to implement only scalar multiplication and distribution
     ### addition, as they will be useful for constructing convex combinations.
