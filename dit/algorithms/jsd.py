@@ -31,7 +31,7 @@ def jensen_shannon_divergence(dists, weights=None):
 
     Raises
     ------
-    DitException
+    ditException
         Raised if there `dists` and `weights` have unequal lengths.
     InvalidNormalization
         Raised if the weights do not sum to unity.
@@ -43,4 +43,7 @@ def jensen_shannon_divergence(dists, weights=None):
 
     # validation of `weights` is done in mixture_distribution,
     # so we don't need to worry about it for the second part.
-    return H(mixture_distribution(dists, weights, merge=True)) - sum(w*H(d) for w, d in zip(weights, dists))
+    one = H(mixture_distribution(dists, weights, merge=True))
+    two = sum(w*H(d) for w, d in zip(weights, dists))
+    jsd = one - two
+    return jsd
