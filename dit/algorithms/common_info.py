@@ -33,10 +33,8 @@ def common_information(dist, rvs=None, rv_names=None):
     if rvs is None:
         rvs = range(dist.outcome_length())
         rv_names = False
-    
-    d = dist.copy()
 
-    outcomes, pmf = zip(*d.zipped(mode='patoms'))
+    outcomes, pmf = zip(*dist.zipped(mode='patoms'))
     d = Distribution(pmf, outcomes)
 
     d2 = meet(d, rvs, rv_names)
