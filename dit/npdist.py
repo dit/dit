@@ -218,6 +218,9 @@ class Distribution(ScalarDistribution):
     from_distribution
         Alternative constructor from an existing distribution.
 
+    atoms
+        Returns the atoms of the probability space.
+
     coalesce
         Returns a new joint distribution after coalescing random variables.
 
