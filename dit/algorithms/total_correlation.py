@@ -3,18 +3,21 @@ The total correlation, aka the multiinformation or the integration.
 """
 
 from ..exceptions import ditException
-from .shannon import entropy as H
+from .shannon import conditional_entropy as H
 
-def total_correlation(dist, rvs=None, rv_names=None):
+def total_correlation(dist, rvs=None, crvs=None, rv_names=None):
     """
     Parameters
     ----------
     dist : Distribution
         The distribution from which the total correlation is calculated.
     rvs : list, None
-        The indexes of the random variable used to calculate the entropy.
-        If None, then the total correlation is calculated over all random
-        variables.
+        The indexes of the random variable used to calculate the total
+        correlation. If None, then the total correlation is calculated
+        over all random variables.
+    crvs : list, None
+    	The indexes of the random variables to condition on. If None, then no
+        variables are condition on.
     rv_names : bool
         If `True`, then the elements of `rvs` are treated as random variable
         names. If `False`, then the elements of `rvs` are treated as random
@@ -36,14 +39,14 @@ def total_correlation(dist, rvs=None, rv_names=None):
             # Set to entropy of entire distribution
             rvs = range(dist.outcome_length())
             rv_names = False
-
-        d = dist.marginal(rvs, rv_names=rv_names)
+        if crvs is None:
+            crvs = []
     else:
         msg = "The total correlation is applicable to joint distributions."
         raise ditException(msg)
 
-    marginals = [ d.marginal([i]) for i in range(d.outcome_length()) ]
-
-    T = sum( H(m) for m in marginals ) - H(d)
+    one = sum([ H(dist, [i], crvs, rv_names) for i in rvs ])
+    two = H(dist, rvs, crvs, rv_names)
+    T = one - two
 
     return T
