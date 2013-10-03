@@ -48,6 +48,13 @@ def test_tc6():
 	assert_almost_equal(T(d, [[0,1], [2], [3]]), 1.0)
 
 def test_tc7():
+	outcomes = ['0000', '0011', '0101', '0110',
+	            '1001', '1010', '1100', '1111']
+	pmf = [1/8] * 8
+	d = D(pmf, outcomes)
+	assert_almost_equal(T(d, [[0,1,2], [1,2,3]]), 3.0)
+
+def test_tc8():
 	outcomes = ['00', '01', '11']
 	pmf = [1/3] * 3
 	d = D(pmf, outcomes)
