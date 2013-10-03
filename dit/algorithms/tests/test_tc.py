@@ -1,0 +1,47 @@
+from __future__ import division
+
+from nose.tools import *
+
+from dit import Distribution as D
+from dit.algorithms import (total_correlation as T,
+							mutual_information as I)
+
+def test_tc1():
+	outcomes = ['000', '011', '101', '110']
+	pmf = [1/4] * 4
+	d = D(pmf, outcomes)
+	assert_almost_equal(T(d), 1.0)
+
+def test_tc2():
+	outcomes = ['0000', '0011', '0101', '0110',
+	            '1001', '1010', '1100', '1111']
+	pmf = [1/8] * 8
+	d = D(pmf, outcomes)
+	assert_almost_equal(T(d), 1.0)
+
+def test_tc3():
+	outcomes = ['0000', '0011', '0101', '0110',
+	            '1001', '1010', '1100', '1111']
+	pmf = [1/8] * 8
+	d = D(pmf, outcomes)
+	assert_almost_equal(T(d, [0,1,2]), 0.0)
+
+def test_tc4():
+	outcomes = ['0000', '0011', '0101', '0110',
+	            '1001', '1010', '1100', '1111']
+	pmf = [1/8] * 8
+	d = D(pmf, outcomes)
+	assert_almost_equal(T(d, [0,1,2], [3]), 1.0)
+
+def test_tc5():
+	outcomes = ['0000', '0011', '0101', '0110',
+	            '1001', '1010', '1100', '1111']
+	pmf = [1/8] * 8
+	d = D(pmf, outcomes)
+	assert_almost_equal(T(d, [0,1], [2,3]), 1.0)
+
+def test_tc6():
+	outcomes = ['00', '01', '11']
+	pmf = [1/3] * 3
+	d = D(pmf, outcomes)
+	assert_almost_equal(T(d), I(d, [0], [1]))
