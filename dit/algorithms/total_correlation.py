@@ -37,7 +37,7 @@ def total_correlation(dist, rvs=None, crvs=None, rv_names=None):
     if dist.is_joint():
         if rvs is None:
             # Set to entropy of entire distribution
-            rvs = range(dist.outcome_length())
+            rvs = [ [i] for i in range(dist.outcome_length()) ]
             rv_names = False
         if crvs is None:
             crvs = []
@@ -45,8 +45,8 @@ def total_correlation(dist, rvs=None, crvs=None, rv_names=None):
         msg = "The total correlation is applicable to joint distributions."
         raise ditException(msg)
 
-    one = sum([ H(dist, [i], crvs, rv_names) for i in rvs ])
-    two = H(dist, rvs, crvs, rv_names)
+    one = sum([ H(dist, rv, crvs, rv_names) for rv in rvs ])
+    two = H(dist, set().union(*rvs), crvs, rv_names)
     T = one - two
 
     return T
