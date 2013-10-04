@@ -2,11 +2,11 @@
 Compute the Gacs-Korner common information
 """
 
-from .lattice import meet
+from .lattice import insert_meet
 from ..npdist import Distribution
-from .shannon import entropy as H
+from .shannon import conditional_entropy as H
 
-def common_information(dist, rvs=None, rv_names=None):
+def common_information(dist, rvs=None, crvs=None, rv_names=None):
     """
     Returns the Gacs-Korner common information H[X] over the random
     variables in `rvs`.
@@ -16,8 +16,12 @@ def common_information(dist, rvs=None, rv_names=None):
     dist : Distribution
         The distribution from which the common information is calculated. 
     rvs : list, None
-        The indexes of the random variable used to calculate the entropy.
-        If None, then the entropy is calculated over all random variables.
+        The indexes of the random variables for which the Gacs-Korner common
+        information is to be computed. If None, then the entropy is calculated 
+        over all random variables.
+    crvs : list, None
+        The indexes of the random variables to condition the common information
+        by. If none, than there is no conditioning.
     rv_names : bool
         If `True`, then the elements of `rvs` are treated as random variable
         names. If `False`, then the elements of `rvs` are treated as random
@@ -31,13 +35,19 @@ def common_information(dist, rvs=None, rv_names=None):
 
     """
     if rvs is None:
-        rvs = range(dist.outcome_length())
+        rvs = [ [i] for i in range(dist.outcome_length()) ]
         rv_names = False
+    if crvs is None:
+        crvs = []
 
     outcomes, pmf = zip(*dist.zipped(mode='patoms'))
     d = Distribution(pmf, outcomes)
+    d.set_rv_names(dist.get_rv_names())
 
-    d2 = meet(d, rvs, rv_names)
+    d2 = insert_meet(d, -1, rvs, rv_names)
 
-    K = H(d2)
+    common = [d2.outcome_length() - 1]
+
+    K = H(d2, common, crvs, rv_names)
+
     return K
