@@ -24,6 +24,8 @@ def test_coi3():
     pmf = [1/8] * 8
     d = D(pmf, outcomes)
     assert_almost_equal(I(d, [[0],[1],[2]]), 0.0)
+    d.set_rv_names("XYZW")
+    assert_almost_equal(I(d, [['X'],['Y'],['Z']]), 0.0)
  
 def test_coi4():
     outcomes = ['0000', '0011', '0101', '0110',
@@ -31,6 +33,8 @@ def test_coi4():
     pmf = [1/8] * 8
     d = D(pmf, outcomes)
     assert_almost_equal(I(d, [[0],[1],[2]], [3]), -1.0)
+    d.set_rv_names("XYZW")
+    assert_almost_equal(I(d, [['X'],['Y'],['Z']], ['W']), -1.0)
  
 def test_coi5():
     outcomes = ['0000', '0011', '0101', '0110',
@@ -38,6 +42,8 @@ def test_coi5():
     pmf = [1/8] * 8
     d = D(pmf, outcomes)
     assert_almost_equal(I(d, [[0],[1]], [2,3]), 1.0)
+    d.set_rv_names("XYZW")
+    assert_almost_equal(I(d, [['X'],['Y']], ['Z','W']), 1.0)
  
 def test_coi6():
     outcomes = ['0000', '0011', '0101', '0110',
@@ -45,3 +51,5 @@ def test_coi6():
     pmf = [1/8] * 8
     d = D(pmf, outcomes)
     assert_almost_equal(I(d, [[0]], [1,2,3]), 0.0)
+    d.set_rv_names("XYZW")
+    assert_almost_equal(I(d, [['X']], ['Y','Z','W']), 0.0)
