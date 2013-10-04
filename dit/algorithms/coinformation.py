@@ -2,7 +2,7 @@
 The co-information.
 """
 
-from iterutils import flatten, powerset
+from iterutils import powerset
 
 from .shannon import conditional_entropy as H
 
@@ -46,6 +46,6 @@ def coinformation(dist, rvs=None, crvs=None, rv_names=None):
         msg = "The total correlation is applicable to joint distributions."
         raise ditException(msg)
 
-    I = sum( (-1)**(len(Xs)+1)*H(dist, flatten(Xs), crvs, rv_names) for Xs in powerset(rvs) )
+    I = sum( (-1)**(len(Xs)+1)*H(dist, set().union(*Xs), crvs, rv_names) for Xs in powerset(rvs) )
 
     return I
