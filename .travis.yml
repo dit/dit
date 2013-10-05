@@ -18,7 +18,7 @@ before_install:
   # Otherwise, rely on pip to install Numpy.
   - 'if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then sudo apt-get install -qq python-numpy; fi;'
 
-  - 'if [ ${CYTHON} == "1" ]; then sudo apt-get install cython; fi;'
+  - 'if [ ${CYTHON} == "1" ]; then pip install cython; fi;'
   #- sudo apt-get install -qq python-numpy
   #- sudo apt-get install -qq python3-numpy
   #- sudo apt-get install -qq python-scipy
