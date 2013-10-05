@@ -49,7 +49,7 @@ from .exceptions import (
     InvalidOutcome,
 )
 
-from .utils import zip
+from .utils import map, range, zip
 
 def prepare_string(dist, digits=None, exact=False, tol=1e-9,
                          show_mask=False, str_outcomes=False):
@@ -150,6 +150,7 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9,
     else:
         outcomes = map(str, outcomes)
 
+    outcomes = list(outcomes)
     if len(outcomes):
         max_length = max(map(len, outcomes))
     else:
@@ -673,7 +674,7 @@ class BaseDistribution(object):
             'outcomes': '_validate_outcomes',
             'norm': '_validate_normalization',
         }
-        for kw, method in mapping.iteritems():
+        for kw, method in mapping.items():
             test = kwargs.get(kw, True)
             if test:
                 getattr(self, method)()

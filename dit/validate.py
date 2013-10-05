@@ -221,7 +221,7 @@ def validate_outcome_class(outcomes):
     """
     # Make sure the class is the same for all outcomes.
     classattr = lambda x : getattr(x, '__class__')
-    classes = map( classattr, outcomes )
+    classes = list(map( classattr, outcomes ))
     equal_classes = np.alltrue( np.equal( classes, outcomes[0].__class__ ) )
     if not equal_classes:
         raise ditException('Not all outcomes have the same class.')
@@ -235,7 +235,7 @@ def validate_outcome_length(outcomes):
     """
     # Make sure each outcome is a container.
     try:
-        lengths = map(len, outcomes)
+        lengths = list(map(len, outcomes))
     except TypeError:
         raise ditException('One or more outcomes is not a container.')
     else:

@@ -15,7 +15,7 @@ import numpy as np
 
 # dit
 from .exceptions import ditException, InvalidDistribution, InvalidOutcome
-from .utils import str_product, product_maker
+from .utils import str_product, product_maker, map, range, zip
 
 
 
@@ -71,10 +71,16 @@ def construct_alphabets(outcomes):
     # don't at least verify that each outcome is a container of the same
     # length.
 
+    # Make sure outcomes is a sequence
+    try:
+        len(outcomes)
+    except TypeError:
+        raise TypeError('`outcomes` must be a sequence.')
+
     # Make sure each outcome is sized.  They really should be sequences,
     # but this check is sufficient for now.
     try:
-        lengths = map(len, outcomes)
+        lengths = list(map(len, outcomes))
     except TypeError:
         raise ditException('One or more outcomes is not sized. len() fails.')
     else:
@@ -224,8 +230,9 @@ def parse_rvs(dist, rvs, rv_names=None, unique=True, sort=True):
     # Sort the random variable names (or indexes) by their index.
     out = zip(rvs, indexes)
     if sort:
+        out = list(out)
         out.sort(key=itemgetter(1))
-    rvs, indexes = zip(*out)
+    rvs, indexes = list(zip(*out))
 
     return rvs, indexes
 
@@ -291,7 +298,7 @@ def reorder(pmf, outcomes, alphabet, product, index=None, method=None):
         # sample space.
 
         # Construct a lookup from symbol to order in the alphabet.
-        alphabet_size = map(len, alphabet)
+        alphabet_size = list(map(len, alphabet))
         alphabet_index = [dict(zip(alph, range(size)))
                           for alph, size in zip(alphabet, alphabet_size)]
 
@@ -304,9 +311,9 @@ def reorder(pmf, outcomes, alphabet, product, index=None, method=None):
             codes.append(idx)
 
         # We need to sort the codes now, keeping track of their indexes.
-        order = zip(codes, range(len(codes)))
+        order = list(zip(codes, range(len(codes))))
         order.sort()
-        sorted_codes, order = zip(*order)
+        sorted_codes, order = list(zip(*order))
         outcomes = [outcomes[i] for i in order]
         pmf = [pmf[i] for i in order]
     else:

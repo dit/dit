@@ -73,6 +73,7 @@ from .exceptions import (
 )
 from .math import get_ops, LinearOperations
 from .params import ditParams
+from .utils import map, range, zip
 
 def _make_distribution(pmf, outcomes, base,
                        alphabet=None, prng=None, sparse=True):
@@ -131,7 +132,7 @@ def _make_distribution(pmf, outcomes, base,
 
     # Tuple sample space and its set.
     d.alphabet = tuple(alphabet)
-    d._alphabet_set = map(set, d.alphabet)
+    d._alphabet_set = tuple(map(set, d.alphabet))
 
     # Set the mask
     d._mask = tuple(False for _ in range(len(alphabet)))
@@ -419,6 +420,7 @@ class Distribution(ScalarDistribution):
         if sort:
             alphabet = map(sorted, alphabet)
             alphabet = map(tuple, alphabet)
+            alphabet = list(alphabet)
             pmf, outcomes, index = reorder(pmf, outcomes,
                                            alphabet, self._product)
         else:
@@ -433,7 +435,7 @@ class Distribution(ScalarDistribution):
 
         # Tuple alphabet and its set.
         self.alphabet = tuple(alphabet)
-        self._alphabet_set = map(set, self.alphabet)
+        self._alphabet_set = tuple(map(set, self.alphabet))
 
         # Mask
         self._mask = tuple(False for _ in range(len(alphabet)))
@@ -461,11 +463,19 @@ class Distribution(ScalarDistribution):
             outcomes = outcomes_
             pmf = pmf_
 
-        ## outcomes
         if outcomes is None:
             msg = "`outcomes` must be specified or obtainable from `pmf`."
             raise InvalidDistribution(msg)
-        elif len(pmf) != len(outcomes):
+
+        # Make sure pmf and outcomes are sequences
+        try:
+            len(outcomes)
+            len(pmf)
+        except TypeError:
+            raise TypeError('`outcomes` and `pmf` must be sequences.')
+
+
+        if len(pmf) != len(outcomes):
             msg = "`pmf` and `outcomes` do not have the same length."
             raise InvalidDistribution(msg)
         elif len(outcomes) == 0:
@@ -497,7 +507,7 @@ class Distribution(ScalarDistribution):
             ops = self.ops
             zipped = zip(pmf, outcomes)
             pairs = [(p, o) for p, o in zipped if not ops.is_null(p)]
-            pmf, outcomes = zip(*pairs)
+            pmf, outcomes = list(zip(*pairs))
 
         ## alphabet
         if alphabet is None:
@@ -749,6 +759,7 @@ class Distribution(ScalarDistribution):
         outcomes = tuple(d.keys())
         pmf = map(np.frombuffer, d.values())
         pmf = map(self.ops.add_reduce, pmf)
+        pmf = tuple(pmf)
 
         if len(rvs) == 1 and extract:
             # The alphabet for each rv is the same as what it was originally.

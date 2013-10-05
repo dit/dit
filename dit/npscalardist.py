@@ -378,7 +378,16 @@ class ScalarDistribution(BaseDistribution):
         # Make sure outcomes and values have the same length.
         if outcomes is None:
             outcomes = range(len(pmf))
-        elif len(pmf) != len(outcomes):
+
+
+        # Make sure pmf and outcomes are sequences
+        try:
+            len(outcomes)
+            len(pmf)
+        except TypeError:
+            raise TypeError('`outcomes` and `pmf` must be sequences.')
+
+        if len(pmf) != len(outcomes):
             msg = "Unequal lengths for `values` and `outcomes`"
             raise InvalidDistribution(msg)
 
@@ -406,7 +415,7 @@ class ScalarDistribution(BaseDistribution):
             ops = self.ops
             zipped = zip(pmf, outcomes)
             pairs = [(p, o) for p, o in zipped if not ops.is_null(p)]
-            pmf, outcomes = zip(*pairs)
+            pmf, outcomes = list(zip(*pairs))
 
         ## alphabets
         # Use outcomes to obtain the alphabets.
@@ -1014,7 +1023,7 @@ class ScalarDistribution(BaseDistribution):
             'norm': '_validate_normalization',
             'probs': '_validate_probabilities'
         }
-        for kw, method in mapping.iteritems():
+        for kw, method in mapping.items():
             test = kwargs.get(kw, True)
             if test:
                 getattr(self, method)()
