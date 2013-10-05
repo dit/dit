@@ -33,7 +33,7 @@ try:
     from itertools import izip as zip
 except ImportError:
     # 3.x has no izip, since zip is builtin.
-    pass
+    zip = zip
 
 try:
     from collections import OrderedDict
