@@ -1101,7 +1101,6 @@ class Distribution(ScalarDistribution):
         """
         from .distribution import prepare_string
 
-        from itertools import izip
         from StringIO import StringIO
 
         s = StringIO()
@@ -1164,7 +1163,7 @@ class Distribution(ScalarDistribution):
         s.write(''.join([ 'x'.ljust(max_length), colsep, pstr, "\n" ]))
         # Adjust for empty outcomes. Min length should be: len('x') == 1
         max_length = max(1, max_length)
-        for o,p in izip(outcomes, pmf):
+        for o,p in zip(outcomes, pmf):
             s.write(''.join( [o.ljust(max_length), colsep, str(p), "\n"] ))
         s.seek(0)
 

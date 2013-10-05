@@ -27,7 +27,13 @@ __all__ = ('Property',
            'product_maker',
            'require_keys',
            'str_product',
-           'xzip')
+           'zip')
+
+try:
+    from itertools import izip as zip
+except ImportError:
+    # 3.x has no izip, since zip is builtin.
+    pass
 
 try:
     from collections import OrderedDict
@@ -360,20 +366,6 @@ def require_keys(keys, dikt):
         if key not in dikt_keys:
            msg = "'%s' is required." % (key,)
            raise Exception(msg)
-
-def xzip(*args):
-    """This is just like the zip function, except it is a generator.
-
-    list(xzip(seq1 [, seq2 [...]])) -> [(seq1[0], seq2[0] ...), (...)]
-
-    Return a list of tuples, where each tuple contains the i-th element
-    from each of the argument sequences.  The returned list is truncated
-    in length to the length of the shortest argument sequence.
-
-    """
-    iters = [iter(a) for a in args]
-    while 1:
-        yield tuple([i.next() for i in iters])
 
 def partitions1(set_):
     """
