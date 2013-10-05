@@ -21,7 +21,7 @@ def validate_boolean(b):
 
 def validate_float(s):
     """Convert s to float or raise a ValueError."""
-    try: 
+    try:
         return float(s)
     except ValueError:
         raise(ValueError('Could not convert "%s" to float' % s))
@@ -61,7 +61,7 @@ class DITParams(dict):
     # A dictionary relating params to validators.
     def __init__(self, *args, **kwargs):
         self.validate = dict([(key, converter) for key, (default, converter) \
-                              in defaultParams.iteritems()])
+                              in defaultParams.items()])
         dict.__init__(self, *args, **kwargs)
 
     def __setitem__(self, key, val):
