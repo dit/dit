@@ -1,5 +1,5 @@
 """
-The co-information.
+The co-information aka the multivariate mututal information.
 """
 
 from iterutils import powerset
@@ -11,11 +11,11 @@ def coinformation(dist, rvs=None, crvs=None, rv_names=None):
     Parameters
     ----------
     dist : Distribution
-        The distribution from which the total correlation is calculated.
+        The distribution from which the coinformation is calculated.
     rvs : list, None
-        The indexes of the random variable used to calculate the total
-        correlation. If None, then the total correlation is calculated
-        over all random variables.
+        The indexes of the random variable used to calculate the coinformation
+        between. If None, then the coinformation is calculated over all random 
+        variables.
     crvs : list, None
     	The indexes of the random variables to condition on. If None, then no
         variables are condition on.
@@ -27,8 +27,8 @@ def coinformation(dist, rvs=None, crvs=None, rv_names=None):
 
     Returns
     -------
-    T : float
-        The total correlation
+    I : float
+        The coinformation.
 
     Raises
     ------
