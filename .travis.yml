@@ -16,11 +16,24 @@ before_install:
 script:
   # Install dit
   - pip install .
+
   # Move to new directory so that dit is not imported from repository.
   # We need the full installation path.
-  - cd
-  # Move into the installation path.
-  - cd `python -c "from __future__ import print_function;import dit;import os;print(os.path.split(dit.__file__)[0])"`
+  #
+  # 2013-10-05
+  #     We should import dit to determine its installation location.
+  #     The reason is that if importing dit fails, then we won't
+  #     change directories at all. Then when nosetests is run, zero
+  #     tests will be run. So we no longer do the following:
+  #
+  ###- cd
+  #### Move into the installation path.
+  ###- cd `python -c "from __future__ import print_function;import dit;import os;print(os.path.split(dit.__file__)[0])"`
+  #
+  #     Instead, we'll use pip, grep, and awk. A bit fragile but it works.
+  #
+  - cd `pip show dit | grep Location | awk '{print $2}'`
+
   # Export current directory for logs.
   - printenv PWD
   # Run nosetests.
