@@ -4,17 +4,16 @@ python:
   - "2.6"
   - "2.7"
   - "3.2"
-  ## TravisCI is using Ubuntu 12.04
-  ## The NumPy versions via apt-get is 1.6.2
-  ## Numpy 1.6.2 does not support Python 3.3
-  #- "3.3"
+  - "3.3"
 
 virtualenv:
   system_site_packages: true
 
 before_install:
-  - sudo apt-get install -qq python-numpy
-  - sudo apt-get install -qq python3-numpy
+  # Use Numpy 1.6.2 up to Python 3.3, then use pip.
+  - 'if [ $TRAVIS_PYTHON_VERSION == "3.3" ]; then pip install numpy; else sudo apt-get install -qq python-numpy; fi;'
+  #- sudo apt-get install -qq python-numpy
+  #- sudo apt-get install -qq python3-numpy
   #- sudo apt-get install -qq python-scipy
   #- sudo apt-get install -qq python3-scipy
   #- sudo apt-get install python-matplotlib
