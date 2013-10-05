@@ -8,7 +8,7 @@ from .shannon import conditional_entropy as H
 
 def common_information(dist, rvs=None, crvs=None, rv_names=None):
     """
-    Returns the Gacs-Korner common information H[X] over the random
+    Returns the Gacs-Korner common information K[X1:X2...] over the random
     variables in `rvs`.
 
     Parameters
@@ -17,8 +17,8 @@ def common_information(dist, rvs=None, crvs=None, rv_names=None):
         The distribution from which the common information is calculated. 
     rvs : list, None
         The indexes of the random variables for which the Gacs-Korner common
-        information is to be computed. If None, then the entropy is calculated 
-        over all random variables.
+        information is to be computed. If None, then the common information is
+        calculated over all random variables.
     crvs : list, None
         The indexes of the random variables to condition the common information
         by. If none, than there is no conditioning.
