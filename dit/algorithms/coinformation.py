@@ -14,10 +14,10 @@ def coinformation(dist, rvs=None, crvs=None, rv_names=None):
         The distribution from which the coinformation is calculated.
     rvs : list, None
         The indexes of the random variable used to calculate the coinformation
-        between. If None, then the coinformation is calculated over all random 
+        between. If None, then the coinformation is calculated over all random
         variables.
     crvs : list, None
-    	The indexes of the random variables to condition on. If None, then no
+        The indexes of the random variables to condition on. If None, then no
         variables are condition on.
     rv_names : bool
         If `True`, then the elements of `rvs` are treated as random variable

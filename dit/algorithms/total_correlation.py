@@ -16,7 +16,7 @@ def total_correlation(dist, rvs=None, crvs=None, rv_names=None):
         correlation. If None, then the total correlation is calculated
         over all random variables.
     crvs : list, None
-    	The indexes of the random variables to condition on. If None, then no
+        The indexes of the random variables to condition on. If None, then no
         variables are condition on.
     rv_names : bool
         If `True`, then the elements of `rvs` are treated as random variable
