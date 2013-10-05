@@ -10,8 +10,9 @@ virtualenv:
   system_site_packages: true
 
 before_install:
-  # Use Numpy 1.6.2 up to Python 3.3, then use pip.
-  - 'if [ $TRAVIS_PYTHON_VERSION == "3.3" ]; then pip install numpy; else sudo apt-get install -qq python-numpy; fi;'
+  # Use Numpy 1.6.2 up to Python 2.x
+  # Otherwise, rely on pip to install Numpy.
+  - 'if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then sudo apt-get install -qq python-numpy; fi;'
   #- sudo apt-get install -qq python-numpy
   #- sudo apt-get install -qq python3-numpy
   #- sudo apt-get install -qq python-scipy
