@@ -258,7 +258,7 @@ def reorder(pmf, outcomes, alphabet, product, index=None, method=None):
         index = dict(zip(outcomes, range(len(outcomes))))
 
     # The number of elements in the sample space?
-    sample_space_size = np.prod( map(len, alphabet) )
+    sample_space_size = np.prod( list(map(len, alphabet)) )
 
     if method is None:
         if sample_space_size > 10000 and len(outcomes) < 1000:

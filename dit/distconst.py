@@ -300,7 +300,7 @@ def uniform_distribution(outcome_length, alphabet_size):
         alphabet = [tuple(range(alphabet_size))] * outcome_length
 
     try:
-        Z = np.prod(map(len, alphabet))
+        Z = np.prod( list(map(len, alphabet)) )
     except TypeError:
         raise TypeError("alphabet_size must be an int or list of lists.")
 
