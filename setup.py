@@ -163,6 +163,7 @@ def main():
     install_requires = [
         'numpy >= 1.6',
         #'networkx >= 1.6',
+        'iterutils'
     ]
     if sys.version_info[:2] == (2, 6):
         install_requires.append('ordereddict >= 1.1')
