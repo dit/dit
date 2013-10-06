@@ -11,19 +11,19 @@ def Unq():
         ('A', 'B', 'AB')
     ]
 
-    d = Distribution(pmf, outcomes)
+    d = Distribution(outcomes, pmf)
     return d
 
 def Rdn():
     pmf = [1/2, 1/2]
     outcomes = ['000', '111']
-    d = Distribution(pmf, outcomes)
+    d = Distribution(outcomes, pmf)
     return d
 
 def Xor():
     pmf = [1/4] * 4
     outcomes = ['000', '011', '101', '110']
-    d = Distribution(pmf, outcomes)
+    d = Distribution(outcomes, pmf)
     return d
 
 def RdnXor():
@@ -39,17 +39,17 @@ def RdnXor():
         ('R1', 'R1', 'R0'),
     ]
 
-    d = Distribution(pmf, outcomes)
+    d = Distribution(outcomes, pmf)
     return d
 
 def ImperfectRdn():
     pmf = [.499, .5, .001]
     outcomes = [('0', '0', '0'), ('1','1','1'), ('0','1','0')]
-    d = Distribution(pmf, outcomes)
+    d = Distribution(outcomes, pmf)
     return d
 
 def Subtle():
     pmf = [1/3] * 3
     outcomes = [('0', '0', '00'), ('1','1','11'), ('0','1','01')]
-    d = Distribution(pmf, outcomes)
+    d = Distribution(outcomes, pmf)
     return d

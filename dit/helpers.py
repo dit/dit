@@ -54,7 +54,7 @@ def construct_alphabets(outcomes):
     Examples
     --------
     >>> construct_alphabets([(0,1), (1,1)])
-    (((0,1), (1,))
+    ((0,1), (1,))
 
     Raises
     ------
@@ -236,13 +236,31 @@ def parse_rvs(dist, rvs, rv_names=None, unique=True, sort=True):
 
     return rvs, indexes
 
-def reorder(pmf, outcomes, alphabet, product, index=None, method=None):
+def reorder(outcomes, pmf, sample_space, index=None):
+    """
+    Helper function to reorder outcomes and pmf to match sample_space.
+
+    """
+    if index is None:
+        index = dict(zip(outcomes, range(len(outcomes))))
+
+    order = [index[outcome] for outcome in sample_space if outcome in index]
+    if len(order) != len(outcomes):
+        # For example, `outcomes` contains an element not in `sample_space`.
+        # For example, `outcomes` contains duplicates.
+        raise InvalidDistribution('outcomes and sample_space are not compatible.')
+
+    outcomes = [outcomes[i] for i in order]
+    pmf = [pmf[i] for i in order]
+    new_index = dict(zip(outcomes, range(len(outcomes))))
+    return outcomes, pmf, new_index
+
+def reorder_cp(pmf, outcomes, alphabet, product, index=None, method=None):
     """
     Helper function to reorder pmf and outcomes so as to match the sample space.
 
-    The Cartesian product of the alphabets defines the sample space.
-
-    There are two ways to do this:
+    When the sample space is not stored, explicitly on the distribution, then
+    there are two ways to do this:
         1) Determine the order by generating the entire sample space.
         2) Analytically calculate the sort order of each outcome.
 
@@ -250,7 +268,7 @@ def reorder(pmf, outcomes, alphabet, product, index=None, method=None):
     is probably faster. However, it must calculate a number using
     (2**(symbol_orders)).sum().  Potentially, this could be costly. If the
     sample space is small, then method 1) is probably fastest. We'll experiment
-    and find a good heurestic.
+    and find a good heuristic.
 
     """
     # A map of the elements in `outcomes` to their index in `outcomes`.
@@ -259,7 +277,6 @@ def reorder(pmf, outcomes, alphabet, product, index=None, method=None):
 
     # The number of elements in the sample space?
     sample_space_size = np.prod( list(map(len, alphabet)) )
-
     if method is None:
         if sample_space_size > 10000 and len(outcomes) < 1000:
             # Large and sparse.

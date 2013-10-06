@@ -75,7 +75,7 @@ def mixture_distribution(dists, weights, merge=False):
 
     outcomes = set().union(*[ d.outcomes for d in dists ])
     pmf = [ops.add_reduce(np.array(vals(o))) for o in outcomes]
-    mix = Distribution(pmf, tuple(outcomes), base=ops.get_base())
+    mix = Distribution(tuple(outcomes), pmf, base=ops.get_base())
     return mix
 
 def mixture_distribution2(dists, weights):
@@ -167,7 +167,7 @@ def modify_outcomes(dist, ctor):
     >>> d2 = dit.modify_outcomes(d, lambda x: x + 1)
     """
     outcomes = tuple(map(ctor, dist.outcomes))
-    d = dist.__class__(dist.pmf, outcomes, base=dist.get_base())
+    d = dist.__class__(outcomes, dist.pmf, base=dist.get_base())
     return d
 
 def random_scalar_distribution(n, prng=None):
@@ -244,7 +244,7 @@ def uniform_scalar_distribution(n):
         outcomes = tuple(range(n))
 
     pmf = [1/nOutcomes] * nOutcomes
-    d = ScalarDistribution(pmf, outcomes, base='linear')
+    d = ScalarDistribution(outcomes, pmf, base='linear')
 
     return d
 
@@ -306,6 +306,6 @@ def uniform_distribution(outcome_length, alphabet_size):
 
     pmf = [1/Z] * Z
     outcomes = tuple( product(*alphabet) )
-    d = Distribution(pmf, outcomes, base='linear')
+    d = Distribution(outcomes, pmf, base='linear')
 
     return d
