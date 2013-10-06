@@ -4,10 +4,10 @@
 """
 Module defining NumPy array-based distribution classes.
 
-One of the features of joint distributions is that we can marginalize them. This
-requires that we are able to construct smaller outcomes from larger outcomes.
-For example, an outcome like '10101' might become '010' if the first and last
-random variables are marginalized.  Given the alphabet of the joint
+One of the features of joint distributions is that we can marginalize them.
+This requires that we are able to construct smaller outcomes from larger
+outcomes. For example, an outcome like '10101' might become '010' if the first
+and last random variables are marginalized.  Given the alphabet of the joint
 distribution, we can construct a tuple such as ('0','1','0') using
 itertools.product, but we really want an outcome which is a string. For
 tuples and other similar containers, we just pass the tuple to the outcome
@@ -45,10 +45,10 @@ Note:
         __iter__ describes the underlying data structure.
         __len__ describes the underlying data structure.
 
-For distributions, the sample space is the alphabet and the alphabet is a single
-tuple. For joint distributions, the sample space is the Cartestian product of
-the alphabets for each random variable, and the alphabet for the joint
-distribution is a tuple of alphabets for each random variable.
+For scalar distributions, the sample space is the alphabet and the alphabet
+is a single set. For (joint) distributions, the sample space is provided
+at initialization and the alphabet is a tuple of alphabets for each random
+variable. The alphabet for each random variable is a tuple.
 
 """
 
@@ -75,8 +75,8 @@ from .math import get_ops, LinearOperations
 from .params import ditParams
 from .utils import map, range, zip
 
-def _make_distribution(pmf, outcomes, base,
-                       alphabet=None, prng=None, sparse=True):
+def _make_distribution(outcomes, pmf, base,
+                       sample_space=None, prng=None, sparse=True):
     """
     An unsafe, but faster, initialization for distributions.
 
@@ -85,9 +85,9 @@ def _make_distribution(pmf, outcomes, base,
     This function can be useful when you are creating many distributions
     in a loop and can guarantee that:
 
-        0) all outcomes are of the same type (eg tuple, str) and length.
-        1) the alphabet is in the desired order.
-        2) outcomes and pmf are in the same order as the sample space.
+         0) all outcomes are of the same type (eg tuple, str) and length.
+         1) the sample space is in the desired order.
+         1) outcomes and pmf are in the same order as the sample space.
            [Thus, `pmf` should not be a dictionary.]
 
     This function will not order the sample space, nor will it reorder outcomes
@@ -112,9 +112,9 @@ def _make_distribution(pmf, outcomes, base,
         base = ditParams['base']
     d.ops = get_ops(base)
 
-    if alphabet is None:
-        # Use outcomes to obtain the alphabets.
-        alphabet = _construct_alphabets(outcomes)
+    if sample_space is None:
+        # Use outcomes to obtain the sample_space.
+        sample_space = outcomes
 
     ## Set the outcome class, ctor, and product function.
     ## Assumption: the class of each outcome is the same.
@@ -131,11 +131,11 @@ def _make_distribution(pmf, outcomes, base,
     d._outcomes_index = dict(zip(outcomes, range(len(outcomes))))
 
     # Tuple sample space and its set.
-    d.alphabet = tuple(alphabet)
+    d.alphabet = construct_alphabets(sample_space)
     d._alphabet_set = tuple(map(set, d.alphabet))
 
     # Set the mask
-    d._mask = tuple(False for _ in range(len(alphabet)))
+    d._mask = tuple(False for _ in range(len(outcomes[0])))
 
     d._meta['is_sparse'] = sparse
 
@@ -194,8 +194,7 @@ class Distribution(ScalarDistribution):
     alphabet : tuple
         A tuple representing the alphabet of the joint random variable.  The
         elements of the tuple are tuples, each of which represents the ordered
-        alphabet for a single random variable. The Cartesian product of these
-        alphabets defines the sample space.
+        alphabet for a single random variable.
 
     outcomes : tuple
         The outcomes of the probability distribution.
@@ -307,7 +306,8 @@ class Distribution(ScalarDistribution):
 
     """
     ## Unadvertised attributes
-    _alphabet_set = None
+    _sample_space = None
+    _sample_space_set = None
     _mask = None
     _meta = {
         'is_joint': True,
@@ -327,34 +327,32 @@ class Distribution(ScalarDistribution):
     pmf = None
     prng = None
 
-    def __init__(self, pmf, outcomes=None, alphabet=None, base=None, prng=None,
-                            sort=True, sparse=True, trim=False, validate=True):
+    def __init__(self, outcomes, pmf=None, sample_space=None, base=None,
+                            prng=None, sort=True, sparse=True, trim=False,
+                            validate=True):
         """
         Initialize the distribution.
 
         Parameters
         ----------
-        pmf : sequence, dict
-            The outcome probabilities or log probabilities. If `pmf` is a
-            dictionary, then the keys are used as `outcomes`, and the values of
-            the dictionary are used as `pmf` instead.  The keys take precedence
-            over any specification of them via `outcomes`.
+        outcomes : sequence, dict
+            The outcomes of the distribution. If `outcomes` is a dictionary,
+            then the keys are used as `outcomes`, and the values of
+            the dictionary are used as `pmf` instead.  The values will not be
+            used if probabilities are passed in via `pmf`. Outcomes must be
+            hashable, orderable, sized, iterable containers. The length of an
+            outcome must be the same for all outcomes, and every outcome must
+            be of the same type.
 
-        outcomes : sequence
-            The outcomes of the distribution. If specified, then its length
-            must equal the length of `pmf`.  If `None`, then the outcomes must
-            be obtainable from `pmf`, otherwise an exception will be raised.
-            Outcomes must be hashable, orderable, sized, iterable containers
-            that are not `None`. The length of an outcome must be the same for
-            all outcomes, and every outcome must be of the same type.
+        pmf : sequence, None
+            The outcome probabilities or log probabilities. `pmf` can be None
+            only if `outcomes` is a dict.
 
-        alphabet : sequence
-            A sequence representing the alphabet of the joint random variable.
-            The elements of the sequence are tuples, each of which represents
-            the ordered alphabet for a single random variable. The Cartesian
-            product of these alphabets defines the sample space. The order of
-            the alphabets and the order within each alphabet is important. If
-            `None`, the value of `outcomes` is used to determine the alphabet.
+        sample_space : sequence
+            A sequence representing the sample space, and corresponding to the
+            complete set of possible outcomes. The order of the sample space
+            is important. If `None`, then the outcomes are used to determine
+            the sample space instead.
 
         base : float, None
             If `pmf` specifies log probabilities, then `base` should specify
@@ -409,8 +407,8 @@ class Distribution(ScalarDistribution):
         super(ScalarDistribution, self).__init__(prng)
 
         # Do any checks/conversions necessary to get the parameters.
-        pmf, outcomes, alphabet = self._init(pmf, outcomes,
-                                             alphabet, base, trim)
+        outcomes, pmf, sample_space = self._init(outcomes, pmf,
+                                             sample_space, base, trim)
 
         # Sort everything to match the order of the sample space.
         ## Question: Using sort=False seems very strange and supporting it
@@ -418,11 +416,8 @@ class Distribution(ScalarDistribution):
         ##           and sample space are sorted.  Is there a valid use case
         ##           for an unsorted sample space?
         if sort:
-            alphabet = map(sorted, alphabet)
-            alphabet = map(tuple, alphabet)
-            alphabet = list(alphabet)
-            pmf, outcomes, index = reorder(pmf, outcomes,
-                                           alphabet, self._product)
+            sample_space = sorted(sample_space)
+            outcomes, pmf, index = reorder(outcomes, pmf, sample_space)
         else:
             index = dict(zip(outcomes, range(len(outcomes))))
 
@@ -433,12 +428,13 @@ class Distribution(ScalarDistribution):
         self.outcomes = tuple(outcomes)
         self._outcomes_index = index
 
-        # Tuple alphabet and its set.
-        self.alphabet = tuple(alphabet)
-        self._alphabet_set = tuple(map(set, self.alphabet))
+        # Tuple sample space and its set.
+        self._sample_space = tuple(sample_space)
+        self._sample_space_set = set(sample_space)
+        self.alphabet = construct_alphabets(sample_space)
 
         # Mask
-        self._mask = tuple(False for _ in range(len(alphabet)))
+        self._mask = tuple(False for _ in range(len(self.alphabet)))
 
         if sparse:
             self.make_sparse(trim=trim)
@@ -448,23 +444,25 @@ class Distribution(ScalarDistribution):
         if validate:
             self.validate()
 
-    def _init(self, pmf, outcomes, alphabet, base, trim):
+    def _init(self, outcomes, pmf, sample_space, base, trim):
         """
         Pre-initialization with various sanity checks.
 
         """
-        # Attempt to grab outcomes and pmf from a dict-like object.
+        # Attempt to grab outcomes and pmf from a dictionary
         try:
-            outcomes_ = tuple(pmf.keys())
-            pmf_ = tuple(pmf.values())
+            outcomes_ = tuple(outcomes.keys())
+            pmf_ = tuple(outcomes.values())
         except AttributeError:
             pass
         else:
             outcomes = outcomes_
-            pmf = pmf_
+            if pmf is not None:
+                msg = '`pmf` must be `None` if `outcomes` is a dict.'
+                raise InvalidDistribution(msg)
 
-        if outcomes is None:
-            msg = "`outcomes` must be specified or obtainable from `pmf`."
+        if pmf is None:
+            msg = '`pmf` was `None` but `outcomes` was not a dict.'
             raise InvalidDistribution(msg)
 
         # Make sure pmf and outcomes are sequences
@@ -474,23 +472,18 @@ class Distribution(ScalarDistribution):
         except TypeError:
             raise TypeError('`outcomes` and `pmf` must be sequences.')
 
-
         if len(pmf) != len(outcomes):
-            msg = "`pmf` and `outcomes` do not have the same length."
+            msg = "Unequal lengths for `pmf` and `outcomes`"
             raise InvalidDistribution(msg)
-        elif len(outcomes) == 0:
-            # To initialize a distribution, we must know the sample space.
-            # This means we must know the alphabet and the outcome class.
-            # From these we can obtain the customized product function
-            # (and thus, the sample space). So initialization requires at
-            # least one outcome. From there, we can build up a minimal
-            # alphabet, if necessary. Note, it might seems that having
-            # just an alphabet is sufficient, but then we would not know
-            # how to combine symbols to form an outcome (e.g. during
-            # marginalization). So we must know the outcome class, and so,
-            # we must have at least one outcome.
-            msg = 'Neither `pmf` nor `outcomes` can have length zero.'
-            raise InvalidDistribution(msg)
+
+        # reorder() and other functions require that outcomes be indexable. So
+        # we make sure it is. We must check for zero length outcomes since, in
+        # principle, you can initialize with a 0-length `pmf` and `outcomes`.
+        if len(outcomes):
+            try:
+                outcomes[0]
+            except TypeError:
+                raise ditException('`outcomes` must be indexable.')
 
         # Determine if the pmf represents log probabilities or not.
         if base is None:
@@ -510,18 +503,23 @@ class Distribution(ScalarDistribution):
             pmf, outcomes = list(zip(*pairs))
 
         ## alphabet
-        if alphabet is None:
-            # Use `outcomes` to obtain the alphabets.
-            alphabet = construct_alphabets(outcomes)
+        if sample_space is None:
+            if len(outcomes) == 0:
+                # We need at least one outcome to know the outcome class.
+                msg = '`outcomes` cannot have zero length if '
+                msg += '`sample_space` is `None`'
+                raise InvalidDistribution(msg)
+            else:
+                sample_space = outcomes
 
         ## Set the outcome class, ctor, and product function.
         ## Assumption: the class of each outcome is the same.
-        klass = outcomes[0].__class__
+        klass = sample_space[0].__class__
         self._outcome_class = klass
         self._outcome_ctor = get_outcome_ctor(klass)
         self._product = get_product_func(klass)
 
-        return pmf, outcomes, alphabet
+        return outcomes, pmf, sample_space
 
     @classmethod
     def from_distribution(cls, dist, base=None, prng=None):
@@ -635,9 +633,8 @@ class Distribution(ScalarDistribution):
             pmf = [p for p in self.pmf] + [value]
 
             # 2. Reorder  ### This call is different from Distribution
-            pmf, outcomes, index = reorder(pmf, self.outcomes, self.alphabet,
-                                           self._product,
-                                           index=self._outcomes_index)
+            outcomes, pmf, index = reorder(self.outcomes, pmf,
+                                           self.sample_space)
 
             # 3. Store
             self.outcomes = tuple(outcomes)
@@ -666,9 +663,8 @@ class Distribution(ScalarDistribution):
         from .validate import validate_sequence
 
         v = super(Distribution, self)._validate_outcomes()
-        # If we surived, then all outcomes have the same class since the
-        # sample space is created by a product function. Now, we just need
-        # to make sure that class is a sequence.
+        # If we survived, then all outcomes have the same class.
+        # Now, we just need to make sure that class is a sequence.
         v &= validate_sequence(self.outcomes[0])
         return v
 
@@ -761,19 +757,7 @@ class Distribution(ScalarDistribution):
         pmf = map(self.ops.add_reduce, pmf)
         pmf = tuple(pmf)
 
-        if len(rvs) == 1 and extract:
-            # The alphabet for each rv is the same as what it was originally.
-            alphabet = [self.alphabet[i] for i in indexes[0]]
-        else:
-            # Each rv is a Cartesian product of original random variables.
-            # So we want to use the distribution's customized product function
-            # to create all possible outcomes. This will define the alphabet
-            # for each random variable.
-            alphabet = [tuple(self._product(*[self.alphabet[i] for i in index]))
-                        for index in indexes]
-
-        d = Distribution(pmf, outcomes,
-                         alphabet=alphabet,
+        d = Distribution(outcomes, pmf,
                          base=self.get_base(),
                          sort=True,
                          sparse=self.is_sparse(),
@@ -804,10 +788,10 @@ class Distribution(ScalarDistribution):
         prng = np.random.RandomState()
         prng.set_state( self.prng.get_state() )
 
-        d = _make_distribution(pmf=np.array(self.pmf, copy=True),
-                               outcomes=deepcopy(self.outcomes),
+        d = _make_distribution(outcomes=deepcopy(self.outcomes),
+                               pmf=np.array(self.pmf, copy=True),
                                base=self.ops.base,
-                               alphabet=deepcopy(self.alphabet),
+                               sample_space=deepcopy(self._sample_space),
                                prng=prng,
                                sparse=self._meta['is_sparse'])
 
@@ -844,17 +828,6 @@ class Distribution(ScalarDistribution):
             # Equivalently: len(self.outcomes[0])
             # Recall, self.alphabet contains only the unmasked/valid rvs.
             return len(self.alphabet)
-
-    def sample_space(self):
-        """
-        Returns an iterator over the ordered outcome space.
-
-        """
-        # Note, this is a restriction of Distribution.
-        # It only deals with sigma-algebras whose sample space is equal to
-        # the Cartesian product of each random variable's sample space.
-        # We might generalize this in the future.
-        return self._product(*self.alphabet)
 
     def get_rv_names(self):
         """
@@ -904,43 +877,24 @@ class Distribution(ScalarDistribution):
 
         """
         # Make sure the outcome exists in the sample space.
-
-        # Note, it is not sufficient to test if each symbol exists in the
-        # the alphabet for its corresponding random variable. The reason is
-        # that, for example, '111' and ('1', '1', '1') would both be seen
-        # as valid.  Thus, we must also verify that the outcome's class
-        # matches that of the other outcome's classes.
-
-        # Make sure the outcome class is correct.
-        if outcome.__class__ != self._outcome_class:
-            # This test works even when the distribution was initialized empty
-            # and _outcome_class is None. In that case, we don't know the
-            # sample space (since we don't know the outcome class), and we
-            # should return False.
+        is_atom = outcome in self._sample_space_set
+        if not is_atom:
+            # Outcome does not exist in the sample space.
             return False
-
-        # Make sure outcome has the correct length.
-        if len(outcome) != self.outcome_length(masked=False):
-            return False
-
-        if null:
-            # The outcome must only be valid.
-
-            # Make sure each symbol exists in its corresponding alphabet.
-            z = False
-            for symbol, alphabet in zip(outcome, self.alphabet):
-                if symbol not in alphabet:
-                    break
-            else:
-                z = True
+        elif null:
+            # Outcome exists in the sample space and we don't care about
+            # whether it represents a null probability.
+            return True
         else:
-            # The outcome must be valid and have positive probability.
-            try:
-                z = self[outcome] > self.ops.zero
-            except InvalidOutcome:
-                z = False
-
-        return z
+            idx = self._outcomes_index.get(outcome, None)
+            if idx is None:
+                # Outcome is not represented in pmf and thus, represents
+                # a null probability.
+                return False
+            else:
+                # Outcome is in pmf.  We still need to test if it represents
+                # a null probability.
+                return self.pmf[idx] > self.ops.zero
 
     def is_homogeneous(self):
         """
@@ -951,9 +905,9 @@ class Distribution(ScalarDistribution):
             # Degenerate case: No random variables, no alphabet.
             return True
 
-        a1 = self._alphabet_set[0]
+        a1 = self.alphabet[0]
         h = False
-        for a2 in self._alphabet_set[1:]:
+        for a2 in self.alphabet[1:]:
             if a1 != a2:
                 break
         else:

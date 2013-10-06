@@ -1,5 +1,5 @@
 """
-The total correlation, aka the multiinformation or the integration.
+The total correlation, aka the multi-information or the integration.
 """
 
 from ..exceptions import ditException
