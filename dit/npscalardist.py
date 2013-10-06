@@ -17,18 +17,19 @@ When a distribution is sparse, del d[e] will make the pmf smaller. But d[e] = 0
 will simply set the element to zero.
 
 When a distribution is dense, del d[e] will only set the element to zero---the
-length of the pmf will still equal the length of the sample space. Using
+length of the pmf will still equal the length of the sample space. Also, using
 d[e] = 0 still sets the element to zero.
 
-For distributions, the sample space is the alphabet and the alphabet is a single
-tuple. For joint distributions, the sample space is the Cartestian product of
-the alphabets for each random variable, and the alphabet for the joint
-distribution is a tuple of alphabets for each random variable.
+For scalar distributions, the sample space is the alphabet and the alphabet
+is a single set. For (joint) distributions, the sample space is provided
+at initialization and the alphabet is a tuple of alphabets for each random
+variable. The alphabet for each random variable is a set.
 
 """
 
 from .distribution import BaseDistribution
 from .exceptions import (
+    ditException,
     IncompatibleDistribution,
     InvalidDistribution,
     InvalidOutcome,
@@ -38,10 +39,12 @@ from .exceptions import (
 import dit.math
 from .math import get_ops, LinearOperations, LogOperations, close
 from .params import ditParams
+from .helpers import reorder
 
 import numpy as np
 
-def _make_distribution(pmf, outcomes=None, alphabet=None, base=None, prng=None, sparse=True):
+def _make_distribution(outcomes, pmf=None, sample_space=None,
+                            base=None, prng=None, sparse=True):
     """
     An unsafe, but faster, initialization for distributions.
 
@@ -50,11 +53,11 @@ def _make_distribution(pmf, outcomes=None, alphabet=None, base=None, prng=None, 
     This function can be useful when you are creating many distributions
     in a loop and can guarantee that:
 
-        0) the alphabet is in the desired order.
+        0) the sample space is in the desired order.
         1) outcomes and pmf are in the same order as the sample space.
            [Thus, `pmf` should not be a dictionary.]
 
-    This function will not order the alphabet, nor will it reorder outcomes
+    This function will not order the sample space, nor will it reorder outcomes
     or pmf.  It will not forcibly make outcomes and pmf to be sparse or dense.
     It will simply declare the distribution to be sparse or dense. The
     distribution is not validated either.
@@ -73,13 +76,15 @@ def _make_distribution(pmf, outcomes=None, alphabet=None, base=None, prng=None, 
         base = ditParams['base']
     d.ops = get_ops(base)
 
-    ## outcomes
-    if outcomes is None:
+    ## pmf and outcomes
+    if pmf is None:
+        ## Then outcomes must be the pmf.
+        pmf = outcomes
         outcomes = range(len(pmf))
 
-    ## alphabets
-    if alphabet is None:
-        alphabet = outcomes
+    ## sample space
+    if sample_space is None:
+        sample_space = outcomes
 
     # Force the distribution to be numerical and a NumPy array.
     d.pmf = np.asarray(pmf, dtype=float)
@@ -89,34 +94,15 @@ def _make_distribution(pmf, outcomes=None, alphabet=None, base=None, prng=None, 
     d._outcomes_index = dict(zip(outcomes, range(len(outcomes))))
 
     # Tuple sample space and its set.
-    d.alphabet = tuple(alphabet)
-    d._alphabet_set = set(alphabet)
+    d._sample_space = tuple(sample_space)
+    d._sample_space_set = set(sample_space)
+
+    # For scalar dists, the alphabet is the sample space.
+    d.alphabet = d._sample_space
 
     d._meta['is_sparse'] = sparse
 
     return d
-
-def reorder(pmf, outcomes, alphabet, index=None):
-    """
-    Helper function to reorder outcomes and pmf to match sample_space.
-
-    """
-    if index is None:
-        index = dict(zip(outcomes, range(len(outcomes))))
-
-    # For distributions, the sample space is equal to the alphabet.
-    sample_space = alphabet
-
-    order = [index[outcome] for outcome in sample_space if outcome in index]
-    if len(order) != len(outcomes):
-        # For example, `outcomes` contains an element not in `sample_space`.
-        # For example, `outcomes` contains duplicates.
-        raise InvalidDistribution('outcomes and sample_space are not compatible.')
-
-    outcomes = [outcomes[i] for i in order]
-    pmf = [pmf[i] for i in order]
-    new_index = dict(zip(outcomes, range(len(outcomes))))
-    return pmf, outcomes, new_index
 
 class ScalarDistribution(BaseDistribution):
     """
@@ -136,8 +122,11 @@ class ScalarDistribution(BaseDistribution):
 
     Private Attributes
     ------------------
-    _alphabet_set : tuple
-        A tuple representing the alphabet of the random variable.
+    _sample_space : tuple
+        A tuple representing the sample space of the probability space.
+
+    _sample_space_set : set
+        A set representing the sample space of the probability space.
 
     _outcomes_index : dict
         A dictionary mapping outcomes to their index in self.outcomes.
@@ -147,9 +136,9 @@ class ScalarDistribution(BaseDistribution):
 
     Public Attributes
     -----------------
-    alphabet : tuple
-        A tuple representing the alphabet of the random variable.  The
-        sample space, for distributions, equals the alphabet.
+    alphabet : set
+        A set representing the alphabet of the random variable.  The
+        sample space for scalar distributions equals the alphabet.
 
     outcomes : tuple
         The outcomes of the probability distribution.
@@ -240,7 +229,8 @@ class ScalarDistribution(BaseDistribution):
 
     """
 
-    _alphabet_set = None
+    _sample_space = None
+    _sample_space_set = None
     _outcomes_index = None
     _meta = {
         'is_joint': False,
@@ -254,31 +244,31 @@ class ScalarDistribution(BaseDistribution):
     pmf = None
     prng = None
 
-    def __init__(self, pmf, outcomes=None, alphabet=None, base=None, prng=None,
-                            sort=True, sparse=True, trim=False, validate=True):
+    def __init__(self, outcomes, pmf=None, sample_space=None, base=None,
+                                 prng=None, sort=True, sparse=True, trim=False,
+                                 validate=True):
         """
         Initialize the distribution.
 
         Parameters
         ----------
-        pmf : sequence, dict
-            The outcome probabilities or log probabilities. If `pmf` is a
-            dictionary, then the keys are used as `outcomes`, and the values of
-            the dictionary are used as `pmf` instead.  The keys take precedence
-            over any specification of them via `outcomes`.
-
-        outcomes : sequence
-            The outcomes of the distribution. If specified, then its length
-            must equal the length of `pmf`.  If `None`, then consecutive
-            integers beginning from 0 are used as the outcomes. An outcome is
+        outcomes : sequence, dict
+            The outcomes of the distribution. If `outcomes` is a dictionary,
+            then the keys are used as `outcomes`, and the values of
+            the dictionary are used as `pmf` instead.  Note: an outcome is
             any hashable object (except `None`) which is equality comparable.
             If `sort` is `True`, then outcomes must also be orderable.
 
-        alphabet : sequence
-            A sequence representing the alphabet of the random variable. For
-            distributions, this corresponds to the complete set of possible
-            outcomes. The order of the alphabet is important. If `None`, the
-            value of `outcomes` is used to determine the alphabet.
+        pmf : sequence
+            The outcome probabilities or log probabilities.  If `None`, then
+            `outcomes` is treated as the probability mass function and the
+            outcomes are consecutive integers beginning from zero.
+
+        sample_space : sequence
+            A sequence representing the sample space, and corresponding to the
+            complete set of possible outcomes. The order of the sample space
+            is important. If `None`, then the outcomes are used to determine
+            the sample space instead.
 
         base : float, None
             If `pmf` specifies log probabilities, then `base` should specify
@@ -289,7 +279,7 @@ class ScalarDistribution(BaseDistribution):
         prng : RandomState
             A pseudo-random number generator with a `rand` method which can
             generate random numbers. For now, this is assumed to be something
-            with an API compatibile to NumPy's RandomState class. This attribute
+            with an API compatible to NumPy's RandomState class. This attribute
             is initialized to equal dit.math.prng.
 
         sort : bool
@@ -326,16 +316,16 @@ class ScalarDistribution(BaseDistribution):
         """
         super(ScalarDistribution, self).__init__(prng)
 
-        pmf, outcomes, alphabet = self._init(pmf, outcomes,
-                                             alphabet, base, trim)
+        outcomes, pmf, sample_space = self._init(outcomes, pmf,
+                                                 sample_space, base, trim)
 
         ## Question: Using sort=False seems very strange and supporting it
         ##           makes things harder, since we can't assume the outcomes
         ##           and sample space are sorted.  Is there a valid use case
         ##           for an unsorted sample space?
         if sort:
-            alphabet = tuple(sorted(alphabet))
-            pmf, outcomes, index = reorder(pmf, outcomes, alphabet)
+            sample_space = tuple(sorted(sample_space))
+            outcomes, pmf, index = reorder(outcomes, pmf, sample_space)
         else:
             index = dict(zip(outcomes, range(len(outcomes))))
 
@@ -347,8 +337,11 @@ class ScalarDistribution(BaseDistribution):
         self._outcomes_index = index
 
         # Tuple sample space and its set.
-        self.alphabet = tuple(alphabet)
-        self._alphabet_set = set(alphabet)
+        self._sample_space = tuple(sample_space)
+        self._sample_space_set = set(sample_space)
+
+        # For scalar dists, the alphabet is the sample space.
+        self.alphabet = self._sample_space
 
         if sparse:
             self.make_sparse(trim=trim)
@@ -358,7 +351,7 @@ class ScalarDistribution(BaseDistribution):
         if validate:
             self.validate()
 
-    def _init(self, pmf, outcomes, alphabet, base, trim):
+    def _init(self, outcomes, pmf, sample_space, base, trim):
         """
         Pre-initialization with various sanity checks.
 
@@ -366,19 +359,25 @@ class ScalarDistribution(BaseDistribution):
         ## pmf
         # Attempt to grab outcomes and pmf from a dictionary
         try:
-            outcomes_ = tuple(pmf.keys())
-            pmf_ = tuple(pmf.values())
+            outcomes_ = tuple(outcomes.keys())
+            pmf_ = tuple(outcomes.values())
         except AttributeError:
             pass
         else:
             outcomes = outcomes_
-            pmf = pmf_
+            if pmf is not None:
+                msg = '`pmf` must be `None` if `outcomes` is a dict.'
+                raise ditException(msg)
 
-        ## outcomes
-        # Make sure outcomes and values have the same length.
-        if outcomes is None:
+        if pmf is None:
+            # Use the outcomes as the pmf and generate integers as outcomes.
+            pmf = outcomes
+            try:
+                np.asarray(pmf, dtype=float)
+            except ValueError:
+                msg = '`pmf` was `None` but `outcomes` was not a distribution.'
+                raise ditException(msg)
             outcomes = range(len(pmf))
-
 
         # Make sure pmf and outcomes are sequences
         try:
@@ -388,17 +387,17 @@ class ScalarDistribution(BaseDistribution):
             raise TypeError('`outcomes` and `pmf` must be sequences.')
 
         if len(pmf) != len(outcomes):
-            msg = "Unequal lengths for `values` and `outcomes`"
+            msg = "Unequal lengths for `pmf` and `outcomes`"
             raise InvalidDistribution(msg)
 
-        # reorder() and other functions require that outcomes be
-        # indexable. So we make sure it is.
+        # reorder() and other functions require that outcomes be indexable. So
+        # we make sure it is. We must check for zero length outcomes since, in
+        # principle, you can initialize with a 0-length `pmf` and `outcomes`.
         if len(outcomes):
             try:
                 outcomes[0]
             except TypeError:
-                # For example, outcomes is a set or frozenset.
-                outcomes = tuple(outcomes)
+                raise ditException('`outcomes` must be indexable.')
 
         # Determine if the pmf represents log probabilities or not.
         if base is None:
@@ -419,15 +418,15 @@ class ScalarDistribution(BaseDistribution):
 
         ## alphabets
         # Use outcomes to obtain the alphabets.
-        if alphabet is None:
+        if sample_space is None:
             if len(outcomes) == 0:
                 msg = '`outcomes` cannot have zero length if '
-                msg += ' `alphabet` is `None`'
+                msg += '`sample_space` is `None`'
                 raise InvalidDistribution(msg)
+            else:
+                sample_space = outcomes
 
-            alphabet = outcomes
-
-        return pmf, outcomes, alphabet
+        return outcomes, pmf, sample_space
 
     @classmethod
     def from_distribution(cls, dist, base=None, prng=None, extract=True):
@@ -488,16 +487,10 @@ class ScalarDistribution(BaseDistribution):
 
         `other` is assumed to have the same base as `self`.
 
-        The other distribution must have the same meta information and the
-        same sample space.  If not, raise an exception.
+        The other distribution is assumed to have the same meta information
+        and sample space.
 
         """
-        # This is not going to scale well, in general.
-        # TODO: Need to check that the atom sets are the same.
-        for o1, o2 in zip(self.sample_space(), other.sample_space()):
-            if o1 != o2:
-                raise IncompatibleDistribution()
-
         # Copy to make sure we don't lose precision when converting.
         d2 = other.copy(base=self.get_base())
 
@@ -519,8 +512,9 @@ class ScalarDistribution(BaseDistribution):
         `other` is assumed to have the same base as `self`.
 
         The appropriate operation is performed assuming that the scalar
-        multiple is of the same base as `self`. If true scalar multiplication
-        is desired, perform the operation on `self.pmf` directly.
+        multiple is of the same base as `self`. If vanilla scalar
+        multiplication is desired, perform the operation directly on
+        `self.pmf`.
 
         Note, we do not implement distribution-to-distribution multiplication.
 
@@ -536,11 +530,15 @@ class ScalarDistribution(BaseDistribution):
         """
         Returns `True` if `outcome` is in self.outcomes.
 
-        Note, the outcome could correspond to a null-outcome. Also, if
-        `outcome` is not in the sample space, then an exception is not raised.
-        Instead, `False` is returned.
+        Note, the outcome could correspond to a null-outcome if the pmf
+        explicitly contains null-probabilities. Also, if `outcome` is not in
+        the sample space, then an exception is not raised. Instead, `False`
+        is returned.
 
         """
+        # The behavior of this must always match self.zipped(). So since
+        # zipped() defaults to mode='pmf', then this checks only if the
+        # outcome is in the pmf.
         return outcome in self._outcomes_index
 
     def __delitem__(self, outcome):
@@ -679,7 +677,8 @@ class ScalarDistribution(BaseDistribution):
             pmf = [p for p in self.pmf] + [value]
 
             # 2. Reorder
-            pmf, outcomes, index = reorder(pmf, self.outcomes, self.alphabet,
+            pmf, outcomes, index = reorder(self.outcomes, pmf,
+                                           self._sample_space,
                                            index=self._outcomes_index)
 
             # 3. Store
@@ -707,9 +706,9 @@ class ScalarDistribution(BaseDistribution):
         prng = np.random.RandomState()
         prng.set_state( self.prng.get_state() )
 
-        d = _make_distribution(pmf=np.array(self.pmf, copy=True),
-                               outcomes=deepcopy(self.outcomes),
-                               alphabet=deepcopy(self.alphabet),
+        d = _make_distribution(outcomes=deepcopy(self.outcomes),
+                               pmf=np.array(self.pmf, copy=True),
+                               sample_space=deepcopy(self._sample_space),
                                base=self.ops.base,
                                prng=prng,
                                sparse=self._meta['is_sparse'])
@@ -723,7 +722,7 @@ class ScalarDistribution(BaseDistribution):
         Returns an iterator over the ordered outcome space.
 
         """
-        return iter(self.alphabet)
+        return iter(self._sample_space)
 
     def has_outcome(self, outcome, null=True):
         """
@@ -739,7 +738,7 @@ class ScalarDistribution(BaseDistribution):
             is that it exist in the distribution's sample space. If `False`,
             then null outcomes are not acceptable.  Thus, `outcome` must exist
             in the distribution's sample space and also have a nonnull
-            probability.
+            probability in order to return `True`.
 
         Notes
         -----
@@ -749,7 +748,7 @@ class ScalarDistribution(BaseDistribution):
         if null:
             # Make sure the outcome exists in the sample space, which equals
             # the alphabet for distributions.
-            z = outcome in self._alphabet_set
+            z = outcome in self._sample_space_set
         else:
             # Must be valid and have positive probability.
             try:

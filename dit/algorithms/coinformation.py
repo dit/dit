@@ -8,6 +8,8 @@ from .shannon import conditional_entropy as H
 
 def coinformation(dist, rvs=None, crvs=None, rv_names=None):
     """
+    Calculates the coinformation.
+
     Parameters
     ----------
     dist : Distribution
@@ -46,6 +48,9 @@ def coinformation(dist, rvs=None, crvs=None, rv_names=None):
         msg = "The total correlation is applicable to joint distributions."
         raise ditException(msg)
 
-    I = sum( (-1)**(len(Xs)+1)*H(dist, set().union(*Xs), crvs, rv_names) for Xs in powerset(rvs) )
+    def entropy(rvs, dist=dist, crvs=crvs, rv_names=rv_names):
+        return H(dist, set().union(*rvs), crvs, rv_names)
+
+    I = sum( (-1)**(len(Xs)+1) * entropy(Xs) for Xs in powerset(rvs) )
 
     return I
