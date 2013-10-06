@@ -2,7 +2,8 @@ from __future__ import division
 
 from nose.tools import *
 
-from dit import Distribution as D
+from dit import Distribution as D, ScalarDistribution as SD
+from dit.exceptions import ditException
 from dit.algorithms import (total_correlation as T,
 							mutual_information as I)
 
@@ -71,3 +72,7 @@ def test_tc8():
 	assert_almost_equal(T(d), I(d, [0], [1]))
 	d.set_rv_names("XY")
 	assert_almost_equal(T(d), I(d, ['X'], ['Y']))
+
+def test_tc9():
+	d = SD([1/3]*3)
+	assert_raises(ditException, T, d)
