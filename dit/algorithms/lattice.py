@@ -7,7 +7,7 @@ from collections import defaultdict
 import dit
 from ..helpers import parse_rvs
 from ..math import sigma_algebra, atom_set
-from ..utils import len_cmp
+from ..utils import len_cmp, map, zip, range
 
 def sigma_algebra_sort(sigalg):
     sigalg = [tuple(sorted(cet)) for cet in sigalg]

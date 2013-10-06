@@ -9,6 +9,7 @@ from .exceptions import ditException
 from .npdist import Distribution
 from .npscalardist import ScalarDistribution
 from .validate import validate_pmf
+from .utils import map, range, zip
 
 __all__ = [
     'mixture_distribution',
@@ -165,7 +166,7 @@ def modify_outcomes(dist, ctor):
     >>> d = dit.uniform_scalar_distribution(5)
     >>> d2 = dit.modify_outcomes(d, lambda x: x + 1)
     """
-    outcomes = map(ctor, dist.outcomes)
+    outcomes = tuple(map(ctor, dist.outcomes))
     d = dist.__class__(dist.pmf, outcomes, base=dist.get_base())
     return d
 
@@ -240,7 +241,7 @@ def uniform_scalar_distribution(n):
         outcomes = n
     except TypeError:
         nOutcomes = n
-        outcomes = range(n)
+        outcomes = tuple(range(n))
 
     pmf = [1/nOutcomes] * nOutcomes
     d = ScalarDistribution(pmf, outcomes, base='linear')
@@ -296,10 +297,10 @@ def uniform_distribution(outcome_length, alphabet_size):
             raise TypeError("outcome_length does not match number of rvs.")
     else:
         # Build the standard alphabet.
-        alphabet = [range(alphabet_size)] * outcome_length
+        alphabet = [tuple(range(alphabet_size))] * outcome_length
 
     try:
-        Z = np.prod(map(len, alphabet))
+        Z = np.prod( list(map(len, alphabet)) )
     except TypeError:
         raise TypeError("alphabet_size must be an int or list of lists.")
 

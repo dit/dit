@@ -12,27 +12,47 @@ import sys
 import subprocess
 import warnings
 
-__all__ = ('Property',
-           'abstract_method',
-           'default_opener',
-           'deprecate',
-           'get_fobj',
-           'is_string_like',
-           'len_cmp',
-           'ordered_partitions',
-           'OrderedDict',
-           'partitions',
-           'partition_set',
-           'powerset',
-           'product_maker',
-           'require_keys',
-           'str_product',
-           'xzip')
+__all__ = (
+    'Property',
+    'abstract_method',
+    'default_opener',
+    'deprecate',
+    'get_fobj',
+    'is_string_like',
+    'len_cmp',
+    'ordered_partitions',
+    'OrderedDict',
+    'partitions',
+    'partition_set',
+    'powerset',
+    'product_maker',
+    'require_keys',
+    'str_product',
+    # 2.x and 3.x compatibility
+    'map',
+    'range',
+    'zip',
+)
+
+######################################################
+# Hacks for simultaneous 2.x and 3.x compatibility.
+#
+
+try:
+    from itertools import imap as map
+    from itertools import izip as zip
+    range = xrange
+except ImportError:
+    # e.g., 3.x has no izip, since zip is builtin.
+    map = map
+    range = range
+    zip = zip
 
 try:
     from collections import OrderedDict
 except ImportError:
     from ordereddict import OrderedDict
+
 
 def Property( fcn ):
     """Simple property decorator.
@@ -361,20 +381,6 @@ def require_keys(keys, dikt):
            msg = "'%s' is required." % (key,)
            raise Exception(msg)
 
-def xzip(*args):
-    """This is just like the zip function, except it is a generator.
-
-    list(xzip(seq1 [, seq2 [...]])) -> [(seq1[0], seq2[0] ...), (...)]
-
-    Return a list of tuples, where each tuple contains the i-th element
-    from each of the argument sequences.  The returned list is truncated
-    in length to the length of the shortest argument sequence.
-
-    """
-    iters = [iter(a) for a in args]
-    while 1:
-        yield tuple([i.next() for i in iters])
-
 def partitions1(set_):
     """
     Generates partitions of elements in `set_'.
@@ -516,14 +522,14 @@ def ordered_partitions(seq, tuples=False):
     if tuples:
         for partition in partitions1(seq):
             # Convert the partition into a list of sorted tuples.
-            partition = map(tuple, map(sorted, partition))
+            partition = list(map(tuple, map(sorted, partition)))
 
             # Generate all permutations.
             for perm in permutations(partition):
                     yield perm
     else:
         for partition in partitions1(seq):
-            partition = map(frozenset, partition)
+            partition = list(map(frozenset, partition))
             for perm in permutations(partition):
                     yield perm
 
