@@ -7,11 +7,11 @@ from collections import defaultdict
 import dit
 from ..helpers import parse_rvs
 from ..math import sigma_algebra, atom_set
-from ..utils import len_cmp, map, zip, range
+from ..utils import lexico_key, map, zip, range
 
 def sigma_algebra_sort(sigalg):
     sigalg = [tuple(sorted(cet)) for cet in sigalg]
-    sigalg.sort(cmp=len_cmp)
+    sigalg.sort(key=lexico_key)
     return sigalg
 
 def induced_sigalg(dist, rvs, rv_names=None):
@@ -170,7 +170,7 @@ def dist_from_induced_sigalg(dist, sigalg, int_outcomes=True):
     atoms = atom_set(sigalg)
     if int_outcomes:
         atoms = [sorted(atom) for atom in atoms]
-        atoms.sort(cmp=len_cmp)
+        atoms.sort(key=lexico_key)
 
     pmf = [dist.event_probability(atom) for atom in atoms]
     if int_outcomes:
@@ -279,7 +279,7 @@ def insert_rv(dist, idx, sigalg):
     # Provide sane sorting of atoms
     atoms = atom_set(sigalg)
     atoms = [sorted(atom) for atom in atoms]
-    atoms.sort(cmp=len_cmp)
+    atoms.sort(key=lexico_key)
     labels = range(len(atoms))
     if dist._outcome_class == str:
         # Then the labels for the new random variable must be strings.
