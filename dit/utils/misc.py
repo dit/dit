@@ -19,7 +19,7 @@ __all__ = (
     'deprecate',
     'get_fobj',
     'is_string_like',
-    'len_cmp',
+    'lexico_key',
     'ordered_partitions',
     'OrderedDict',
     'partitions',
@@ -202,15 +202,17 @@ def is_string_like(obj):
         return False
     return True
 
-def len_cmp(x,y):
-    """A comparison function which sorts shorter objects first."""
-    lenx, leny = len(x), len(y)
-    if lenx < leny:
-        return -1
-    elif lenx > leny:
-        return 1
-    else:
-        return cmp(x,y)
+def lexico_key(x):
+    """Returns a key suitable for a lexicographic sort.
+
+    Examples
+    --------
+    >>> L = ['a', 'aa', 'b']
+    >>> sorted(L, key=lexico_key)
+    ['a', 'b', 'aa']
+
+    """
+    return (len(x), x)
 
 def partition_set(elements, relation=None, innerset=False, reflexive=False, transitive=False):
     """Returns the equivlence classes from `elements`.
@@ -487,7 +489,7 @@ def partitions(seq, tuples=False):
 
             # Convert the partition into a sorted tuple of sorted tuples.
             # Sort by smallest parts first, then lexicographically.
-            partition = tuple(sorted(partition, cmp=len_cmp))
+            partition = tuple(sorted(partition, key=lexico_key))
 
             yield partition
 
