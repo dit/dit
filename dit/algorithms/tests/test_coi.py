@@ -2,8 +2,9 @@ from __future__ import division
 
 from nose.tools import *
 
-from dit import Distribution as D
-from dit.algorithms import coinformation as I
+from dit import Distribution as D, ScalarDistribution as SD
+from dit.algorithms import coinformation as I, entropy as H
+from dit.exceptions import ditException
 
 def test_coi1():
     outcomes = ['000', '011', '101', '110']
@@ -53,3 +54,13 @@ def test_coi6():
     assert_almost_equal(I(d, [[0]], [1,2,3]), 0.0)
     d.set_rv_names("XYZW")
     assert_almost_equal(I(d, [['X']], ['Y','Z','W']), 0.0)
+
+def test_coi7():
+    outcomes = "ABC"
+    pmf = [1/3]*3
+    d = D(outcomes, pmf)
+    assert_almost_equal(H(d), I(d))
+
+def test_coi8():
+    d = SD([1/3]*3)
+    assert_raises(ditException, I, d)

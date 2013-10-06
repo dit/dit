@@ -4,6 +4,7 @@ The co-information aka the multivariate mututal information.
 
 from iterutils import powerset
 
+from ..exceptions import ditException
 from .shannon import conditional_entropy as H
 
 def coinformation(dist, rvs=None, crvs=None, rv_names=None):
@@ -45,7 +46,7 @@ def coinformation(dist, rvs=None, crvs=None, rv_names=None):
         if crvs is None:
             crvs = []
     else:
-        msg = "The total correlation is applicable to joint distributions."
+        msg = "The coinformation is applicable to joint distributions."
         raise ditException(msg)
 
     def entropy(rvs, dist=dist, crvs=crvs, rv_names=rv_names):
