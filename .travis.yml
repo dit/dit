@@ -7,8 +7,8 @@ python:
   - "3.3"
 
 env:
-  - CYTHON=1
   - CYTHON=0
+  - CYTHON=1
 
 virtualenv:
   system_site_packages: true

@@ -179,7 +179,7 @@ def dist_from_induced_sigalg(dist, sigalg, int_outcomes=True):
         # Outcomes must be sequences.
         outcomes = [tuple(sorted(atom)) for atom in atoms]
 
-    d = ScalarDistribution(pmf, outcomes, base=dist.get_base())
+    d = ScalarDistribution(outcomes, pmf, base=dist.get_base())
     return d
 
 def join(dist, rvs, rv_names=None, int_outcomes=True):

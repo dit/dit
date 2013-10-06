@@ -14,11 +14,12 @@ space", instead of the "outcome space", as this is mostly a universal standard.
 Recall that an event is a subset of outcomes from the sample space. In `dit`
 distributions are specified by assigning probabilities to each outcome
 of the sample space.  This corresponds to assigning probabilities to each of
-the singleton events. Queries to the distribution using the [] operator return
-the probability of an outcome---it is not necessary to pass the outcome in as
-a singleton event.  Event probabilities are obtained through the
-`event_probability` method. There is a corresponding `outcome_probability`
-method as well (which just uses the [] operator).
+the atoms in the underlying sigma-algebra that defines the probability space.
+Queries to the distribution using the [] operator return the probability of an
+outcome---it is not necessary to pass the outcome in as a singleton event.
+Event probabilities are obtained through the `event_probability` method.
+There is a corresponding `outcome_probability` method as well (which just uses
+the [] operator).
 
 `None` is not an allowable outcome.  `dit` uses `None` to signify that an
 outcome does not exist in the sample space.  We do not enforce this rule.
@@ -159,7 +160,7 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9,
     # 1) Convert to linear probabilities, if necessary.
     if exact:
         # Copy to avoid precision loss
-        d = dist.set_base('linear', copy=True)
+        d = dist.copy(base='linear')
     else:
         d = dist
 
@@ -664,7 +665,7 @@ class BaseDistribution(object):
 
         Raises
         ------
-        Invalidoutcome
+        InvalidOutcome
             Raised if an outcome is not in the outcome space.
         InvalidNormalization
             Raised if the distribution is improperly normalized.
@@ -712,8 +713,7 @@ class BaseDistribution(object):
             #
             # There are many ways to do this, but we need to do it in a way
             # that does not rely on the particular implementation's storage
-            # mechanism.  Here is one way.
-            #
+            # mechanism for the sample space.
             for outcome in self.sample_space():
                 yield outcome, self[outcome]
         else:
@@ -728,8 +728,6 @@ class BaseDistribution(object):
     ### addition, as they will be useful for constructing convex combinations.
     ### While other operations could be defined, their usage is likely uncommon
     ### and the implementation slower as well.
-
-
 
     def __add__(self, other):
         """
