@@ -135,7 +135,7 @@ def _make_distribution(outcomes, pmf, base,
     d._alphabet_set = tuple(map(set, d.alphabet))
 
     # Set the mask
-    d._mask = tuple(False for _ in range(len(alphabet)))
+    d._mask = tuple(False for _ in range(len(outcomes[0])))
 
     d._meta['is_sparse'] = sparse
 
@@ -788,10 +788,10 @@ class Distribution(ScalarDistribution):
         prng = np.random.RandomState()
         prng.set_state( self.prng.get_state() )
 
-        d = _make_distribution(pmf=np.array(self.pmf, copy=True),
-                               outcomes=deepcopy(self.outcomes),
+        d = _make_distribution(outcomes=deepcopy(self.outcomes),
+                               pmf=np.array(self.pmf, copy=True),
                                base=self.ops.base,
-                               sample_space=deepcopy(self.sample_space),
+                               sample_space=deepcopy(self._sample_space),
                                prng=prng,
                                sparse=self._meta['is_sparse'])
 
