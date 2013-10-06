@@ -2,8 +2,9 @@
 Compute the Gacs-Korner common information
 """
 
-from .lattice import insert_meet
 from ..npdist import Distribution
+from ..helpers import parse_rvs
+from .lattice import insert_meet
 from .shannon import conditional_entropy as H
 
 def common_information(dist, rvs=None, crvs=None, rv_names=None):
@@ -39,6 +40,8 @@ def common_information(dist, rvs=None, crvs=None, rv_names=None):
         rv_names = False
     if crvs is None:
         crvs = []
+    else:
+        crvs = parse_rvs(dist, crvs, rv_names)[1]
 
     outcomes, pmf = zip(*dist.zipped(mode='patoms'))
     d = Distribution(outcomes, pmf)
@@ -48,6 +51,6 @@ def common_information(dist, rvs=None, crvs=None, rv_names=None):
 
     common = [d2.outcome_length() - 1]
 
-    K = H(d2, common, crvs, rv_names)
+    K = H(d2, common, crvs)
 
     return K

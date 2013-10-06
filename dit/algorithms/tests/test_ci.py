@@ -53,4 +53,4 @@ def test_K5():
 	assert_almost_equal(K(d, [['X'],['Y']]), 1.5)
 	assert_almost_equal(K(d, [['X'],['Y'],['Z']]), 1.0)
 	assert_almost_equal(K(d, ['X', 'Y'], ['Z']), 0.5)
-	assert_almost_equal(K(d, ['XY', 'YZ']), 2.25)
+	assert_almost_equal(K(d, ['XY', 'YZ']), 2.0)
