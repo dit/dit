@@ -159,7 +159,7 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9,
     # 1) Convert to linear probabilities, if necessary.
     if exact:
         # Copy to avoid precision loss
-        d = dist.set_base('linear', copy=True)
+        d = dist.copy(base='linear')
     else:
         d = dist
 
