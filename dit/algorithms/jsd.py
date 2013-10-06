@@ -11,6 +11,7 @@ import numpy as np
 from ..exceptions import ditException
 from ..distconst import mixture_distribution
 from .shannon import entropy as H
+from ..utils import map, zip
 
 def jensen_shannon_divergence(dists, weights=None):
     """

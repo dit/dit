@@ -7,7 +7,6 @@ Functions related to sampling from discrete distributions.
 """
 
 import operator
-from itertools import izip
 
 import numpy as np
 

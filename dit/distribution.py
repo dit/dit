@@ -38,8 +38,6 @@ properly if interrupted midway through (and the distribution is modified).
 """
 from __future__ import print_function, division
 
-from itertools import izip
-
 import numpy as np
 
 from .math import close, prng, approximate_fraction
@@ -50,6 +48,8 @@ from .exceptions import (
     InvalidNormalization,
     InvalidOutcome,
 )
+
+from .utils import map, range, zip
 
 def prepare_string(dist, digits=None, exact=False, tol=1e-9,
                          show_mask=False, str_outcomes=False):
@@ -150,6 +150,7 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9,
     else:
         outcomes = map(str, outcomes)
 
+    outcomes = list(outcomes)
     if len(outcomes):
         max_length = max(map(len, outcomes))
     else:
@@ -612,7 +613,6 @@ class BaseDistribution(object):
             A string representation of the distribution.
 
         """
-        from itertools import izip
         from StringIO import StringIO
         s = StringIO()
 
@@ -632,7 +632,7 @@ class BaseDistribution(object):
         s.write("\n")
 
         s.write(''.join([ 'x'.ljust(max_length), colsep, pstr, "\n" ]))
-        for o,p in izip(outcomes, pmf):
+        for o,p in zip(outcomes, pmf):
             s.write(''.join( [o.ljust(max_length), colsep, str(p), "\n"] ))
 
         s.seek(0)
@@ -674,7 +674,7 @@ class BaseDistribution(object):
             'outcomes': '_validate_outcomes',
             'norm': '_validate_normalization',
         }
-        for kw, method in mapping.iteritems():
+        for kw, method in mapping.items():
             test = kwargs.get(kw, True)
             if test:
                 getattr(self, method)()
@@ -705,7 +705,7 @@ class BaseDistribution(object):
             raise ditException('Invalid mode.')
 
         if mode == 'pmf':
-            for x in izip(self.outcomes, self.pmf):
+            for x in zip(self.outcomes, self.pmf):
                 yield x
         elif mode == 'atoms':
             # Then we want to iterate over the sample space.
@@ -720,7 +720,7 @@ class BaseDistribution(object):
             is_null = self.ops.is_null
             # Here we can shortcut and go through outcomes and pmf,
             # while pruning null outcomes.
-            for outcome, prob in izip(self.outcomes, self.pmf):
+            for outcome, prob in zip(self.outcomes, self.pmf):
                 if not is_null(prob):
                     yield outcome, prob
 

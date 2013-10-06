@@ -109,14 +109,13 @@ def sigma_algebra(C, X=None):
     # index of a unique representative in the list of unique representatives.
     # This will be used to repopulate the larger binary string representation.
     lookups = {}
-    for i, indexes in enumerate(unique_cols.itervalues()):
+    for i, indexes in enumerate(unique_cols.values()):
         for index in indexes:
             lookups[index] = i
 
     # The total number of elements is given by the powerset on all unique
     # indexes. That is, we just generate all binary strings. Then, for each
     # binary string, we construct the subset in the sigma algebra.
-    indexes = range(len(X))
     sC = set([])
     for word in product([0,1], repeat=len(unique_cols)):
         subset = [x for i,x in enumerate(X) if word[lookups[i]] == 1]

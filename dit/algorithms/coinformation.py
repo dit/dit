@@ -1,20 +1,21 @@
 """
-The total correlation, aka the multiinformation or the integration.
+The co-information aka the multivariate mututal information.
 """
 
-from ..exceptions import ditException
+from iterutils import powerset
+
 from .shannon import conditional_entropy as H
 
-def total_correlation(dist, rvs=None, crvs=None, rv_names=None):
+def coinformation(dist, rvs=None, crvs=None, rv_names=None):
     """
     Parameters
     ----------
     dist : Distribution
-        The distribution from which the total correlation is calculated.
+        The distribution from which the coinformation is calculated.
     rvs : list, None
-        The indexes of the random variable used to calculate the total
-        correlation. If None, then the total correlation is calculated
-        over all random variables.
+        The indexes of the random variable used to calculate the coinformation
+        between. If None, then the coinformation is calculated over all random
+        variables.
     crvs : list, None
         The indexes of the random variables to condition on. If None, then no
         variables are condition on.
@@ -26,8 +27,8 @@ def total_correlation(dist, rvs=None, crvs=None, rv_names=None):
 
     Returns
     -------
-    T : float
-        The total correlation
+    I : float
+        The coinformation.
 
     Raises
     ------
@@ -45,8 +46,6 @@ def total_correlation(dist, rvs=None, crvs=None, rv_names=None):
         msg = "The total correlation is applicable to joint distributions."
         raise ditException(msg)
 
-    one = sum([ H(dist, rv, crvs, rv_names) for rv in rvs ])
-    two = H(dist, set().union(*rvs), crvs, rv_names)
-    T = one - two
+    I = sum( (-1)**(len(Xs)+1)*H(dist, set().union(*Xs), crvs, rv_names) for Xs in powerset(rvs) )
 
-    return T
+    return I

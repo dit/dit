@@ -5,6 +5,7 @@ from nose.tools import *
 
 from dit.npdist import Distribution
 from dit.exceptions import *
+from dit.utils import map, range, zip
 
 import numpy as np
 
@@ -36,16 +37,22 @@ def test_zipped():
     outcomes = ['000', '011', '101', '110', '222', '321', '333']
     d = Distribution(pmf, outcomes)
 
-    outcomes_, pmf_ = zip(*d.zipped())
+    outcomes_, pmf_ = list(zip(*d.zipped()))
     d2 = Distribution(pmf_, outcomes_)
     assert_true(d.is_approx_equal(d2))
 
-    outcomes_, pmf_ = zip(*d.zipped(mode='atoms'))
+    outcomes_, pmf_ = list(zip(*d.zipped(mode='atoms')))
     d3 = Distribution(pmf_, outcomes_)
     assert_true(d.is_approx_equal(d3))
 
-    outcomes_, pmf_ = zip(*d.zipped(mode='patoms'))
+    outcomes_, pmf_ = list(zip(*d.zipped(mode='patoms')))
     d4 = Distribution(pmf_, outcomes_)
     d.make_sparse()
     np.testing.assert_allclose(d.pmf, d4.pmf)
 
+def test_init2():
+    # Cannot initialize with an iterator.
+    # Must pass in a sequence for outcomes.
+    outcomes = map(int, ['0','1','2','3','4'])
+    pmf = [1/5] * 5
+    assert_raises(TypeError, Distribution, pmf, outcomes)
