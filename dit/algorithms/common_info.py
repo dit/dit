@@ -41,7 +41,7 @@ def common_information(dist, rvs=None, crvs=None, rv_names=None):
         crvs = []
 
     outcomes, pmf = zip(*dist.zipped(mode='patoms'))
-    d = Distribution(pmf, outcomes)
+    d = Distribution(outcomes, pmf)
     d.set_rv_names(dist.get_rv_names())
 
     d2 = insert_meet(d, -1, rvs, rv_names)
