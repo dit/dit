@@ -7,6 +7,7 @@
 
 from __future__ import absolute_import
 
+import collections
 import os
 import sys
 import subprocess
@@ -17,6 +18,7 @@ __all__ = (
     'abstract_method',
     'default_opener',
     'deprecate',
+    'flatten',
     'get_fobj',
     'is_string_like',
     'lexico_key',
@@ -157,6 +159,26 @@ class deprecate(object):
         new_f.__dict__.update(f.__dict__)
 
         return new_f
+
+def flatten(l):
+    """Flatten an irregular list of lists.
+
+    Parameters
+    ----------
+    l : iterable
+       The object to be flattened.
+
+    Yields
+    -------
+    el : object
+        The non-iterable items in `l`.
+    """
+    for el in l:
+        if isinstance(el, collections.Iterable) and not isinstance(el, basestring):
+            for sub in flatten(el):
+                yield sub
+        else:
+            yield el
 
 def get_fobj(fname, mode='w+'):
     """Obtain a proper file object.
