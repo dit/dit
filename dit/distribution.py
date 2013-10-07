@@ -50,7 +50,7 @@ from .exceptions import (
     InvalidOutcome,
 )
 
-from .utils import map, range, zip
+from six.moves import map, range, zip
 
 def prepare_string(dist, digits=None, exact=False, tol=1e-9,
                          show_mask=False, str_outcomes=False):

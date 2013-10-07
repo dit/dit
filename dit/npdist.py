@@ -54,8 +54,10 @@ variable. The alphabet for each random variable is a tuple.
 
 import itertools
 from collections import defaultdict
-import numpy as np
 from operator import itemgetter
+
+import numpy as np
+from six.moves import map, range, zip
 
 from .npscalardist import ScalarDistribution
 
@@ -73,7 +75,6 @@ from .exceptions import (
 )
 from .math import get_ops, LinearOperations
 from .params import ditParams
-from .utils import map, range, zip
 
 def _make_distribution(outcomes, pmf, base,
                        sample_space=None, prng=None, sparse=True):
