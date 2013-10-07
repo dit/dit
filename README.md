@@ -30,7 +30,7 @@ Basic usage is as follows:
 
 Create a biased coin and print it.
 
-    >>> d = dit.Distribution([.4, .6], ['H', 'T'])
+    >>> d = dit.Distribution(['H', 'T'], [.4, .6])
     >>> print d
     Class:          Distribution
     Alphabet:       ('H', 'T') for all rvs
