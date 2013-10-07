@@ -164,7 +164,6 @@ def main():
         'numpy >= 1.6',
         'iterutils >= 0.1.6',
         'six >= 1.4.0', # 1.4.0 includes six.moves.range.
-        #'networkx >= 1.6',
     ]
     if sys.version_info[:2] == (2, 6):
         install_requires.append('ordereddict >= 1.1')
