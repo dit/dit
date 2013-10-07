@@ -30,29 +30,16 @@ __all__ = (
     'product_maker',
     'require_keys',
     'str_product',
-    # 2.x and 3.x compatibility
-    'map',
-    'range',
-    'zip',
 )
 
 ######################################################
 # Hacks for simultaneous 2.x and 3.x compatibility.
 #
-
 try:
-    from itertools import imap as map
-    from itertools import izip as zip
-    range = xrange
-except ImportError:
-    # e.g., 3.x has no izip, since zip is builtin.
-    map = map
-    range = range
-    zip = zip
-
-try:
+    # 2.7+
     from collections import OrderedDict
 except ImportError:
+    # 2.6
     from ordereddict import OrderedDict
 
 

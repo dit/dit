@@ -12,10 +12,11 @@ import itertools
 
 # Other
 import numpy as np
+from six.moves import map, range, zip
 
 # dit
 from .exceptions import ditException, InvalidDistribution, InvalidOutcome
-from .utils import str_product, product_maker, map, range, zip
+from .utils import str_product, product_maker
 
 
 

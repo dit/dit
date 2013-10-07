@@ -3,9 +3,10 @@
 
 from nose.tools import *
 
+from six.moves import map, range, zip
+
 from dit.npdist import Distribution
 from dit.exceptions import *
-from dit.utils import map, range, zip
 
 import numpy as np
 
