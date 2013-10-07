@@ -13,7 +13,7 @@ import numpy as np
 
 from dit.utils import powerset
 
-__all__ = ['is_sigma_algebra', 'sigma_algebra', 'atoms']
+__all__ = ['is_sigma_algebra', 'sigma_algebra', 'atom_set']
 
 def sets2matrix(C, X=None):
     """Returns the sets in C as binary strings representing elements in X.
@@ -223,6 +223,9 @@ def atom_set(F, X=None):
         A frozenset of frozensets, representing the atoms of the sigma algebra.
 
     """
+    if not isinstance(next(iter(F)), frozenset):
+        raise Exception('Input to `atom_set` must contain frozensets.')
+
     atoms = []
     for cet in F:
         if not cet:
