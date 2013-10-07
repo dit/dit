@@ -7,11 +7,11 @@ This is a reasonable measure of distinguishablity between distribution.
 from __future__ import division
 
 import numpy as np
+from six.moves import map, zip
 
 from ..exceptions import ditException
 from ..distconst import mixture_distribution
 from .shannon import entropy as H
-from ..utils import map, zip
 
 def jensen_shannon_divergence(dists, weights=None):
     """

@@ -4,12 +4,12 @@
 from __future__ import division
 
 import numpy as np
+from six.moves import map, range, zip
 
 from .exceptions import ditException
 from .npdist import Distribution
 from .npscalardist import ScalarDistribution
 from .validate import validate_pmf
-from .utils import map, range, zip
 
 __all__ = [
     'mixture_distribution',

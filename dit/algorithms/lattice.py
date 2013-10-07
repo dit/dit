@@ -4,10 +4,12 @@ Some algorithms related to lattices.
 """
 from collections import defaultdict
 
+from six.moves import map, range, zip
+
 import dit
 from ..helpers import parse_rvs
 from ..math import sigma_algebra, atom_set
-from ..utils import lexico_key, map, zip, range
+from ..utils import lexico_key
 
 def sigma_algebra_sort(sigalg):
     sigalg = [tuple(sorted(cet)) for cet in sigalg]
