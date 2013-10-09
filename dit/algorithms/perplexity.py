@@ -2,8 +2,7 @@
 The perplexity of a distribution.
 """
 
-from .shannon import entropy
-from .entropy2 import entropy2 as H
+from .shannon import conditional_entropy, entropy
 from ..utils.misc import flatten
 
 def perplexity(dist, rvs=None, crvs=None, rv_names=None):
@@ -47,4 +46,4 @@ def perplexity(dist, rvs=None, crvs=None, rv_names=None):
     else:
         return base**entropy(dist)
 
-    return base**H(dist, rvs, crvs, rv_names)
+    return base**conditional_entropy(dist, rvs, crvs, rv_names)
