@@ -3,7 +3,7 @@ The perplexity of a distribution.
 """
 
 from .shannon import entropy
-from ..abc import H
+from .entropy2 import entropy2 as H
 from ..utils.misc import flatten
 
 def perplexity(dist, rvs=None, crvs=None, rv_names=None):
