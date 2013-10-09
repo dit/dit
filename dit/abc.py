@@ -2,7 +2,7 @@
 Import several functions as shorthand.
 """
 
-from dit.algorithms import conditional_entropy
+from dit.algorithms import conditional_entropy, entropy
 from dit.utils.misc import flatten
 
 from dit import (Distribution as D,
@@ -59,7 +59,6 @@ def H(dist, rvs=None, crvs=None, rv_names=None):
         if crvs is None:
             crvs = []
     else:
-        msg = "The entropy is applicable to joint distributions."
-        raise ditException(msg)
+        return entropy(dist)
 
     return conditional_entropy(dist, rvs, crvs, rv_names)
