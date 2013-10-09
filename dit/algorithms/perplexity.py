@@ -1,32 +1,20 @@
 """
-Import several functions as shorthand.
+The perplexity of a distribution.
 """
 
-from dit.algorithms import conditional_entropy, entropy
-from dit.utils.misc import flatten
+from .shannon import entropy
+from ..abc import H
+from ..utils.misc import flatten
 
-from dit import (Distribution as D,
-                 ScalarDistribution as SD,
-                )
-
-from dit.algorithms import (coinformation as I,
-                            common_information as K,
-                            total_correlation as T,
-                            perplexity as P,
-                            jensen_shannon_divergence as JSD,
-                           )
-
-__all__ = ['D', 'SD', 'H', 'I', 'K', 'T', 'JSD']
-
-def H(dist, rvs=None, crvs=None, rv_names=None):
+def perplexity(dist, rvs=None, crvs=None, rv_names=None):
     """
     Parameters
     ----------
     dist : Distribution
-        The distribution from which the entropy is calculated.
+        The distribution from which the perplexity is calculated.
     rvs : list, None
-        The indexes of the random variable used to calculate the entropy. If 
-        None, then the entropy is calculated over all random variables.
+        The indexes of the random variable used to calculate the perplexity.
+        If None, then the perpelxity is calculated over all random variables.
     crvs : list, None
         The indexes of the random variables to condition on. If None, then no
         variables are condition on.
@@ -38,9 +26,12 @@ def H(dist, rvs=None, crvs=None, rv_names=None):
 
     Returns
     -------
-    H : float
-        The entropy.
+    P : float
+        The perplexity.
     """
+
+    base = dist.get_base(numerical=True) if dist.is_log() else 2
+
     if dist.is_joint():
         if rvs is None:
             # Set to entropy of entire distribution
@@ -54,6 +45,6 @@ def H(dist, rvs=None, crvs=None, rv_names=None):
         if crvs is None:
             crvs = []
     else:
-        return entropy(dist)
+        return base**entropy(dist)
 
-    return conditional_entropy(dist, rvs, crvs, rv_names)
+    return base**H(dist, rvs, crvs, rv_names)
