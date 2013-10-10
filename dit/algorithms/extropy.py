@@ -2,7 +2,6 @@
 The extropy
 """
 
-from ..helpers import parse_rvs
 from ..math import LogOperations
 
 import numpy as np
@@ -57,13 +56,16 @@ def extropy(dist, rvs=None, rv_names=None):
     else:
         d = dist
 
-    npmf = 1 - d.pmf
+    pmf = d.pmf
     if d.is_log():
-        base = d.get_base(numerical=True)
+        ops = LogOperations(d.get_base())
+        base = ops.get_base(numerical=True)
+        npmf = ops.log(1-ops.exp(pmf))
         terms = -base**npmf * npmf
     else:
         # Calculate entropy in bits.
         log = LogOperations(2).log
+        npmf = 1 - pmf
         terms = -npmf * log(npmf)
 
     J = np.nansum(terms)
