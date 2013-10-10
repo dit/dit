@@ -35,7 +35,7 @@ script:
   # We need the full installation path.
   #
   # 2013-10-05
-  #     We should import dit to determine its installation location.
+  #     We should not import dit to determine its installation location.
   #     The reason is that if importing dit fails, then we won't
   #     change directories at all. Then when nosetests is run, zero
   #     tests will be run. So we no longer do the following:
