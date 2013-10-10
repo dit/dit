@@ -25,6 +25,7 @@ before_install:
   #- sudo apt-get install -qq python3-scipy
   #- sudo apt-get install python-matplotlib
   - pip install coveralls --use-mirrors
+  - pip install --upgrade nose
 
 script:
   # Install dit
