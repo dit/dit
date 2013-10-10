@@ -4,7 +4,6 @@ The extropy
 
 from ..helpers import parse_rvs
 from ..math import LogOperations
-from ..utils.misc import flatten
 
 import numpy as np
 
@@ -54,7 +53,7 @@ def extropy(dist, rvs=None, rv_names=None):
             rvs = list(range(dist.outcome_length()))
             rv_names = False
 
-        d = dist.marginal(set(flatten(rvs)), rv_names=rv_names)
+        d = dist.marginal(rvs, rv_names=rv_names)
     else:
         d = dist
 

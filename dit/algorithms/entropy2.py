@@ -4,7 +4,6 @@ measures.
 """
 
 from .shannon import conditional_entropy, entropy
-from ..utils.misc import flatten
 
 def entropy2(dist, rvs=None, crvs=None, rv_names=None):
     """
@@ -34,11 +33,6 @@ def entropy2(dist, rvs=None, crvs=None, rv_names=None):
             # Set to entropy of entire distribution
             rvs = list(range(dist.outcome_length()))
             rv_names = False
-        else:
-            # this will allow inputs of the form [0, 1, 2] or [[0, 1], [2]],
-            # allowing uniform behavior with the mutual information like
-            # measures.
-            rvs = set(flatten(rvs))
         if crvs is None:
             crvs = []
     else:
