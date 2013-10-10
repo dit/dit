@@ -3,4 +3,5 @@ from .total_correlation import total_correlation
 from .coinformation import coinformation
 from .jsd import jensen_shannon_divergence
 from .common_info import common_information
+from .binding import binding_information, residual_entropy
 from .lattice import insert_join, insert_meet

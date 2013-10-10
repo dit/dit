@@ -12,6 +12,8 @@ from dit import (Distribution as D,
 from dit.algorithms import (coinformation as I,
                             common_information as K,
                             total_correlation as T,
+                            binding_information as B,
+                            residual_entropy as R,
                             jensen_shannon_divergence as JSD,
                            )
 
