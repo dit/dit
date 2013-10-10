@@ -16,6 +16,9 @@ def test_J3():
     d = D(['00', '11'], [1/2, 1/2])
     assert_almost_equal(J(d), 1)
     assert_almost_equal(J(d, [0,1]), 1)
-    assert_almost_equal(J(d, [[0],[1]]), 1)
 
-# needs more tests...
+def test_J4():
+    d = SD([ 1/2**i for i in range(1, 10) ] + [1/2**9])
+    for i in range(2, 10):
+        d.set_base(i)
+        assert_less(J(d), H(d))
