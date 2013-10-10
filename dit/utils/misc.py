@@ -13,6 +13,8 @@ import sys
 import subprocess
 import warnings
 
+import six
+
 __all__ = (
     'Property',
     'abstract_method',
@@ -161,7 +163,7 @@ def flatten(l):
         The non-iterable items in `l`.
     """
     for el in l:
-        if isinstance(el, collections.Iterable) and not isinstance(el, basestring):
+        if isinstance(el, collections.Iterable) and not isinstance(el, six.string_types):
             for sub in flatten(el):
                 yield sub
         else:
