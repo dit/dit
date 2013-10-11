@@ -58,9 +58,8 @@ def extropy(dist, rvs=None, rv_names=None):
 
     pmf = d.pmf
     if d.is_log():
-        ops = LogOperations(d.get_base())
-        base = ops.get_base(numerical=True)
-        npmf = ops.log(1-ops.exp(pmf))
+        base = d.get_base(numerical=True)
+        npmf = d.ops.log(1-d.ops.exp(pmf))
         terms = -base**npmf * npmf
     else:
         # Calculate entropy in bits.
