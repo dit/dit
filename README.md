@@ -86,22 +86,23 @@ Calculate the Shannon mutual informations I[X:Z], I[Y:Z], I[X,Y:Z].
     >>> dit.algorithms.mutual_information(d, ['X', 'Y'], ['Z'])
     1.0
 
-Calculate the marginal distribution P(X,Z) and print its probabilities as fractions.
+Calculate the marginal distribution P(X,Z). Then print its probabilities as fractions, showing the mask.
 
     >>> d2 = d.marginal(['X', 'Z'])
-    >>> print d2.to_string(exact=True)
+    >>> print d2.to_string(show_mask=True, exact=True)
+    
     Class:          Distribution
     Alphabet:       ('0', '1') for all rvs
     Base:           linear
     Outcome Class:  str
-    Outcome Length: 2
+    Outcome Length: 2 (mask: 3)
     RV Names:       ('X', 'Z')
 
-    x    p(x)
-    00   1/4
-    01   1/4
-    10   1/4
-    11   1/4
+    x     p(x)
+    0*0   1/4
+    0*1   1/4
+    1*0   1/4
+    1*1   1/4
 
 Convert the distribution probabilities to log (base 3.5) probabilities, and access its pmf.
 
