@@ -11,8 +11,8 @@ Installation
 Installation is easy, provided you have `git` and `pip` set up:
 
     pip install git+https://github.com/dit/dit/#egg=dit
-
-If you want to do this manually, clone this repository:
+    
+And that's it! Alternatively, you can clone this repository:
 
     git clone https://github.com/dit/dit
 
@@ -42,18 +42,40 @@ Create a biased coin and print it.
     x   p(x)
     H   0.4
     T   0.6
+    
+Calculate the probability of 'H' and also of 'H' or 'T'.
 
-Create a distribution representing the XOR logic function.  We have two
-inputs, X and Y, and then Z = XOR(X,Y).
+    >>> d['H']
+    0.4
+    >>> d.event_probability(['H','T'])
+    1.0
+
+Create a distribution representing the XOR logic function.  Here, we have two inputs, X and Y, and then an output 
+Z = XOR(X,Y).
 
     >>> import dit.example_dists
     >>> d = dit.example_dists.Xor()
     >>> d.set_rv_names(['X', 'Y', 'Z'])
+    >>> print d
+    Class:          Distribution
+    Alphabet:       ('0', '1') for all rvs
+    Base:           linear
+    Outcome Class:  str
+    Outcome Length: 3
+    RV Names:       ('X', 'Y', 'Z')
 
-Calculate the Shannon entropy of the joint distribution.
+    x     p(x)
+    000   0.25
+    011   0.25
+    101   0.25
+    110   0.25
+
+Calculate the Shannon entropy and extropy of the joint distribution.
 
     >>> dit.algorithms.entropy(d)
     0.97095059445466858
+    >>> dit.algorithms.extropy(d)
+    1.2451124978365313
 
 Calculate the Shannon mutual informations I[X:Z], I[Y:Z], I[X,Y:Z].
 
@@ -64,10 +86,10 @@ Calculate the Shannon mutual informations I[X:Z], I[Y:Z], I[X,Y:Z].
     >>> dit.algorithms.mutual_information(d, ['X', 'Y'], ['Z'])
     1.0
 
-Calculate the marginal distribution P(X,Z).
+Calculate the marginal distribution P(X,Z) and print its probabilities as fractions.
 
     >>> d2 = d.marginal(['X', 'Z'])
-    >>> print d2
+    >>> print d2.to_string(exact=True)
     Class:          Distribution
     Alphabet:       ('0', '1') for all rvs
     Base:           linear
@@ -76,8 +98,20 @@ Calculate the marginal distribution P(X,Z).
     RV Names:       ('X', 'Z')
 
     x    p(x)
-    00   0.25
-    01   0.25
-    10   0.25
-    11   0.25
+    00   1/4
+    01   1/4
+    10   1/4
+    11   1/4
 
+Convert the distribution probabilities to log (base 3.5) probabilities, and access its pmf.
+
+    >>> d2.set_base(3.5)
+    >>> d2.pmf
+    array([-1.10658951, -1.10658951, -1.10658951, -1.10658951])
+    
+Draw 5 random samples from this distribution.
+
+    >>> d2.rand(5)
+    ['10', '11', '00', '01', '10']
+    
+    
