@@ -90,7 +90,6 @@ Calculate the marginal distribution P(X,Z). Then print its probabilities as frac
 
     >>> d2 = d.marginal(['X', 'Z'])
     >>> print d2.to_string(show_mask=True, exact=True)
-    
     Class:          Distribution
     Alphabet:       ('0', '1') for all rvs
     Base:           linear
