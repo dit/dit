@@ -3,7 +3,7 @@ Some standard discrete distribution.
 """
 
 from .. import ScalarDistribution
-from ..math.misc import combinations, is_integer
+from ..math.misc import combinations, is_integer, is_number
 
 def bernoulli(p):
     """
@@ -15,8 +15,8 @@ def binomial(n, p):
     """
     if not is_integer(n) or n < 0:
         raise ValueError("{0} is not a positive integer.".format(n))
-    if not 0 <= p <= 1:
-        raise ValueError("{0} is not a valid probability.".format(p))
+    if not is_number(p) or not 0 <= p <= 1:
+       raise ValueError("{0} is not a valid probability.".format(p))
     pp = lambda n, k: combinations(n, k) * p**k * (1-p)**(n-k)
     outcomes = list(range(n+1))
     probs = [ pp(n, k) for k in outcomes ]
