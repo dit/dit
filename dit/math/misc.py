@@ -60,9 +60,9 @@ def factorial(n):
         If `n` is not non-negative integer.
     """
     if not is_number(n):
-        raise TypeError("{} is not a number.".format(n))
+        raise TypeError("{0} is not a number.".format(n))
     if not is_integer(n) or n < 0:
-        raise ValueError("{} is not a positive integer.".format(n))
+        raise ValueError("{0} is not a positive integer.".format(n))
     return np.prod(np.arange(1, n+1))
 
 def combinations(n, k):
@@ -91,6 +91,6 @@ def combinations(n, k):
     nf = factorial(n)
     kf = factorial(k)
     if k > n:
-        raise ValueError("{} is larger than {}.".format(k, n))
+        raise ValueError("{0} is larger than {1}.".format(k, n))
     nmkf = factorial(n-k)
     return nf/(kf*nmkf)
