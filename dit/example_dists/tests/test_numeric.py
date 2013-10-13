@@ -5,7 +5,7 @@ from nose.tools import *
 import numpy as np
 
 from dit.algorithms import entropy
-from dit.example_dists import bernoulli, binomial, uniform
+from dit.example_dists import bernoulli, binomial, hypergeometric, uniform
 
 def test_bernoulli1():
     d = bernoulli(1/2)
@@ -38,3 +38,22 @@ def test_uniform1():
         assert_equal(d.outcomes, tuple(range(n)))
         assert_almost_equal(d[0], 1/n)
         assert_almost_equal(entropy(d), np.log2(n))
+
+def test_uniform2():
+    for v in [-1, 1.5, 'a', int, []]:
+        assert_raises(ValueError, uniform, v)
+
+def test_hypergeometric1():
+    d = hypergeometric(50, 5, 10)
+    assert_almost_equal(d[4], 0.003964583)
+    assert_almost_equal(d[5], 0.0001189375)
+
+def test_hypergeometric2():
+    vals = [(50, 5, -1), (50, -1, 10), (-1, 5, 10),
+            (50, 5, 1.5), (50, 1.5, 10), (1.5, 5, 10),
+            (50, 5, 'a'), (50, 'a', 10), ('a', 5, 10),
+            (50, 5, int), (50, int, 10), (int, 5, 10),
+            (50, 5, []), (50, [], 10), ([], 5, 10),
+            ]
+    for val in vals:
+        assert_raises(ValueError, hypergeometric, *val)

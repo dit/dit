@@ -63,7 +63,10 @@ def factorial(n):
         raise TypeError("{0} is not a number.".format(n))
     if not is_integer(n) or n < 0:
         raise ValueError("{0} is not a positive integer.".format(n))
-    return np.prod(np.arange(1, n+1))
+    if n == 0:
+        return 1
+    else:
+        return n * factorial(n-1)
 
 def combinations(n, k):
     """
