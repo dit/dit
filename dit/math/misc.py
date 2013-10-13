@@ -61,7 +61,7 @@ def factorial(n):
     """
     if not is_number(n):
         raise TypeError("{} is not a number.".format(n))
-    if not is_integer(n) and n > 0:
+    if not is_integer(n) or n < 0:
         raise ValueError("{} is not a positive integer.".format(n))
     return np.prod(np.arange(1, n+1))
 
