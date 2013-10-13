@@ -2,7 +2,10 @@ from __future__ import division
 
 from nose.tools import *
 
-from dit.example_dists import bernoulli, binomial
+import numpy as np
+
+from dit.algorithms import entropy
+from dit.example_dists import bernoulli, binomial, uniform
 
 def test_bernoulli1():
     d = bernoulli(1/2)
@@ -28,3 +31,10 @@ def test_binomial1():
 def test_binomial2():
     for n in [-1, 1.5, 'a', int, []]:
         assert_raises(ValueError, binomial, n, 1/2)
+
+def test_uniform1():
+    for n in range(2, 10):
+        d = uniform(n)
+        assert_almost_equal(d.outcomes, tuple(range(n)))
+        assert_almost_equal(d[0], 1/n)
+        assert_almost_equal(entropy(d), np.log2(n))
