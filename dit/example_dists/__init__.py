@@ -1,2 +1,2 @@
 from .circuits import *
-from numeric import *
+from .numeric import *

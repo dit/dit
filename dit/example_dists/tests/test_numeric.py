@@ -24,3 +24,7 @@ def test_binomial1():
         d = binomial(n, 1/2)
         assert_equal(d.outcomes, tuple(range(n+1)))
         assert_almost_equal(sum(d.pmf), 1)
+
+def test_binomial2():
+    for n in [-1, 1.5, 'a', int, []]:
+        assert_raises(ValueError, binomial, n, 1/2)
