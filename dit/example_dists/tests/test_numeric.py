@@ -35,6 +35,6 @@ def test_binomial2():
 def test_uniform1():
     for n in range(2, 10):
         d = uniform(n)
-        assert_almost_equal(d.outcomes, tuple(range(n)))
+        assert_equal(d.outcomes, tuple(range(n)))
         assert_almost_equal(d[0], 1/n)
         assert_almost_equal(entropy(d), np.log2(n))
