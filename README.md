@@ -1,6 +1,5 @@
-dit
+dit  [![Build Status](https://secure.travis-ci.org/dit/dit.png)](http://travis-ci.org/dit/dit)
 ===
-[![Build Status](https://secure.travis-ci.org/dit/dit.png)](http://travis-ci.org/dit/dit)
 
 `dit` is a Python package for information theory.  It's undergoing substantial
 development, so the API will change as well.
