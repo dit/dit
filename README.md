@@ -1,5 +1,8 @@
-dit  [![Build Status](https://secure.travis-ci.org/dit/dit.png)](http://travis-ci.org/dit/dit)
+
+
+dit &nbsp;&nbsp; [![Build Status](https://secure.travis-ci.org/dit/dit.png)](http://travis-ci.org/dit/dit) &nbsp;&nbsp; [![Coverage Status](https://coveralls.io/repos/chebee7i/dit/badge.png?branch=master)](https://coveralls.io/r/chebee7i/dit?branch=master)
 ===
+
 
 `dit` is a Python package for information theory.  It's undergoing substantial
 development, so the API will change as well.
