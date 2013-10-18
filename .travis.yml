@@ -62,4 +62,5 @@ after_success:
   # so this might not work. We shall see.
   - cp .coverage $TRAVIS_BUILD_DIR
   - cd $TRAVIS_BUILD_DIR
+  - coverage report -m
   - coveralls
