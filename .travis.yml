@@ -54,7 +54,7 @@ script:
 
   # Run nosetests.
   - nosetests -v --with-coverage --cover-erase --cover-package=dit
-
+  - coverage report -m
 after_success:
   # We must run coveralls from the git repo.
   # But we ran tests from the installed directory.
