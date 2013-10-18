@@ -33,7 +33,6 @@ exclude_lines =
     except RuntimeError
 
     # hard to test (potentially long running)
-    #def random_powerlaw_tree_sequence
 
 ignore_errors = True
 
