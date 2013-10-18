@@ -29,6 +29,7 @@ before_install:
 
 script:
   # Install dit
+  - printenv PWD
   - pip install .
 
   # Move to new directory so that dit is not imported from repository.
@@ -55,4 +56,5 @@ script:
   - nosetests -v --with-coverage --cover-erase --cover-package=dit
 
 after_success:
+  - cd $TRAVIS_BUILD_DIR
   - coveralls
