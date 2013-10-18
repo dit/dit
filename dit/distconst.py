@@ -170,11 +170,23 @@ def modify_outcomes(dist, ctor):
     d = dist.__class__(outcomes, dist.pmf, base=dist.get_base())
     return d
 
-def random_scalar_distribution(n, prng=None):
+def random_scalar_distribution(n, alpha=None, prng=None):
     """
     Returns a random scalar distribution over `n` outcomes.
 
-    The distribution is sampled uniformly over the space of distributions.
+    The distribution is sampled uniformly over the space of distributions on
+    the `n`-simplex. If `alpha` is not `None`, then the distribution is
+    sampled from the Dirichlet distribution with parameter `alpha`.
+
+    Parameters
+    ----------
+    n : int | list
+        The number of outcomes, or a list containing the outcomes.
+
+    alpha : list | None
+        The concentration parameters defining that the Dirichlet distribution
+        used to draw the random distribution. If `None`, then each of the
+        concentration parameters are set equal to 1.
 
     """
     import dit.math
@@ -182,16 +194,29 @@ def random_scalar_distribution(n, prng=None):
     if prng is None:
         prng = dit.math.prng
 
-    d = uniform_distribution(n)
-    pmf = prng.dirichlet( np.ones(len(d)) )
+    try:
+        nOutcomes = len(n)
+    except TypeError:
+        nOutcomes = n
+
+    d = uniform_scalar_distribution(nOutcomes)
+    if alpha is None:
+        alpha = np.ones(len(d))
+    elif len(alpha) != nOutcomes:
+        raise ditException('Number of concentration parameters must be `n`.')
+
+    pmf = prng.dirichlet(alpha)
     d.pmf = pmf
     return d
 
-def random_distribution(outcome_length, alphabet_size, prng=None):
+def random_distribution(outcome_length, alphabet_size, alpha=None, prng=None):
     """
     Returns a uniform distribution.
 
-    The distribution is sampled uniformly over the space of distributions.
+    The distribution is sampled uniformly over the space of distributions on
+    the `n`-simplex, where `n` is equal to `alphabet_size**outcome_length`.
+    If `alpha` is not `None`, then the distribution is sampled from the
+    Dirichlet distribution with parameter `alpha`.
 
     Parameters
     ----------
@@ -203,6 +228,11 @@ def random_distribution(outcome_length, alphabet_size, prng=None):
         integer, then the alphabet will consist of integers from 0 to k-1 where
         k is the alphabet size.  If a list, then the elements are used as the
         alphabet.
+
+    alpha : list | None
+        The concentration parameters defining that the Dirichlet distribution
+        used to draw the random distribution. If `None`, then each of the
+        concentration parameters are set equal to 1.
 
     Returns
     -------
@@ -216,7 +246,13 @@ def random_distribution(outcome_length, alphabet_size, prng=None):
         prng = dit.math.prng
 
     d = uniform_distribution(outcome_length, alphabet_size)
-    pmf = prng.dirichlet( np.ones(len(d)) )
+
+    if alpha is None:
+        alpha = np.ones(len(d))
+    elif len(alpha) != len(d):
+        raise ditException('Invalid number of concentration parameters.')
+
+    pmf = prng.dirichlet(alpha)
     d.pmf = pmf
     return d
 
