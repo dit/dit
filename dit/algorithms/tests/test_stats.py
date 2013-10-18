@@ -17,7 +17,7 @@ from dit.algorithms.stats import _numerical_test
 
 def test__numerical_test1():
     d = D([(0, 0), (1, 0), (2, 1), (3, 1)], [1/8, 1/8, 3/8, 3/8])
-    assert_is_none(_numerical_test(d))
+    assert(_numerical_test(d) is None)
 
 def test__numerical_test2():
     d = D([(0, 0), (1, '0'), (2, 1), (3, 1)], [1/8, 1/8, 3/8, 3/8])
@@ -39,7 +39,7 @@ def test_median1():
     ps = np.linspace(0, 1, 11)
     for n, p in product(ns, ps):
         d = binomial(n, p)
-        assert_in(median(d), [floor(n*p), n*p, ceil(n*p)])
+        assert(median(d) in [floor(n*p), n*p, ceil(n*p)])
 
 def test_median2():
     d = D([(0, 0), (1, 0), (2, 1), (3, 1)], [1/8, 1/8, 3/8, 3/8])
@@ -50,7 +50,7 @@ def test_mode1():
     ps = np.linspace(0, 1, 11)
     for n, p in product(ns, ps):
         d = binomial(n, p)
-        assert_in(mode(d)[0][0], [floor((n+1)*p), floor((n+1)*p)-1])
+        assert(mode(d)[0][0] in [floor((n+1)*p), floor((n+1)*p)-1])
 
 def test_mode2():
     d = D([(0, 0), (1, 0), (2, 1), (3, 1)], [1/8, 1/8, 3/8, 3/8])
