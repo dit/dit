@@ -47,20 +47,25 @@ script:
   #
   #     Instead, we'll use pip, grep, and awk. A bit fragile but it works.
   #
-  - cd `pip show dit | grep Location | awk '{print $2"/dit"}'`
+  - export DIT_INSTALL=`pip show dit | grep Location | awk '{print $2"/dit"}'`
+
+  ### Also, nose 1.3.0 does not tell coverage to only cover the requested
+  ### package (except during the report).  So to restrict coverage, we must
+  ### inform coverage through the .coveragerc file.
+  - cp .coveragerc $DIT_INSTALL
 
   # Export current directory for logs.
+  - cd $DIT_INSTALL
   - printenv PWD
 
   # Run nosetests.
   - nosetests -v --with-coverage --cover-erase --cover-package=dit
-  - coverage report -m
+
 after_success:
   # We must run coveralls from the git repo.
   # But we ran tests from the installed directory.
-  # The .coverage file looks like it contains absolute paths...
-  # so this might not work. We shall see.
+  # The .coverage file looks like it contains absolute paths,
+  # but coveralls does not seem to care.
   - cp .coverage $TRAVIS_BUILD_DIR
   - cd $TRAVIS_BUILD_DIR
-  - coverage report -m
   - coveralls
