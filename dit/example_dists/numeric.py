@@ -36,7 +36,10 @@ def binomial(n, p):
     """
     The binomial distribution:
 
-    f(k;n,p) = P(X = k) = nCk p^k (1-p)^(n-k)
+        f(k;n,p) = P(X = k) = nCk p^k (1-p)^(n-k)
+
+    describes the number of successes in n i.i.d. draws each with probability
+    of success p.
 
     Parameters
     ----------
@@ -48,7 +51,9 @@ def binomial(n, p):
     Returns
     -------
     d : ScalarDistribution
-        The binomial distribution of `n` trials with probabily `p` of success.
+        The binomial distribution describes the number of successes in `n`
+        trials (identically and independently distributed draws) each with
+        probability of success `p`.
 
     Raises
     ------
@@ -67,7 +72,7 @@ def binomial(n, p):
 
 def hypergeometric(N, K, n):
     """
-    The binomial distribution:
+    The hypergeometric distribution:
 
     f(k;N,K,n) = P(X = k) = KCk * (N-K)C(n-k) / NCn
 
@@ -83,9 +88,9 @@ def hypergeometric(N, K, n):
     Returns
     -------
     d : ScalarDistribution
-        The hypergeometric distribution of a population of size `N` with `K` 
-        successes in the population, and `n` draws are made, without 
-        replacement, from that population. P(k) is the probability of k 
+        The hypergeometric distribution of a population of size `N` with `K`
+        successes in the population, and `n` draws are made, without
+        replacement, from that population. P(k) is the probability of k
         successes among the `n` draws.
 
     Raises
