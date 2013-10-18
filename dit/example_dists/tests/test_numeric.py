@@ -43,6 +43,20 @@ def test_uniform2():
     for v in [-1, 1.5, 'a', int, []]:
         assert_raises(ValueError, uniform, v)
 
+def test_uniform3():
+    _as = [1, 2, 3, 4, 5]
+    _bs = [5, 7, 9, 11, 13]
+    for a, b in zip(_as, _bs):
+        d = uniform(a, b)
+        assert_equal(len(d.outcomes), b-a)
+        assert_almost_equal(d[a], 1/(b-a))
+
+def test_uniform4():
+    assert_raises(ValueError, uniform, 2, 0)
+
+def test_uniform5():
+    assert_raises(ValueError, uniform, 0, [])
+
 def test_hypergeometric1():
     d = hypergeometric(50, 5, 10)
     assert_almost_equal(d[4], 0.003964583)
