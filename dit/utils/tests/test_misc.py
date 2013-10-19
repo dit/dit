@@ -11,7 +11,7 @@ def test_flatten1():
         assert_equal(i, j)
 
 def test_is_string_like1():
-    ys = ['', 'hi', "pants", '"test"', u'pants', r'pants']
+    ys = ['', 'hi', "pants", '"test"', unicode('pants'), r'pants']
     ns = [1, [], int, {}, ()]
     for y in ys:
         assert_true(is_string_like(y))
