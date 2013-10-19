@@ -1,6 +1,7 @@
 from nose.tools import *
 
 from dit.utils.misc import flatten, is_string_like
+from six import u
 
 def test_flatten1():
     x = [[[0], 1, 2], 3, [4]]
@@ -11,7 +12,7 @@ def test_flatten1():
         assert_equal(i, j)
 
 def test_is_string_like1():
-    ys = ['', 'hi', "pants", '"test"', unicode('pants'), r'pants']
+    ys = ['', 'hi', "pants", '"test"', u('pants'), r'pants']
     ns = [1, [], int, {}, ()]
     for y in ys:
         assert_true(is_string_like(y))
