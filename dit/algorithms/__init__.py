@@ -7,3 +7,5 @@ from .common_info import common_information
 from .binding import binding_information, residual_entropy
 from .lattice import insert_join, insert_meet
 from .extropy import extropy
+from .stats import mean, median, mode, standard_deviation, central_moment, \
+                   standard_moment
