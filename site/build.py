@@ -35,6 +35,15 @@ def build(dest):
     # We aren't doing anything fancy yet.
     shutil.copytree(source, dest)
 
+def update_gitrepo():
+    source = os.path.split(os.path.abspath(__file__))[0]
+    initial = os.getcwd()
+    try:
+        os.chdir(source)
+        subprocess.call(['git', 'pull'])
+    finally:
+        os.chdir(initial)
+
 def main():
     try:
         min_delay = int(sys.argv[2]) * 60
@@ -58,7 +67,7 @@ def main():
         # Then its a bad symlink.
         os.unlink(build_dir)
 
-    subprocess.call(['git', 'pull'])
+    update_gitrepo()
     build(build_dir)
     subprocess.call(['touch', build_dir])
     print "Done."
