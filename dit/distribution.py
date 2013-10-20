@@ -622,13 +622,13 @@ class BaseDistribution(object):
                 self.alphabet,
                 base]
 
-        L = max(map(len,headers))
+        L = max(map(len, headers))
         for head, val in zip(headers, vals):
             s.write("{0}{1}\n".format(head.ljust(L), val))
         s.write("\n")
 
         s.write(''.join([ 'x'.ljust(max_length), colsep, pstr, "\n" ]))
-        for o,p in zip(outcomes, pmf):
+        for o, p in zip(outcomes, pmf):
             s.write(''.join( [o.ljust(max_length), colsep, str(p), "\n"] ))
 
         s.seek(0)

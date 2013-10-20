@@ -109,7 +109,7 @@ def _construct_alphabets(outcomes):
     outcome_length = len(outcomes[0])
     alphabets = [OrderedDict() for i in range(outcome_length)]
     for outcome in outcomes:
-        for i,symbol in enumerate(outcome):
+        for i, symbol in enumerate(outcome):
             alphabets[i][symbol] = True
 
     alphabets = tuple( map(tuple, alphabets) )
@@ -296,7 +296,8 @@ def reorder(outcomes, pmf, sample_space, index=None):
     if len(order) != len(outcomes):
         # For example, `outcomes` contains an element not in `sample_space`.
         # For example, `outcomes` contains duplicates.
-        raise InvalidDistribution('outcomes and sample_space are not compatible.')
+        msg = 'outcomes and sample_space are not compatible.'
+        raise InvalidDistribution(msg)
 
     outcomes = [outcomes[i] for i in order]
     pmf = [pmf[i] for i in order]
@@ -369,7 +370,7 @@ def reorder_cp(pmf, outcomes, alphabet, product, index=None, method=None):
         codes = []
         for outcome in outcomes:
             idx = 0
-            for i,symbol in enumerate(outcome):
+            for i, symbol in enumerate(outcome):
                 idx += alphabet_index[i][symbol] * (alphabet_size[i])**(L-i)
             codes.append(idx)
 

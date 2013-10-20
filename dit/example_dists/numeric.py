@@ -105,7 +105,7 @@ def hypergeometric(N, K, n):
     if not is_integer(n) or n < 0:
         raise ValueError("{0} is not a positive integer.".format(n))
     outcomes = list(range(max(0, n+K-N), min(K, n)+1))
-    pmf = [ C(K, k)*C(N-K,n-k)/C(N, n) for k in outcomes ]
+    pmf = [ C(K, k)*C(N-K, n-k)/C(N, n) for k in outcomes ]
     return ScalarDistribution(outcomes, pmf)
 
 def uniform(a, b=None):
@@ -119,7 +119,7 @@ def uniform(a, b=None):
         The lower bound of the uniform distribution. If `b` is None, then `a` is
         taken to be the length of the uniform with a lower bound of 0.
     b : int, None
-        The upper bound of the uniform distribution. If None, a uniform 
+        The upper bound of the uniform distribution. If None, a uniform
         distribution over 0 .. `a` is returned.
 
     Returns

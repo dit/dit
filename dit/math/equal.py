@@ -14,7 +14,7 @@ def close__cython(x, y, rtol=None, atol=None):
         rtol = ditParams['rtol']
     if atol is None:
         atol = ditParams['atol']
-    return close_(x,y,rtol,atol)
+    return close_(x, y, rtol, atol)
 
 def close__python(x, y, rtol=None, atol=None):
     if rtol is None:
@@ -30,8 +30,8 @@ def close__python(x, y, rtol=None, atol=None):
 
     if xinf:
         # If they are inf, make sure the signs are the same.
-        xgz = x>0
-        ygz = y>0
+        xgz = x > 0
+        ygz = y > 0
         if (xgz and not ygz) or (not xgz and ygz):
             return False
     else:

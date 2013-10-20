@@ -91,7 +91,7 @@ def _sample_discrete__python(pmf, rand):
 
     """
     total = 0
-    for i,prob in enumerate(pmf):
+    for i, prob in enumerate(pmf):
         total += prob
         if rand < total:
             return i

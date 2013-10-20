@@ -167,7 +167,7 @@ def mode(dist):
     Returns
     -------
     modes : [ndarray]
-        A list of arrays, one for each index of the outcomes. Each array 
+        A list of arrays, one for each index of the outcomes. Each array
         contains the modes of that index.
 
     Raises
@@ -176,7 +176,7 @@ def mode(dist):
         If the outcomes of the `dist` are not numerical.
     """
     _numerical_test(dist)
-    
+
     try:
         dists = [ dist.marginal([i]) for i in range(dist.outcome_length()) ]
     except:
