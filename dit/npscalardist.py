@@ -30,14 +30,12 @@ variable. The alphabet for each random variable is a set.
 from .distribution import BaseDistribution
 from .exceptions import (
     ditException,
-    IncompatibleDistribution,
     InvalidDistribution,
     InvalidOutcome,
-    InvalidProbability,
 )
 
 import dit.math
-from .math import get_ops, LinearOperations, LogOperations, close
+from .math import get_ops, LinearOperations, close
 from .params import ditParams
 from .helpers import reorder
 

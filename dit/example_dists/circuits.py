@@ -1,6 +1,6 @@
 from __future__ import division
 
-from dit import Distribution, ScalarDistribution
+from dit import Distribution
 
 def Unq():
     pmf = [1/4] * 4

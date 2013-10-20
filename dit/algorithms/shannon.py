@@ -5,7 +5,6 @@ This will be replaced with something better later.
 
 """
 
-from ..helpers import parse_rvs
 from ..math import LogOperations
 
 import numpy as np

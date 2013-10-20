@@ -52,7 +52,6 @@ variable. The alphabet for each random variable is a tuple.
 
 """
 
-import itertools
 from collections import defaultdict
 from operator import itemgetter
 
@@ -62,7 +61,6 @@ from six.moves import map, range, zip
 from .npscalardist import ScalarDistribution
 
 from .helpers import (
-    _construct_alphabets,
     construct_alphabets,
     get_outcome_ctor,
     get_product_func,
@@ -71,7 +69,7 @@ from .helpers import (
 )
 
 from .exceptions import (
-    InvalidDistribution, InvalidOutcome, InvalidProbability, ditException
+    InvalidDistribution, InvalidOutcome, ditException
 )
 from .math import get_ops, LinearOperations
 from .params import ditParams

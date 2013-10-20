@@ -41,16 +41,11 @@ from __future__ import print_function, division
 
 import numpy as np
 
-from .math import close, prng, approximate_fraction
+from .math import approximate_fraction
 
-from .exceptions import (
-    ditException,
-    InvalidBase,
-    InvalidNormalization,
-    InvalidOutcome,
-)
+from .exceptions import ditException
 
-from six.moves import map, range, zip
+from six.moves import map, zip
 
 def prepare_string(dist, digits=None, exact=False, tol=1e-9,
                          show_mask=False, str_outcomes=False):

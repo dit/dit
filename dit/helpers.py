@@ -16,7 +16,7 @@ from six.moves import map, range, zip
 
 # dit
 from .exceptions import ditException, InvalidDistribution, InvalidOutcome
-from .utils import str_product, product_maker
+from .utils import product_maker
 
 
 

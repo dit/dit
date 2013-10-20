@@ -6,8 +6,6 @@ Functions related to sampling from discrete distributions.
 
 """
 
-import operator
-
 import numpy as np
 
 import dit.exceptions

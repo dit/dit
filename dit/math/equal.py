@@ -3,8 +3,7 @@
 
 from __future__ import absolute_import
 
-from numpy import isinf, array, absolute, less_equal
-from numpy import allclose as _allclose
+from numpy import allclose as _allclose, isinf
 
 from dit import ditParams
 
