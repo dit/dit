@@ -1,6 +1,5 @@
 
-
-dit &nbsp;&nbsp; [![Build Status](https://secure.travis-ci.org/dit/dit.png)](http://travis-ci.org/dit/dit) &nbsp;&nbsp; [![Coverage Status](https://coveralls.io/repos/chebee7i/dit/badge.png?branch=master)](https://coveralls.io/r/chebee7i/dit?branch=master)
+dit &nbsp;&nbsp; [![Build Status](https://secure.travis-ci.org/dit/dit.png)](http://travis-ci.org/dit/dit) &nbsp;&nbsp; [![Coverage Status](https://coveralls.io/repos/dit/dit/badge.png?branch=master)](https://coveralls.io/r/dit/dit?branch=master)
 ===
 
 

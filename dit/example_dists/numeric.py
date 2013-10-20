@@ -108,28 +108,43 @@ def hypergeometric(N, K, n):
     pmf = [ C(K, k)*C(N-K,n-k)/C(N, n) for k in outcomes ]
     return ScalarDistribution(outcomes, pmf)
 
-def uniform(n):
+def uniform(a, b=None):
     """
     The discrete uniform distribution:
-    P(x in 0..n-1) = 1/n
+    P(x in a..b-1) = 1/(b-a)
 
     Parameters
     ----------
-    n : int
-        The range of the uniform distribution.
+    a : int
+        The lower bound of the uniform distribution. If `b` is None, then `a` is
+        taken to be the length of the uniform with a lower bound of 0.
+    b : int, None
+        The upper bound of the uniform distribution. If None, a uniform 
+        distribution over 0 .. `a` is returned.
 
     Returns
     -------
     d : ScalarDistribution
-        The uniform distribution of range `n`.
+        The uniform distribution from `a` to `b`-1.
 
     Raises
     ------
     ValueError
-        Raised if `n` is not a positive integer.
+        Raised if `b` is not an integer or None, or if `a` is not an integer and
+        positive if `b` is None or larger than `b` if be is not None.
     """
-    if not is_integer(n) or n < 0:
-        raise ValueError("{0} is not a positive integer.".format(n))
-    outcomes = list(range(n))
-    pmf = [1/n]*n
+    if not (b is None or is_integer(b)):
+        msg = "{0} is not an integer or None."
+        raise ValueError(msg.format(b))
+    if b is None:
+        if not is_integer(a) or a <= 0:
+            msg = "{0} is not a positive integer."
+            raise ValueError(msg.format(a))
+        a, b = 0, a
+    else:
+        if not is_integer(a) or a >= b:
+            msg = "{0} is not an integer larger than {1}."
+            raise ValueError(msg.format(a, b))
+    outcomes = list(range(a, b))
+    pmf = [1/(b-a)]*(b-a)
     return ScalarDistribution(outcomes, pmf)
