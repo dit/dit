@@ -545,4 +545,3 @@ def ordered_partitions(seq, tuples=False):
             partition = list(map(frozenset, partition))
             for perm in permutations(partition):
                     yield perm
-

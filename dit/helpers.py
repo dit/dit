@@ -151,6 +151,53 @@ def get_product_func(klass):
 
     return product
 
+def normalize_rvs(dist, rvs, crvs, rv_names):
+    """
+    For use in multivariate information measures.
+
+    Parameters
+    ----------
+    rvs : list, None
+        List of random variables to use in this measure.
+
+    crvs : list, None
+        List of random variables to condition on.
+
+    rv_names : bool, None
+        If `True`, then the elements of `rvs` are treated as random variable
+        names. If `False`, then the elements of `rvs` are treated as random
+        variable indexes.  If `None`, then the value `True` is used if the
+        distribution has specified names for its random variables.
+
+    Returns
+    -------
+    rvs : list
+        The explicit random variables to use.
+
+    crvs : list
+        The explicit random variables to condition on.
+
+    rv_names : bool
+
+
+    Raises
+    ------
+    ditException
+        Raised if `dist` is not a joint distribution.
+    """
+    if dist.is_joint():
+        if rvs is None:
+            # Set to total correlation of entire distribution
+            rvs = [ [i] for i in range(dist.outcome_length()) ]
+            rv_names = False
+        if crvs is None:
+            crvs = []
+    else:
+        msg = "The information measure requires a joint distribution."
+        raise ditException(msg)
+
+    return rvs, crvs, rv_names
+
 def parse_rvs(dist, rvs, rv_names=None, unique=True, sort=True):
     """
     Returns the indexes of the random variables in `rvs`.

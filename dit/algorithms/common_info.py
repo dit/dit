@@ -2,8 +2,8 @@
 Compute the Gacs-Korner common information
 """
 
+from ..helpers import normalize_rvs, parse_rvs
 from ..npdist import Distribution
-from ..helpers import parse_rvs
 from .lattice import insert_meet
 from .shannon import conditional_entropy as H
 
@@ -23,7 +23,7 @@ def common_information(dist, rvs=None, crvs=None, rv_names=None):
     crvs : list, None
         The indexes of the random variables to condition the common information
         by. If none, than there is no conditioning.
-    rv_names : bool
+    rv_names : bool, None
         If `True`, then the elements of `rvs` are treated as random variable
         names. If `False`, then the elements of `rvs` are treated as random
         variable indexes.  If `None`, then the value `True` is used if the
@@ -35,13 +35,8 @@ def common_information(dist, rvs=None, crvs=None, rv_names=None):
         The Gacs-Korner common information of the distribution.
 
     """
-    if rvs is None:
-        rvs = [ [i] for i in range(dist.outcome_length()) ]
-        rv_names = False
-    if crvs is None:
-        crvs = []
-    else:
-        crvs = parse_rvs(dist, crvs, rv_names)[1]
+    rvs, crvs, rv_names = normalize_rvs(dist, rvs, crvs, rv_names)
+    crvs = parse_rvs(dist, crvs, rv_names)[1]
 
     outcomes, pmf = zip(*dist.zipped(mode='patoms'))
     d = Distribution(outcomes, pmf)

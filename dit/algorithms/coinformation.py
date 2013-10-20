@@ -5,6 +5,7 @@ The co-information aka the multivariate mututal information.
 from iterutils import powerset
 
 from ..exceptions import ditException
+from ..helpers import normalize_rvs
 from .shannon import conditional_entropy as H
 
 def coinformation(dist, rvs=None, crvs=None, rv_names=None):
@@ -38,16 +39,7 @@ def coinformation(dist, rvs=None, crvs=None, rv_names=None):
     ditException
         Raised if `dist` is not a joint distribution.
     """
-    if dist.is_joint():
-        if rvs is None:
-            # Set to entropy of entire distribution
-            rvs = [ [i] for i in range(dist.outcome_length()) ]
-            rv_names = False
-        if crvs is None:
-            crvs = []
-    else:
-        msg = "The coinformation is applicable to joint distributions."
-        raise ditException(msg)
+    rvs, crvs, rv_names = normalize_rvs(dist, rvs, crvs, rv_names)
 
     def entropy(rvs, dist=dist, crvs=crvs, rv_names=rv_names):
         return H(dist, set().union(*rvs), crvs, rv_names)
