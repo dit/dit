@@ -567,7 +567,8 @@ class Distribution(ScalarDistribution):
 
         if prng is None:
             # Do not use copied prng.
-            d.prng = dit.math.prng
+            from .math import prng
+            d.prng = prng
         else:
             # Use specified prng.
             d.prng = prng

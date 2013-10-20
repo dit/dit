@@ -461,6 +461,7 @@ class ScalarDistribution(BaseDistribution):
             The new distribution.
 
         """
+        from .npdist import Distribution
         if isinstance(dist, Distribution):
             from .convert import DtoSD
             d = DtoSD(dist, extract)
