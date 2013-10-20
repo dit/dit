@@ -51,9 +51,6 @@ def main():
     except:
         min_delay = 0
 
-    utc_datetime = datetime.datetime.utcnow()
-    print utc_datetime.strftime("\n%Y-%m-%d %H:%M:%S")
-
     # Build only if enough time has passed.
     build_dir = get_build_dir()
     if os.path.exists(build_dir):
