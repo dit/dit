@@ -7,7 +7,7 @@ This is a reasonable measure of distinguishablity between distribution.
 from __future__ import division
 
 import numpy as np
-from six.moves import zip
+from six.moves import zip # pylint: disable=redefined-builtin
 
 from ..distconst import mixture_distribution
 from .shannon import entropy as H

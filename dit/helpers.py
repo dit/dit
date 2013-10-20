@@ -12,7 +12,7 @@ import itertools
 
 # Other
 import numpy as np
-from six.moves import map, range, zip
+from six.moves import map, range, zip # pylint: disable=redefined-builtin
 
 # dit
 from .exceptions import ditException, InvalidDistribution, InvalidOutcome

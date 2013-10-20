@@ -56,7 +56,7 @@ from collections import defaultdict
 from operator import itemgetter
 
 import numpy as np
-from six.moves import map, range, zip
+from six.moves import map, range, zip # pylint: disable=redefined-builtin
 
 from .npscalardist import ScalarDistribution
 

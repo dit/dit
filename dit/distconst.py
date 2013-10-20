@@ -4,7 +4,7 @@
 from __future__ import division
 
 import numpy as np
-from six.moves import map, range, zip
+from six.moves import map, range, zip # pylint: disable=redefined-builtin
 
 from .exceptions import ditException
 from .npdist import Distribution
