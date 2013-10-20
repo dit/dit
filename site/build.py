@@ -6,7 +6,7 @@ This script can be used to build the website.
 
 It is also run on each commit to github.
 
-Example:  ./build ../public_html
+Example:  ./build public_html
 
 """
 
