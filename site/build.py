@@ -71,7 +71,7 @@ def main():
         # Then its a bad symlink.
         os.unlink(build_dir)
 
-    update_gitrepo()
+    #update_gitrepo()
     build(build_dir)
     subprocess.call(['touch', build_dir])
     print "\tDone."
