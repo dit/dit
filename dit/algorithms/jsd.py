@@ -7,9 +7,8 @@ This is a reasonable measure of distinguishablity between distribution.
 from __future__ import division
 
 import numpy as np
-from six.moves import map, zip
+from six.moves import zip
 
-from ..exceptions import ditException
 from ..distconst import mixture_distribution
 from .shannon import entropy as H
 
@@ -23,7 +22,8 @@ def jensen_shannon_divergence(dists, weights=None):
         The distributions, P_i, to take the Jensen-Shannon Divergence of.
 
     weights: [float], None
-        The weights, w_i, to give the distributions. If None, the weights are assumed to be uniform.
+        The weights, w_i, to give the distributions. If None, the weights are
+        assumed to be uniform.
 
     Returns
     -------

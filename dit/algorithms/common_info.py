@@ -15,7 +15,7 @@ def common_information(dist, rvs=None, crvs=None, rv_names=None):
     Parameters
     ----------
     dist : Distribution
-        The distribution from which the common information is calculated. 
+        The distribution from which the common information is calculated.
     rvs : list, None
         The indexes of the random variables for which the Gacs-Korner common
         information is to be computed. If None, then the common information is

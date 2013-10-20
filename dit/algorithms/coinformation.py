@@ -4,7 +4,6 @@ The co-information aka the multivariate mututal information.
 
 from iterutils import powerset
 
-from ..exceptions import ditException
 from ..helpers import normalize_rvs
 from .shannon import conditional_entropy as H
 
