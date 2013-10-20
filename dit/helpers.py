@@ -303,10 +303,8 @@ def reorder_cp(pmf, outcomes, alphabet, product, index=None, method=None):
             # We lost an outcome.
             bad = set(outcomes) - set(outcomes_)
             L = len(bad)
-            if L == 1:
-                raise InvalidOutcome(bad, single=True)
-            elif L:
-                raise InvalidOutcome(bad, single=False)
+            if L > 0:
+                raise InvalidOutcome(bad, single=(L==1))
         else:
             outcomes = outcomes_
 
