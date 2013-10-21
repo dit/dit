@@ -262,7 +262,7 @@ def parse_rvs(dist, rvs, rv_names=None, unique=True, sort=True):
                 indexes.append( dist._rvs[rv] )
 
         if len(indexes) != len(rvs):
-            msg ='`rvs` contains invalid random variable names.'
+            msg = '`rvs` contains invalid random variable names.'
             raise ditException(msg)
     else:
         # Then `rvs` contained the set of indexes.
