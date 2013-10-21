@@ -377,7 +377,7 @@ def reorder_cp(pmf, outcomes, alphabet, product, index=None, method=None):
         # We need to sort the codes now, keeping track of their indexes.
         order = list(zip(codes, range(len(codes))))
         order.sort()
-        sorted_codes, order = list(zip(*order))
+        _, order = list(zip(*order))
         outcomes = [outcomes[i] for i in order]
         pmf = [pmf[i] for i in order]
     else:

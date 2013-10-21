@@ -392,7 +392,7 @@ class BaseDistribution(object):
         if patoms:
             mode = 'patoms'
 
-        for outcome, prob in self.zipped(mode):
+        for outcome, _ in self.zipped(mode):
             yield outcome
 
     def copy(self):
