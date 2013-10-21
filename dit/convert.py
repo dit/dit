@@ -41,6 +41,8 @@ def DtoSD(dist, extract):
                          sparse=dist.is_sparse(),
                          validate=False)
 
+    return d
+
 def SDtoD(dist):
     """
     Convert a ScalarDistribution to a Distribution.
