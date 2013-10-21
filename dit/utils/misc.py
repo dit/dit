@@ -392,8 +392,8 @@ def require_keys(keys, dikt):
     dikt_keys = set(dikt)
     for key in keys:
         if key not in dikt_keys:
-           msg = "'%s' is required." % (key,)
-           raise Exception(msg)
+            msg = "'%s' is required." % (key,)
+            raise Exception(msg)
 
 def partitions1(set_):
     """
@@ -541,9 +541,9 @@ def ordered_partitions(seq, tuples=False):
 
             # Generate all permutations.
             for perm in permutations(partition):
-                    yield perm
+                yield perm
     else:
         for partition in partitions1(seq):
             partition = list(map(frozenset, partition))
             for perm in permutations(partition):
-                    yield perm
+                yield perm
