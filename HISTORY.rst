@@ -63,26 +63,26 @@ something modified or corrected.
 Research Groups
 ---------------
 
-    Complexity Sciences Center
-    Department of Physics
-    University of California-Davis
-    PI: James P. Crutchfield
-
-    Center for Complexity and Collective Computation
-    Wisconsin Institute for Discovery
-    University of Wisconsin-Madison
-    PI: David C. Krakauer and Jessica C. Flack
-
-    Department of Computer Science
-    University of Colorado-Boulder
-    PI: Elizabeth Bradley
+    | Complexity Sciences Center
+    | Department of Physics
+    | University of California-Davis
+    | PI: James P. Crutchfield
+    |
+    | Center for Complexity and Collective Computation
+    | Wisconsin Institute for Discovery
+    | University of Wisconsin-Madison
+    | PI: David C. Krakauer and Jessica C. Flack
+    |
+    | Department of Computer Science
+    | University of Colorado-Boulder
+    | PI: Elizabeth Bradley
 
 
 Funding
 -------
 
-    ARO grant W911NF-12-1-0288
-    DARPA Physical Intelligence Subcontract No. 9060-000709
-    NSF Grant No. PHY-0748828
-    John Templeton Foundation
+    | ARO grant W911NF-12-1-0288
+    | DARPA Physical Intelligence Subcontract No. 9060-000709
+    | NSF Grant No. PHY-0748828
+    | John Templeton Foundation
 
