@@ -196,7 +196,7 @@ def main():
         'author':               "Humans",
         'author_email':         "admin@dit.io",
         'description':          "Python package for information theory.",
-        'long_description':     open('README.md').read(),
+        'long_description':     open('README.rst').read(),
         'license':              "BSD",
     }
 
