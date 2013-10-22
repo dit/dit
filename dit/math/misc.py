@@ -4,8 +4,6 @@ miscellaneous math.
 
 from numbers import Integral, Number
 
-import numpy as np
-
 def is_number(x):
     """
     Tests if `x` is a number.

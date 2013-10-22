@@ -120,10 +120,8 @@ def validate_outcomes(outcomes, sample_space):
     sample_space = set(sample_space)
     bad = outcomes.difference(sample_space)
     L = len(bad)
-    if L == 1:
-        raise InvalidOutcome(bad, single=True)
-    elif L:
-        raise InvalidOutcome(bad, single=False)
+    if L > 0:
+        raise InvalidOutcome(bad, single=(L==1))
 
     return True
 

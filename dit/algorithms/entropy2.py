@@ -1,5 +1,5 @@
 """
-A version of the entropy with signature common to the other multivariate 
+A version of the entropy with signature common to the other multivariate
 measures.
 """
 
@@ -12,7 +12,7 @@ def entropy2(dist, rvs=None, crvs=None, rv_names=None):
     dist : Distribution
         The distribution from which the entropy is calculated.
     rvs : list, None
-        The indexes of the random variable used to calculate the entropy. If 
+        The indexes of the random variable used to calculate the entropy. If
         None, then the entropy is calculated over all random variables.
     crvs : list, None
         The indexes of the random variables to condition on. If None, then no

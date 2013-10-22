@@ -2,7 +2,7 @@
 The total correlation, aka the multi-information or the integration.
 """
 
-from ..exceptions import ditException
+from ..helpers import normalize_rvs
 from .shannon import conditional_entropy as H
 
 def total_correlation(dist, rvs=None, crvs=None, rv_names=None):
@@ -18,7 +18,7 @@ def total_correlation(dist, rvs=None, crvs=None, rv_names=None):
     crvs : list, None
         The indexes of the random variables to condition on. If None, then no
         variables are condition on.
-    rv_names : bool
+    rv_names : bool, None
         If `True`, then the elements of `rvs` are treated as random variable
         names. If `False`, then the elements of `rvs` are treated as random
         variable indexes.  If `None`, then the value `True` is used if the
@@ -34,16 +34,7 @@ def total_correlation(dist, rvs=None, crvs=None, rv_names=None):
     ditException
         Raised if `dist` is not a joint distribution.
     """
-    if dist.is_joint():
-        if rvs is None:
-            # Set to entropy of entire distribution
-            rvs = [ [i] for i in range(dist.outcome_length()) ]
-            rv_names = False
-        if crvs is None:
-            crvs = []
-    else:
-        msg = "The total correlation is applicable to joint distributions."
-        raise ditException(msg)
+    rvs, crvs, rv_names = normalize_rvs(dist, rvs, crvs, rv_names)
 
     one = sum([ H(dist, rv, crvs, rv_names) for rv in rvs ])
     two = H(dist, set().union(*rvs), crvs, rv_names)

@@ -52,17 +52,15 @@ variable. The alphabet for each random variable is a tuple.
 
 """
 
-import itertools
 from collections import defaultdict
 from operator import itemgetter
 
 import numpy as np
-from six.moves import map, range, zip
+from six.moves import map, range, zip # pylint: disable=redefined-builtin
 
 from .npscalardist import ScalarDistribution
 
 from .helpers import (
-    _construct_alphabets,
     construct_alphabets,
     get_outcome_ctor,
     get_product_func,
@@ -71,7 +69,7 @@ from .helpers import (
 )
 
 from .exceptions import (
-    InvalidDistribution, InvalidOutcome, InvalidProbability, ditException
+    InvalidDistribution, InvalidOutcome, ditException
 )
 from .math import get_ops, LinearOperations
 from .params import ditParams
@@ -569,7 +567,8 @@ class Distribution(ScalarDistribution):
 
         if prng is None:
             # Do not use copied prng.
-            d.prng = dit.math.prng
+            from .math import prng
+            d.prng = prng
         else:
             # Use specified prng.
             d.prng = prng
@@ -1120,7 +1119,7 @@ class Distribution(ScalarDistribution):
         vals.append(rv_names)
 
         # Info
-        L = max(map(len,headers))
+        L = max(map(len, headers))
         for head, val in zip(headers, vals):
             s.write("{0}{1}\n".format("{0}: ".format(head).ljust(L+2), val))
         s.write("\n")
@@ -1129,7 +1128,7 @@ class Distribution(ScalarDistribution):
         s.write(''.join([ 'x'.ljust(max_length), colsep, pstr, "\n" ]))
         # Adjust for empty outcomes. Min length should be: len('x') == 1
         max_length = max(1, max_length)
-        for o,p in zip(outcomes, pmf):
+        for o, p in zip(outcomes, pmf):
             s.write(''.join( [o.ljust(max_length), colsep, str(p), "\n"] ))
         s.seek(0)
 

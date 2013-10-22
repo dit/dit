@@ -7,7 +7,7 @@
 
 from __future__ import absolute_import
 
-import collections
+from collections import Iterable
 import os
 import sys
 import subprocess
@@ -163,7 +163,7 @@ def flatten(l):
         The non-iterable items in `l`.
     """
     for el in l:
-        if isinstance(el, collections.Iterable) and not isinstance(el, six.string_types):
+        if isinstance(el, Iterable) and not isinstance(el, six.string_types):
             for sub in flatten(el):
                 yield sub
         else:
@@ -225,7 +225,8 @@ def lexico_key(x):
     """
     return (len(x), x)
 
-def partition_set(elements, relation=None, innerset=False, reflexive=False, transitive=False):
+def partition_set(elements, relation=None, innerset=False, reflexive=False,
+                  transitive=False):
     """Returns the equivlence classes from `elements`.
 
     Given `relation`, we test each element in `elements` against the other
@@ -291,7 +292,7 @@ def partition_set(elements, relation=None, innerset=False, reflexive=False, tran
                 eqclasses.append( (element, [element]) )
 
 
-        eqclasses = [c for r,c in eqclasses]
+        eqclasses = [c for r, c in eqclasses]
 
     else:
         def belongs(element, eqclass):
@@ -391,8 +392,8 @@ def require_keys(keys, dikt):
     dikt_keys = set(dikt)
     for key in keys:
         if key not in dikt_keys:
-           msg = "'%s' is required." % (key,)
-           raise Exception(msg)
+            msg = "'%s' is required." % (key,)
+            raise Exception(msg)
 
 def partitions1(set_):
     """
@@ -404,7 +405,8 @@ def partitions1(set_):
 
     """
     # Thomas Dybdahl Ahle (https://github.com/thomasahle)
-    # Source: http://compprog.wordpress.com/2007/10/15/generating-the-partitions-of-a-set
+    # Source:
+    #   http://compprog.wordpress.com/2007/10/15/generating-the-partitions-of-a-set
     if not set_:
         yield ()
         return
@@ -539,10 +541,9 @@ def ordered_partitions(seq, tuples=False):
 
             # Generate all permutations.
             for perm in permutations(partition):
-                    yield perm
+                yield perm
     else:
         for partition in partitions1(seq):
             partition = list(map(frozenset, partition))
             for perm in permutations(partition):
-                    yield perm
-
+                yield perm

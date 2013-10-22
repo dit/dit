@@ -12,11 +12,11 @@ import itertools
 
 # Other
 import numpy as np
-from six.moves import map, range, zip
+from six.moves import map, range, zip # pylint: disable=redefined-builtin
 
 # dit
 from .exceptions import ditException, InvalidDistribution, InvalidOutcome
-from .utils import str_product, product_maker
+from .utils import product_maker
 
 
 
@@ -109,7 +109,7 @@ def _construct_alphabets(outcomes):
     outcome_length = len(outcomes[0])
     alphabets = [OrderedDict() for i in range(outcome_length)]
     for outcome in outcomes:
-        for i,symbol in enumerate(outcome):
+        for i, symbol in enumerate(outcome):
             alphabets[i][symbol] = True
 
     alphabets = tuple( map(tuple, alphabets) )
@@ -150,6 +150,53 @@ def get_product_func(klass):
         product = product_maker(ctor)
 
     return product
+
+def normalize_rvs(dist, rvs, crvs, rv_names):
+    """
+    For use in multivariate information measures.
+
+    Parameters
+    ----------
+    rvs : list, None
+        List of random variables to use in this measure.
+
+    crvs : list, None
+        List of random variables to condition on.
+
+    rv_names : bool, None
+        If `True`, then the elements of `rvs` are treated as random variable
+        names. If `False`, then the elements of `rvs` are treated as random
+        variable indexes.  If `None`, then the value `True` is used if the
+        distribution has specified names for its random variables.
+
+    Returns
+    -------
+    rvs : list
+        The explicit random variables to use.
+
+    crvs : list
+        The explicit random variables to condition on.
+
+    rv_names : bool
+
+
+    Raises
+    ------
+    ditException
+        Raised if `dist` is not a joint distribution.
+    """
+    if dist.is_joint():
+        if rvs is None:
+            # Set to total correlation of entire distribution
+            rvs = [ [i] for i in range(dist.outcome_length()) ]
+            rv_names = False
+        if crvs is None:
+            crvs = []
+    else:
+        msg = "The information measure requires a joint distribution."
+        raise ditException(msg)
+
+    return rvs, crvs, rv_names
 
 def parse_rvs(dist, rvs, rv_names=None, unique=True, sort=True):
     """
@@ -215,7 +262,7 @@ def parse_rvs(dist, rvs, rv_names=None, unique=True, sort=True):
                 indexes.append( dist._rvs[rv] )
 
         if len(indexes) != len(rvs):
-            msg ='`rvs` contains invalid random variable names.'
+            msg = '`rvs` contains invalid random variable names.'
             raise ditException(msg)
     else:
         # Then `rvs` contained the set of indexes.
@@ -249,7 +296,8 @@ def reorder(outcomes, pmf, sample_space, index=None):
     if len(order) != len(outcomes):
         # For example, `outcomes` contains an element not in `sample_space`.
         # For example, `outcomes` contains duplicates.
-        raise InvalidDistribution('outcomes and sample_space are not compatible.')
+        msg = 'outcomes and sample_space are not compatible.'
+        raise InvalidDistribution(msg)
 
     outcomes = [outcomes[i] for i in order]
     pmf = [pmf[i] for i in order]
@@ -303,10 +351,8 @@ def reorder_cp(pmf, outcomes, alphabet, product, index=None, method=None):
             # We lost an outcome.
             bad = set(outcomes) - set(outcomes_)
             L = len(bad)
-            if L == 1:
-                raise InvalidOutcome(bad, single=True)
-            elif L:
-                raise InvalidOutcome(bad, single=False)
+            if L > 0:
+                raise InvalidOutcome(bad, single=(L==1))
         else:
             outcomes = outcomes_
 
@@ -324,14 +370,14 @@ def reorder_cp(pmf, outcomes, alphabet, product, index=None, method=None):
         codes = []
         for outcome in outcomes:
             idx = 0
-            for i,symbol in enumerate(outcome):
+            for i, symbol in enumerate(outcome):
                 idx += alphabet_index[i][symbol] * (alphabet_size[i])**(L-i)
             codes.append(idx)
 
         # We need to sort the codes now, keeping track of their indexes.
         order = list(zip(codes, range(len(codes))))
         order.sort()
-        sorted_codes, order = list(zip(*order))
+        _, order = list(zip(*order))
         outcomes = [outcomes[i] for i in order]
         pmf = [pmf[i] for i in order]
     else:

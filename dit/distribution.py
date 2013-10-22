@@ -41,16 +41,11 @@ from __future__ import print_function, division
 
 import numpy as np
 
-from .math import close, prng, approximate_fraction
+from .math import approximate_fraction
 
-from .exceptions import (
-    ditException,
-    InvalidBase,
-    InvalidNormalization,
-    InvalidOutcome,
-)
+from .exceptions import ditException
 
-from six.moves import map, range, zip
+from six.moves import map, zip # pylint: disable=redefined-builtin
 
 def prepare_string(dist, digits=None, exact=False, tol=1e-9,
                          show_mask=False, str_outcomes=False):
@@ -397,7 +392,7 @@ class BaseDistribution(object):
         if patoms:
             mode = 'patoms'
 
-        for outcome, prob in self.zipped(mode):
+        for outcome, _ in self.zipped(mode):
             yield outcome
 
     def copy(self):
@@ -627,13 +622,13 @@ class BaseDistribution(object):
                 self.alphabet,
                 base]
 
-        L = max(map(len,headers))
+        L = max(map(len, headers))
         for head, val in zip(headers, vals):
             s.write("{0}{1}\n".format(head.ljust(L), val))
         s.write("\n")
 
         s.write(''.join([ 'x'.ljust(max_length), colsep, pstr, "\n" ]))
-        for o,p in zip(outcomes, pmf):
+        for o, p in zip(outcomes, pmf):
             s.write(''.join( [o.ljust(max_length), colsep, str(p), "\n"] ))
 
         s.seek(0)

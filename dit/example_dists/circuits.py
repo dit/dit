@@ -1,6 +1,6 @@
 from __future__ import division
 
-from dit import Distribution, ScalarDistribution
+from dit import Distribution
 
 def Unq():
     pmf = [1/4] * 4
@@ -44,12 +44,12 @@ def RdnXor():
 
 def ImperfectRdn():
     pmf = [.499, .5, .001]
-    outcomes = [('0', '0', '0'), ('1','1','1'), ('0','1','0')]
+    outcomes = [('0', '0', '0'), ('1', '1', '1'), ('0', '1', '0')]
     d = Distribution(outcomes, pmf)
     return d
 
 def Subtle():
     pmf = [1/3] * 3
-    outcomes = [('0', '0', '00'), ('1','1','11'), ('0','1','01')]
+    outcomes = [('0', '0', '00'), ('1', '1', '11'), ('0', '1', '01')]
     d = Distribution(outcomes, pmf)
     return d

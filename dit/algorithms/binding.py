@@ -3,7 +3,7 @@ The binding information and residual entropy.
 """
 
 from .shannon import conditional_entropy as H
-from ..exceptions import ditException
+from ..helpers import normalize_rvs
 
 def binding_information(dist, rvs=None, crvs=None, rv_names=None):
     """
@@ -34,16 +34,7 @@ def binding_information(dist, rvs=None, crvs=None, rv_names=None):
     ditException
         Raised if `dist` is not a joint distribution.
     """
-    if dist.is_joint():
-        if rvs is None:
-            # Set to entropy of entire distribution
-            rvs = [ [i] for i in range(dist.outcome_length()) ]
-            rv_names = False
-        if crvs is None:
-            crvs = []
-    else:
-        msg = "The binding information is applicable to joint distributions."
-        raise ditException(msg)
+    rvs, crvs, rv_names = normalize_rvs(dist, rvs, crvs, rv_names)
 
     others = lambda rv, rvs: set(set().union(*rvs)) - set(rv)
 
@@ -83,16 +74,7 @@ def residual_entropy(dist, rvs=None, crvs=None, rv_names=None):
     ditException
         Raised if `dist` is not a joint distribution.
     """
-    if dist.is_joint():
-        if rvs is None:
-            # Set to entropy of entire distribution
-            rvs = [ [i] for i in range(dist.outcome_length()) ]
-            rv_names = False
-        if crvs is None:
-            crvs = []
-    else:
-        msg = "The residual entropy is applicable to joint distributions."
-        raise ditException(msg)
+    rvs, crvs, rv_names = normalize_rvs(dist, rvs, crvs, rv_names)
 
     others = lambda rv, rvs: set(set().union(*rvs)) - set(rv)
 

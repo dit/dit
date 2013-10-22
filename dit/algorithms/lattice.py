@@ -4,7 +4,7 @@ Some algorithms related to lattices.
 """
 from collections import defaultdict
 
-from six.moves import map, range, zip
+from six.moves import map, range, zip # pylint: disable=redefined-builtin
 
 import dit
 from ..helpers import parse_rvs
@@ -56,7 +56,7 @@ def induced_sigalg(dist, rvs, rv_names=None):
     # partition of the original outcomes.
     d = defaultdict(list)
     ctor = dist._outcome_ctor
-    for outcome, p in dist.zipped(mode='atoms'):
+    for outcome, _ in dist.zipped(mode='atoms'):
         # We need to iterate over all atoms, not just those in pmf.
         # Build a list of inner outcomes. "c" stands for "constructed".
         c_outcome = ctor([outcome[i] for i in indexes])

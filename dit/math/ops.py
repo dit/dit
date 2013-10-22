@@ -383,10 +383,10 @@ def set_add(ops):
     base = ops.base
     if base == 2:
         def add(self, x, y, func=np.logaddexp2):
-            return func(x,y)
+            return func(x, y)
     elif base == 'e' or close(base, np.e):
         def add(self, x, y, func=np.logaddexp):
-            return func(x,y)
+            return func(x, y)
     else:
         # No need to optimize this...
         def add(self, x, y):
@@ -424,10 +424,10 @@ def set_add_inplace(ops):
     base = ops.base
     if base == 2:
         def add_inplace(self, x, y, func=np.logaddexp2):
-            return func(x,y,x)
+            return func(x, y, x)
     elif base == 'e' or close(base, np.e):
         def add_inplace(self, x, y, func=np.logaddexp):
-            return func(x,y,x)
+            return func(x, y, x)
     else:
         def add_inplace(self, x, y):
             x *= np.log2(base)
