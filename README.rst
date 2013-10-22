@@ -1,30 +1,48 @@
 
-dit &nbsp;&nbsp; [![Build Status](https://secure.travis-ci.org/dit/dit.png)](http://travis-ci.org/dit/dit) &nbsp;&nbsp; [![Coverage Status](https://coveralls.io/repos/dit/dit/badge.png?branch=master)](https://coveralls.io/r/dit/dit?branch=master)
-===
+`dit` is a Python package for information theory.
 
+.. image:: https://travis-ci.org/dit/dit.png?branch=master
+   :target: https://travis-ci.org/dit/dit
+.. image:: https://coveralls.io/repos/dit/dit/badge.png?branch=master
+   :target: https://coveralls.io/r/dit/dit?branch=master
 
-`dit` is a Python package for information theory.  It's undergoing substantial
-development, so the API will change as well.
+Documentation:
+  Coming soon.
 
+Downloads:
+  Coming soon.
+  
+Dependencies:
+  * Python 2.6, 2.7, 3.2, 3.3
+  * numpy >= 1.6
+  * iterutils >= 0.1.6
+  * six >= 1.4.0
 
-Installation
-============
+Optional Dependencies:
+  * cython
 
-Installation is easy, provided you have `git` and `pip` set up:
+Install:
+  Until `dit` is on PyPI, the easiest way to install is::
+  
+      pip install git+https://github.com/dit/dit/#egg=dit
+      
+  Alternatively, you can clone this repository, move into the newly created `dit` directory, and then install the package.
+  
+      git clone https://github.com/dit/dit.git
+      cd dit
+      pip install .
 
-    pip install git+https://github.com/dit/dit/#egg=dit
-    
-And that's it! Alternatively, you can clone this repository:
+Mailing list:
+  None
 
-    git clone https://github.com/dit/dit
+Code and bug tracker:
+  https://github.com/dit/dit
 
-Then, move into the newly created `dit` directory, and install the package 
-using `pip`:
+License:
+  BSD 2-Clause License, see LICENSE.txt for details.
 
-    pip install .
-
-Usage
-=====
+Quickstart
+----------
 
 Basic usage is as follows:
 
