@@ -1,5 +1,5 @@
 """
-Implimentations of various information measures.
+Implementations of various information measures.
 """
 
 from .shannon import entropy, conditional_entropy, mutual_information
@@ -13,4 +13,3 @@ from .lattice import insert_join, insert_meet
 from .extropy import extropy
 from .stats import mean, median, mode, standard_deviation, central_moment, \
                    standard_moment
-
