@@ -1,5 +1,4 @@
-
-`dit` is a Python package for information theory.
+``dit`` is a Python package for information theory.
 
 .. image:: https://travis-ci.org/dit/dit.png?branch=master
    :target: https://travis-ci.org/dit/dit
@@ -13,20 +12,20 @@ Downloads:
   Coming soon.
   
 Dependencies:
-  * Python 2.6, 2.7, 3.2, 3.3
-  * numpy >= 1.6
-  * iterutils >= 0.1.6
-  * six >= 1.4.0
+  * Python 2.6, 2.7, 3.2, or 3.3
+  * numpy
+  * iterutils
+  * six
 
 Optional Dependencies:
   * cython
 
 Install:
-  Until `dit` is on PyPI, the easiest way to install is::
+  Until ``dit`` is available on PyPI, the easiest way to install is::
   
       pip install git+https://github.com/dit/dit/#egg=dit
       
-  Alternatively, you can clone this repository, move into the newly created `dit` directory, and then install the package.
+  Alternatively, you can clone this repository, move into the newly created ``dit`` directory, and then install the package::
   
       git clone https://github.com/dit/dit.git
       cd dit
@@ -44,11 +43,11 @@ License:
 Quickstart
 ----------
 
-Basic usage is as follows:
+Basic usage is as follows::
 
     >>> import dit
 
-Create a biased coin and print it.
+Create a biased coin and print it. ::
 
     >>> d = dit.Distribution(['H', 'T'], [.4, .6])
     >>> print d
@@ -63,7 +62,7 @@ Create a biased coin and print it.
     H   0.4
     T   0.6
     
-Calculate the probability of 'H' and also of 'H' or 'T'.
+Calculate the probability of 'H' and also of 'H' or 'T'. ::
 
     >>> d['H']
     0.4
@@ -71,7 +70,7 @@ Calculate the probability of 'H' and also of 'H' or 'T'.
     1.0
 
 Create a distribution representing the XOR logic function.  Here, we have two inputs, X and Y, and then an output 
-Z = XOR(X,Y).
+Z = XOR(X,Y). ::
 
     >>> import dit.example_dists
     >>> d = dit.example_dists.Xor()
@@ -90,14 +89,14 @@ Z = XOR(X,Y).
     101   0.25
     110   0.25
 
-Calculate the Shannon entropy and extropy of the joint distribution.
+Calculate the Shannon entropy and extropy of the joint distribution. ::
 
     >>> dit.algorithms.entropy(d)
     0.97095059445466858
     >>> dit.algorithms.extropy(d)
     1.2451124978365313
 
-Calculate the Shannon mutual informations I[X:Z], I[Y:Z], I[X,Y:Z].
+Calculate the Shannon mutual informations I[X:Z], I[Y:Z], I[X,Y:Z]. ::
 
     >>> dit.algorithms.mutual_information(d, ['X'], ['Z'])
     0.0
@@ -106,7 +105,7 @@ Calculate the Shannon mutual informations I[X:Z], I[Y:Z], I[X,Y:Z].
     >>> dit.algorithms.mutual_information(d, ['X', 'Y'], ['Z'])
     1.0
 
-Calculate the marginal distribution P(X,Z). Then print its probabilities as fractions, showing the mask.
+Calculate the marginal distribution P(X,Z). Then print its probabilities as fractions, showing the mask. ::
 
     >>> d2 = d.marginal(['X', 'Z'])
     >>> print d2.to_string(show_mask=True, exact=True)
@@ -123,13 +122,13 @@ Calculate the marginal distribution P(X,Z). Then print its probabilities as frac
     1*0   1/4
     1*1   1/4
 
-Convert the distribution probabilities to log (base 3.5) probabilities, and access its pmf.
+Convert the distribution probabilities to log (base 3.5) probabilities, and access its pmf. ::
 
     >>> d2.set_base(3.5)
     >>> d2.pmf
     array([-1.10658951, -1.10658951, -1.10658951, -1.10658951])
     
-Draw 5 random samples from this distribution.
+Draw 5 random samples from this distribution. ::
 
     >>> d2.rand(5)
     ['10', '11', '00', '01', '10']
