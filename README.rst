@@ -1,4 +1,6 @@
-``dit`` is a Python package for information theory.
+``dit``
+=======
+a Python package for information theory.
 
 .. image:: https://travis-ci.org/dit/dit.png?branch=master
    :target: https://travis-ci.org/dit/dit
