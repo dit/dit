@@ -2,6 +2,8 @@
 [run]
 branch = False
 source = dit
+omit = *test_*.py
+       dit/abc.py
 
 [report]
 # Regexes for lines to exclude from consideration
