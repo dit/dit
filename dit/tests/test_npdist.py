@@ -42,7 +42,7 @@ def test_init5():
     assert_raises(InvalidDistribution, Distribution, outcomes, pmf)
 
 def test_init6():
-    outcomes = {'0', '1', '2'}
+    outcomes = set(['0', '1', '2'])
     pmf = [1/3]*3
     assert_raises(ditException, Distribution, outcomes, pmf)
 
