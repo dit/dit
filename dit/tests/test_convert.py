@@ -1,7 +1,5 @@
 from __future__ import division
 
-from nose.tools import assert_is_instance
-
 from dit import Distribution, ScalarDistribution
 from dit.convert import DtoSD, SDtoD
 
