@@ -114,6 +114,8 @@ def _make_distribution(outcomes, pmf, base,
     if sample_space is None:
         # Use outcomes to obtain the sample_space.
         sample_space = outcomes
+    d._sample_space = sample_space
+    d._sample_space_set = set(sample_space)
 
     ## Set the outcome class, ctor, and product function.
     ## Assumption: the class of each outcome is the same.
@@ -459,6 +461,7 @@ class Distribution(ScalarDistribution):
             if pmf is not None:
                 msg = '`pmf` must be `None` if `outcomes` is a dict.'
                 raise InvalidDistribution(msg)
+            pmf = pmf_
 
         if pmf is None:
             msg = '`pmf` was `None` but `outcomes` was not a dict.'
