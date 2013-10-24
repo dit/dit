@@ -69,7 +69,7 @@ def samples(np.ndarray[np.float_t, ndim=1] pmf,
 
     Returns
     -------
-    None
+    out : NumPy int array, shape (k,)
 
     Notes
     -----

@@ -116,7 +116,7 @@ def _samples_discrete__python(pmf, rands, out=None):
 
     Returns
     -------
-    None
+    out : NumPy int array, shape (k,)
 
     """
     L = rands.shape[0]
@@ -132,6 +132,8 @@ def _samples_discrete__python(pmf, rands, out=None):
             if rand < total:
                 out[i] = j
                 break
+
+    return out
 
 # Load the cython function if possible
 try:
