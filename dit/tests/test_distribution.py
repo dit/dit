@@ -1,6 +1,6 @@
 from __future__ import division
 
-from nose.tools import assert_almost_equal, assert_in, assert_raises, \
+from nose.tools import assert_almost_equal, assert_equal, assert_raises, \
                        assert_true
 
 from dit import Distribution
@@ -12,7 +12,9 @@ def test_dist_iter1():
     pmf = [1/4]*4
     d = Distribution(outcomes, pmf)
     for o in d:
-        assert_in(o, outcomes)
+        assert(o in outcomes)
+    for o1, o2 in zip(d, outcomes):
+        assert_equal(o1, o2)
 
 
 def test_dist_iter2():
@@ -20,7 +22,9 @@ def test_dist_iter2():
     pmf = [1/4]*4
     d = Distribution(outcomes, pmf)
     for o in reversed(d):
-        assert_in(o, outcomes)
+        assert(o in outcomes)
+    for o1, o2 in zip(reversed(d), reversed(outcomes)):
+        assert_equal(o1, o2)
 
 
 def test_numerical():
@@ -35,7 +39,7 @@ def test_rand():
     pmf = [1/4]*4
     d = Distribution(outcomes, pmf)
     for _ in range(10):
-        assert_in(d.rand(), outcomes)
+        assert(d.rand() in outcomes)
 
 
 def test_to_dict():
