@@ -411,7 +411,7 @@ def partitions1(set_):
     if not set_:
         yield ()
         return
-    for i in range(2**len(set_) / 2):
+    for i in range(2**len(set_) // 2): # 2**() is even, so using // is safe.
         parts = [set(), set()]
         for item in set_:
             parts[i&1].add(item)
