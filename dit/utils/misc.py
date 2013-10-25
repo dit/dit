@@ -14,6 +14,7 @@ import subprocess
 import warnings
 
 import six
+from six.moves import range
 
 __all__ = (
     'Property',
@@ -410,7 +411,7 @@ def partitions1(set_):
     if not set_:
         yield ()
         return
-    for i in xrange(2**len(set_) / 2):
+    for i in range(2**len(set_) / 2):
         parts = [set(), set()]
         for item in set_:
             parts[i&1].add(item)
