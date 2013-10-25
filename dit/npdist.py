@@ -637,7 +637,7 @@ class Distribution(ScalarDistribution):
 
             # 2. Reorder  ### This call is different from Distribution
             outcomes, pmf, index = reorder(self.outcomes, pmf,
-                                           self.sample_space)
+                                           self.sample_space())
 
             # 3. Store
             self.outcomes = tuple(outcomes)

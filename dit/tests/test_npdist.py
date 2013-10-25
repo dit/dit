@@ -109,3 +109,39 @@ def test_make_distribution():
     d = _make_distribution(outcomes, pmf, None)
     assert_true(type(d) is Distribution)
     assert_equal(d.outcomes, ('0', '1'))
+
+def test_setitem1():
+    d = Distribution(['0', '1'], [1/2, 1/2])
+    assert_raises(InvalidOutcome, d.__setitem__, '2', 0)
+
+def test_setitem2():
+    d = Distribution(['00', '11'], [1, 0])
+    d.make_sparse()
+    d['11'] = 1/2
+    d.normalize()
+    assert('11' in d)
+    assert_almost_equal(d['11'], 1/3)
+
+def test_coalesce():
+    outcomes = ['000', '011', '101', '110']
+    pmf = [1/4]*4
+    d = Distribution(outcomes, pmf)
+    d = d.coalesce([[0, 1], [2]])
+    assert_equal(d.outcome_length(), 2)
+
+def test_copy():
+    outcomes = ['0', '1']
+    pmf = [1/2, 1/2]
+    d1 = Distribution(outcomes, pmf)
+    d2 = d1.copy(base=10)
+    d3 = Distribution(outcomes, pmf)
+    d3.set_base(10)
+    assert_true(d2.is_approx_equal(d3))
+
+def test_outcome_length():
+    outcomes = ['000', '011', '101', '110']
+    pmf = [1/4]*4
+    d = Distribution(outcomes, pmf)
+    d = d.marginal([0, 2])
+    assert_equal(d.outcome_length(), 2)
+    assert_equal(d.outcome_length(masked=True), 3)
