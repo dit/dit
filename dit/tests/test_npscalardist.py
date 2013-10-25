@@ -1,6 +1,7 @@
 from __future__ import division
 
-from nose.tools import assert_equal, assert_raises, assert_true
+from nose.tools import assert_almost_equal, assert_equal, assert_raises, \
+                       assert_true
 from numpy.testing import assert_array_almost_equal
 
 from dit import ScalarDistribution
@@ -56,3 +57,16 @@ def test_init9():
     d2 = ScalarDistribution.from_distribution(d1, base=10)
     d1.set_base(10)
     assert_true(d1.is_approx_equal(d2))
+
+def test_add_mul():
+    d1 = ScalarDistribution([1/3, 2/3])
+    d2 = ScalarDistribution([2/3, 1/3])
+    d3 = ScalarDistribution([1/2, 1/2])
+    d4 = 0.5*(d1 + d2)
+    assert_true(d3.is_approx_equal(d4))
+
+def test_del():
+    d = ScalarDistribution([1/2, 1/2])
+    del d[1]
+    d.normalize()
+    assert_almost_equal(d[0], 1)
