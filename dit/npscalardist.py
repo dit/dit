@@ -366,6 +366,7 @@ class ScalarDistribution(BaseDistribution):
             if pmf is not None:
                 msg = '`pmf` must be `None` if `outcomes` is a dict.'
                 raise ditException(msg)
+            pmf = pmf_
 
         if pmf is None:
             # Use the outcomes as the pmf and generate integers as outcomes.
