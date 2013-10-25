@@ -114,8 +114,6 @@ def _make_distribution(outcomes, pmf, base,
     if sample_space is None:
         # Use outcomes to obtain the sample_space.
         sample_space = outcomes
-    d._sample_space = sample_space
-    d._sample_space_set = set(sample_space)
 
     ## Set the outcome class, ctor, and product function.
     ## Assumption: the class of each outcome is the same.
@@ -132,6 +130,10 @@ def _make_distribution(outcomes, pmf, base,
     d._outcomes_index = dict(zip(outcomes, range(len(outcomes))))
 
     # Tuple sample space and its set.
+    d._sample_space = tuple(sample_space)
+    d._sample_space_set = set(sample_space)
+
+    # Alphabet and its set.
     d.alphabet = construct_alphabets(sample_space)
     d._alphabet_set = tuple(map(set, d.alphabet))
 
