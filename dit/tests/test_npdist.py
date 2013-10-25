@@ -145,3 +145,44 @@ def test_outcome_length():
     d = d.marginal([0, 2])
     assert_equal(d.outcome_length(), 2)
     assert_equal(d.outcome_length(masked=True), 3)
+
+def test_has_outcome1():
+    d = Distribution(['0', '1'], [1, 0])
+    d.make_sparse()
+    assert_false(d.has_outcome('1', null=False))
+
+def test_has_outcome2():
+    d = Distribution(['0', '1'], [1, 0])
+    assert_false(d.has_outcome('1', null=False))
+
+def test_is_homogeneous1():
+    outcomes = ['00', '11']
+    pmf = [1/2, 1/2]
+    d = Distribution(outcomes, pmf)
+    assert_true(d.is_homogeneous())
+
+def test_is_homogeneous2():
+    outcomes = ['00', '01']
+    pmf = [1/2, 1/2]
+    d = Distribution(outcomes, pmf)
+    assert_false(d.is_homogeneous())
+
+def test_marginalize():
+    outcomes = ['000', '011', '101', '110']
+    pmf = [1/4]*4
+    d = Distribution(outcomes, pmf)
+    d1 = d.marginal([0,2])
+    d2 = d.marginalize([1])
+    assert_true(d1.is_approx_equal(d2))
+
+def test_set_rv_names1():
+    outcomes = ['00', '11']
+    pmf = [1/2, 1/2]
+    d = Distribution(outcomes, pmf)
+    assert_raises(ditException, d.set_rv_names, 'X')
+
+def test_set_rv_names2():
+    outcomes = ['00', '11']
+    pmf = [1/2, 1/2]
+    d = Distribution(outcomes, pmf)
+    assert_raises(ditException, d.set_rv_names, 'XYZ')
