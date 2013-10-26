@@ -10,6 +10,8 @@ Example:  ./build public_html
 
 """
 
+from __future__ import print_function
+
 import datetime
 import os
 import shutil
@@ -56,7 +58,7 @@ def main():
     if os.path.exists(build_dir):
         elapsed = time.time() - os.path.getmtime(build_dir)
         if elapsed < min_delay:
-            print "Not enough time has elapsed since last build."
+            print("Not enough time has elapsed since last build.")
             sys.exit(0)
         else:
             # Delete it all!
@@ -71,7 +73,7 @@ def main():
     #update_gitrepo()
     build(build_dir)
     subprocess.call(['touch', build_dir])
-    print "Done."
+    print("Done.\n")
 
 if __name__ == '__main__':
     main()
