@@ -441,39 +441,44 @@ def partitions2(n):
 
     # H1 [Initialize.]
     # Per above, make lists larger by one element to give 1-based indexing.
-    a = [0] * (n+1)
-    b = [1] * (n)
-    m = 1
+    if n == 0:
+        yield [[]]
+    elif n == 1:
+        yield [[0]]
+    else:
+        a = [0] * (n+1)
+        b = [1] * (n)
+        m = 1
 
-    while True:
-        # H2 [Visit.]
-        yield a[1:]
-        if a[n] == m:
-            # H4 [Find $j$.]
-            j = n - 1
-            while a[j] == b[j]:
-                j -= 1
+        while True:
+            # H2 [Visit.]
+            yield a[1:]
+            if a[n] == m:
+                # H4 [Find $j$.]
+                j = n - 1
+                while a[j] == b[j]:
+                    j -= 1
 
-            # H5 [Increase $a_j$.]
-            if j == 1:
-                break
-            else:
-                a[j] += 1
+                # H5 [Increase $a_j$.]
+                if j == 1:
+                    break
+                else:
+                    a[j] += 1
 
-            # H6 [Zero out $a_{j+1} \ldots a_n$]
-            m = b[j]
-            if a[j] == b[j]: # Iverson braket
-                m += 1
-            j += 1
-            while j < n:
-                a[j] = 0
-                b[j] = m
+                # H6 [Zero out $a_{j+1} \ldots a_n$]
+                m = b[j]
+                if a[j] == b[j]: # Iverson braket
+                    m += 1
                 j += 1
-            a[n] = 0
+                while j < n:
+                    a[j] = 0
+                    b[j] = m
+                    j += 1
+                a[n] = 0
 
-        else:
-            # H3
-            a[n] += 1
+            else:
+                # H3
+                a[n] += 1
 
 def partitions(seq, tuples=False):
     """
