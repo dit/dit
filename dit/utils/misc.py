@@ -77,7 +77,10 @@ def abstract_method(f):
     """
     def abstract_f(*args, **kwargs):
         raise NotImplementedError("Abstract method.")
-    abstract_f.func_name = f.func_name
+    if six.PY2:
+        abstract_f.func_name = f.func_name
+    else:
+        abstract_f.__name__ = f.__name__
     abstract_f.__doc__ = f.__doc__
     return abstract_f
 
