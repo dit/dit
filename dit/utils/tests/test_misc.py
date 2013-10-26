@@ -1,7 +1,8 @@
 from nose.tools import *
 
 from dit.utils.misc import flatten, is_string_like, partitions, partitions2, \
-                           ordered_partitions, require_keys, partition_set
+                           ordered_partitions, require_keys, partition_set, \
+                           abstract_method
 from six import u
 
 def test_flatten1():
@@ -61,8 +62,20 @@ def test_require_keys1():
     required = [0, '0', 'jeans']
     assert_raises(Exception, require_keys, required, d)
 
-def test_partition_set():
+def test_partition_set1():
     stuff = ['0', '1', '00', '11', '000', '111', [0, 1, 2]]
     fn = lambda a, b: len(a) == len(b)
     classes, lookup = partition_set(stuff, fn)
     assert_equal(lookup, [0, 0, 1, 1, 2, 2, 2])
+
+def test_partition_set2():
+    stuff = ['0', '1', '00', '11', '000', '111', [0, 1, 2]]
+    fn = lambda a, b: len(a) == len(b)
+    classes, lookup = partition_set(stuff, fn, reflexive=True, transitive=True)
+    assert_equal(lookup, [0, 0, 1, 1, 2, 2, 2])
+
+def test_abstract_method():
+    @abstract_method
+    def an_abstract_method():
+        pass
+    assert_raises(NotImplementedError, an_abstract_method)
