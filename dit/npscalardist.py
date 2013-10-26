@@ -677,7 +677,7 @@ class ScalarDistribution(BaseDistribution):
             pmf = [p for p in self.pmf] + [value]
 
             # 2. Reorder
-            pmf, outcomes, index = reorder(self.outcomes, pmf,
+            outcomes, pmf, index = reorder(self.outcomes, pmf,
                                            self._sample_space,
                                            index=self._outcomes_index)
 
