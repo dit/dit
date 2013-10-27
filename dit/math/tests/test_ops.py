@@ -117,7 +117,6 @@ class TestLog2(object):
         prods = np.cumprod(nums)
         prods = self.ops.log(prods)
         nums = self.ops.log(nums)
-        print prods
         for i, p in enumerate(prods):
             npt.assert_allclose(self.ops.mult_reduce(nums[:i+1]), p)
         npt.assert_allclose(self.ops.mult_reduce(np.array([])), self.ops.one)
