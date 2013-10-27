@@ -18,6 +18,7 @@ __all__ = [
     'LogOperations'
 ]
 
+# For 2.x, these are ascii strings. For 3.x these are unicode strings.
 acceptable_base_strings = set(['linear', 'e'])
 
 def get_ops(base):
@@ -222,7 +223,7 @@ class LinearOperations(Operations):
     # If the functions below are standard Python functions (as opposed to
     # NumPy ufuncs), then they will be treated as unbound methods for the class.
     # During instantiation, they are bound to the instance (since before
-    # instantiation that are class methods) and thus, we are left with
+    # instantiation they are class methods) and thus, we are left with
     # bound methods (undesirably). If we had modified these attributes in the
     # __init__ function, then they would not be bound (or even unbound methods)
     # but functions instead (desirably).  This is precisely what LogOperations
