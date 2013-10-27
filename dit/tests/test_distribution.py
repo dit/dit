@@ -1,9 +1,10 @@
 from __future__ import division
+from __future__ import print_function
 
 from nose.tools import assert_almost_equal, assert_equal, assert_raises, \
                        assert_true
 
-from dit import Distribution
+from dit import Distribution, ScalarDistribution
 from dit.distribution import BaseDistribution
 from dit.exceptions import ditException, InvalidNormalization
 
@@ -71,3 +72,261 @@ def test_zipped1():
     d = Distribution(outcomes, pmf)
     zipped = d.zipped(mode='pants')
     assert_raises(ditException, list, zipped)
+
+
+def test_to_string1():
+    # Basic
+    outcomes = ['00', '01', '10', '11']
+    pmf = [1/4]*4
+    d = Distribution(outcomes, pmf)
+    s = d.to_string()
+    s_ = """Class:          Distribution
+Alphabet:       ('0', '1') for all rvs
+Base:           linear
+Outcome Class:  str
+Outcome Length: 2
+RV Names:       None
+
+x    p(x)
+00   0.25
+01   0.25
+10   0.25
+11   0.25"""
+    assert_equal(s, s_)
+
+
+def test_to_string2():
+    # Test with exact.
+    outcomes = ['00', '01', '10', '11']
+    pmf = [1/4]*4
+    d = Distribution(outcomes, pmf)
+    s = d.to_string(exact=True)
+    s_ = """Class:          Distribution
+Alphabet:       ('0', '1') for all rvs
+Base:           linear
+Outcome Class:  str
+Outcome Length: 2
+RV Names:       None
+
+x    p(x)
+00   1/4
+01   1/4
+10   1/4
+11   1/4"""
+    assert_equal(s, s_)
+
+def test_to_string3():
+    # Test printing
+    outcomes = ['00', '01', '10', '11']
+    pmf = [1/4]*4
+    d = Distribution(outcomes, pmf)
+    s_ = """Class:          Distribution
+Alphabet:       ('0', '1') for all rvs
+Base:           linear
+Outcome Class:  str
+Outcome Length: 2
+RV Names:       None
+
+x    p(x)
+00   0.25
+01   0.25
+10   0.25
+11   0.25"""
+
+    # context manager?
+    import sys
+    import StringIO
+    sio = StringIO.StringIO()
+    try:
+        old = sys.stdout
+        sys.stdout = sio
+        print(d, end='')
+    finally:
+        sys.stdout = old
+    sio.seek(0)
+    s = sio.read()
+    assert_equal(s, s_)
+
+def test_to_string4():
+    # Basic with marginal
+    outcomes = ['00', '01', '10', '11']
+    pmf = [1/4]*4
+    d = Distribution(outcomes, pmf)
+    d = d.marginal([0])
+    s = d.to_string()
+    s_ = """Class:          Distribution
+Alphabet:       ('0', '1') for all rvs
+Base:           linear
+Outcome Class:  str
+Outcome Length: 1
+RV Names:       None
+
+x   p(x)
+0   0.5
+1   0.5"""
+    assert_equal(s, s_)
+
+def test_to_string4():
+    # Basic with marginal and mask
+    outcomes = ['00', '01', '10', '11']
+    pmf = [1/4]*4
+    d = Distribution(outcomes, pmf)
+    d = d.marginal([0])
+    s = d.to_string(show_mask=True)
+    s_ = """Class:          Distribution
+Alphabet:       ('0', '1') for all rvs
+Base:           linear
+Outcome Class:  str
+Outcome Length: 1 (mask: 2)
+RV Names:       None
+
+x    p(x)
+0*   0.5
+1*   0.5"""
+    assert_equal(s, s_)
+
+def test_to_string5():
+    # Basic
+    outcomes = ['00', '01', '10', '11']
+    pmf = [1/4]*4
+    d = Distribution(outcomes, pmf)
+    s = d.to_string(digits=1)
+    s_ = """Class:          Distribution
+Alphabet:       ('0', '1') for all rvs
+Base:           linear
+Outcome Class:  str
+Outcome Length: 2
+RV Names:       None
+
+x    p(x)
+00   0.2
+01   0.2
+10   0.2
+11   0.2"""
+    assert_equal(s, s_)
+
+def test_to_string6():
+    # Basic
+    outcomes = ['00', '01', '10', '11']
+    pmf = [1/4]*4
+    d = ScalarDistribution(outcomes, pmf)
+    s = d.to_string()
+    s_ = """Class:    ScalarDistribution
+Alphabet: ('00', '01', '10', '11')
+Base:     linear
+
+x    p(x)
+00   0.25
+01   0.25
+10   0.25
+11   0.25"""
+    assert_equal(s, s_)
+
+def test_to_string7():
+    outcomes = ['00', '01', '10', '11']
+    pmf = [1/4]*4
+    d = Distribution(outcomes, pmf)
+    d = d.marginal([0])
+    s = d.to_string(show_mask='!')
+    s_ = """Class:          Distribution
+Alphabet:       ('0', '1') for all rvs
+Base:           linear
+Outcome Class:  str
+Outcome Length: 1 (mask: 2)
+RV Names:       None
+
+x    p(x)
+0!   0.5
+1!   0.5"""
+    assert_equal(s, s_)
+
+def test_to_string8():
+    # Basic
+    outcomes = ['00', '01', '10', '11']
+    pmf = [1/4]*4
+    d = Distribution(outcomes, pmf)
+    d.set_base(2)
+    s = d.to_string()
+    s_ = """Class:          Distribution
+Alphabet:       ('0', '1') for all rvs
+Base:           2
+Outcome Class:  str
+Outcome Length: 2
+RV Names:       None
+
+x    log p(x)
+00   -2.0
+01   -2.0
+10   -2.0
+11   -2.0"""
+    assert_equal(s, s_)
+
+def test_to_string9():
+    # Basic
+    d = ScalarDistribution([], sample_space=[0, 1], validate=False)
+    s = d.to_string()
+    s_ = """Class:    ScalarDistribution
+Alphabet: (0, 1)
+Base:     2
+
+x   log p(x)"""
+    assert_equal(s, s_)
+
+def test_prepare_string1():
+    # Basic
+    outcomes = ['00', '01', '10', '11']
+    pmf = [1/4]*4
+    d = ScalarDistribution(outcomes, pmf)
+    from dit.distribution import prepare_string
+    assert_raises(ditException, prepare_string, d, show_mask=True)
+
+def test_prepare_string2():
+    # Basic
+    outcomes = ['00', '01', '10', '11']
+    pmf = [1/4]*4
+    d = ScalarDistribution(outcomes, pmf)
+    from dit.distribution import prepare_string
+    assert_raises(ditException, prepare_string, d, str_outcomes=True)
+
+def test_prepare_string3():
+    outcomes = [(0,0), (0,1), (1,0), (1,1)]
+    pmf = [1/4]*4
+    d = Distribution(outcomes, pmf)
+    s_ = """Class:          Distribution
+Alphabet:       (0, 1) for all rvs
+Base:           linear
+Outcome Class:  tuple
+Outcome Length: 2
+RV Names:       None
+
+x    p(x)
+00   0.25
+01   0.25
+10   0.25
+11   0.25"""
+    s = d.to_string(str_outcomes=True)
+    assert_equal(s, s_)
+
+def test_prepare_string4():
+    class WeirdInt(int):
+        def __str__(self):
+            raise Exception
+    outcomes = [(0,0), (0,1), (1,0), (1,1)]
+    outcomes = [ (WeirdInt(x), WeirdInt(y)) for (x,y) in outcomes ]
+    pmf = [1/4]*4
+    d = Distribution(outcomes, pmf)
+    s_ = """Class:          Distribution
+Alphabet:       (0, 1) for all rvs
+Base:           linear
+Outcome Class:  tuple
+Outcome Length: 2
+RV Names:       None
+
+x        p(x)
+(0, 0)   0.25
+(0, 1)   0.25
+(1, 0)   0.25
+(1, 1)   0.25"""
+    s = d.to_string(str_outcomes=True)
+    assert_equal(s, s_)
+

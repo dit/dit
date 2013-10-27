@@ -33,7 +33,7 @@ Joint outcomes must be: hashable, orderable, and also a sequence.
 Recall, a sequence is a sized, iterable container. See:
 http://docs.python.org/3/library/collections.abc.html#collections-abstract-base-classes
 
-TODO: Examine thread-saftey issues.  Most of the methods will not function
+TODO: Examine thread-safety issues.  Most of the methods will not function
 properly if interrupted midway through (and the distribution is modified).
 
 """
@@ -138,9 +138,11 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9,
 
         try:
             # First, convert the elements of the outcome to strings.
-            outcomes = [map(str, outcome) for outcome in outcomes]
+            outcomes_ = [map(str, outcome) for outcome in outcomes]
             # Now convert the entire outcome to a string
-            outcomes = map(lambda o: ''.join(o), outcomes)
+            outcomes_ = map(lambda o: ''.join(o), outcomes_)
+            # Force the iterators to expand in case there are exceptions.
+            outcomes = list(outcomes_)
         except:
             outcomes = map(str, outcomes)
     else:
@@ -165,7 +167,7 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9,
     else:
         pmf = d.pmf
 
-    # 3) Construct fractions, in necessary.
+    # 3) Construct fractions, if necessary.
     if exact:
         pmf = [approximate_fraction(x, tol) for x in pmf]
 
@@ -183,7 +185,7 @@ class BaseDistribution(object):
     """
     The base class for all "distribution" classes.
 
-    Generally, distributions are mutuable in that the outcomes and probabilities
+    Generally, distributions are mutable in that the outcomes and probabilities
     can be changed from zero to nonzero and back again. However, the sample
     space is not mutable and must remain fixed over the lifetime of the
     distribution.
