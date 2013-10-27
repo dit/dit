@@ -88,15 +88,15 @@ class TestLog2(object):
         X = self.ops.log(np.array([[0,0,0],[0,1,2],[1,1,1]]))
         Y = self.ops.log(np.array([0,3,3]))
         for x, y in zip(X, Y):
-            assert_almost_equal(self.ops.add_reduce(x), y)
-        assert_almost_equal(self.ops.add_reduce(np.array([])), self.ops.zero)
+            npt.assert_allclose(self.ops.add_reduce(x), y)
+        npt.assert_allclose(self.ops.add_reduce(np.array([])), self.ops.zero)
 
     def test_mult(self):
         X = self.ops.log(np.array([0,1,0,.5,0,1,.5,1,.5,2,2,2]))
         Y = self.ops.log(np.array([0,0,1,0,5,.5,1,1,.5,1,2,.5]))
         Z = self.ops.log(np.array([0,0,0,0,0,.5,.5,1,.25,2,4,1]))
         for x, y, z in zip(X, Y, Z):
-            assert_almost_equal(self.ops.mult(x, y), z)
+            npt.assert_allclose(self.ops.mult(x, y), z)
         npt.assert_allclose(self.ops.mult(X, Y), Z)
 
     def test_mult_inplace(self):
@@ -110,7 +110,7 @@ class TestLog2(object):
         X = self.ops.log(np.array([1,2,.5,10], dtype=float))
         Y = self.ops.log(np.array([1,1/2,2,1/10]))
         for x, y in zip(X, Y):
-            assert_almost_equal(self.ops.invert(x), y)
+            npt.assert_allclose(self.ops.invert(x), y)
 
     def test_mult_reduce(self):
         nums = np.arange(1,5+1)
@@ -119,8 +119,8 @@ class TestLog2(object):
         nums = self.ops.log(nums)
         print prods
         for i, p in enumerate(prods):
-            assert_almost_equal(self.ops.mult_reduce(nums[:i+1]), p)
-        assert_almost_equal(self.ops.mult_reduce(np.array([])), self.ops.one)
+            npt.assert_allclose(self.ops.mult_reduce(nums[:i+1]), p)
+        npt.assert_allclose(self.ops.mult_reduce(np.array([])), self.ops.one)
 
 class TestLog3(TestLog2):
     def setUp(self):
