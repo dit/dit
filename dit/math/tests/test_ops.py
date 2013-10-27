@@ -130,6 +130,10 @@ class TestLogE(TestLog2):
     def setUp(self):
         self.ops = LogOperations('e')
 
+class TestLogHalf(TestLog2):
+    def setUp(self):
+        self.ops = LogOperations(.5)
+
 def test_exp_func():
     bad_bases = ['pants', -1, 0, 1]
     for b in bad_bases:
