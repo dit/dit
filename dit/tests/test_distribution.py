@@ -135,8 +135,8 @@ x    p(x)
 
     # context manager?
     import sys
-    import StringIO
-    sio = StringIO.StringIO()
+    from six import StringIO
+    sio = StringIO()
     try:
         old = sys.stdout
         sys.stdout = sio

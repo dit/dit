@@ -611,7 +611,7 @@ class BaseDistribution(object):
             A string representation of the distribution.
 
         """
-        from StringIO import StringIO
+        from six import StringIO
         s = StringIO()
 
         x = prepare_string(self, digits, exact, tol)

@@ -1071,7 +1071,7 @@ class Distribution(ScalarDistribution):
         """
         from .distribution import prepare_string
 
-        from StringIO import StringIO
+        from six import StringIO
 
         s = StringIO()
 
