@@ -27,11 +27,12 @@ before_install:
   - pip install coveralls --use-mirrors
   - pip install --upgrade nose
 
-script:
+install:
   # Install dit
   - printenv PWD
   - pip install .
 
+script:
   # Move to new directory so that dit is not imported from repository.
   # We need the full installation path.
   #
