@@ -57,10 +57,13 @@ def sample(dist, size=None, rand=None, prng=None):
             msg = "The random number generator must support a `rand()' call."
             e = dit.exceptions.ditException(msg)
             raise(e)
-    elif n != len(rand):
-        msg = "The number of random numbers must equal n."
-        e = dit.exceptions.ditException(msg)
-        raise(e)
+    else:
+        if size is None:
+            rand = np.array([rand])
+        elif n != len(rand):
+            msg = "The number of random numbers must equal n."
+            e = dit.exceptions.ditException(msg)
+            raise(e)
 
     indexes = _samples(dist.pmf, rand)
     outcomes = dist.outcomes
@@ -136,14 +139,16 @@ def _samples_discrete__python(pmf, rands, out=None):
     return out
 
 # Load the cython function if possible
-try:
+
+try: # pragma: no cover
     from ._samplediscrete import sample as _sample_discrete__cython
     _sample = _sample_discrete__cython
-except ImportError:
+except ImportError: # pragma: no cover
     _sample = _sample_discrete__python
-try:
+
+try: # pragma: no cover
     from ._samplediscrete import samples as _samples_discrete__cython
     _samples = _samples_discrete__cython
-except ImportError:
+except ImportError: # pragma: no cover
     _samples = _samples_discrete__python
 
