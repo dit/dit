@@ -17,15 +17,8 @@ before_install:
   # Use Numpy 1.6.2 up to Python 2.x
   # Otherwise, rely on pip to install Numpy.
   - 'if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then sudo apt-get install -qq python-numpy; fi;'
-
-  - 'if [ ${CYTHON} == "1" ]; then pip install cython; fi;'
-  - 'if [ ${CYTHON} == "1" ]; then which cython; fi;'
-  - 'if [ ${CYTHON} == "1" ]; then python -c "import Cython"; fi;'
-  #- sudo apt-get install -qq python-numpy
-  #- sudo apt-get install -qq python3-numpy
-  #- sudo apt-get install -qq python-scipy
-  #- sudo apt-get install -qq python3-scipy
-  #- sudo apt-get install python-matplotlib
+  # NumPy is a build dependency for Cython.  Should be a no-op for 2.x
+  - pip install numpy
   - pip install coveralls --use-mirrors
   - pip install --upgrade nose
 

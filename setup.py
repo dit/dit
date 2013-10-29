@@ -57,7 +57,7 @@ __version__ = '%s'
 
 def check_opt(name):
     x = eval('has_{0}()'.format(name.lower()))
-    msg = "%(name)s not found. %(name)s extensions will not be built: x = %(x)s"
+    msg = "%(name)s not found. %(name)s extensions will not be built."
     if not x:
         warnings.warn(msg % {'name':name, 'x':x})
     return x
@@ -129,7 +129,15 @@ def main():
     cython_modules = []
     if opt['cython']:
         import Cython.Distutils
-        import numpy as np
+        try:
+            import numpy as np
+        except ImportError:
+            msg = "Please install NumPy first."
+            msg = "Alternatively, disable Cython extensions:\n\n"
+            msg += "    python setup.py install --nocython\n"
+            msg += "    pip install --install-option='--nocython'\n\n"
+            print(msg)
+            raise
 
         cmdclass['build_ext'] = Cython.Distutils.build_ext
 
