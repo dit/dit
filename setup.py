@@ -58,9 +58,9 @@ __version__ = '%s'
 def check_opt(name):
     x = None
     exec('x = has_%s()' % name.lower())
-    msg = "%(name)s not found. %(name)s extensions will not be built."
+    msg = "%(name)s not found. %(name)s extensions will not be built: x = %(x)s"
     if not x:
-        warnings.warn(msg % {'name':name})
+        warnings.warn(msg % {'name':name, 'x':x})
     return x
 
 def hack_distutils(debug=False, fast_link=True):
