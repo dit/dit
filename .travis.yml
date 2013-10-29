@@ -19,6 +19,8 @@ before_install:
   - 'if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then sudo apt-get install -qq python-numpy; fi;'
 
   - 'if [ ${CYTHON} == "1" ]; then pip install cython; fi;'
+  - 'if [ ${CYTHON} == "1" ]; then which cython; fi;'
+  - 'if [ ${CYTHON} == "1" ]; then python -c "import Cython"; fi;'
   #- sudo apt-get install -qq python-numpy
   #- sudo apt-get install -qq python3-numpy
   #- sudo apt-get install -qq python-scipy
