@@ -59,7 +59,7 @@ def check_opt(name):
     x = eval('has_{0}()'.format(name.lower()))
     msg = "%(name)s not found. %(name)s extensions will not be built."
     if not x:
-        warnings.warn(msg % {'name':name, 'x':x})
+        warnings.warn(msg % {'name':name})
     return x
 
 def hack_distutils(debug=False, fast_link=True):
