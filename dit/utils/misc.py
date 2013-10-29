@@ -38,7 +38,7 @@ __all__ = (
 ######################################################
 # Hacks for simultaneous 2.x and 3.x compatibility.
 #
-try: # pragma: no clover
+try: # pragma: no cover
     # 2.7+
     from collections import OrderedDict
 except ImportError: # pragma: no cover
