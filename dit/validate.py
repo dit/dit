@@ -167,7 +167,7 @@ def validate_probabilities(pmf, ops):
     Returns
     -------
     v : bool
-        `True` if the pmf vlaies are probabilities.
+        `True` if the pmf values are probabilities.
 
     Raises
     ------
@@ -184,8 +184,11 @@ def validate_probabilities(pmf, ops):
     too_low = pmf < min(zero, one)
     too_high = pmf > max(zero, one)
     if too_low.any() or too_high.any():
-        bad = pmf[ np.logical_or(too_low, too_high) ]
-        raise InvalidProbability( bad, ops=ops )
+        sig_too_low = np.logical_not(np.isclose(pmf[too_low], zero))
+        sig_too_high = np.logical_not(np.isclose(pmf[too_high], one))
+        if sig_too_low.any() or sig_too_high.any():
+            bad = pmf[ np.logical_or(sig_too_low, sig_too_high) ]
+            raise InvalidProbability( bad, ops=ops )
 
     return True
 
