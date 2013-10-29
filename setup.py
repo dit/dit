@@ -56,8 +56,7 @@ __version__ = '%s'
     fh.close()
 
 def check_opt(name):
-    x = None
-    exec('x = has_%s()' % name.lower())
+    x = eval('has_{0}()'.format(name.lower()))
     msg = "%(name)s not found. %(name)s extensions will not be built: x = %(x)s"
     if not x:
         warnings.warn(msg % {'name':name, 'x':x})
