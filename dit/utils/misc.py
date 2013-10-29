@@ -38,10 +38,10 @@ __all__ = (
 ######################################################
 # Hacks for simultaneous 2.x and 3.x compatibility.
 #
-try:
+try: # pragma: no clover
     # 2.7+
     from collections import OrderedDict
-except ImportError:
+except ImportError: # pragma: no cover
     # 2.6
     from ordereddict import OrderedDict
 
