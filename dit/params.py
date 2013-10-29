@@ -23,7 +23,7 @@ def validate_float(s):
     """Convert s to float or raise a ValueError."""
     try:
         return float(s)
-    except ValueError:
+    except TypeError:
         raise(ValueError('Could not convert "%s" to float' % s))
 
 def validate_base(b):
@@ -32,6 +32,12 @@ def validate_base(b):
     # String bases.
     if b == 'e' or b == 'linear':
         return b
+    else:
+        try:
+            b + ''
+            raise InvalidBase(b)
+        except TypeError:
+            pass
 
     # Numerical bases.
     if b <= 0 or b == 1:
