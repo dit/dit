@@ -9,3 +9,4 @@ Module providing miscellaneous functionality.
 from __future__ import absolute_import
 
 from .misc import *
+from .latexarray import to_latex
