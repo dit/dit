@@ -304,7 +304,7 @@ def reorder(outcomes, pmf, sample_space, index=None):
     new_index = dict(zip(outcomes, range(len(outcomes))))
     return outcomes, pmf, new_index
 
-def reorder_cp(pmf, outcomes, alphabet, product, index=None, method=None):
+def reorder_cp(outcomes, pmf, alphabet, product, index=None, method=None):
     """
     Helper function to reorder pmf and outcomes so as to match the sample space.
 
@@ -324,16 +324,16 @@ def reorder_cp(pmf, outcomes, alphabet, product, index=None, method=None):
     if index is None:
         index = dict(zip(outcomes, range(len(outcomes))))
 
-    # The number of elements in the sample space?
-    sample_space_size = np.prod( list(map(len, alphabet)) )
     if method is None:
+        # The number of elements in the sample space?
+        sample_space_size = np.prod( list(map(len, alphabet)) )
         if sample_space_size > 10000 and len(outcomes) < 1000:
             # Large and sparse.
             method = 'analytic'
         else:
             method = 'generate'
 
-    method = 'generate'
+    # method = 'generate'
     if method == 'generate':
         # Obtain the order from the generated order.
         sample_space = product(*alphabet)
@@ -385,4 +385,4 @@ def reorder_cp(pmf, outcomes, alphabet, product, index=None, method=None):
 
     new_index = dict(zip(outcomes, range(len(outcomes))))
 
-    return pmf, outcomes, new_index
+    return outcomes, pmf, new_index
