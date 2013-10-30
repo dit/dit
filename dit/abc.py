@@ -17,5 +17,39 @@ from dit.algorithms import (coinformation as I,
                             jensen_shannon_divergence as JSD,
                            )
 
-__all__ = ['D', 'SD', 'H', 'I', 'K', 'T', 'P', 'B', 'R', 'JSD']
+# distribution types
+_dists = [
+    'D',    # a joint distribution
+    'SD',   # a scalar distribution
+]
 
+# measures directly computed from i-diagrams
+_shannon = [
+    'H',    # the joint conditional entropy
+    'I',    # the multivariate conditional mututal information
+    'T',    # the conditional total correlation [multi-information/integration]
+    'B',    # the conditional binding information [dual total correlation]
+    'R',    # the conditional residual entropy [erasure entropy]
+]
+
+# measures representable on i-diagrams
+_shannon_ext = [
+    'K',    # the Gacs-Korner common information [meet entropy]
+#    'C',    # the Wyner common information
+]
+
+# measures of distance between distriutions
+_divergences = [
+    'JSD',  # the Jensen-Shannon divergence
+#    'DKL', # the relative entropy [Kullback-Leibler divergence]
+#    'xH',  # the cross entropy
+]
+
+# other measures
+_others = [
+    'P',    # the perplexity
+#    'CRE',  # the cumulative residual entropy
+#    'gCRE', # the generalized cumulative residual entropy
+]
+
+__all__ = _dists + _shannon + _shannon_ext + _divergences + _others
