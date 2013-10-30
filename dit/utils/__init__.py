@@ -8,5 +8,7 @@ Module providing miscellaneous functionality.
 
 from __future__ import absolute_import
 
+from .bindargs import bindcallargs
 from .misc import *
 from .latexarray import to_latex
+
