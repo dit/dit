@@ -24,6 +24,7 @@ For example, to override a parameter of some function:
 """
 
 import sys
+import inspect
 from inspect import getcallargs
 
 try:
