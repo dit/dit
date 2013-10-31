@@ -11,7 +11,6 @@ import dit
 def test_mixture_distribution_weights():
     d = dit.Distribution(['A','B'], [.5, .5])
     d2 = dit.Distribution(['A', 'B'], [1, 0])
-    pmf = np.array([.75, .25])
 
     assert_raises(ditException, dit.mixture_distribution, [d, d2], [1])
     assert_raises(ditException, dit.mixture_distribution2, [d, d2], [1])
@@ -39,7 +38,6 @@ def test_mixture_distribution2():
     # Test when sample spaces are incompatible.
     d = dit.Distribution(['A','B'], [.5, .5])
     d2 = dit.Distribution(['A', 'B'], [1, 0], sort=True, trim=True)
-    pmf = np.array([.25, .75])
 
     # Fails when it tries to get d2['A']
     assert_raises(InvalidOutcome, dit.mixture_distribution, [d,d2], [.5,.5])

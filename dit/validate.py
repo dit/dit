@@ -78,8 +78,6 @@ def validate_normalization(pmf, ops):
         When the distribution is not properly normalized.
 
     """
-    # log_func is the identity function for non-log distributions.
-    log = ops.log
     one = ops.one
 
     # Make sure the distribution is normalized properly.

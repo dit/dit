@@ -32,7 +32,6 @@ def test_named_tempfile2():
 
 
 def test_tempdir():
-    name = None
     with tempdir() as tmpdir:
         assert_true(os.path.isdir(tmpdir))
     assert_false(os.path.isdir(tmpdir))
