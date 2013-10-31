@@ -1,0 +1,4 @@
+numpy
+iterutils
+six
+numpydoc
