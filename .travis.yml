@@ -56,7 +56,9 @@ script:
   - printenv PWD
 
   # Run nosetests.
-  - nosetests -v --with-coverage --cover-erase --cover-package=dit
+
+  - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]; then nosetests -v --with-coverage --cover-erase --cover-package=dit --exclude=.*3\.py; fi;
+  - if [ ${TRAVIS_PYTHON_VERSION:0:1} == "3" ]; then nosetests -v --with-coverage --cover-erase --cover-package=dit; fi;
 
 after_success:
   # We must run coveralls from the git repo.
