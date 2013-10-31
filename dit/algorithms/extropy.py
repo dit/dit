@@ -2,7 +2,7 @@
 The extropy
 """
 
-from ..math import LogOperations
+from ..math.ops import LogOperations
 
 import numpy as np
 

@@ -8,7 +8,7 @@ from .shannon import conditional_entropy, entropy
 def entropy2(dist, rvs=None, crvs=None, rv_names=None):
     """
     Compute the conditional joint entropy.
-    
+
     Parameters
     ----------
     dist : Distribution

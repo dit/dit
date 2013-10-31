@@ -41,6 +41,9 @@ def coinformation(dist, rvs=None, crvs=None, rv_names=None):
     rvs, crvs, rv_names = normalize_rvs(dist, rvs, crvs, rv_names)
 
     def entropy(rvs, dist=dist, crvs=crvs, rv_names=rv_names):
+        """
+        Helper function to aid in computing the entropy of subsets.
+        """
         return H(dist, set().union(*rvs), crvs, rv_names)
 
     I = sum( (-1)**(len(Xs)+1) * entropy(Xs) for Xs in powerset(rvs) )
