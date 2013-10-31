@@ -34,3 +34,4 @@ dit/math/_*.html
 
 # ignore rope's project directory...
 .ropeproject
+docs/_build/
