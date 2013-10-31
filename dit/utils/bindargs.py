@@ -184,12 +184,13 @@ def bindcallargs_leq32(_fUnCtIoN_, *args, **kwargs):
         bargs.extend(callargs[spec.varargs])
     bargs = tuple(bargs)
 
-    # bind kwargs. Start with specified, add in defaults for unspecifed kwonly.
-    # Then, add in varkwargs.
+    # Start with kwonlyargs.
     bkwargs = dict((kwonlyarg, callargs[kwonlyarg]) for kwonlyarg in spec.kwonlyargs)
+    # Add in kwonlydefaults for unspecified kwonlyargs only.
     if spec.kwonlydefaults is not None:
-        bkwargs.update(dict({k:v for k in spec.kwonlydefaults
-                             if k not in bkwargs}))
+        bkwargs.update(dict([(k, v) for k in spec.kwonlydefaults
+                             if k not in bkwargs]))
+    # Add in varkw.
     if spec.varkw is not None:
         bkwargs.update(callargs[spec.varkw])
 
