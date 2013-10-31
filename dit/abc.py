@@ -35,21 +35,16 @@ _shannon = [
 # measures representable on i-diagrams
 _shannon_ext = [
     'K',    # the Gacs-Korner common information [meet entropy]
-#    'C',    # the Wyner common information
 ]
 
 # measures of distance between distriutions
 _divergences = [
     'JSD',  # the Jensen-Shannon divergence
-#    'DKL', # the relative entropy [Kullback-Leibler divergence]
-#    'xH',  # the cross entropy
 ]
 
 # other measures
 _others = [
     'P',    # the perplexity
-#    'CRE',  # the cumulative residual entropy
-#    'gCRE', # the generalized cumulative residual entropy
 ]
 
 __all__ = _dists + _shannon + _shannon_ext + _divergences + _others
