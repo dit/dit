@@ -166,7 +166,7 @@ x   p(x)
 1   0.5"""
     assert_equal(s, s_)
 
-def test_to_string4():
+def test_to_string5():
     # Basic with marginal and mask
     outcomes = ['00', '01', '10', '11']
     pmf = [1/4]*4
@@ -185,7 +185,7 @@ x    p(x)
 1*   0.5"""
     assert_equal(s, s_)
 
-def test_to_string5():
+def test_to_string6():
     # Basic
     outcomes = ['00', '01', '10', '11']
     pmf = [1/4]*4
@@ -205,7 +205,7 @@ x    p(x)
 11   0.2"""
     assert_equal(s, s_)
 
-def test_to_string6():
+def test_to_string7():
     # Basic
     outcomes = ['00', '01', '10', '11']
     pmf = [1/4]*4
@@ -222,7 +222,7 @@ x    p(x)
 11   0.25"""
     assert_equal(s, s_)
 
-def test_to_string7():
+def test_to_string8():
     outcomes = ['00', '01', '10', '11']
     pmf = [1/4]*4
     d = Distribution(outcomes, pmf)
@@ -240,7 +240,7 @@ x    p(x)
 1!   0.5"""
     assert_equal(s, s_)
 
-def test_to_string8():
+def test_to_string9():
     # Basic
     outcomes = ['00', '01', '10', '11']
     pmf = [1/4]*4
@@ -261,7 +261,7 @@ x    log p(x)
 11   -2.0"""
     assert_equal(s, s_)
 
-def test_to_string9():
+def test_to_string10():
     # Basic
     d = ScalarDistribution([], sample_space=[0, 1], validate=False)
     s = d.to_string()

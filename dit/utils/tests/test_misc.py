@@ -57,7 +57,7 @@ def test_require_keys1():
     required = [0, '0']
     assert(require_keys(required, d) is None)
 
-def test_require_keys1():
+def test_require_keys2():
     d = {0: '', '0': '', 'pants': ''}
     required = [0, '0', 'jeans']
     assert_raises(Exception, require_keys, required, d)

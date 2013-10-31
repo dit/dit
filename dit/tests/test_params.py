@@ -20,8 +20,8 @@ def test_validate_boolean2():
         assert_false(validate_boolean(value))
 
 def test_validate_boolean3():
-    nan = ['maybe', 2, 0.5]
-    for value in nan:
+    not_valid = ['maybe', 2, 0.5]
+    for value in not_valid:
         assert_raises(ValueError, validate_boolean, value)
 
 def test_validate_float1():

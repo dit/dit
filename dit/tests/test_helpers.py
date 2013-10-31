@@ -50,7 +50,7 @@ def test_reorder1():
     new = reorder(outcomes, pmf, sample_space)
     assert_equal(new[0], ['00', '01', '11'])
 
-def test_reorder1():
+def test_reorder2():
     outcomes = ['00', '11', '22']
     pmf = [1/3]*3
     sample_space = ('00', '01', '10', '11')
