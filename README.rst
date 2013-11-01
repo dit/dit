@@ -8,7 +8,7 @@ a Python package for information theory.
    :target: https://coveralls.io/r/dit/dit?branch=master
 
 Documentation:
-  Coming soon.
+  http://docs.dit.io
 
 Downloads:
   Coming soon.
