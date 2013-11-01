@@ -1,7 +1,17 @@
 
+import contextlib
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+
 import numpy as np
 import numpy.core.arrayprint as arrayprint
-import contextlib
+
+from .exitstack import ExitStack
+from .context import cd, named_tempfile, tempdir
+from .misc import default_opener
 
 # http://stackoverflow.com/questions/2891790/pretty-printing-of-numpy-array
 #
@@ -128,3 +138,66 @@ def to_latex(a, decimals=3, tab='  '):
 \end{{array}}"""
 
     return template.format(**subs)
+
+def to_pdf(a, decimals=3,
+              line="p(x) = \\left[\n{0}\n\\right]",
+              show=True):
+    """
+    Converts a NumPy array to a LaTeX array, compiles and displays it.
+
+    Examples
+    --------
+    >>> a = np.array([[.1, .23, -1.523],[2.1, .23, .523]])
+    >>> to_pdf(a) # pragma: no cover
+
+    """
+    template = r"""\documentclass{{article}}
+\usepackage{{amsmath}}
+\usepackage{{array}}
+\usepackage{{dcolumn}}
+\pagestyle{{empty}}
+\begin{{document}}
+\begin{{displaymath}}
+{0}
+\end{{displaymath}}
+\end{{document}}"""
+
+    fline = line.format(to_latex(a, decimals=3))
+    latex = template.format(fline)
+
+    with ExitStack() as stack:
+        EC = stack.enter_context
+        tmpdir = EC(tempdir())
+        EC(cd(tmpdir))
+        latexfobj = EC(named_tempfile(dir=tmpdir, suffix='.tex'))
+
+        # Write the latex file
+        latexfobj.write(latex)
+        latexfobj.close()
+
+        # Compile to PDF
+        args = ['pdflatex', '-interaction=batchmode', latexfobj.name]
+        with open(os.devnull, 'w') as fp:
+            subprocess.call(args, stdout=fp, stderr=fp)
+            subprocess.call(args, stdout=fp, stderr=fp)
+
+        # Create another tempfile which will not be deleted.
+        pdffobj = tempfile.NamedTemporaryFile(suffix='_pmf.pdf', delete=False)
+        pdffobj.close()
+
+        # Crop the PDF and copy to persistent tempfile.
+        pdfpath = latexfobj.name[:-3] + 'pdf'
+        # Cannot add &>/dev/null to cmd, as Ghostscript is unable to find the
+        # input file. This seems to be some weird interaction between
+        # subprocess and pdfcrop. Also, we need to use shell=True since some
+        # versions of pdfcrop rely on a hack to determine what perl interpreter
+        # to call it with.
+        cmd = r'pdfcrop --debug {} {}'.format(pdfpath, pdffobj.name)
+        with open(os.devnull, 'w') as fp:
+            subprocess.call(cmd, shell=True, stdout=fp)
+
+        # Open the PDF
+        if show:
+            default_opener(pdffobj.name)
+
+        return pdffobj.name
