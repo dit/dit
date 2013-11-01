@@ -1,7 +1,12 @@
 
+import contextlib
+import shutil
+
 import numpy as np
 import numpy.core.arrayprint as arrayprint
-import contextlib
+
+from .context import cd, named_tempfile, tempdir
+from .misc import default_opener
 
 # http://stackoverflow.com/questions/2891790/pretty-printing-of-numpy-array
 #
@@ -128,3 +133,46 @@ def to_latex(a, decimals=3, tab='  '):
 \end{{array}}"""
 
     return template.format(**subs)
+
+def to_pdf(a, decimals=3, show=True):
+    """
+    Converts a NumPy array to a LaTeX array, compiles and displays it.
+
+    """
+    template = r"""\documentclass{{article}}
+\usepackage{{amsmath}}
+\usepackage{{array}}
+\usepackage{{dcolumn}}
+\begin{{document}}
+{0}
+\end{{document}}"""
+
+    latex = template.format(to_latex(a, decimals=3))
+
+    with tempdir() as tmpdir, \
+         cd(tmpdir), \
+         named_tempfile(dir=tempdir, suffix='.tex') as latexfobj:
+
+        """
+        # Write the latex file
+        latexfobj.write(latex)
+        latexfobj.close()
+
+        # Compile to PDF
+        subprocess.call(['pdflatex', latexfobj.name])
+        subprocess.call(['pdflatex', latexfobj.name])
+
+        # Copy PDF in tempdir to another tempfile which will not be deleted.
+        pdfpath = latexfobj.name[:-3] + 'pdf'
+        pdffobj = tempfile.NamedTemporaryFile(suffix='_pmf.pdf', delete=False)
+        pdffobj.close()
+        shutil.copy(pdfpath, pdffobj.name)
+
+        # Open the PDF
+        if show:
+            default_opener(pdffobj.name)
+
+        return pdffobj.name
+
+        """
+        print tmpdir
