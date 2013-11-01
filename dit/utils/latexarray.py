@@ -9,6 +9,7 @@ import tempfile
 import numpy as np
 import numpy.core.arrayprint as arrayprint
 
+from .exitstack import ExitStack
 from .context import cd, named_tempfile, tempdir
 from .misc import default_opener
 
@@ -164,9 +165,11 @@ def to_pdf(a, decimals=3,
     fline = line.format(to_latex(a, decimals=3))
     latex = template.format(fline)
 
-    with tempdir() as tmpdir, \
-         cd(tmpdir), \
-         named_tempfile(dir=tmpdir, suffix='.tex') as latexfobj:
+    with ExitStack() as stack:
+        EC = stack.enter_context
+        tmpdir = EC(tempdir())
+        EC(cd(tmpdir))
+        latexfobj = EC(named_tempfile(dir=tmpdir, suffix='.tex'))
 
         # Write the latex file
         latexfobj.write(latex)
