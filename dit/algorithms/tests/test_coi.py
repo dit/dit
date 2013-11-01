@@ -5,12 +5,14 @@ from nose.tools import *
 from dit import Distribution as D, ScalarDistribution as SD
 from dit.algorithms import coinformation as I, entropy as H
 from dit.exceptions import ditException
+from dit.example_dists import Xor
 
 def test_coi1():
-    outcomes = ['000', '011', '101', '110']
-    pmf = [1/4] * 4
-    d = D(outcomes, pmf)
+    d = Xor()
     assert_almost_equal(I(d), -1.0)
+    assert_almost_equal(I(d, [[0], [1], [2]]), -1.0)
+    assert_almost_equal(I(d, [[0], [1], [2]], [2]), 0.0)
+    assert_almost_equal(I(d, [[0], [1]], [2]), 1.0)
 
 def test_coi2():
     outcomes = ['0000', '0011', '0101', '0110',
