@@ -54,6 +54,10 @@ def test_validate_probabilities():
     pmf = np.asarray([.5, .5])
     assert_true(v.validate_probabilities(pmf, ops))
 
+    ops = LogOperations(2)
+    pmf = np.array([.1, .23, -.523])
+    assert_raises(v.InvalidProbability, v.validate_probabilities, pmf, ops)
+
 def test_validate_sequence():
     x = '101'
     assert_true(v.validate_sequence(x))
