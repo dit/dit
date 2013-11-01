@@ -15,6 +15,7 @@ from dit.algorithms import (coinformation as I,
                             binding_information as B,
                             residual_entropy as R,
                             jensen_shannon_divergence as JSD,
+                            interaction_information as II,
                            )
 
 # distribution types
@@ -35,6 +36,7 @@ _shannon = [
 # measures representable on i-diagrams
 _shannon_ext = [
     'K',    # the Gacs-Korner common information [meet entropy]
+    'II',   # the interaction information
 ]
 
 # measures of distance between distriutions
