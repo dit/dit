@@ -1,6 +1,10 @@
 
 import contextlib
+import os
 import shutil
+import subprocess
+import sys
+import tempfile
 
 import numpy as np
 import numpy.core.arrayprint as arrayprint
@@ -134,45 +138,63 @@ def to_latex(a, decimals=3, tab='  '):
 
     return template.format(**subs)
 
-def to_pdf(a, decimals=3, show=True):
+def to_pdf(a, decimals=3,
+              line="p(x) = \\left[\n{0}\n\\right]",
+              show=True):
     """
     Converts a NumPy array to a LaTeX array, compiles and displays it.
+
+    Examples
+    --------
+    >>> a = np.array([[.1, .23, -1.523],[2.1, .23, .523]])
+    >>> to_pdf(a) # pragma: no cover
 
     """
     template = r"""\documentclass{{article}}
 \usepackage{{amsmath}}
 \usepackage{{array}}
 \usepackage{{dcolumn}}
+\pagestyle{{empty}}
 \begin{{document}}
+\begin{{displaymath}}
 {0}
+\end{{displaymath}}
 \end{{document}}"""
 
-    latex = template.format(to_latex(a, decimals=3))
+    fline = line.format(to_latex(a, decimals=3))
+    latex = template.format(fline)
 
     with tempdir() as tmpdir, \
          cd(tmpdir), \
-         named_tempfile(dir=tempdir, suffix='.tex') as latexfobj:
+         named_tempfile(dir=tmpdir, suffix='.tex') as latexfobj:
 
-        """
         # Write the latex file
         latexfobj.write(latex)
         latexfobj.close()
 
         # Compile to PDF
-        subprocess.call(['pdflatex', latexfobj.name])
-        subprocess.call(['pdflatex', latexfobj.name])
+        args = ['pdflatex', '-interaction=batchmode', latexfobj.name]
+        with open(os.devnull, 'w') as fp:
+            subprocess.call(args, stdout=fp, stderr=fp)
+            subprocess.call(args, stdout=fp, stderr=fp)
 
-        # Copy PDF in tempdir to another tempfile which will not be deleted.
-        pdfpath = latexfobj.name[:-3] + 'pdf'
+        # Create another tempfile which will not be deleted.
         pdffobj = tempfile.NamedTemporaryFile(suffix='_pmf.pdf', delete=False)
         pdffobj.close()
-        shutil.copy(pdfpath, pdffobj.name)
+
+        # Crop the PDF and copy to persistent tempfile.
+        pdfpath = latexfobj.name[:-3] + 'pdf'
+        # Cannot add &>/dev/null to cmd, as Ghostscript is unable to find the
+        # input file. This seems to be some weird interaction between
+        # subprocess and pdfcrop. Also, we need to use shell=True since some
+        # versions of pdfcrop rely on a hack to determine what perl interpreter
+        # to call it with.
+        cmd = r'pdfcrop --debug {} {}'.format(pdfpath, pdffobj.name)
+        with open(os.devnull, 'w') as fp:
+            subprocess.call(cmd, shell=True, stdout=fp)
 
         # Open the PDF
         if show:
             default_opener(pdffobj.name)
 
         return pdffobj.name
-
-        """
-        print tmpdir
