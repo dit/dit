@@ -1,8 +1,8 @@
 """
 For Python 2.6, we cannot do:
 
-	with A as B, C as D:
-	    pass
+    with A as B, C as D:
+        pass
 
 So we can use contextlib.nested instead, but its deprecated in 2.7+.
 contextlib.ExitStack provides a uniform way to do this across versions.
@@ -129,4 +129,4 @@ class ExitStack(object):
         return suppressed_exc
 
 if sys.version_info[:2] >= (3,3):
-	from contextlib import ExitStack
+    from contextlib import ExitStack
