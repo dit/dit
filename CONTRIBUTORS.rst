@@ -24,18 +24,18 @@ A supplementary (but still incomplete) list of contributors is given by the
 list of names that have commits in ``dit``'s `git <http://git-scm.com>`_
 repository.  This can be obtained via::
 
-	git log --raw | grep "^Author: " | sort | uniq
+    git log --raw | grep "^Author: " | sort | uniq
 
 ----------------
 Original Authors
 ----------------
-chebee7i
-Ryan G. James
+| chebee7i
+| Ryan G. James
 
 ------------
 Contributors
 ------------
 chebee7i
-	GitHub: `chebee7i <https://github.com/chebee7i>`_
+    GitHub: `chebee7i <https://github.com/chebee7i>`_
 Ryan G. James
-	GitHub: `Autoplectic <https://github.com/Autoplectic>`_
+    GitHub: `Autoplectic <https://github.com/Autoplectic>`_
