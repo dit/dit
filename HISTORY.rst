@@ -34,7 +34,7 @@ for calculating candidates measures for redundancy, synergy, and unique
 information.
 
 Still, the growth of the ``infotheory`` subpackage was quite organic, and many
-of the original designs has been diluted due to unexpected use cases.
+of the original designs had been diluted due to unexpected use cases.
 Discussions on a rewrite were commonplace, but design is always tricky and so,
 a rewrite was delayed for some time.
 
@@ -44,11 +44,11 @@ first commit made its way into the record books in January of 2013, now
 available as a completely separate package.  Its development was slow but
 steady, and picked up quite a bit around September 2013.
 
-This short outline is no where near detailed enough to give justice to the
+This short outline is nowhere near detailed enough to give justice to the
 work and decisions made along the way, but ``dit`` has benefited immensely from
-these prior experiences---they have helped determine the API, typical use
-patterns, and much more.  Given the history, its not unlikely that ``dit`` might
-eventually be rewritten as well.  Until then, it will grow organically
+these prior experiences---they helped determine the API, typical use patterns,
+and much more.  Given the history, its not unlikely that ``dit`` might
+eventually be rewritten as well.  Until then, it will continually grow
 to meet the needs of those who use it.
 
 Support
