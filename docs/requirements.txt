@@ -2,3 +2,4 @@ numpy
 iterutils
 six
 numpydoc
+sphinxcontrib-bibtex
