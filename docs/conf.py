@@ -35,7 +35,7 @@ extensions = ['sphinx.ext.autodoc',
              ]
 
 # Use our local configuration for mathjax:
-mathjax_path = "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML,http://dit.io/MathJax/local/dit.js"
+mathjax_path = "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML,http://dit.io/MathJax/local/dit.js"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
