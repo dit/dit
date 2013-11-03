@@ -31,15 +31,16 @@
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   var TEX = MathJax.InputJax.TeX;
 
-  TEX.Macro("H", "\\operatorname{H}");
-  TEX.Macro("I", "\\operatorname{I}");
-  TEX.Macro("T", "\\operatorname{T}");
-  TEX.Macro("B", "\\operatorname{B}");
-  TEX.Macro("R", "\\operatorname{R}");
-  TEX.Macro("II", "\\operatorname{II}");
-  TEX.Macro("DKL", "\\operatorname{D_{KL}}");
-  TEX.Macro("xH", "\\operatorname{xH}");
-  TEX.Macro("JSD", "\\operatorname{JSD}");
+  TEX.Macro("op", "\\ensuremath{\\operatorname{#1}}", 1)
+  TEX.Macro("H", "\\op{H}");
+  TEX.Macro("I", "\\op{I}");
+  TEX.Macro("T", "\\op{T}");
+  TEX.Macro("B", "\\op{B}");
+  TEX.Macro("R", "\\op{R}");
+  TEX.Macro("II", "\\op{II}");
+  TEX.Macro("DKL", "\\op{D_{KL}}");
+  TEX.Macro("xH", "\\op{xH}");
+  TEX.Macro("JSD", "\\op{JSD}");
 
   // don't use stix, it's pretty ugly
   MathJax.Hub.Config({
