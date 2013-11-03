@@ -180,16 +180,16 @@ htmlhelp_basename = 'ditdoc'
 # -- Options for LaTeX output --------------------------------------------------
 
 macros = r'''
-\newcommand{\op}  {\ensuremath{\operatorname{#1}}}
-\renewcommand{\H} {\op{H}}
-\newcommand{\I}   {\op{I}}
-\newcommand{\T}   {\op{T}}
-\newcommand{\B}   {\op{B}}
-\newcommand{\R}   {\op{R}}
-\newcommand{\II}  {\op{II}}
-\newcommand{\DKL} {\op{D_{KL}}}
-\newcommand{\xH}  {\op{xH}}
-\newcommand{\JSD} {\op{JSD}}
+\newcommand{\op}[1]{\ensuremath{\operatorname{#1}}}
+\renewcommand{\H}  {\op{H}}
+\newcommand{\I}    {\op{I}}
+\newcommand{\T}    {\op{T}}
+\newcommand{\B}    {\op{B}}
+\newcommand{\R}    {\op{R}}
+\newcommand{\II}   {\op{II}}
+\newcommand{\DKL}  {\op{D_{KL}}}
+\newcommand{\xH}   {\op{xH}}
+\newcommand{\JSD}  {\op{JSD}}
 '''
 
 latex_elements = {
