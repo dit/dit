@@ -7,7 +7,7 @@ variables. It is defined via an inclusion/exclusion sum:
 
 .. math::
 
-   \I[X_{0:n}] = -\sum_{y \in \{0..n\}} (-1)^{|y|} \H[X_y]
+   \I[X_{0:n}] = -\sum_{y \subseteq \{0..n\}} (-1)^{|y|} \H[X_y]
 
 .. autofunction:: dit.algorithms.coinformation
 
