@@ -202,7 +202,7 @@ latex_elements = {
 # Additional stuff for the LaTeX preamble.
 'preamble': r'''
 \usepackage{amsmath}
-\usepackage{amssym}
+\usepackage{amssymb}
 \usepackage{nicefrac}
 ''' + macros,
 }
