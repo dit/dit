@@ -37,9 +37,14 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   TEX.Macro("B", "\\operatorname{B}");
   TEX.Macro("R", "\\operatorname{R}");
   TEX.Macro("II", "\\operatorname{II}");
-  TEX.Macro("R", "\\operatorname{R}");
-  TEX.Macro("R", "\\operatorname{R}");
-  TEX.Macro("R", "\\operatorname{R}");
+  TEX.Macro("DKL", "\\operatorname{D_{KL}}");
+  TEX.Macro("xH", "\\operatorname{xH}");
+  TEX.Macro("JSD", "\\operatorname{JSD}");
+
+  // don't use stix, it's pretty ugly
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
   // place macros here.  E.g.:
   //   TEX.Macro("R","{\\bf R}");
   //   TEX.Macro("op","\\mathop{\\rm #1}",1); // a macro with 1 parameter
