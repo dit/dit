@@ -1,3 +1,0 @@
-[submodule "docs/_theme/sphinx_rtd_theme"]
-	path = docs/_theme/sphinx_rtd_theme
-	url = https://github.com/dit/sphinx_rtd_theme.git
