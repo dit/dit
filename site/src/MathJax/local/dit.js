@@ -31,7 +31,7 @@
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   var TEX = MathJax.InputJax.TeX;
 
-  TEX.Macro("op", "\\ensuremath{\\operatorname{#1}}", 1)
+  TEX.Macro("op", "\\operatorname{#1}", 1)
   TEX.Macro("H", "\\op{H}");
   TEX.Macro("I", "\\op{I}");
   TEX.Macro("T", "\\op{T}");
