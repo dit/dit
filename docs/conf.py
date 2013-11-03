@@ -35,7 +35,7 @@ extensions = ['sphinx.ext.autodoc',
              ]
 
 # Use our local configuration for mathjax:
-mathjax_path = "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML,http://dit.io/MathJax/config/local/dit.js"
+mathjax_path = "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML,http://dit.io/MathJax/local/dit.js"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -194,7 +194,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'dit.tex', u'dit Documentation',
-   u'Chris Ellison and Ryan James', 'manual'),
+   u'dit Contributors', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -224,7 +224,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'dit', u'dit Documentation',
-     [u'Chris Ellison and Ryan James'], 1)
+     [u'dit Contributors'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -238,7 +238,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'dit', u'dit Documentation',
-   u'Chris Ellison and Ryan James', 'dit', 'One line description of project.',
+   u'dit Contributors', 'dit', 'One line description of project.',
    'Miscellaneous'),
 ]
 
