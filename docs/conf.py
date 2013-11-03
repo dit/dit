@@ -179,6 +179,19 @@ htmlhelp_basename = 'ditdoc'
 
 # -- Options for LaTeX output --------------------------------------------------
 
+macros = r'''
+\newcommand{\op}  {\ensuremath{\operatorname{#1}}}
+\newcommand{\H}   {\op{H}}
+\newcommand{\I}   {\op{I}}
+\newcommand{\T}   {\op{T}}
+\newcommand{\B}   {\op{B}}
+\newcommand{\R}   {\op{R}}
+\newcommand{\II}  {\op{II}}
+\newcommand{\DKL} {\op{D_{KL}}}
+\newcommand{\xH}  {\op{xH}}
+\newcommand{\JSD} {\op{JSD}}
+'''
+
 latex_elements = {
 # The paper size ('letterpaper' or 'a4paper').
 #'papersize': 'letterpaper',
@@ -187,7 +200,11 @@ latex_elements = {
 #'pointsize': '10pt',
 
 # Additional stuff for the LaTeX preamble.
-#'preamble': '',
+'preamble': r'''
+\usepackage{amsmath}
+\usepackage{amssym}
+\usepackage{nicefrac}
+''' + macros,
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
