@@ -3,3 +3,4 @@ iterutils
 six
 numpydoc
 sphinxcontrib-bibtex
+sphinx-better-theme
