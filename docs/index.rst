@@ -17,7 +17,7 @@ Contents:
    tutorial
    notation
    measures
-
+   zreferences
 ..
    Indices and tables
    ==================
