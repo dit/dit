@@ -36,6 +36,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   TEX.Macro("T", "\\operatorname{T}");
   TEX.Macro("B", "\\operatorname{B}");
   TEX.Macro("R", "\\operatorname{R}");
+  TEX.Macro("II", "\\operatorname{II}");
+  TEX.Macro("R", "\\operatorname{R}");
+  TEX.Macro("R", "\\operatorname{R}");
+  TEX.Macro("R", "\\operatorname{R}");
   // place macros here.  E.g.:
   //   TEX.Macro("R","{\\bf R}");
   //   TEX.Macro("op","\\mathop{\\rm #1}",1); // a macro with 1 parameter
