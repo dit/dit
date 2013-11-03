@@ -26,19 +26,15 @@ Interaction information was first studied in the 3-variable case which, for
 :math:`X_{0:3} = X_0X_1X_2`, takes the following form:
 
 .. math::
-   :nowrap:
 
    \II(X_0:X_1:X_2) = \I(X_0:X_1|X_2) - \I(X_0:X_1)
 
 The extension to :math:`n>3` proceeds recursively. For example,
 
 .. math::
-   :nowrap:
 
-   \begin{align*}
    \II(X_0:X_1:X_2:X_3)
    	  &= \II(X_0:X_1:X_2|X_3) - \II(X_0:X_1:X_2) \\
-   	  &= \I(X_0:X_1|X_2,X_3) - \I(X_0:X_1|X_3) - \I(X_0:X_1|X_2) + \I(X_0:X_1)\\
-   \end{align*}
+   	  &= \I(X_0:X_1|X_2,X_3) - \I(X_0:X_1|X_3) - \I(X_0:X_1|X_2) + \I(X_0:X_1)
 
 .. autofunction:: dit.algorithms.interaction_information
