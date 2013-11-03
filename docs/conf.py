@@ -181,7 +181,7 @@ htmlhelp_basename = 'ditdoc'
 
 macros = r'''
 \newcommand{\op}  {\ensuremath{\operatorname{#1}}}
-\newcommand{\H}   {\op{H}}
+\renewcommand{\H} {\op{H}}
 \newcommand{\I}   {\op{I}}
 \newcommand{\T}   {\op{T}}
 \newcommand{\B}   {\op{B}}
