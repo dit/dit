@@ -103,6 +103,11 @@ pygments_style = 'sphinx'
 # a list of builtin themes.
 html_theme = 'dit'
 
+# For ReadTheDocs, having html_style set will force it use our style instead
+# of its own.  This should point to the CSS file relative to _static, noting
+# that any CSS files from the theme will be copied there by Sphinx.
+html_style = 'theme.css'
+
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
@@ -181,7 +186,7 @@ htmlhelp_basename = 'ditdoc'
 
 macros = r'''
 \newcommand{\op}[1]{\ensuremath{\operatorname{#1}}}
-\renewcommand{\H}  {\op{H}}
+\newcommand{\H}    {\op{H}}
 \newcommand{\I}    {\op{I}}
 \newcommand{\T}    {\op{T}}
 \newcommand{\B}    {\op{B}}
