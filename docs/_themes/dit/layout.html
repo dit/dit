@@ -48,9 +48,9 @@
   {% endif %}
 
   {# RTD hosts these file themselves, so just load on non RTD builds #}
-  {% if not IGNORE_READTHEDOCS %}
+  {% if not READTHEDOCS %}
     <link rel="stylesheet" href="{{ pathto('_static/' + style, 1) }}" type="text/css" />
-    <script type="text/javascript" src="_static/theme.js"></script>
+    <script type="text/javascript" src="_static/js/theme.js"></script>
   {% endif %}
 
   {% for cssfile in css_files %}
