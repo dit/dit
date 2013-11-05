@@ -15,6 +15,6 @@ information:
 
 .. math::
 
-   K[X_0, X_1] = \max_{f(X_0) = g(X_1) = V} H[V]
+   \K[X_0, X_1] = \max_{f(X_0) = g(X_1) = V} \H[V]
 
 .. autofunction:: dit.algorithms.common_information
