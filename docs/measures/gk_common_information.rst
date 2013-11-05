@@ -35,7 +35,7 @@ entropy of that common random variable is the Gács-Körner common information:
 
 .. math::
 
-   \K[X_0, X_1] = \max_{f(X_0) = g(X_1) = V} \H[V]
+   \K[X_0 : X_1] = \max_{f(X_0) = g(X_1) = V} \H[V]
 
 As a canonical example, consider the following:
 
@@ -81,7 +81,18 @@ versa. Therefore we aggregate 0s and 1s into 2.
 :math:`n`-Variables
 ===================
 
-stuff
+With an arbitrary number of variables, the Gács-Körner common information is
+defined similarly:
+
+.. math::
+
+   \K[X_0 : \ldots : X_n] = \max_{\substack{V = f_0(X_0) \\ \vdots \\ V = f_n(X_n)}} \H[V]
+
+The common information is a monotonically decreasing function:
+
+.. math::
+
+   \K[X_0 : \ldots : X_{n-1}] \ge \K[X_0 : \ldots : X_n]
 
 .. autofunction:: dit.algorithms.common_information
 
