@@ -17,9 +17,11 @@ distribution then isolated from each other. Each round of the game the a joint
 outcome is generated from the distribution and each player is told the symbol
 that their particular variable took. The goal of the game is for the players to
 simultaneously write the same symbol on a piece of paper, and for the entropy of
-the players' symbols to be maximized. The matching symbols produced by the
-players are called the *common random variable* and the entropy of that variable
-is the Gács-Körner common information, :math:`\K`.
+the players' symbols to be maximized. They must do this using only their
+knowledge of the joint random variable and the particular outcome of their
+marginal variable. The matching symbols produced by the players are called the
+*common random variable* and the entropy of that variable is the Gács-Körner
+common information, :math:`\K`.
 
 Two Variables
 =============
