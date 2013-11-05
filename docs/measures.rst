@@ -21,6 +21,7 @@ random variables:
    measures/coinformation
    measures/total_correlation
    measures/binding_information
+   measures/residual_entropy
 
 The next group of measures are Shannon-esque measures. These are measure that,
 while not quite based directly on the canonical Shannon measures like above,
