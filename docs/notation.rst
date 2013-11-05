@@ -25,7 +25,11 @@ then :math:`X_A = X_0 X_2 X_4`. The complement of :math:`A`
 When there exists a function :math:`Y = f(X)` we write :math:`X \imore Y`
 meaning that :math:`X` is *informationally richer* than :math:`Y`. Similarly, if
 :math:`f(Y) = X` then we write :math:`X \iless Y` and say that :math:`X` is
-*informationally poorer* than :math:`Y`.
-
-.. note::
-   need to describe the meet :math:`\meet` and join :math:`\join`.
+*informationally poorer* than :math:`Y`. Of all the variables that are poorer
+than both :math:`X` and :math:`Y`, there is a richest one. This variable is
+known as the *meet* of :math:`X` and :math:`Y` and is denoted :math:`X \meet Y`.
+By definition, :math:`\forall Z s.t. Z \iless X` and :math:`Z \iless Y, Z \iless
+X \meet Y`. Similarly of all variables richer than both :math:`X` and :math:`Y`,
+there is a poorest. This variable is known as the *join* of :math:`X` and
+:math:`Y` and is denoted :math:`X \join Y`. The joint random variable
+:math:`(X,Y)` is equivalent to the join.
