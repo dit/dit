@@ -1,6 +1,59 @@
-Gacs-Korner Common Information
-==============================
+.. gk_common_information.rst
 
-This is a very direct measure of shared information.
+******************************
+Gács-Körner Common Information
+******************************
+
+The Gács-Körner common information take a very direct approach to the idea of
+common information. Consider a joint distribution over :math:`X_0` and
+:math:`X_1`. Given any particular outcome from that joint, we want a function
+:math:`f(X_0)` and a function :math:`g(X_1)` such that :math:`\forall x_0x_1 =
+X_0X_1, f(x_0) = g(x_1) = v`. Of all possible pairs of functions :math:`f(X_0) =
+g(X_1) = V`, there exists a "largest" one, and it is known as the common random
+variable. The entropy of that common random variable is the Gács-Körner common
+information:
+
+.. math::
+
+   \K[X_0, X_1] = \max_{f(X_0) = g(X_1) = V} \H[V]
+
+As a canonical example, consider the following:
+
+   >>> from __future__ import division
+   >>> from dit import Distribution as D
+   >>> from dit.algorithms import common_information as K
+   >>> outcomes = ['00', '01', '10', '11', '22', '33']
+   >>> pmf = [1/8, 1/8, 1/8, 1/8, 1/4, 1/4]
+   >>> d = D(outcomes, pmf)
+   >>> K(d)
+   1.5
+
+So, the Gács-Körner common information is 1.5. But what is the common random
+variable?
+
+   >>> from dit.algorithms import insert_meet
+   >>> crv = insert_meet(d, -1, [[0],[1]])
+   >>> print(crv)
+   Class:          Distribution
+   Alphabet:       (('0', '1', '2', '3'), ('0', '1', '2', '3'), ('2', '0', '1'))
+   Base:           linear
+   Outcome Class:  str
+   Outcome Length: 3
+   RV Names:       None
+
+   x     p(x)
+   002   0.125
+   012   0.125
+   102   0.125
+   112   0.125
+   220   0.25
+   331   0.25
+
+Looking at the third index of the outcomes, we see that the common random
+variable maps 2 to 0 and 3 to 1, maintaining the information from those values.
+When :math:`X_0` or :math:`X_1` are either 0 or 1, however, it maps them to 2.
+This is because :math:`f` and :math:`g` must act independently: if :math:`x_0`
+is a 0 or a 1, there is no way to know if :math:`x_1` is a 0 or a 1 and vice
+versa. Therefore we aggregate 0s and 1s into 2.
 
 .. autofunction:: dit.algorithms.common_information

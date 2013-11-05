@@ -1,7 +1,8 @@
 .. tutorial.rst
 
+***********
 Basic Usage
-===========
+***********
 
 The basic usage of ``dit`` corresponds to creating distributions, modifying
 them if need be, and then computing properties of those distributions. For
@@ -26,6 +27,6 @@ example::
    >>> print(entropy(d))
    2.0
 
-Here we have imported a example distribution constructor (that of the logical
-exclusive or) and the entropy function, then we instantiated the XOR
+Here, we imported an example distribution constructor (that of the logical
+exclusive or) and the entropy function. Then we instantiated the XOR
 distribution, printed it, and computed its entropy.
