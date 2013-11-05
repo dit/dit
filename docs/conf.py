@@ -191,6 +191,11 @@ macros = r'''
 \newcommand{\DKL}  {\op{D_{KL}}}
 \newcommand{\xH}   {\op{xH}}
 \newcommand{\JSD}  {\op{JSD}}
+
+\newcommand{\meet} {\curlywedge}
+\newcommand{\join} {\curlyvee}
+\newcommand{\iless}{\preceq}
+\newcommand{\imore}{\succeq}
 '''
 
 latex_elements = {

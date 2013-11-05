@@ -4,14 +4,32 @@
 Gács-Körner Common Information
 ******************************
 
-The Gács-Körner common information take a very direct approach to the idea of
-common information. Consider a joint distribution over :math:`X_0` and
-:math:`X_1`. Given any particular outcome from that joint, we want a function
-:math:`f(X_0)` and a function :math:`g(X_1)` such that :math:`\forall x_0x_1 =
-X_0X_1, f(x_0) = g(x_1) = v`. Of all possible pairs of functions :math:`f(X_0) =
-g(X_1) = V`, there exists a "largest" one, and it is known as the common random
-variable. The entropy of that common random variable is the Gács-Körner common
-information:
+The Gács-Körner common information :cite:`Gacs1973` take a very direct approach
+to the idea of common information. It extracts a random variable that is
+contained within each of the random variables under consideration.
+
+The Common Information Game
+===========================
+
+Let's play a game. We have an n-variable joint distribution, and one player for
+each variable. Each player is given the probability mass function of the joint
+distribution then isolated from each other. Each round of the game the a joint
+outcome is generated from the distribution and each player is told the symbol
+that their particular variable took. The goal of the game is for the players to
+simultaneously write the same symbol on a piece of paper, and for the entropy of
+the players' symbols to be maximized. The matching symbols produced by the
+players are called the *common random variable* and the entropy of that variable
+is the Gács-Körner common information, :math:`\K`.
+
+Two Variables
+=============
+
+Consider a joint distribution over :math:`X_0` and :math:`X_1`. Given any
+particular outcome from that joint, we want a function :math:`f(X_0)` and a
+function :math:`g(X_1)` such that :math:`\forall x_0x_1 = X_0X_1, f(x_0) =
+g(x_1) = v`. Of all possible pairs of functions :math:`f(X_0) = g(X_1) = V`,
+there exists a "largest" one, and it is known as the common random variable. The
+entropy of that common random variable is the Gács-Körner common information:
 
 .. math::
 
@@ -55,5 +73,10 @@ When :math:`X_0` or :math:`X_1` are either 0 or 1, however, it maps them to 2.
 This is because :math:`f` and :math:`g` must act independently: if :math:`x_0`
 is a 0 or a 1, there is no way to know if :math:`x_1` is a 0 or a 1 and vice
 versa. Therefore we aggregate 0s and 1s into 2.
+
+:math:`n`-Variables
+===================
+
+stuff
 
 .. autofunction:: dit.algorithms.common_information

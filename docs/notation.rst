@@ -21,3 +21,11 @@ For an arbitrary set of indices :math:`A`, the corresponding collection of
 random variables is denoted :math:`X_A`. For example, if :math:`A = \{0,2,4\}`,
 then :math:`X_A = X_0 X_2 X_4`. The complement of :math:`A`
 (with respect to some universal set) is denoted :math:`\bar{A}`.
+
+When there exists a function :math:`Y = f(X)` we write :math:`X \imore Y`
+meaning that :math:`X` is *informationally richer* than :math:`Y`. Similarly, if
+:math:`f(Y) = X` then we write :math:`X \iless Y` and say that :math:`X` is
+*informationally poorer* thatn :math:`Y`.
+
+.. note::
+   need to describe the meet :math:`\join` and join :math:`\join`.

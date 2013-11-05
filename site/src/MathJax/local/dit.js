@@ -43,6 +43,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   TEX.Macro("xH", "\\op{xH}");
   TEX.Macro("JSD", "\\op{JSD}");
 
+  // some binary operators
+  TEX.Macros("meet", "\\curlywedge");
+  TEX.Macros("join", "\\curlyvee");
+  TEX.Macros("iless", "\\preceq");
+  TEX.Macros("imore", "\\succeq");
+
   // don't use stix, it's pretty ugly
   MathJax.Hub.Config({
     "HTML-CSS": { availableFonts: ["TeX"] }
