@@ -1,7 +1,8 @@
 .. tutorial.rst
 
+***********
 Basic Usage
-===========
+***********
 
 The basic usage of ``dit`` corresponds to creating distributions, modifying
 them if need be, and then computing properties of those distributions. For
