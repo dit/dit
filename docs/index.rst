@@ -16,6 +16,7 @@ Contents:
 
    tutorial
    notation
+   distributions
    measures
    zreferences
 ..

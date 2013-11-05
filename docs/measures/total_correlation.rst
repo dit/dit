@@ -10,7 +10,8 @@ information. It is defined as the amount of information each individual variable
 carries above and beyond the joint entropy:
 
 .. math::
-   \T[X_{0:n}] = \sum \H[X_i] - \H[X_{0:n}]
+   \T[X_{0:n}] &= \sum \H[X_i] - \H[X_{0:n}] \\
+               &= \sum_{x_{0:n} \in X_{0:n}} p(x_{0:n}) \log_2 \frac{p(x_{0:n})}{\prod p(x_i)}
 
 Two nice features of the total correlation are that it is non-negative and that
 it is zero if and only if the random variables :math:`X_{0:n}` are all
