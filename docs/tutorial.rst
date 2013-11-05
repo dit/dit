@@ -26,6 +26,6 @@ example::
    >>> print(entropy(d))
    2.0
 
-Here we have imported a example distribution constructor (that of the logical
-exclusive or) and the entropy function, then we instantiated the XOR
+Here we have imported an example distribution constructor (that of the logical
+exclusive or) and the entropy function. Then we instantiated the XOR
 distribution, printed it, and computed its entropy.
