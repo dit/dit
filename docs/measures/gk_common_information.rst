@@ -48,8 +48,10 @@ As a canonical example, consider the following:
    >>> K(d)
    1.5
 
-So, the Gács-Körner common information is 1.5. But what is the common random
-variable?
+So, the Gács-Körner common information is 1.5 bits. But what is the common
+random variable?
+
+.. code-block:: python
 
    >>> from dit.algorithms import insert_meet
    >>> crv = insert_meet(d, -1, [[0],[1]])
@@ -82,3 +84,6 @@ versa. Therefore we aggregate 0s and 1s into 2.
 stuff
 
 .. autofunction:: dit.algorithms.common_information
+
+.. bibliography:: ../references.bib
+   :cited:

@@ -44,10 +44,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   TEX.Macro("JSD", "\\op{JSD}");
 
   // some binary operators
-  TEX.Macros("meet", "\\curlywedge");
-  TEX.Macros("join", "\\curlyvee");
-  TEX.Macros("iless", "\\preceq");
-  TEX.Macros("imore", "\\succeq");
+  TEX.Macro("meet", "\\curlywedge");
+  TEX.Macro("join", "\\curlyvee");
+  TEX.Macro("iless", "\\preceq");
+  TEX.Macro("imore", "\\succeq");
 
   // don't use stix, it's pretty ugly
   MathJax.Hub.Config({

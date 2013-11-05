@@ -1,5 +1,8 @@
+.. total_correlation.rst
+
+*****************
 Total Correlation
-=================
+*****************
 
 The total correlation :cite:`Watanabe1960`, denoted :math:`\T`, also known as
 the multi-information or integration, is one generalization of the mutual
