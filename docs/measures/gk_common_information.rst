@@ -78,6 +78,12 @@ This is because :math:`f` and :math:`g` must act independently: if :math:`x_0`
 is a 0 or a 1, there is no way to know if :math:`x_1` is a 0 or a 1 and vice
 versa. Therefore we aggregate 0s and 1s into 2.
 
+The Gács-Körner common information satisfies an important inequality:
+
+.. math::
+
+   0 \leq \K[X_0:X_1] \leq \I[X_0:X_1]
+
 :math:`n`-Variables
 ===================
 

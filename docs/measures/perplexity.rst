@@ -15,4 +15,10 @@ would have the same entropy. For example, a distribution with 2 bits of entropy
 has a perplexity of 4, and so could be said to be "as random" as a four-sided
 die.
 
+The conditional perplexity is defined in the natural way:
+
+.. math::
+
+   \P[X|Y] = 2^{\H[X|Y]}
+
 .. autofunction:: dit.algorithms.perplexity
