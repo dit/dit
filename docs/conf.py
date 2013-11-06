@@ -187,6 +187,7 @@ macros = r'''
 \newcommand{\B}    {\op{B}}
 \newcommand{\R}    {\op{R}}
 \newcommand{\II}   {\op{II}}
+\newcommand{\P}    {\op{P}}
 \newcommand{\K}    {\op{K}}
 \newcommand{\DKL}  {\op{D_{KL}}}
 \newcommand{\xH}   {\op{xH}}

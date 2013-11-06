@@ -31,7 +31,7 @@
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   var TEX = MathJax.InputJax.TeX;
 
-  TEX.Macro("op", "\\operatorname{#1}", 1)
+  TEX.Macro("op", "\\operatorname{#1}", 1);
   TEX.Macro("H", "\\op{H}");
   TEX.Macro("I", "\\op{I}");
   TEX.Macro("T", "\\op{T}");
@@ -39,6 +39,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   TEX.Macro("R", "\\op{R}");
   TEX.Macro("K", "\\op{K}");
   TEX.Macro("II", "\\op{II}");
+  TEX.Macro("P", "\\op{P}");
   TEX.Macro("DKL", "\\op{D_{KL}}");
   TEX.Macro("xH", "\\op{xH}");
   TEX.Macro("JSD", "\\op{JSD}");
