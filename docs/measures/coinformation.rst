@@ -4,7 +4,7 @@
 Co-Information
 **************
 
-The co-information is one generalization of the mutual information to multiple
+The co-information :cite:`Bell2003` is one generalization of the mutual information to multiple
 variables. It is defined via an inclusion/exclusion sum:
 
 .. math::

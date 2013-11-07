@@ -37,6 +37,3 @@ Here we see that the total correlation is equal to :math:`\log_2{m}` regardless
 of :math:`n`.
 
 .. autofunction:: dit.algorithms.total_correlation
-
-.. bibliography:: ../references.bib
-   :cited:

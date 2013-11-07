@@ -101,6 +101,3 @@ The common information is a monotonically decreasing function:
    \K[X_0 : \ldots : X_{n-1}] \ge \K[X_0 : \ldots : X_n]
 
 .. autofunction:: dit.algorithms.common_information
-
-.. bibliography:: ../references.bib
-   :cited:

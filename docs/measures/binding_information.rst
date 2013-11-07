@@ -13,6 +13,3 @@ another generalization of the mutual information. It is defined as:
                &= - \sum_{x_{0:n} \in X_{0:n}} p(x_{0:n}) \log_2 \frac{p(x_{0:n})}{\prod p(x_i|x_{\{0:n\}/i})}
 
 .. autofunction:: dit.algorithms.binding_information
-
-.. bibliography:: ../references.bib
-   :cited:
