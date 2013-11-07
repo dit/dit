@@ -10,8 +10,8 @@ from numpy import allclose
 
 from dit.math import LogOperations
 ops = LogOperations(2)
-log2 = ops.log2
-exp2 = ops.exp2
+log2 = ops.log
+exp2 = ops.exp
 
 from dit.math.aitchison import *
 
