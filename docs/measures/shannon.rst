@@ -11,7 +11,7 @@ Entropy
 
    \H[X] = - \sum_{x \in X} p(x) \log_2 p(x)
 
-.. autofunction:: dit.algorithms.entropy
+.. autofunction:: dit.algorithms.shannon.entropy
 
 Conditional Entropy
 ===================
@@ -20,7 +20,7 @@ Conditional Entropy
 
    \H[X|Y] = \sum_{x \in X, y \in Y} p(x, y) \log_2 p(x|y)
 
-.. autofunction:: dit.algorithms.conditional_entropy
+.. autofunction:: dit.algorithms.shannon.conditional_entropy
 
 Mutual Information
 ==================
@@ -31,4 +31,4 @@ Mutual Information
            &= \H[X] + \H[Y] - \H[X,Y] \\
            &= \sum_{x \in X, y \in Y} p(x, y) \log_2 \frac{p(x, y)}{p(x)p(y)}
 
-.. autofunction:: dit.algorithms.mutual_information
+.. autofunction:: dit.algorithms.shannon.mutual_information

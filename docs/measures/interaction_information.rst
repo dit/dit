@@ -27,4 +27,4 @@ The extension to :math:`n>3` proceeds recursively. For example,
       &= \I(X_0:X_1|X_2,X_3) - \I(X_0:X_1|X_3) \\
       &\qquad - \I(X_0:X_1|X_2) + \I(X_0:X_1)
 
-.. autofunction:: dit.algorithms.interaction_information
+.. autofunction:: dit.algorithms.interaction_information.interaction_information

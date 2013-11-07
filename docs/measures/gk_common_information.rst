@@ -78,11 +78,18 @@ This is because :math:`f` and :math:`g` must act independently: if :math:`x_0`
 is a 0 or a 1, there is no way to know if :math:`x_1` is a 0 or a 1 and vice
 versa. Therefore we aggregate 0s and 1s into 2.
 
+Properties & Uses
+-----------------
+
 The Gács-Körner common information satisfies an important inequality:
 
 .. math::
 
    0 \leq \K[X_0:X_1] \leq \I[X_0:X_1]
+
+One usage of the common information is as a measure of *redundancy*
+:cite:`Griffith2013`. Consider a function that takes two inputs and produces a
+single output.
 
 :math:`n`-Variables
 ===================
@@ -100,4 +107,4 @@ The common information is a monotonically decreasing function:
 
    \K[X_0 : \ldots : X_{n-1}] \ge \K[X_0 : \ldots : X_n]
 
-.. autofunction:: dit.algorithms.common_information
+.. autofunction:: dit.algorithms.common_info.common_information

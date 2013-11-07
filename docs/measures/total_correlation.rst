@@ -36,4 +36,4 @@ consider is general parity distributions:
 Here we see that the total correlation is equal to :math:`\log_2{m}` regardless
 of :math:`n`.
 
-.. autofunction:: dit.algorithms.total_correlation
+.. autofunction:: dit.algorithms.total_correlation.total_correlation

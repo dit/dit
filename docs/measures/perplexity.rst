@@ -21,4 +21,4 @@ The conditional perplexity is defined in the natural way:
 
    \P[X|Y] = 2^{\H[X|Y]}
 
-.. autofunction:: dit.algorithms.perplexity
+.. autofunction:: dit.algorithms.perplexity.perplexity

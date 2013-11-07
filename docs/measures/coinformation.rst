@@ -12,4 +12,4 @@ variables. It is defined via an inclusion/exclusion sum:
    \I[X_{0:n}] &= -\sum_{y \in \mathcal{P}(\{0..n\})} (-1)^{|y|} \H[X_y] \\
                &= \sum_{x_{0:n} \in X_{0:n}} p(x_{0:n}) \log_2 \prod_{y \in \mathcal{P}(\{0..n\})} p(y)^{(-1)^{|y|}}
 
-.. autofunction:: dit.algorithms.coinformation
+.. autofunction:: dit.algorithms.coinformation.coinformation
