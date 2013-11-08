@@ -19,6 +19,8 @@ Contents:
    distributions
    measures
    zreferences
+   todo
+
 ..
    Indices and tables
    ==================

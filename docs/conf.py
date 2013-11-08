@@ -29,6 +29,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.intersphinx',
               'sphinx.ext.coverage',
               'sphinx.ext.mathjax',
+              'sphinx.ext.todo',
               'sphinx.ext.viewcode',
               'sphinxcontrib.napoleon',
               'sphinxcontrib.bibtex',
@@ -96,6 +97,8 @@ pygments_style = 'sphinx'
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
 
+# Include todos in the output.
+todo_include_todos = True
 
 # -- Options for HTML output ---------------------------------------------------
 
