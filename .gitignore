@@ -37,3 +37,4 @@ dit/math/_*.html
 
 # ignore the documentation build directory
 docs/_build/
+docs/images/idiagrams.pdf

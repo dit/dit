@@ -5,11 +5,13 @@
 
 \usepackage{tikz}
 \usetikzlibrary{calc}
+\usetikzlibrary{external}
+\tikzexternalize[prefix=idiagrams/]
 
-\usepackage{verbatim}
-\usepackage[active,tightpage]{preview}
-\PreviewEnvironment{tikzpicture}
-\setlength\PreviewBorder{5pt}
+% \usepackage{verbatim}
+% \usepackage[active,tightpage]{preview}
+% \PreviewEnvironment{tikzpicture}
+% \setlength\PreviewBorder{5pt}
 
 
 
@@ -22,7 +24,7 @@
 \newcommand{\B}     {\op{B}}
 \newcommand{\R}     {\op{R}}
 \newcommand{\K}     {\op{K}}
-\newcommand{\meet} {\curlywedge}
+\newcommand{\meet}  {\curlywedge}
 
 % Definition of variables
 \def \r {2cm}
@@ -145,18 +147,21 @@
 
 %% Shannon
 
+\tikzsetnextfilename{h_x}
 \begin{tikzpicture}
     \drawIDtwo
     \fill [black, fill opacity=0.25] \X;
     \node[anchor=south, scale=1.5] at (current bounding box.north) {$\H[X]$};
 \end{tikzpicture}
 
+\tikzsetnextfilename{h_y}
 \begin{tikzpicture}
     \drawIDtwo
     \fill [black, fill opacity=0.25] \Y;
     \node[anchor=south, scale=1.5] at (current bounding box.north) {$\H[Y]$};
 \end{tikzpicture}
 
+\tikzsetnextfilename{h_xgy}
 \begin{tikzpicture}
     \drawIDtwo
     \begin{scope}[even odd rule]
@@ -166,6 +171,7 @@
     \node[anchor=south, scale=1.5] at (current bounding box.north) {$\H[X|Y]$};
 \end{tikzpicture}
 
+\tikzsetnextfilename{h_ygx}
 \begin{tikzpicture}
     \drawIDtwo
     \begin{scope}[even odd rule]
@@ -177,12 +183,14 @@
 
 %% Entropy
 
+\tikzsetnextfilename{h_xy}
 \begin{tikzpicture}
     \drawIDtwo
     \fillIDtwo{0.25}{0.25}
     \node[anchor=south, scale=1.5] at (current bounding box.north) {$\H[X, Y]$};
 \end{tikzpicture}
 
+\tikzsetnextfilename{h_xyz}
 \begin{tikzpicture}
     \drawIDthree
     \fillIDthree{0.25}{0.25}{0.25}
@@ -191,12 +199,14 @@
 
 %% Co-Information
 
+\tikzsetnextfilename{i_xy}
 \begin{tikzpicture}
     \drawIDtwo
     \fillIDtwo{0.0}{0.25}
     \node[anchor=south, scale=1.5] at (current bounding box.north) {$\I[X : Y]$};
 \end{tikzpicture}
 
+\tikzsetnextfilename{i_xyz}
 \begin{tikzpicture}
     \drawIDthree
     \fillIDthree{0.0}{0.0}{0.25}
@@ -205,12 +215,14 @@
 
 %% Total Correlation
 
+\tikzsetnextfilename{t_xy}
 \begin{tikzpicture}
     \drawIDtwo
     \fillIDtwo{0.0}{0.25}
     \node[anchor=south, scale=1.5] at (current bounding box.north) {$\T[X : Y]$};
 \end{tikzpicture}
 
+\tikzsetnextfilename{t_xyz}
 \begin{tikzpicture}
     \drawIDthree
     \fillIDthree{0.0}{0.25}{0.5}
@@ -219,12 +231,14 @@
 
 %% Binding Information
 
+\tikzsetnextfilename{b_xy}
 \begin{tikzpicture}
     \drawIDtwo
     \fillIDtwo{0.0}{0.25}
     \node[anchor=south, scale=1.5] at (current bounding box.north) {$\B[X : Y]$};
 \end{tikzpicture}
 
+\tikzsetnextfilename{b_xyz}
 \begin{tikzpicture}
     \drawIDthree
     \fillIDthree{0.0}{0.25}{0.25}
@@ -233,12 +247,14 @@
 
 %% Residual Entropy
 
+\tikzsetnextfilename{r_xy}
 \begin{tikzpicture}
     \drawIDtwo
     \fillIDtwo{0.25}{0.0}
     \node[anchor=south, scale=1.5] at (current bounding box.north) {$\R[X : Y]$};
 \end{tikzpicture}
 
+\tikzsetnextfilename{r_xyz}
 \begin{tikzpicture}
     \drawIDthree
     \fillIDthree{0.25}{0.0}{0.0}
@@ -247,6 +263,7 @@
 
 %% Gács-Körner Common Information
 
+\tikzsetnextfilename{k_xy}
 \begin{tikzpicture}
     \drawIDtwo
     \draw [ultra thick] \Ktwo;
@@ -254,6 +271,7 @@
     \node[anchor=south, scale=1.5] at (current bounding box.north) {$\K[X : Y]$};
 \end{tikzpicture}
 
+\tikzsetnextfilename{k_xyz}
 \begin{tikzpicture}
     \drawIDthree
     \draw [ultra thick] \Kthree;
@@ -261,6 +279,7 @@
     \node[anchor=south, scale=1.5] at (current bounding box.north) {$\K[X : Y : Z]$};
 \end{tikzpicture}
 
+\tikzsetnextfilename{red_xy}
 \begin{tikzpicture}
     \drawIDthree
     \draw [ultra thick] \Ktwo;
