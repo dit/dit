@@ -26,6 +26,18 @@ def Xor():
     d = Distribution(outcomes, pmf)
     return d
 
+def And():
+    pmf = [1/4] * 4
+    outcomes = ['000', '010', '100', '111']
+    d = Distribution(outcomes, pmf)
+    return d
+
+def Or():
+    pmf = [1/4] * 4
+    outcomes = ['000', '011', '101', '111']
+    d = Distribution(outcomes, pmf)
+    return d
+
 def RdnXor():
     pmf = [1/8] * 8
     outcomes = [
