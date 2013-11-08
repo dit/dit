@@ -35,15 +35,18 @@ there exists a "largest" one, and it is known as the common random variable. The
 entropy of that common random variable is the Gács-Körner common information:
 
 .. math::
+
    \K[X_0 : X_1] &= \max_{f(X_0) = g(X_1) = V} \H[V] \\
                  &= \H[X_0 \meet X_1]
 
 .. todo::
+
    Add an i-diagram.
 
 As a canonical example, consider the following:
 
 .. code-block:: python
+
    >>> from __future__ import division
    >>> from dit import Distribution as D
    >>> from dit.algorithms import common_information as K
@@ -57,6 +60,7 @@ So, the Gács-Körner common information is 1.5 bits. But what is the common
 random variable?
 
 .. code-block:: python
+
    >>> from dit.algorithms import insert_meet
    >>> crv = insert_meet(d, -1, [[0],[1]])
    >>> print(crv)
@@ -88,6 +92,7 @@ Properties & Uses
 The Gács-Körner common information satisfies an important inequality:
 
 .. math::
+
    0 \leq \K[X_0:X_1] \leq \I[X_0:X_1]
 
 One usage of the common information is as a measure of *redundancy*
@@ -98,11 +103,13 @@ they can synergistically influence the output. Determining how to compute the
 amount of redundancy is an open problem, but one proposal is:
 
 .. math::
+
    \I[X_0 \meet X_1 : Y]
 
 This quantity can be computed easily using dit:
 
 .. code-block:: python
+
    >>> from dit.example_dists import RdnXor
    >>> from dit.algorithms import insert_meet, mutual_information as I
    >>> d = RdnXor()
@@ -117,18 +124,21 @@ With an arbitrary number of variables, the Gács-Körner common information is
 defined similarly:
 
 .. math::
+
    \K[X_0 : \ldots : X_n] &= \max_{\substack{V = f_0(X_0) \\ \vdots \\ V = f_n(X_n)}} \H[V] \\
                           &= \H[X_0 \meet \ldots \meet X_n]
 
 The common information is a monotonically decreasing function:
 
 .. math::
+
    \K[X_0 : \ldots : X_{n-1}] \ge \K[X_0 : \ldots : X_n]
 
 The multivariate common information follows a similar inequality as the two
 variate version:
 
 .. math::
+
    0 \leq \K[X_0 : \dots : X_n] \leq \min_{i, j \in \{0..n\}} \I[X_i : X_j]
 
 .. autofunction:: dit.algorithms.common_info.common_information

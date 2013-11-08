@@ -11,6 +11,7 @@ information. It is defined as the amount of information each individual variable
 carries above and beyond the joint entropy:
 
 .. math::
+
    \T[X_{0:n}] &= \sum \H[X_i] - \H[X_{0:n}] \\
                &= \sum_{x_{0:n} \in X_{0:n}} p(x_{0:n}) \log_2 \frac{p(x_{0:n})}{\prod p(x_i)}
 
@@ -20,6 +21,7 @@ independent. Some baseline behavior is good to note also. First its behavior
 when applied to "giant bit" distributions:
 
 .. code-block:: python
+
    >>> from dit import Distribution as D
    >>> from dit.algorithms import total_correlation as T
    >>> [ T(D(['0'*n, '1'*n], [0.5, 0.5])) for n in range(2, 6) ]
@@ -30,6 +32,7 @@ one less than the number of variables. The second type of distribution to
 consider is general parity distributions:
 
 .. code-block:: python
+
    >>> from dit.example_dists import n_mod_m
    >>> [ T(n_mod_m(n, 2)) for n in range(3, 6) ]
    [1.0, 1.0, 1.0]
@@ -40,9 +43,11 @@ Here we see that the total correlation is equal to :math:`\log_2{m}` regardless
 of :math:`n`.
 
 .. todo::
+
    Add i-diagram.
 
 .. todo::
+
    Add more examples, perhaps from real-world usage.
 
 .. autofunction:: dit.algorithms.total_correlation.total_correlation

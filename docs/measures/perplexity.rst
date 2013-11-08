@@ -8,6 +8,7 @@ Perplexity
 The perplexity is a trivial measure to make the entropy more intuitive.
 
 .. math::
+
    \P[X] = 2^{\H[X]}
 
 The perplexity of a random variable is the size of a uniform distribution that
@@ -18,9 +19,11 @@ die.
 The conditional perplexity is defined in the natural way:
 
 .. math::
+
    \P[X|Y] = 2^{\H[X|Y]}
 
 .. todo::
+
    Add some good examples.
 
 .. autofunction:: dit.algorithms.perplexity.perplexity

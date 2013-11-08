@@ -22,10 +22,13 @@ Numpy-based Distribution
 Distribution specific stuff.
 
 .. todo::
+
    Add autoclass calls?
 
 .. todo::
+
    Add examples.
 
 .. todo::
+
    Add discussion.
