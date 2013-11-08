@@ -121,7 +121,7 @@ defined similarly:
 
 .. math::
 
-   \K[X_0 : \ldots : X_n] &= \max_{\substack{V = f_0(X_0) \\ \vdots \\ V = f_n(X_n)}} \H[V]
+   \K[X_0 : \ldots : X_n] &= \max_{\substack{V = f_0(X_0) \\ \vdots \\ V = f_n(X_n)}} \H[V] \\
                           &= \H[X_0 \meet \ldots \meet X_n]
 
 The common information is a monotonically decreasing function:
