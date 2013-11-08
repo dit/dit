@@ -5,8 +5,12 @@
 Basic Shannon measures
 **********************
 
+The information on this page is drawn from :cite:`Cover2006`.
+
 Entropy
 =======
+
+The entropy measures how much information is in a random variable :math:`X`.
 
 .. math::
 
@@ -17,6 +21,9 @@ Entropy
 Conditional Entropy
 ===================
 
+The conditional entropy is the amount of information in variable :math:`X`
+beyond that which is in variable :math:`Y`.
+
 .. math::
 
    \H[X|Y] = \sum_{x \in X, y \in Y} p(x, y) \log_2 p(x|y)
@@ -25,6 +32,9 @@ Conditional Entropy
 
 Mutual Information
 ==================
+
+The mutual information is the amount of information shared by :math:`X` and
+:math:`Y`.
 
 .. math::
 
