@@ -40,6 +40,8 @@ entropy of that common random variable is the Gács-Körner common information:
 
 As a canonical example, consider the following:
 
+.. code-block:: python
+
    >>> from __future__ import division
    >>> from dit import Distribution as D
    >>> from dit.algorithms import common_information as K
@@ -89,8 +91,26 @@ The Gács-Körner common information satisfies an important inequality:
    0 \leq \K[X_0:X_1] \leq \I[X_0:X_1]
 
 One usage of the common information is as a measure of *redundancy*
-:cite:`Griffith2013`. Consider a function that takes two inputs and produces a
-single output.
+:cite:`Griffith2013`. Consider a function that takes two inputs, :math:`X_0` and
+:math:`X_1`, and produces a single output :math:`Y`. The output can be
+influenced redundantly by both inputs, uniquely from either one, or together
+they can synergistically influence the output. Determining how to compute the
+amount of redundancy is an open problem, but one proposal is:
+
+.. math::
+
+   \I[X_0 \join X_1 : Y]
+
+This quantity can be computed easily using dit:
+
+.. code-block:: python
+
+   >>> from dit.example_dists import RdnXor
+   >>> from dit.algorithms import insert_meet, mutual_information as I
+   >>> d = RdnXor()
+   >>> d = insert_meet(d, -1, [[0], [1]])
+   >>> I(d, [3], [2])
+   1.0
 
 :math:`n`-Variables
 ===================
