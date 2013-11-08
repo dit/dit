@@ -36,7 +36,8 @@ entropy of that common random variable is the Gács-Körner common information:
 
 .. math::
 
-   \K[X_0 : X_1] = \max_{f(X_0) = g(X_1) = V} \H[V]
+   \K[X_0 : X_1] &= \max_{f(X_0) = g(X_1) = V} \H[V] \\
+                 &= \H[X_0 \meet X_1]
 
 As a canonical example, consider the following:
 
@@ -99,7 +100,7 @@ amount of redundancy is an open problem, but one proposal is:
 
 .. math::
 
-   \I[X_0 \join X_1 : Y]
+   \I[X_0 \meet X_1 : Y]
 
 This quantity can be computed easily using dit:
 
