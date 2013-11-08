@@ -129,4 +129,11 @@ The common information is a monotonically decreasing function:
 
    \K[X_0 : \ldots : X_{n-1}] \ge \K[X_0 : \ldots : X_n]
 
+The multivariate common information follows a similar inequality as the two
+variate version:
+
+.. math::
+
+   0 \leq \K[X_0 : \dots : X_n] \leq \min_{i, j in \{0..n\}} \I[X_i : X_j]
+
 .. autofunction:: dit.algorithms.common_info.common_information
