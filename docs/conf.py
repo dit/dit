@@ -181,13 +181,13 @@ htmlhelp_basename = 'ditdoc'
 
 macros = r'''
 \newcommand{\op}[1]{\ensuremath{\operatorname{#1}}}
-\renewcommand{\H}    {\op{H}}   % No more Erd\H{o}s
+\renewcommand{\H}  {\op{H}}   % No more Erd\H{o}s
 \newcommand{\I}    {\op{I}}
 \newcommand{\T}    {\op{T}}
 \newcommand{\B}    {\op{B}}
 \newcommand{\R}    {\op{R}}
 \newcommand{\II}   {\op{II}}
-\newcommand{\P}    {\op{P}}
+\renewcommand{\P}  {\op{P}}
 \newcommand{\K}    {\op{K}}
 \newcommand{\DKL}  {\op{D_{KL}}}
 \newcommand{\xH}   {\op{xH}}
