@@ -40,6 +40,7 @@ can not really be directly compared to the measures above:
    :maxdepth: 2
 
    measures/perplexity
+   measures/extropy
 
 There are also measures of "distance" or divergence:
 
