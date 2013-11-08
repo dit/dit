@@ -19,7 +19,8 @@ Contents:
    distributions
    measures
    zreferences
-   todo
+
+.. todolist::
 
 ..
    Indices and tables
