@@ -13,6 +13,9 @@
 
 import sys, os
 
+# environment variable to know if the docs are being built on rtd.
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -97,8 +100,8 @@ pygments_style = 'sphinx'
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
 
-# Include todos in the output.
-todo_include_todos = True
+# Only show todos for local builds, not on the official docs.
+todo_include_todos = not on_rtd
 
 # -- Options for HTML output ---------------------------------------------------
 
