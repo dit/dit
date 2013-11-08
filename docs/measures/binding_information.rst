@@ -13,9 +13,13 @@ another generalization of the mutual information. It is defined as:
    \B[X_{0:n}] &= \H[X_{0:n}] - \sum \H[X_i | X_{\{0..n\}/i}] \\
                &= - \sum_{x_{0:n} \in X_{0:n}} p(x_{0:n}) \log_2 \frac{p(x_{0:n})}{\prod p(x_i|x_{\{0:n\}/i})}
 
-.. todo::
+.. image:: ../images/idiagrams/b_xy.png
+   :alt: The binding information :math:`\B[X:Y]`
+   :align: center
 
-   Add an i-diagram.
+.. image:: ../images/idiagrams/b_xyz.png
+   :alt: The binding information :math:`\B[X:Y:Z]`
+   :align: center
 
 .. todo::
 

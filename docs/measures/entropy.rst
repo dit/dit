@@ -7,6 +7,14 @@ Entropy
 
 This is a general entropy function, handling conditional joint entropy.
 
+.. image:: ../images/idiagrams/h_xy.png
+   :alt: The entropy :math:`\H[X,Y]`
+   :align: center
+
+.. image:: ../images/idiagrams/h_xyz.png
+   :alt: The entropy :math:`\H[X,Y,Z]`
+   :align: center
+
 .. todo::
 
    Add equation.

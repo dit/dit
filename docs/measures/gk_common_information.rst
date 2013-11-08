@@ -39,9 +39,9 @@ entropy of that common random variable is the Gács-Körner common information:
    \K[X_0 : X_1] &= \max_{f(X_0) = g(X_1) = V} \H[V] \\
                  &= \H[X_0 \meet X_1]
 
-.. todo::
-
-   Add an i-diagram.
+.. image:: ../images/idiagrams/k_xy.png
+   :alt: The Gács-Körner common information :math:`\K[X:Y]`
+   :align: center
 
 As a canonical example, consider the following:
 
@@ -106,6 +106,10 @@ amount of redundancy is an open problem, but one proposal is:
 
    \I[X_0 \meet X_1 : Y]
 
+.. image:: ../images/idiagrams/red_xy.png
+   :alt: The zero-error redundancy :math:`\K[X\meetY:Z]`
+   :align: center
+
 This quantity can be computed easily using dit:
 
 .. code-block:: python
@@ -140,5 +144,9 @@ variate version:
 .. math::
 
    0 \leq \K[X_0 : \dots : X_n] \leq \min_{i, j \in \{0..n\}} \I[X_i : X_j]
+
+.. image:: ../images/idiagrams/k_xyz.png
+   :alt: The Gács-Körner common information :math:`\K[X:Y:Z]`
+   :align: center
 
 .. autofunction:: dit.algorithms.common_info.common_information

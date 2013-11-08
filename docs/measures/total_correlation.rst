@@ -42,6 +42,15 @@ consider is general parity distributions:
 Here we see that the total correlation is equal to :math:`\log_2{m}` regardless
 of :math:`n`.
 
+
+.. image:: ../images/idiagrams/t_xy.png
+   :alt: The total correlation :math:`\T[X:Y]`
+   :align: center
+
+.. image:: ../images/idiagrams/t_xyz.png
+   :alt: The total correlation :math:`\T[X:Y:Z]`
+   :align: center
+
 .. todo::
 
    Add i-diagram.
