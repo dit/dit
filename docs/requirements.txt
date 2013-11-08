@@ -1,5 +1,5 @@
 numpy
 iterutils
 six
-numpydoc
+sphinxcontrib-napoleon
 sphinxcontrib-bibtex
