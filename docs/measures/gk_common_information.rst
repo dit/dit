@@ -134,6 +134,6 @@ variate version:
 
 .. math::
 
-   0 \leq \K[X_0 : \dots : X_n] \leq \min_{i, j in \{0..n\}} \I[X_i : X_j]
+   0 \leq \K[X_0 : \dots : X_n] \leq \min_{i, j \in \{0..n\}} \I[X_i : X_j]
 
 .. autofunction:: dit.algorithms.common_info.common_information
