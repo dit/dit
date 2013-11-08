@@ -1,4 +1,5 @@
 .. jensen_shannon_divergence.rst
+.. py:module :: dit.algorithms.jsd
 
 *************************
 Jensen-Shannon Divergence

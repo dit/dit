@@ -1,4 +1,5 @@
 .. entropy.rst
+.. py:module :: dit.algorithms.entropy2
 
 *******
 Entropy

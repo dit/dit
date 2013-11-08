@@ -1,4 +1,5 @@
 .. interaction_information.rst
+.. py:module :: dit.algorithms.interaction_information
 
 ***********************
 Interaction Information

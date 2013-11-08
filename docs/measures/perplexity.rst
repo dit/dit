@@ -1,4 +1,5 @@
 .. perplexity.rst
+.. py:module :: dit.algorithms.perplexity
 
 **********
 Perplexity
