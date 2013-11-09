@@ -7,7 +7,7 @@ First, we import::
 
     >>> import dit
 
-Now, we create a distribution representing a biased coin and print it.::
+Now, we create a distribution representing a biased coin and print it. ::
 
     >>> d = dit.Distribution(['H', 'T'], [.4, .6])
     >>> print d
@@ -23,15 +23,16 @@ Now, we create a distribution representing a biased coin and print it.::
     T   0.6
 
 Calculate the probability of :math:`H` and also of the combination:
-:math:`H~ \mathbf{or}~T`. ::
+:math:`H~\mathbf{or}~T`. ::
 
     >>> d['H']
     0.4
     >>> d.event_probability(['H','T'])
     1.0
 
-Create a distribution representing the :math:`\mathbf{xor}` logic function.  Here, we have two inputs, :math:`X` and :math:`Y`, and then an output
-:math:`Z = \mathbf{xor}(X,Y)`.::
+Create a distribution representing the :math:`\mathbf{xor}` logic function.  
+Here, we have two inputs, :math:`X` and :math:`Y`, and then an output
+:math:`Z = \mathbf{xor}(X,Y)`. ::
 
     >>> import dit.example_dists
     >>> d = dit.example_dists.Xor()
@@ -57,7 +58,7 @@ Calculate the Shannon entropy and extropy of the joint distribution. ::
     >>> dit.algorithms.extropy(d)
     1.2451124978365313
 
-Calculate the Shannon mutual informations :math:`I[X:Z]`, :math:`I[Y:Z]`,
+Calculate the Shannon mutual informations :math:`I[X:Z]`, :math:`I[Y:Z]`, and
 :math:`I[X,Y:Z]`. ::
 
     >>> dit.algorithms.mutual_information(d, ['X'], ['Z'])
@@ -67,7 +68,8 @@ Calculate the Shannon mutual informations :math:`I[X:Z]`, :math:`I[Y:Z]`,
     >>> dit.algorithms.mutual_information(d, ['X', 'Y'], ['Z'])
     1.0
 
-Calculate the marginal distribution :math:`P(X,Z)`. Then print its probabilities as fractions, showing the mask. ::
+Calculate the marginal distribution :math:`P(X,Z)`. 
+Then print its probabilities as fractions, showing the mask. ::
 
     >>> d2 = d.marginal(['X', 'Z'])
     >>> print d2.to_string(show_mask=True, exact=True)
@@ -84,7 +86,8 @@ Calculate the marginal distribution :math:`P(X,Z)`. Then print its probabilities
     1*0   1/4
     1*1   1/4
 
-Convert the distribution probabilities to log (base 3.5) probabilities, and access its probability mass function. ::
+Convert the distribution probabilities to log (base 3.5) 
+probabilities, and access its probability mass function. ::
 
     >>> d2.set_base(3.5)
     >>> d2.pmf
