@@ -14,7 +14,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   general
+   generalinfo
    notation
    distributions
    measures
