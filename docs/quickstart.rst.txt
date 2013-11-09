@@ -58,8 +58,8 @@ Calculate the Shannon entropy and extropy of the joint distribution. ::
     >>> dit.algorithms.extropy(d)
     1.2451124978365313
 
-Calculate the Shannon mutual informations :math:`I[X:Z]`, :math:`I[Y:Z]`, and
-:math:`I[X,Y:Z]`. ::
+Calculate the Shannon mutual informations :math:`\I[X:Z]`, :math:`\I[Y:Z]`, and
+:math:`\I[X,Y:Z]`. ::
 
     >>> dit.algorithms.mutual_information(d, ['X'], ['Z'])
     0.0
