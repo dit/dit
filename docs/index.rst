@@ -14,7 +14,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   tutorial
+   general
    notation
    distributions
    measures

@@ -1,0 +1,34 @@
+Documentation:
+  http://docs.dit.io
+
+Downloads:
+  Coming soon.
+
+Dependencies:
+  * Python 2.6, 2.7, 3.2, or 3.3
+  * numpy
+  * iterutils
+  * six
+
+Optional Dependencies:
+  * cython
+
+Install:
+  Until ``dit`` is available on PyPI, the easiest way to install is::
+
+      pip install git+https://github.com/dit/dit/#egg=dit
+
+  Alternatively, you can clone this repository, move into the newly created ``dit`` directory, and then install the package::
+
+      git clone https://github.com/dit/dit.git
+      cd dit
+      pip install .
+
+Mailing list:
+  None
+
+Code and bug tracker:
+  https://github.com/dit/dit
+
+License:
+  BSD 2-Clause, see LICENSE.txt for details.
