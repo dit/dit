@@ -16,13 +16,13 @@ Optional Dependencies:
 Install:
   Until ``dit`` is available on PyPI, the easiest way to install is::
 
-      pip install git+https://github.com/dit/dit/#egg=dit
+    pip install git+https://github.com/dit/dit/#egg=dit
 
   Alternatively, you can clone this repository, move into the newly created ``dit`` directory, and then install the package::
 
-      git clone https://github.com/dit/dit.git
-      cd dit
-      pip install .
+    git clone https://github.com/dit/dit.git
+    cd dit
+    pip install .
 
 Mailing list:
   None
