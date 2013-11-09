@@ -198,6 +198,7 @@ macros = r'''
 \newcommand{\DKL}  {\op{D_{KL}}}
 \newcommand{\xH}   {\op{xH}}
 \newcommand{\JSD}  {\op{JSD}}
+\newcommand{\TSE}  {\op{TSE}}
 
 \newcommand{\meet} {\curlywedge}
 \newcommand{\join} {\curlyvee}
