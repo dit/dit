@@ -8,7 +8,8 @@ Total Correlation
 The total correlation :cite:`Watanabe1960`, denoted :math:`\T`, also known as
 the multi-information or integration, is one generalization of the mutual
 information. It is defined as the amount of information each individual variable
-carries above and beyond the joint entropy:
+carries above and beyond the joint entropy, e.g. the difference between the
+whole and the sum of its parts:
 
 .. math::
 
@@ -50,10 +51,6 @@ of :math:`n`.
 .. image:: ../images/idiagrams/t_xyz.png
    :alt: The total correlation :math:`\T[X:Y:Z]`
    :align: center
-
-.. todo::
-
-   Add i-diagram.
 
 .. todo::
 

@@ -6,7 +6,8 @@ Binding Information
 *******************
 
 The binding information :cite:`Abdallah2012`, or dual total correlation, is yet
-another generalization of the mutual information. It is defined as:
+another generalization of the mutual information. It is the amount of
+information that is shared among the variables. It is defined as:
 
 .. math::
 
