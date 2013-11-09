@@ -46,10 +46,12 @@ of :math:`n`.
 
 .. image:: ../images/idiagrams/t_xy.png
    :alt: The total correlation :math:`\T[X:Y]`
+   :width: 342px
    :align: center
 
 .. image:: ../images/idiagrams/t_xyz.png
    :alt: The total correlation :math:`\T[X:Y:Z]`
+   :width: 357px
    :align: center
 
 .. todo::
