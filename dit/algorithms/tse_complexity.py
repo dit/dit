@@ -54,6 +54,6 @@ def tse_complexity(dist, rvs=None, crvs=None, rv_names=None):
         subH /= nCk(N, k)
         return subH
 
-    TSE = sum( sub_entropies(k) - k/N * joint for k in range(1, N+1) )
+    TSE = sum( sub_entropies(k) - k/N * joint for k in range(1, N) )
 
     return TSE
