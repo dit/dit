@@ -45,16 +45,20 @@
 \newcommand{\drawIDtwo} {
     \draw [ultra thick, X color] \X;
     \draw [ultra thick, Y color] \Y;
-    \draw (-2.5, 1.5) node [scale=1.5] {$X$};
-    \draw ( 2.5, 1.5) node [scale=1.5] {$Y$};
+}
+\newcommand{\labelIDtwo}[2] {
+    \draw (-2.5, 1.5) node [scale=1.5] {#1};
+    \draw ( 2.5, 1.5) node [scale=1.5] {#2};
 }
 \newcommand{\drawIDthree} {
     \draw [ultra thick, X color] \X;
     \draw [ultra thick, Y color] \Y;
     \draw [ultra thick, Z color] \Z;
-    \draw (-2.75, -2.25) node [scale=1.5] {$X$};
-    \draw ( 2.75, -2.25) node [scale=1.5] {$Y$};
-    \draw ( 2.00,  2.75) node [scale=1.5] {$Z$};
+}
+\newcommand{\labelIDthree}[3] {
+    \draw (-2.75, -2.25) node [scale=1.5] {#1};
+    \draw ( 2.75, -2.25) node [scale=1.5] {#2};
+    \draw ( 2.00,  2.75) node [scale=1.5] {#3};
 }
 
 % fills for the 2-variable I-diagram
@@ -151,35 +155,39 @@
 \tikzsetnextfilename{h_x}
 \begin{tikzpicture}
     \drawIDtwo
+    \labelIDtwo{$X_0$}{$X_1$}
     \fill [black, fill opacity=0.25] \X;
-    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\H[X]$};
+    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\H[X_0]$};
 \end{tikzpicture}
 
 \tikzsetnextfilename{h_y}
 \begin{tikzpicture}
     \drawIDtwo
+    \labelIDtwo{$X_0$}{$X_1$}
     \fill [black, fill opacity=0.25] \Y;
-    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\H[Y]$};
+    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\H[X_1]$};
 \end{tikzpicture}
 
 \tikzsetnextfilename{h_xgy}
 \begin{tikzpicture}
     \drawIDtwo
+    \labelIDtwo{$X_0$}{$X_1$}
     \begin{scope}[even odd rule]
         \clip \X \Y;
         \fill [black, fill opacity=0.25] \X;
     \end{scope}
-    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\H[X|Y]$};
+    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\H[X_0|X_1]$};
 \end{tikzpicture}
 
 \tikzsetnextfilename{h_ygx}
 \begin{tikzpicture}
     \drawIDtwo
+    \labelIDtwo{$X_0$}{$X_1$}
     \begin{scope}[even odd rule]
         \clip \Y \X;
         \fill [black, fill opacity=0.25] \Y;
     \end{scope}
-    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\H[Y|X]$};
+    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\H[X_1|X_0]$};
 \end{tikzpicture}
 
 %% Entropy
@@ -187,15 +195,17 @@
 \tikzsetnextfilename{h_xy}
 \begin{tikzpicture}
     \drawIDtwo
+    \labelIDtwo{$X_0$}{$X_1$}
     \fillIDtwo{0.25}{0.25}
-    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\H[X, Y]$};
+    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\H[X_0, X_1]$};
 \end{tikzpicture}
 
 \tikzsetnextfilename{h_xyz}
 \begin{tikzpicture}
     \drawIDthree
+    \labelIDthree{$X_0$}{$X_1$}{$X_2$}
     \fillIDthree{0.25}{0.25}{0.25}
-    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\H[X, Y, Z]$};
+    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\H[X_0, X_1, X_2]$};
 \end{tikzpicture}
 
 %% Co-Information
@@ -203,15 +213,17 @@
 \tikzsetnextfilename{i_xy}
 \begin{tikzpicture}
     \drawIDtwo
+    \labelIDtwo{$X_0$}{$X_1$}
     \fillIDtwo{0.0}{0.25}
-    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\I[X : Y]$};
+    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\I[X_0 : X_1]$};
 \end{tikzpicture}
 
 \tikzsetnextfilename{i_xyz}
 \begin{tikzpicture}
     \drawIDthree
+    \labelIDthree{$X_0$}{$X_1$}{$X_2$}
     \fillIDthree{0.0}{0.0}{0.25}
-    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\I[X : Y : Z]$};
+    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\I[X_0 : X_1 : X_2]$};
 \end{tikzpicture}
 
 %% Total Correlation
@@ -219,15 +231,17 @@
 \tikzsetnextfilename{t_xy}
 \begin{tikzpicture}
     \drawIDtwo
+    \labelIDtwo{$X_0$}{$X_1$}
     \fillIDtwo{0.0}{0.25}
-    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\T[X : Y]$};
+    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\T[X_0 : X_1]$};
 \end{tikzpicture}
 
 \tikzsetnextfilename{t_xyz}
 \begin{tikzpicture}
     \drawIDthree
+    \labelIDthree{$X_0$}{$X_1$}{$X_2$}
     \fillIDthree{0.0}{0.25}{0.5}
-    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\T[X : Y : Z]$};
+    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\T[X_0 : X_1 : X_2]$};
 \end{tikzpicture}
 
 %% Binding Information
@@ -235,15 +249,17 @@
 \tikzsetnextfilename{b_xy}
 \begin{tikzpicture}
     \drawIDtwo
+    \labelIDtwo{$X_0$}{$X_1$}
     \fillIDtwo{0.0}{0.25}
-    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\B[X : Y]$};
+    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\B[X_0 : X_1]$};
 \end{tikzpicture}
 
 \tikzsetnextfilename{b_xyz}
 \begin{tikzpicture}
     \drawIDthree
+    \labelIDthree{$X_0$}{$X_1$}{$X_2$}
     \fillIDthree{0.0}{0.25}{0.25}
-    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\B[X : Y : Z]$};
+    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\B[X_0 : X_1 : X_2]$};
 \end{tikzpicture}
 
 %% Residual Entropy
@@ -251,15 +267,17 @@
 \tikzsetnextfilename{r_xy}
 \begin{tikzpicture}
     \drawIDtwo
+    \labelIDtwo{$X_0$}{$X_1$}
     \fillIDtwo{0.25}{0.0}
-    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\R[X : Y]$};
+    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\R[X_0 : X_1]$};
 \end{tikzpicture}
 
 \tikzsetnextfilename{r_xyz}
 \begin{tikzpicture}
     \drawIDthree
+    \labelIDthree{$X_0$}{$X_1$}{$X_2$}
     \fillIDthree{0.25}{0.0}{0.0}
-    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\R[X : Y : Z]$};
+    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\R[X_0 : X_1 : X_2]$};
 \end{tikzpicture}
 
 %% Gács-Körner Common Information
@@ -267,28 +285,31 @@
 \tikzsetnextfilename{k_xy}
 \begin{tikzpicture}
     \drawIDtwo
+    \labelIDtwo{$X_0$}{$X_1$}
     \draw [ultra thick] \Ktwo;
     \fill [black, fill opacity=0.25] \Ktwo;
-    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\K[X : Y]$};
+    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\K[X_0 : X_1]$};
 \end{tikzpicture}
 
 \tikzsetnextfilename{k_xyz}
 \begin{tikzpicture}
     \drawIDthree
+    \labelIDthree{$X_0$}{$X_1$}{$X_2$}
     \draw [ultra thick] \Kthree;
     \fill [black, fill opacity=0.25] \Kthree;
-    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\K[X : Y : Z]$};
+    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\K[X_0 : X_1 : X_2]$};
 \end{tikzpicture}
 
 \tikzsetnextfilename{red_xy}
 \begin{tikzpicture}
     \drawIDthree
+    \labelIDthree{$X_0$}{$X_1$}{$Y$}
     \draw [ultra thick] \Ktwo;
     \begin{scope}[even odd rule]
         \clip \Z;
         \fill [black, fill opacity=0.25] \Ktwo;
     \end{scope}
-    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\I[X \meet Y : Z]$};
+    \node[anchor=south, scale=1.5] at (current bounding box.north) {$\I[X_0 \meet X_1 : Y]$};
 \end{tikzpicture}
 
 \end{document}
