@@ -31,7 +31,9 @@ Advanced Notation
 When there exists a function :math:`Y = f(X)` we write :math:`X \imore Y`
 meaning that :math:`X` is *informationally richer* than :math:`Y`. Similarly, if
 :math:`f(Y) = X` then we write :math:`X \iless Y` and say that :math:`X` is
-*informationally poorer* than :math:`Y`. Of all the variables that are poorer
+*informationally poorer* than :math:`Y`. If :math:`X \iless Y` and :math:`X
+\imore Y` then we write :math:`X \ieq Y` and say that :math:`X` is
+*informationally equivalent* to :math:`Y`. Of all the variables that are poorer
 than both :math:`X` and :math:`Y`, there is a richest one. This variable is
 known as the *meet* of :math:`X` and :math:`Y` and is denoted :math:`X \meet Y`.
 By definition, :math:`\forall Z s.t. Z \iless X` and :math:`Z \iless Y, Z \iless

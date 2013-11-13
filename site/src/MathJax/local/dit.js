@@ -49,6 +49,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   TEX.Macro("join", "\\curlyvee");
   TEX.Macro("iless", "\\preceq");
   TEX.Macro("imore", "\\succeq");
+  TEX.Macro("ieq", "\\cong");
 
   // don't use stix, it's pretty ugly
   MathJax.Hub.Config({

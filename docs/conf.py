@@ -204,6 +204,7 @@ macros = r'''
 \newcommand{\join} {\curlyvee}
 \newcommand{\iless}{\preceq}
 \newcommand{\imore}{\succeq}
+\newcommand{\ieq}  {\cong}
 '''
 
 latex_elements = {
