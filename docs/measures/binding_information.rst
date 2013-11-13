@@ -16,10 +16,12 @@ information that is shared among the variables. It is defined as:
 
 .. image:: ../images/idiagrams/b_xy.png
    :alt: The binding information :math:`\B[X:Y]`
+   :width: 342px
    :align: center
 
 .. image:: ../images/idiagrams/b_xyz.png
    :alt: The binding information :math:`\B[X:Y:Z]`
+   :width: 357px
    :align: center
 
 .. todo::

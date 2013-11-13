@@ -14,10 +14,12 @@ The residual entropy, or erasure entropy, is a dual to the binding information.
 
 .. image:: ../images/idiagrams/r_xy.png
    :alt: The residual entropy :math:`\R[X:Y]`
+   :width: 342px
    :align: center
 
 .. image:: ../images/idiagrams/r_xyz.png
    :alt: The residual entropy :math:`\R[X:Y:Z]`
+   :width: 357px
    :align: center
 
 .. todo::

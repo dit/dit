@@ -9,10 +9,12 @@ This is a general entropy function, handling conditional joint entropy.
 
 .. image:: ../images/idiagrams/h_xy.png
    :alt: The entropy :math:`\H[X,Y]`
+   :width: 342px
    :align: center
 
 .. image:: ../images/idiagrams/h_xyz.png
    :alt: The entropy :math:`\H[X,Y,Z]`
+   :width: 357px
    :align: center
 
 .. todo::

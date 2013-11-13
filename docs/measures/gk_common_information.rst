@@ -41,6 +41,7 @@ entropy of that common random variable is the Gács-Körner common information:
 
 .. image:: ../images/idiagrams/k_xy.png
    :alt: The Gács-Körner common information :math:`\K[X:Y]`
+   :width: 342px
    :align: center
 
 As a canonical example, consider the following:
@@ -108,6 +109,7 @@ amount of redundancy is an open problem, but one proposal is:
 
 .. image:: ../images/idiagrams/red_xy.png
    :alt: The zero-error redundancy :math:`\K[X\meetY:Z]`
+   :width: 357px
    :align: center
 
 This quantity can be computed easily using dit:
@@ -147,6 +149,7 @@ variate version:
 
 .. image:: ../images/idiagrams/k_xyz.png
    :alt: The Gács-Körner common information :math:`\K[X:Y:Z]`
+   :width: 357px
    :align: center
 
 .. autofunction:: dit.algorithms.common_info.common_information

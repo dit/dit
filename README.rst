@@ -5,4 +5,4 @@
 .. image:: https://coveralls.io/repos/dit/dit/badge.png?branch=master
    :target: https://coveralls.io/r/dit/dit?branch=master
 
-For installation information and a quick demo, visit: http://docs.dit.io/generalinfo.html
+For installation information and a quick demo, visit: http://docs.dit.io/en/latest/generalinfo.html

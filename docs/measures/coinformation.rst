@@ -20,9 +20,12 @@ be negative.
 
 .. image:: ../images/idiagrams/i_xy.png
    :alt: The co-information :math:`\I[X:Y]`
+   :width: 342px
+   :align: center
 
 .. image:: ../images/idiagrams/i_xyz.png
    :alt: The co-information :math:`\I[X:Y:Z]`
+   :width: 357px
    :align: center
 
 .. todo::
