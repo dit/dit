@@ -14,15 +14,19 @@ Optional Dependencies:
   * cython
 
 Install:
-  Until ``dit`` is available on PyPI, the easiest way to install is::
+  Until ``dit`` is available on PyPI, the easiest way to install is:
 
-    pip install git+https://github.com/dit/dit/#egg=dit
+  .. code-block:: bash
 
-  Alternatively, you can clone this repository, move into the newly created ``dit`` directory, and then install the package::
+      pip install git+https://github.com/dit/dit/#egg=dit
 
-    git clone https://github.com/dit/dit.git
-    cd dit
-    pip install .
+  Alternatively, you can clone this repository, move into the newly created ``dit`` directory, and then install the package:
+
+  .. code-block:: bash
+
+      git clone https://github.com/dit/dit.git
+      cd dit
+      pip install .
 
 Mailing list:
   None
