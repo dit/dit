@@ -18,7 +18,7 @@ The entropy measures how much information is in a random variable :math:`X`.
 
 .. math::
 
-   \H[X] = - \sum_{x \in X} p(x) \log_2 p(x)
+   \H[X] = -\sum_{x \in X} p(x) \log_2 p(x)
 
 What do we mean by "how much information"? Basically, we mean the average number
 of yes-no questions one would have to ask to determine an outcome from the
@@ -79,6 +79,27 @@ beyond that which is in variable :math:`Y`.
 .. math::
 
    \H[X|Y] = \sum_{x \in X, y \in Y} p(x, y) \log_2 p(x|y)
+
+As a simple example, consider two identical variables:
+
+.. code-block:: python
+
+   >>> d = dit.Distribution(['HH', 'TT'], [1/2, 1/2])
+   >>> dit.algorithms.conditional_entropy(d, [0], [1])
+   0.0
+
+We see that knowing the second variable tells us everything about the first,
+leaving zero entropy. On the other end of the spectrum, two independent
+variables:
+
+.. code-block:: python
+
+   >>> d = dit.Distribution(['HH', 'HT', 'TH', 'TT'], [1/4]*4)
+   >>> dit.algorithms.conditional_entropy(d, [0], [1])
+   1.0
+
+Here, the second variable tells us nothing about the first so we are left with
+the one bit of information a coin flip has.
 
 .. autofunction:: dit.algorithms.shannon.conditional_entropy
 
