@@ -1,5 +1,5 @@
 .. gk_common_information.rst
-.. py:module :: dit.algorithms.common_information
+.. py:module:: dit.algorithms.common_information
 
 ******************************
 Gács-Körner Common Information

@@ -1,5 +1,5 @@
 .. coinformation.rst
-.. py:module :: dit.algorithms.coinformation
+.. py:module:: dit.algorithms.coinformation
 
 **************
 Co-Information

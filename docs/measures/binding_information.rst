@@ -1,5 +1,5 @@
 .. binding_information.rst
-.. py:module :: dit.algorithms.binding
+.. py:module:: dit.algorithms.binding
 
 *******************
 Binding Information

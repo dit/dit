@@ -1,5 +1,5 @@
 .. residual_entropy.rst
-.. py:module :: dit.algorithms.binding
+.. py:module:: dit.algorithms.binding
 
 ****************
 Residual Entropy

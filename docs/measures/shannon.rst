@@ -1,5 +1,5 @@
 .. shannon.rst
-.. py:module :: dit.algorithms.shannon
+.. py:module:: dit.algorithms.shannon
 
 **********************
 Basic Shannon measures

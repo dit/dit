@@ -1,5 +1,5 @@
 .. total_correlation.rst
-.. py:module :: dit.algorithms.total_correlation
+.. py:module:: dit.algorithms.total_correlation
 
 *****************
 Total Correlation
