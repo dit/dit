@@ -41,6 +41,7 @@ can not really be directly compared to the measures above:
 
    measures/perplexity
    measures/extropy
+   measures/tse_complexity
 
 There are also measures of "distance" or divergence:
 
