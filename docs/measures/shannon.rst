@@ -56,6 +56,18 @@ time we need to ask a follow up question: "was it `B`?". So half the time we
 need to ask one question, and the other half of the time we need to ask two
 questions. In other words, we need to ask 1.5 questions on average.
 
+Joint Entropy
+-------------
+
+The entropy of multiple variables is computed in a similar manner:
+
+.. math::
+
+   \H[X_{0:n}] = \sum_{x_{0:n} \in X_{0:n}} p(x_{0:n}) \log_2 p(x_{0:n})
+
+Its intuition is also the same: the average number of binary questions required
+to identify a joint event from the distribution.
+
 .. autofunction:: dit.algorithms.shannon.entropy
 
 Conditional Entropy
