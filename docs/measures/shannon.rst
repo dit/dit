@@ -74,7 +74,7 @@ Conditional Entropy
 ===================
 
 The conditional entropy is the amount of information in variable :math:`X`
-beyond that which is in variable :math:`Y`.
+beyond that which is in variable :math:`Y`:
 
 .. math::
 
@@ -107,7 +107,7 @@ Mutual Information
 ==================
 
 The mutual information is the amount of information shared by :math:`X` and
-:math:`Y`.
+:math:`Y`:
 
 .. math::
 
@@ -115,16 +115,32 @@ The mutual information is the amount of information shared by :math:`X` and
            &= \H[X] + \H[Y] - \H[X,Y] \\
            &= \sum_{x \in X, y \in Y} p(x, y) \log_2 \frac{p(x, y)}{p(x)p(y)}
 
-.. todo::
+The mutual information is symmetric:
 
-   Add i-diagrams.
+.. math::
 
-.. todo::
+   \I[X:Y] = \I[Y:X]
 
-   Add discussion.
+Meaning that the information that :math:`X` carries about :math:`Y` is equal to
+the information that :math:`Y` carries about :math:`X`. The entropy of :math:`X`
+can be decomposed into the information it shares with :math:`Y` and the
+information it doesn't:
 
-.. todo::
+.. math::
 
-   Add examples.
+   \H[X] = \I[X:Y] + \H[X|Y]
+
+.. seealso::
+
+   :py:func:`dit.algorithms.coinformation.coinformation`
+      Generalized as the information which *all* variables contribute to.
+
+   :py:func:`dit.algorithms.total_correlation.total_correlation`
+      Generalized as the sum of the information in the individual variables
+      minus the joint.
+
+   :py:func:`dit.algorithms.binding.binding_information`
+      Generalized as the joint minus the entropy of each variable conditioned on
+      the others.
 
 .. autofunction:: dit.algorithms.shannon.mutual_information
