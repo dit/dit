@@ -15,18 +15,25 @@ inclusion/exclusion sum:
    \I[X_{0:n}] &= -\sum_{y \in \mathcal{P}(\{0..n\})} (-1)^{|y|} \H[X_y] \\
                &= \sum_{x_{0:n} \in X_{0:n}} p(x_{0:n}) \log_2 \prod_{y \in \mathcal{P}(\{0..n\})} p(y)^{(-1)^{|y|}}
 
-One notable property of the co-information is that for :math:`n \geq 3` it can
-be negative.
-
-.. image:: ../images/idiagrams/i_xy.png
-   :alt: The co-information :math:`\I[X:Y]`
-   :width: 342px
-   :align: center
+This can be visuallized on an i-diagram as below:
 
 .. image:: ../images/idiagrams/i_xyz.png
    :alt: The co-information :math:`\I[X:Y:Z]`
    :width: 357px
    :align: center
+
+It is clear that the co-information measures the "center-most" atom of the
+diagram only, which is the only atom to which every variable contributes.
+
+One notable property of the co-information is that for :math:`n \geq 3` it can
+be negative. For example:
+
+.. code-block::python
+
+   >>> from dit.example_dists import Xor
+   >>> d = Xor()
+   >>> dit.algorithms.coinformation(d)
+   -1.0
 
 .. todo::
 
