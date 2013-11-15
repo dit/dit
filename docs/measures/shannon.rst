@@ -132,6 +132,9 @@ information it doesn't:
 
 .. seealso::
 
+   The mutual information generalized to the multivariate case in three
+   different ways:
+
    :py:func:`dit.algorithms.coinformation.coinformation`
       Generalized as the information which *all* variables contribute to.
 
@@ -144,3 +147,43 @@ information it doesn't:
       the others.
 
 .. autofunction:: dit.algorithms.shannon.mutual_information
+
+Visualization of Information
+============================
+
+It has been shown that there is a correspondence between set-theoretic measures
+and information-theoretic measures. The entropy is equivalent to set
+cardinality, mutual information to set intersection, and conditional entropy to
+set difference. Because of this we can use Venn-like diagrams to represent the
+information in and shared between random variables. These diagrams are called
+*information diagrams* or i-diagrams for short.
+
+.. image:: ../images/idiagrams/h_x.png
+   :alt: The entropy :math:`\H[X_0]`
+   :width: 342px
+   :align: center
+
+.. image:: ../images/idiagrams/h_y.png
+   :alt: The entropy :math:`\H[X_1]`
+   :width: 342px
+   :align: center
+
+.. image:: ../images/idiagrams/h_xy.png
+   :alt: The joint entropy :math:`\H[X_0,X_1]`
+   :width: 342px
+   :align: center
+
+.. image:: ../images/idiagrams/h_xgy.png
+   :alt: The conditional entropy :math:`\H[X_0|X_1]`
+   :width: 342px
+   :align: center
+
+.. image:: ../images/idiagrams/h_ygx.png
+   :alt: The conditional entropy :math:`\H[X_1|X_0]`
+   :width: 342px
+   :align: center
+
+.. image:: ../images/idiagrams/i_xy.png
+   :alt: The mutual information :math:`\I[X_0:X_1]`
+   :width: 342px
+   :align: center
