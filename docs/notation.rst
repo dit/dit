@@ -25,6 +25,8 @@ random variables is denoted :math:`X_A`. For example, if :math:`A = \{0,2,4\}`,
 then :math:`X_A = X_0 X_2 X_4`. The complement of :math:`A`
 (with respect to some universal set) is denoted :math:`\bar{A}`.
 
+Furthermore, we define :math:`0 \log_2 0 = 0`.
+
 Advanced Notation
 =================
 
