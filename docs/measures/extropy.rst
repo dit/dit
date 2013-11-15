@@ -5,11 +5,11 @@
 Extropy
 *******
 
-The extropy :cite:`Lad2011` is a dual to the entropy.
+The extropy :cite:`Lad2011` is a dual to the entropy. It is defined by:
 
-.. todo::
+.. math::
 
-   Add equation.
+   \J[X] = -\sum_{x \in X} (1-p(x)) \log_2 (1-p(x))
 
 .. todo::
 

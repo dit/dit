@@ -43,6 +43,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   TEX.Macro("DKL", "\\op{D_{KL}}");
   TEX.Macro("xH", "\\op{xH}");
   TEX.Macro("JSD", "\\op{JSD}");
+  TEX.Macro("J", "\\op{J}");
 
   // some binary operators
   TEX.Macro("meet", "\\curlywedge");
