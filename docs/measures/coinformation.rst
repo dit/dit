@@ -28,7 +28,7 @@ diagram only, which is the only atom to which every variable contributes.
 One notable property of the co-information is that for :math:`n \geq 3` it can
 be negative. For example:
 
-.. code-block::python
+.. code-block:: python
 
    >>> from dit.example_dists import Xor
    >>> d = Xor()
