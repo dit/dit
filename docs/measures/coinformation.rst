@@ -23,10 +23,19 @@ This can be visuallized on an i-diagram as below:
    :align: center
 
 It is clear that the co-information measures the "center-most" atom of the
-diagram only, which is the only atom to which every variable contributes.
+diagram only, which is the only atom to which every variable contributes. To
+exemplifying this, consider "giant bit" distributions:
 
-One notable property of the co-information is that for :math:`n \geq 3` it can
-be negative. For example:
+.. code-block:: python
+
+   >>> from dit import Distribution as D
+   >>> from dit.algorithms import coinformation as I
+   >>> [ I(D(['0'*n, '1'*n], [1/2, 1/2])) for n in range(2, 6) ]
+   [1.0, 1.0, 1.0, 1.0]
+
+This verifies intuition that the entire one bit of the distribution's entropy is
+condensed in a single atom. One notable property of the co-information is that
+for :math:`n \geq 3` it can be negative. For example:
 
 .. code-block:: python
 
@@ -35,8 +44,26 @@ be negative. For example:
    >>> dit.algorithms.coinformation(d)
    -1.0
 
-.. todo::
+Based on these two examples one might get the impression that the co-information
+is positive for "redundant" distributions and negative for "synergistic"
+distributions. This however is not true --- consider the four-variable parity
+distribution:
 
-   add examples, preferably from Bell's paper.
+.. code-block:: python
+
+   >>> from dit.example_dists import n_mod_m
+   >>> d = n_mod_m(4, 2)
+   >>> dit.algorithms.coinformation(d)
+   1.0
+
+Meaning that the co-information is positive for both the most redundant
+distribution, the giant bit, and the most synergistic, the parity. Therefore the
+coinformation can not be used to measure redundancy or synergy.
+
+.. note::
+
+   Correctly measuring redundancy and synergy is an ongoing problem. See
+   :cite:`Griffith2013` and references therein for the current status of the
+   problem.
 
 .. autofunction:: dit.algorithms.coinformation.coinformation
