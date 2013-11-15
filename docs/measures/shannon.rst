@@ -78,7 +78,7 @@ beyond that which is in variable :math:`Y`:
 
 .. math::
 
-   \H[X|Y] = \sum_{x \in X, y \in Y} p(x, y) \log_2 p(x|y)
+   \H[X|Y] = -\sum_{x \in X, y \in Y} p(x, y) \log_2 p(x|y)
 
 As a simple example, consider two identical variables:
 
