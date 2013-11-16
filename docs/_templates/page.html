@@ -5,6 +5,7 @@
 #}
 {% extends "!page.html" %}
 {% block extrahead %}
-    {% if not embedded %}<script type="text/javascript" src="{{ pathto('_static/copybutton.js', 1) }}"></script>{% endif %}
+    <link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+    <script type="text/javascript" src="{{ pathto('_static/copybutton.js', 1) }}"></script>
 {{ super() }}
 {% endblock %}

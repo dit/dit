@@ -36,6 +36,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
               'sphinxcontrib.napoleon',
               'sphinxcontrib.bibtex',
+              'dit.sphinxext.ipython_console_highlighting',
              ]
 
 # Use our local configuration for mathjax:

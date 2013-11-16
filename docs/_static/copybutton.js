@@ -12,7 +12,7 @@ $(document).ready(function() {
      * used to parse the source code. As an example, Sphinx will autodetect
      * if the code block represents a python console, then the "pycon" lexer
      * is used instead of the "python" lexer, but the class on the outer div
-     * might still be 'highlight-python'.
+     * might still say 'highlight-python'.
      */
     var div = $('.highlight-python .highlight,' +
                 '.highlight-py .highlight,' +
@@ -28,7 +28,16 @@ $(document).ready(function() {
                 */
                 '.highlight-pytb .highlight,' +
                 '.highlight-py3tb .highlight,' +
-                '.highlight-ipython .highlight')
+
+                '.highlight-ipython .highlight,' +
+                '.highlight-ipython3 .highlight,' +
+                '.highlight-ipythontb .highlight,' +
+                '.highlight-ipythontb3 .highlight,' +
+                '.highlight-ipythoncon .highlight,' +
+                '.highlight-ipython3con .highlight,' +
+                '.highlight-ipy .highlight,' +
+                '.highlight-ipy3 .highlight')
+
 
     var pre = div.find('pre');
 
@@ -43,8 +52,7 @@ $(document).ready(function() {
         'cursor':'pointer', 'position': 'absolute', 'top': '0', 'right': '0',
         'border-color': border_color, 'border-style': border_style,
         'border-width': border_width, 'color': border_color,
-        'text-size': '75%', 'font-family': 'monospace',
-        'padding-left': '0.2em',  'padding-right': '0.2em',
+        'padding-left': '0.3em',  'padding-right': '0.3em',
         'border-radius': '0 3px 0 0'
     }
 
@@ -53,7 +61,7 @@ $(document).ready(function() {
         var jthis = $(this);
         if (jthis.find('.gp').length > 0) {
             // TODO: use something more generic that makes sense for IPython.
-            var button = $('<span class="copybutton">&gt;&gt;&gt;</span>');
+            var button = $('<i class="copybutton fa fa-eye fa-1g"></i>');
             button.css(button_styles)
             button.attr('title', hide_text);
             jthis.prepend(button);
@@ -68,20 +76,34 @@ $(document).ready(function() {
             .end();
     });
 
-    // define the behavior of the button when it's clicked
+    /** Define the behavior of the button when it's clicked.
+     *
+     * Generic.Output    --> .go
+     * Generic.Prompt    --> .gp
+     * Generic.Error     --> .gh  (used for Output prompts)
+     * Generic.Traceback --> .gt
+     *
+     * We make elements within traceback invisible rather than hiding them.
+     * If we had hid them instead, then the vertical size of the <pre> block
+     * would change causing undesirable jumps.  The downside is that when you
+     * select all the code to copy it, you will see a weird selection pattern,
+     * and the copied code may contain some spaces that were between the
+     * <span> elements. Is there a better solution?
+     *
+     */
     $('.copybutton').toggle(
         function() {
             var button = $(this);
-            button.parent().find('.go, .gp, .gt').hide();
-            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'hidden');
-            button.css('text-decoration', 'line-through');
+            button.parent().find('.go, .gp, .gh, .gt').hide();
+            button.next('pre').find('.gt').nextUntil('.go, .gp, .gh').css('visibility', 'hidden');
+            button.attr('class', 'copybutton fa fa-eye-slash fa-1g');
             button.attr('title', show_text);
         },
         function() {
             var button = $(this);
-            button.parent().find('.go, .gp, .gt').show();
-            button.next('pre').find('.gt').nextUntil('.gp, .go').css('visibility', 'visible');
-            button.css('text-decoration', 'none');
+            button.parent().find('.go, .gp, .gh, .gt').show();
+            button.next('pre').find('.gt').nextUntil('.gp, .go, .gh').css('visibility', 'visible');
+            button.attr('class', 'copybutton fa fa-eye fa-1g');
             button.attr('title', hide_text);
         });
 });
