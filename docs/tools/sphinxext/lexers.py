@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Defines a variety of Pygments lexers for highlighting IPython code.
 
@@ -11,7 +12,7 @@ This includes:
     IPythonTracebackLexer
         Supports 2.x and 3.x via keyword `python3`.  The partial traceback
         lexer reads everything but the Python code appearing in a traceback.
-        The full lexer combines the partial lexer with a pure python lexer.
+        The full lexer combines the partial lexer with an IPython lexer.
 
     IPythonConsoleLexer
         A lexer for IPython console sessions, with support for tracebacks.
@@ -36,6 +37,7 @@ from pygments.token import (
     Comment, Generic, Keyword, Literal, Name, Operator, Other, Text, Error,
 )
 from pygments.util import get_bool_opt
+
 
 
 line_re = re.compile('.*?\n')
@@ -331,6 +333,7 @@ class IPythonConsoleLexer(Lexer):
             end_input = False
         if end_input and self.mode != 'tb':
             # Only look for an end of input when not in tb mode.
+            # An ellipsis could appear within the traceback.
             mode = 'output'
             code = u''
             insertion = (0, Generic.Prompt, line)
