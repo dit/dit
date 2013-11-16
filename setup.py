@@ -180,6 +180,7 @@ def main():
         'dit.algorithms',
         'dit.example_dists',
         'dit.math',
+        'dit.sphinxext',
         'dit.utils',
     ]
 
