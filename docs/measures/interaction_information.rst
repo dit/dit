@@ -28,12 +28,8 @@ The extension to :math:`n>3` proceeds recursively. For example,
       &= \I(X_0:X_1|X_2,X_3) - \I(X_0:X_1|X_3) \\
       &\qquad - \I(X_0:X_1|X_2) + \I(X_0:X_1)
 
-.. todo::
+.. seealso::
 
-   Add some examples, e.g. parity distributions.
-
-.. todo::
-
-   discuss historical context (used to quantify "synergy"), and why it is wrong.
+   For more information, see :py:func:`dit.algorithms.coinformation.coinformation`.
 
 .. autofunction:: dit.algorithms.interaction_information.interaction_information
