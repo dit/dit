@@ -80,7 +80,7 @@ $(document).ready(function() {
      *
      * Generic.Output    --> .go
      * Generic.Prompt    --> .gp
-     * Generic.Heading     --> .gh  (used for Output prompts)
+     * Generic.Heading   --> .gh  (used for Output prompts)
      * Generic.Traceback --> .gt
      *
      * We make elements within traceback invisible rather than hiding them.
