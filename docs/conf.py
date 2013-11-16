@@ -13,8 +13,6 @@
 
 import sys, os
 
-sys.path.append(os.path.abspath('tools/sphinxext'))
-
 # environment variable to know if the docs are being built on rtd.
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
