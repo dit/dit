@@ -110,4 +110,29 @@ Draw 5 random samples from this distribution. ::
     In [19]: d2.rand(5)
     Out[19]: ['10', '11', '00', '01', '10']
 
+Valid bases are greater than zero and not equal to one. An exception is
+raised for invalid bases::
+
+    In [20]: d2.set_base(1)
+    ---------------------------------------------------------------------------
+    InvalidBase                               Traceback (most recent call last)
+    <ipython-input-20-035f3285eb1d> in <module>()
+    ----> 1 d2.set_base(1)
+
+    /usr/local/lib/python2.7/site-packages/dit/npscalardist.pyc in set_base(self, base)
+        870
+        871         # Sanitize inputs
+    --> 872         base = validate_base(base)
+        873
+        874         # Determine the conversion targets.
+
+    /usr/local/lib/python2.7/site-packages/dit/params.pyc in validate_base(b)
+         42     # Numerical bases.
+         43     if b <= 0 or b == 1:
+    ---> 44         raise InvalidBase(b)
+         45     else:
+         46         return b
+
+    InvalidBase: 1 is not a valid logarithm base.
+
 
