@@ -1,3 +1,5 @@
+.. highlight:: ipy
+
 Quickstart
 ----------
 
@@ -5,12 +7,13 @@ The basic usage of ``dit`` corresponds to creating distributions, modifying
 them if need be, and then computing properties of those distributions.
 First, we import::
 
-    >>> import dit
+    In [1]: import dit
 
 Now, we create a distribution representing a biased coin and print it. ::
 
-    >>> d = dit.Distribution(['H', 'T'], [.4, .6])
-    >>> print d
+    In [2]: d = dit.Distribution(['H', 'T'], [.4, .6])
+
+    In [3]: print d
     Class:          Distribution
     Alphabet:       ('H', 'T') for all rvs
     Base:           linear
@@ -25,19 +28,23 @@ Now, we create a distribution representing a biased coin and print it. ::
 Calculate the probability of :math:`H` and also of the combination:
 :math:`H~\mathbf{or}~T`. ::
 
-    >>> d['H']
-    0.4
-    >>> d.event_probability(['H','T'])
-    1.0
+    In [4]: d['H']
+    Out[4]: 0.4
 
-Create a distribution representing the :math:`\mathbf{xor}` logic function.  
+    In [5]: d.event_probability(['H','T'])
+    Out[5]: 1.0
+
+Create a distribution representing the :math:`\mathbf{xor}` logic function.
 Here, we have two inputs, :math:`X` and :math:`Y`, and then an output
 :math:`Z = \mathbf{xor}(X,Y)`. ::
 
-    >>> import dit.example_dists
-    >>> d = dit.example_dists.Xor()
-    >>> d.set_rv_names(['X', 'Y', 'Z'])
-    >>> print d
+    In [6]: import dit.example_dists
+
+    In [7]: d = dit.example_dists.Xor()
+
+    In [8]: d.set_rv_names(['X', 'Y', 'Z'])
+
+    In [9]: print d
     Class:          Distribution
     Alphabet:       ('0', '1') for all rvs
     Base:           linear
@@ -53,26 +60,30 @@ Here, we have two inputs, :math:`X` and :math:`Y`, and then an output
 
 Calculate the Shannon entropy and extropy of the joint distribution. ::
 
-    >>> dit.algorithms.entropy(d)
-    0.97095059445466858
-    >>> dit.algorithms.extropy(d)
-    1.2451124978365313
+    In [10]: dit.algorithms.entropy(d)
+    Out[10]: 0.97095059445466858
+
+    In [11]: dit.algorithms.extropy(d)
+    Out[11]: 1.2451124978365313
 
 Calculate the Shannon mutual informations :math:`\I[X:Z]`, :math:`\I[Y:Z]`, and
 :math:`\I[X,Y:Z]`. ::
 
-    >>> dit.algorithms.mutual_information(d, ['X'], ['Z'])
-    0.0
-    >>> dit.algorithms.mutual_information(d, ['Y'], ['Z'])
-    0.0
-    >>> dit.algorithms.mutual_information(d, ['X', 'Y'], ['Z'])
-    1.0
+    In [12]: dit.algorithms.mutual_information(d, ['X'], ['Z'])
+    Out[12]: 0.0
 
-Calculate the marginal distribution :math:`P(X,Z)`. 
+    In [13]: dit.algorithms.mutual_information(d, ['Y'], ['Z'])
+    Out[13]: 0.0
+
+    In [14]: dit.algorithms.mutual_information(d, ['X', 'Y'], ['Z'])
+    Out[14]: 1.0
+
+Calculate the marginal distribution :math:`P(X,Z)`.
 Then print its probabilities as fractions, showing the mask. ::
 
-    >>> d2 = d.marginal(['X', 'Z'])
-    >>> print d2.to_string(show_mask=True, exact=True)
+    In [15]: d2 = d.marginal(['X', 'Z'])
+
+    In [16]: print d2.to_string(show_mask=True, exact=True)
     Class:          Distribution
     Alphabet:       ('0', '1') for all rvs
     Base:           linear
@@ -86,16 +97,17 @@ Then print its probabilities as fractions, showing the mask. ::
     1*0   1/4
     1*1   1/4
 
-Convert the distribution probabilities to log (base 3.5) 
+Convert the distribution probabilities to log (base 3.5)
 probabilities, and access its probability mass function. ::
 
-    >>> d2.set_base(3.5)
-    >>> d2.pmf
+    In [17]: d2.set_base(3.5)
+
+    In [18]: d2.pmf
     array([-1.10658951, -1.10658951, -1.10658951, -1.10658951])
 
 Draw 5 random samples from this distribution. ::
 
-    >>> d2.rand(5)
-    ['10', '11', '00', '01', '10']
+    In [19]: d2.rand(5)
+    Out[19]: ['10', '11', '00', '01', '10']
 
 
