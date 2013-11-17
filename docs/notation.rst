@@ -42,4 +42,5 @@ By definition, :math:`\forall Z s.t. Z \iless X` and :math:`Z \iless Y, Z \iless
 X \meet Y`. Similarly of all variables richer than both :math:`X` and :math:`Y`,
 there is a poorest. This variable is known as the *join* of :math:`X` and
 :math:`Y` and is denoted :math:`X \join Y`. The joint random variable
-:math:`(X,Y)` is equivalent to the join.
+:math:`(X,Y)` and the join are informationally equivalent: 
+:math:`(X,Y) \ieq X \join Y`.
