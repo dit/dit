@@ -2,11 +2,7 @@
 [run]
 branch = False
 source = dit
-omit =
-    *test_*.py
-    dit/abc.py
-    dit/utils/exitstack.py
-    dit/utils/bindargs.py
+omit = *test_*.py, dit/abc.py, dit/utils/exitstack.py, dit/utils/bindargs.py
 
 [report]
 # Regexes for lines to exclude from consideration
