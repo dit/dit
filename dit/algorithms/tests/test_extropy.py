@@ -1,6 +1,6 @@
 from __future__ import division
 
-from nose.tools import *
+from nose.tools import assert_almost_equal, assert_true
 
 import numpy as np
 
@@ -23,28 +23,28 @@ def test_J3():
 def test_J4():
     for i in range(2, 10):
         d = SD([1/i]*i)
-        assert_almost_equal(J(d), (i-1)*(np.log2(i) - np.log2(i-1)))
+        yield assert_almost_equal, J(d), (i-1)*(np.log2(i) - np.log2(i-1))
 
 # based on result 2 from the extropy paper
 def test_J5():
     for i in range(2, 10):
         d = SD([1/i]*i)
         d.set_base('e')
-        assert_almost_equal(J(d), (i-1)*(np.log(i)-np.log(i-1)))
+        yield assert_almost_equal, J(d), (i-1)*(np.log(i)-np.log(i-1))
 
 # based on result 2 from the extropy paper
 def test_J6():
     for i in range(2, 10):
         d = SD([1/i]*i)
         d.set_base(10)
-        assert_almost_equal(J(d), (i-1)*(np.log10(i)-np.log10(i-1)))
+        yield assert_almost_equal, J(d), (i-1)*(np.log10(i)-np.log10(i-1))
 
 # nose on travisCI with python 2.6 doesn't have assert_less
 # based on result 1 from the extropy paper
 def test_J7():
     for i in range(3, 10):
         d = SD([1/i]*i)
-        assert(J(d) < H(d))
+        yield assert_true, J(d) < H(d)
 
 # nose on travisCI with python 2.6 doesn't have assert_less
 # based on result 1 from the extropy paper
@@ -52,7 +52,7 @@ def test_J8():
     for i in range(3, 10):
         d = SD([1/i]*i)
         d.set_base(i)
-        assert(J(d) < H(d))
+        yield assert_true, J(d) < H(d)
 
 # based on result 4 from extropy paper
 def test_J9():

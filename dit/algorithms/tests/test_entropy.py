@@ -35,21 +35,21 @@ def test_H3():
 def test_H4():
     for i in range(2, 10):
         d = D([ str(_) for _ in range(i) ], [1/i]*i)
-        assert_almost_equal(H(d), np.log2(i))
+        yield assert_almost_equal, H(d), np.log2(i)
 
 def test_H5():
     for i in range(2, 10):
         d = D([ str(_) for _ in range(i) ], [1/i]*i)
         d.set_base(i)
-        assert_almost_equal(H(d), 1)
+        yield assert_almost_equal, H(d), 1
 
 def test_H6():
     for i in range(2, 10):
         d = SD([1/i]*i)
-        assert_almost_equal(H(d), np.log2(i))
+        yield assert_almost_equal, H(d), np.log2(i)
 
 def test_H7():
     for i in range(2, 10):
         d = SD([1/i]*i)
         d.set_base(i)
-        assert_almost_equal(H(d), 1)
+        yield assert_almost_equal, H(d), 1

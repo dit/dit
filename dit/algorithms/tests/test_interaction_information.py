@@ -11,7 +11,7 @@ def test_ii1():
         outcomes = ['0'*i, '1'*i]
         pmf = [1/2, 1/2]
         d = D(outcomes, pmf)
-        assert_almost_equal(interaction_information(d), (-1)**i)
+        yield assert_almost_equal, interaction_information(d), (-1)**i
 
 def test_ii2():
     for i in range(2, 6):
@@ -20,7 +20,7 @@ def test_ii2():
         d = D(outcomes, pmf)
         ci = coinformation(d)
         ii = interaction_information(d)
-        assert_almost_equal(ii, (-1)**i * ci)
+        yield assert_almost_equal, ii, (-1)**i * ci
 
 def test_ii3():
     d = Xor()
