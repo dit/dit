@@ -1,6 +1,6 @@
 from __future__ import division
 
-from nose.tools import *
+from nose.tools import assert_almost_equal
 
 from dit import Distribution
 from dit.algorithms import gk_common_information as K
