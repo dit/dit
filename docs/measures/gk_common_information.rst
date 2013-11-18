@@ -1,5 +1,5 @@
 .. gk_common_information.rst
-.. py:module:: dit.algorithms.common_information
+.. py:module:: dit.algorithms.gk_common_information
 
 ******************************
 Gács-Körner Common Information
@@ -50,7 +50,7 @@ As a canonical example, consider the following:
 
    >>> from __future__ import division
    >>> from dit import Distribution as D
-   >>> from dit.algorithms import common_information as K
+   >>> from dit.algorithms import gk_common_information as K
    >>> outcomes = ['00', '01', '10', '11', '22', '33']
    >>> pmf = [1/8, 1/8, 1/8, 1/8, 1/4, 1/4]
    >>> d = D(outcomes, pmf)
@@ -152,4 +152,4 @@ variate version:
    :width: 357px
    :align: center
 
-.. autofunction:: dit.algorithms.common_info.common_information
+.. autofunction:: dit.algorithms.gk_common_information.gk_common_information

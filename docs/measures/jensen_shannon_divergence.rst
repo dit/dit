@@ -1,5 +1,5 @@
 .. jensen_shannon_divergence.rst
-.. py:module:: dit.algorithms.jsd
+.. py:module:: dit.algorithms.jensen_shannon_divergence
 
 *************************
 Jensen-Shannon Divergence
@@ -51,4 +51,4 @@ from the use of the Shannon entropy.
 
    Add examples.
 
-.. autofunction:: dit.algorithms.jsd.jensen_shannon_divergence
+.. autofunction:: dit.algorithms.jensen_shannon_divergence.jensen_shannon_divergence

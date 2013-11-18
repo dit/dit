@@ -25,4 +25,4 @@ This is a general entropy function, handling conditional joint entropy.
 
    Add some clever examples.
 
-.. autofunction:: dit.algorithms.entropy2.entropy2
+.. autofunction:: dit.algorithms.entropy2.entropy
