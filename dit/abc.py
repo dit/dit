@@ -6,7 +6,7 @@ from dit import (Distribution as D,
                  ScalarDistribution as SD,
                 )
 
-from dit.algorithms.entropy2 import entropy2 as H
+from dit.algorithms.entropy2 import entropy as H
 
 from dit.algorithms import (coinformation as I,
                             common_information as K,

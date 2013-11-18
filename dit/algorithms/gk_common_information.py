@@ -7,7 +7,7 @@ from ..npdist import Distribution
 from .lattice import insert_meet
 from .shannon import conditional_entropy as H
 
-def common_information(dist, rvs=None, crvs=None, rv_names=None):
+def gk_common_information(dist, rvs=None, crvs=None, rv_names=None):
     """
     Returns the Gacs-Korner common information K[X1:X2...] over the random
     variables in `rvs`.

@@ -5,7 +5,7 @@ from nose.tools import *
 import numpy as np
 
 from dit import Distribution as D, ScalarDistribution as SD
-from dit.algorithms.entropy2 import entropy2 as H
+from dit.algorithms.entropy2 import entropy as H
 
 def test_H1():
     d = D(['H', 'T'], [1/2, 1/2])

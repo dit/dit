@@ -3,9 +3,9 @@ A version of the entropy with signature common to the other multivariate
 measures.
 """
 
-from .shannon import conditional_entropy, entropy
+from .shannon import conditional_entropy, entropy as shannon_entropy
 
-def entropy2(dist, rvs=None, crvs=None, rv_names=None):
+def entropy(dist, rvs=None, crvs=None, rv_names=None):
     """
     Compute the conditional joint entropy.
 
@@ -38,6 +38,6 @@ def entropy2(dist, rvs=None, crvs=None, rv_names=None):
         if crvs is None:
             crvs = []
     else:
-        return entropy(dist)
+        return shannon_entropy(dist)
 
     return conditional_entropy(dist, rvs, crvs, rv_names)

@@ -3,7 +3,7 @@ from __future__ import division
 from nose.tools import *
 
 from dit import Distribution
-from dit.algorithms import common_information as K
+from dit.algorithms import gk_common_information as K
 
 def test_K1():
 	outcomes = ['00', '11']

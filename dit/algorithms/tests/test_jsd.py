@@ -1,6 +1,6 @@
-from nose.tools import *
+from nose.tools import assert_almost_equal, assert_raises
 
-from dit.exceptions import *
+from dit.exceptions import ditException
 import dit
 
 def test_jsd1():

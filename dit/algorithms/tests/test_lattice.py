@@ -2,7 +2,7 @@ from __future__ import division
 
 from iterutils import powerset
 
-from nose.tools import *
+from nose.tools import assert_equal, assert_raises
 
 import numpy as np
 import numpy.testing as npt
