@@ -9,7 +9,7 @@ from dit import (Distribution as D,
 from dit.algorithms.entropy2 import entropy as H
 
 from dit.algorithms import (coinformation as I,
-                            common_information as K,
+                            gk_common_information as K,
                             total_correlation as T,
                             perplexity as P,
                             binding_information as B,
