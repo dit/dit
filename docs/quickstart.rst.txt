@@ -10,9 +10,9 @@ First, we import:
 
     In [1]: import dit
 
-Suppose we have a really thick coin, so thick that there is a reasonably
-probability of it landing on the edge.  Here is how we might represent the
-coin in ``dit``.
+Suppose we have a really thick coin, one so thick that there is a reasonable
+chance of it landing on its edge. Here is how we might represent the coin in
+``dit``.
 
 .. ipython::
 
