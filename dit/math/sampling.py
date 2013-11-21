@@ -65,7 +65,13 @@ def sample(dist, size=None, rand=None, prng=None):
             e = dit.exceptions.ditException(msg)
             raise(e)
 
-    indexes = _samples(dist.pmf, rand)
+    # We need linear probabilities.
+    if dist.is_log():
+        pmf = dist.ops.exp(dist.pmf)
+    else:
+        pmf = dist.pmf
+
+    indexes = _samples(pmf, rand)
     outcomes = dist.outcomes
     s = [outcomes[i] for i in indexes]
     if size is None:
