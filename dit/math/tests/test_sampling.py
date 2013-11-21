@@ -14,6 +14,13 @@ def test_sample1():
     x = s.sample(d)
     assert_equal(x, '101')
 
+    # with log dist
+    dit.math.prng.seed(0)
+    d.set_base(3.5)
+    x = s.sample(d)
+    assert_equal(x, '101')
+
+
 def test_sample2():
     # Specified prng
     d = dit.example_dists.Xor()

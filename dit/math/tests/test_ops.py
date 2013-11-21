@@ -133,12 +133,21 @@ class TestLogHalf(TestLog2):
     def setUp(self):
         self.ops = LogOperations(.5)
 
-def test_exp_func():
+def test_exp_func1():
     bad_bases = ['pants', -1, 0, 1]
     for b in bad_bases:
         assert_raises(InvalidBase, exp_func, b)
 
-def test_log_func():
+def test_exp_func2():
+    ops = LogOperations(.5)
+    npt.assert_allclose([.5**1, .5**2, .5**3], ops.exp([1,2,3]))
+
+def test_log_func1():
     bad_bases = ['pants', -1, 0, 1]
     for b in bad_bases:
         assert_raises(InvalidBase, log_func, b)
+
+def test_log_func2():
+    ops = LogOperations(2)
+    npt.assert_allclose([np.log2(1), np.log2(2), np.log2(3)],
+                         ops.log([1,2,3]))
