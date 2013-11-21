@@ -1,42 +1,66 @@
-.. highlight:: ipython
 
 Quickstart
 ----------
 
 The basic usage of ``dit`` corresponds to creating distributions, modifying
 them if need be, and then computing properties of those distributions.
-First, we import::
+First, we import:
+
+.. ipython::
 
     In [1]: import dit
 
-Now, we create a distribution representing a biased coin and print it. ::
+Suppose we have a really thick coin, so thick that there is a reasonably
+probability of it landing on the edge.  Here is how we might represent the
+coin in ``dit``.
 
-    In [2]: d = dit.Distribution(['H', 'T'], [.4, .6])
+.. ipython::
+
+    In [2]: d = dit.Distribution(['H', 'T', 'E'], [.4, .4, .2])
 
     In [3]: print d
     Class:          Distribution
-    Alphabet:       ('H', 'T') for all rvs
+    Alphabet:       ('E', H', 'T') for all rvs
     Base:           linear
     Outcome Class:  str
     Outcome Length: 1
     RV Names:       None
 
     x   p(x)
+    E   0.2
     H   0.4
-    T   0.6
+    T   0.4
 
 Calculate the probability of :math:`H` and also of the combination:
-:math:`H~\mathbf{or}~T`. ::
+:math:`H~\mathbf{or}~T`.
 
+.. ipython::
+
+    @doctest float
     In [4]: d['H']
     Out[4]: 0.4
 
+    @doctest float
     In [5]: d.event_probability(['H','T'])
-    Out[5]: 1.0
+    Out[5]: 0.8
+
+Calculate the Shannon entropy and extropy of the joint distribution.
+
+.. ipython::
+
+    @doctest float
+    In [10]: dit.algorithms.entropy(d)
+    Out[10]: 1.5219280948873621
+
+    @doctest float
+    In [11]: dit.algorithms.extropy(d)
+    Out[11]: 1.1419011889093373
 
 Create a distribution representing the :math:`\mathbf{xor}` logic function.
 Here, we have two inputs, :math:`X` and :math:`Y`, and then an output
-:math:`Z = \mathbf{xor}(X,Y)`. ::
+:math:`Z = \mathbf{xor}(X,Y)`.
+
+.. ipython::
 
     In [6]: import dit.example_dists
 
@@ -58,28 +82,27 @@ Here, we have two inputs, :math:`X` and :math:`Y`, and then an output
     101   0.25
     110   0.25
 
-Calculate the Shannon entropy and extropy of the joint distribution. ::
-
-    In [10]: dit.algorithms.entropy(d)
-    Out[10]: 0.97095059445466858
-
-    In [11]: dit.algorithms.extropy(d)
-    Out[11]: 1.2451124978365313
-
 Calculate the Shannon mutual informations :math:`\I[X:Z]`, :math:`\I[Y:Z]`, and
-:math:`\I[X,Y:Z]`. ::
+:math:`\I[X,Y:Z]`.
 
+.. ipython::
+
+    @doctest float
     In [12]: dit.algorithms.mutual_information(d, ['X'], ['Z'])
     Out[12]: 0.0
 
+    @doctest float
     In [13]: dit.algorithms.mutual_information(d, ['Y'], ['Z'])
     Out[13]: 0.0
 
+    @doctest float
     In [14]: dit.algorithms.mutual_information(d, ['X', 'Y'], ['Z'])
     Out[14]: 1.0
 
 Calculate the marginal distribution :math:`P(X,Z)`.
-Then print its probabilities as fractions, showing the mask. ::
+Then print its probabilities as fractions, showing the mask.
+
+.. ipython::
 
     In [15]: d2 = d.marginal(['X', 'Z'])
 
@@ -98,20 +121,31 @@ Then print its probabilities as fractions, showing the mask. ::
     1*1   1/4
 
 Convert the distribution probabilities to log (base 3.5)
-probabilities, and access its probability mass function. ::
+probabilities, and access its probability mass function.
+
+.. ipython::
 
     In [17]: d2.set_base(3.5)
 
+    @doctest float
     In [18]: d2.pmf
     array([-1.10658951, -1.10658951, -1.10658951, -1.10658951])
 
-Draw 5 random samples from this distribution. ::
+Draw 5 random samples from this distribution.
 
+.. ipython::
+
+    @suppress
+    In [19]: dit.math.prng.seed(1)
+
+    @doctest
     In [19]: d2.rand(5)
-    Out[19]: ['10', '11', '00', '01', '10']
+    Out[19]: ['01', '10', '00', '01', '00']
 
 Valid bases are greater than zero and not equal to one. An exception is
-raised for invalid bases::
+raised for invalid bases:
+
+.. ipython::
 
     In [20]: d2.set_base(1)
     ---------------------------------------------------------------------------
@@ -135,4 +169,4 @@ raised for invalid bases::
 
     InvalidBase: 1 is not a valid logarithm base.
 
-
+Enjoy!

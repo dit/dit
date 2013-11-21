@@ -38,7 +38,12 @@ extensions = ['sphinx.ext.autodoc',
               'sphinxcontrib.napoleon',
               'sphinxcontrib.bibtex',
               'sphinxext.ipython_console_highlighting',
+              'sphinxext.ipython_directive',
              ]
+
+ipython_execlines = ['import numpy as np',
+                     'import matplotlib.pyplot as plt',
+                     'import dit']
 
 # Use our local configuration for mathjax:
 mathjax_path = "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML,http://dit.io/MathJax/local/dit.js"
