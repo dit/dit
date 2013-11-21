@@ -207,6 +207,7 @@ macros = r'''
 \newcommand{\xH}   {\op{xH}}
 \newcommand{\JSD}  {\op{JSD}}
 \newcommand{\J}    {\op{J}}
+\newcommand{\TSE}  {\op{TSE}}
 
 \newcommand{\meet} {\curlywedge}
 \newcommand{\join} {\curlyvee}

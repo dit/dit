@@ -16,6 +16,8 @@ from dit.algorithms import (coinformation as I,
                             residual_entropy as R,
                             jensen_shannon_divergence as JSD,
                             interaction_information as II,
+                            tse_complexity as TSE,
+                            extropy as J,
                            )
 
 # distribution types
@@ -37,6 +39,7 @@ _shannon = [
 _shannon_ext = [
     'K',    # the Gacs-Korner common information [meet entropy]
     'II',   # the interaction information
+    'TSE',  # the TSE complexity
 ]
 
 # measures of distance between distriutions
@@ -47,6 +50,7 @@ _divergences = [
 # other measures
 _others = [
     'P',    # the perplexity
+    'J',    # the extropy
 ]
 
 __all__ = _dists + _shannon + _shannon_ext + _divergences + _others
