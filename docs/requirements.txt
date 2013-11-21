@@ -1,3 +1,4 @@
+ipython
 numpy
 iterutils
 six
