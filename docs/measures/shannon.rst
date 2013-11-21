@@ -24,30 +24,38 @@ What do we mean by "how much information"? Basically, we mean the average number
 of yes-no questions one would have to ask to determine an outcome from the
 distribution. In the simplest case, consider a sure thing:
 
-.. code-block:: python
+.. ipython::
 
-   >>> d = dit.Distribution(['H'], [1])
-   >>> dit.algorithms.entropy(d)
-   0.0
+   In [1]: from __future__ import division
+
+   In [2]: d = dit.Distribution(['H'], [1])
+
+   @doctest float
+   In [3]: dit.algorithms.entropy(d)
+   Out[3]: 0.0
 
 So is we know that the outcome from our distribution will always be `H`, we have
 to ask zero questions to figure that out. If however we have a fair coin:
 
-.. code-block:: python
+.. ipython::
 
-   >>> d = dit.Distribution(['H', 'T'], [1/2, 1/2])
-   >>> dit.algorithms.entropy(d)
-   1.0
+   In [4]: d = dit.Distribution(['H', 'T'], [1/2, 1/2])
+
+   @doctest float
+   In [5]: dit.algorithms.entropy(d)
+   Out[5]: 1.0
 
 The entropy tells us that we must ask one question to determine whether an `H`
 or `T` was the outcome of the coin flip. Now what if there are three outcomes?
 Let's consider the following situation:
 
-.. code-block:: python
+.. ipython::
 
-   >>> d = dit.Distribution(['A', 'B', 'C'], [1/2, 1/4, 1/4])
-   >>> dit.algorithms.entropy(d)
-   1.5
+   In [6]: d = dit.Distribution(['A', 'B', 'C'], [1/2, 1/4, 1/4])
+
+   @doctest float
+   In [7]: dit.algorithms.entropy(d)
+   Out[7]: 1.5
 
 Here we find that the entropy is 1.5 bits. How do we ask one and a half
 questions on average? Well, if our first question is "was it `A`?" and it is
@@ -82,21 +90,25 @@ beyond that which is in variable :math:`Y`:
 
 As a simple example, consider two identical variables:
 
-.. code-block:: python
+.. ipython::
 
-   >>> d = dit.Distribution(['HH', 'TT'], [1/2, 1/2])
-   >>> dit.algorithms.conditional_entropy(d, [0], [1])
-   0.0
+   In [8]: d = dit.Distribution(['HH', 'TT'], [1/2, 1/2])
+
+   @doctest float
+   In [9]: dit.algorithms.conditional_entropy(d, [0], [1])
+   Out[9]: 0.0
 
 We see that knowing the second variable tells us everything about the first,
 leaving zero entropy. On the other end of the spectrum, two independent
 variables:
 
-.. code-block:: python
+.. ipython::
 
-   >>> d = dit.Distribution(['HH', 'HT', 'TH', 'TT'], [1/4]*4)
-   >>> dit.algorithms.conditional_entropy(d, [0], [1])
-   1.0
+   In [10]: d = dit.Distribution(['HH', 'HT', 'TH', 'TT'], [1/4]*4)
+
+   @doctest float
+   In [11]: dit.algorithms.conditional_entropy(d, [0], [1])
+   Out[11]: 1.0
 
 Here, the second variable tells us nothing about the first so we are left with
 the one bit of information a coin flip has.

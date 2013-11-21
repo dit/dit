@@ -46,25 +46,34 @@ entropy of that common random variable is the Gács-Körner common information:
 
 As a canonical example, consider the following:
 
-.. code-block:: python
+.. ipython::
 
-   >>> from __future__ import division
-   >>> from dit import Distribution as D
-   >>> from dit.algorithms import gk_common_information as K
-   >>> outcomes = ['00', '01', '10', '11', '22', '33']
-   >>> pmf = [1/8, 1/8, 1/8, 1/8, 1/4, 1/4]
-   >>> d = D(outcomes, pmf)
-   >>> K(d)
-   1.5
+   In [1]: from __future__ import division
+
+   In [2]: from dit import Distribution as D
+
+   In [3]: from dit.algorithms import gk_common_information as K
+
+   In [4]: outcomes = ['00', '01', '10', '11', '22', '33']
+
+   In [5]: pmf = [1/8, 1/8, 1/8, 1/8, 1/4, 1/4]
+
+   In [6]: d = D(outcomes, pmf)
+
+   @doctest float
+   In [7]: K(d)
+   Out[7]: 1.5
 
 So, the Gács-Körner common information is 1.5 bits. But what is the common
 random variable?
 
-.. code-block:: python
+.. ipython::
 
-   >>> from dit.algorithms import insert_meet
-   >>> crv = insert_meet(d, -1, [[0],[1]])
-   >>> print(crv)
+   In [8]: from dit.algorithms import insert_meet
+
+   In [9]: crv = insert_meet(d, -1, [[0],[1]])
+
+   In [10]: print(crv)
    Class:          Distribution
    Alphabet:       (('0', '1', '2', '3'), ('0', '1', '2', '3'), ('2', '0', '1'))
    Base:           linear
@@ -114,14 +123,19 @@ amount of redundancy is an open problem, but one proposal is:
 
 This quantity can be computed easily using dit:
 
-.. code-block:: python
+.. ipython::
 
-   >>> from dit.example_dists import RdnXor
-   >>> from dit.algorithms import insert_meet, mutual_information as I
-   >>> d = RdnXor()
-   >>> d = insert_meet(d, -1, [[0], [1]])
-   >>> I(d, [3], [2])
-   1.0
+   In [11]: from dit.example_dists import RdnXor
+
+   In [12]: from dit.algorithms import mutual_information as I
+
+   In [13]: d = RdnXor()
+
+   In [14]: d = insert_meet(d, -1, [[0],[1]])
+
+   @doctest float
+   In [15]: I(d, [3], [2])
+   Out[15]: 1.0
 
 :math:`n`-Variables
 ===================
