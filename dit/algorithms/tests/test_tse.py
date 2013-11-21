@@ -19,7 +19,7 @@ def test_tse1():
         yield assert_almost_equal, tse, x
 
 def test_tse2():
-    for n in xrange(2, 7):
+    for n in range(2, 7):
         d = D(['0'*n, '1'*n], [1/2, 1/2])
         tse = TSE(d)
         yield assert_almost_equal, tse, (n-1)/2
