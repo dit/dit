@@ -43,7 +43,6 @@ extensions = ['sphinx.ext.autodoc',
 
 ipython_mplbackend = None
 ipython_execlines = ['import numpy as np',
-                     'import matplotlib.pyplot as plt',
                      'import dit']
 
 # Use our local configuration for mathjax:
