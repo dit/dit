@@ -84,9 +84,8 @@ def exp_func(b):
         if b <= 0 or b == 1:
             raise InvalidBase(b)
 
-        Z = np.exp(b)
-        def exp(x, func=np.exp):
-            return func(x) / Z
+        def exp(x, base=b):
+            return base**np.asarray(x)
 
     return exp
 
