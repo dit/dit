@@ -1,5 +1,5 @@
 .. perplexity.rst
-.. py:module:: dit.algorithms.perplexity
+.. py:module:: dit.esoteric.perplexity
 
 **********
 Perplexity
@@ -26,4 +26,4 @@ The conditional perplexity is defined in the natural way:
 
    Add some good examples.
 
-.. autofunction:: dit.algorithms.perplexity.perplexity
+.. autofunction:: dit.esoteric.perplexity.perplexity

@@ -3,7 +3,7 @@ from __future__ import division
 from nose.tools import assert_almost_equal, assert_raises
 
 from dit import Distribution as D, ScalarDistribution as SD
-from dit.algorithms import coinformation as I, entropy as H
+from dit.multivariate import coinformation as I, entropy as H
 from dit.exceptions import ditException
 from dit.example_dists import Xor
 

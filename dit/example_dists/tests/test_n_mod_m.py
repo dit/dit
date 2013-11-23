@@ -4,7 +4,7 @@ from nose.tools import assert_almost_equal, assert_raises
 
 from numpy import log2
 
-from dit.algorithms import interaction_information as II
+from dit.multivariate import interaction_information as II
 from dit.example_dists import n_mod_m
 
 def test_n_mod_m1():

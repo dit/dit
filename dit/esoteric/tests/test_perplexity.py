@@ -4,7 +4,7 @@ from nose.tools import assert_almost_equal
 
 from dit import (ScalarDistribution as SD,
                  Distribution as D)
-from dit.algorithms import perplexity as P
+from dit.esoteric import perplexity as P
 from six.moves import range
 
 

@@ -3,7 +3,7 @@ from __future__ import division
 from nose.tools import assert_almost_equal
 
 from dit import Distribution
-from dit.algorithms import gk_common_information as K
+from dit.multivariate import gk_common_information as K
 
 def test_K1():
 	outcomes = ['00', '11']

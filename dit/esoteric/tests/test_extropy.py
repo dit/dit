@@ -5,7 +5,8 @@ from nose.tools import assert_almost_equal, assert_true
 import numpy as np
 
 from dit import Distribution as D, ScalarDistribution as SD
-from dit.algorithms import entropy as H, extropy as J
+from dit.shannon import entropy as H
+from dit.esoteric import extropy as J
 
 def test_J1():
     assert_almost_equal(H(0.25), J(0.25))

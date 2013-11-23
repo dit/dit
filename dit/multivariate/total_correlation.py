@@ -3,7 +3,7 @@ The total correlation, aka the multi-information or the integration.
 """
 
 from ..helpers import normalize_rvs
-from .shannon import conditional_entropy as H
+from ..shannon import conditional_entropy as H
 
 def total_correlation(dist, rvs=None, crvs=None, rv_names=None):
     """

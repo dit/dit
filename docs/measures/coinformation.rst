@@ -1,5 +1,5 @@
 .. coinformation.rst
-.. py:module:: dit.algorithms.coinformation
+.. py:module:: dit.multivariate.coinformation
 
 **************
 Co-Information
@@ -32,7 +32,7 @@ exemplifying this, consider "giant bit" distributions:
 
    In [2]: from dit import Distribution as D
 
-   In [3]: from dit.algorithms import coinformation as I
+   In [3]: from dit.multivariate import coinformation as I
 
    @doctest float
    In [4]: [ I(D(['0'*n, '1'*n], [1/2, 1/2])) for n in range(2, 6) ]
@@ -77,4 +77,4 @@ coinformation can not be used to measure redundancy or synergy.
    :cite:`Griffith2013` and references therein for the current status of the
    problem.
 
-.. autofunction:: dit.algorithms.coinformation.coinformation
+.. autofunction:: dit.multivariate.coinformation.coinformation

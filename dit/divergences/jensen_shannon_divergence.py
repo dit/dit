@@ -10,7 +10,7 @@ import numpy as np
 from six.moves import zip # pylint: disable=redefined-builtin
 
 from ..distconst import mixture_distribution
-from .shannon import entropy as H
+from ..shannon import entropy as H
 
 def jensen_shannon_divergence(dists, weights=None):
     """

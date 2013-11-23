@@ -1,5 +1,5 @@
 .. total_correlation.rst
-.. py:module:: dit.algorithms.total_correlation
+.. py:module:: dit.multivariate.total_correlation
 
 *****************
 Total Correlation
@@ -30,7 +30,7 @@ when applied to "giant bit" distributions:
 
    In [1]: from dit import Distribution as D
 
-   In [2]: from dit.algorithms import total_correlation as T
+   In [2]: from dit.multivariate import total_correlation as T
 
    @doctest float
    In [3]: [ T(D(['0'*n, '1'*n], [0.5, 0.5])) for n in range(2, 6) ]
@@ -67,4 +67,4 @@ correaltion of :math:`A \cup B` is:
 
    Add more examples, perhaps from real-world usage.
 
-.. autofunction:: dit.algorithms.total_correlation.total_correlation
+.. autofunction:: dit.multivariate.total_correlation.total_correlation

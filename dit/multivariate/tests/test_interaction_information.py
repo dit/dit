@@ -3,7 +3,7 @@ from __future__ import division
 from nose.tools import assert_almost_equal
 
 from dit import Distribution as D
-from dit.algorithms import interaction_information, coinformation
+from dit.multivariate import interaction_information, coinformation
 from dit.example_dists import Xor
 
 def test_ii1():

@@ -3,7 +3,8 @@ from nose.tools import assert_almost_equal
 from dit.example_dists import (Unq, Rdn, Xor, RdnXor, ImperfectRdn, Subtle, And,
                                Or)
 
-from dit.algorithms import entropy, insert_meet, mutual_information
+from dit.algorithms import insert_meet
+from dit.shannon import entropy, mutual_information
 
 def test_unq():
     d = Unq()

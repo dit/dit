@@ -6,19 +6,22 @@ from dit import (Distribution as D,
                  ScalarDistribution as SD,
                 )
 
-from dit.algorithms.entropy2 import entropy as H
+from dit.divergences import (jensen_shannon_divergence as JSD,
+                            )
 
-from dit.algorithms import (coinformation as I,
-                            gk_common_information as K,
-                            total_correlation as T,
-                            perplexity as P,
-                            binding_information as B,
-                            residual_entropy as R,
-                            jensen_shannon_divergence as JSD,
-                            interaction_information as II,
-                            tse_complexity as TSE,
-                            extropy as J,
-                           )
+from dit.esoteric import (extropy as J,
+                          perplexity as P,
+                         )
+
+from dit.multivariate import (binding_information as B,
+                              coinformation as I,
+                              entropy as H,
+                              gk_common_information as K,
+                              interaction_information as II,
+                              residual_entropy as R,
+                              total_correlation as T,
+                              tse_complexity as TSE,
+                             )
 
 # distribution types
 _dists = [

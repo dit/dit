@@ -4,7 +4,7 @@ from nose.tools import *
 
 import numpy as np
 
-from dit.algorithms import entropy
+from dit.shannon import entropy
 from dit.example_dists import bernoulli, binomial, hypergeometric, uniform
 
 def test_bernoulli1():

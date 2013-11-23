@@ -3,9 +3,9 @@ from __future__ import division
 from nose.tools import assert_almost_equal
 
 from dit import Distribution as D, ScalarDistribution as SD
-from dit.algorithms import (entropy as H,
-                            mutual_information as I,
-                            conditional_entropy as CH)
+from dit.shannon import (entropy as H,
+                         mutual_information as I,
+                         conditional_entropy as CH)
 
 def test_H1():
     d = SD([1/2, 1/2])

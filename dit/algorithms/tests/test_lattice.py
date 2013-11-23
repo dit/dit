@@ -8,7 +8,9 @@ import numpy as np
 import numpy.testing as npt
 
 from dit import Distribution, ScalarDistribution
-from dit.algorithms.lattice import *
+from dit.algorithms.lattice import (dist_from_induced_sigalg, insert_join,
+                                    insert_meet, join, join_sigalg, meet,
+                                    meet_sigalg, sigma_algebra_sort)
 
 def test_sigalg_sort():
     sigalg = frozenset([

@@ -5,7 +5,7 @@ from nose.tools import assert_almost_equal
 import numpy as np
 
 from dit import Distribution as D, ScalarDistribution as SD
-from dit.algorithms.entropy2 import entropy as H
+from dit.multivariate import entropy as H
 
 def test_H1():
     d = D(['H', 'T'], [1/2, 1/2])

@@ -5,7 +5,7 @@ from nose.tools import assert_almost_equal
 from iterutils import powerset
 
 from dit import Distribution as D
-from dit.algorithms import binding_information as B, tse_complexity as TSE
+from dit.multivariate import binding_information as B, tse_complexity as TSE
 from dit.example_dists import n_mod_m
 from dit.math.misc import combinations as nCk
 

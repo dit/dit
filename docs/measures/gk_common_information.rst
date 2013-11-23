@@ -1,5 +1,5 @@
 .. gk_common_information.rst
-.. py:module:: dit.algorithms.gk_common_information
+.. py:module:: dit.multivariate.gk_common_information
 
 ******************************
 Gács-Körner Common Information
@@ -52,7 +52,7 @@ As a canonical example, consider the following:
 
    In [2]: from dit import Distribution as D
 
-   In [3]: from dit.algorithms import gk_common_information as K
+   In [3]: from dit.multivariate import gk_common_information as K
 
    In [4]: outcomes = ['00', '01', '10', '11', '22', '33']
 
@@ -127,7 +127,7 @@ This quantity can be computed easily using dit:
 
    In [11]: from dit.example_dists import RdnXor
 
-   In [12]: from dit.algorithms import mutual_information as I
+   In [12]: from dit.shannon import mutual_information as I
 
    In [13]: d = RdnXor()
 
@@ -166,4 +166,4 @@ variate version:
    :width: 357px
    :align: center
 
-.. autofunction:: dit.algorithms.gk_common_information.gk_common_information
+.. autofunction:: dit.multivariate.gk_common_information.gk_common_information

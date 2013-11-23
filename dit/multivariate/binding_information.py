@@ -2,7 +2,7 @@
 The binding information and residual entropy.
 """
 
-from .shannon import conditional_entropy as H
+from ..shannon import conditional_entropy as H
 from ..helpers import normalize_rvs
 
 def binding_information(dist, rvs=None, crvs=None, rv_names=None):

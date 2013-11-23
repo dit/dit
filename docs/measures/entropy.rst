@@ -1,5 +1,5 @@
 .. entropy.rst
-.. py:module:: dit.algorithms.entropy2
+.. py:module:: dit.multivariate.entropy
 
 *******
 Entropy
@@ -25,4 +25,4 @@ This is a general entropy function, handling conditional joint entropy.
 
    Add some clever examples.
 
-.. autofunction:: dit.algorithms.entropy2.entropy
+.. autofunction:: dit.multivariate.entropy.entropy

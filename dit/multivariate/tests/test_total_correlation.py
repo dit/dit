@@ -4,8 +4,8 @@ from nose.tools import assert_almost_equal, assert_raises
 
 from dit import Distribution as D, ScalarDistribution as SD
 from dit.exceptions import ditException
-from dit.algorithms import (total_correlation as T,
-                            mutual_information as I)
+from dit.multivariate import total_correlation as T
+from dit.shannon import mutual_information as I
 
 def test_tc1():
     outcomes = ['000', '011', '101', '110']

@@ -49,11 +49,11 @@ Calculate the Shannon entropy and extropy of the joint distribution.
 .. ipython::
 
     @doctest float
-    In [10]: dit.algorithms.entropy(d)
+    In [10]: dit.shannon.entropy(d)
     Out[10]: 1.5219280948873621
 
     @doctest float
-    In [11]: dit.algorithms.extropy(d)
+    In [11]: dit.esoteric.extropy(d)
     Out[11]: 1.1419011889093373
 
 Create a distribution representing the :math:`\mathbf{xor}` logic function.
@@ -88,15 +88,15 @@ Calculate the Shannon mutual informations :math:`\I[X:Z]`, :math:`\I[Y:Z]`, and
 .. ipython::
 
     @doctest float
-    In [12]: dit.algorithms.mutual_information(d, ['X'], ['Z'])
+    In [12]: dit.shannon.mutual_information(d, ['X'], ['Z'])
     Out[12]: 0.0
 
     @doctest float
-    In [13]: dit.algorithms.mutual_information(d, ['Y'], ['Z'])
+    In [13]: dit.shannon.mutual_information(d, ['Y'], ['Z'])
     Out[13]: 0.0
 
     @doctest float
-    In [14]: dit.algorithms.mutual_information(d, ['X', 'Y'], ['Z'])
+    In [14]: dit.shannon.mutual_information(d, ['X', 'Y'], ['Z'])
     Out[14]: 1.0
 
 Calculate the marginal distribution :math:`P(X,Z)`.

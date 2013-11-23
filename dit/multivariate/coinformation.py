@@ -5,7 +5,7 @@ The co-information aka the multivariate mututal information.
 from iterutils import powerset
 
 from ..helpers import normalize_rvs
-from .shannon import conditional_entropy as H
+from ..shannon import conditional_entropy as H
 
 def coinformation(dist, rvs=None, crvs=None, rv_names=None):
     """

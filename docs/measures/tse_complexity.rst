@@ -1,5 +1,5 @@
 .. tse_complexity.rst
-.. py:module::dit.algorithms.tse_complexity
+.. py:module::dit.multivariate.tse_complexity
 
 **************
 TSE Complexity
@@ -18,4 +18,4 @@ distribution is tightly coupled.
 
    Come up with some examples to verify the claim about coupling.
 
-.. autofunction:: dit.algorithms.tse_complexity.tse_complexity
+.. autofunction:: dit.multivariate.tse_complexity.tse_complexity
