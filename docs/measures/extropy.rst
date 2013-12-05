@@ -1,5 +1,5 @@
 .. extropy.rst
-.. py:module:: dit.algorithms.extropy
+.. py:module:: dit.esoteric.extropy
 
 *******
 Extropy
@@ -19,4 +19,4 @@ The extropy :cite:`Lad2011` is a dual to the entropy. It is defined by:
 
    Compute some examples from the paper.
 
-.. autofunction:: dit.algorithms.extropy.extropy
+.. autofunction:: dit.esoteric.extropy.extropy

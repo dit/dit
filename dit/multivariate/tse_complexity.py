@@ -5,7 +5,7 @@ from __future__ import division
 
 from itertools import combinations
 
-from .shannon import conditional_entropy as H
+from ..shannon import conditional_entropy as H
 from ..helpers import normalize_rvs
 from ..math.misc import combinations as nCk
 

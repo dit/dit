@@ -2,7 +2,7 @@
 The perplexity of a distribution.
 """
 
-from .shannon import conditional_entropy, entropy
+from ..shannon import conditional_entropy, entropy
 from ..utils.misc import flatten
 
 def perplexity(dist, rvs=None, crvs=None, rv_names=None):

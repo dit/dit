@@ -12,6 +12,9 @@ from ..math import sigma_algebra, atom_set
 from ..utils import lexico_key
 
 def sigma_algebra_sort(sigalg):
+    """
+    Put the sigma algebra in lexicographical order.
+    """
     sigalg = [tuple(sorted(cet)) for cet in sigalg]
     sigalg.sort(key=lexico_key)
     return sigalg
@@ -295,14 +298,17 @@ def insert_rv(dist, idx, sigalg):
 
     if idx == dist.outcome_length():
         def new_outcome_ctor(outcome, ctor=dist._outcome_ctor):
+            """The end of the atoms"""
             new_outcome = [ outcome, [atom_of[outcome]] ]
             return ctor(chain.from_iterable(new_outcome))
     elif idx == 0:
         def new_outcome_ctor(outcome, ctor=dist._outcome_ctor):
+            """The beginning of the atoms"""
             new_outcome = [ [atom_of[outcome]], outcome ]
             return ctor(chain.from_iterable(new_outcome))
     else:
         def new_outcome_ctor(outcome, ctor=dist._outcome_ctor):
+            """In the middle of the atoms"""
             new_outcome = [ outcome[:idx], [atom_of[outcome]], outcome[idx:] ]
             return ctor(chain.from_iterable(new_outcome))
 

@@ -1,5 +1,5 @@
 .. shannon.rst
-.. py:module:: dit.algorithms.shannon
+.. py:module:: dit.shannon.shannon
 
 **********************
 Basic Shannon measures
@@ -31,7 +31,7 @@ distribution. In the simplest case, consider a sure thing:
    In [2]: d = dit.Distribution(['H'], [1])
 
    @doctest float
-   In [3]: dit.algorithms.entropy(d)
+   In [3]: dit.shannon.entropy(d)
    Out[3]: 0.0
 
 So is we know that the outcome from our distribution will always be `H`, we have
@@ -42,7 +42,7 @@ to ask zero questions to figure that out. If however we have a fair coin:
    In [4]: d = dit.Distribution(['H', 'T'], [1/2, 1/2])
 
    @doctest float
-   In [5]: dit.algorithms.entropy(d)
+   In [5]: dit.shannon.entropy(d)
    Out[5]: 1.0
 
 The entropy tells us that we must ask one question to determine whether an `H`
@@ -54,7 +54,7 @@ Let's consider the following situation:
    In [6]: d = dit.Distribution(['A', 'B', 'C'], [1/2, 1/4, 1/4])
 
    @doctest float
-   In [7]: dit.algorithms.entropy(d)
+   In [7]: dit.shannon.entropy(d)
    Out[7]: 1.5
 
 Here we find that the entropy is 1.5 bits. How do we ask one and a half
@@ -76,7 +76,7 @@ The entropy of multiple variables is computed in a similar manner:
 Its intuition is also the same: the average number of binary questions required
 to identify a joint event from the distribution.
 
-.. autofunction:: dit.algorithms.shannon.entropy
+.. autofunction:: dit.shannon.shannon.entropy
 
 Conditional Entropy
 ===================
@@ -95,7 +95,7 @@ As a simple example, consider two identical variables:
    In [8]: d = dit.Distribution(['HH', 'TT'], [1/2, 1/2])
 
    @doctest float
-   In [9]: dit.algorithms.conditional_entropy(d, [0], [1])
+   In [9]: dit.shannon.conditional_entropy(d, [0], [1])
    Out[9]: 0.0
 
 We see that knowing the second variable tells us everything about the first,
@@ -107,13 +107,13 @@ variables:
    In [10]: d = dit.Distribution(['HH', 'HT', 'TH', 'TT'], [1/4]*4)
 
    @doctest float
-   In [11]: dit.algorithms.conditional_entropy(d, [0], [1])
+   In [11]: dit.shannon.conditional_entropy(d, [0], [1])
    Out[11]: 1.0
 
 Here, the second variable tells us nothing about the first so we are left with
 the one bit of information a coin flip has.
 
-.. autofunction:: dit.algorithms.shannon.conditional_entropy
+.. autofunction:: dit.shannon.shannon.conditional_entropy
 
 Mutual Information
 ==================
@@ -147,18 +147,18 @@ information it doesn't:
    The mutual information generalized to the multivariate case in three
    different ways:
 
-   :py:func:`dit.algorithms.coinformation.coinformation`
+   :py:func:`dit.multivariate.coinformation.coinformation`
       Generalized as the information which *all* variables contribute to.
 
-   :py:func:`dit.algorithms.total_correlation.total_correlation`
+   :py:func:`dit.multivariate.total_correlation.total_correlation`
       Generalized as the sum of the information in the individual variables
       minus the joint.
 
-   :py:func:`dit.algorithms.binding.binding_information`
+   :py:func:`dit.multivariate.binding.binding_information`
       Generalized as the joint minus the entropy of each variable conditioned on
       the others.
 
-.. autofunction:: dit.algorithms.shannon.mutual_information
+.. autofunction:: dit.shannon.shannon.mutual_information
 
 Visualization of Information
 ============================

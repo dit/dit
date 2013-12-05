@@ -3,7 +3,7 @@ A version of the entropy with signature common to the other multivariate
 measures.
 """
 
-from .shannon import conditional_entropy, entropy as shannon_entropy
+from ..shannon import conditional_entropy, entropy as shannon_entropy
 
 def entropy(dist, rvs=None, crvs=None, rv_names=None):
     """

@@ -178,8 +178,12 @@ def main():
     packages = [
         'dit',
         'dit.algorithms',
+        'dit.divergences',
+        'dit.esoteric',
         'dit.example_dists',
         'dit.math',
+        'dit.multivariate',
+        'dit.shannon',
         'dit.utils',
     ]
 

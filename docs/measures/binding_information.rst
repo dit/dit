@@ -1,5 +1,5 @@
 .. binding_information.rst
-.. py:module:: dit.algorithms.binding_information
+.. py:module:: dit.multivariate.binding_information
 
 *******************
 Binding Information
@@ -30,4 +30,4 @@ The binding information satisfies the following two inequalities:
 
    Show some examples, perhaps from the Abdallah paper.
 
-.. autofunction:: dit.algorithms.binding_information.binding_information
+.. autofunction:: dit.multivariate.binding_information.binding_information

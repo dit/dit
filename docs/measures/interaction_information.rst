@@ -1,5 +1,5 @@
 .. interaction_information.rst
-.. py:module:: dit.algorithms.interaction_information
+.. py:module:: dit.multivariate.interaction_information
 
 ***********************
 Interaction Information
@@ -30,6 +30,6 @@ The extension to :math:`n>3` proceeds recursively. For example,
 
 .. seealso::
 
-   For more information, see :py:func:`dit.algorithms.coinformation.coinformation`.
+   For more information, see :py:func:`dit.multivariate.coinformation.coinformation`.
 
-.. autofunction:: dit.algorithms.interaction_information.interaction_information
+.. autofunction:: dit.multivariate.interaction_information.interaction_information

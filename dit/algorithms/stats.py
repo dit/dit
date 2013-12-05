@@ -179,7 +179,7 @@ def mode(dist):
 
     try:
         dists = [ dist.marginal([i]) for i in range(dist.outcome_length()) ]
-    except:
+    except AttributeError:
         dists = [ dist ]
 
     modes = [ np.asarray(d.outcomes)[d.pmf == d.pmf.max()] for d in dists ]

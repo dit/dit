@@ -25,3 +25,7 @@ from .npdist import Distribution
 from .distconst import *
 
 import dit.algorithms
+import dit.divergences
+import dit.esoteric
+import dit.multivariate
+import dit.shannon

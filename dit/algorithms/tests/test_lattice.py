@@ -1,3 +1,7 @@
+"""
+Tests for dit.algorithms.lattice
+"""
+
 from __future__ import division
 
 from iterutils import powerset
@@ -8,35 +12,41 @@ import numpy as np
 import numpy.testing as npt
 
 from dit import Distribution, ScalarDistribution
-from dit.algorithms.lattice import *
+from dit.algorithms.lattice import (dist_from_induced_sigalg, insert_join,
+                                    join, join_sigalg, meet, meet_sigalg,
+                                    sigma_algebra_sort)
 
 def test_sigalg_sort():
+    """ Test sigma_algebra_sort """
     sigalg = frozenset([
         frozenset([]),
         frozenset([1]),
         frozenset([2]),
-        frozenset([1,2])
+        frozenset([1, 2])
     ])
-    sigalg_ = [(), (1,), (2,), (1,2)]
+    sigalg_ = [(), (1,), (2,), (1, 2)]
     assert_equal( sigalg_, sigma_algebra_sort(sigalg) )
 
 def test_join_sigalg():
+    """ Test join_sigalg """
     outcomes = ['00', '01', '10', '11']
     pmf = [1/4]*4
     d = Distribution(outcomes, pmf)
     sigalg = frozenset([ frozenset(_) for _ in powerset(outcomes) ])
-    join = join_sigalg(d, [[0],[1]])
-    assert_equal(sigalg, join)
+    joined = join_sigalg(d, [[0], [1]])
+    assert_equal(sigalg, joined)
 
 def test_meet_sigalg():
+    """ Test meet_sigalg """
     outcomes = ['00', '01', '10', '11']
     pmf = [1/4]*4
     d = Distribution(outcomes, pmf)
     sigalg = frozenset([ frozenset([]), frozenset(outcomes) ])
-    meet = meet_sigalg(d, [[0],[1]])
-    assert_equal(sigalg, meet)
+    meeted = meet_sigalg(d, [[0], [1]])
+    assert_equal(sigalg, meeted)
 
 def test_dist_from_induced():
+    """ Test dist_from_induced_sigalg """
     outcomes = [(0,), (1,), (2,)]
     pmf = np.array([1/3] * 3)
     d = ScalarDistribution(outcomes, pmf)
@@ -45,39 +55,42 @@ def test_dist_from_induced():
     d2 = dist_from_induced_sigalg(d, sigalg)
     npt.assert_allclose(pmf, d2.pmf)
 
-    sigalg = [(), ((0,),), ((1,),(2,)), ((0,),(1,),(2,))]
+    sigalg = [(), ((0,),), ((1,), (2,)), ((0,), (1,), (2,))]
     sigalg = frozenset(map(frozenset, sigalg))
     d2 = dist_from_induced_sigalg(d, sigalg, int_outcomes=True)
     pmf = np.array([1/3, 2/3])
     npt.assert_allclose(pmf, d2.pmf)
 
     d2 = dist_from_induced_sigalg(d, sigalg, int_outcomes=False)
-    outcomes = ( ((0,),), ((1,),(2,)) )
+    outcomes = ( ((0,),), ((1,), (2,)) )
     assert_equal(outcomes, d2.outcomes)
 
 def test_join():
+    """ Test join """
     outcomes = ['00', '01', '10', '11']
     pmf = [1/4]*4
     d = Distribution(outcomes, pmf)
-    d2 = join(d, [[0],[1]])
-    assert_equal(d2.outcomes, (0,1,2,3))
+    d2 = join(d, [[0], [1]])
+    assert_equal(d2.outcomes, (0, 1, 2, 3))
     npt.assert_allclose(d2.pmf, d.pmf)
 
 def test_meet():
+    """ Test meet """
     outcomes = ['00', '01', '10', '11']
     pmf = [1/4]*4
     d = Distribution(outcomes, pmf)
-    d2 = meet(d, [[0],[1]])
+    d2 = meet(d, [[0], [1]])
     assert_equal(d2.outcomes, (0,))
     npt.assert_allclose(d2.pmf, [1])
 
 def test_insert_join():
+    """ Test insert_join """
     outcomes = ['00', '01', '10', '11']
     pmf = [1/4]*4
     d = Distribution(outcomes, pmf)
-    assert_raises(IndexError, insert_join, d, 5, [[0],[1]])
+    assert_raises(IndexError, insert_join, d, 5, [[0], [1]])
 
     for idx in range(d.outcome_length()):
-        d2 = insert_join(d, idx, [[0],[1]])
+        d2 = insert_join(d, idx, [[0], [1]])
         m = d2.marginal([idx])
         npt.assert_allclose(d2.pmf, m.pmf)

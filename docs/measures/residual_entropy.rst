@@ -1,5 +1,5 @@
 .. residual_entropy.rst
-.. py:currentmodule:: dit.algorithms.binding_information
+.. py:currentmodule:: dit.multivariate.binding_information
 
 ****************
 Residual Entropy
@@ -30,4 +30,4 @@ The residual entropy, or erasure entropy, is a dual to the binding information.
 
    Add some good examples.
 
-.. autofunction:: dit.algorithms.binding_information.residual_entropy
+.. autofunction:: dit.multivariate.binding_information.residual_entropy
