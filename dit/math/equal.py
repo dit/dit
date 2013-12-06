@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Functions to test if two floats are equal to within relative and absolute
+tolerances. This dynamically chooses a cython implementation if available.
+"""
+
 from __future__ import absolute_import
 
 from numpy import allclose as _allclose, isinf
@@ -9,14 +14,14 @@ from dit import ditParams
 
 __all__ = ['close', 'allclose']
 
-def close__cython(x, y, rtol=None, atol=None):
+def close__cython(x, y, rtol=None, atol=None): # pylint: disable=missing-docstring
     if rtol is None:
         rtol = ditParams['rtol']
     if atol is None:
         atol = ditParams['atol']
     return close_(x, y, rtol, atol)
 
-def close__python(x, y, rtol=None, atol=None):
+def close__python(x, y, rtol=None, atol=None): # pylint: disable=missing-docstring
     if rtol is None:
         rtol = ditParams['rtol']
     if atol is None:

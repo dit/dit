@@ -26,8 +26,8 @@ def simplest_fraction_in_interval(x, y):
         return Fraction(0)
     else:
         # Remainder and Coefficient of continued fractions for x and y.
-        xr, xc = modf(1/x);
-        yr, yc = modf(1/y);
+        xr, xc = modf(1/x)
+        yr, yc = modf(1/y)
         if xc < yc:
             return Fraction(1, int(xc) + 1)
         elif yc < xc:

@@ -1,4 +1,4 @@
-from nose.tools import *
+from nose.tools import assert_equal, assert_raises
 
 import numpy as np
 

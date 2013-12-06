@@ -1,8 +1,8 @@
 from __future__ import division
 
-from nose.tools import *
+from nose.tools import assert_equal, assert_false, assert_raises, assert_true
 
-from dit.math.misc import *
+from dit.math.misc import combinations, is_integer, is_number, factorial
 
 def test_number1():
     for i in range(-10, 10):
