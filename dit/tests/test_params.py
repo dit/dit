@@ -4,11 +4,11 @@ from nose.tools import (assert_almost_equal, assert_equal, assert_false,
 from numpy import inf, nan
 
 from dit.exceptions import InvalidBase
-from dit.params import (validate_boolean, validate_float, validate_base, 
+from dit.params import (validate_boolean, validate_float, validate_base,
                         validate_choice, validate_text)
 
 def test_validate_boolean1():
-    good = ['t', 'T', 'y', 'Y', 'yes', 'Yes', 'YES', 'on', 'On', 'ON', 'true', 
+    good = ['t', 'T', 'y', 'Y', 'yes', 'Yes', 'YES', 'on', 'On', 'ON', 'true',
             'True', 'TRUE', '1', 1, True]
     for value in good:
         assert_true(validate_boolean(value))

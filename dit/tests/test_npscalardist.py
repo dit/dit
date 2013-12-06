@@ -150,6 +150,6 @@ def test_is_approx_equal2():
     assert_false(d1.is_approx_equal(d2))
 
 def test_is_approx_equal3():
-    d1 = ScalarDistribution([1/2, 1/2], sample_space=(0,1,2))
+    d1 = ScalarDistribution([1/2, 1/2], sample_space=(0, 1, 2))
     d2 = ScalarDistribution([1/2, 1/2])
     assert_false(d1.is_approx_equal(d2))

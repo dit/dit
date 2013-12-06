@@ -289,7 +289,7 @@ def test_prepare_string2():
     assert_raises(ditException, prepare_string, d, str_outcomes=True)
 
 def test_prepare_string3():
-    outcomes = [(0,0), (0,1), (1,0), (1,1)]
+    outcomes = [(0, 0), (0, 1), (1, 0), (1, 1)]
     pmf = [1/4]*4
     d = Distribution(outcomes, pmf)
     s_ = """Class:          Distribution
@@ -311,8 +311,8 @@ def test_prepare_string4():
     class WeirdInt(int):
         def __str__(self):
             raise Exception
-    outcomes = [(0,0), (0,1), (1,0), (1,1)]
-    outcomes = [ (WeirdInt(x), WeirdInt(y)) for (x,y) in outcomes ]
+    outcomes = [(0, 0), (0, 1), (1, 0), (1, 1)]
+    outcomes = [ (WeirdInt(x), WeirdInt(y)) for (x, y) in outcomes ]
     pmf = [1/4]*4
     d = Distribution(outcomes, pmf)
     s_ = """Class:          Distribution
