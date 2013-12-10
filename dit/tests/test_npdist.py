@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+"""
+Tests for dit.npdist.
+"""
+
 from __future__ import division
 
 from nose.tools import (assert_almost_equal, assert_equal, assert_false,
@@ -77,14 +82,14 @@ def test_atoms():
     d = Distribution(outcomes, pmf)
 
     atoms = outcomes
-    assert_equal( list(d.atoms()), atoms)
+    assert_equal(list(d.atoms()), atoms)
 
     patoms = ['000', '011', '101', '110', '222', '333']
-    assert_equal( list(d.atoms(patoms=True)), patoms)
+    assert_equal(list(d.atoms(patoms=True)), patoms)
 
     d = Distribution(outcomes, pmf, sample_space=outcomes + ['444'])
     atoms = outcomes + ['444']
-    assert_equal( list(d.atoms()), atoms)
+    assert_equal(list(d.atoms()), atoms)
 
 def test_zipped():
     pmf = [.125, .125, .125, .125, .25, 0, .25]
@@ -120,7 +125,7 @@ def test_setitem2():
     d.make_sparse()
     d['11'] = 1/2
     d.normalize()
-    assert('11' in d)
+    assert_true('11' in d)
     assert_almost_equal(d['11'], 1/3)
 
 def test_coalesce():

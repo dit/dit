@@ -1,3 +1,7 @@
+"""
+Tests for dit.distconst.
+"""
+
 from __future__ import division
 
 from nose.tools import assert_equal, assert_false, assert_raises, assert_true
@@ -9,7 +13,7 @@ from dit.exceptions import ditException, InvalidOutcome
 import dit
 
 def test_mixture_distribution_weights():
-    d = dit.Distribution(['A','B'], [0.5, 0.5])
+    d = dit.Distribution(['A', 'B'], [0.5, 0.5])
     d2 = dit.Distribution(['A', 'B'], [1, 0])
 
     assert_raises(ditException, dit.mixture_distribution, [d, d2], [1])
@@ -47,7 +51,7 @@ def test_mixture_distribution2():
 def test_mixture_distribution3():
     # Sample spaces are compatible.
     # But pmfs have a different order.
-    d = dit.Distribution(['A','B'], [0.5, 0.5])
+    d = dit.Distribution(['A', 'B'], [0.5, 0.5])
     d2 = dit.Distribution(['B', 'A'], [1, 0], sort=False, trim=False, sparse=False)
     pmf = np.array([0.25, 0.75])
 
@@ -92,7 +96,7 @@ def test_random_scalar_distribution():
     np.testing.assert_allclose(d.pmf, pmf)
 
     # Test with concentration parameters
-    pmf = np.array([0.34228708,  0.52696865,  0.13074428])
+    pmf = np.array([0.34228708, 0.52696865, 0.13074428])
     dit.math.prng.seed(1)
     d = dit.random_scalar_distribution(3, alpha=[1, 2, 1])
     assert_equal(d.outcomes, (0, 1, 2))
@@ -126,7 +130,7 @@ def test_random_distribution():
     assert_raises(TypeError, dit.random_distribution, 3, [3, 2, 3])
 
     # Test with concentration parameters
-    pmf = np.array([ 0.15092872,  0.23236257,  0.05765063,  0.55905808])
+    pmf = np.array([0.15092872, 0.23236257, 0.05765063, 0.55905808])
     dit.math.prng.seed(1)
     d = dit.random_distribution(2, 2, alpha=[1, 2, 1, 3])
     assert_equal(d.outcomes, outcomes)

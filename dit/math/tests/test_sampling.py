@@ -1,3 +1,7 @@
+"""
+Tests for dit.math.sampling.
+"""
+
 from nose.tools import assert_equal, assert_raises
 
 import numpy as np

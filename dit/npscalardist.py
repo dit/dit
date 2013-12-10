@@ -583,7 +583,7 @@ class ScalarDistribution(BaseDistribution):
             # Update the outcomes and the outcomes index.
             idx = outcomes_index[outcome]
             new_indexes = [i for i in range(len(outcomes)) if i != idx]
-            new_outcomes = tuple([ outcomes[i] for i in new_indexes])
+            new_outcomes = tuple([outcomes[i] for i in new_indexes])
             self.outcomes = new_outcomes
             self._outcomes_index = dict(zip(new_outcomes,
                                         range(len(new_outcomes))))
@@ -704,7 +704,7 @@ class ScalarDistribution(BaseDistribution):
 
         # Make an exact copy of the PRNG.
         prng = np.random.RandomState()
-        prng.set_state( self.prng.get_state() )
+        prng.set_state(self.prng.get_state())
 
         d = _make_distribution(outcomes=deepcopy(self.outcomes),
                                pmf=np.array(self.pmf, copy=True),
@@ -929,7 +929,7 @@ class ScalarDistribution(BaseDistribution):
         L = len(self)
         # Recall, __getitem__ is a view to the dense distribution.
         outcomes = tuple(self.sample_space())
-        pmf = [ self[o] for o in outcomes ]
+        pmf = [self[o] for o in outcomes]
         self.pmf = np.array(pmf, dtype=float)
         self.outcomes = outcomes
         self._outcomes_index = dict(zip(outcomes, range(len(outcomes))))

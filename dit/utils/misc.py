@@ -46,7 +46,7 @@ except ImportError: # pragma: no cover
     from ordereddict import OrderedDict
 
 
-def Property( fcn ):
+def Property(fcn):
     """Simple property decorator.
 
     Usage:
@@ -63,7 +63,7 @@ def Property( fcn ):
             return locals()
 
     """
-    return property( **fcn() )
+    return property(**fcn())
 
 def abstract_method(f):
     """Simple decorator to designate an abstract method.
@@ -290,7 +290,7 @@ def partition_set(elements, relation=None, innerset=False, reflexive=False,
                     break
             else:
                 lookup.append(len(eqclasses))
-                eqclasses.append( (element, [element]) )
+                eqclasses.append((element, [element]))
 
 
         eqclasses = [c for _, c in eqclasses]
@@ -502,7 +502,7 @@ def partitions(seq, tuples=False):
     seq = list(seq)
 
     if tuples:
-        for partition in partitions1( seq ):
+        for partition in partitions1(seq):
             # Convert the partition into a list of sorted tuples.
             partition = map(tuple, map(sorted, partition))
 
@@ -513,8 +513,8 @@ def partitions(seq, tuples=False):
             yield partition
 
     else:
-        for partition in partitions1( seq ):
-            partition = frozenset( map(frozenset, partition) )
+        for partition in partitions1(seq):
+            partition = frozenset(map(frozenset, partition))
             yield partition
 
 def ordered_partitions(seq, tuples=False):

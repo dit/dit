@@ -56,14 +56,14 @@ def sample(dist, size=None, rand=None, prng=None):
         except AttributeError:
             msg = "The random number generator must support a `rand()' call."
             e = dit.exceptions.ditException(msg)
-            raise(e)
+            raise e
     else:
         if size is None:
             rand = np.array([rand])
         elif n != len(rand):
             msg = "The number of random numbers must equal n."
             e = dit.exceptions.ditException(msg)
-            raise(e)
+            raise e
 
     # We need linear probabilities.
     if dist.is_log():

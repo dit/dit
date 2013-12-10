@@ -1,3 +1,7 @@
+"""
+Tests for dit.params.
+"""
+
 from nose.tools import (assert_almost_equal, assert_equal, assert_false,
                         assert_true, assert_raises)
 

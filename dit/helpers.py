@@ -88,7 +88,7 @@ def construct_alphabets(outcomes):
         outcome_length = lengths[0]
 
     # Make sure each outcome has the same length.
-    equal_lengths = np.alltrue( np.equal( lengths, outcome_length ) )
+    equal_lengths = np.alltrue(np.equal(lengths, outcome_length))
     if not equal_lengths:
         raise ditException('Not all outcomes have the same length.')
 
@@ -112,7 +112,7 @@ def _construct_alphabets(outcomes):
         for i, symbol in enumerate(outcome):
             alphabets[i][symbol] = True
 
-    alphabets = tuple( map(tuple, alphabets) )
+    alphabets = tuple(map(tuple, alphabets))
     return alphabets
 
 def get_outcome_ctor(klass):
@@ -188,7 +188,7 @@ def normalize_rvs(dist, rvs, crvs, rv_names):
     if dist.is_joint():
         if rvs is None:
             # Set to total correlation of entire distribution
-            rvs = [ [i] for i in range(dist.outcome_length()) ]
+            rvs = [[i] for i in range(dist.outcome_length())]
             rv_names = False
         if crvs is None:
             crvs = []
@@ -259,7 +259,7 @@ def parse_rvs(dist, rvs, rv_names=None, unique=True, sort=True):
         indexes = []
         for rv in rvs:
             if rv in dist._rvs:
-                indexes.append( dist._rvs[rv] )
+                indexes.append(dist._rvs[rv])
 
         if len(indexes) != len(rvs):
             msg = '`rvs` contains invalid random variable names.'
@@ -326,7 +326,7 @@ def reorder_cp(outcomes, pmf, alphabet, product, index=None, method=None):
 
     if method is None:
         # The number of elements in the sample space?
-        sample_space_size = np.prod( list(map(len, alphabet)) )
+        sample_space_size = np.prod(list(map(len, alphabet)))
         if sample_space_size > 10000 and len(outcomes) < 1000:
             # Large and sparse.
             method = 'analytic'
@@ -352,7 +352,7 @@ def reorder_cp(outcomes, pmf, alphabet, product, index=None, method=None):
             bad = set(outcomes) - set(outcomes_)
             L = len(bad)
             if L > 0:
-                raise InvalidOutcome(bad, single=(L==1))
+                raise InvalidOutcome(bad, single=(L == 1))
         else:
             outcomes = outcomes_
 

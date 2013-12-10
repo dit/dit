@@ -17,7 +17,7 @@ def test_tse1():
     """ Test identity comparing TSE to B from Olbrich's talk """
     for i, j in zip(range(3, 6), range(2, 5)):
         d = n_mod_m(i, j)
-        indices = [ [k] for k in range(i) ]
+        indices = [[k] for k in range(i)]
         tse = TSE(d)
         x = 1/2 * sum(B(d, rv)/nCk(i, len(rv)) for rv in powerset(indices))
         yield assert_almost_equal, tse, x

@@ -52,7 +52,7 @@ def _gm(x):
         The k geometric means of the k compositions in `x`.
 
     """
-    x_gm = x.prod(axis=1) ** ( 1/x.shape[1] )
+    x_gm = x.prod(axis=1) ** (1/x.shape[1])
 
     return x_gm
 
@@ -355,7 +355,7 @@ def alr(x):
 
     x = np.atleast_2d(x)
 
-    y = log2( x[:, :-1] / x[:, -1][:, np.newaxis] )
+    y = log2(x[:, :-1] / x[:, -1][:, np.newaxis])
 
     if single:
         y = y[0]
@@ -399,8 +399,8 @@ def ilr(x):
 
     rng = np.arange(1, x.shape[1])
     gm = (x.cumprod(axis=1)[:, :-1])**(1/rng)
-    y = log2( gm / x[:, 1:] )
-    y *= np.sqrt([ i/(i+1) for i in rng ]) # same coefficient for each column
+    y = log2(gm / x[:, 1:])
+    y *= np.sqrt([i/(i+1) for i in rng]) # same coefficient for each column
 
     if single:
         y = y[0]
@@ -434,13 +434,13 @@ def ubasis(n):
 
     # Set the lower triangle to 1/i for each row and apply coefficent
     rng = np.arange(1, n+1)
-    u *= np.array([ 1/i for i in rng ])[:, np.newaxis]
+    u *= np.array([1/i for i in rng])[:, np.newaxis]
 
     # the 1st diag is set to -1
     u.flat[1::n+2] = -1
 
     # scale everything
-    u *= np.array([ math.sqrt(i/(i+1)) for i in rng ])[:, np.newaxis]
+    u *= np.array([math.sqrt(i/(i+1)) for i in rng])[:, np.newaxis]
 
     return u
 
@@ -554,7 +554,7 @@ def ilr_inv(xilr):
 
     b = basis(xilr.shape[1])
     for i in range(xilr.shape[0]):
-        x[i] = closure( power(b, xilr[i]).prod(axis=0) )
+        x[i] = closure(power(b, xilr[i]).prod(axis=0))
 
     if single:
         x = x[0]

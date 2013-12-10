@@ -1,3 +1,7 @@
+"""
+Tests for dit.math.misc.
+"""
+
 from __future__ import division
 
 from nose.tools import assert_equal, assert_false, assert_raises, assert_true

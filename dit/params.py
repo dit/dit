@@ -14,17 +14,19 @@ def validate_boolean(b):
         b = b.lower()
     except AttributeError:
         pass
-    if b in ('t', 'y', 'yes', 'on', 'true', '1', 1, True): return True
-    elif b in ('f', 'n', 'no', 'off', 'false', '0', 0, False): return False
+    if b in ('t', 'y', 'yes', 'on', 'true', '1', 1, True):
+        return True
+    elif b in ('f', 'n', 'no', 'off', 'false', '0', 0, False):
+        return False
     else:
-        raise(ValueError('Could not convert "%s" to boolean' % b))
+        raise ValueError('Could not convert "%s" to boolean' % b)
 
 def validate_float(s):
     """Convert s to float or raise a ValueError."""
     try:
         return float(s)
     except TypeError:
-        raise(ValueError('Could not convert "%s" to float' % s))
+        raise ValueError('Could not convert "%s" to float' % s)
 
 def validate_base(b):
     """Convert s to a valid base or raise InvalidBase."""
@@ -34,7 +36,7 @@ def validate_base(b):
         return b
     else:
         try:
-            b + ''
+            b + '' # pylint disable=pointless-statement
             raise InvalidBase(b)
         except TypeError:
             pass
@@ -51,7 +53,7 @@ def validate_choice(s, choices):
     except AttributeError:
         pass
     if s not in choices:
-        raise(ValueError("%s is an invalid specification." % s))
+        raise ValueError("%s is an invalid specification." % s)
     else:
         return s
 
@@ -66,7 +68,7 @@ class DITParams(dict):
     """
     # A dictionary relating params to validators.
     def __init__(self, *args, **kwargs):
-        self.validate = dict([(key, converter) for key, (default, converter) \
+        self.validate = dict([(key, converter) for key, (_, converter)
                               in defaultParams.items()])
         dict.__init__(self, *args, **kwargs)
 
@@ -81,7 +83,7 @@ class DITParams(dict):
         except KeyError:
             msg = '%r is not a valid dit parameter. ' % key
             msg += 'See ditParams.keys() for a list of valid parameters.'
-            raise(KeyError(msg))
+            raise KeyError(msg)
 
         dict.__setitem__(self, key, cval)
 
@@ -103,7 +105,7 @@ def set_params():
     """Return the default params, after updating from the .ditrc file."""
     ## Currently, we don't support a .ditrc file.
     ## So we just return the default parameters.
-    ret =  DITParams([ (key, tup[0]) for key, tup in defaultParams.items() ])
+    ret = DITParams([(key, tup[0]) for key, tup in defaultParams.items()])
     return ret
 
 ## key -> (value, validator)

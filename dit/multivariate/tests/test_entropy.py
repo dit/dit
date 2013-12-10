@@ -9,6 +9,7 @@ from nose.tools import assert_almost_equal
 import numpy as np
 
 from dit import Distribution as D, ScalarDistribution as SD
+from dit.example_dists import uniform
 from dit.multivariate import entropy as H
 
 def test_H1():
@@ -42,25 +43,25 @@ def test_H3():
 def test_H4():
     """ Test H for uniform distributions """
     for i in range(2, 10):
-        d = D([ str(_) for _ in range(i) ], [1/i]*i)
+        d = D.from_distribution(uniform(i))
         yield assert_almost_equal, H(d), np.log2(i)
 
 def test_H5():
     """ Test H for uniform distributions in various bases """
     for i in range(2, 10):
-        d = D([ str(_) for _ in range(i) ], [1/i]*i)
+        d = D.from_distribution(uniform(i))
         d.set_base(i)
         yield assert_almost_equal, H(d), 1
 
 def test_H6():
     """ Test H for uniform distributions using ScalarDistributions """
     for i in range(2, 10):
-        d = SD([1/i]*i)
+        d = uniform(i)
         yield assert_almost_equal, H(d), np.log2(i)
 
 def test_H7():
     """ Test H for uniform distributions using SDs in various bases """
     for i in range(2, 10):
-        d = SD([1/i]*i)
+        d = uniform(i)
         d.set_base(i)
         yield assert_almost_equal, H(d), 1

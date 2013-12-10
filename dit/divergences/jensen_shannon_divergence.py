@@ -40,7 +40,7 @@ def jensen_shannon_divergence(dists, weights=None):
         Raised if the weights are not valid probabilities.
     """
     if weights is None:
-        weights = np.array([ 1/len(dists) ] * len(dists))
+        weights = np.array([1/len(dists)] * len(dists))
 
     # validation of `weights` is done in mixture_distribution,
     # so we don't need to worry about it for the second part.

@@ -204,9 +204,9 @@ def test_alr():
 def test_ilr():
     # 1D
     x = np.array([1, 2, 3, 4])
-    lg = log2( [(x[0]              )**(1/1) / x[1],
-                (x[0] * x[1]       )**(1/2) / x[2],
-                (x[0] * x[1] * x[2])**(1/3) / x[3]] )
+    lg = log2([(x[0]              )**(1/1) / x[1],
+               (x[0] * x[1]       )**(1/2) / x[2],
+               (x[0] * x[1] * x[2])**(1/3) / x[3]])
     coeff = np.sqrt([1/2, 2/3, 3/4])
     ilrx_ = coeff * lg
     ilrx = ilr(x)
@@ -275,7 +275,7 @@ def test_clr_prop():
     x2 = np.array([3, 5, 1, 1])
     a1, a2 = 0.3, 0.9
 
-    z1 = clr( perturbation( power(x1, a1), power(x2, a2) ) )
+    z1 = clr(perturbation(power(x1, a1), power(x2, a2)))
     z2 = a1 * clr(x1) + a2 * clr(x2)
 
     assert_almost_equal_array(z1, z2)

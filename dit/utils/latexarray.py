@@ -124,7 +124,7 @@ def to_latex(a, decimals=3, tab='  '):
         lines = []
         for row in array:
             # Strip [ and ], remove newlines, and split on whitespace
-            elements = row.__str__()[1:-1].replace('\n','').split()
+            elements = row.__str__()[1:-1].replace('\n', '').split()
             line = [tab, ' & '.join(elements), r' \\']
             lines.append(''.join(line))
 

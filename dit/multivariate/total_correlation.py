@@ -36,7 +36,7 @@ def total_correlation(dist, rvs=None, crvs=None, rv_names=None):
     """
     rvs, crvs, rv_names = normalize_rvs(dist, rvs, crvs, rv_names)
 
-    one = sum([ H(dist, rv, crvs, rv_names) for rv in rvs ])
+    one = sum([H(dist, rv, crvs, rv_names) for rv in rvs])
     two = H(dist, set().union(*rvs), crvs, rv_names)
     T = one - two
 

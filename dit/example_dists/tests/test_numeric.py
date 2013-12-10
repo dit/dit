@@ -19,7 +19,7 @@ def test_bernoulli1():
 
 def test_bernoulli2():
     """ Test bernoulli distribution """
-    for p in [ i/10 for i in range(0, 11)]:
+    for p in [i/10 for i in range(0, 11)]:
         d = bernoulli(p)
         assert_almost_equal(d[0], 1-p)
         assert_almost_equal(d[1], p)

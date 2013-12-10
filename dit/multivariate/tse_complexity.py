@@ -49,11 +49,11 @@ def tse_complexity(dist, rvs=None, crvs=None, rv_names=None):
         """
         Compute the average entropy of all subsets of `rvs` of size `k`.
         """
-        sub_rvs = ( set().union(*rv) for rv in combinations(rvs, k) )
-        subH = sum( H(dist, rv, crvs, rv_names) for rv in sub_rvs )
+        sub_rvs = (set().union(*rv) for rv in combinations(rvs, k))
+        subH = sum(H(dist, rv, crvs, rv_names) for rv in sub_rvs)
         subH /= nCk(N, k)
         return subH
 
-    TSE = sum( sub_entropies(k) - k/N * joint for k in range(1, N) )
+    TSE = sum(sub_entropies(k) - k/N * joint for k in range(1, N))
 
     return TSE

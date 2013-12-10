@@ -73,7 +73,7 @@ def exp_func(b):
         raise InvalidBase(msg=b)
 
     if b == 'linear':
-        exp = lambda x : x
+        exp = lambda x: x
     elif b == 2:
         exp = np.exp2
     elif b == 10:
@@ -140,7 +140,7 @@ def log_func(b):
         raise InvalidBase(msg=b)
 
     if b == 'linear':
-        log = lambda x : x
+        log = lambda x: x
     elif b == 2:
         log = np.log2
     elif b == 10:
@@ -270,8 +270,8 @@ class LinearOperations(Operations):
     # is to explicitly declare these functions to be static methods, as we
     # do below.
     #
-    exp = staticmethod( exp_func(base) )
-    log = staticmethod( log_func(base) )
+    exp = staticmethod(exp_func(base))
+    log = staticmethod(log_func(base))
 
     def add(self, x, y):
         """

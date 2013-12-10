@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Specialized distribution constructors.
+"""
+
 from __future__ import division
 
 import numpy as np
@@ -73,7 +77,7 @@ def mixture_distribution(dists, weights, merge=False):
         vals = lambda o: [ops.mult(w, d[o])
                           for w, d in zip(weights, dists)]
 
-    outcomes = set().union(*[ d.outcomes for d in dists ])
+    outcomes = set().union(*[d.outcomes for d in dists])
     pmf = [ops.add_reduce(np.array(vals(o))) for o in outcomes]
     mix = Distribution(tuple(outcomes), pmf, base=ops.get_base())
     return mix
@@ -336,12 +340,12 @@ def uniform_distribution(outcome_length, alphabet_size):
         alphabet = [tuple(range(alphabet_size))] * outcome_length
 
     try:
-        Z = np.prod( list(map(len, alphabet)) )
+        Z = np.prod(list(map(len, alphabet)))
     except TypeError:
         raise TypeError("alphabet_size must be an int or list of lists.")
 
     pmf = [1/Z] * Z
-    outcomes = tuple( product(*alphabet) )
+    outcomes = tuple(product(*alphabet))
     d = Distribution(outcomes, pmf, base='linear')
 
     return d

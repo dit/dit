@@ -59,7 +59,7 @@ def test_ordered_partitions2():
 def test_require_keys1():
     d = {0: '', '0': '', 'pants': ''}
     required = [0, '0']
-    assert(require_keys(required, d) is None)
+    assert_true(require_keys(required, d) is None)
 
 def test_require_keys2():
     d = {0: '', '0': '', 'pants': ''}
