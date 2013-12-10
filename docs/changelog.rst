@@ -1,5 +1,3 @@
-.. changelog.rst
-
 *********
 Changelog
 *********
@@ -15,4 +13,4 @@ Changelog
 * :feature:`33` Add the Perplexity.
 * :feature:`45` Add the Interaction Information.
 * :feature:`47` Add the TSE Complexity.
-* :support:`32` Use `six` for 2/3 compatibility.
+* :support:`32` Use ``six`` for python 2/3 compatibility.
