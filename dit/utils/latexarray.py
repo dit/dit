@@ -1,9 +1,7 @@
 
 import contextlib
 import os
-import shutil
 import subprocess
-import sys
 import tempfile
 
 import numpy as np
@@ -162,7 +160,7 @@ def to_pdf(a, decimals=3,
 \end{{displaymath}}
 \end{{document}}"""
 
-    fline = line.format(to_latex(a, decimals=3))
+    fline = line.format(to_latex(a, decimals))
     latex = template.format(fline)
 
     with ExitStack() as stack:
