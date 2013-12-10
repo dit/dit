@@ -1,8 +1,11 @@
+"""
+Tests for dit.utils.context.
+"""
+
 from __future__ import unicode_literals
 
-from nose.tools import *
+from nose.tools import assert_equal, assert_false, assert_true
 import os
-import time
 from dit.utils import cd, named_tempfile, tempdir
 
 def test_cd():

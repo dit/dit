@@ -1,3 +1,6 @@
+"""
+Functions to convert pmfs to latex arrays.
+"""
 
 import contextlib
 import os

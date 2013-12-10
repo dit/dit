@@ -1,19 +1,23 @@
+"""
+Tests for dit.utils.bindargs.
+"""
+
 from dit.utils.bindargs import bindcallargs
 
-from nose.tools import *
+from nose.tools import assert_equal
 
-def F0(a, b=3, *args, **kwargs):
+def F0(a, b=3, *args, **kwargs): # pylint: disable=unused-argument
     pass
 
-def F1(a, b, c=2, *args, **kwargs):
+def F1(a, b, c=2, *args, **kwargs): # pylint: disable=unused-argument
     pass
 
-def F2(a, b=3):
+def F2(a, b=3): # pylint: disable=unused-argument
     pass
 
 def test_bindcallargs0():
     out = bindcallargs(F0, 5, 4, 3, 2, 1, hello='there')
-    out_ = (5,4,3,2,1), {'hello': 'there'}
+    out_ = (5, 4, 3, 2, 1), {'hello': 'there'}
     assert_equal(out, out_)
 
 def test_bindcallargs1():

@@ -14,7 +14,7 @@ import subprocess
 import warnings
 
 import six
-from six.moves import range
+from six.moves import range # pylint: disable=redefined-builtin
 
 __all__ = (
     'Property',
@@ -75,7 +75,7 @@ def abstract_method(f):
         def method(self):
             pass
     """
-    def abstract_f(*args, **kwargs):
+    def abstract_f(*args, **kwargs): # pylint: disable=unused-argument
         raise NotImplementedError("Abstract method.")
     abstract_f.__name__ = f.__name__
     abstract_f.__doc__ = f.__doc__
@@ -281,7 +281,7 @@ def partition_set(elements, relation=None, innerset=False, reflexive=False,
     lookup = []
     if reflexive and transitive:
         eqclasses = []
-        for element_idx, element in enumerate(elements):
+        for _, element in enumerate(elements):
             for eqclass_idx, (representative, eqclass) in enumerate(eqclasses):
                 if relation(representative, element):
                     eqclass.append(element)
@@ -293,7 +293,7 @@ def partition_set(elements, relation=None, innerset=False, reflexive=False,
                 eqclasses.append( (element, [element]) )
 
 
-        eqclasses = [c for r, c in eqclasses]
+        eqclasses = [c for _, c in eqclasses]
 
     else:
         def belongs(element, eqclass):
@@ -313,7 +313,7 @@ def partition_set(elements, relation=None, innerset=False, reflexive=False,
             return True
 
         eqclasses = []
-        for element_idx, element in enumerate(elements):
+        for _, element in enumerate(elements):
             for eqclass_idx, eqclass in enumerate(eqclasses):
                 if belongs(element, eqclass):
                     eqclass.append(element)
