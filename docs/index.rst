@@ -19,6 +19,7 @@ Contents:
    distributions
    measures
    zreferences
+   changelog
 
 .. todolist::
 
