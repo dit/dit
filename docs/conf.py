@@ -29,7 +29,8 @@ on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc',
+extensions = ['releases',
+              'sphinx.ext.autodoc',
               'sphinx.ext.intersphinx',
               'sphinx.ext.coverage',
               'sphinx.ext.mathjax',
@@ -109,6 +110,10 @@ pygments_style = 'sphinx'
 
 # Only show todos for local builds, not on the official docs.
 todo_include_todos = not on_rtd
+
+# changelog-related items:
+releases_release_uri = "https://github.com/dit/dit/tree/%s"
+releases_issue_uri = "https://github.com/dit/dit/issues/%s"
 
 # -- Options for HTML output ---------------------------------------------------
 
