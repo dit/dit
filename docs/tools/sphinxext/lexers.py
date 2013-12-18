@@ -24,6 +24,13 @@ This includes:
         to Pygments.
 
 """
+#-----------------------------------------------------------------------------
+# Copyright (c) 2013, the IPython Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#-----------------------------------------------------------------------------
 
 # Standard library
 import re
@@ -38,7 +45,8 @@ from pygments.token import (
 )
 from pygments.util import get_bool_opt
 
-
+# Local
+from IPython.testing.skipdoctest import skip_doctest
 
 line_re = re.compile('.*?\n')
 
@@ -75,7 +83,7 @@ def build_ipy_lexer(python3):
         PyLexer = PythonLexer
         clsname = 'IPythonLexer'
         name = 'IPython'
-        aliases = ['ipython']
+        aliases = ['ipython2', 'ipython']
         doc = """IPython Lexer"""
 
     tokens = PyLexer.tokens.copy()
@@ -161,6 +169,10 @@ class IPythonTracebackLexer(DelegatingLexer):
 
     def __init__(self, **options):
         self.python3 = get_bool_opt(options, 'python3', False)
+        if self.python3:
+            self.aliases = ['ipythontb3']
+        else:
+            self.aliases = ['ipythontb2', 'ipythontb']
 
         if self.python3:
             IPyLexer = IPython3Lexer
@@ -170,52 +182,51 @@ class IPythonTracebackLexer(DelegatingLexer):
         DelegatingLexer.__init__(self, IPyLexer,
                                  IPythonPartialTracebackLexer, **options)
 
-
+@skip_doctest
 class IPythonConsoleLexer(Lexer):
     """
     An IPython console lexer for IPython code-blocks and doctests, such as:
 
-    .. sourcecode:: ipythoncon
+    .. code-block:: rst
 
-        In [1]: a = 'foo'
+        .. code-block:: ipythoncon
 
-        In [2]: a
-        Out[2]: 'foo'
+            In [1]: a = 'foo'
 
-        In [3]: print a
-        foo
+            In [2]: a
+            Out[2]: 'foo'
 
-        In [4]: 1 / 0
+            In [3]: print a
+            foo
 
-    Support is also provided for IPython exceptions.
+            In [4]: 1 / 0
 
-    .. code-block:: ipythoncon
 
-        In [1]: raise Exception
-        ---------------------------------------------------------------------------
-        Exception                                 Traceback (most recent call last)
-        <ipython-input-1-fca2ab0ca76b> in <module>()
-        ----> 1 raise Exception
+    Support is also provided for IPython exceptions:
 
-        Exception:
+    .. code-block:: rst
+
+        .. code-block:: ipythoncon
+
+            In [1]: raise Exception
+            ---------------------------------------------------------------------------
+            Exception                                 Traceback (most recent call last)
+            <ipython-input-1-fca2ab0ca76b> in <module>()
+            ----> 1 raise Exception
+
+            Exception:
 
     """
     name = 'IPython console session'
     aliases = ['ipythoncon']
     mimetypes = ['text/x-ipython-console']
 
-    # The regexps used to determine what is input and what is output. The
-    # input regex should be consistent with and also be the combination of
-    # the values of the `in_template` and `in2_templates`. For example, the
-    # defaults prompts are:
+    # The regexps used to determine what is input and what is output.
+    # The default prompts for IPython are:
     #
     #     c.PromptManager.in_template  = 'In [\#]: '
     #     c.PromptManager.in2_template = '   .\D.: '
     #     c.PromptManager.out_template = 'Out[\#]: '
-    #
-    # Note, we do not include the trailing whitespace in the regex since
-    # we want to allow blank prompts (and editors often remove trailing
-    # whitespace).
     #
     in1_regex = r'In \[[0-9]+\]: '
     in2_regex = r'   \.\.+\.: '
@@ -248,6 +259,10 @@ class IPythonConsoleLexer(Lexer):
 
         """
         self.python3 = get_bool_opt(options, 'python3', False)
+        if self.python3:
+            self.aliases = ['ipythoncon3']
+        else:
+            self.aliases = ['ipythoncon2', 'ipythoncon']
 
         in1_regex = options.get('in1_regex', self.in1_regex)
         in2_regex = options.get('in2_regex', self.in2_regex)
@@ -259,7 +274,8 @@ class IPythonConsoleLexer(Lexer):
         # The reason can't just use the rstrip'd variants instead is because
         # we want any whitespace associated with the prompt to be inserted
         # with the token. This allows formatted code to be modified so as hide
-        # the appearance of prompts.  For example, see copybutton.js.
+        # the appearance of prompts, with the whitespace included. One example
+        # use of this is in copybutton.js from the standard lib Python docs.
         in1_regex_rstrip = in1_regex.rstrip() + '\n'
         in2_regex_rstrip = in2_regex.rstrip() + '\n'
         out_regex_rstrip = out_regex.rstrip() + '\n'
@@ -312,18 +328,30 @@ class IPythonConsoleLexer(Lexer):
         self.buffer = u''
         self.insertions = []
 
-    def get_modecode(self, line):
+    def get_mci(self, line):
         """
-        Returns the next mode and code to be added to the next mode's buffer.
+        Parses the line and returns a 3-tuple: (mode, code, insertion).
 
-        The next mode depends on current mode and contents of line.
+        `mode` is the next mode (or state) of the lexer, and is always equal
+        to 'input', 'output', or 'tb'.
+
+        `code` is a portion of the line that should be added to the buffer
+        corresponding to the next mode and eventually lexed by another lexer.
+        For example, `code` could be Python code if `mode` were 'input'.
+
+        `insertion` is a 3-tuple (index, token, text) representing an
+        unprocessed "token" that will be inserted into the stream of tokens
+        that are created from the buffer once we change modes. This is usually
+        the input or output prompt.
+
+        In general, the next mode depends on current mode and on the contents
+        of `line`.
 
         """
         # To reduce the number of regex match checks, we have multiple
         # 'if' blocks instead of 'if-elif' blocks.
 
-        ### Check for possible end of input
-        ###
+        # Check for possible end of input
         in2_match = self.in2_regex.match(line)
         in2_match_rstrip = self.in2_regex_rstrip.match(line)
         if (in2_match and in2_match.group().rstrip() == line.rstrip()) or \
@@ -339,8 +367,7 @@ class IPythonConsoleLexer(Lexer):
             insertion = (0, Generic.Prompt, line)
             return mode, code, insertion
 
-        ### Check for output prompt
-        ###
+        # Check for output prompt
         out_match = self.out_regex.match(line)
         out_match_rstrip = self.out_regex_rstrip.match(line)
         if out_match or out_match_rstrip:
@@ -350,15 +377,13 @@ class IPythonConsoleLexer(Lexer):
             else:
                 idx = out_match_rstrip.end()
             code = line[idx:]
-            # Use the 'error' token for output.  We should probably make
-            # our own token, but error is typically in a bright color like
-            # red, so it works fine for our output prompts.
+            # Use the 'heading' token for output.  We cannot use Generic.Error
+            # since it would conflict with exceptions.
             insertion = (0, Generic.Heading, line[:idx])
             return mode, code, insertion
 
 
-        ### Check for input or continuation prompt (non stripped version)
-        ###
+        # Check for input or continuation prompt (non stripped version)
         in1_match = self.in1_regex.match(line)
         if in1_match or (in2_match and self.mode != 'tb'):
             # New input or when not in tb, continued input.
@@ -373,8 +398,7 @@ class IPythonConsoleLexer(Lexer):
             insertion = (0, Generic.Prompt, line[:idx])
             return mode, code, insertion
 
-        ### Check for input or continuation prompt (stripped version)
-        ###
+        # Check for input or continuation prompt (stripped version)
         in1_match_rstrip = self.in1_regex_rstrip.match(line)
         if in1_match_rstrip or (in2_match_rstrip and self.mode != 'tb'):
             # New input or when not in tb, continued input.
@@ -389,16 +413,14 @@ class IPythonConsoleLexer(Lexer):
             insertion = (0, Generic.Prompt, line[:idx])
             return mode, code, insertion
 
-        ### Check for traceback
-        ###
+        # Check for traceback
         if self.ipytb_start.match(line):
             mode = 'tb'
             code = line
             insertion = None
             return mode, code, insertion
 
-        ### All other stuff...
-        ###
+        # All other stuff...
         if self.mode in ('input', 'output'):
             # We assume all other text is output. Multiline input that
             # does not use the continuation marker cannot be detected.
@@ -413,6 +435,7 @@ class IPythonConsoleLexer(Lexer):
             #        print True
             #
             # In both cases, the 2nd line will be 'output'.
+            #
             mode = 'output'
         else:
             mode = 'tb'
@@ -426,7 +449,7 @@ class IPythonConsoleLexer(Lexer):
         self.reset()
         for match in line_re.finditer(text):
             line = match.group()
-            mode, code, insertion = self.get_modecode(line)
+            mode, code, insertion = self.get_mci(line)
 
             if mode != self.mode:
                 # Yield buffered tokens before transitioning to new mode.
@@ -458,6 +481,11 @@ class IPyLexer(Lexer):
 
     def __init__(self, **options):
         self.python3 = get_bool_opt(options, 'python3', False)
+        if self.python3:
+            self.aliases = ['ipy3']
+        else:
+            self.aliases = ['ipy2', 'ipy']
+
         Lexer.__init__(self, **options)
 
         self.IPythonLexer = IPythonLexer(**options)
