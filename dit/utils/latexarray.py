@@ -1,9 +1,10 @@
+"""
+Functions to convert pmfs to latex arrays.
+"""
 
 import contextlib
 import os
-import shutil
 import subprocess
-import sys
 import tempfile
 
 import numpy as np
@@ -123,7 +124,7 @@ def to_latex(a, decimals=3, tab='  '):
         lines = []
         for row in array:
             # Strip [ and ], remove newlines, and split on whitespace
-            elements = row.__str__()[1:-1].replace('\n','').split()
+            elements = row.__str__()[1:-1].replace('\n', '').split()
             line = [tab, ' & '.join(elements), r' \\']
             lines.append(''.join(line))
 
@@ -162,7 +163,7 @@ def to_pdf(a, decimals=3,
 \end{{displaymath}}
 \end{{document}}"""
 
-    fline = line.format(to_latex(a, decimals=3))
+    fline = line.format(to_latex(a, decimals))
     latex = template.format(fline)
 
     with ExitStack() as stack:

@@ -82,7 +82,7 @@ def central_moment(dist, n):
     outcomes, pmf = zip(*dist.zipped(mode='patoms'))
     outcomes = np.asarray(outcomes)
     pmf = np.asarray(pmf)
-    terms = np.asarray([ (np.asarray(o)-mu)**n for o in outcomes ])
+    terms = np.asarray([(np.asarray(o)-mu)**n for o in outcomes])
     terms[np.isnan(terms)] = 0
     return np.average(terms, axis=0, weights=pmf)
 
@@ -178,10 +178,10 @@ def mode(dist):
     _numerical_test(dist)
 
     try:
-        dists = [ dist.marginal([i]) for i in range(dist.outcome_length()) ]
+        dists = [dist.marginal([i]) for i in range(dist.outcome_length())]
     except AttributeError:
-        dists = [ dist ]
+        dists = [dist]
 
-    modes = [ np.asarray(d.outcomes)[d.pmf == d.pmf.max()] for d in dists ]
-    modes = [ m.flatten() for m in modes ]
+    modes = [np.asarray(d.outcomes)[d.pmf == d.pmf.max()] for d in dists]
+    modes = [m.flatten() for m in modes]
     return modes

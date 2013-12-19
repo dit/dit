@@ -735,7 +735,7 @@ class Distribution(ScalarDistribution):
         from array import array
 
         # We allow repeats and want to keep the order. We don't need the names.
-        parse = lambda rv : parse_rvs(self, rv, rv_names=rv_names,
+        parse = lambda rv: parse_rvs(self, rv, rv_names=rv_names,
                                                 unique=False, sort=False)[1]
         indexes = [parse(rv) for rv in rvs]
 
@@ -748,13 +748,13 @@ class Distribution(ScalarDistribution):
         ctor_i = self._outcome_ctor
 
         # Build the distribution.
-        factory = lambda : array('d')
+        factory = lambda: array('d')
         d = defaultdict(factory)
         for outcome, p in self.zipped():
             # Build a list of inner outcomes. "c" stands for "constructed".
             c_outcome = [ctor_i([outcome[i] for i in rv]) for rv in indexes]
             # Build the outer outcome from the inner outcomes.
-            c_outcome = ctor_o( c_outcome )
+            c_outcome = ctor_o(c_outcome)
             d[c_outcome].append(p)
 
         outcomes = tuple(d.keys())
@@ -791,7 +791,7 @@ class Distribution(ScalarDistribution):
 
         # Make an exact copy of the PRNG.
         prng = np.random.RandomState()
-        prng.set_state( self.prng.get_state() )
+        prng.set_state(self.prng.get_state())
 
         d = _make_distribution(outcomes=deepcopy(self.outcomes),
                                pmf=np.array(self.pmf, copy=True),
@@ -1130,11 +1130,11 @@ class Distribution(ScalarDistribution):
         s.write("\n")
 
         # Distribution
-        s.write(''.join([ 'x'.ljust(max_length), colsep, pstr, "\n" ]))
+        s.write(''.join(['x'.ljust(max_length), colsep, pstr, "\n"]))
         # Adjust for empty outcomes. Min length should be: len('x') == 1
         max_length = max(1, max_length)
         for o, p in zip(outcomes, pmf):
-            s.write(''.join( [o.ljust(max_length), colsep, str(p), "\n"] ))
+            s.write(''.join([o.ljust(max_length), colsep, str(p), "\n"]))
         s.seek(0)
 
         s = s.read()

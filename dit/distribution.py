@@ -432,7 +432,7 @@ class BaseDistribution(object):
 
         """
         from dit.utils import powerset
-        return powerset( list(self.sample_space()) )
+        return powerset(list(self.sample_space()))
 
     def get_base(self, numerical=False):
         """
@@ -629,9 +629,9 @@ class BaseDistribution(object):
             s.write("{0}{1}\n".format(head.ljust(L), val))
         s.write("\n")
 
-        s.write(''.join([ 'x'.ljust(max_length), colsep, pstr, "\n" ]))
+        s.write(''.join(['x'.ljust(max_length), colsep, pstr, "\n"]))
         for o, p in zip(outcomes, pmf):
-            s.write(''.join( [o.ljust(max_length), colsep, str(p), "\n"] ))
+            s.write(''.join([o.ljust(max_length), colsep, str(p), "\n"]))
 
         s.seek(0)
         s = s.read()

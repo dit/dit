@@ -25,14 +25,14 @@ def test_sigalg_sort():
         frozenset([1, 2])
     ])
     sigalg_ = [(), (1,), (2,), (1, 2)]
-    assert_equal( sigalg_, sigma_algebra_sort(sigalg) )
+    assert_equal(sigalg_, sigma_algebra_sort(sigalg))
 
 def test_join_sigalg():
     """ Test join_sigalg """
     outcomes = ['00', '01', '10', '11']
     pmf = [1/4]*4
     d = Distribution(outcomes, pmf)
-    sigalg = frozenset([ frozenset(_) for _ in powerset(outcomes) ])
+    sigalg = frozenset([frozenset(_) for _ in powerset(outcomes)])
     joined = join_sigalg(d, [[0], [1]])
     assert_equal(sigalg, joined)
 
@@ -41,7 +41,7 @@ def test_meet_sigalg():
     outcomes = ['00', '01', '10', '11']
     pmf = [1/4]*4
     d = Distribution(outcomes, pmf)
-    sigalg = frozenset([ frozenset([]), frozenset(outcomes) ])
+    sigalg = frozenset([frozenset([]), frozenset(outcomes)])
     meeted = meet_sigalg(d, [[0], [1]])
     assert_equal(sigalg, meeted)
 
@@ -62,7 +62,7 @@ def test_dist_from_induced():
     npt.assert_allclose(pmf, d2.pmf)
 
     d2 = dist_from_induced_sigalg(d, sigalg, int_outcomes=False)
-    outcomes = ( ((0,),), ((1,), (2,)) )
+    outcomes = (((0,),), ((1,), (2,)))
     assert_equal(outcomes, d2.outcomes)
 
 def test_join():

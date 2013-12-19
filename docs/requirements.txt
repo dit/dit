@@ -1,6 +1,7 @@
 ipython
-numpy
 iterutils
+numpy
+releases
 six
-sphinxcontrib-napoleon
 sphinxcontrib-bibtex
+sphinxcontrib-napoleon

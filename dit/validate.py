@@ -81,7 +81,7 @@ def validate_normalization(pmf, ops):
     one = ops.one
 
     # Make sure the distribution is normalized properly.
-    total = ops.add_reduce( pmf )
+    total = ops.add_reduce(pmf)
     if not close(total, one):
         raise InvalidNormalization(total)
 
@@ -119,7 +119,7 @@ def validate_outcomes(outcomes, sample_space):
     bad = outcomes.difference(sample_space)
     L = len(bad)
     if L > 0:
-        raise InvalidOutcome(bad, single=(L==1))
+        raise InvalidOutcome(bad, single=(L == 1))
 
     return True
 
@@ -189,7 +189,7 @@ def validate_probabilities(pmf, ops):
         too_low[too_low] = np.logical_not(np.isclose(pmf[too_low], zero))
         too_high[too_high] = np.logical_not(np.isclose(pmf[too_high], one))
         if too_low.any() or too_high.any():
-            bad = pmf[ np.logical_or(too_low, too_high) ]
+            bad = pmf[np.logical_or(too_low, too_high)]
             raise InvalidProbability(bad, ops=ops)
 
     return True
@@ -223,9 +223,9 @@ def validate_outcome_class(outcomes):
 
     """
     # Make sure the class is the same for all outcomes.
-    classattr = lambda x : getattr(x, '__class__')
-    classes = list(map( classattr, outcomes ))
-    equal_classes = np.alltrue( np.equal( classes, outcomes[0].__class__ ) )
+    classattr = lambda x: getattr(x, '__class__')
+    classes = list(map(classattr, outcomes))
+    equal_classes = np.alltrue(np.equal(classes, outcomes[0].__class__))
     if not equal_classes:
         raise ditException('Not all outcomes have the same class.')
     else:
@@ -245,7 +245,7 @@ def validate_outcome_length(outcomes):
         outcome_length = lengths[0]
 
     # Make sure each outcome has the same length.
-    equal_lengths = np.alltrue( np.equal( lengths, outcome_length ) )
+    equal_lengths = np.alltrue(np.equal(lengths, outcome_length))
     if not equal_lengths:
         raise ditException('Not all outcomes have the same length.')
     else:

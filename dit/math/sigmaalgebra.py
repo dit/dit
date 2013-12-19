@@ -48,7 +48,7 @@ def sets2matrix(C, X=None):
 
     # Each element of C will be represented as a binary string of 0s and 1s.
     # Note, X is frozen, so its iterating order is fixed.
-    Cmatrix = [[ 1 if x in cet else 0 for x in Xset ] for cet in C]
+    Cmatrix = [[1 if x in cet else 0 for x in Xset] for cet in C]
     Cmatrix = np.array(Cmatrix, dtype=int)
 
     return Cmatrix, Xset
@@ -119,7 +119,7 @@ def sigma_algebra(C, X=None):
     sC = set([])
     for word in product([0, 1], repeat=len(unique_cols)):
         subset = [x for i, x in enumerate(X) if word[lookups[i]] == 1]
-        sC.add( frozenset(subset) )
+        sC.add(frozenset(subset))
     sC = frozenset(sC)
 
     return sC

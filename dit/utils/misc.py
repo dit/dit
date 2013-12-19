@@ -14,7 +14,7 @@ import subprocess
 import warnings
 
 import six
-from six.moves import range
+from six.moves import range # pylint: disable=redefined-builtin
 
 __all__ = (
     'Property',
@@ -46,7 +46,7 @@ except ImportError: # pragma: no cover
     from ordereddict import OrderedDict
 
 
-def Property( fcn ):
+def Property(fcn):
     """Simple property decorator.
 
     Usage:
@@ -63,7 +63,7 @@ def Property( fcn ):
             return locals()
 
     """
-    return property( **fcn() )
+    return property(**fcn())
 
 def abstract_method(f):
     """Simple decorator to designate an abstract method.
@@ -75,7 +75,7 @@ def abstract_method(f):
         def method(self):
             pass
     """
-    def abstract_f(*args, **kwargs):
+    def abstract_f(*args, **kwargs): # pylint: disable=unused-argument
         raise NotImplementedError("Abstract method.")
     abstract_f.__name__ = f.__name__
     abstract_f.__doc__ = f.__doc__
@@ -281,7 +281,7 @@ def partition_set(elements, relation=None, innerset=False, reflexive=False,
     lookup = []
     if reflexive and transitive:
         eqclasses = []
-        for element_idx, element in enumerate(elements):
+        for _, element in enumerate(elements):
             for eqclass_idx, (representative, eqclass) in enumerate(eqclasses):
                 if relation(representative, element):
                     eqclass.append(element)
@@ -290,10 +290,10 @@ def partition_set(elements, relation=None, innerset=False, reflexive=False,
                     break
             else:
                 lookup.append(len(eqclasses))
-                eqclasses.append( (element, [element]) )
+                eqclasses.append((element, [element]))
 
 
-        eqclasses = [c for r, c in eqclasses]
+        eqclasses = [c for _, c in eqclasses]
 
     else:
         def belongs(element, eqclass):
@@ -313,7 +313,7 @@ def partition_set(elements, relation=None, innerset=False, reflexive=False,
             return True
 
         eqclasses = []
-        for element_idx, element in enumerate(elements):
+        for _, element in enumerate(elements):
             for eqclass_idx, eqclass in enumerate(eqclasses):
                 if belongs(element, eqclass):
                     eqclass.append(element)
@@ -502,7 +502,7 @@ def partitions(seq, tuples=False):
     seq = list(seq)
 
     if tuples:
-        for partition in partitions1( seq ):
+        for partition in partitions1(seq):
             # Convert the partition into a list of sorted tuples.
             partition = map(tuple, map(sorted, partition))
 
@@ -513,8 +513,8 @@ def partitions(seq, tuples=False):
             yield partition
 
     else:
-        for partition in partitions1( seq ):
-            partition = frozenset( map(frozenset, partition) )
+        for partition in partitions1(seq):
+            partition = frozenset(map(frozenset, partition))
             yield partition
 
 def ordered_partitions(seq, tuples=False):

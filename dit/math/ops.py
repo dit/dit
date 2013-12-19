@@ -73,7 +73,7 @@ def exp_func(b):
         raise InvalidBase(msg=b)
 
     if b == 'linear':
-        exp = lambda x : x
+        exp = lambda x: x
     elif b == 2:
         exp = np.exp2
     elif b == 10:
@@ -85,6 +85,21 @@ def exp_func(b):
             raise InvalidBase(b)
 
         def exp(x, base=b):
+            """
+            Return `base`**`x`
+
+            Parameters
+            ----------
+            x : float
+                The number to exponentiate
+            base : float
+                The base of the exponential
+
+            Returns
+            -------
+            p : float
+                `base`**`x`
+            """
             return base**np.asarray(x)
 
     return exp
@@ -125,7 +140,7 @@ def log_func(b):
         raise InvalidBase(msg=b)
 
     if b == 'linear':
-        log = lambda x : x
+        log = lambda x: x
     elif b == 2:
         log = np.log2
     elif b == 10:
@@ -138,6 +153,21 @@ def log_func(b):
 
         Z = np.log(b)
         def log(x, func=np.log):
+            """
+            Return the log of `x`
+
+            Parameters
+            ----------
+            x : float
+                The value to take the log of
+            func : function
+                A logarithm function
+
+            Returns
+            -------
+            log : float
+                The logarithm of `x` in base `b` (from outer scope)
+            """
             return func(x) / Z
 
     return log
@@ -199,21 +229,31 @@ class Operations(object):
         return close(self.zero, p)
 
     def add(self, x, y):
+        """ Abstract base class """
         raise NotImplementedError
     def add_inplace(self, x, y):
+        """ Abstract base class """
         raise NotImplementedError
     def add_reduce(self, x):
+        """ Abstract base class """
         raise NotImplementedError
     def mult(self, x, y):
+        """ Abstract base class """
         raise NotImplementedError
     def mult_inplace(self, x, y):
+        """ Abstract base class """
         raise NotImplementedError
     def mult_reduce(self, x):
+        """ Abstract base class """
         raise NotImplementedError
     def invert(self, x):
+        """ Abstract base class """
         raise NotImplementedError
 
 class LinearOperations(Operations):
+    """
+    The class of operations on linear values.
+    """
 
     one = 1
     zero = 0
@@ -230,8 +270,8 @@ class LinearOperations(Operations):
     # is to explicitly declare these functions to be static methods, as we
     # do below.
     #
-    exp = staticmethod( exp_func(base) )
-    log = staticmethod( log_func(base) )
+    exp = staticmethod(exp_func(base))
+    log = staticmethod(log_func(base))
 
     def add(self, x, y):
         """

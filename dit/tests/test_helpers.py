@@ -1,3 +1,7 @@
+"""
+Tests for dit.helpers.
+"""
+
 from __future__ import division
 
 from nose.tools import assert_equal, assert_raises

@@ -41,7 +41,7 @@ def n_mod_m(n, m):
     size = m**(n-1)
     alpha = range(m)
     subwords = product(alpha, repeat=n-1)
-    outcomes = [ ''.join(map(str, w)) + str(sum(w)%m) for w in subwords ]
+    outcomes = [''.join(map(str, w)) + str(sum(w)%m) for w in subwords]
     pmf = [1/size]*size
     d = Distribution(outcomes, pmf)
     return d

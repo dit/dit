@@ -52,7 +52,7 @@ def _gm(x):
         The k geometric means of the k compositions in `x`.
 
     """
-    x_gm = x.prod(axis=1) ** ( 1/x.shape[1] )
+    x_gm = x.prod(axis=1) ** (1/x.shape[1])
 
     return x_gm
 
@@ -128,7 +128,7 @@ def subcomposition(x, indexes):
         The subcompositions of `x`.
 
     """
-    xsub = closure(x[:,indexes])
+    xsub = closure(x[:, indexes])
 
     return xsub
 
@@ -201,7 +201,7 @@ def power(x, a):
 
 add = perturbation
 
-def sub(x,y):
+def sub(x, y):
     """Returns the difference of compositions.
 
     Parameters
@@ -220,7 +220,7 @@ def sub(x,y):
     z = perturbation(x, power(y, -1.0)) # 1.0 and not 1 forces coercion
     return z
 
-def inner(x,y):
+def inner(x, y):
     """Returns the Aitchison inner product between `x` and `y`.
 
     Parameters
@@ -269,7 +269,7 @@ def norm(x):
         The norm(s) of the composition(s).
 
     """
-    n = np.sqrt(inner(x,x))
+    n = np.sqrt(inner(x, x))
     return n
 
 def dist(x, y):
@@ -286,7 +286,7 @@ def dist(x, y):
         The distance between `x` and `y`.
 
     """
-    d = norm(sub(x,y))
+    d = norm(sub(x, y))
     return d
 
 metric = dist
@@ -355,7 +355,7 @@ def alr(x):
 
     x = np.atleast_2d(x)
 
-    y = log2( x[:,:-1] / x[:,-1][:, np.newaxis] )
+    y = log2(x[:, :-1] / x[:, -1][:, np.newaxis])
 
     if single:
         y = y[0]
@@ -398,9 +398,9 @@ def ilr(x):
     x = np.atleast_2d(x)
 
     rng = np.arange(1, x.shape[1])
-    gm = (x.cumprod(axis=1)[:,:-1])**(1/rng)
-    y = log2( gm / x[:,1:] )
-    y *= np.sqrt([ i/(i+1) for i in rng ]) # same coefficient for each column
+    gm = (x.cumprod(axis=1)[:, :-1])**(1/rng)
+    y = log2(gm / x[:, 1:])
+    y *= np.sqrt([i/(i+1) for i in rng]) # same coefficient for each column
 
     if single:
         y = y[0]
@@ -434,13 +434,13 @@ def ubasis(n):
 
     # Set the lower triangle to 1/i for each row and apply coefficent
     rng = np.arange(1, n+1)
-    u *= np.array([ 1/i for i in rng ])[:, np.newaxis]
+    u *= np.array([1/i for i in rng])[:, np.newaxis]
 
     # the 1st diag is set to -1
     u.flat[1::n+2] = -1
 
     # scale everything
-    u *= np.array([ math.sqrt(i/(i+1)) for i in rng ])[:, np.newaxis]
+    u *= np.array([math.sqrt(i/(i+1)) for i in rng])[:, np.newaxis]
 
     return u
 
@@ -510,16 +510,16 @@ def alr_inv(xalr):
     newshape[1] += 1
     x = np.empty(newshape)
 
-    x[:,:-1] = exp2(xalr)
+    x[:, :-1] = exp2(xalr)
 
     ### Now we can exactly solve for the last element, and
     ### then we can unscale each of the other components.
-    #x[:,-1] = 1 / (1 + x[:,:-1].sum(axis=1))
-    #x[:,:-1] *= x[:,-1][:,np.newaxis]
+    #x[:, -1] = 1 / (1 + x[:, :-1].sum(axis=1))
+    #x[:, :-1] *= x[:, -1][:, np.newaxis]
 
     ### Or we can set the last element equal to 1 and apply closure.
     ### This is quicker so we do that.
-    x[:,-1] = 1
+    x[:, -1] = 1
     x = closure(x)
 
     if single:
@@ -554,7 +554,7 @@ def ilr_inv(xilr):
 
     b = basis(xilr.shape[1])
     for i in range(xilr.shape[0]):
-        x[i] = closure( power(b, xilr[i]).prod(axis=0) )
+        x[i] = closure(power(b, xilr[i]).prod(axis=0))
 
     if single:
         x = x[0]

@@ -96,8 +96,8 @@ def join_sigalg(dist, rvs, rv_names=None):
     """
     # We require unique indexes within each random variable and want the
     # indexes in distribution order. We don't need the names.
-    parse = lambda rv : parse_rvs(dist, rv, rv_names=rv_names,
-                                            unique=False, sort=True)[1]
+    parse = lambda rv: parse_rvs(dist, rv, rv_names=rv_names,
+                                           unique=False, sort=True)[1]
     indexes = [parse(rv) for rv in rvs]
 
     sigalgs = [induced_sigalg(dist, rv, rv_names=False) for rv in indexes]
@@ -135,8 +135,8 @@ def meet_sigalg(dist, rvs, rv_names=None):
     """
     # We require unique indexes within each random variable and want the
     # indexes in distribution order. We don't need the names.
-    parse = lambda rv : parse_rvs(dist, rv, rv_names=rv_names,
-                                            unique=False, sort=True)[1]
+    parse = lambda rv: parse_rvs(dist, rv, rv_names=rv_names,
+                                           unique=False, sort=True)[1]
     indexes = [parse(rv) for rv in rvs]
 
     sigalgs = [induced_sigalg(dist, rv, rv_names=False) for rv in indexes]
@@ -278,7 +278,7 @@ def insert_rv(dist, idx, sigalg):
     if idx == -1:
         idx = dist.outcome_length()
 
-    if not (0 <= idx <= dist.outcome_length()):
+    if not 0 <= idx <= dist.outcome_length():
         raise IndexError('Invalid insertion index.')
 
     # Provide sane sorting of atoms
@@ -299,17 +299,17 @@ def insert_rv(dist, idx, sigalg):
     if idx == dist.outcome_length():
         def new_outcome_ctor(outcome, ctor=dist._outcome_ctor):
             """The end of the atoms"""
-            new_outcome = [ outcome, [atom_of[outcome]] ]
+            new_outcome = [outcome, [atom_of[outcome]]]
             return ctor(chain.from_iterable(new_outcome))
     elif idx == 0:
         def new_outcome_ctor(outcome, ctor=dist._outcome_ctor):
             """The beginning of the atoms"""
-            new_outcome = [ [atom_of[outcome]], outcome ]
+            new_outcome = [[atom_of[outcome]], outcome]
             return ctor(chain.from_iterable(new_outcome))
     else:
         def new_outcome_ctor(outcome, ctor=dist._outcome_ctor):
             """In the middle of the atoms"""
-            new_outcome = [ outcome[:idx], [atom_of[outcome]], outcome[idx:] ]
+            new_outcome = [outcome[:idx], [atom_of[outcome]], outcome[idx:]]
             return ctor(chain.from_iterable(new_outcome))
 
     d = dit.modify_outcomes(dist, new_outcome_ctor)

@@ -1,3 +1,7 @@
+"""
+Tests for dit.math.equal.
+"""
+
 from __future__ import division
 
 from nose.tools import assert_false, assert_true

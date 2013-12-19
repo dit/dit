@@ -1,14 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+"""
+Tests for dit.npdist.
+"""
+
 from __future__ import division
 
-from nose.tools import *
+from nose.tools import (assert_almost_equal, assert_equal, assert_false,
+                        assert_raises, assert_true)
 from numpy.testing import assert_array_almost_equal
 
-from six.moves import map, range, zip
+from six.moves import map, zip # pylint: disable=redefined-builtin
 
 from dit.npdist import Distribution, ScalarDistribution, _make_distribution
-from dit.exceptions import *
+from dit.exceptions import ditException, InvalidDistribution, InvalidOutcome
 
 import numpy as np
 
@@ -16,12 +22,12 @@ def test_init1():
     # Invalid initializations.
     assert_raises(InvalidDistribution, Distribution, [])
     assert_raises(InvalidDistribution, Distribution, [], [])
-    Distribution([], [], sample_space=[(0,1)], validate=False)
+    Distribution([], [], sample_space=[(0, 1)], validate=False)
 
 def test_init2():
     # Cannot initialize with an iterator.
     # Must pass in a sequence for outcomes.
-    outcomes = map(int, ['0','1','2','3','4'])
+    outcomes = map(int, ['0', '1', '2', '3', '4'])
     pmf = [1/5] * 5
     assert_raises(TypeError, Distribution, outcomes, pmf)
 
@@ -76,14 +82,14 @@ def test_atoms():
     d = Distribution(outcomes, pmf)
 
     atoms = outcomes
-    assert_equal( list(d.atoms()), atoms)
+    assert_equal(list(d.atoms()), atoms)
 
     patoms = ['000', '011', '101', '110', '222', '333']
-    assert_equal( list(d.atoms(patoms=True)), patoms)
+    assert_equal(list(d.atoms(patoms=True)), patoms)
 
     d = Distribution(outcomes, pmf, sample_space=outcomes + ['444'])
     atoms = outcomes + ['444']
-    assert_equal( list(d.atoms()), atoms)
+    assert_equal(list(d.atoms()), atoms)
 
 def test_zipped():
     pmf = [.125, .125, .125, .125, .25, 0, .25]
@@ -119,7 +125,7 @@ def test_setitem2():
     d.make_sparse()
     d['11'] = 1/2
     d.normalize()
-    assert('11' in d)
+    assert_true('11' in d)
     assert_almost_equal(d['11'], 1/3)
 
 def test_coalesce():
@@ -171,7 +177,7 @@ def test_marginalize():
     outcomes = ['000', '011', '101', '110']
     pmf = [1/4]*4
     d = Distribution(outcomes, pmf)
-    d1 = d.marginal([0,2])
+    d1 = d.marginal([0, 2])
     d2 = d.marginalize([1])
     assert_true(d1.is_approx_equal(d2))
 

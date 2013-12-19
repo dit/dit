@@ -13,7 +13,7 @@ def test_dist_iter1():
     pmf = [1/4]*4
     d = Distribution(outcomes, pmf)
     for o in d:
-        assert(o in outcomes)
+        assert_true(o in outcomes)
     for o1, o2 in zip(d, outcomes):
         assert_equal(o1, o2)
 
@@ -23,7 +23,7 @@ def test_dist_iter2():
     pmf = [1/4]*4
     d = Distribution(outcomes, pmf)
     for o in reversed(d):
-        assert(o in outcomes)
+        assert_true(o in outcomes)
     for o1, o2 in zip(reversed(d), reversed(outcomes)):
         assert_equal(o1, o2)
 
@@ -40,7 +40,7 @@ def test_rand():
     pmf = [1/4]*4
     d = Distribution(outcomes, pmf)
     for _ in range(10):
-        assert(d.rand() in outcomes)
+        yield assert_true, d.rand() in outcomes
 
 
 def test_to_dict():
@@ -49,7 +49,7 @@ def test_to_dict():
     d = Distribution(outcomes, pmf)
     dd = d.to_dict()
     for o, p in dd.items():
-        assert_almost_equal(d[o], p)
+        yield assert_almost_equal, d[o], p
 
 def test_validate1():
     outcomes = ['00', '01', '10', '11']
@@ -289,7 +289,7 @@ def test_prepare_string2():
     assert_raises(ditException, prepare_string, d, str_outcomes=True)
 
 def test_prepare_string3():
-    outcomes = [(0,0), (0,1), (1,0), (1,1)]
+    outcomes = [(0, 0), (0, 1), (1, 0), (1, 1)]
     pmf = [1/4]*4
     d = Distribution(outcomes, pmf)
     s_ = """Class:          Distribution
@@ -311,8 +311,8 @@ def test_prepare_string4():
     class WeirdInt(int):
         def __str__(self):
             raise Exception
-    outcomes = [(0,0), (0,1), (1,0), (1,1)]
-    outcomes = [ (WeirdInt(x), WeirdInt(y)) for (x,y) in outcomes ]
+    outcomes = [(0, 0), (0, 1), (1, 0), (1, 1)]
+    outcomes = [(WeirdInt(x), WeirdInt(y)) for (x, y) in outcomes]
     pmf = [1/4]*4
     d = Distribution(outcomes, pmf)
     s_ = """Class:          Distribution

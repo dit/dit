@@ -24,7 +24,7 @@ def DtoSD(dist, extract):
 
     """
     if extract and dist.outcome_length() == 1:
-        outcomes = tuple( outcome[0] for outcome in dist.outcomes )
+        outcomes = tuple(outcome[0] for outcome in dist.outcomes)
         sample_space = dist.alphabet[0]
     else:
         outcomes = dist.outcomes
