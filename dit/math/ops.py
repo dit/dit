@@ -228,6 +228,18 @@ class Operations(object):
         """
         return close(self.zero, p)
 
+    def is_null_exact(self, p):
+        """
+        Returns `True` if `p` is exactly a null probability.
+
+        Parameters
+        ----------
+        p : float
+            The probability to be tested.
+
+        """
+        return self.zero == p
+
     def add(self, x, y):
         """ Abstract base class """
         raise NotImplementedError
