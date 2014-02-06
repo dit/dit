@@ -103,7 +103,8 @@ def _construct_alphabets(outcomes):
     # Its important that we maintain the order of the sample space.
     # The sample space is given by the Cartesian product of the alphabets.
     # So if the user passes sort=False to the constructor of Distribution,
-    # we must make sure to keep the order of the alphabet.
+    # we must make sure to keep the order of the alphabet. So we do not sort
+    # the alphabets.
     from dit.utils import OrderedDict
 
     outcome_length = len(outcomes[0])
