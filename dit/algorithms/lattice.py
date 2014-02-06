@@ -1,3 +1,4 @@
+
 """
 Some algorithms related to lattices.
 
@@ -60,8 +61,9 @@ def induced_sigalg(dist, rvs, rv_names=None):
     d = defaultdict(list)
     ctor = dist._outcome_ctor
     for outcome, _ in dist.zipped(mode='atoms'):
-        # We need to iterate over all atoms, not just those in pmf.
         # Build a list of inner outcomes. "c" stands for "constructed".
+        # We need to iterate over all atoms, not just those in pmf since
+        # we are trying to partition the sample space.
         c_outcome = ctor([outcome[i] for i in indexes])
         d[c_outcome].append(outcome)
 
@@ -298,17 +300,17 @@ def insert_rv(dist, idx, sigalg):
 
     if idx == dist.outcome_length():
         def new_outcome_ctor(outcome, ctor=dist._outcome_ctor):
-            """The end of the atoms"""
+            """The end of the outcome"""
             new_outcome = [outcome, [atom_of[outcome]]]
             return ctor(chain.from_iterable(new_outcome))
     elif idx == 0:
         def new_outcome_ctor(outcome, ctor=dist._outcome_ctor):
-            """The beginning of the atoms"""
+            """The beginning of the outcome"""
             new_outcome = [[atom_of[outcome]], outcome]
             return ctor(chain.from_iterable(new_outcome))
     else:
         def new_outcome_ctor(outcome, ctor=dist._outcome_ctor):
-            """In the middle of the atoms"""
+            """In the middle of the outcome"""
             new_outcome = [outcome[:idx], [atom_of[outcome]], outcome[idx:]]
             return ctor(chain.from_iterable(new_outcome))
 
