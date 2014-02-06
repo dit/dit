@@ -1,6 +1,53 @@
-
+# -*- coding: utf-8 -*-
 """
 Some algorithms related to lattices.
+
+Here we are concerned with determining random variable induced sigma-algebras.
+That is, we want to know the subsigma-algebra (of the underlying sigma-algebra)
+that corresponds to a random variable. However, we consider only those random
+variables that map outcomes in the underlying sigma-algebra to a projection of
+that outcome. For example, if an outcome in the underlying sigma-algebra is
+(1,2,3), then random variable `X_1` would take on the value (2,) and the joint
+random variable `X_0,X_2` has the value (1,2). By considering all possible
+induced sigma-algebras, we are equivalently considering all possible partitions
+of the sample space.
+
+Relationship to Intersection Information based on Common Randomness
+--------------------------------------------------------------------
+In general, the meet and join operators are defined with respect to information
+equivalence, which in turn, derives from the notions of informationally
+richer/poorer. In this module, richer and poorer correspond to refinements and
+coarsenings of the sample space and thus, depend explicitly on the structure
+of the underlying sigma-algebra.
+
+As an example, consider the r.v.s. X and Y, where X = 1 and Y = X with p=1 and
+Y = 0 with p=0. There is a sense in X and Y have the same distribution. However,
+X and Y are not informationally equivalent as there is a function f such that
+X = f(Y) where f maps 0 and 1 to 1, but not the other way around. One imagines
+X as the coarsest possible partition of the sample space, whereas Y is a
+refinement. To wit, the sample space is {10,11} with p(10) = 0 and p(11) = 1.
+Then X corresponds to the partition: {(10, 11)} while Y is {(10,), (11,)}.
+
+In [1], richer and poorer are defined in terms of probability almost surely.
+That is, X is informationally poorer than Y if X = f(Y) almost surely.  This
+means that the definition is not as sensitive to the structure of the
+underlying sigma-algebra. In the above example, X and Y are now informationally
+equivalent, even though Y is a refinement of the partition corresponding to X.
+
+In general, there is a trend that coarser partitions correspond to
+informationally poorer random variables (but due to the partial ordering, not
+all partitions are comparable to one another).  In [1], a (comparable) coarser
+partition is only poorer if the coarsening involves outcomes with nonzero
+probability. Said another way, a r.v. that is corresponds to a refinement of
+another r.v. is informationally richer only if it refines outcomes which have
+nonzero probability.
+
+If the behavior of [1] is desired, one must make sure to prune the sample space
+of any outcomes that have zero probability. Then, the implementation here will
+give the same results as [1].
+
+[1] "Intersection Information based on Common Randomness"
+    http://arxiv.org/abs/1310.1538
 
 """
 from collections import defaultdict
