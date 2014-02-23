@@ -26,6 +26,7 @@ from .distconst import *
 
 import dit.algorithms
 import dit.divergences
+import dit.example_dists
 import dit.inference
 import dit.esoteric
 import dit.multivariate
