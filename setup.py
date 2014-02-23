@@ -148,6 +148,13 @@ def main():
             ["dit/math/_close.pyx"]
         )
 
+        pycounts = Extension(
+            "dit.inference.pycounts",
+            ["dit/inference/pycounts.pyx", "dit/inference/counts.c"],
+            include_dirs=[np.get_include()],
+            libraries=['m'],
+        )
+
         samplediscrete = Extension(
             "dit.math._samplediscrete",
             ["dit/math/_samplediscrete.pyx"],
@@ -157,6 +164,7 @@ def main():
         # Active Cython modules
         cython_modules = [
             close,
+            pycounts,
             samplediscrete,
         ]
 
@@ -181,6 +189,7 @@ def main():
         'dit.divergences',
         'dit.esoteric',
         'dit.example_dists',
+        'dit.inference',
         'dit.math',
         'dit.multivariate',
         'dit.shannon',
