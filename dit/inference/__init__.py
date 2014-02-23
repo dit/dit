@@ -2,4 +2,7 @@
 Module for basic inference tools.
 
 """
-from .pycounts import *
+try:
+	from .pycounts import *
+except ImportError:
+	pass
