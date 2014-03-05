@@ -137,6 +137,25 @@ def test_random_distribution():
     np.testing.assert_allclose(d.pmf, pmf)
     assert_raises(ditException, dit.random_distribution, 2, 2, alpha=[1])
 
+def test_simplex_grid1():
+    dists = np.asarray(list(dit.simplex_grid(2, 2, using=tuple)))
+    dists_ = np.asarray([(0.0, 1.0), (0.25, 0.75), (0.5, 0.5),
+                         (0.75, 0.25), (1.0, 0.0)])
+    np.testing.assert_allclose(dists, dists_)
+
+def test_simplex_grid2():
+    dists = np.asarray([d.pmf for d in dit.simplex_grid(2, 2)])
+    dists_ = np.asarray([(0.0, 1.0), (0.25, 0.75), (0.5, 0.5),
+                         (0.75, 0.25), (1.0, 0.0)])
+    np.testing.assert_allclose(dists, dists_)
+
+def test_simplex_grid3():
+    d = dit.random_distribution(1, 2)
+    dists = np.asarray([x.pmf for x in dit.simplex_grid(2, 2, using=d)])
+    dists_ = np.asarray([(0.0, 1.0), (0.25, 0.75), (0.5, 0.5),
+                         (0.75, 0.25), (1.0, 0.0)])
+    np.testing.assert_allclose(dists, dists_)
+
 # These can be simple smoke test, since the random* tests hit all the branches.
 
 def test_uniform_scalar_distribution():

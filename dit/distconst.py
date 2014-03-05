@@ -3,6 +3,7 @@
 
 """
 Specialized distribution constructors.
+
 """
 
 from __future__ import division
@@ -21,6 +22,7 @@ __all__ = [
     'modify_outcomes',
     'random_scalar_distribution',
     'random_distribution',
+    'simplex_grid',
     'uniform_distribution',
     'uniform_scalar_distribution',
 ]
@@ -215,7 +217,7 @@ def random_scalar_distribution(n, alpha=None, prng=None):
 
 def random_distribution(outcome_length, alphabet_size, alpha=None, prng=None):
     """
-    Returns a uniform distribution.
+    Returns a random distribution drawn uniformly from the simplex.
 
     The distribution is sampled uniformly over the space of distributions on
     the `n`-simplex, where `n` is equal to `alphabet_size**outcome_length`.
@@ -259,6 +261,47 @@ def random_distribution(outcome_length, alphabet_size, alpha=None, prng=None):
     pmf = prng.dirichlet(alpha)
     d.pmf = pmf
     return d
+
+def simplex_grid(length, depth, base=2, using=None):
+    """Returns a generator over distributions, determined by a grid.
+
+    The grid is "triangular" in Euclidean space.
+
+    Parameters
+    ----------
+    length : int
+        The number of elements in each distribution. The dimensionality
+        of the simplex is length-1.
+    depth : int
+        Controls the density of the grid.  The number of points on the simplex
+        is given by:
+            (base**depth + length - 1)! / (base**depth)! / (length-1)!
+        At each depth, we exponentially increase the number of points.
+    base : int
+        The rate at which we divide probabilities.
+    using : None or distribution
+        If not `None`, then each yielded distribution is a copy of `using`
+        with its pmf set appropriately.  If `using` is equal to the tuple
+        type, then only tuples are yielded.
+
+    Examples
+    --------
+    >>> list(dit.simplex_grid(2, 2, using=tuple))
+    [(0.0, 1.0), (0.25, 0.75), (0.5, 0.5), (0.75, 0.25), (1.0, 0.0)]
+
+    """
+    from dit.math.combinatorics import slots
+    gen = slots(int(base)**int(depth), int(length), normalized=True)
+    if using == tuple:
+        for pmf in gen:
+            yield pmf
+    elif using is None:
+        using = random_scalar_distribution(length)
+
+    for pmf in gen:
+        d = using.copy()
+        d.pmf[:] = pmf
+        yield d
 
 def uniform_scalar_distribution(n):
     """
