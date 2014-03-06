@@ -262,7 +262,7 @@ def random_distribution(outcome_length, alphabet_size, alpha=None, prng=None):
     d.pmf = pmf
     return d
 
-def simplex_grid(length, depth, base=2, using=None):
+def simplex_grid(length, depth, base=2, using=None, inplace=False):
     """Returns a generator over distributions, determined by a grid.
 
     The grid is "triangular" in Euclidean space.
@@ -283,6 +283,13 @@ def simplex_grid(length, depth, base=2, using=None):
         If not `None`, then each yielded distribution is a copy of `using`
         with its pmf set appropriately.  If `using` is equal to the tuple
         type, then only tuples are yielded.
+    inplace : bool
+        If `True`, then each yielded distribution is the same Python object,
+        but with a new probability mass function. If `False`, then each yielded
+        distribution is a unique Python object and can be safely stored for
+        other calculations after the generator has finished. When `using` is
+        equal to `tuple`, this option has no effect---all yielded tuples are
+        distinct.
 
     Examples
     --------
@@ -291,17 +298,29 @@ def simplex_grid(length, depth, base=2, using=None):
 
     """
     from dit.math.combinatorics import slots
+
     gen = slots(int(base)**int(depth), int(length), normalized=True)
+
     if using == tuple:
         for pmf in gen:
             yield pmf
-    elif using is None:
-        using = random_scalar_distribution(length)
 
-    for pmf in gen:
-        d = using.copy()
-        d.pmf[:] = pmf
-        yield d
+    else:
+        if using is None:
+            using = random_scalar_distribution(length)
+        elif length != len(using.pmf):
+            raise Exception('`length` must match the length of pmf')
+
+        if inplace:
+            d = using
+            for pmf in gen:
+                d.pmf[:] = pmf
+                yield d
+        else:
+            for pmf in gen:
+                d = using.copy()
+                d.pmf[:] = pmf
+                yield d
 
 def uniform_scalar_distribution(n):
     """

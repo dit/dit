@@ -138,22 +138,38 @@ def test_random_distribution():
     assert_raises(ditException, dit.random_distribution, 2, 2, alpha=[1])
 
 def test_simplex_grid1():
+    # Test with tuple
     dists = np.asarray(list(dit.simplex_grid(2, 2, using=tuple)))
     dists_ = np.asarray([(0.0, 1.0), (0.25, 0.75), (0.5, 0.5),
                          (0.75, 0.25), (1.0, 0.0)])
     np.testing.assert_allclose(dists, dists_)
 
 def test_simplex_grid2():
+    # Test with ScalarDistribution
     dists = np.asarray([d.pmf for d in dit.simplex_grid(2, 2)])
     dists_ = np.asarray([(0.0, 1.0), (0.25, 0.75), (0.5, 0.5),
                          (0.75, 0.25), (1.0, 0.0)])
     np.testing.assert_allclose(dists, dists_)
 
 def test_simplex_grid3():
+    # Test with Distribution
     d = dit.random_distribution(1, 2)
     dists = np.asarray([x.pmf for x in dit.simplex_grid(2, 2, using=d)])
     dists_ = np.asarray([(0.0, 1.0), (0.25, 0.75), (0.5, 0.5),
                          (0.75, 0.25), (1.0, 0.0)])
+    np.testing.assert_allclose(dists, dists_)
+
+def test_simplex_grid4():
+    # Test with Distribution but with wrong length specified.
+    d = dit.random_distribution(2, 2)
+    g = dit.simplex_grid(5, 2, using=d)
+    np.testing.assert_raises(Exception, next, g)
+
+def test_simplex_grid5():
+    # Test with ScalarDistribution with inplace=True
+    # All final dists should be the same.
+    dists = np.asarray([d.pmf for d in dit.simplex_grid(2, 2, inplace=True)])
+    dists_ = np.asarray([(1.0, 0.0)]*5)
     np.testing.assert_allclose(dists, dists_)
 
 # These can be simple smoke test, since the random* tests hit all the branches.
