@@ -211,16 +211,15 @@ def counts_from_data(data, int hLength, int fLength, marginals=True, alphabet=No
 
     Returns
     -------
-    hmapping : dict
-        A dictionary mapping history words to row indexes.
+    histories : list
+        A list of observed histories, corresponding to the rows in `cCounts`.
     cCounts : NumPy array
         A NumPy array representing conditional counts. The rows correspond to
         the observed histories, so this is sparse. The number of rows in this
         array cannot be known in advance, but the number of columns will be
         equal to the alphabet size raised to the `fLength` power.
-    hCount : NumPy array
-        A 1D array representing the count of each the history word. Each
-        element corresponds to a value in `hmapping`.
+    hCounts : NumPy array
+        A 1D array representing the count of each history word.
     alphabet : tuple
         The ordered tuple representing the alphabet of the data. If `None`,
         the one is created from the data.
@@ -231,6 +230,10 @@ def counts_from_data(data, int hLength, int fLength, marginals=True, alphabet=No
     This requires three complete passes through the data. One to obtain
     the full alphabet. Another to standardize the data.  A final pass to
     obtain the counts.
+
+    This is implemented densely.  So during the course of the algorithm,
+    we work with a large array containing a row for each possible history.
+    Only the rows corresponding to observed histories are returned.
 
     """
     cdef int i,j
@@ -252,10 +255,10 @@ def counts_from_data(data, int hLength, int fLength, marginals=True, alphabet=No
         shape = ( hLength+1, 1 )
     else:
         shape = ( (nSymbols**(hLength+1) - 1) // (nSymbols - 1), nSymbols**fLength )
-    counts = np.zeros(shape, dtype=ITYPE)
+    cdef np.ndarray[ITYPE_t, ndim=2, mode="c"] cCounts = np.zeros(shape, dtype=ITYPE)
     cdef ITYPE_t *dataPtr = <ITYPE_t *>PyArray_DATA(data)
-    cdef ITYPE_t *countsPtr = <ITYPE_t *>PyArray_DATA(counts)
-    counts_st(dataPtr, len(data), hLength, fLength, nSymbols, countsPtr, marginals)
+    cdef ITYPE_t *cCountsPtr = <ITYPE_t *>PyArray_DATA(cCounts)
+    counts_st(dataPtr, len(data), hLength, fLength, nSymbols, cCountsPtr, marginals)
 
     # first, construct array of offsets
     # The offset is the index of the first element of each level of the n-ary tree.
@@ -271,31 +274,35 @@ def counts_from_data(data, int hLength, int fLength, marginals=True, alphabet=No
             offsetPtr[i] = (nSymbols**i - 1) // (nSymbols - 1)
 
     # construct mapping from histories to rows
-    cdef np.ndarray[ITYPE_t, ndim=1, mode="c"] hCount = np.ascontiguousarray(counts.sum(axis=1, dtype=ITYPE))
-    cdef ITYPE_t *hCountPtr = <ITYPE_t *>PyArray_DATA(hCount)
-    cdef int nHistories = hCount.size
-    cdef object hmapping = PyDict_New()
-    cdef long x
-    rowId = 0
+    cdef np.ndarray[ITYPE_t, ndim=1, mode="c"] hCounts = np.ascontiguousarray(cCounts.sum(axis=1, dtype=ITYPE))
+    cdef ITYPE_t *hCountsPtr = <ITYPE_t *>PyArray_DATA(hCounts)
+    cdef int nHistories = hCounts.size
+    histories = []
     for i in range(nHistories):
-        if hCountPtr[i] > 0:
+        if hCountsPtr[i] > 0:
             hword = dec2base(i, alphabet, offset)
-            PyDict_SetItem(hmapping, hword, rowId)
-            rowId += 1
-            # Cython automatically handles DECREFs in this case.
+            histories.append(hword)
 
-    allowed = hCount > 0
+    allowed = hCounts > 0
 
-    return hmapping, counts[allowed], hCount[allowed], alphabet
+    return histories, cCounts[allowed], hCounts[allowed], alphabet
 
-def probabilities_from_counts(cCounts, hCount):
+def probabilities_from_counts(np.ndarray[ITYPE_t, ndim=2, mode="c"] cCounts,
+                              np.ndarray[ITYPE_t, ndim=1, mode="c"] hCounts,
+                              bint marginals):
     """
+    Returns probabilities using the output of `counts_from_data`.
+
     Parameters
     ----------
+    histories : list
+        The list of observed histories.
     cCounts : NumPy array
         The conditional counts as output from `counts_from_data`.
-    hCount : NumPy array
+    hCounts : NumPy array
         The history counts as output from `counts_from_data`.
+    marginals : bool
+        The value of `marginals` that was passed to `counts_from_data`.
 
     Returns
     -------
@@ -304,14 +311,22 @@ def probabilities_from_counts(cCounts, hCount):
         correspond to the observed histories and the columns to the future
         words.
     hDist : NumPy array
-        A 1D array representing the probability of each history word.
+        A 1D array representing the probability of each history word, where
+        probabilities are taken with respect to histories of the same length.
 
     """
     cDists = cCounts.astype(float)
     norms = cCounts.sum(axis=1)
     cDists /= norms[:,np.newaxis]
-    hDist = hCount.astype(float)
-    hDist /= hCount.sum()
+    hDist = hCounts.astype(float)
+
+    cdef long total
+    if marginals:
+        total = hCounts[0]
+    else:
+        total = hCounts.sum()
+    hDist /= total
+
     return cDists, hDist
 
 def morphs_from_data(data, hLength, fLength, marginals=True, probabilities=False, logs=False):
@@ -413,11 +428,12 @@ def distribution_from_data(d, L, trim=True, base=None):
     # The docstring for counts_from_data should explain the outputs.
     hLength = 0
     fLength = L
-    x = counts_from_data(d, hLength, fLength, marginals=False)
-    mapping, cCounts, hCounts, alphabet = x
+    marginals = False
+    x = counts_from_data(d, hLength, fLength, marginals=marginals)
+    histories, cCounts, hCounts, alphabet = x
 
     # We turn the counts to probabilities
-    cProbs, hProbs = probabilities_from_counts(cCounts, hCounts)
+    cProbs, hProbs = probabilities_from_counts(cCounts, hCounts, marginals)
 
     # There is only the empty history.
     pmf = cProbs[0]
