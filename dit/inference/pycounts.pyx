@@ -71,6 +71,9 @@ def standardize_data(data, alphabet=None,
     -------
     out : NumPy array
         An integer NumPy array containing the standardized data.
+    alphabet : list
+        The ordered symbols in the alphabet. These symbols are standardized to
+        integers from 0 to len(`alphabet`)-1.
 
     Notes
     -----
@@ -118,7 +121,7 @@ def standardize_data(data, alphabet=None,
             symbol = bisect_left(alphabet, data[i])
             outPtr[i] = symbol
 
-    return out
+    return out, alphabet
 
 
 def dec2base(int dec, alphabet, np.ndarray[ITYPE_t, ndim=1, mode="c"] offset):
@@ -247,7 +250,7 @@ def counts_from_data(data, int hLength, int fLength, marginals=True, alphabet=No
 
     # Standardize alphabet to 0 .. k where k = len(alphabet) - 1
     if standardize:
-        data = standardize_data(data, alphabet)
+        data, _ = standardize_data(data, alphabet)
 
     # construct counts
     cdef int nSymbols = len(alphabet)
