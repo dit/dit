@@ -81,7 +81,7 @@ def expanded_samplespace(d, alphabets=None):
 
 
     outcomes = list(d._product(*alphabets))
-    pmf = [0] * len(outcomes)
+    pmf = [d.ops.zero] * len(outcomes)
     for o, p in d.zipped(mode='patoms'):
         idx = outcomes.index(o)
         pmf[idx] = p
