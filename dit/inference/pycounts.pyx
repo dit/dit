@@ -52,6 +52,10 @@ def standardize_data(data, alphabet=None,
     """
     Returns `data` standardized to an integer alphabet.
 
+    The data points should be sortable if the alphabet size is greater than
+    four. This is because we use the `bisect` module to standardize the data
+    whenever the alphabet size is five or larger.
+
     Parameters
     ----------
     data : iterable
@@ -114,6 +118,33 @@ def standardize_data(data, alphabet=None,
                 outPtr[i] = 0
             else:
                 outPtr[i] = 1
+    elif K == 3:
+        # Ternary alphabet
+        first = alphabet[0]
+        second = alphabet[1]
+        for i in range(L):
+            s = data[i]
+            if s == first:
+                outPtr[i] = 0
+            elif s == second:
+                outPtr[i] = 1
+            else:
+                outPtr[i] = 2
+    elif K == 4:
+        # 4-ary alphabet
+        first = alphabet[0]
+        second = alphabet[1]
+        third = alphabet[2]
+        for i in range(L):
+            s = data[i]
+            if s == first:
+                outPtr[i] = 0
+            elif s == second:
+                outPtr[i] = 1
+            elif s == third:
+                outPtr[i] = 2
+            else:
+                outPtr[i] = 3
     else:
         # Otherwise, we use binary searches to determine the standard symbol.
         for i in range(L):
