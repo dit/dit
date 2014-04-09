@@ -23,6 +23,7 @@ from .npscalardist import ScalarDistribution
 from .npdist import Distribution
 
 from .distconst import *
+from .helpers import copypmf
 
 import dit.algorithms
 import dit.divergences

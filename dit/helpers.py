@@ -387,3 +387,74 @@ def reorder_cp(outcomes, pmf, alphabet, product, index=None, method=None):
     new_index = dict(zip(outcomes, range(len(outcomes))))
 
     return outcomes, pmf, new_index
+
+def copypmf(d, base=None, mode='asis'):
+    """
+    Returns a NumPy array of the distribution's pmf.
+
+    Parameters
+    ----------
+    d : distribution
+        The distribution from which the pmf is copied.
+    base : float, 'linear', 'e', None
+        The desired base of the probabilities. If None, then the probabilities
+        maintain their current base.
+    mode : ['dense', 'sparse', 'asis']
+        A specification of how the pmf should be construted. 'dense' means
+        that the pmf should contain the entire sample space. 'sparse' means
+        the pmf should only contain nonnull probabilities. 'asis' means to
+        make a copy of the pmf, as it exists in the distribution.
+
+    Returns
+    -------
+    pmf : NumPy array
+        The pmf of the distribution.
+
+    """
+    from dit.math import LinearOperations, LogOperations, get_ops
+    from dit.params import validate_base
+
+    # Sanitize inputs, need numerical base for old base.
+    base_old = d.get_base(numerical=True)
+    if base is None:
+        base_new = base_old
+    else:
+        base_new = validate_base(base)
+
+    # Create ops instances.
+    ops_old = d.ops
+    ops_new = get_ops(base_new)
+
+    # Build the pmf
+    if mode == 'asis':
+        pmf = np.array(d.pmf, copy=True)
+    elif mode == 'dense':
+        pmf = np.array([d[o] for o in d.sample_space()], dtype=float)
+    elif mode == 'sparse':
+        pmf = np.array([p for p in d.pmf if not ops_old.is_null(p)], dtype=float)
+
+    # Determine the conversion targets.
+    islog_old = d.is_log()
+    if base_new == 'linear':
+        islog_new = False
+    else:
+        islog_new = True
+
+    # Do the conversion!
+    if islog_old and islog_new:
+        # Convert from one log base to another.
+        ## log_b(x) = log_b(a) * log_a(x)
+        pmf *= ops_new.log(base_old)
+    elif not islog_old and not islog_new:
+        # No conversion: from linear to linear.
+        pass
+    elif islog_old and not islog_new:
+        # Convert from log to linear.
+        ## x = b**log_b(x)
+        pmf = base_old**pmf
+    else:
+        # Convert from linear to log.
+        ## x = log_b(x)
+        pmf = ops_new.log(pmf)
+
+    return pmf
