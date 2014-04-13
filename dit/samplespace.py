@@ -35,8 +35,7 @@ the whole sample space during marginalization. So this particular use case will
 experience the penalty discussed above.
 
 """
-
-from .helpers import parse_rvs, get_outcome_ctor
+from .helpers import parse_rvs, get_outcome_ctor, construct_alphabets
 from .utils import OrderedDict
 
 try:
@@ -48,6 +47,8 @@ except ImportError:
 from operator import mul
 from itertools import product
 
+import numpy as np
+
 class SampleSpace(Set):
     """
     An abstract representation of a sample space.
@@ -56,7 +57,7 @@ class SampleSpace(Set):
 
     """
     def __init__(self, samplespace, product=product):
-        self._samplespace = samplespace
+        self._samplespace = list(samplespace)
         self._length = len(samplespace)
         self._product = product
         self._outcome_length = len(samplespace[0])
@@ -74,6 +75,13 @@ class SampleSpace(Set):
 
     def __iter__(self):
         return iter(self._samplespace)
+
+    def index(self, item):
+        """
+        Returns a key for sorting items in the sample space.
+
+        """
+        return self._samplespace.index(item)
 
     def coalesce(self, rvs, extract=False):
         """
@@ -206,6 +214,9 @@ class SampleSpace(Set):
     def outcome_length(self):
         return self._outcome_length
 
+    def sort(self):
+        self._samplespace.sort()
+
 
 class CartesianProduct(SampleSpace):
     """
@@ -213,7 +224,7 @@ class CartesianProduct(SampleSpace):
 
     """
     def __init__(self, alphabets, product=product):
-        self.alphabets = tuple(alphabet for alphabet in alphabets)
+        self.alphabets = list(alphabet for alphabet in alphabets)
         self._alphabet_sets = [alphabet if isinstance(alphabet, SampleSpace)
                               else set(alphabet) for alphabet in alphabets]
 
@@ -224,11 +235,33 @@ class CartesianProduct(SampleSpace):
         self._outcome_class = next(self._product(*self.alphabets)).__class__
         self._outcome_ctor = get_outcome_ctor(self._outcome_class)
 
+        # Used for calculating indexes
+        shifts = np.cumprod(self.alphabet_sizes[::-1])
+        shifts = [1] + list(shifts[:-1])
+        shifts.reverse()
+        self._shifts = np.array(shifts)
+
     def __contains__(self, item):
         return all([x in self._alphabet_sets[i] for i, x in enumerate(item)])
 
     def __iter__(self):
         return self._product(*self.alphabets)
+
+    def index(self, item):
+        """
+        Returns a key for sorting items in the sample space.
+
+        """
+        # This works even if alphabets[i] is itself a sample space.
+        try:
+            indexes = [self.alphabets[i].index(symbol)
+                       for i, symbol in enumerate(item)]
+        except (ValueError, IndexError):
+            msg = '{0!r} is not in the sample space'.format(item)
+            raise ValueError(msg)
+
+        idx = np.sum(np.array(indexes) * self._shifts)
+        return idx
 
     def coalesce(self, rvs, extract=False):
         """
@@ -300,3 +333,9 @@ class CartesianProduct(SampleSpace):
             ss = CartesianProduct(sample_spaces, product)
         return ss
 
+    def sort(self):
+        for i, alphabet in enumerate(self.alphabets):
+            if isinstance(alphabet, SampleSpace):
+                alphabet.sort()
+            else:
+                self.alphabets[i] = tuple(sorted(alphabet))

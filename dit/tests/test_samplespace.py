@@ -30,6 +30,19 @@ class TestSampleSpace(object):
         ss2_ = [('000', '00'), ('011', '10'), ('100', '01'), ('122', '21')]
         assert_equal(list(ss2), ss2_)
 
+    def test_sort(self):
+        product = dit.helpers.get_product_func(str)
+        samplespace = ['00', '01', '12', '10']
+        ss = SampleSpace(samplespace, product)
+        assert_equal(list(ss), samplespace)
+        indexes = [ss.index(i) for i in samplespace]
+        assert_equal(indexes, range(len(samplespace)))
+
+        ss.sort()
+        assert_equal(list(ss), sorted(samplespace))
+        indexes = [ss.index(i) for i in samplespace]
+        assert_equal(indexes, [0, 1, 3, 2])
+
 class TestCartesianProduct(object):
     def setUp(self):
         product = dit.helpers.get_product_func(str)
@@ -60,4 +73,15 @@ class TestCartesianProduct(object):
                  ('20', '0'), ('20', '1'), ('20', '2'),
                  ('21', '0'), ('21', '1'), ('21', '2')]
         assert_equal(list(ss2), ss2_)
+
+    def test_sort(self):
+        alphabets = [[0,1], [2,1]]
+        ss = CartesianProduct(alphabets)
+        indexes = [ss.index(i) for i in list(ss)]
+        assert_equal(indexes, range(len(ss)))
+
+        samplespace = list(ss)
+        ss.sort()
+        indexes = [ss.index(i) for i in samplespace]
+        assert_equal(indexes, [1, 0, 3, 2])
 
