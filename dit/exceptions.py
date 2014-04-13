@@ -117,7 +117,7 @@ class InvalidNormalization(ditException):
         The sole argument should be the summation of the probabilities.
 
         """
-        msg = "Bad normalization: {0}".format(args[0])
+        msg = "Bad normalization: {0!r}".format(args[0])
         self.summation = args[0]
         args = (msg,) + args
         ditException.__init__(self, *args, **kwargs)
