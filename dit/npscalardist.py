@@ -244,7 +244,7 @@ class ScalarDistribution(BaseDistribution):
     prng = None
 
     def __init__(self, outcomes, pmf=None, sample_space=None, base=None,
-                                 prng=None, sort=True, sparse=True, trim=False,
+                                 prng=None, sort=True, sparse=True, trim=True,
                                  validate=True):
         """
         Initialize the distribution.
@@ -297,9 +297,8 @@ class ScalarDistribution(BaseDistribution):
             dense and every outcome in the sample space will be represented.
 
         trim : bool
-            Specifies if null-outcomes should be removed from the sample space
-            before it is finalized.  In general, the sample space cannot be
-            changed once the distribution has been created.
+            Specifies if null-outcomes should be removed from pmf when
+            `make_sparse()` is called (assuming `sparse` is `True`).
 
         validate : bool
             If `True`, then validate the distribution.  If `False`, then assume
@@ -315,7 +314,7 @@ class ScalarDistribution(BaseDistribution):
         """
         super(ScalarDistribution, self).__init__(prng)
 
-        outcomes, pmf = self._init(outcomes, pmf, base, trim)
+        outcomes, pmf = self._init(outcomes, pmf, base)
 
         ## alphabets
         if len(outcomes) == 0 and sample_space is None:
@@ -366,7 +365,7 @@ class ScalarDistribution(BaseDistribution):
         if validate:
             self.validate()
 
-    def _init(self, outcomes, pmf, base, trim):
+    def _init(self, outcomes, pmf, base):
         """
         Pre-initialization with various sanity checks.
 
@@ -425,13 +424,6 @@ class ScalarDistribution(BaseDistribution):
                 base = ditParams['base']
         self.ops = get_ops(base)
 
-        if trim:
-            # Remove any outcome probability if it is a null probability.
-            ops = self.ops
-            zipped = zip(pmf, outcomes)
-            pairs = [(p, o) for p, o in zipped if not ops.is_null(p)]
-            pmf, outcomes = list(zip(*pairs))
-
         return outcomes, pmf
 
     @classmethod
@@ -481,7 +473,7 @@ class ScalarDistribution(BaseDistribution):
 
         if prng is None:
             # Do not use copied prng.
-            d.prng = dit.math.prng
+            d.prng = np.random.RandomState()
         else:
             # Use specified prng.
             d.prng = prng

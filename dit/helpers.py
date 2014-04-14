@@ -9,6 +9,7 @@ Helper non-public API functions for distributions.
 # Standard library
 from operator import itemgetter
 import itertools
+import warnings
 
 # Other
 import numpy as np
@@ -31,7 +32,35 @@ constructor_map = {
     str : ''.join,
 }
 
+class RV_Mode(object):
+    INDICES = 0
+    NAMES = 1
 
+    _mapping = {
+        'indexes': INDICES,
+        'indices': INDICES,
+        'names': NAMES,
+        None: None,
+        True: NAMES,
+        False: INDICES
+    }
+
+    # Temporary until we can convert everything to using: rv_mode
+    _deprecated = set([True, False])
+
+    def __getitem__(self, item):
+        try:
+            mode = self._mapping[item]
+        except KeyError:
+            raise KeyError('Invalid value for `rv_mode`')
+
+        if item in self._deprecated:
+            msg = 'Deprecated value for `rv_mode`: {0!r}'.format(item)
+            warnings.warn(msg, DeprecationWarning)
+
+        return mode
+
+RV_MODES = RV_Mode()
 
 def construct_alphabets(outcomes):
     """
@@ -205,7 +234,7 @@ def normalize_rvs(dist, rvs, crvs, rv_names):
 
 def parse_rvs(dist, rvs, rv_names=None, unique=True, sort=True):
     """
-    Returns the indexes of the random variables in `rvs`.
+    Returns the indices of the random variables in `rvs`.
 
     Parameters
     ----------
@@ -230,8 +259,8 @@ def parse_rvs(dist, rvs, rv_names=None, unique=True, sort=True):
     -------
     rvs : tuple
         A new tuple of the specified random variables, possibly sorted.
-    indexes : tuple
-        The corresponding indexes of the random variables, possibly sorted.
+    indices : tuple
+        The corresponding indices of the random variables, possibly sorted.
 
     Raises
     ------
@@ -239,6 +268,10 @@ def parse_rvs(dist, rvs, rv_names=None, unique=True, sort=True):
         If `rvs` cannot be converted properly into indexes.
 
     """
+    if rv_names is None:
+        rv_names = dist._rv_mode
+    rv_mode = RV_MODES[rv_names]
+
     # Quick check for the empty set. Interpretation: no random variables.
     if len(rvs) == 0:
         return (), ()
@@ -248,19 +281,13 @@ def parse_rvs(dist, rvs, rv_names=None, unique=True, sort=True):
         msg = '`rvs` contained duplicates.'
         raise ditException(msg)
 
-    # If `rv_names` is None, then its value depends on whether the distribution
-    # has names associated with its random variables.
-    if rv_names is None:
-        if dist._rvs is None:
-            # Interpret `rvs` as listing indexes.
-            rv_names = False
-        else:
-            # Interpret `rvs` as listing random variable names.
-            rv_names = True
-
-    if rv_names:
+    if rv_mode == RV_MODES.NAMES:
         # Then `rvs` contained random variable names.
         # We convert these to indexes.
+
+        if dist._rvs is None:
+            raise ditException('There are no random variable names to use.')
+
         indexes = []
         for rv in rvs:
             if rv in dist._rvs:
@@ -277,7 +304,7 @@ def parse_rvs(dist, rvs, rv_names=None, unique=True, sort=True):
     all_indexes = set(range(dist.outcome_length()))
     good_indexes = all_indexes.intersection(indexes)
     if len(good_indexes) != len(set(indexes)):
-        msg = '`rvs` contains invalid random variables'
+        msg = '`rvs` contains invalid random variables, {0}, {1} {2}'.format(indexes, good_indexes, rv_mode)
         raise ditException(msg)
 
     # Sort the random variable names (or indexes) by their index.

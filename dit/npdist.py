@@ -73,6 +73,7 @@ from .npscalardist import ScalarDistribution
 
 from .helpers import (
     construct_alphabets,
+    copypmf,
     get_outcome_ctor,
     get_product_func,
     parse_rvs,
@@ -331,6 +332,7 @@ class Distribution(ScalarDistribution):
     _outcomes_index = None
     _product = None
     _rvs = None
+    _rv_mode = 'indices'
 
     ## Advertised attributes.
     alphabet = None
@@ -340,7 +342,7 @@ class Distribution(ScalarDistribution):
     prng = None
 
     def __init__(self, outcomes, pmf=None, sample_space=None, base=None,
-                            prng=None, sort=True, sparse=True, trim=False,
+                            prng=None, sort=True, sparse=True, trim=True,
                             validate=True):
         """
         Initialize the distribution.
@@ -394,9 +396,8 @@ class Distribution(ScalarDistribution):
             dense and every outcome in the sample space will be represented.
 
         trim : bool
-            Specifies if null-outcomes should be removed from the sample space
-            before it is finalized.  In general, the sample space cannot be
-            changed once the distribution has been created.
+            Specifies if null-outcomes should be removed from pmf when
+            `make_sparse()` is called (assuming `sparse` is `True`).
 
         validate : bool
             If `True`, then validate the distribution.  If `False`, then assume
@@ -419,7 +420,7 @@ class Distribution(ScalarDistribution):
         super(ScalarDistribution, self).__init__(prng)
 
         # Do any checks/conversions necessary to get the parameters.
-        outcomes, pmf = self._init(outcomes, pmf, base, trim)
+        outcomes, pmf = self._init(outcomes, pmf, base)
 
         if len(outcomes) == 0 and sample_space is None:
             msg = '`outcomes` must be nonempty if no sample space is given'
@@ -490,7 +491,7 @@ class Distribution(ScalarDistribution):
         if validate:
             self.validate()
 
-    def _init(self, outcomes, pmf, base, trim):
+    def _init(self, outcomes, pmf, base):
         """
         Pre-initialization with various sanity checks.
 
@@ -542,13 +543,6 @@ class Distribution(ScalarDistribution):
                 base = ditParams['base']
         self.ops = get_ops(base)
 
-        if trim:
-            # Remove any outcome probability if it is a null probability.
-            ops = self.ops
-            zipped = zip(pmf, outcomes)
-            pairs = [(p, o) for p, o in zipped if not ops.is_null(p)]
-            pmf, outcomes = list(zip(*pairs))
-
         return outcomes, pmf
 
     @classmethod
@@ -598,8 +592,7 @@ class Distribution(ScalarDistribution):
 
         if prng is None:
             # Do not use copied prng.
-            from .math import prng
-            d.prng = prng
+            d.prng = np.random.RandomState()
         else:
             # Use specified prng.
             d.prng = prng
@@ -813,6 +806,104 @@ class Distribution(ScalarDistribution):
 
         return d
 
+    def condition_on(self, crvs, rvs=None, rv_mode=None, extract=False):
+        """
+        Returns distributions conditioned on random variables `crvs`.
+
+        Optionally, `rvs` specifies which random variables should remain.
+
+        NOTE: Eventually this will return a conditional distribution.
+
+        Parameters
+        ----------
+        crvs : list
+            The random variables to condition on.
+        rvs : list, None
+            The random variables for the resulting conditional distributions.
+            Any random variable not represented in the union of `crvs` and
+            `rvs` will be marginalized. If `None`, then every random variable
+            not appearing in `crvs` is used.
+        rv_mode : str, None
+            Specifies how to interpret `crvs` and `rvs`. Valid options are:
+            {'indices', 'names'}. If equal to 'indices', then the elements
+            of `crvs` and `rvs` are interpreted as random variable indices.
+            If equal to 'names', the the elements are interpreted as random
+            varible names. If `None`, then the value of `self.rv_mode` is
+            consulted, which defaults to 'indices'.
+        extract : bool
+            If the length of either `crvs` or `rvs` is 1 and `extract` is
+            `True`, then instead of the new outcomes being 1-tuples, we extract
+            the sole element to create scalar distributions.
+
+        Returns
+        -------
+        cdist : dist
+            The distribution of the conditioned random variables.
+        dists : list of distributions
+            The conditional distributions for each outcome in `cdist`.
+
+        """
+        crvs, cindexes = parse_rvs(self, crvs, rv_mode, unique=True, sort=True)
+        if rvs is None:
+            indexes = set(range(self.outcome_length())) - set(cindexes)
+        else:
+            rvs, indexes = parse_rvs(self, rvs, rv_mode, unique=True, sort=True)
+
+        union = set(cindexes).union(indexes)
+        if len(union) != len(cindexes) + len(indexes):
+            raise ditException('`crvs` and `rvs` must have no intersection.')
+
+        # Marginalize the random variables not in crvs or rvs
+        if len(union) < self.outcome_length():
+            mapping = dict(zip(sorted(union), range(len(union))))
+            d = self.marginal(union, rv_names='indices')
+            # Now we need to shift the indices to their new index values.
+            cindexes = [mapping[idx] for idx in cindexes]
+            indexes = [mapping[idx] for idx in indexes]
+        else:
+            d = self
+
+        cdist = d.marginal(cindexes, rv_names='indices')
+        dist = d.marginal(indexes, rv_names='indices')
+        sample_space = dist._sample_space
+        rv_names = dist.get_rv_names()
+
+        ops = d.ops
+        base = ops.get_base()
+        ctor = d._outcome_ctor
+
+        # A list of indexes of conditioned outcomes for each joint outcome.
+        # These are the indexes of w in P(w) for each ws in P(ws).
+        cidx = cdist._outcomes_index
+        coutcomes = [cidx[ctor([o[i] for i in cindexes])] for o in d.outcomes]
+
+        # A list of indexes of outcomes for each joint outcome.
+        # These are the indexes of s in P(s) for each ws in P(ws).
+        idx = dist._outcomes_index
+        outcomes = [idx[ctor([o[i] for i in indexes])] for o in d.outcomes]
+
+        cprobs = np.array([ops.invert(cdist.pmf[i]) for i in coutcomes])
+        probs = ops.mult(d.pmf, cprobs)
+
+        # Now build the distributions
+        pmfs = np.empty((len(cdist), len(dist)), dtype=float)
+        pmfs.fill(ops.zero)
+        for i, (coutcome, outcome) in enumerate(zip(coutcomes, outcomes)):
+            pmfs[coutcome, outcome] = probs[i]
+        dists = [Distribution(dist.outcomes, pmfs[i],
+                 base=base, sample_space=sample_space, validate=False)
+                 for i in range(pmfs.shape[0])]
+        for dist in dists:
+            dist.set_rv_names(rv_names)
+
+        if extract:
+            if len(cindexes) == 1:
+                cdist = ScalarDistribution.from_distribution(cdist)
+            if len(indexes) == 1:
+                dists = [ScalarDistribution.from_distribution(d) for d in dists]
+
+        return cdist, dists
+
     def copy(self, base=None):
         """
         Returns a (deep) copy of the distribution.
@@ -997,17 +1088,14 @@ class Distribution(ScalarDistribution):
         # Handle parts of d that are not settable through initialization.
 
         # Set the random variable names
-        if rv_names:
-            names = rvs
+        if self._rvs is None:
+            # There are no names...
+            names = None
         else:
-            if self._rvs is None:
-                # There are no names...
-                names = None
-            else:
-                # We only have the indexes...so reverse lookup to get the names.
-                names_, indexes_ = self._rvs.keys(), self._rvs.values()
-                rev = dict(zip(indexes_, names_))
-                names = [rev[i] for i in indexes]
+            # We only have the indexes...so reverse lookup to get the names.
+            names_, indexes_ = self._rvs.keys(), self._rvs.values()
+            rev = dict(zip(indexes_, names_))
+            names = [rev[i] for i in indexes]
         d.set_rv_names(names)
 
         # Set the mask
@@ -1070,6 +1158,11 @@ class Distribution(ScalarDistribution):
                 rvs = None
 
         self._rvs = rvs
+
+        if self._rvs is not None:
+            # Unsure if we should change this automatically.
+            self._rv_mode = 'names'
+
 
     def to_string(self, digits=None, exact=False, tol=1e-9, show_mask=False,
                         str_outcomes=False):

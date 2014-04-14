@@ -39,12 +39,10 @@ def test_mixture_distribution_log():
     npt.assert_allclose(pmf, d3.pmf)
 
 def test_mixture_distribution2():
-    # Test when sample spaces are incompatible.
+    # Test when pmfs are different lengths.
     d = dit.Distribution(['A', 'B'], [0.5, 0.5])
     d2 = dit.Distribution(['A', 'B'], [1, 0], sort=True, trim=True)
 
-    # Fails when it tries to get d2['A']
-    assert_raises(InvalidOutcome, dit.mixture_distribution, [d, d2], [0.5, 0.5])
     # Fails when it checks that all pmfs have the same length.
     assert_raises(ValueError, dit.mixture_distribution2, [d, d2], [0.5, 0.5])
 
