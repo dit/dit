@@ -9,11 +9,7 @@ i = information
 t = theory
 
 However, the more precise statement (at this point) is that `dit` is a
-Python package for sigma-algebras defined on finite sets. Presently,
-a few assumptions are made which make `dit` unsuitable as a general
-sigma algebra package (on finite sets).  Some of these assumptions
-deal with how the sample space and sigma algebras are formed from
-the probability mass function (and its outcomes).
+Python package for sigma-algebras defined on finite sets.
 
 """
 
@@ -26,6 +22,7 @@ from .npdist import Distribution
 from .samplespace import ScalarSampleSpace, SampleSpace, CartesianProduct
 from .distconst import *
 from .helpers import copypmf
+from .algorithms import pruned_samplespace, expanded_samplespace
 
 import dit.algorithms
 import dit.divergences
