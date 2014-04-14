@@ -26,7 +26,8 @@ def test__numerical_test1():
 
 def test__numerical_test2():
     """ Test _numerical_test on a bad distribution """
-    d = D([(0, 0), (1, '0'), (2, 1), (3, 1)], [1/8, 1/8, 3/8, 3/8])
+    # A bad distribution is one with a non-numerical alphabet
+    d = D([(0, '0'), (1, '0'), (2, '1'), (3, '1')], [1/8, 1/8, 3/8, 3/8])
     assert_raises(TypeError, _numerical_test, d)
 
 def test_mean1():
