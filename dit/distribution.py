@@ -273,12 +273,7 @@ class BaseDistribution(object):
         could be a log probability or a linear probability.
 
     """
-    # Subclasses should update these meta attributes *before* calling the base
-    # distribution's __init__ function.
-    _meta = {
-        'is_joint': None,
-        'is_numerical': None,
-    }
+    _meta = None
 
     # These should be set in the subclass's init function.
     outcomes = None
@@ -298,6 +293,12 @@ class BaseDistribution(object):
             import dit.math
             prng = dit.math.prng
         self.prng = prng
+
+        self._meta = {
+            'is_joint': None,
+            'is_numerical': None,
+        }
+
 
     def __contains__(self, outcome):
         raise NotImplementedError

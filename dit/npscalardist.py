@@ -231,11 +231,7 @@ class ScalarDistribution(BaseDistribution):
 
     _sample_space = None
     _outcomes_index = None
-    _meta = {
-        'is_joint': False,
-        'is_numerical': True,
-        'is_sparse': None
-    }
+    _meta = None
 
     alphabet = None
     outcomes = None
@@ -313,6 +309,11 @@ class ScalarDistribution(BaseDistribution):
 
         """
         super(ScalarDistribution, self).__init__(prng)
+
+        # Set *instance* attributes.
+        self._meta['is_joint'] = False
+        self._meta['is_numerical'] = True
+        self._meta['is_sparse'] = None
 
         outcomes, pmf = self._init(outcomes, pmf, base)
 

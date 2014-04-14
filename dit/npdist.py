@@ -323,11 +323,7 @@ class Distribution(ScalarDistribution):
     ## Unadvertised attributes
     _sample_space = None
     _mask = None
-    _meta = {
-        'is_joint': True,
-        'is_numerical': True,
-        'is_sparse': None,
-    }
+    _meta = None
     _outcome_class = None
     _outcome_ctor = None
     _outcomes_index = None
@@ -419,6 +415,11 @@ class Distribution(ScalarDistribution):
         # We do this because we want to init the prng AND ignore everything
         # that ScalarDistribution does.
         super(ScalarDistribution, self).__init__(prng)
+
+        # Set *instance* attributes
+        self._meta['is_joint'] = True
+        self._meta['is_numerical'] = True
+        self._meta['is_sparse'] = None
 
         # Do any checks/conversions necessary to get the parameters.
         outcomes, pmf = self._init(outcomes, pmf, base)
@@ -866,7 +867,13 @@ class Distribution(ScalarDistribution):
             cindexes = [mapping[idx] for idx in cindexes]
             indexes = [mapping[idx] for idx in indexes]
         else:
-            d = self
+            # Make a copy so we don't have to worry about changing the input
+            # distribution when we make it sparse.
+            d = self.copy()
+
+        # It's just easier to not worry about conditioning on zero probs.
+        sparse = d.is_sparse()
+        d.make_sparse()
 
         cdist = d.marginal(cindexes, rv_names='indices')
         dist = d.marginal(indexes, rv_names='indices')
@@ -878,12 +885,12 @@ class Distribution(ScalarDistribution):
         ctor = d._outcome_ctor
 
         # A list of indexes of conditioned outcomes for each joint outcome.
-        # These are the indexes of w in P(w) for each ws in P(ws).
+        # These are the indexes of w in the pmf of P(w) for each ws in P(ws).
         cidx = cdist._outcomes_index
         coutcomes = [cidx[ctor([o[i] for i in cindexes])] for o in d.outcomes]
 
         # A list of indexes of outcomes for each joint outcome.
-        # These are the indexes of s in P(s) for each ws in P(ws).
+        # These are the indexes of s in the pmf of P(s) for each ws in P(ws).
         idx = dist._outcomes_index
         outcomes = [idx[ctor([o[i] for i in indexes])] for o in d.outcomes]
 
@@ -895,7 +902,7 @@ class Distribution(ScalarDistribution):
         pmfs.fill(ops.zero)
         for i, (coutcome, outcome) in enumerate(zip(coutcomes, outcomes)):
             pmfs[coutcome, outcome] = probs[i]
-        dists = [Distribution(dist.outcomes, pmfs[i],
+        dists = [Distribution(dist.outcomes, pmfs[i], sparse=sparse,
                  base=base, sample_space=sample_space, validate=False)
                  for i in range(pmfs.shape[0])]
         for dist in dists:
