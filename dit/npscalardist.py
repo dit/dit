@@ -38,6 +38,7 @@ import dit.math
 from .math import get_ops, LinearOperations, close
 from .params import ditParams
 from .helpers import reorder
+from .samplespace import BaseSampleSpace, ScalarSampleSpace
 
 import numpy as np
 
@@ -80,10 +81,6 @@ def _make_distribution(outcomes, pmf=None, sample_space=None,
         pmf = outcomes
         outcomes = range(len(pmf))
 
-    ## sample space
-    if sample_space is None:
-        sample_space = outcomes
-
     # Force the distribution to be numerical and a NumPy array.
     d.pmf = np.asarray(pmf, dtype=float)
 
@@ -91,12 +88,19 @@ def _make_distribution(outcomes, pmf=None, sample_space=None,
     d.outcomes = tuple(outcomes)
     d._outcomes_index = dict(zip(outcomes, range(len(outcomes))))
 
-    # Tuple sample space and its set.
-    d._sample_space = tuple(sample_space)
-    d._sample_space_set = set(sample_space)
+
+    if isinstance(sample_space, BaseSampleSpace):
+        if sample_space._meta['is_joint']:
+            msg = '`sample_space` must be a scalar sample space.'
+            raise InvalidDistribution(msg)
+        d._sample_space = sample_space
+    else:
+        if sample_space is None:
+            sample_space = outcomes
+        d._sample_space = ScalarSampleSpapce(sample_space)
 
     # For scalar dists, the alphabet is the sample space.
-    d.alphabet = d._sample_space
+    d.alphabet = tuple(d._sample_space)
 
     d._meta['is_sparse'] = sparse
 
@@ -123,9 +127,6 @@ class ScalarDistribution(BaseDistribution):
     _sample_space : tuple
         A tuple representing the sample space of the probability space.
 
-    _sample_space_set : set
-        A set representing the sample space of the probability space.
-
     _outcomes_index : dict
         A dictionary mapping outcomes to their index in self.outcomes.
 
@@ -134,9 +135,10 @@ class ScalarDistribution(BaseDistribution):
 
     Public Attributes
     -----------------
-    alphabet : set
-        A set representing the alphabet of the random variable.  The
-        sample space for scalar distributions equals the alphabet.
+    alphabet : tuple
+        A tuple representing the alphabet of the joint random variable.  The
+        elements of the tuple are tuples, each of which represents the ordered
+        alphabet for a single random variable.
 
     outcomes : tuple
         The outcomes of the probability distribution.
@@ -228,7 +230,6 @@ class ScalarDistribution(BaseDistribution):
     """
 
     _sample_space = None
-    _sample_space_set = None
     _outcomes_index = None
     _meta = {
         'is_joint': False,
@@ -314,16 +315,36 @@ class ScalarDistribution(BaseDistribution):
         """
         super(ScalarDistribution, self).__init__(prng)
 
-        outcomes, pmf, sample_space = self._init(outcomes, pmf,
-                                                 sample_space, base, trim)
+        outcomes, pmf = self._init(outcomes, pmf, base, trim)
+
+        ## alphabets
+        if len(outcomes) == 0 and sample_space is None:
+            msg = '`outcomes` must be nonempty if no sample space is given'
+            raise InvalidDistribution(msg)
+
+        if isinstance(sample_space, BaseSampleSpace):
+            if sample_space._meta['is_joint']:
+                msg = '`sample_space` must be a scalar sample space.'
+                raise InvalidDistribution(msg)
+
+            if sort:
+                sample_space.sort()
+            self._sample_space = sample_space
+
+        else:
+            if sample_space is None:
+                sample_space = outcomes
+
+            if sort:
+                sample_space = list(sorted(sample_space))
+            self._sample_space = ScalarSampleSpace(sample_space)
 
         ## Question: Using sort=False seems very strange and supporting it
         ##           makes things harder, since we can't assume the outcomes
         ##           and sample space are sorted.  Is there a valid use case
         ##           for an unsorted sample space?
-        if sort:
-            sample_space = tuple(sorted(sample_space))
-            outcomes, pmf, index = reorder(outcomes, pmf, sample_space)
+        if sort and len(outcomes) > 0:
+            outcomes, pmf, index = reorder(outcomes, pmf, self._sample_space)
         else:
             index = dict(zip(outcomes, range(len(outcomes))))
 
@@ -334,12 +355,8 @@ class ScalarDistribution(BaseDistribution):
         self.outcomes = tuple(outcomes)
         self._outcomes_index = index
 
-        # Tuple sample space and its set.
-        self._sample_space = tuple(sample_space)
-        self._sample_space_set = set(sample_space)
-
         # For scalar dists, the alphabet is the sample space.
-        self.alphabet = self._sample_space
+        self.alphabet = tuple(self._sample_space)
 
         if sparse:
             self.make_sparse(trim=trim)
@@ -349,7 +366,7 @@ class ScalarDistribution(BaseDistribution):
         if validate:
             self.validate()
 
-    def _init(self, outcomes, pmf, sample_space, base, trim):
+    def _init(self, outcomes, pmf, base, trim):
         """
         Pre-initialization with various sanity checks.
 
@@ -415,17 +432,7 @@ class ScalarDistribution(BaseDistribution):
             pairs = [(p, o) for p, o in zipped if not ops.is_null(p)]
             pmf, outcomes = list(zip(*pairs))
 
-        ## alphabets
-        # Use outcomes to obtain the alphabets.
-        if sample_space is None:
-            if len(outcomes) == 0:
-                msg = '`outcomes` cannot have zero length if '
-                msg += '`sample_space` is `None`'
-                raise InvalidDistribution(msg)
-            else:
-                sample_space = outcomes
-
-        return outcomes, pmf, sample_space
+        return outcomes, pmf
 
     @classmethod
     def from_distribution(cls, dist, base=None, prng=None, extract=True):
@@ -748,7 +755,7 @@ class ScalarDistribution(BaseDistribution):
         if null:
             # Make sure the outcome exists in the sample space, which equals
             # the alphabet for distributions.
-            z = outcome in self._sample_space_set
+            z = outcome in self._sample_space
         else:
             # Must be valid and have positive probability.
             try:

@@ -68,6 +68,8 @@ from .helpers import (
     reorder
 )
 
+from .samplespace import SampleSpace, CartesianProduct
+
 from .exceptions import (
     InvalidDistribution, InvalidOutcome, ditException
 )
@@ -111,10 +113,6 @@ def _make_distribution(outcomes, pmf, base,
         base = ditParams['base']
     d.ops = get_ops(base)
 
-    if sample_space is None:
-        # Use outcomes to obtain the sample_space.
-        sample_space = outcomes
-
     ## Set the outcome class, ctor, and product function.
     ## Assumption: the class of each outcome is the same.
     klass = outcomes[0].__class__
@@ -129,13 +127,16 @@ def _make_distribution(outcomes, pmf, base,
     d.outcomes = tuple(outcomes)
     d._outcomes_index = dict(zip(outcomes, range(len(outcomes))))
 
-    # Tuple sample space and its set.
-    d._sample_space = tuple(sample_space)
-    d._sample_space_set = set(sample_space)
+    # Alphabet
+    d.alphabet = tuple(construct_alphabets(outcomes))
 
-    # Alphabet and its set.
-    d.alphabet = construct_alphabets(sample_space)
-    d._alphabet_set = tuple(map(set, d.alphabet))
+    # Sample space.
+    if sample_space is None:
+        d._sample_space = CartesianProduct(d.alphabet, d._product)
+    elif isinstance(sample_space, SampleSpace):
+        d._sample_space = sample_space
+    else:
+        d._sample_space = SampleSpace(outcomes)
 
     # Set the mask
     d._mask = tuple(False for _ in range(len(outcomes[0])))
@@ -162,11 +163,6 @@ class Distribution(ScalarDistribution):
 
     Private Attributes
     ------------------
-    _alphabet_set : tuple
-        A tuple representing the alphabet of the joint random variable.  The
-        elements of the tuple are sets, each of which represents the unordered
-        alphabet of a single random variable.
-
     _mask : tuple
         A tuple of booleans specifying if the corresponding random variable
         has been masked or not.
@@ -191,6 +187,9 @@ class Distribution(ScalarDistribution):
     _rvs : dict
         A dictionary mapping random variable names to their index into the
         outcomes of the distribution.
+
+    _samplespace : SampleSpace
+        The sample space of the distribution.
 
     Public Attributes
     -----------------
@@ -310,7 +309,6 @@ class Distribution(ScalarDistribution):
     """
     ## Unadvertised attributes
     _sample_space = None
-    _sample_space_set = None
     _mask = None
     _meta = {
         'is_joint': True,
@@ -351,11 +349,11 @@ class Distribution(ScalarDistribution):
             The outcome probabilities or log probabilities. `pmf` can be None
             only if `outcomes` is a dict.
 
-        sample_space : sequence
+        sample_space : sequence, CartesianProduct
             A sequence representing the sample space, and corresponding to the
             complete set of possible outcomes. The order of the sample space
             is important. If `None`, then the outcomes are used to determine
-            the sample space instead.
+            a Cartesian product sample space instead.
 
         base : float, None
             If `pmf` specifies log probabilities, then `base` should specify
@@ -410,17 +408,54 @@ class Distribution(ScalarDistribution):
         super(ScalarDistribution, self).__init__(prng)
 
         # Do any checks/conversions necessary to get the parameters.
-        outcomes, pmf, sample_space = self._init(outcomes, pmf,
-                                             sample_space, base, trim)
+        outcomes, pmf = self._init(outcomes, pmf, base, trim)
+
+        if len(outcomes) == 0 and sample_space is None:
+            msg = '`outcomes` must be nonempty if no sample space is given'
+            raise InvalidDistribution(msg)
+
+        if isinstance(sample_space, SampleSpace):
+            if not sample_space._meta['is_joint']:
+                msg = '`sample_space` must be a joint sample space.'
+                raise InvalidDistribution(msg)
+
+            if sort:
+                sample_space.sort()
+            self._outcome_class = sample_space._outcome_class
+            self._outcome_ctor = sample_space._outcome_ctor
+            self._product = sample_space._product
+            self._sample_space = sample_space
+            alphabets = construct_alphabets(list(sample_space))
+        else:
+            if sample_space is None:
+                ss = outcomes
+            else:
+                ss = sample_space
+
+
+            alphabets = construct_alphabets(ss)
+            if sort:
+                alphabets = tuple(map(tuple, map(sorted, alphabets)))
+
+            ## Set the outcome class, ctor, and product function.
+            ## Assumption: the class of each outcome is the same.
+            klass = ss[0].__class__
+            self._outcome_class = klass
+            self._outcome_ctor = get_outcome_ctor(klass)
+            self._product = get_product_func(klass)
+
+            if sample_space is None:
+                self._sample_space = CartesianProduct(alphabets, self._product)
+            else:
+                self._sample_space = SampleSpace(ss)
 
         # Sort everything to match the order of the sample space.
         ## Question: Using sort=False seems very strange and supporting it
         ##           makes things harder, since we can't assume the outcomes
         ##           and sample space are sorted.  Is there a valid use case
         ##           for an unsorted sample space?
-        if sort:
-            sample_space = sorted(sample_space)
-            outcomes, pmf, index = reorder(outcomes, pmf, sample_space)
+        if sort and len(outcomes) > 0:
+            outcomes, pmf, index = reorder(outcomes, pmf, self._sample_space)
         else:
             index = dict(zip(outcomes, range(len(outcomes))))
 
@@ -431,10 +466,7 @@ class Distribution(ScalarDistribution):
         self.outcomes = tuple(outcomes)
         self._outcomes_index = index
 
-        # Tuple sample space and its set.
-        self._sample_space = tuple(sample_space)
-        self._sample_space_set = set(sample_space)
-        self.alphabet = construct_alphabets(sample_space)
+        self.alphabet = tuple(alphabets)
 
         # Mask
         self._mask = tuple(False for _ in range(len(self.alphabet)))
@@ -447,7 +479,7 @@ class Distribution(ScalarDistribution):
         if validate:
             self.validate()
 
-    def _init(self, outcomes, pmf, sample_space, base, trim):
+    def _init(self, outcomes, pmf, base, trim):
         """
         Pre-initialization with various sanity checks.
 
@@ -506,24 +538,7 @@ class Distribution(ScalarDistribution):
             pairs = [(p, o) for p, o in zipped if not ops.is_null(p)]
             pmf, outcomes = list(zip(*pairs))
 
-        ## alphabet
-        if sample_space is None:
-            if len(outcomes) == 0:
-                # We need at least one outcome to know the outcome class.
-                msg = '`outcomes` cannot have zero length if '
-                msg += '`sample_space` is `None`'
-                raise InvalidDistribution(msg)
-            else:
-                sample_space = outcomes
-
-        ## Set the outcome class, ctor, and product function.
-        ## Assumption: the class of each outcome is the same.
-        klass = sample_space[0].__class__
-        self._outcome_class = klass
-        self._outcome_ctor = get_outcome_ctor(klass)
-        self._product = get_product_func(klass)
-
-        return outcomes, pmf, sample_space
+        return outcomes, pmf
 
     @classmethod
     def from_distribution(cls, dist, base=None, prng=None):
@@ -639,7 +654,7 @@ class Distribution(ScalarDistribution):
 
             # 2. Reorder  ### This call is different from Distribution
             outcomes, pmf, index = reorder(self.outcomes, pmf,
-                                           self.sample_space())
+                                           self._sample_space)
 
             # 3. Store
             self.outcomes = tuple(outcomes)
@@ -882,7 +897,7 @@ class Distribution(ScalarDistribution):
 
         """
         # Make sure the outcome exists in the sample space.
-        is_atom = outcome in self._sample_space_set
+        is_atom = outcome in self._sample_space
         if not is_atom:
             # Outcome does not exist in the sample space.
             return False

@@ -17,6 +17,7 @@ from dit.npdist import Distribution, ScalarDistribution, _make_distribution
 from dit.exceptions import ditException, InvalidDistribution, InvalidOutcome
 
 import numpy as np
+from itertools import product
 
 def test_init1():
     # Invalid initializations.
@@ -81,15 +82,15 @@ def test_atoms():
     outcomes = ['000', '011', '101', '110', '222', '321', '333']
     d = Distribution(outcomes, pmf)
 
-    atoms = outcomes
-    assert_equal(list(d.atoms()), atoms)
+    atoms = d._product(['0','1','2', '3'], repeat=3)
+    assert_equal(list(d.atoms()), list(atoms))
 
     patoms = ['000', '011', '101', '110', '222', '333']
     assert_equal(list(d.atoms(patoms=True)), patoms)
 
     d = Distribution(outcomes, pmf, sample_space=outcomes + ['444'])
-    atoms = outcomes + ['444']
-    assert_equal(list(d.atoms()), atoms)
+    atoms = d._product(['0','1','2', '3', '4'], repeat=3)
+    assert_equal(list(d.atoms()), list(atoms))
 
 def test_zipped():
     pmf = [.125, .125, .125, .125, .25, 0, .25]

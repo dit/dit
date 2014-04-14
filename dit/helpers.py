@@ -60,6 +60,7 @@ def construct_alphabets(outcomes):
     Raises
     ------
     ditException
+        When there are no outcomes.
         When not every outcome is a sequence.
         When not all outcomes have the same length.
 
@@ -74,9 +75,12 @@ def construct_alphabets(outcomes):
 
     # Make sure outcomes is a sequence
     try:
-        len(outcomes)
+        L = len(outcomes)
     except TypeError:
         raise TypeError('`outcomes` must be a sequence.')
+
+    if L == 0:
+        raise ditException('`outcomes` must not be empty.')
 
     # Make sure each outcome is sized.  They really should be sequences,
     # but this check is sufficient for now.
@@ -290,102 +294,22 @@ def reorder(outcomes, pmf, sample_space, index=None):
     Helper function to reorder outcomes and pmf to match sample_space.
 
     """
+    try:
+        order = [(sample_space.index(outcome), i)
+                 for i, outcome in enumerate(outcomes)]
+    except ValueError:
+        msg = 'One of the outcomes was not in the sample space.'
+        raise InvalidOutcome(msg)
+
+    order.sort()
+    _, order = zip(*order)
+
     if index is None:
         index = dict(zip(outcomes, range(len(outcomes))))
-
-    order = [index[outcome] for outcome in sample_space if outcome in index]
-    if len(order) != len(outcomes):
-        # For example, `outcomes` contains an element not in `sample_space`.
-        # For example, `outcomes` contains duplicates.
-        msg = 'outcomes and sample_space are not compatible.'
-        raise InvalidDistribution(msg)
 
     outcomes = [outcomes[i] for i in order]
     pmf = [pmf[i] for i in order]
     new_index = dict(zip(outcomes, range(len(outcomes))))
-    return outcomes, pmf, new_index
-
-def reorder_cp(outcomes, pmf, alphabet, product, index=None, method=None):
-    """
-    Helper function to reorder pmf and outcomes so as to match the sample space.
-
-    When the sample space is not stored, explicitly on the distribution, then
-    there are two ways to do this:
-        1) Determine the order by generating the entire sample space.
-        2) Analytically calculate the sort order of each outcome.
-
-    If the sample space is very large and sparsely populated, then method 2)
-    is probably faster. However, it must calculate a number using
-    (2**(symbol_orders)).sum().  Potentially, this could be costly. If the
-    sample space is small, then method 1) is probably fastest. We'll experiment
-    and find a good heuristic.
-
-    """
-    # A map of the elements in `outcomes` to their index in `outcomes`.
-    if index is None:
-        index = dict(zip(outcomes, range(len(outcomes))))
-
-    if method is None:
-        # The number of elements in the sample space?
-        sample_space_size = np.prod(list(map(len, alphabet)))
-        if sample_space_size > 10000 and len(outcomes) < 1000:
-            # Large and sparse.
-            method = 'analytic'
-        else:
-            method = 'generate'
-
-    # method = 'generate'
-    if method == 'generate':
-        # Obtain the order from the generated order.
-        sample_space = product(*alphabet)
-        order = [index[outcome] for outcome in sample_space if outcome in index]
-        if len(order) != len(outcomes):
-            msg = 'Outcomes and sample_space are not compatible.'
-            raise InvalidDistribution(msg)
-        outcomes_ = [outcomes[i] for i in order]
-        pmf = [pmf[i] for i in order]
-
-        # We get this for free: Check that every outcome was in the sample
-        # space. Well, its costs us a bit in memory to keep outcomes and
-        # outcomes_.
-        if len(outcomes_) != len(outcomes):
-            # We lost an outcome.
-            bad = set(outcomes) - set(outcomes_)
-            L = len(bad)
-            if L > 0:
-                raise InvalidOutcome(bad, single=(L == 1))
-        else:
-            outcomes = outcomes_
-
-    elif method == 'analytic':
-        # Analytically calculate the sort order.
-        # Note, this method does not verify that every outcome was in the
-        # sample space.
-
-        # Construct a lookup from symbol to order in the alphabet.
-        alphabet_size = list(map(len, alphabet))
-        alphabet_index = [dict(zip(alph, range(size)))
-                          for alph, size in zip(alphabet, alphabet_size)]
-
-        L = len(outcomes[0]) - 1
-        codes = []
-        for outcome in outcomes:
-            idx = 0
-            for i, symbol in enumerate(outcome):
-                idx += alphabet_index[i][symbol] * (alphabet_size[i])**(L-i)
-            codes.append(idx)
-
-        # We need to sort the codes now, keeping track of their indexes.
-        order = list(zip(codes, range(len(codes))))
-        order.sort()
-        _, order = list(zip(*order))
-        outcomes = [outcomes[i] for i in order]
-        pmf = [pmf[i] for i in order]
-    else:
-        raise Exception("Method must be 'generate' or 'analytic'")
-
-    new_index = dict(zip(outcomes, range(len(outcomes))))
-
     return outcomes, pmf, new_index
 
 def copypmf(d, base=None, mode='asis'):
