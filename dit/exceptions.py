@@ -91,17 +91,25 @@ class InvalidOutcome(ditException):
         Parameters
         ----------
         outcome : sequence
-            The invalid outcomess.
+            The invalid outcomes.
         single : bool
             Specifies whether `outcome` represents a single outcome or not.
 
         """
         single = kwargs.get('single', True)
-        bad = args[0]
-        if single:
-            msg = "Outcome {0} is not in the sample space.".format(repr(bad))
+        try:
+            bad = args[0]
+        except IndexError:
+            # Demand a custom message.
+            if 'msg' in kwargs:
+                msg = kwargs['msg']
+            else:
+                msg = ''
         else:
-            msg = "Outcomes {0} are not in the sample space.".format(bad)
+            if single:
+                msg = "Outcome {0!r} is not in the sample space.".format(bad)
+            else:
+                msg = "Outcomes {0} are not in the sample space.".format(bad)
         args = (msg,) + args
         ditException.__init__(self, *args, **kwargs)
 

@@ -790,7 +790,11 @@ class Distribution(ScalarDistribution):
             if extract:
                 sample_space = sample_space.alphabets[0]
         else:
-            sample_space = list(zip(*sample_spaces))
+            if extract:
+                # There is only one sample space: len(indexes) = 1
+                sample_space = sample_spaces[0]
+            else:
+                sample_space = list(zip(*sample_spaces))
 
         d = Distribution(outcomes, pmf,
                          base=self.get_base(),

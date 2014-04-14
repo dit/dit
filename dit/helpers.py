@@ -325,8 +325,18 @@ def reorder(outcomes, pmf, sample_space, index=None):
         order = [(sample_space.index(outcome), i)
                  for i, outcome in enumerate(outcomes)]
     except ValueError:
-        msg = 'One of the outcomes was not in the sample space.'
-        raise InvalidOutcome(msg)
+        # Let's identify which outcomes were not in the sample space.
+        bad = []
+        for outcome in outcomes:
+            try:
+                sample_space.index(outcome)
+            except ValueError:
+                bad.append(outcome)
+        if len(bad) == 1:
+            single = True
+        else:
+            single = False
+        raise InvalidOutcome(bad, single=single)
 
     order.sort()
     _, order = zip(*order)
