@@ -46,7 +46,7 @@ except ImportError:
     # Py 2.x and < 3.3
     from collections import Set
 
-from itertools import product
+import itertools
 
 import numpy as np
 
@@ -111,7 +111,7 @@ class SampleSpace(ScalarSampleSpace):
         if product is None:
             self._product = get_product_func(self._outcome_class)
         else:
-            self._product = product
+            self._product = itertools.product
 
     def coalesce(self, rvs, extract=False):
         """
@@ -249,17 +249,23 @@ class CartesianProduct(SampleSpace):
     An abstract representation of a Cartesian product sample space.
 
     """
-    def __init__(self, alphabets, product=product):
+    def __init__(self, alphabets, product=None):
         self.alphabets = tuple(alphabet if isinstance(alphabet, SampleSpace)
                               else tuple(alphabet) for alphabet in alphabets)
         self._alphabet_sets = [alphabet if isinstance(alphabet, SampleSpace)
                               else set(alphabet) for alphabet in alphabets]
 
         self.alphabet_sizes = tuple(len(alphabet) for alphabet in alphabets)
-        # Here, the user MUST specify how we take products.
-        # We infer the class from the specified product.
+        if product is None:
+            # Let's try to guess.
+            # If every alphabet has the class str, let's use that.
+            klasses = [next(iter(alphabet)).__class__
+                       for alphabet in self.alphabets]
+            if len(set(klasses)) == 1 and klasses[0] == str:
+                product = get_product_func(str)
+            else:
+                product = itertools.product
         self._product = product
-        # Set initial value, in case there are no alphabets.
         self._length = np.prod(self.alphabet_sizes, dtype=int)
         self._outcome_length = len(self.alphabet_sizes)
         self._outcome_class = next(self._product(*self.alphabets)).__class__
@@ -368,7 +374,7 @@ class CartesianProduct(SampleSpace):
         if len(rvs) == 1 and extract:
             ss = sample_spaces[0]
         else:
-            ss = CartesianProduct(sample_spaces, product)
+            ss = CartesianProduct(sample_spaces, itertools.product)
         return ss
 
     def sort(self):

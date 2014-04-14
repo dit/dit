@@ -10,6 +10,11 @@ class TestSampleSpace(object):
         self.samplespace = ['00', '01', '10', '12']
         self.ss = SampleSpace(self.samplespace, product)
 
+    def test_samplespace_auto(self):
+        samplespace = ['00', '01', '10', '12']
+        ss = SampleSpace(samplespace)
+        assert_equal(list(ss), list(self.ss))
+
     def test_samplespace(self):
         assert_equal(list(self.ss), self.samplespace)
         assert_equal(len(self.ss), 4)

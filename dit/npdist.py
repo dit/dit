@@ -65,6 +65,7 @@ This has to do with sorting the alphabets. Probably this can be relaxed.
 
 from collections import defaultdict
 from operator import itemgetter
+import itertools
 
 import numpy as np
 from six.moves import map, range, zip # pylint: disable=redefined-builtin
@@ -444,7 +445,6 @@ class Distribution(ScalarDistribution):
             else:
                 ss = sample_space
 
-
             alphabets = construct_alphabets(ss)
             if sort:
                 alphabets = tuple(map(tuple, map(sorted, alphabets)))
@@ -782,14 +782,15 @@ class Distribution(ScalarDistribution):
         pmf = tuple(pmf)
 
         # Preserve the sample space during coalescing.
-        sample_spaces = [self._sample_space.coalesce([idx], extract=True)
-                         for idx in indexes]
+        sample_spaces = [self._sample_space.coalesce([idxes], extract=True)
+                         for idxes in indexes]
         if isinstance(self._sample_space, CartesianProduct):
-            sample_space = CartesianProduct(sample_spaces)
+            sample_space = CartesianProduct(sample_spaces,
+                                            product=itertools.product)
             if extract:
                 sample_space = sample_space.alphabets[0]
         else:
-            sample_space = sample_spaces[0]
+            sample_space = list(zip(*sample_spaces))
 
         d = Distribution(outcomes, pmf,
                          base=self.get_base(),
