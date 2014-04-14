@@ -8,6 +8,8 @@ is also important for the calculations of various PID quantities.
 
 """
 
+from dit.samplespace import ScalarSampleSpace, SampleSpace, CartesianProduct
+
 def pruned_samplespace(d, sample_space=None):
     """
     Returns a new distribution with pruned sample space.
@@ -41,7 +43,12 @@ def pruned_samplespace(d, sample_space=None):
             outcomes.append(o)
             pmf.append(p)
 
-    pd = d.__class__(outcomes, pmf, base=d.get_base())
+    if d.is_joint():
+        sample_space = SampleSpace(outcomes)
+    else:
+        sample_space = ScalarSampleSpace(outcomes)
+    pd = d.__class__(outcomes, pmf,
+                     sample_space=sample_space, base=d.get_base())
     return pd
 
 def expanded_samplespace(d, alphabets=None):
@@ -69,6 +76,11 @@ def expanded_samplespace(d, alphabets=None):
     ed : distribution
         The distribution with an expanded sample space.
 
+    Notes
+    -----
+    The default constructor for Distribution will create a Cartesian product
+    sample space if not sample space is provided.
+
     """
     if alphabets is None:
         # Note, we sort the alphabets now, so we are possibly changing the
@@ -79,12 +91,11 @@ def expanded_samplespace(d, alphabets=None):
         if len(alphabets) != L:
             raise Exception("You need to provide {0} alphabets".format(L))
 
+    if d.is_joint():
+        sample_space = CartesianProduct(alphabets, d._product)
+    else:
+        sample_space = ScalarSampleSpace(alphabets)
 
-    outcomes = list(d._product(*alphabets))
-    pmf = [d.ops.zero] * len(outcomes)
-    for o, p in d.zipped(mode='patoms'):
-        idx = outcomes.index(o)
-        pmf[idx] = p
-
-    ed = d.__class__(outcomes, pmf, base=d.get_base())
+    ed = d.__class__(d.outcomes, d.pmf,
+                     sample_space=sample_space, base=d.get_base())
     return ed
