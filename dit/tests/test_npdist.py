@@ -15,6 +15,7 @@ from six.moves import map, zip # pylint: disable=redefined-builtin
 
 from dit.npdist import Distribution, ScalarDistribution, _make_distribution
 from dit.exceptions import ditException, InvalidDistribution, InvalidOutcome
+from dit.samplespace import CartesianProduct
 
 import numpy as np
 from itertools import product
@@ -88,7 +89,8 @@ def test_atoms():
     patoms = ['000', '011', '101', '110', '222', '333']
     assert_equal(list(d.atoms(patoms=True)), patoms)
 
-    d = Distribution(outcomes, pmf, sample_space=outcomes + ['444'])
+    ss = CartesianProduct.from_outcomes(outcomes + ['444'])
+    d = Distribution(outcomes, pmf, sample_space=ss)
     atoms = d._product(['0','1','2', '3', '4'], repeat=3)
     assert_equal(list(d.atoms()), list(atoms))
 

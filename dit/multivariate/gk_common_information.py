@@ -39,7 +39,9 @@ def gk_common_information(dist, rvs=None, crvs=None, rv_names=None):
     crvs = parse_rvs(dist, crvs, rv_names)[1]
 
     outcomes, pmf = zip(*dist.zipped(mode='patoms'))
-    d = Distribution(outcomes, pmf)
+    # The GK-common information is sensitive to zeros in the sample space.
+    # Here, we make sure to remove them.
+    d = Distribution(outcomes, pmf, sample_space=outcomes)
     d.set_rv_names(dist.get_rv_names())
 
     d2 = insert_meet(d, -1, rvs, rv_names)

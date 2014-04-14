@@ -7,12 +7,13 @@ from nose.tools import assert_almost_equal
 from dit.example_dists import (Unq, Rdn, Xor, RdnXor, ImperfectRdn, Subtle, And,
                                Or)
 
-from dit.algorithms import insert_meet
+from dit.algorithms import insert_meet, pruned_samplespace
 from dit.shannon import mutual_information
 
 def test_unq():
     """ Test the Unq distribution """
     d = Unq()
+    d = pruned_samplespace(d)
     d = insert_meet(d, -1, [[0], [1]])
     i1 = mutual_information(d, [0], [2])
     i2 = mutual_information(d, [1], [2])
@@ -26,6 +27,7 @@ def test_unq():
 def test_rdn():
     """ Test the Rdn distribution """
     d = Rdn()
+    d = pruned_samplespace(d)
     d = insert_meet(d, -1, [[0], [1]])
     i1 = mutual_information(d, [0], [2])
     i2 = mutual_information(d, [1], [2])
@@ -39,6 +41,7 @@ def test_rdn():
 def test_xor():
     """ Test the Xor distribution """
     d = Xor()
+    d = pruned_samplespace(d)
     d = insert_meet(d, -1, [[0], [1]])
     i1 = mutual_information(d, [0], [2])
     i2 = mutual_information(d, [1], [2])
@@ -52,6 +55,7 @@ def test_xor():
 def test_and():
     """ Test the And distribution """
     d = And()
+    d = pruned_samplespace(d)
     d = insert_meet(d, -1, [[0], [1]])
     i1 = mutual_information(d, [0], [2])
     i2 = mutual_information(d, [1], [2])
@@ -65,6 +69,7 @@ def test_and():
 def test_or():
     """ Test the Or distribution """
     d = Or()
+    d = pruned_samplespace(d)
     d = insert_meet(d, -1, [[0], [1]])
     i1 = mutual_information(d, [0], [2])
     i2 = mutual_information(d, [1], [2])
@@ -78,6 +83,7 @@ def test_or():
 def test_rdnxor():
     """ Test the RdnXor distribution """
     d = RdnXor()
+    d = pruned_samplespace(d)
     d = insert_meet(d, -1, [[0], [1]])
     i1 = mutual_information(d, [0], [2])
     i2 = mutual_information(d, [1], [2])
@@ -91,6 +97,7 @@ def test_rdnxor():
 def test_imperfectrdn():
     """ Test the ImperfectRdn distribution """
     d = ImperfectRdn()
+    d = pruned_samplespace(d)
     d = insert_meet(d, -1, [[0], [1]])
     i1 = mutual_information(d, [0], [2])
     i2 = mutual_information(d, [1], [2])
@@ -104,6 +111,7 @@ def test_imperfectrdn():
 def test_subtle():
     """ Test the Subtle distribution """
     d = Subtle()
+    d = pruned_samplespace(d)
     d = insert_meet(d, -1, [[0], [1]])
     i1 = mutual_information(d, [0], [2])
     i2 = mutual_information(d, [1], [2])
