@@ -103,8 +103,9 @@ class SampleSpace(ScalarSampleSpace):
     def __init__(self, samplespace, product=None):
         super(SampleSpace, self).__init__(samplespace)
 
-        self._outcome_length = len(samplespace[0])
-        self._outcome_class = samplespace[0].__class__
+        outcome = next(iter(samplespace))
+        self._outcome_length = len(outcome)
+        self._outcome_class = outcome.__class__
         self._outcome_ctor = get_outcome_ctor(self._outcome_class)
         # Since we have access to an outcome, we determine a product from it.
         if product is None:
@@ -189,7 +190,7 @@ class SampleSpace(ScalarSampleSpace):
             c_outcome = ctor_o(c_outcome)
             outcomes[c_outcome] = True
 
-        return SampleSpace(outcomes.keys())
+        return SampleSpace(list(outcomes.keys()))
 
     def marginal(self, rvs):
         """
