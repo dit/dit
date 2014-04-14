@@ -50,6 +50,17 @@ is a single set. For (joint) distributions, the sample space is provided
 at initialization and the alphabet is a tuple of alphabets for each random
 variable. The alphabet for each random variable is a tuple.
 
+As of now, dit does not support mixed-type alphabets within a single r.v.
+So you can have outcomes like:
+
+    (0, '0'), (1, '1')
+
+but not like:
+
+    (0, '0'), (1, 1)
+
+This has to do with sorting the alphabets. Probably this can be relaxed.
+
 """
 
 from collections import defaultdict
