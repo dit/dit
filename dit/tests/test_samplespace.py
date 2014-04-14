@@ -36,7 +36,7 @@ class TestSampleSpace(object):
         ss = SampleSpace(samplespace, product)
         assert_equal(list(ss), samplespace)
         indexes = [ss.index(i) for i in samplespace]
-        assert_equal(indexes, range(len(samplespace)))
+        assert_equal(indexes, list(range(len(samplespace))))
 
         ss.sort()
         assert_equal(list(ss), sorted(samplespace))
@@ -78,7 +78,7 @@ class TestCartesianProduct(object):
         alphabets = [[0,1], [2,1]]
         ss = CartesianProduct(alphabets)
         indexes = [ss.index(i) for i in list(ss)]
-        assert_equal(indexes, range(len(ss)))
+        assert_equal(indexes, list(range(len(ss))))
 
         samplespace = list(ss)
         ss.sort()
