@@ -362,8 +362,8 @@ def product_maker(func):
 
     """
     from itertools import product
-    def _product(*args):
-        for prod in product(*args):
+    def _product(*args, **kwargs):
+        for prod in product(*args, **kwargs):
             yield func(prod)
     return _product
 
