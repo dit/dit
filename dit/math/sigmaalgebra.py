@@ -226,19 +226,63 @@ def atom_set(F, X=None):
     if not isinstance(next(iter(F)), frozenset):
         raise Exception('Input to `atom_set` must contain frozensets.')
 
-    atoms = []
-    for cet in F:
-        if not cet:
-            # An atom must be nonempty.
-            continue
+    def method1():
+        """
+        # of ops = len(F) * 2**len(largest element in F)
 
-        # Now look at all nonempty, proper subsets of cet.
-        subsets = list(powerset(cet))[1:-1]
-        for subset in subsets:
-            if frozenset(subset) in F:
-                break
-        else:
-            # Then `cet` has no proper subset that is also in F.
-            atoms.append(frozenset(cet))
+        """
+        atoms = []
+        for cet in F:
+            if not cet:
+                # An atom must be nonempty.
+                continue
+
+            # Now look at all nonempty, proper subsets of cet.
+            #
+            # If you have a sample space with 64 elements, and then consider
+            # the trivial sigma algebra, then one element of F will be the
+            # empty set, while the other will have 64 elements. Taking the
+            # powerset of this set will require going through a list of 2^64
+            # elements...in addition to taking forever, we can't even store
+            # that in memory.
+            #
+            subsets = list(powerset(cet))[1:-1] # nonempty and proper
+            for subset in subsets:
+                if frozenset(subset) in F:
+                    break
+            else:
+                # Then `cet` has no nonempty proper subset that is also in F.
+                atoms.append(frozenset(cet))
+
+        return atoms
+
+    def method2():
+        """
+        # of ops = len(F) * len(F)
+
+        """
+        atoms = []
+        for cet in F:
+            if len(cet) == 0:
+                # An atom must be nonempty.
+                continue
+
+            # We just go through the elements of F. If another nonempty
+            # element is a strict subset cet, then cet is not an atom.
+            #
+            for other_cet in F:
+                # We need to find an other_cet which is a non-empty proper subset
+                # of cet. Then, cet cannot be an atom.
+                L = len(other_cet)
+                if L == 0 or L == len(cet):
+                    continue
+                elif other_cet.issubset(cet):
+                    break
+            else:
+                atoms.append(frozenset(cet))
+
+        return atoms
+
+    atoms = method2()
 
     return frozenset(atoms)
