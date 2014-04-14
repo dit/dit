@@ -38,7 +38,7 @@ In general, there is a trend that coarser partitions correspond to
 informationally poorer random variables (but due to the partial ordering, not
 all partitions are comparable to one another).  In [1], a (comparable) coarser
 partition is only poorer if the coarsening involves outcomes with nonzero
-probability. Said another way, a r.v. that is corresponds to a refinement of
+probability. Said another way, a r.v. that corresponds to a refinement of
 another r.v. is informationally richer only if it refines outcomes which have
 nonzero probability.
 
