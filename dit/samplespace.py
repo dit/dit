@@ -46,7 +46,6 @@ except ImportError:
     # Py 2.x and < 3.3
     from collections import Set
 
-from operator import mul
 from itertools import product
 
 import numpy as np
@@ -260,7 +259,7 @@ class CartesianProduct(SampleSpace):
         # We infer the class from the specified product.
         self._product = product
         # Set initial value, in case there are no alphabets.
-        self._length = reduce(mul, self.alphabet_sizes, 1)
+        self._length = np.prod(self.alphabet_sizes, dtype=int)
         self._outcome_length = len(self.alphabet_sizes)
         self._outcome_class = next(self._product(*self.alphabets)).__class__
         self._outcome_ctor = get_outcome_ctor(self._outcome_class)
