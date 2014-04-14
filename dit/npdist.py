@@ -188,7 +188,7 @@ class Distribution(ScalarDistribution):
         A dictionary mapping random variable names to their index into the
         outcomes of the distribution.
 
-    _samplespace : SampleSpace
+    _sample_space : SampleSpace
         The sample space of the distribution.
 
     Public Attributes
@@ -777,9 +777,20 @@ class Distribution(ScalarDistribution):
         pmf = map(self.ops.add_reduce, pmf)
         pmf = tuple(pmf)
 
+        # Preserve the sample space during coalescing.
+        sample_spaces = [self._sample_space.coalesce([idx], extract=True)
+                         for idx in indexes]
+        if isinstance(self._sample_space, CartesianProduct):
+            sample_space = CartesianProduct(sample_spaces)
+            if extract:
+                sample_space = sample_space.alphabets[0]
+        else:
+            sample_space = sample_spaces[0]
+
         d = Distribution(outcomes, pmf,
                          base=self.get_base(),
                          sort=True,
+                         sample_space=sample_space,
                          sparse=self.is_sparse(),
                          validate=False)
 
