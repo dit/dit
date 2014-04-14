@@ -259,7 +259,8 @@ class CartesianProduct(SampleSpace):
         # Here, the user MUST specify how we take products.
         # We infer the class from the specified product.
         self._product = product
-        self._length = reduce(mul, self.alphabet_sizes)
+        # Set initial value, in case there are no alphabets.
+        self._length = reduce(mul, self.alphabet_sizes, 1)
         self._outcome_length = len(self.alphabet_sizes)
         self._outcome_class = next(self._product(*self.alphabets)).__class__
         self._outcome_ctor = get_outcome_ctor(self._outcome_class)
@@ -275,6 +276,14 @@ class CartesianProduct(SampleSpace):
 
     def __iter__(self):
         return self._product(*self.alphabets)
+
+    @classmethod
+    def from_outcomes(cls, outcomes, product=None):
+        alphabets = construct_alphabets(outcomes)
+        klass = outcomes[0].__class__
+        if product is None:
+            product = get_product_func(klass)
+        return cls(alphabets, product=product)
 
     def index(self, item):
         """

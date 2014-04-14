@@ -85,3 +85,16 @@ class TestCartesianProduct(object):
         indexes = [ss.index(i) for i in samplespace]
         assert_equal(indexes, [1, 0, 3, 2])
 
+    def test_from_outcomes(self):
+        outcomes = ['00', '11']
+        ss = CartesianProduct.from_outcomes(outcomes)
+        assert_equal(list(ss), ['00', '01', '10', '11'])
+        assert_raises(ValueError, ss.index, '22')
+
+def test_nested():
+    outcomes = ['11', '00']
+    ss = CartesianProduct.from_outcomes(outcomes)
+    ss2 = CartesianProduct([[0], ss])
+    assert_equal(list(ss2), [(0,'11'), (0,'10'), (0,'01'), (0,'00')])
+    ss2.sort()
+    assert_equal(list(ss2), [(0,'00'), (0,'01'), (0,'10'), (0,'11')])
