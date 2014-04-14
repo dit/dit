@@ -35,7 +35,9 @@ the whole sample space during marginalization. So this particular use case will
 experience the penalty discussed above.
 
 """
-from .helpers import parse_rvs, get_outcome_ctor, construct_alphabets
+from .helpers import (
+    parse_rvs, get_outcome_ctor, construct_alphabets, get_product_func
+)
 from .utils import OrderedDict
 
 try:
@@ -49,20 +51,17 @@ from itertools import product
 
 import numpy as np
 
-class SampleSpace(Set):
+class BaseSampleSpace(Set):
     """
     An abstract representation of a sample space.
 
     A sized, iterable, container.
 
     """
-    def __init__(self, samplespace, product=product):
+    _meta = {}
+    def __init__(self, samplespace):
         self._samplespace = list(samplespace)
         self._length = len(samplespace)
-        self._product = product
-        self._outcome_length = len(samplespace[0])
-        self._outcome_class = samplespace[0].__class__
-        self._outcome_ctor = get_outcome_ctor(self._outcome_class)
 
         # Store a set for O(1) lookup.
         self._set = set(samplespace)
@@ -82,6 +81,37 @@ class SampleSpace(Set):
 
         """
         return self._samplespace.index(item)
+
+    def sort(self):
+        self._samplespace.sort()
+
+class ScalarSampleSpace(BaseSampleSpace):
+    _meta = {
+        'is_joint': False,
+    }
+
+class SampleSpace(ScalarSampleSpace):
+    """
+    An abstract representation of a sample space.
+
+    A sized, iterable, container.
+
+    """
+    _meta = {
+        'is_joint': True,
+    }
+
+    def __init__(self, samplespace, product=None):
+        super(SampleSpace, self).__init__(samplespace)
+
+        self._outcome_length = len(samplespace[0])
+        self._outcome_class = samplespace[0].__class__
+        self._outcome_ctor = get_outcome_ctor(self._outcome_class)
+        # Since we have access to an outcome, we determine a product from it.
+        if product is None:
+            self._product = get_product_func(self._outcome_class)
+        else:
+            self._product = product
 
     def coalesce(self, rvs, extract=False):
         """
@@ -214,21 +244,20 @@ class SampleSpace(Set):
     def outcome_length(self):
         return self._outcome_length
 
-    def sort(self):
-        self._samplespace.sort()
-
-
 class CartesianProduct(SampleSpace):
     """
     An abstract representation of a Cartesian product sample space.
 
     """
     def __init__(self, alphabets, product=product):
-        self.alphabets = list(alphabet for alphabet in alphabets)
+        self.alphabets = tuple(alphabet if isinstance(alphabet, SampleSpace)
+                              else tuple(alphabet) for alphabet in alphabets)
         self._alphabet_sets = [alphabet if isinstance(alphabet, SampleSpace)
                               else set(alphabet) for alphabet in alphabets]
 
         self.alphabet_sizes = tuple(len(alphabet) for alphabet in alphabets)
+        # Here, the user MUST specify how we take products.
+        # We infer the class from the specified product.
         self._product = product
         self._length = reduce(mul, self.alphabet_sizes)
         self._outcome_length = len(self.alphabet_sizes)
@@ -334,8 +363,11 @@ class CartesianProduct(SampleSpace):
         return ss
 
     def sort(self):
+        alphabets = []
         for i, alphabet in enumerate(self.alphabets):
             if isinstance(alphabet, SampleSpace):
                 alphabet.sort()
             else:
-                self.alphabets[i] = tuple(sorted(alphabet))
+                alphabet = tuple(sorted(alphabet))
+            alphabets.append(alphabet)
+        self.alphabets = tuple(alphabets)

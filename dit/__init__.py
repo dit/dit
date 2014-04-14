@@ -23,7 +23,7 @@ from .npscalardist import ScalarDistribution
 from .npdist import Distribution
 
 # Order does not matter for these
-from .samplespace import SampleSpace, CartesianProduct
+from .samplespace import ScalarSampleSpace, SampleSpace, CartesianProduct
 from .distconst import *
 from .helpers import copypmf
 
