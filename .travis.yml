@@ -21,8 +21,6 @@ matrix:
 
   allow_failures:
     # 3.4 and pypy Wheels are not yet available.
-    - python: "3.4"
-      env: OPTIONAL_DEPS=true
     - python: "pypy"
     - env: FROM_SOURCE=true
 
