@@ -24,14 +24,12 @@ matrix:
     - python: "3.4"
       env: OPTIONAL_DEPS=true
     - python: "pypy"
-      env: OPTIONAL_DEPS=true
     - env: FROM_SOURCE=true
 
 env:
   global:
     # Install from wheels *only*.
     - PIPINSTALL="pip install -v --use-wheel --no-index --find-links=http://wheels.astropy.org --find-links=http://wheels2.astropy.org"
-    - NXOPTDEPS=""
   matrix:
     - OPTIONAL_DEPS=true
     - OPTIONAL_DEPS=false
@@ -51,7 +49,8 @@ install:
   # Skipping pydot (not 3.x compatible)
   # Skipping gdal (errors during pip installs)
   - sudo apt-get update -qq
-  - if [ "${OPTIONAL_DEPS}" == "true" ]; then $PIPINSTALL numpy Cython; fi
+  - if [ "${FROM_SOURCE}" != "true" ]; then $PIPINSTALL numpy; fi
+  - if [ "${OPTIONAL_DEPS}" == "true" ]; then $PIPINSTALL Cython; fi
 
   # Try to install latest and greatest from source.
   - if [ "${FROM_SOURCE}" == "true" ]; then pip install --upgrade numpy Cython; fi
