@@ -131,11 +131,13 @@ This quantity can be computed easily using dit:
 
    In [13]: d = RdnXor()
 
+   In [15]: d = dit.pruned_samplespace(d)
+
    In [14]: d = insert_meet(d, -1, [[0],[1]])
 
    @doctest float
-   In [15]: I(d, [3], [2])
-   Out[15]: 1.0
+   In [16]: I(d, [3], [2])
+   Out[16]: 1.0
 
 :math:`n`-Variables
 ===================

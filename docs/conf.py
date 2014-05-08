@@ -12,7 +12,6 @@
 # serve to show the default.
 
 import sys, os
-sys.path.append(os.path.abspath('tools'))
 
 # environment variable to know if the docs are being built on rtd.
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
@@ -38,8 +37,8 @@ extensions = ['releases',
               'sphinx.ext.viewcode',
               'sphinxcontrib.napoleon',
               'sphinxcontrib.bibtex',
-              'sphinxext.ipython_console_highlighting',
-              'sphinxext.ipython_directive',
+              'IPython.sphinxext.ipython_console_highlighting',
+              'IPython.sphinxext.ipython_directive',
              ]
 
 ipython_mplbackend = None
