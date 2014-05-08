@@ -153,6 +153,7 @@ def main():
             ["dit/inference/pycounts.pyx", "dit/inference/counts.c"],
             include_dirs=[np.get_include()],
             libraries=['m'],
+            extra_compile_args=['-std=c99'],
         )
 
         samplediscrete = Extension(

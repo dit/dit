@@ -120,9 +120,12 @@ void counts_st(long* data, int nObservations,
 
     **/
 
-
     // VLA is allocated on the stack (C99)
     int offset[hLength+2];
+
+    int index, hword, fword;
+    int nFutures = pow(nSymbols, fLength);
+
     if (nSymbols == 1) {
         for (L=0; L < hLength+2; ++L) {
             offset[L] = L;
@@ -133,12 +136,11 @@ void counts_st(long* data, int nObservations,
             offset[L] = (pow(nSymbols,L) - 1) / (nSymbols - 1);
         }
     }
+
     /**
         When we parse the data, we only fill in the tail end of `out`, since
         this corresponds to filling out the leaves of the tree.
     **/
-    int index, hword, fword;
-    int nFutures = pow(nSymbols, fLength);
     for (i = hLength; i <= nObservations - fLength; ++i) {
         // Construct the index for the history word (from the left)
         hword = offset[hLength];
