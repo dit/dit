@@ -121,6 +121,10 @@ def _make_distribution(outcomes, pmf, base,
     # This sets the prng.
     super(ScalarDistribution, d).__init__(prng)
 
+    d._meta['is_joint'] = True
+    d._meta['is_numerical'] = True
+    d._meta['is_sparse'] = None
+
     if base is None:
         # Assume default base.
         base = ditParams['base']

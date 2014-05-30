@@ -103,7 +103,7 @@ def standardize_data(data, alphabet=None,
     cdef int K = len(alphabet)
     cdef int i, symbol
 
-    # Note this will be slower for an array than for a list since NumPy
+    # Note data[i] will be slower for an array than for a list since NumPy
     # indexing is slower than pure Python indexing.
 
     if K == 1:
