@@ -3,13 +3,35 @@ Information partitions, e.g. ways of dividing up the information in a joint
 distribution.
 """
 
+from itertools import islice
+from iterutils import powerset
+
 from prettytable import PrettyTable
 
-from dit.utils import partitions
-from dit.multivariate import coinformation as I
+from networkx import DiGraph, dfs_preorder_nodes as children, topological_sort
+
+from dit.multivariate import entropy as H
 
 __all__ = ['ShannonPartition',
           ]
+
+
+### TODO: enable caching on this?
+def poset_lattice(elements):
+    """
+    Return the Hasse diagram of the lattice induced by `elements`.
+    """
+    child = lambda a, b: a.issubset(b) and (len(b) - len(a) == 1)
+
+    lattice = DiGraph()
+
+    for a in powerset(elements):
+        for b in powerset(elements):
+            if child(set(a), set(b)):
+                lattice.add_edge(b, a)
+
+    return lattice
+
 
 class ShannonPartition(object):
     """
@@ -18,6 +40,13 @@ class ShannonPartition(object):
 
     def __init__(self, dist):
         """
+        Construct a Shannon-type partition of the information contained in
+        `dist`.
+
+        Parameters
+        ----------
+        dist : distribution
+            The distribution to partition.
         """
         self.dist = dist
         self._partition()
@@ -25,6 +54,14 @@ class ShannonPartition(object):
     @staticmethod
     def _stringify(rvs, crvs):
         """
+        Construct a string representation of a measure, e.g. I[X:Y|Z]
+
+        Parameters
+        ----------
+        rvs : list
+            The random variable(s) for the measure.
+        crvs : list
+            The random variable(s) that the measure is conditioned on.
         """
         rvs = [ ','.join(str(_) for _ in rv) for rv in rvs ]
         crvs = [ str(_) for _ in crvs ]
@@ -35,7 +72,6 @@ class ShannonPartition(object):
         s = "{}[{}{}{}]".format(symbol, a, sep, b)
         return s
 
-    ### FIXME: Computing each atom this way is terribly inefficient.
     def _partition(self):
         """
         Return all the atoms of the I-diagram for `dist`.
@@ -44,21 +80,35 @@ class ShannonPartition(object):
         ----------
         dist : distribution
             The distribution to compute the I-diagram of.
-
-        Returns
-        -------
-
         """
         rvs = self.dist.get_rv_names()
         if not rvs:
             rvs = tuple(range(self.dist.outcome_length()))
-        atoms = { p for p in partitions(rvs, tuples=True) if len(p) == 2 }
-        atoms = atoms.union({ (p[1], p[0]) for p in atoms })
-        atoms.add((rvs, ()))
 
-        atoms = [ (tuple( (_,) for _ in a ), b) for a, b in atoms ]
+        lattice = poset_lattice(rvs)
+        rlattice = lattice.reverse()
+        Hs = {}; Is = {}; atoms = {}; new_atoms = {}
 
-        self.atoms = { (rvs, crvs): I(self.dist, rvs, crvs) for rvs, crvs in atoms }
+        # Entropies
+        for node in lattice:
+            Hs[node] = H(self.dist, node)
+
+        # Subset-sum type thing, basically co-information calculations.
+        for node in lattice:
+            Is[node] = sum( (-1)**(len(rv)+1)*Hs[rv] for rv in children(lattice, node) )
+
+        # Mobius inversion of the above, resulting in the Shannon atoms.
+        for node in topological_sort(lattice)[:-1]:
+            kids = islice(children(rlattice, node), 1, None)
+            atoms[node] = Is[node] - sum( atoms[child] for child in kids )
+
+        # get the atom indices in proper format
+        for atom, value in atoms.iteritems():
+            a_rvs = tuple( (_,) for _ in atom )
+            a_crvs = tuple(sorted(set(rvs) - set(atom)))
+            new_atoms[(a_rvs, a_crvs)] = value
+
+        self.atoms = new_atoms
 
     def __str__(self):
         """
@@ -68,6 +118,8 @@ class ShannonPartition(object):
         ### TODO: add some logic for the format string, so things look nice with arbitrary values
         table.float_format['bits'] = ' 5.3'
         for (rvs, crvs), value in reversed(sorted(self.atoms.iteritems(), key=(lambda row: len(row[0][1])))):
+            if abs(value) < 1e-10: # TODO: make more robust
+                value = 0.0        # gets rid of pesky -0.0 display values
             table.add_row([self._stringify(rvs, crvs), value])
         return table.get_string()
 
@@ -83,6 +135,6 @@ class ShannonPartition(object):
         if string:
             f = self._stringify
         else:
-            f = lambda a, b: a, b
+            f = lambda a, b: (a, b)
 
         return { f(rvs, crvs) for rvs, crvs in self.atoms.keys() }
