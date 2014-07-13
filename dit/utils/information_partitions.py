@@ -110,6 +110,23 @@ class ShannonPartition(object):
 
         self.atoms = new_atoms
 
+    def __getitem__(self, item):
+        """
+        Return the value of any information measure.
+
+        Parameters
+        ----------
+        item : tuple
+            A pair (rvs, crvs).
+        """
+        def is_part(atom, rvs, crvs):
+            lhs = all( any( ( (_,) in atom[0] ) for _ in rv) for rv in rvs )
+            rhs = set(crvs).issubset(atom[1])
+            return lhs and rhs
+
+        return sum(value for atom, value in self.atoms.iteritems() if is_part(atom, *item))
+
+
     def __str__(self):
         """
         Use PrettyTable to create a nice table.

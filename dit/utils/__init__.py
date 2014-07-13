@@ -13,4 +13,4 @@ from .bindargs import bindcallargs
 from .context import cd, named_tempfile, tempdir
 from .misc import *
 from .latexarray import to_latex
-
+from .information_partitions import *
