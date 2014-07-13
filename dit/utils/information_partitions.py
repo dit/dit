@@ -3,6 +3,8 @@ Information partitions, e.g. ways of dividing up the information in a joint
 distribution.
 """
 
+from __future__ import absolute_import
+
 from itertools import islice
 from iterutils import powerset
 
@@ -10,7 +12,7 @@ from prettytable import PrettyTable
 
 from networkx import DiGraph, dfs_preorder_nodes as children, topological_sort
 
-from dit.multivariate import entropy as H
+from ..shannon import entropy as H
 
 __all__ = ['ShannonPartition',
           ]
