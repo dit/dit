@@ -191,6 +191,9 @@ def normalize_rvs(dist, rvs, crvs, rv_names):
 
     Parameters
     ----------
+    dist : Distribution
+        The distribution to get the variable names for.
+
     rvs : list, None
         List of random variables to use in this measure.
 
