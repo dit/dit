@@ -81,7 +81,7 @@ def mixture_distribution(dists, weights, merge=False):
 
     outcomes = set().union(*[d.outcomes for d in dists])
     pmf = [ops.add_reduce(np.array(vals(o))) for o in outcomes]
-    mix = Distribution(tuple(outcomes), pmf, base=ops.get_base())
+    mix = dists[0].__class__(tuple(outcomes), pmf, base=ops.get_base())
     return mix
 
 def mixture_distribution2(dists, weights):
