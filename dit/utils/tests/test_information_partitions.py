@@ -36,7 +36,7 @@ def test_sp2():
         yield assert_almost_equal, ip[meas], I(d, meas[0], meas[1])
 
 def test_sp3():
-    """ Test all_atoms() """
+    """ Test get_atoms() """
     d = n_mod_m(3, 2)
     ip = ShannonPartition(d)
     atoms1 = {'H[0|1,2]',
