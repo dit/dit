@@ -3,5 +3,6 @@ iterutils
 numpy
 releases
 six
+sphinx
 sphinxcontrib-bibtex
 sphinxcontrib-napoleon
