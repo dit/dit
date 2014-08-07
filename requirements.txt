@@ -1,0 +1,6 @@
+Cython
+ipython
+iterutils
+numpy
+prettytable
+six
