@@ -179,6 +179,7 @@ def main():
     install_requires = [
         'numpy >= 1.6',
         'iterutils >= 0.1.6',
+        'prettytable',
         'six >= 1.4.0', # 1.4.0 includes six.moves.range.
     ]
     if sys.version_info[:2] == (2, 6):
