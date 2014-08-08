@@ -71,7 +71,7 @@ class ShannonPartition(object):
         b = ','.join(crvs)
         symbol = 'H' if len(rvs) == 1 else 'I'
         sep = '|' if len(crvs) > 0 else ''
-        s = "{}[{}{}{}]".format(symbol, a, sep, b)
+        s = "{0}[{1}{2}{3}]".format(symbol, a, sep, b)
         return s
 
     def _partition(self):
