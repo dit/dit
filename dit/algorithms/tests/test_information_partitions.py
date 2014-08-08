@@ -8,7 +8,7 @@ from iterutils import powerset
 
 from dit.multivariate import coinformation as I
 from dit.utils import partitions
-from dit.utils.information_partitions import ShannonPartition
+from dit.algorithms.information_partitions import ShannonPartition
 from dit.example_dists import n_mod_m
 
 def all_info_measures(vars):
