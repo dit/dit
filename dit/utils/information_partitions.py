@@ -105,7 +105,7 @@ class ShannonPartition(object):
             atoms[node] = Is[node] - sum( atoms[child] for child in kids )
 
         # get the atom indices in proper format
-        for atom, value in atoms.iteritems():
+        for atom, value in atoms.items():
             a_rvs = tuple( (_,) for _ in atom )
             a_crvs = tuple(sorted(set(rvs) - set(atom)))
             new_atoms[(a_rvs, a_crvs)] = value
@@ -126,7 +126,7 @@ class ShannonPartition(object):
             rhs = set(crvs).issubset(atom[1])
             return lhs and rhs
 
-        return sum(value for atom, value in self.atoms.iteritems() if is_part(atom, *item))
+        return sum(value for atom, value in self.atoms.items() if is_part(atom, *item))
 
 
     def __str__(self):
@@ -136,7 +136,7 @@ class ShannonPartition(object):
         table = PrettyTable(['measure', 'bits'])
         ### TODO: add some logic for the format string, so things look nice with arbitrary values
         table.float_format['bits'] = ' 5.3'
-        for (rvs, crvs), value in reversed(sorted(self.atoms.iteritems(), key=(lambda row: len(row[0][1])))):
+        for (rvs, crvs), value in reversed(sorted(self.atoms.items(), key=(lambda row: len(row[0][1])))):
             if abs(value) < 1e-10: # TODO: make more robust
                 value = 0.0        # gets rid of pesky -0.0 display values
             table.add_row([self._stringify(rvs, crvs), value])
