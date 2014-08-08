@@ -156,4 +156,4 @@ class ShannonPartition(object):
         else:
             f = lambda a, b: (a, b)
 
-        return { f(rvs, crvs) for rvs, crvs in self.atoms.keys() }
+        return set([ f(rvs, crvs) for rvs, crvs in self.atoms.keys() ])
