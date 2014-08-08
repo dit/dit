@@ -1,6 +1,8 @@
 Cython
 ipython
 iterutils
+networkx
 numpy
 prettytable
 six
+
