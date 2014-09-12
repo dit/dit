@@ -426,11 +426,13 @@ def insert_frv(d, func, index=-1):
     ----------
     dist : Distribution
         The distribution used to construct the new distribution.
-    func : callable
+    func : callable | list of callable
         A function which takes a single argument---the value of the previous
         random variables---and returns a new random variable. Note, the return
         value will be added to the outcome using `__add__`, and so it should be
-        a hashable, orderable sequence (as every outcome must be).
+        a hashable, orderable sequence (as every outcome must be). If a list of
+        callables is provided, then multiple random variables are added
+        simultaneously and will appear in the same order as the list.
     idx : int
         The index at which to insert the random variable. A value of -1 is
         will append the random variable to the end.
@@ -451,8 +453,18 @@ def insert_frv(d, func, index=-1):
     ('000', '011', '101', '110')
 
     """
-    new_rv = map(func, d.outcomes)
-    outcomes = [old + new for old, new in zip(d.outcomes, new_rv)]
+    try:
+        func[0]
+    except TypeError:
+        funcs = [func]
+    else:
+        funcs = func
+
+    partial_outcomes = [map(func, d.outcomes) for func in funcs]
+    # Now "flatten" the new contributions.
+    partial_outcomes = [d._outcome_ctor([o for o_list in outcome for o in o_list])
+                        for outcome in zip(*partial_outcomes)]
+    outcomes = [old + new for old, new in zip(d.outcomes, partial_outcomes)]
     d2 = Distribution(outcomes, d.pmf.copy(), base=d.get_base())
     return d2
 

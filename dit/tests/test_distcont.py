@@ -193,7 +193,6 @@ def test_uniform_distribution():
     assert_equal(d.outcomes, ((0, 0), (0, 1), (1, 0), (1, 1)))
     np.testing.assert_allclose(d.pmf, pmf)
 
-
 def test_booleanfunctions1():
     # Smoke test
     d = dit.Distribution(['00', '01', '10', '11'], [1/4]*4)
@@ -232,3 +231,32 @@ def test_booleanfunctions4():
     outcomes = tuple(tuple(map(int, o)) for o in outcomes)
     assert_equal(d.outcomes, outcomes)
 
+def test_insert_frv1():
+    # Test multiple insertion.
+    d = dit.uniform_distribution(2, 2)
+    def xor(outcome):
+        o = int(outcome[0] != outcome[1])
+        # Here we are returning 2 random variables
+        return (o,o)
+    # We are also inserting two times simultaneously.
+    d2 = dit.insert_frv(d, [xor, xor])
+    outcomes = (
+        (0, 0, 0, 0, 0, 0),
+        (0, 1, 1, 1, 1, 1),
+        (1, 0, 1, 1, 1, 1),
+        (1, 1, 0, 0, 0, 0)
+    )
+    assert_equal(d2.outcomes, outcomes)
+
+def test_insert_frv2():
+    # Test multiple insertion.
+    d = dit.uniform_distribution(2, 2)
+    d = dit.modify_outcomes(d, lambda x: ''.join(map(str, x)))
+    def xor(outcome):
+        o = str(int(outcome[0] != outcome[1]))
+        # Here we are returning 2 random variables
+        return o*2
+    # We are also inserting two times simultaneously.
+    d2 = dit.insert_frv(d, [xor, xor])
+    outcomes = ('000000', '011111', '101111', '110000')
+    assert_equal(d2.outcomes, outcomes)
