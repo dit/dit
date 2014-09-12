@@ -192,3 +192,43 @@ def test_uniform_distribution():
     d = dit.uniform_distribution(2, 2)
     assert_equal(d.outcomes, ((0, 0), (0, 1), (1, 0), (1, 1)))
     np.testing.assert_allclose(d.pmf, pmf)
+
+
+def test_booleanfunctions1():
+    # Smoke test
+    d = dit.Distribution(['00', '01', '10', '11'], [1/4]*4)
+    bf = dit.BooleanFunctions(d)
+    d = dit.insert_frv(d, bf.xor([0,1]))
+    d = dit.insert_frv(d, bf.xor([1,2]))
+    assert_equal(d.outcomes, ('0000', '0110', '1011', '1101'))
+
+def test_booleanfunctions2():
+    # Smoke test
+    d = dit.Distribution([(0,0), (0,1), (1,0), (1,1)], [1/4]*4)
+    bf = dit.BooleanFunctions(d)
+    d = dit.insert_frv(d, bf.xor([0,1]))
+    d = dit.insert_frv(d, bf.xor([1,2]))
+    assert_equal(d.outcomes, ((0,0,0,0), (0,1,1,0), (1,0,1,1), (1,1,0,1)))
+
+def test_booleanfunctions3():
+    # Smoke test
+    outcomes = ['000', '001', '010', '011', '100', '101', '110', '111']
+    pmf = [1/8] * 8
+    d = dit.Distribution(outcomes, pmf)
+    bf = dit.BooleanFunctions(d)
+    d = dit.insert_frv(d, bf.from_hexes('27'))
+    outcomes = ('0000', '0010', '0101', '0110', '1000', '1010', '1100', '1111')
+    assert_equal(d.outcomes, outcomes)
+
+def test_booleanfunctions4():
+    # Smoke test
+    outcomes = ['000', '001', '010', '011', '100', '101', '110', '111']
+    outcomes = [tuple(map(int, o)) for o in outcomes]
+    pmf = [1/8] * 8
+    d = dit.Distribution(outcomes, pmf)
+    bf = dit.BooleanFunctions(d)
+    d = dit.insert_frv(d, bf.from_hexes('27'))
+    outcomes = ('0000', '0010', '0101', '0110', '1000', '1010', '1100', '1111')
+    outcomes = tuple(tuple(map(int, o)) for o in outcomes)
+    assert_equal(d.outcomes, outcomes)
+

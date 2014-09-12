@@ -25,6 +25,8 @@ __all__ = [
     'simplex_grid',
     'uniform_distribution',
     'uniform_scalar_distribution',
+    'insert_frv',
+    'BooleanFunctions'
 ]
 
 def mixture_distribution(dists, weights, merge=False):
@@ -411,3 +413,171 @@ def uniform_distribution(outcome_length, alphabet_size):
     d = Distribution(outcomes, pmf, base='linear')
 
     return d
+
+def insert_frv(d, func, index=-1):
+    """
+    Returns a new distribution with an added random variable at index `idx`.
+
+    The new random variable must be a function of the other random variables.
+    By this, we mean that the entropy of the new random variable conditioned
+    on the original random variables should be zero.
+
+    Parameters
+    ----------
+    dist : Distribution
+        The distribution used to construct the new distribution.
+    func : callable
+        A function which takes a single argument---the value of the previous
+        random variables---and returns a new random variable. Note, the return
+        value will be added to the outcome using `__add__`, and so it should be
+        a hashable, orderable sequence (as every outcome must be).
+    idx : int
+        The index at which to insert the random variable. A value of -1 is
+        will append the random variable to the end.
+
+    Returns
+    -------
+    d : Distribution
+        The new distribution.
+
+    Examples
+    --------
+    >>> d = dit.Distribution(['00', '01', '10', '11'], [1/4]*4)
+    >>> def xor(outcome):
+    ...    return str(int(outcome[0] != outcome[1]))
+    ...
+    >>> d2 = dit.insert_frv(d, xor)
+    >>> d.outcomes
+    ('000', '011', '101', '110')
+
+    """
+    new_rv = map(func, d.outcomes)
+    outcomes = [old + new for old, new in zip(d.outcomes, new_rv)]
+    d2 = Distribution(outcomes, d.pmf.copy(), base=d.get_base())
+    return d2
+
+class BooleanFunctions(object):
+    """
+    Helper class for building a new random variable.
+
+    The new random variable is the output of a boolean function.
+
+    """
+    def __init__(self, d):
+        """
+        Initialize the boolean function creator.
+
+        Parameters
+        ----------
+        d : Distribution
+            The distribution used to create the new random variables. Outcomes
+            are assumed to be strings of '0' and '1', or tuples of 0 and 1.
+            The returned functions act appropriately.
+
+        Examples
+        --------
+        >>> d = dit.Distribution(['00', '01', '10', '11'], [1/4]*4)
+        >>> bf = dit.BooleanFunctions(d)
+        >>> d = dit.insert_frv(d, bf.xor([0,1]))
+        >>> d = dit.insert_frv(d, bf.xor([1,2]))
+        >>> d.outcomes
+        ('0000', '0110', '1011', '1101')
+
+        """
+        try:
+            d.outcomes[0] + ''
+        except TypeError:
+            is_int = True
+        else:
+            is_int = False
+
+        self.is_int = is_int
+        self.L = d.outcome_length()
+
+    def xor(self, indices):
+        """
+        Returns a callable which returns the logical XOR of the given indices.
+
+        Parameters
+        ----------
+        indices : list
+            A list of two indices used to take the XOR.
+
+        Returns
+        -------
+        func : function
+            A callable implementing the XOR function. It receives a single
+            argument, the outcome and returns an outcome for the calculation.
+
+        Examples
+        --------
+        >>> d = dit.Distribution(['00', '01', '10', '11'], [1/4]*4)
+        >>> bf = dit.BooleanFunctions(d)
+        >>> d = dit.insert_frv(d, bf.xor([0,1]))
+        >>> d.outcomes
+        ('000', '011', '101', '110')
+
+        """
+        if self.is_int:
+            def func(outcome):
+                result = outcome[indices[0]] != outcome[indices[1]]
+                return (int(result),)
+        else:
+            def func(outcome):
+                result = outcome[indices[0]] != outcome[indices[1]]
+                return str(int(result))
+
+        return func
+
+    def from_hexes(self, hexes):
+        """
+        Returns a callable implementing a boolean function on up to 3-bits.
+
+        The original outcomes are represented in base-16 as one of the letters
+        in '0123456789ABCDEF' (not case sensitive). Then, each boolean function
+        is a specification of the outcomes for which it be should true. The
+        random variable will be false for the complement of this set---so this
+        function assumes full support. For example, if the random variable is a
+        function of 3-bits and should be true only for '010' or '111', then
+        `hexes` should be: '27'. This nicely handles 1- and 2-bit inputs in a
+        similar fashion.
+
+        Parameters
+        ----------
+        hexes : str
+            A string of base-16 characters representing the (up to) 4-bit
+            outcomes for which the random variable should be true.
+
+        Returns
+        -------
+        func : function
+            A callable implementing the desired function. It receives a single
+            argument, the outcome and returns an outcome for the calculation.
+
+        Examples
+        --------
+        >>> outcomes = ['000', '001', '010', '011', '100', '101', '110', '111']
+        >>> pmf = [1/8] * 8
+        >>> d = dit.Distribution(outcomes, pmf)
+        >>> bf = dit.BooleanFunctions(d)
+        >>> d = dit.insert_frv(d, bf.from_hexes('27'))
+        >>> d.outcomes
+        ('0000', '0010', '0101', '0110', '1000', '1010', '1100', '1111')
+
+        """
+        base = 16
+        template = "{0:0{1}b}"
+        outcomes = [template.format(int(h, base), self.L) for h in hexes]
+        if self.is_int:
+            outcomes = [tuple(map(int, o)) for o in outcomes]
+        outcomes = set(outcomes)
+
+        if self.is_int:
+            def func(outcome):
+                result = outcome in outcomes
+                return (int(result),)
+        else:
+            def func(outcome):
+                result = outcome in outcomes
+                return str(int(result))
+        return func
