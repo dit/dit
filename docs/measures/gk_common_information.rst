@@ -58,11 +58,16 @@ As a canonical example, consider the following:
 
    In [5]: pmf = [1/8, 1/8, 1/8, 1/8, 1/4, 1/4]
 
-   In [6]: d = D(outcomes, pmf)
+   In [6]: d = D(outcomes, pmf, sample_space=outcomes)
 
    @doctest float
    In [7]: K(d)
    Out[7]: 1.5
+
+.. note::
+   It is important that we set the `sample_space` argument. If it is `None`
+   then the Cartesian product of each alphabet, and in such a case the meet
+   will trivially be degenerate. 
 
 So, the Gács-Körner common information is 1.5 bits. But what is the common
 random variable?
