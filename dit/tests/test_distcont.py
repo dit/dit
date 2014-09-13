@@ -270,7 +270,7 @@ def test_RVFunctions_from_mapping1():
     assert_equal(d.outcomes, outcomes)
 
 def test_RVFunctions_from_mapping2():
-    d = dit.Distribution(['00', '01', '10', '11'], [1/4]*4)
+    d = dit.Distribution([(0,0), (0,1), (1,0), (1,1)], [1/4]*4)
     bf = dit.RVFunctions(d)
     mapping = {(0,0): 0, (0,1): 1, (1,0): 1, (1,1): 0}
     d = dit.insert_rvf(d, bf.from_mapping(mapping, force=True))
