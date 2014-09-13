@@ -585,16 +585,16 @@ class RVFunctions(object):
         --------
         >>> d = dit.Distribution(['00', '01', '10', '11'], [1/4]*4)
         >>> bf = dit.RVFunctions(d)
-        >>> mapping = {'00': '0', '01': '1', '10': '1', '11': '1'}
+        >>> mapping = {'00': '0', '01': '1', '10': '1', '11': '0'}
         >>> d = dit.insert_rvf(d, bf.from_mapping(mapping))
         >>> d.outcomes
         ('000', '011', '101', '110')
 
         Same example as above but now with tuples.
 
-        >>> d = dit.Distribution(['00', '01', '10', '11'], [1/4]*4)
+        >>> d = dit.Distribution([(0,0), (0,1), (1,0), (1,1)], [1/4]*4)
         >>> bf = dit.RVFunctions(d)
-        >>> mapping = {(0,0): 0, (0,1): 1, (1,0): 1, (1,1): 1}
+        >>> mapping = {(0,0): 0, (0,1): 1, (1,0): 1, (1,1): 0}
         >>> d = dit.insert_rvf(d, bf.from_mapping(mapping, force=True))
         >>> d.outcomes
         ((0, 0, 0), (0, 1, 1), (1, 0, 1), (1, 1, 0))
@@ -608,7 +608,7 @@ class RVFunctions(object):
         if force:
             try:
                 list(map(ctor, mapping.values()))
-            except TypeError:
+            except (TypeError, ditException):
                 values = [ctor([o]) for o in mapping.values()]
                 mapping = dict(zip(mapping.keys(), values))
 
@@ -633,6 +633,23 @@ class RVFunctions(object):
         partition : list
             A list of iterables. The outer list is required to determine the
             order of the new random variable
+
+        Returns
+        -------
+        func : function
+            A callable implementing the desired function. It receives a single
+            argument, the outcome, and returns an outcome of the new random
+            variable that is specified by the partition.
+
+        Examples
+        --------
+        >>> d = dit.Distribution(['00', '01', '10', '11'], [1/4]*4)
+        >>> bf = dit.RVFunctions(d)
+        >>> partition = (('00','11'), ('01', '10'))
+        >>> d = dit.insert_rvf(d, bf.from_partition(partition))
+        >>> d.outcomes
+        ('000', '011', '101', '110')
+
 
         """
         alphabet = '0123456789abcdefghijklmnopqrstuvwxyz'
@@ -688,7 +705,7 @@ class RVFunctions(object):
         >>> pmf = [1/8] * 8
         >>> d = dit.Distribution(outcomes, pmf)
         >>> bf = dit.RVFunctions(d)
-        >>> d = dit.insert_frv(d, bf.from_hexes('27'))
+        >>> d = dit.insert_rvf(d, bf.from_hexes('27'))
         >>> d.outcomes
         ('0000', '0010', '0101', '0110', '1000', '1010', '1100', '1111')
 

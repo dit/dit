@@ -260,3 +260,27 @@ def test_insert_rvf2():
     d2 = dit.insert_rvf(d, [xor, xor])
     outcomes = ('000000', '011111', '101111', '110000')
     assert_equal(d2.outcomes, outcomes)
+
+def test_RVFunctions_from_mapping1():
+    d = dit.Distribution(['00', '01', '10', '11'], [1/4]*4)
+    bf = dit.RVFunctions(d)
+    mapping = {'00': '0', '01': '1', '10': '1', '11': '0'}
+    d = dit.insert_rvf(d, bf.from_mapping(mapping))
+    outcomes = ('000', '011', '101', '110')
+    assert_equal(d.outcomes, outcomes)
+
+def test_RVFunctions_from_mapping2():
+    d = dit.Distribution(['00', '01', '10', '11'], [1/4]*4)
+    bf = dit.RVFunctions(d)
+    mapping = {(0,0): 0, (0,1): 1, (1,0): 1, (1,1): 0}
+    d = dit.insert_rvf(d, bf.from_mapping(mapping, force=True))
+    outcomes = ((0, 0, 0), (0, 1, 1), (1, 0, 1), (1, 1, 0))
+    assert_equal(d.outcomes, outcomes)
+
+def test_RVFunctions_from_partition():
+    d = dit.Distribution(['00', '01', '10', '11'], [1/4]*4)
+    bf = dit.RVFunctions(d)
+    partition = (('00','11'), ('01', '10'))
+    d = dit.insert_rvf(d, bf.from_partition(partition))
+    outcomes = ('000', '011', '101', '110')
+    assert_equal(d.outcomes, outcomes)
