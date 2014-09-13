@@ -20,6 +20,13 @@ from .exceptions import ditException, InvalidDistribution, InvalidOutcome
 from .utils import product_maker
 
 
+def str_outcome_ctor(iterable):
+    try:
+        return ''.join(iterable)
+    except TypeError:
+        msg = 'Outcome could not be constructed from {0!r}'.format(iterable)
+        raise ditException(msg)
+
 
 #
 # This dictionary is a registry (which could, in principle, be updated
@@ -29,7 +36,7 @@ from .utils import product_maker
 # See get_outcome_constructor() and get_produc_func() for more details.
 #
 constructor_map = {
-    str : ''.join,
+    str : str_outcome_ctor,
 }
 
 class RV_Mode(object):
