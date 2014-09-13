@@ -25,8 +25,8 @@ __all__ = [
     'simplex_grid',
     'uniform_distribution',
     'uniform_scalar_distribution',
-    'insert_frv',
-    'BooleanFunctions'
+    'insert_rvf',
+    'RVFunctions'
 ]
 
 def mixture_distribution(dists, weights, merge=False):
@@ -414,9 +414,9 @@ def uniform_distribution(outcome_length, alphabet_size):
 
     return d
 
-def insert_frv(d, func, index=-1):
+def insert_rvf(d, func, index=-1):
     """
-    Returns a new distribution with an added random variable at index `idx`.
+    Returns a new distribution with an added random variable at index `index`.
 
     The new random variable must be a function of the other random variables.
     By this, we mean that the entropy of the new random variable conditioned
@@ -433,7 +433,7 @@ def insert_frv(d, func, index=-1):
         a hashable, orderable sequence (as every outcome must be). If a list of
         callables is provided, then multiple random variables are added
         simultaneously and will appear in the same order as the list.
-    idx : int
+    index : int
         The index at which to insert the random variable. A value of -1 is
         will append the random variable to the end.
 
@@ -448,7 +448,7 @@ def insert_frv(d, func, index=-1):
     >>> def xor(outcome):
     ...    return str(int(outcome[0] != outcome[1]))
     ...
-    >>> d2 = dit.insert_frv(d, xor)
+    >>> d2 = dit.insert_rvf(d, xor)
     >>> d.outcomes
     ('000', '011', '101', '110')
 
@@ -460,38 +460,46 @@ def insert_frv(d, func, index=-1):
     else:
         funcs = func
 
+    #print d.outcomes
     partial_outcomes = [map(func, d.outcomes) for func in funcs]
+    #partial_outcomes = list(map(list,partial_outcomes))
+    #print partial_outcomes
     # Now "flatten" the new contributions.
     partial_outcomes = [d._outcome_ctor([o for o_list in outcome for o in o_list])
                         for outcome in zip(*partial_outcomes)]
+    #print partial_outcomes
     outcomes = [old + new for old, new in zip(d.outcomes, partial_outcomes)]
     d2 = Distribution(outcomes, d.pmf.copy(), base=d.get_base())
     return d2
 
-class BooleanFunctions(object):
+class RVFunctions(object):
     """
-    Helper class for building a new random variable.
+    Helper class for building new random variables.
 
-    The new random variable is the output of a boolean function.
+    Each new random variable is a function of the existing random variables.
+    So for each outcome in the original distribution, there can be only one
+    possible value for the new random variable.
+
+    Some methods may make assumptions about the sample space. For example, the
+    :meth:`xor` method assumes the sample space consists of 0-like and 1-like
+    outcomes.
 
     """
     def __init__(self, d):
         """
-        Initialize the boolean function creator.
+        Initialize the random variable function creator.
 
         Parameters
         ----------
         d : Distribution
-            The distribution used to create the new random variables. Outcomes
-            are assumed to be strings of '0' and '1', or tuples of 0 and 1.
-            The returned functions act appropriately.
+            The distribution used to create the new random variables.
 
         Examples
         --------
         >>> d = dit.Distribution(['00', '01', '10', '11'], [1/4]*4)
         >>> bf = dit.BooleanFunctions(d)
-        >>> d = dit.insert_frv(d, bf.xor([0,1]))
-        >>> d = dit.insert_frv(d, bf.xor([1,2]))
+        >>> d = dit.insert_rvf(d, bf.xor([0,1]))
+        >>> d = dit.insert_rvf(d, bf.xor([1,2]))
         >>> d.outcomes
         ('0000', '0110', '1011', '1101')
 
@@ -505,10 +513,15 @@ class BooleanFunctions(object):
 
         self.is_int = is_int
         self.L = d.outcome_length()
+        self.ctor = d._outcome_ctor
+        self.outcome_class = d._outcome_class
 
     def xor(self, indices):
         """
         Returns a callable which returns the logical XOR of the given indices.
+
+        Outcomes are assumed to be strings of '0' and '1', or tuples of 0 and 1.
+        The returned function handles both cases appropriately.
 
         Parameters
         ----------
@@ -524,8 +537,8 @@ class BooleanFunctions(object):
         Examples
         --------
         >>> d = dit.Distribution(['00', '01', '10', '11'], [1/4]*4)
-        >>> bf = dit.BooleanFunctions(d)
-        >>> d = dit.insert_frv(d, bf.xor([0,1]))
+        >>> bf = dit.RVFunctions(d)
+        >>> d = dit.insert_rvf(d, bf.xor([0,1]))
         >>> d.outcomes
         ('000', '011', '101', '110')
 
@@ -541,18 +554,121 @@ class BooleanFunctions(object):
 
         return func
 
+    def from_mapping(self, mapping, force=True):
+        """
+        Returns a callable implementing a random variable via a mapping.
+
+        Parameters
+        ----------
+        mapping : dict
+            A mapping from outcomes to values of the new random variable.
+
+        force : bool
+            Ideally, the values of `mapping` should be satisfy the requirements
+            of all outcomes (hashable, ordered sequences), but if `force` is
+            `True`, we will attempt to use the distribution's outcome
+            constructor and make sure that they are. If they are not, then
+            the outcomes will be placed into a 1-tuple. This is strictly
+            a convenience for users. As an example, suppose the outcomes are
+            strings, the values of `mapping` can also be strings without issue.
+            However, if the outcomes are tuples of integers, then the values
+            *should* also be tuples. When `force` is `True`, then the values
+            can be integers and then they will be transformed into 1-tuples.
+
+        Returns
+        -------
+        func : function
+            A callable implementing the desired function. It receives a single
+            argument, the outcome, and returns an outcome for the calculation.
+
+        Examples
+        --------
+        >>> d = dit.Distribution(['00', '01', '10', '11'], [1/4]*4)
+        >>> bf = dit.RVFunctions(d)
+        >>> mapping = {'00': '0', '01': '1', '10': '1', '11': '1'}
+        >>> d = dit.insert_rvf(d, bf.from_mapping(mapping))
+        >>> d.outcomes
+        ('000', '011', '101', '110')
+
+        Same example as above but now with tuples.
+
+        >>> d = dit.Distribution(['00', '01', '10', '11'], [1/4]*4)
+        >>> bf = dit.RVFunctions(d)
+        >>> mapping = {(0,0): 0, (0,1): 1, (1,0): 1, (1,1): 1}
+        >>> d = dit.insert_rvf(d, bf.from_mapping(mapping, force=True))
+        >>> d.outcomes
+        ((0, 0, 0), (0, 1, 1), (1, 0, 1), (1, 1, 0))
+
+        See Also
+        --------
+        dit.modify_outcomes
+
+        """
+        ctor = self.ctor
+        if force:
+            try:
+                list(map(ctor, mapping.values()))
+            except TypeError:
+                values = [ctor([o]) for o in mapping.values()]
+                mapping = dict(zip(mapping.keys(), values))
+
+        def func(outcome):
+            return mapping[outcome]
+
+        return func
+
+    def from_partition(self, partition):
+        """
+        Returns a callable implementing a function specified by a partition.
+
+        The partition must divide the sample space of the distribution. The
+        number of equivalence classes, n, determines the number of values for
+        the random variable. The values are integers from 0 to n-1, but if the
+        outcome class of the distribution is string, then this function will
+        use the first n letters from '0123456789abcdefghijklmnopqrstuvwxyz'
+        as values for the random variable.
+
+        Parameters
+        ----------
+        partition : list
+            A list of iterables. The outer list is required to determine the
+            order of the new random variable
+
+        """
+        alphabet = '0123456789abcdefghijklmnopqrstuvwxyz'
+        # Practically, we support the str class. This is bytes in Python
+        # versions <3 and unicode >3.
+
+        n = len(partition)
+
+        if self.outcome_class == str:
+            vals = alphabet[:n]
+        else:
+            vals = range(n)
+
+        mapping = {}
+        # Probably could do this more efficiently.
+        for i, eqclass in enumerate(partition):
+            for outcome in eqclass:
+                mapping[self.ctor([outcome])] = vals[i]
+
+        return self.from_mapping(mapping, force=True)
+
     def from_hexes(self, hexes):
         """
         Returns a callable implementing a boolean function on up to 3-bits.
+
+        Outcomes are assumed to be strings of '0' and '1', or tuples of 0 and 1.
+        The returned function handles both cases appropriately.
 
         The original outcomes are represented in base-16 as one of the letters
         in '0123456789ABCDEF' (not case sensitive). Then, each boolean function
         is a specification of the outcomes for which it be should true. The
         random variable will be false for the complement of this set---so this
-        function assumes full support. For example, if the random variable is a
-        function of 3-bits and should be true only for '010' or '111', then
-        `hexes` should be: '27'. This nicely handles 1- and 2-bit inputs in a
-        similar fashion.
+        function additional assumes full support. For example, if the random
+        variable is a function of 3-bits and should be true only for the
+        outcomes '010' or '111', then `hexes` should be '27'. This nicely
+        handles 1- and 2-bit inputs in a similar fashion.
 
         Parameters
         ----------
@@ -564,14 +680,14 @@ class BooleanFunctions(object):
         -------
         func : function
             A callable implementing the desired function. It receives a single
-            argument, the outcome and returns an outcome for the calculation.
+            argument, the outcome, and returns an outcome for the calculation.
 
         Examples
         --------
         >>> outcomes = ['000', '001', '010', '011', '100', '101', '110', '111']
         >>> pmf = [1/8] * 8
         >>> d = dit.Distribution(outcomes, pmf)
-        >>> bf = dit.BooleanFunctions(d)
+        >>> bf = dit.RVFunctions(d)
         >>> d = dit.insert_frv(d, bf.from_hexes('27'))
         >>> d.outcomes
         ('0000', '0010', '0101', '0110', '1000', '1010', '1100', '1111')
