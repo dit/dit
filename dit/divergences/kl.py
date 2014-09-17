@@ -1,6 +1,33 @@
 import dit
 import numpy as np
 
+def cross_entropy_pmf(p, q=None):
+    """
+    Calculates the cross entropy from probability mass functions `p` and `q`.
+
+    If `q` is None, then it is set to be `p`.
+    Then the entropy of `p` is calculated.
+
+    """
+    if q is None:
+        q = p
+    return -np.nansum(p * np.log2(q))
+
+entropy_pmf = cross_entropy_pmf
+
+def relative_entropy_pmf(p, q):
+    """
+    Calculates the relative entropy (or Kullback-Leibler divergence).
+
+    .. math::
+
+        D_{KL}(p || q)
+
+    """
+    return cross_entropy_pmf(p, q) - cross_entropy_pmf(p, p)
+
+DKL_pmf = relative_entropy_pmf
+
 def cross_entropy(d1, d2, pmf_only=True):
     """
     Returns H(d1, d2)
@@ -18,3 +45,5 @@ def cross_entropy(d1, d2, pmf_only=True):
 def relative_entropy(d1, d2):
     ce = cross_entropy(d1, d2, pmf_only=False)
     return ce - dit.shannon.entropy(d1)
+
+DKL = relative_entropy
