@@ -9,6 +9,10 @@ from ..math import LogOperations
 
 import numpy as np
 
+def entropy_pmf(pmf):
+    pmf = np.asarray(pmf)
+    return np.nansum(-pmf * np.log2(pmf))
+
 def entropy(dist, rvs=None, rv_names=None):
     """
     Returns the entropy H[X] over the random variables in `rvs`.
