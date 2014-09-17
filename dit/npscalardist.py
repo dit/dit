@@ -315,6 +315,10 @@ class ScalarDistribution(BaseDistribution):
         self._meta['is_numerical'] = True
         self._meta['is_sparse'] = None
 
+        if pmf is None and not isinstance(outcomes, dict):
+            # If we make it through the checks, the outcomes will be integers.
+            sort = False
+
         outcomes, pmf = self._init(outcomes, pmf, base)
 
         ## alphabets
