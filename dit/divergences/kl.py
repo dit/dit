@@ -11,6 +11,10 @@ def cross_entropy_pmf(p, q=None):
     """
     if q is None:
         q = p
+
+    p = np.asarray(p)
+    q = np.asarray(q)
+
     return -np.nansum(p * np.log2(q))
 
 entropy_pmf = cross_entropy_pmf
