@@ -10,6 +10,10 @@ from ..math import LogOperations
 import numpy as np
 
 def entropy_pmf(pmf):
+    """
+    Returns the entropy of the probability mass function.
+
+    """
     pmf = np.asarray(pmf)
     return np.nansum(-pmf * np.log2(pmf))
 
