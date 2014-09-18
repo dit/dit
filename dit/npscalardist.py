@@ -278,11 +278,11 @@ class ScalarDistribution(BaseDistribution):
             is initialized to equal dit.math.prng.
 
         sort : bool
-            If `True`, then the sample space is sorted first. Usually, this is
-            desirable, as it normalizes the behavior of distributions which
-            have the same sample space (when considered as a set).  Note that
-            addition and multiplication of distributions is defined only if the
-            sample spaces (as tuples) are equal.
+            If `True`, then the sample space is sorted before finalizing it.
+            Usually, this is desirable, as it normalizes the behavior of
+            distributions which have the same sample space (when considered
+            as a set).  Note that addition and multiplication of distributions
+            is defined only if the sample spaces (as tuples) are equal.
 
         sparse : bool
             Specifies the form of the pmf.  If `True`, then `outcomes` and `pmf`
@@ -294,7 +294,8 @@ class ScalarDistribution(BaseDistribution):
 
         trim : bool
             Specifies if null-outcomes should be removed from pmf when
-            `make_sparse()` is called (assuming `sparse` is `True`).
+            `make_sparse()` is called (assuming `sparse` is `True`) during
+            initialization.
 
         validate : bool
             If `True`, then validate the distribution.  If `False`, then assume
@@ -319,7 +320,7 @@ class ScalarDistribution(BaseDistribution):
             # If we make it through the checks, the outcomes will be integers.
             sort = False
 
-        outcomes, pmf = self._init(outcomes, pmf, base)
+        outcomes, pmf, skip_sort = self._init(outcomes, pmf, base)
 
         ## alphabets
         if len(outcomes) == 0 and sample_space is None:
@@ -347,7 +348,7 @@ class ScalarDistribution(BaseDistribution):
         ##           makes things harder, since we can't assume the outcomes
         ##           and sample space are sorted.  Is there a valid use case
         ##           for an unsorted sample space?
-        if sort and len(outcomes) > 0:
+        if sort and len(outcomes) > 0 and not skip_sort:
             outcomes, pmf, index = reorder(outcomes, pmf, self._sample_space)
         else:
             index = dict(zip(outcomes, range(len(outcomes))))
@@ -375,6 +376,9 @@ class ScalarDistribution(BaseDistribution):
         Pre-initialization with various sanity checks.
 
         """
+        # If we generate integer outcomes, then we can skip the sort.
+        skip_sort = False
+
         ## pmf
         # Attempt to grab outcomes and pmf from a dictionary
         try:
@@ -395,9 +399,10 @@ class ScalarDistribution(BaseDistribution):
             try:
                 np.asarray(pmf, dtype=float)
             except ValueError:
-                msg = '`pmf` was `None` but `outcomes` was not a distribution.'
+                msg = 'Failed to convert `outcomes` to an array.'
                 raise ditException(msg)
             outcomes = range(len(pmf))
+            skip_sort = True
 
         # Make sure pmf and outcomes are sequences
         try:
@@ -429,7 +434,7 @@ class ScalarDistribution(BaseDistribution):
                 base = ditParams['base']
         self.ops = get_ops(base)
 
-        return outcomes, pmf
+        return outcomes, pmf, skip_sort
 
     @classmethod
     def from_distribution(cls, dist, base=None, prng=None, extract=True):

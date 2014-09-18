@@ -382,11 +382,12 @@ class Distribution(ScalarDistribution):
             is initialized to equal dit.math.prng.
 
         sort : bool
-            If `True`, then each random variable's alphabets are sorted.
-            Usually, this is desirable, as it normalizes the behavior of
-            distributions which have the same sample spaces (when considered as
-            a set).  Note that addition and multiplication of distributions is
-            defined only if the sample spaces are compatible.
+            If `True`, then each random variable's alphabets are sorted before
+            they are finalized. Usually, this is desirable, as it normalizes
+            the behavior of distributions which have the same sample spaces
+            (when considered as a set).  Note that addition and multiplication
+            of distributions is defined only if the sample spaces are
+            compatible.
 
         sparse : bool
             Specifies the form of the pmf.  If `True`, then `outcomes` and `pmf`
@@ -398,7 +399,8 @@ class Distribution(ScalarDistribution):
 
         trim : bool
             Specifies if null-outcomes should be removed from pmf when
-            `make_sparse()` is called (assuming `sparse` is `True`).
+            `make_sparse()` is called (assuming `sparse` is `True`) during
+            initialization.
 
         validate : bool
             If `True`, then validate the distribution.  If `False`, then assume
@@ -501,6 +503,9 @@ class Distribution(ScalarDistribution):
         Pre-initialization with various sanity checks.
 
         """
+        # Note: We've changed the behavior of _init here.
+        # In ScalarDistribution it returns a 3-tuple. Here, a 2-tuple.
+
         # Attempt to grab outcomes and pmf from a dictionary
         try:
             outcomes_ = tuple(outcomes.keys())
