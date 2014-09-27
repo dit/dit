@@ -6,3 +6,5 @@
    :target: https://coveralls.io/r/dit/dit?branch=master
 
 For installation information and a quick demo, visit: http://docs.dit.io/en/latest/generalinfo.html
+
+Source code is hosted at Github: https://github.com/dit/dit
