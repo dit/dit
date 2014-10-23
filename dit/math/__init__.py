@@ -20,6 +20,7 @@ from .ops import get_ops, LinearOperations, LogOperations
 from .fraction import approximate_fraction
 from .sigmaalgebra import sigma_algebra, is_sigma_algebra, atom_set
 
+from . import pmfops
 from .pmfops import perturb as perturb_pmf
 
 from . import aitchison

@@ -62,3 +62,27 @@ def perturb(pmf, eps=.1, prng=None):
 
     return out
 
+def convex_combination(pmfs, weights=None):
+    """
+    Forms the convex combination of the pmfs.
+
+    Assumption: All pmf probabilities and weights are linearly distributed.
+
+    Parameters
+    ----------
+    pmfs : NumPy array, shape (n,k)
+        The `n` distributions, each of length `k` that will be mixed.
+    weights : NumPy array, shape (n,)
+        The weights applied to each pmf. This array will be normalized
+        automatically.
+
+    """
+    # Possibly could be used to speed up dit.mixture_distribution2().
+    pmfs = np.atleast_2d(pmfs)
+    if weights is None:
+        weights = np.ones(pmfs.shape[0], dtype=float) / pmfs.shape[0]
+    else:
+        weights = np.asarray(weights, dtype=float)
+        weights /= weights.sum()
+    mixture = (pmfs * weights[:, np.newaxis]).sum(axis=0)
+    return mixture
