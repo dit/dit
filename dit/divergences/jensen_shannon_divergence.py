@@ -9,12 +9,56 @@ from __future__ import division
 import numpy as np
 from six.moves import zip # pylint: disable=redefined-builtin
 
+import dit
 from ..distconst import mixture_distribution
-from ..shannon import entropy as H
+from ..shannon import entropy as H, entropy_pmf as H_pmf
+
+def jensen_shannon_divergence_pmf(pmfs, weights=None):
+    """
+    The Jensen-Shannon Divergence: H(sum(w_i*P_i)) - sum(w_i*H(P_i)).
+
+    The square root of the Jensen-Shannon divergence is a distance metric.
+
+    Assumption: Linearly distributed probabilities.
+
+    Parameters
+    ----------
+    pmfs : NumPy array, shape (n,k)
+        The `n` distributions, each of length `k` that will be mixed.
+    weights : NumPy array, shape (n,)
+        The weights applied to each pmf. This array will be normalized
+        automatically. If None, each pmf is weighted equally.
+
+    Returns
+    -------
+    jsd: float
+        The Jensen-Shannon Divergence
+
+    """
+    pmfs = np.atleast_2d(pmfs)
+    if weights is None:
+        weights = np.ones(pmfs.shape[0], dtype=float) / pmfs.shape[0]
+    else:
+        if len(weights) != len(pmfs):
+            msg = "number of weights != number of pmfs"
+            raise dit.exceptions.ditException(msg)
+        weights = np.asarray(weights, dtype=float)
+        weights /= weights.sum()
+
+    mixture = dit.math.pmfops.convex_combination(pmfs, weights)
+    one = H_pmf(mixture)
+    entropies = np.apply_along_axis(H_pmf, 1, pmfs)
+    print(pmfs)
+    print(entropies)
+    print(entropies * weights)
+    two = (entropies * weights).sum()
+    return one - two
 
 def jensen_shannon_divergence(dists, weights=None):
     """
     The Jensen-Shannon Divergence: H(sum(w_i*P_i)) - sum(w_i*H(P_i)).
+
+    The square root of the Jensen-Shannon divergence is a distance metric.
 
     Parameters
     ----------
