@@ -8,6 +8,8 @@ def cross_entropy_pmf(p, q=None):
     If `q` is None, then it is set to be `p`.
     Then the entropy of `p` is calculated.
 
+    Assumption: Linearly distributed probabilities.
+
     """
     if q is None:
         q = p
@@ -22,6 +24,8 @@ entropy_pmf = cross_entropy_pmf
 def relative_entropy_pmf(p, q):
     """
     Calculates the relative entropy (or Kullback-Leibler divergence).
+
+    Assumption: Linearly distributed probabilities.
 
     .. math::
 
