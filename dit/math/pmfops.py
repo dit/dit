@@ -1,12 +1,17 @@
 # coding: utf-8
+"""
+A catch-all module for miscellaneous pmf-based operations.
 
+Eventually, we will need to reorganize.
+
+"""
 from __future__ import division
 from __future__ import print_function
 
 import dit
 import numpy as np
 
-def perturb_pmf(pmf, eps=.1, prng=None):
+def perturb(pmf, eps=.1, prng=None):
     """
     Returns a new distribution with all probabilities perturbed.
 
@@ -27,7 +32,8 @@ def perturb_pmf(pmf, eps=.1, prng=None):
     Parameters
     ----------
     pmf : NumPy array
-        The distribution to be perturbed.
+        The distribution to be perturbed. Assumes `pmf` represents linearly
+        distributed probabilities.
     eps : float
         The scaling factor used for perturbing. Values of `10` correspond
         to large perturbations for the ``1``-simplex.

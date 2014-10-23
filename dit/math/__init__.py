@@ -19,7 +19,8 @@ from .sampling import sample, _sample, _samples
 from .ops import get_ops, LinearOperations, LogOperations
 from .fraction import approximate_fraction
 from .sigmaalgebra import sigma_algebra, is_sigma_algebra, atom_set
-from .perturb import perturb_pmf
+
+from .pmfops import perturb as perturb_pmf
 
 from . import aitchison
 from . import combinatorics
