@@ -39,9 +39,9 @@ def perturb(pmf, eps=.1, prng=None):
 
     Parameters
     ----------
-    pmf : NumPy array
+    pmf : NumPy array, shape (n,) or (k,n)
         The distribution to be perturbed. Assumes `pmf` represents linearly
-        distributed probabilities.
+        distributed probabilities. One may pass in `k` such distributions.
     eps : float
         The scaling factor used for perturbing. Values of `10` correspond
         to large perturbations for the ``1``-simplex.
@@ -60,6 +60,8 @@ def perturb(pmf, eps=.1, prng=None):
     pmf_2d = np.atleast_2d(pmf)
     out = np.zeros_like(pmf_2d)
     for i, row in enumerate(pmf_2d):
+        # We must treat each row differently because their supports
+        # could live on different simplices.
         idx = row > 0
         p1 = row[idx]
         p1_ilr = dit.math.aitchison.ilr(p1)
