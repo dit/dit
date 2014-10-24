@@ -10,10 +10,18 @@ from nose.tools import *
 
 module = dit.math.pmfops
 
-def test_perturb():
+def test_perturb_one():
     # Smoke test
     d = np.array([0, .5, .5])
     d2 = module.perturb(d, .00001)
+    d3 = d2.round(2)
+    np.testing.assert_allclose(d, d3)
+
+def test_perturb_many():
+    # Smoke test
+    d = np.array([[0, .5, .5], [.5, .5, .0]])
+    d2 = module.perturb(d, .00001)
+    print(d2)
     d3 = d2.round(2)
     np.testing.assert_allclose(d, d3)
 
