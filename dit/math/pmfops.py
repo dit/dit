@@ -8,6 +8,8 @@ Eventually, we will need to reorganize.
 from __future__ import division
 from __future__ import print_function
 
+from itertools import product
+
 import dit
 import numpy as np
 
@@ -86,3 +88,209 @@ def convex_combination(pmfs, weights=None):
         weights /= weights.sum()
     mixture = (pmfs * weights[:, np.newaxis]).sum(axis=0)
     return mixture
+
+def downsample(pmf, depth, base=2, method='componentL1'):
+    """
+    Returns the nearest pmf on a triangular grid.
+
+    When multiple grid points are equally close, only one of them is returned.
+    The particular grid point returned is arbitrary and determined by the
+    method that compares distances.
+
+    Parameters
+    ----------
+    pmf : NumPy array, shape (n,) or (k, n)
+        The pmf on the ``(n-1)``-simplex.
+    depth : int
+        Controls the density of the grid.  The number of points on the simplex
+        is given by: (base**depth + length - 1)! / (base**depth)! / (length-1)!
+        At each depth, the number of points is exponentially increased.
+    base : int
+        The rate at which we divide probabilities..
+    method : str
+        The algorithm used to determine what `nearest` means. The default
+        method, 'componentL1', moves each component to its nearest grid
+        value using the L1 norm.
+
+    Returns
+    -------
+    d : NumPy array, shape (n,)
+        The downsampled pmf.
+
+    See Also
+    --------
+    dit.simplex_grid
+
+    """
+    if method in _methods:
+        return _methods[method](pmf, depth, base)
+    else:
+        raise NotImplementedError('Unknown method.')
+
+def downsample_componentL1(pmf, depth, base=2):
+    """
+    Renormalizes and uses updated insert indexes as you go.
+
+    """
+    N = base**depth
+    locs = np.linspace(0, 1, N + 1)
+
+    out = np.atleast_2d(pmf).transpose().copy()
+    # Go through each component.
+    for i in range(out.shape[0] - 1):
+        # Find insertion indexes
+        insert_index = np.searchsorted(locs, out[i])
+        # Define the indexes of clamped region for each component.
+        clamps = np.array([insert_index - 1, insert_index])
+        # Actually get the clamped region
+        gridvals = locs[clamps]
+        # Calculate distance to each point, per component.
+        distances = np.abs(gridvals - out[i])
+        # Determine which index each component was closest to.
+        desired = np.argmin(distances, axis=0)
+        # Pull those indexes from the clamping indexes
+        locations = np.where(desired, insert_index, insert_index - 1)
+        out[i] = locs[locations]
+        # Now renormalize the other components of the distribution...
+        temp = out.transpose() # View
+        prev_Z = temp[..., :i+1].sum(axis=-1)
+        zeros = np.isclose(prev_Z, 1)
+        Z = (1 - prev_Z) / temp[..., i+1:].sum(axis=-1)
+        temp[..., i+1:] *= Z[..., np.newaxis]
+        # This assumes len(shape) == 2.
+        temp[zeros, i+1:] = 0
+
+    out = out.transpose()
+    out[...,-1] = 1 - out[...,:-1].sum(axis=-1)
+    if len(pmf.shape) == 1:
+        out = out[0]
+    return out
+
+def clamped_indexes(pmf, depth, base):
+    """
+    Returns the indexes of the component values that clamp the pmf.
+
+    Returns
+    -------
+    clamps : NumPy array, shape (2,n) or (2,k,n)
+
+    """
+    N = base**depth
+    locs = np.linspace(0, 1, N + 1)
+    # Find insertion indexes
+    insert_index = np.searchsorted(locs, pmf)
+    # Define the indexes of clamped region for each component.
+    clamps = np.array([insert_index - 1, insert_index])
+
+    return clamps, locs
+
+def neighbors(pmf, depth, base=2):
+    """
+    Returns the grid points that define the cell containing the pmf.
+
+    We enumerate through all possible grid points. In general, this will
+    give up to 2**(n-1) points. Yet, we know that the neighborhood for any
+    point will be an n-simplex, and so there can only be n neighbors.
+
+    How do we find correct n neighbors? WIP.
+
+    """
+    # We can only have 1 pmf.
+    assert(len(pmf.shape) == 1)
+
+    N = base**depth
+    locs = np.linspace(0, 1, N + 1)
+
+    closest = downsample(pmf, depth, base)
+    closest_key = np.searchsorted(locs, closest)
+    # Key all but the last (since that is determined)
+    closest_id = frozenset(enumerate(closest_key))
+    print(closest_key)
+
+    neighs = []
+    keys = set([])
+    #print(locs[:10])
+    #print(pmf)
+    for offsets in product([-1, 0], repeat=len(pmf) - 1):
+        d = pmf.copy()
+        key = []
+        #print("****", offsets)
+        for i, offset in enumerate(offsets):
+            # Project the i^th coordinate.
+            index = np.searchsorted(locs, d[i]) + offset
+            #print(i, offset, index, d[i], d)
+            # In these cases, the prob is essentially equal to the first
+            # element (0) or the last element (1).
+            if index < 0:
+                index += 1 # now: first index
+            if index == len(locs):
+                index -= 1 # now: last index
+                continue
+            key.append(index)
+            d[i] = locs[index]
+            # Now renormalize.
+            prev_Z = d[:i+1].sum()
+            if np.isclose(prev_Z, 1):
+                Z = 0
+            else:
+                Z = (1 - prev_Z) / d[i+1:].sum()
+            d[i+1:] *= Z
+        else:
+            # Build the last key element.
+            key.append(np.searchsorted(locs, d[-1]))
+            # Build a unique id as a frozenset. Order matters, so enumerate.
+            key_id = frozenset(enumerate(key))
+            overlap = closest_id.intersection(key_id)
+            if key_id not in keys:
+                keys.add(key_id)
+                neighs.append(d)
+                print(key, len(overlap), d)
+
+    return neighs, keys
+
+def projections(pmf, depth, base=2):
+    """
+    Returns the projections on the way to the nearest grid point.
+
+    """
+    # We can only have 1 pmf.
+    assert(len(pmf.shape) == 1)
+
+    N = base**depth
+    locs = np.linspace(0, 1, N + 1)
+
+    out = pmf.copy()
+    # Go through each component.
+
+    projs = [out.copy()]
+    for i in range(out.shape[0] - 1):
+        # Find insertion indexes
+        insert_index = np.searchsorted(locs, out[i])
+        # Define the indexes of clamped region for each component.
+        clamps = np.array([insert_index - 1, insert_index])
+        # Actually get the clamped region
+        gridvals = locs[clamps]
+        # Calculate distance to each point, per component.
+        distances = np.abs(gridvals - out[i])
+        # Determine which index each component was closest to.
+        desired = np.argmin(distances, axis=0)
+        # Pull those indexes from the clamping indexes
+        locations = np.where(desired, insert_index, insert_index - 1)
+        out[i] = locs[locations]
+        # Now renormalize the other components of the distribution...
+        prev_Z = out[:i+1].sum(axis=-1)
+        zeros = np.isclose(prev_Z, 1)
+        if zeros:
+            Z = 0
+        else:
+            Z = (1 - prev_Z) / out[i+1:].sum(axis=-1)
+        out[i+1:] *= Z
+        projs.append(out.copy())
+
+    return np.asarray(projs)
+
+
+_methods = {
+    'componentL1': downsample_componentL1
+}
+
