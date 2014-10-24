@@ -57,16 +57,19 @@ def perturb(pmf, eps=.1, prng=None):
     if prng is None:
         prng = dit.math.prng
 
-    idx = pmf > 0
-    p1 = pmf[idx]
+    pmf_2d = np.atleast_2d(pmf)
+    out = np.zeros_like(pmf_2d)
+    for i, row in enumerate(pmf_2d):
+        idx = row > 0
+        p1 = row[idx]
+        p1_ilr = dit.math.aitchison.ilr(p1)
+        delta = eps * (prng.rand(*p1_ilr.shape) - .5)
+        p2_ilr = p1_ilr + delta
+        p2 = dit.math.aitchison.ilr_inv(p2_ilr)
+        out[i,idx] = p2
 
-    p1_ilr = dit.math.aitchison.ilr(p1)
-    delta = eps * (prng.rand(len(p1_ilr)) - .5)
-    p2_ilr = p1_ilr + delta
-    p2 = dit.math.aitchison.ilr_inv(p2_ilr)
-
-    out = np.zeros(len(pmf))
-    out[idx] = p2
+    if len(pmf.shape) == 1:
+        out = out[0]
 
     return out
 
