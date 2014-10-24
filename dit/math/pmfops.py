@@ -13,6 +13,12 @@ from itertools import product
 import dit
 import numpy as np
 
+__all__ = [
+    'perturb',
+    'convex_combination',
+    'downsample',
+]
+
 def perturb(pmf, eps=.1, prng=None):
     """
     Returns a new distribution with all probabilities perturbed.
@@ -129,6 +135,7 @@ def downsample(pmf, depth, base=2, method='componentL1'):
 
 def downsample_componentL1(pmf, depth, base=2):
     """
+    Clamps each component, one-by-one.
     Renormalizes and uses updated insert indexes as you go.
 
     """
@@ -166,7 +173,7 @@ def downsample_componentL1(pmf, depth, base=2):
         out = out[0]
     return out
 
-def clamped_indexes(pmf, depth, base):
+def clamped_indexes(pmf, depth, base=2):
     """
     Returns the indexes of the component values that clamp the pmf.
 
@@ -184,73 +191,36 @@ def clamped_indexes(pmf, depth, base):
 
     return clamps, locs
 
-def neighbors(pmf, depth, base=2):
-    """
-    Returns the grid points that define the cell containing the pmf.
-
-    We enumerate through all possible grid points. In general, this will
-    give up to 2**(n-1) points. Yet, we know that the neighborhood for any
-    point will be an n-simplex, and so there can only be n neighbors.
-
-    How do we find correct n neighbors? WIP.
-
-    """
-    # We can only have 1 pmf.
-    assert(len(pmf.shape) == 1)
-
-    N = base**depth
-    locs = np.linspace(0, 1, N + 1)
-
-    closest = downsample(pmf, depth, base)
-    closest_key = np.searchsorted(locs, closest)
-    # Key all but the last (since that is determined)
-    closest_id = frozenset(enumerate(closest_key))
-    print(closest_key)
-
-    neighs = []
-    keys = set([])
-    #print(locs[:10])
-    #print(pmf)
-    for offsets in product([-1, 0], repeat=len(pmf) - 1):
-        d = pmf.copy()
-        key = []
-        #print("****", offsets)
-        for i, offset in enumerate(offsets):
-            # Project the i^th coordinate.
-            index = np.searchsorted(locs, d[i]) + offset
-            #print(i, offset, index, d[i], d)
-            # In these cases, the prob is essentially equal to the first
-            # element (0) or the last element (1).
-            if index < 0:
-                index += 1 # now: first index
-            if index == len(locs):
-                index -= 1 # now: last index
-                continue
-            key.append(index)
-            d[i] = locs[index]
-            # Now renormalize.
-            prev_Z = d[:i+1].sum()
-            if np.isclose(prev_Z, 1):
-                Z = 0
-            else:
-                Z = (1 - prev_Z) / d[i+1:].sum()
-            d[i+1:] *= Z
-        else:
-            # Build the last key element.
-            key.append(np.searchsorted(locs, d[-1]))
-            # Build a unique id as a frozenset. Order matters, so enumerate.
-            key_id = frozenset(enumerate(key))
-            overlap = closest_id.intersection(key_id)
-            if key_id not in keys:
-                keys.add(key_id)
-                neighs.append(d)
-                print(key, len(overlap), d)
-
-    return neighs, keys
-
-def projections(pmf, depth, base=2):
+def projections(pmf, depth, base=2, method=None):
     """
     Returns the projections on the way to the nearest grid point.
+
+    The original pmf is included in the final output.
+
+    Parameters
+    ----------
+    pmf : NumPy array, shape (n,)
+        The pmf on the ``(n-1)``-simplex.
+    depth : int
+        Controls the density of the grid.  The number of points on the simplex
+        is given by: (base**depth + length - 1)! / (base**depth)! / (length-1)!
+        At each depth, the number of points is exponentially increased.
+    base : int
+        The rate at which we divide probabilities..
+    method : str
+        The algorithm used to determine what `nearest` means. The default
+        method, 'componentL1', moves each component to its nearest grid
+        value using the L1 norm.
+
+    Returns
+    -------
+    d : NumPy array, shape (n,n)
+        The projections leading to the downsampled pmf.
+
+    See Also
+    --------
+    downsample, dit.simplex_grid
+
 
     """
     # We can only have 1 pmf.
