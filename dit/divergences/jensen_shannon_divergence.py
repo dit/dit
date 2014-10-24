@@ -48,9 +48,6 @@ def jensen_shannon_divergence_pmf(pmfs, weights=None):
     mixture = dit.math.pmfops.convex_combination(pmfs, weights)
     one = H_pmf(mixture)
     entropies = np.apply_along_axis(H_pmf, 1, pmfs)
-    print(pmfs)
-    print(entropies)
-    print(entropies * weights)
     two = (entropies * weights).sum()
     return one - two
 
