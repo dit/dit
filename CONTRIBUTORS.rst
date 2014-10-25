@@ -3,18 +3,17 @@ Introduction
 ============
 
 This file contains an incomplete list of people who have contributed to ``dit``.
-It is an *inclusive* list, and anyone who has contributed who wishes to make
+It is an *inclusive* list, and anyone who has contributed and wishes to make
 that contribution known is welcome to add an entry into this file.  As a rule,
 no name should be added to this list without the approval of the person
 associated with that name.
 
 In general, creating a comprehensive list of contributors can be difficult, and
 the list within this file is almost certainly incomplete.  Contributors include
-testers, bug reporters, build/integration systems such as `TravisCI <https
+testers, bug reporters, build/integration systems (such as `TravisCI <https
 ://travis-ci.org>`_, `coveralls <https://coveralls.io>`_, and `readthedocs
-<https://readthedocs.org>`_, contributors who wish to remain anonymous, funding
-sources, advisors, users, etc.  Simply stated: ``dit`` is a collaborative
-project.
+<https://readthedocs.org>`_), contributors who wish to remain anonymous, funding
+sources, academic advisors, users, etc.
 
 Do you want to make your contribution known? If you have commit access, edit
 this file and add your name. If you do not have commit access, feel free to open
