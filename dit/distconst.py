@@ -497,7 +497,7 @@ class RVFunctions(object):
         Examples
         --------
         >>> d = dit.Distribution(['00', '01', '10', '11'], [1/4]*4)
-        >>> bf = dit.BooleanFunctions(d)
+        >>> bf = dit.RVFunctions(d)
         >>> d = dit.insert_rvf(d, bf.xor([0,1]))
         >>> d = dit.insert_rvf(d, bf.xor([1,2]))
         >>> d.outcomes
@@ -625,8 +625,10 @@ class RVFunctions(object):
         number of equivalence classes, n, determines the number of values for
         the random variable. The values are integers from 0 to n-1, but if the
         outcome class of the distribution is string, then this function will
-        use the first n letters from '0123456789abcdefghijklmnopqrstuvwxyz'
-        as values for the random variable.
+        use the first n letters from:
+            '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        as values for the random variable. So random variables with more than
+        62 outcomes are not supported by this function.
 
         Parameters
         ----------
@@ -652,13 +654,18 @@ class RVFunctions(object):
 
 
         """
-        alphabet = '0123456789abcdefghijklmnopqrstuvwxyz'
         # Practically, we support the str class. This is bytes in Python
         # versions <3 and unicode >3.
+        alphabet = '0123456789'
+        letters = 'abcdefghijklmnopqrstuvwxyz'
+        alphabet += letters
+        alphabet += letters.upper()
 
         n = len(partition)
-
         if self.outcome_class == str:
+            if n > len(alphabet):
+                msg = 'Number of outcomes is too large.'
+                raise NotImplementedError(msg)
             vals = alphabet[:n]
         else:
             vals = range(n)
@@ -673,7 +680,7 @@ class RVFunctions(object):
 
     def from_hexes(self, hexes):
         """
-        Returns a callable implementing a boolean function on up to 3-bits.
+        Returns a callable implementing a boolean function on up to 4-bits.
 
         Outcomes are assumed to be strings of '0' and '1', or tuples of 0 and 1.
         The returned function handles both cases appropriately.
@@ -684,14 +691,14 @@ class RVFunctions(object):
         random variable will be false for the complement of this set---so this
         function additional assumes full support. For example, if the random
         variable is a function of 3-bits and should be true only for the
-        outcomes '010' or '111', then `hexes` should be '27'. This nicely
-        handles 1- and 2-bit inputs in a similar fashion.
+        outcomes 2='010' or 7='111', then `hexes` should be '27'. This nicely
+        handles 1- and 2-, and 4-bit inputs in a similar fashion.
 
         Parameters
         ----------
         hexes : str
-            A string of base-16 characters representing the (up to) 4-bit
-            outcomes for which the random variable should be true.
+            A string of base-16 characters, each element represents an
+            (up to) 4-bit outcome for which the random variable should be true.
 
         Returns
         -------
