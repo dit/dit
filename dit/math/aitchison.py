@@ -52,34 +52,11 @@ def _gm(x):
         The k geometric means of the k compositions in `x`.
 
     """
-    x_gm = x.prod(axis=1) ** (1/x.shape[1])
+    last_axis = -1
+    x_gm = x.prod(axis=last_axis) ** (1/x.shape[last_axis])
 
     return x_gm
 
-
-def _closure(x):
-    """Returns the closure operation applied to the rows of `x`.
-
-    Parameters
-    ----------
-    x : NumPy array, shape (k,n)
-        The k compositions to be closed.
-
-    Returns
-    -------
-    cx : NumPy array, shape (k,n)
-        The closures of the k compositions in `x`.
-
-    Notes
-    -----
-    The sum of the elements of the composition is assumed to be \\kappa = 1.
-
-    """
-    s = x.sum(axis=1, dtype=float)
-    if np.any(s == 0.0):
-        raise ditException("x contains an unnormalizable distribution.")
-    cx = x / s[:, np.newaxis]
-    return cx
 
 def closure(x):
     """Returns the closure operation applied to the composition x.
@@ -99,17 +76,10 @@ def closure(x):
         The closure of `x`.
 
     """
-    if len(x.shape) == 1:
-        single = True
-    else:
-        single = False
-
-    x = np.atleast_2d(x)
-    cx = _closure(x)
-
-    if single:
-        cx = cx[0]
-
+    s = x.sum(axis=-1, dtype=float)
+    if np.any(s == 0.0):
+        raise ditException("x contains an unnormalizable distribution.")
+    cx = x / s[..., np.newaxis]
     return cx
 
 def subcomposition(x, indexes):
@@ -151,17 +121,7 @@ def perturbation(x, dx):
         The perturbation of `x` by `dx`.
 
     """
-    if len(x.shape) == 1:
-        single = True
-    else:
-        single = False
-
-    x = np.atleast_2d(x)
-    dx = np.atleast_2d(dx)
-    px = _closure(x * dx)
-
-    if single:
-        px = px[0]
+    px = closure(x * dx)
 
     return px
 
@@ -184,17 +144,9 @@ def power(x, a):
         The result of powering `x` by `a`.
 
     """
+    a = np.ravel(a)[..., np.newaxis]
+    px = closure(x**a)
     if len(x.shape) == 1:
-        single = True
-    else:
-        single = False
-
-    x = np.atleast_2d(x)
-    a = np.ravel(a)[:, np.newaxis]
-
-    px = _closure(x**a)
-
-    if single:
         px = px[0]
 
     return px

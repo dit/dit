@@ -327,7 +327,6 @@ def test_alr_inv():
     assert_equal_shape(x, y)
     assert_almost_equal_array(x, y)
 
-
 def test_ilr_inv():
     x = np.array([1, 2, 3, 4]) / 10
     x_ilr = ilr(x)
