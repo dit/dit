@@ -275,6 +275,10 @@ def simplex_grid(length, subdivisions, using=None, inplace=False):
 
         (subdivisions + length - 1)! / (subdivisions)! / (length-1)!
 
+    and is equivalent to the total number of ways ``n`` indistinguishable items
+    can be placed into ``k`` distinguishable slots, where n=`subdivisions` and
+    k=`length`.
+
     Parameters
     ----------
     length : int
@@ -688,7 +692,6 @@ class RVFunctions(object):
             for outcome in eqclass:
                 mapping[self.ctor(outcome)] = vals[i]
 
-        print(mapping)
         return self.from_mapping(mapping, force=True)
 
     def from_hexes(self, hexes):
