@@ -11,10 +11,12 @@ from __future__ import division
 import numpy as np
 from six.moves import map, range, zip # pylint: disable=redefined-builtin
 
+from .distribution import BaseDistribution
 from .exceptions import ditException
 from .npdist import Distribution
 from .npscalardist import ScalarDistribution
 from .validate import validate_pmf
+
 
 __all__ = [
     'mixture_distribution',
@@ -264,34 +266,39 @@ def random_distribution(outcome_length, alphabet_size, alpha=None, prng=None):
     d.pmf = pmf
     return d
 
-def simplex_grid(length, depth, base=2, using=None, inplace=False):
+def simplex_grid(length, subdivisions, using=None, inplace=False):
     """Returns a generator over distributions, determined by a grid.
 
     The grid is "triangular" in Euclidean space.
+
+    The total number of points on the grid is::
+
+        (subdivisions + length - 1)! / (subdivisions)! / (length-1)!
 
     Parameters
     ----------
     length : int
         The number of elements in each distribution. The dimensionality
         of the simplex is length-1.
-    depth : int
-        Controls the density of the grid.  The number of points on the simplex
-        is given by:
-            (base**depth + length - 1)! / (base**depth)! / (length-1)!
-        At each depth, we exponentially increase the number of points.
-    base : int
-        The rate at which we divide probabilities.
-    using : None or distribution
-        If not `None`, then each yielded distribution is a copy of `using`
-        with its pmf set appropriately.  If `using` is equal to the tuple
-        type, then only tuples are yielded.
+    subdivisions : int
+        The number of subdivisions for the interval [0, 1]. Each component
+        will take on values at the boundaries of the subdivisions. For example,
+        one subdivision means each component can take the values 0 or 1 only.
+        Two subdivisions corresponds to :math:`[[0, 1/2], [1/2, 1]]` and thus,
+        each component can take the values 0, 1/2, or 1. A common use case is
+        to exponentially increase the number of subdivisions at each level.
+        That is, subdivisions would be: 2**0, 2**1, 2**2, 2**3, ...
+    using : None, callable, or distribution
+        If None, then scalar distributions on integers are yielded. If `using`
+        is a distribution, then each yielded distribution is a copy of `using`
+        with its pmf set appropriately. For other callables, a tuple of the
+        pmf is passed to the callable and then yielded.
     inplace : bool
         If `True`, then each yielded distribution is the same Python object,
         but with a new probability mass function. If `False`, then each yielded
         distribution is a unique Python object and can be safely stored for
-        other calculations after the generator has finished. When `using` is
-        equal to `tuple`, this option has no effect---all yielded tuples are
-        distinct.
+        other calculations after the generator has finished. This keyword has
+        an effect only when `using` is None or some distribution.
 
     Examples
     --------
@@ -301,16 +308,19 @@ def simplex_grid(length, depth, base=2, using=None, inplace=False):
     """
     from dit.math.combinatorics import slots
 
-    gen = slots(int(base)**int(depth), int(length), normalized=True)
+    gen = slots(int(subdivisions), int(length), normalized=True)
+
+    if using is None:
+        using = random_scalar_distribution(length)
 
     if using == tuple:
         for pmf in gen:
             yield pmf
-
+    elif not isinstance(using, BaseDistribution):
+        for pmf in gen:
+            yield using(pmf)
     else:
-        if using is None:
-            using = random_scalar_distribution(length)
-        elif length != len(using.pmf):
+        if length != len(using.pmf):
             raise Exception('`length` must match the length of pmf')
 
         if inplace:

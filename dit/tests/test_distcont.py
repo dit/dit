@@ -137,14 +137,14 @@ def test_random_distribution():
 
 def test_simplex_grid1():
     # Test with tuple
-    dists = np.asarray(list(dit.simplex_grid(2, 2, using=tuple)))
+    dists = np.asarray(list(dit.simplex_grid(2, 2**2, using=tuple)))
     dists_ = np.asarray([(0.0, 1.0), (0.25, 0.75), (0.5, 0.5),
                          (0.75, 0.25), (1.0, 0.0)])
     np.testing.assert_allclose(dists, dists_)
 
 def test_simplex_grid2():
     # Test with ScalarDistribution
-    dists = np.asarray([d.pmf for d in dit.simplex_grid(2, 2)])
+    dists = np.asarray([d.pmf for d in dit.simplex_grid(2, 2**2)])
     dists_ = np.asarray([(0.0, 1.0), (0.25, 0.75), (0.5, 0.5),
                          (0.75, 0.25), (1.0, 0.0)])
     np.testing.assert_allclose(dists, dists_)
@@ -152,7 +152,7 @@ def test_simplex_grid2():
 def test_simplex_grid3():
     # Test with Distribution
     d = dit.random_distribution(1, 2)
-    dists = np.asarray([x.pmf for x in dit.simplex_grid(2, 2, using=d)])
+    dists = np.asarray([x.pmf for x in dit.simplex_grid(2, 2**2, using=d)])
     dists_ = np.asarray([(0.0, 1.0), (0.25, 0.75), (0.5, 0.5),
                          (0.75, 0.25), (1.0, 0.0)])
     np.testing.assert_allclose(dists, dists_)
@@ -160,15 +160,34 @@ def test_simplex_grid3():
 def test_simplex_grid4():
     # Test with Distribution but with wrong length specified.
     d = dit.random_distribution(2, 2)
-    g = dit.simplex_grid(5, 2, using=d)
+    g = dit.simplex_grid(5, 2**2, using=d)
     np.testing.assert_raises(Exception, next, g)
 
 def test_simplex_grid5():
     # Test with ScalarDistribution with inplace=True
     # All final dists should be the same.
-    dists = np.asarray([d.pmf for d in dit.simplex_grid(2, 2, inplace=True)])
+    dists = np.asarray([d.pmf for d in dit.simplex_grid(2, 2**2, inplace=True)])
     dists_ = np.asarray([(1.0, 0.0)]*5)
     np.testing.assert_allclose(dists, dists_)
+
+def test_simplex_grid6():
+    # Test using NumPy arrays and a base of 3.
+    d_ = np.array([
+        [ 0.        ,  0.        ,  1.        ],
+        [ 0.        ,  0.33333333,  0.66666667],
+        [ 0.        ,  0.66666667,  0.33333333],
+        [ 0.        ,  1.        ,  0.        ],
+        [ 0.33333333,  0.        ,  0.66666667],
+        [ 0.33333333,  0.33333333,  0.33333333],
+        [ 0.33333333,  0.66666667,  0.        ],
+        [ 0.66666667,  0.        ,  0.33333333],
+        [ 0.66666667,  0.33333333,  0.        ],
+        [ 1.        ,  0.        ,  0.        ]
+    ])
+    d = np.array(list(dit.simplex_grid(3, 3, using=np.array)))
+    np.testing.assert_allclose(d, d_)
+
+
 
 # These can be simple smoke test, since the random* tests hit all the branches.
 
