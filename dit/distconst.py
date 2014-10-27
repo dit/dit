@@ -514,6 +514,8 @@ class RVFunctions(object):
         ('0000', '0110', '1011', '1101')
 
         """
+        if not isinstance(d, Distribution):
+            raise ditException('`d` must be a Distribution instance.')
         try:
             d.outcomes[0] + ''
         except TypeError:
@@ -684,8 +686,9 @@ class RVFunctions(object):
         # Probably could do this more efficiently.
         for i, eqclass in enumerate(partition):
             for outcome in eqclass:
-                mapping[self.ctor([outcome])] = vals[i]
+                mapping[self.ctor(outcome)] = vals[i]
 
+        print(mapping)
         return self.from_mapping(mapping, force=True)
 
     def from_hexes(self, hexes):

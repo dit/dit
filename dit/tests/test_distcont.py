@@ -6,6 +6,8 @@ from __future__ import division
 
 from nose.tools import assert_equal, assert_false, assert_raises, assert_true
 
+import itertools
+
 import numpy as np
 import numpy.testing as npt
 
@@ -249,6 +251,28 @@ def test_rvfunctions4():
     outcomes = ('0000', '0010', '0101', '0110', '1000', '1010', '1100', '1111')
     outcomes = tuple(tuple(map(int, o)) for o in outcomes)
     assert_equal(d.outcomes, outcomes)
+
+def test_rvfunctions_scalardist():
+    d = dit.ScalarDistribution(range(5), [1/5] * 5)
+    assert_raises(ditException, dit.RVFunctions, d)
+
+def test_rvfunctions_ints():
+    d = dit.uniform_distribution(2, 2)
+    rvf = dit.RVFunctions(d)
+    partition = [(d.outcomes[i],) for i in range(len(d))]
+    mapping = rvf.from_partition(partition)
+    d2 = dit.insert_rvf(d, mapping)
+    outcomes = ((0,0,0), (0,1,1), (1,0,2), (1,1,3))
+    assert_equal(d2.outcomes, outcomes)
+
+def test_rvfunctions_toolarge():
+    letters = 'abcd'
+    outcomes = itertools.product(letters, repeat=3)
+    outcomes = map(''.join, outcomes)
+    d = dit.Distribution(outcomes, [1/64]*64, validate=False)
+    rvf = dit.RVFunctions(d)
+    partition = [(d.outcomes[i],) for i in range(len(d))]
+    assert_raises(NotImplementedError, rvf.from_partition, partition)
 
 def test_insert_rvf1():
     # Test multiple insertion.
