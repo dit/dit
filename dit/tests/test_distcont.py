@@ -189,7 +189,13 @@ def test_simplex_grid6():
     d = np.array(list(dit.simplex_grid(3, 3, using=np.array)))
     np.testing.assert_allclose(d, d_)
 
+def test_simplex_grid_bad_n():
+    x = dit.simplex_grid(0, 3)
+    assert_raises(ditException, list, x)
 
+def test_simplex_grid_bad_subdivisions():
+    x = dit.simplex_grid(3, 0)
+    assert_raises(ditException, list, x)
 
 # These can be simple smoke test, since the random* tests hit all the branches.
 

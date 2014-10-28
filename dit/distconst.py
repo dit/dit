@@ -312,6 +312,11 @@ def simplex_grid(length, subdivisions, using=None, inplace=False):
     """
     from dit.math.combinatorics import slots
 
+    if subdivisions < 1:
+        raise ditException('`subdivisions` must be greater than or equal to 1')
+    elif length < 1:
+        raise ditException('`length` must be greater than or equal to 1')
+
     gen = slots(int(subdivisions), int(length), normalized=True)
 
     if using is None:
