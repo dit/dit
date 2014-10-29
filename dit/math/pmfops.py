@@ -15,6 +15,7 @@ import numpy as np
 
 __all__ = [
     'perturb_support',
+    'replace_zeros',
     'convex_combination',
     'downsample',
 ]
@@ -83,6 +84,86 @@ def perturb_support(pmf, eps=.1, prng=None):
         out = out[0]
 
     return out
+
+def replace_zeros(pmf, delta, rand=True, prng=None):
+    """
+    Replaces zeros in a pmf with values smaller than `eps`.
+
+    Note that when considering the Aitchison geometry, the boundaries of the
+    simplex are infinitely far away from the uniform distribution. So this
+    operation, while numerically small, moves to a new distribution that
+    is significantly closer to the uniform distribution (relatively speaking).
+
+    The replacement strategy is done in a multiplicative fashion according
+    to the following formula [1]_, but optionally, with randomly determined
+    replacement values:
+
+        x_i^\prime =
+            \begin{cases}
+                \delta_i & x_i = 0 \\
+                x_i (1 - \sum_i \delta_i) & x_i \neq 0
+            \end{cases}
+
+    where :math:`\delta_i` is the replacement value for each zero element.
+    This approach is preferred since it preserves the ratios of nonzero
+    elements, an important feature of distributions. Simply adding some values
+    to the zero elements and then renormalizing would not preserve the ratios.
+
+    Parameters
+    ----------
+    pmf : NumPy array, shape (n,) or (k, n)
+        The distribution or `k` distributions living on the `(n-1)`-simplex.
+    delta : float
+        A small value for all the zero elements in the pmf.
+    rand : bool
+        When `True`, the replacement values for zero elements are random
+        numbers less than `delta`. When `False`, the replacement values are
+        equal to `delta`.
+    prng : NumPy RandomState
+        A random number generator used to select replacement values when
+        `rand` is `True`. If None, then `dit.math.prng` is used.
+
+    Returns
+    -------
+    d : NumPy array, shape (n,) or (k, n)
+        The distributions with zeros replaced.
+
+    Examples
+    --------
+    >>> d = np.array([.25, .75, 0])
+    >>> replace_zeros(d, .01, rand=False)
+    array([ 0.2475,  0.7425,  0.01  ])
+
+    Notes
+    -----
+    When the distribution is determined by counts and the total number of
+    counts is known, this method can be modified so that the value of `delta`
+    is chosen according to a Bayesian inferential procedure. Not implemented.
+
+    References
+    ----------
+    .. [1] Martín-Fernández JA and Thió-Henestrosa S, 2006. Rounded zeros: some
+    practical aspects for compositional data. In Compositional Data Analysis
+    in the Geosciences: From Theory to Practice, vol. 264. Geological Society,
+    London, pp. 191–201.
+
+    """
+    if prng is None:
+        prng = dit.math.prng
+
+    nonzero = pmf == 0
+
+    replacements = np.zeros(nonzero.sum(), dtype=float)
+    if rand:
+        replacements = delta * prng.rand(len(replacements))
+    else:
+        replacements += delta
+
+    d = pmf.copy()
+    d[nonzero] += replacements
+    d[~nonzero] *= 1 - replacements.sum()
+
+    return d
 
 def convex_combination(pmfs, weights=None):
     """
