@@ -13,14 +13,14 @@ module = dit.math.pmfops
 def test_perturb_one():
     # Smoke test
     d = np.array([0, .5, .5])
-    d2 = module.perturb(d, .00001)
+    d2 = module.perturb_support(d, .00001)
     d3 = d2.round(2)
     np.testing.assert_allclose(d, d3)
 
 def test_perturb_many():
     # Smoke test
     d = np.array([[0, .5, .5], [.5, .5, .0]])
-    d2 = module.perturb(d, .00001)
+    d2 = module.perturb_support(d, .00001)
     print(d2)
     d3 = d2.round(2)
     np.testing.assert_allclose(d, d3)
@@ -119,13 +119,10 @@ def test_projections_0element():
     ])
     np.testing.assert_allclose(x, x_good, rtol=1e-7, atol=1e-8)
 
-
-
-
 def test_clamps():
     d = np.array([.51, .48, .01])
-    out_ = (np.array([[4, 3, 0], [5, 4, 1]]),
-            np.array([ 0., 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1.]))
-    out = module.clamped_indexes(d, 2**3)
-    np.testing.assert_allclose(out[0], out_[0])
-    np.testing.assert_allclose(out[1], out_[1], rtol=1e-7, atol=1e-8)
+    locs = np.linspace(0, 1, 2**3+1)
+    out_ = np.array([[4, 3, 0], [5, 4, 1]])
+    out = module.clamped_indexes(d, locs)
+    np.testing.assert_allclose(out, out_)
+
