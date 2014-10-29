@@ -14,10 +14,11 @@ import dit
 import numpy as np
 
 __all__ = [
-    'perturb_support',
-    'replace_zeros',
     'convex_combination',
     'downsample',
+    'jittered'
+    'perturb_support',
+    'replace_zeros',
 ]
 
 def perturb_support(pmf, eps=.1, prng=None):
@@ -162,6 +163,51 @@ def replace_zeros(pmf, delta, rand=True, prng=None):
     d = pmf.copy()
     d[nonzero] += replacements
     d[~nonzero] *= 1 - replacements.sum()
+
+    return d
+
+def jittered(pmf, jitter=1e-5, zeros=True, prng=None):
+    """
+    Jitters the elements of `pmf`.
+
+    Parameters
+    ----------
+    pmf : NumPy array, shape (n,) or (k, n)
+        The pmf or `k` pmfs to jitter.
+    jitter : float
+        The jitter amount. The value is used for both zero and nonzero
+        elements in the pmf.
+    zeros : bool
+        If `True`, the zeros in `pmf` are first replaced using `jitter` as
+        the `delta` parameter in :meth:`replace_zeros`. If `False`, only the
+        nonzero elements in `pmf` are jittered.
+    prng : NumPy RandomState
+        A random number generator used to select replacement values when
+        `rand` is `True`. If None, then `dit.math.prng` is used.
+
+    Returns
+    -------
+    d : NumPy array, shape (n,) or (k, n)
+        The jittered pmf(s).
+
+    Examples
+    --------
+    >>> d = np.array([.5, .5, 0, 0])
+    >>> jittered(d)
+    array([4.99999999e-01, 4.99999999e-01, 6.54894572e-10, 5.49417792e-10])
+
+    See Also
+    --------
+    replace_zeros, perturb_support
+
+    """
+    if prng is None:
+        prng = dit.math.prng
+
+    if zeros:
+        d = replace_zeros(pmf, jitter, prng=prng)
+
+    d = perturb_support(d, jitter)
 
     return d
 
