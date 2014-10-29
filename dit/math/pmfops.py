@@ -14,20 +14,20 @@ import dit
 import numpy as np
 
 __all__ = [
-    'perturb',
+    'perturb_support',
     'convex_combination',
     'downsample',
 ]
 
-def perturb(pmf, eps=.1, prng=None):
+def perturb_support(pmf, eps=.1, prng=None):
     """
-    Returns a new distribution with all probabilities perturbed.
+    Returns a new distribution with all nonzero probabilities perturbed.
 
     Probabilities which are zero in the pmf cannot be perturbed by this method.
     All other probabilities are perturbed via the following process:
 
     0. Initial pmf ``p`` lives on the ``n``-simplex.
-    1. Transform ``p`` via ilr (inverse logarithmic ratio) transform.
+    1. Transform ``p`` via ilr (isometric logarithmic ratio) transform.
     2. Uniformly draw ``n`` random numbers between ``[0,1]``.
     3. Construct new transformed pmf: `p2_ilr = p1_ilr + eps * rand`
     4. Apply inverse ilr transformation.
@@ -52,6 +52,15 @@ def perturb(pmf, eps=.1, prng=None):
     -------
     out : NumPy array
         The perturbed distribution.
+
+    References
+    ----------
+    For details on the isometric log-ratio transformation see [1]_.
+
+    .. [1] J. J. Egozcue, V. Pawlowsky-Glahn, G. Mateu-Figueras, C.
+    Barceló-Vidal. Isometric Logratio Transformations for Compositional
+    Data Analysis, Mathematical Geology. April 2003, Volume 35, Issue 3,
+    pp 279-300. http://dx.doi.org/10.1023/A:1023818214614
 
     """
     if prng is None:
@@ -155,19 +164,21 @@ def _downsample_componentL1(pmf, i, op, locs):
         The subdivisions for each component.
 
     """
-    # Find insertion indexes
-    insert_index = np.searchsorted(locs, pmf[i])
-    # Define the indexes of clamped region for each component.
-    lower = insert_index - 1
-    upper = insert_index
-    clamps = np.array([lower, upper])
+    clamps = clamped_indexes(pmf[i], locs)
+    lower, upper = clamps
     # Actually get the clamped region
     gridvals = locs[clamps]
     # Calculate distance to each point, per component.
     distances = np.abs(gridvals - pmf[i])
+
     # Determine which index each component was closest to.
     # desired[i] == 0 means that the lower index was closer
     # desired[i] == 1 means that the upper index was closer
+    # If there are any symmetries in the distribution, it could happen
+    # that some of the distances are equal. The op() will select only
+    # one of these branches---this prevents an exhaustive listing of
+    # all possible neighbors. A small jitter is recommended. This will
+    # have a marginal effect on any binning we might do.
     desired = op(distances, axis=0)
     # Pull those indexes from the clamping indexes
     # So when desired[i] == 1, we want to pull the upper index.
@@ -192,6 +203,7 @@ def downsample_componentL1(pmf, subdivisions):
     locs = np.linspace(0, 1, subdivisions + 1)
 
     out = np.atleast_2d(pmf).transpose().copy()
+
     # Go through each component and move to closest component.
     op = np.argmin
     for i in range(out.shape[0] - 1):
@@ -202,22 +214,44 @@ def downsample_componentL1(pmf, subdivisions):
         out = out[0]
     return out
 
-def clamped_indexes(pmf, subdivisions):
+def clamped_indexes(pmf, locs):
     """
     Returns the indexes of the component values that clamp the pmf.
+
+    If the component value is equal to a grid point, then the lower and upper
+    clamps are equal to one another.
 
     Returns
     -------
     clamps : NumPy array, shape (2,n) or (2,k,n)
 
-    """
-    locs = np.linspace(0, 1, subdivisions + 1)
-    # Find insertion indexes
-    insert_index = np.searchsorted(locs, pmf)
-    # Define the indexes of clamped region for each component.
-    clamps = np.array([insert_index - 1, insert_index])
+    Examples
+    --------
+    >>> locs = np.linspace(0, 1, 3) # [0, 1/2, 1]
+    >>> d = np.array([.25, .5, .25])
+    >>> clamped_indices(d, locs)
+    array([[0, 1, 0],
+           [1, 1, 1]])
 
-    return clamps, locs
+    """
+    # Find insertion indexes
+    left_index = np.searchsorted(locs, pmf, 'left')
+    right_index = np.searchsorted(locs, pmf, 'right')
+
+    # If the left index does not equal the right index, then the coordinate
+    # is equal to an element of `locs`. This means we want its upper and lower
+    # clamped indexes to be equal.
+    #
+    # If the left and right indexes are equal, then, the (left) index specifies
+    # the upper clamp. We subtract one for the lower clamp. There is no concern
+    # for the lower clamp dropping to -1 since already know that the coordinate
+    # is not equal to an element in `locs`.
+    upper = left_index
+    lower = upper - 1
+    mask = left_index != right_index
+    lower[mask] = upper[mask]
+    clamps = np.array([lower, upper])
+    return clamps
 
 def projections(pmf, subdivisions, ops=None):
     """
@@ -270,7 +304,7 @@ def projections(pmf, subdivisions, ops=None):
 
     # Go through each component and move to closest component.
     for i, op in zip(range(out.shape[0] - 1), ops):
-        _downsample_componentL1(out, i, op, locs)
+        locations = _downsample_componentL1(out, i, op, locs)
         projs.append(out.copy())
 
     projs = np.asarray(projs)

@@ -21,7 +21,7 @@ from .fraction import approximate_fraction
 from .sigmaalgebra import sigma_algebra, is_sigma_algebra, atom_set
 
 from . import pmfops
-from .pmfops import perturb as perturb_pmf
+from .pmfops import perturb_support as perturb_support_pmf
 
 from . import aitchison
 from . import combinatorics
