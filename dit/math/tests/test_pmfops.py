@@ -89,6 +89,39 @@ def test_projections_max():
     d2 = module.projections(d, 2**3, [np.argmax, np.argmax, np.argmax])
     np.testing.assert_allclose(d2, d2_, rtol=1e-7, atol=1e-8)
 
+def test_projections_0element():
+    # During projections, if an element is equal to 0, then searchsorted
+    # returns 0, and `lower - 1` gives it index -1...which incorrectly
+    # compares locs[-1] instead of locs[0]. So without the line:
+    #    lower[lower == -1] = 0
+    # we would have an error.
+    d = np.array([ 0.23714859,  0.35086749,  0.01870522,
+                   0.32914084,  0.05896644,  0.00517141])
+    ops = [np.argmin, np.argmin, np.argmin, np.argmin, np.argmax]
+    x = dit.math.pmfops.projections(d, 2**3, ops)
+    # We would have had:
+    x_bad = np.array([
+        [ 0.23714859,  0.35086749,  0.01870522,  0.32914084,  0.05896644, 0.00517141],
+        [ 0.25      ,  0.34495659,  0.0183901 ,  0.32359596,  0.05797306, 0.00508429],
+        [ 0.25      ,  0.375     ,  0.01702605,  0.29959378,  0.05367301, 0.00470717],
+        [ 0.25      ,  0.375     ,  0.        ,  0.31384313,  0.05622582, 0.00493105],
+        [ 0.25      ,  0.375     ,  0.        ,  0.375     ,  0.        , 0.        ],
+        [ 0.25      ,  0.375     ,  0.        ,  0.375     ,  1.        , np.nan]
+    ])
+    # Since the error has been fixed. We get:
+    x_good = np.array([
+        [ 0.23714859,  0.35086749,  0.01870522,  0.32914084,  0.05896644, 0.00517141],
+        [ 0.25      ,  0.34495659,  0.0183901 ,  0.32359596,  0.05797306, 0.00508429],
+        [ 0.25      ,  0.375     ,  0.01702605,  0.29959378,  0.05367301, 0.00470717],
+        [ 0.25      ,  0.375     ,  0.        ,  0.31384313,  0.05622582, 0.00493105],
+        [ 0.25      ,  0.375     ,  0.        ,  0.375     ,  0.        , 0.        ],
+        [ 0.25      ,  0.375     ,  0.        ,  0.375     ,  0.        , 0.        ],
+    ])
+    np.testing.assert_allclose(x, x_good, rtol=1e-7, atol=1e-8)
+
+
+
+
 def test_clamps():
     d = np.array([.51, .48, .01])
     out_ = (np.array([[4, 3, 0], [5, 4, 1]]),
