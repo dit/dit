@@ -85,7 +85,7 @@ def jensen_shannon_divergence(dists, weights=None):
     else:
         if hasattr(weights, 'pmf'):
             m = 'Likely user error. Second argument to JSD should be weights.'
-            raise Exception(m)
+            raise dit.exceptions.ditException(m)
 
     # validation of `weights` is done in mixture_distribution,
     # so we don't need to worry about it for the second part.

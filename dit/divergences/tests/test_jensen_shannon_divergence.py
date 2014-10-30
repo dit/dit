@@ -11,6 +11,11 @@ from dit.divergences import (
     jensen_shannon_divergence_pmf as JSD_pmf
 )
 
+def test_jsd0():
+    """ Test the JSD of a distribution but with weights misspecified."""
+    d1 = Distribution("AB", [0.5, 0.5])
+    assert_raises(ditException, JSD, d1, d1)
+
 def test_jsd1():
     """ Test the JSD of a distribution with itself """
     d1 = Distribution("AB", [0.5, 0.5])
