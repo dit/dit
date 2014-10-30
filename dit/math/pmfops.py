@@ -206,8 +206,10 @@ def jittered(pmf, jitter=1e-5, zeros=True, prng=None):
 
     if zeros:
         d = replace_zeros(pmf, jitter, prng=prng)
+    else:
+        d = pmf
 
-    d = perturb_support(d, jitter)
+    d = perturb_support(d, jitter, prng=prng)
 
     return d
 

@@ -126,3 +126,34 @@ def test_clamps():
     out = module.clamped_indexes(d, locs)
     np.testing.assert_allclose(out, out_)
 
+def test_replace_nonzero_rand():
+    d = np.array([.25, .75, 0])
+    x = module.replace_zeros(d, .0001)
+    np.testing.assert_allclose(d, x.round(2))
+
+def test_replace_nonzero_norand():
+    d = np.array([.25, .75, 0])
+    x = module.replace_zeros(d, .0001, rand=False)
+    assert_true(x[2] == .0001)
+    np.testing.assert_allclose(d, x.round(2))
+
+def test_jittered_zeros():
+    d = np.array([.25, .75, 0])
+    prng = np.random.RandomState(1)
+    x = module.jittered(d, jitter=1e-5, zeros=True, prng=prng)
+    x_ = np.array([  2.49999362e-01,   7.49996467e-01,   4.17024000e-06])
+    np.testing.assert_allclose(x, x_)
+
+def test_jittered():
+    d = np.array([.25, .75, 0])
+    prng = np.random.RandomState(1)
+    x = module.jittered(d, jitter=1e-5, zeros=False, prng=prng)
+    x_ = np.array([ 0.24999985,  0.75000015,  0.        ])
+    np.testing.assert_allclose(x, x_)
+
+def test_jittered_noprng():
+    d = np.array([.25, .75, 0])
+    dit.math.prng.seed(1)
+    x = module.jittered(d, jitter=1e-5, zeros=False)
+    x_ = np.array([ 0.24999985,  0.75000015,  0.        ])
+    np.testing.assert_allclose(x, x_)
