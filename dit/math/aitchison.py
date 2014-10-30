@@ -98,7 +98,7 @@ def subcomposition(x, indexes):
         The subcompositions of `x`.
 
     """
-    xsub = closure(x[:, indexes])
+    xsub = closure(x[..., indexes])
 
     return xsub
 

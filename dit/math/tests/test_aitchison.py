@@ -1,12 +1,18 @@
 
 from __future__ import division
 
-from nose.tools import (assert_almost_equal, assert_equal, assert_true)
+from nose.tools import (
+    assert_almost_equal,
+    assert_equal,
+    assert_true,
+    assert_raises
+)
 
 import numpy as np
 
 from numpy import allclose
 
+from dit.exceptions import ditException
 from dit.math import LogOperations
 ops = LogOperations(2)
 log2 = ops.log
@@ -14,7 +20,7 @@ exp2 = ops.exp
 
 from dit.math.aitchison import (alr, alr_inv, basis, closure, clr, clr_inv,
                                 dist, ilr, ilr_inv, inner, norm, perturbation,
-                                power)
+                                power, subcomposition)
 
 def assert_almost_equal_array(x, y):
     for i, j in zip(x.ravel(), y.ravel()):
@@ -56,6 +62,14 @@ def test_closure_invariance():
     assert_almost_equal_array(xcl, ycl)
     assert_almost_equal_array(ycl, zcl)
     assert_almost_equal_array(zcl, xcl)
+
+def test_closure_unnormalizable():
+    """
+    Test an unnormalizable vector.
+
+    """
+    x = np.zeros(3)
+    assert_raises(ditException, closure, x)
 
 def test_perturbation():
     # 1D
@@ -322,8 +336,8 @@ def test_alr_inv():
     assert_almost_equal_array(x, y)
 
     x = np.array([[1, 2, 3, 4], [2, 2, 2, 4]]) / 10
-    x_clr = clr(x)
-    y = clr_inv(x_clr)
+    x_alr = alr(x)
+    y = alr_inv(x_alr)
     assert_equal_shape(x, y)
     assert_almost_equal_array(x, y)
 
@@ -335,11 +349,19 @@ def test_ilr_inv():
     assert_almost_equal_array(x, y)
 
     x = np.array([[1, 2, 3, 4], [2, 2, 2, 4]]) / 10
-    x_clr = clr(x)
-    y = clr_inv(x_clr)
+    x_ilr = ilr(x)
+    y = ilr_inv(x_ilr)
     assert_equal_shape(x, y)
     assert_almost_equal_array(x, y)
 
+def test_subcomposition():
+    """
+    Grab a test_subcomposition.
+
+    """
+    x = np.array([1, 2, 3, 4]) / 10
+    y = np.array([1, 2, 3]) / 6
+    np.testing.assert_allclose(subcomposition(x, [0, 1, 2]), y)
 
 
 
