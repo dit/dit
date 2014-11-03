@@ -48,7 +48,8 @@ __all__ = [
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def standardize_data(data, alphabet=None,
-                     np.ndarray[ITYPE_t, ndim=1, mode="c"] out=None):
+                     np.ndarray[ITYPE_t, ndim=1, mode="c"] out=None,
+                     validate=False):
     """
     Returns `data` standardized to an integer alphabet.
 
@@ -70,6 +71,10 @@ def standardize_data(data, alphabet=None,
     out : NumPy array
         The output NumPy array whose length is at least as large as the
         length of `data`.
+    validate : bool
+        If `True`, then make sure that the data only contains symbols in the
+        specified alphabet. If `alphabet` is None, this parameter is ignored.
+
 
     Returns
     -------
@@ -83,7 +88,8 @@ def standardize_data(data, alphabet=None,
     -----
     Generally, only one pass through `data` is required, but if `alphabet` is
     `None`, then two passes are necessary.  The time-complexity, assuming
-    an alphabet was provided is O( len(data) * log(len(alphabet)) ).
+    an alphabet was provided is O( len(data) * log(len(alphabet)) ). When
+    `validate` is `True`, then two passes are required.
 
     """
     cdef int L = len(data)
@@ -93,6 +99,13 @@ def standardize_data(data, alphabet=None,
     elif isinstance(alphabet, set) or isinstance(alphabet, frozenset):
         msg = "Alphabet is unordered, but it must be ordered."
         raise Exception(msg)
+    elif validate:
+        alph = set(data)
+        diff = alph.difference(set(alphabet))
+        if diff:
+            msg = 'Data contains symbols in {0}, which are not in the alphabet {1}.'
+            msg = msg.format(list(diff), alphabet)
+            raise Exception(msg)
 
     if out is None:
         out = np.empty(L, dtype=ITYPE)
