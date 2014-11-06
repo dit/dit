@@ -5,6 +5,7 @@
 Functions related to sampling from discrete distributions.
 
 """
+from __future__ import division
 
 import numpy as np
 
@@ -12,6 +13,7 @@ import dit.exceptions
 
 __all__ = (
     'sample',
+    'ball',
 )
 
 def sample(dist, size=None, rand=None, prng=None):
@@ -143,6 +145,114 @@ def _samples_discrete__python(pmf, rands, out=None):
                 break
 
     return out
+
+def ball(n, size=None, prng=None):
+    """
+    Return random samples within an n-dimensional standard ball of radius 1.
+
+    Parameters
+    ----------
+    size : int
+        The number of samples to draw from the unit n-ball.
+
+    Returns
+    -------
+    samples : NumPy array, shape (`size`, `n`)
+        Points within the unit `n`-ball.
+
+    """
+    if size is None:
+        s = 1
+    else:
+        s = size
+
+    if prng is None:
+        prng = dit.math.prng
+
+    # The alternative versions _2ball and _3ball_cylinder were slower in
+    # timings. So we do not use them.
+    samples = _ball(n, s, prng)
+
+    if size is None:
+        samples = samples[0]
+
+    return samples
+
+
+def _ball(n, size, prng):
+    """
+    Return `size` samples from the unit n-ball.
+
+    Parameters
+    ----------
+    size : int
+        The number of samples to draw from the unit `n`-ball.
+
+    Returns
+    -------
+    samples : NumPy array, shape (`size`, `n`)
+        Points within the unit `n`-ball.
+
+    """
+    R = prng.rand(size, 1)**(1/3)
+    X = prng.rand(size, n)
+    norm = np.sqrt( (X**2).sum(axis=1) )[..., np.newaxis]
+    return (R * X) / norm
+
+def _2ball(size, prng):
+    """
+    Return `size` samples from the unit 2-ball.
+
+    Parameters
+    ----------
+    size : int
+        The number of samples to draw from the unit 2-ball.
+
+    Returns
+    -------
+    samples : NumPy array, shape (`size`, 2)
+        Points within the unit 2-ball.
+
+    """
+    # This ends up not being faster due to the fancy indexing.
+    # In Cython, we'd do better.
+    theta = 2 * np.pi * prng.rand(size)
+    u = prng.rand(size) + prng.rand(size)
+    cond = u > 1
+    q = u[u > 1]
+    q *= -1
+    q += 2
+    x = u * np.cos(theta)
+    y = u * np.sin(theta)
+    return np.array([x, y]).transpose()
+
+def _3ball_cylinder(size, prng):
+    """
+    Return `size` samples from the unit 3-ball.
+
+    Parameters
+    ----------
+    size : int
+        The number of samples to draw from the unit 3-ball.
+
+    Returns
+    -------
+    samples : NumPy array, shape (`size`, 3)
+        Points within the unit 3-ball.
+
+    References
+    ----------
+    .. [1] http://math.stackexchange.com/a/87243
+
+    """
+    # This also ends up being slower than _ball.
+    R = prng.rand(size)**(1/3)
+    z = 2 * prng.rand(size) - 1
+    theta = 2 * np.pi * prng.rand(size)
+    r = np.sqrt(R ** 2 - z ** 2)
+    x = r * np.cos(theta)
+    y = r * np.sin(theta)
+    return np.array([x, y, z]).transpose()
 
 # Load the cython function if possible
 
