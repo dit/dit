@@ -194,8 +194,8 @@ def _ball(n, size, prng):
         Points within the unit `n`-ball.
 
     """
-    R = prng.rand(size, 1)**(1/3)
-    X = prng.rand(size, n)
+    R = prng.rand(size, 1)**(1/n)
+    X = prng.randn(size, n)
     norm = np.sqrt( (X**2).sum(axis=1) )[..., np.newaxis]
     return (R * X) / norm
 
@@ -213,15 +213,17 @@ def _2ball(size, prng):
     samples : NumPy array, shape (`size`, 2)
         Points within the unit 2-ball.
 
+    References
+    ----------
+    .. [1] http://stackoverflow.com/a/5838055
+
     """
     # This ends up not being faster due to the fancy indexing.
     # In Cython, we'd do better.
     theta = 2 * np.pi * prng.rand(size)
     u = prng.rand(size) + prng.rand(size)
     cond = u > 1
-    q = u[u > 1]
-    q *= -1
-    q += 2
+    u[cond] = 2 - u[cond]
     x = u * np.cos(theta)
     y = u * np.sin(theta)
     return np.array([x, y]).transpose()
