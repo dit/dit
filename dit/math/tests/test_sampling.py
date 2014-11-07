@@ -24,7 +24,6 @@ def test_sample1():
     x = module.sample(d)
     assert_equal(x, '101')
 
-
 def test_sample2():
     # Specified prng
     d = dit.example_dists.Xor()
@@ -70,7 +69,7 @@ def test_sample_discrete_python2():
 def test_ball_smoke():
     dit.math.prng.seed(0)
     x = module.ball(3)
-    x_ = np.array([ 0.54094267,  0.45590783,  0.4121294 ])
+    x_ = np.array([ 0.21324626,  0.4465436 , -0.65226253])
     np.testing.assert_allclose(x, x_)
 
     dit.math.prng.seed(0)
@@ -81,17 +80,17 @@ def test_base_with_size():
     # size 3, 1
     dit.math.prng.seed(0)
     x = module.ball(3, 1)
-    x_ = np.array([[ 0.54094267,  0.45590783,  0.4121294 ]])
+    x_ = np.array([[ 0.21324626,  0.4465436 , -0.65226253]])
     np.testing.assert_allclose(x, x_)
 
     # size 4, 4
     dit.math.prng.seed(0)
     x = module.ball(4, 4)
     x_ = np.array([
-        [ 0.27564989,  0.42024932,  0.28471498,  0.58022978],
-        [ 0.61209883,  0.24355419,  0.50288752,  0.33594321],
-        [ 0.4394934 ,  0.71612975,  0.05496026,  0.06741153],
-        [ 0.0115166 ,  0.47426856,  0.44324584,  0.49556759]
+        [ 0.69375635, -0.36303705,  0.35293677, -0.05622584],
+        [-0.06238751,  0.24817385,  0.08706278,  0.87899164],
+        [ 0.70592518,  0.1128636 ,  0.41171971,  0.30951042],
+        [ 0.72885111, -0.1000816 ,  0.15272267, -0.41665039]
     ])
     np.testing.assert_allclose(x, x_)
 
@@ -100,8 +99,9 @@ def test_2ball():
     x = module._2ball(3, dit.math.prng)
     x_ = np.array([
         [-0.93662222, -0.29662586],
-        [-0.28542405, -1.28408855],
-        [-1.28553692, -0.96853918]])
+        [-0.14853979, -0.66826269],
+        [-0.31184301, -0.23494632]
+    ])
     assert_equal(x.shape, (3, 2))
     np.testing.assert_allclose(x, x_)
 

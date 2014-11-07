@@ -21,7 +21,6 @@ def test_perturb_many():
     # Smoke test
     d = np.array([[0, .5, .5], [.5, .5, .0]])
     d2 = module.perturb_support(d, .00001)
-    print(d2)
     d3 = d2.round(2)
     np.testing.assert_allclose(d, d3)
 
@@ -141,19 +140,19 @@ def test_jittered_zeros():
     d = np.array([.25, .75, 0])
     prng = np.random.RandomState(1)
     x = module.jittered(d, jitter=1e-5, zeros=True, prng=prng)
-    x_ = np.array([  2.49999362e-01,   7.49996467e-01,   4.17024000e-06])
+    x_ = np.array([  2.49998269e-01,   7.49997561e-01,   4.17024317e-06])
     np.testing.assert_allclose(x, x_)
 
 def test_jittered():
     d = np.array([.25, .75, 0])
     prng = np.random.RandomState(1)
     x = module.jittered(d, jitter=1e-5, zeros=False, prng=prng)
-    x_ = np.array([ 0.24999985,  0.75000015,  0.        ])
+    x_ = np.array([ 0.24999923,  0.75000077,  0.        ])
     np.testing.assert_allclose(x, x_)
 
 def test_jittered_noprng():
     d = np.array([.25, .75, 0])
     dit.math.prng.seed(1)
     x = module.jittered(d, jitter=1e-5, zeros=False)
-    x_ = np.array([ 0.24999985,  0.75000015,  0.        ])
+    x_ = np.array([ 0.24999923,  0.75000077,  0.        ])
     np.testing.assert_allclose(x, x_)

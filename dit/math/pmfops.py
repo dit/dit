@@ -21,7 +21,7 @@ __all__ = [
     'replace_zeros',
 ]
 
-def perturb_support(pmf, eps=.1, prng=None):
+def perturb_support(pmf, eps=.1, shape='ball', prng=None):
     """
     Returns a new distribution with all nonzero probabilities perturbed.
 
@@ -47,6 +47,12 @@ def perturb_support(pmf, eps=.1, prng=None):
     eps : float
         The scaling factor used for perturbing. Values of `10` correspond
         to large perturbations for the ``1``-simplex.
+    shape : str
+        The type of neighborhood to draw from. Valid options are 'square' or
+        'ball'. For 'square', a point is chosen uniformly from a unit square
+        centered around `pmf` in ilr coordinates. For 'ball' a point is chosen
+        uniformly from the unit circle centered around the pmf in ilr
+        coordinates. In both cases, the region is then scaled by `eps`.
     prng : NumPy RandomState
         A random number generator.
 
@@ -76,7 +82,10 @@ def perturb_support(pmf, eps=.1, prng=None):
         idx = row > 0
         p1 = row[idx]
         p1_ilr = dit.math.aitchison.ilr(p1)
-        delta = eps * (prng.rand(*p1_ilr.shape) - .5)
+        if shape == 'square':
+            delta = eps * (prng.rand(*p1_ilr.shape) - .5)
+        elif shape == 'ball':
+            delta = eps * dit.math.ball(p1_ilr.shape[0], prng=prng)
         p2_ilr = p1_ilr + delta
         p2 = dit.math.aitchison.ilr_inv(p2_ilr)
         out[i,idx] = p2
