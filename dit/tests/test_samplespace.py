@@ -54,6 +54,11 @@ class TestCartesianProduct(object):
         alphabets = [['0', '1'], ['0', '1', '2']]
         self.ss = CartesianProduct(alphabets, product)
 
+    def test_stralphabets(self):
+        # Test that str product is inferred.
+        x = CartesianProduct([['0', '1']]*2)
+        assert_equal(list(x), ['00', '01', '10', '11'])
+
     def test_samplespace(self):
         assert_equal(list(self.ss), ['00', '01', '02', '10', '11', '12'])
         assert_equal(len(self.ss), 6)
