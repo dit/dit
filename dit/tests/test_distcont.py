@@ -212,7 +212,6 @@ def test_uniform_scalar_distribution():
     assert_equal(d.outcomes, outcomes)
     np.testing.assert_allclose(d.pmf, pmf)
 
-
 def test_uniform_distribution():
     pmf = np.array([1/4] * 4)
     dit.math.prng.seed(1)
@@ -221,7 +220,7 @@ def test_uniform_distribution():
     np.testing.assert_allclose(d.pmf, pmf)
 
 def test_rvfunctions1():
-    # Smoke test
+    # Smoke test with strings
     d = dit.Distribution(['00', '01', '10', '11'], [1/4]*4)
     bf = dit.RVFunctions(d)
     d = dit.insert_rvf(d, bf.xor([0,1]))
@@ -229,7 +228,7 @@ def test_rvfunctions1():
     assert_equal(d.outcomes, ('0000', '0110', '1011', '1101'))
 
 def test_rvfunctions2():
-    # Smoke test
+    # Smoke test with int tuples
     d = dit.Distribution([(0,0), (0,1), (1,0), (1,1)], [1/4]*4)
     bf = dit.RVFunctions(d)
     d = dit.insert_rvf(d, bf.xor([0,1]))
@@ -237,7 +236,7 @@ def test_rvfunctions2():
     assert_equal(d.outcomes, ((0,0,0,0), (0,1,1,0), (1,0,1,1), (1,1,0,1)))
 
 def test_rvfunctions3():
-    # Smoke test
+    # Smoke test strings with from_hexes
     outcomes = ['000', '001', '010', '011', '100', '101', '110', '111']
     pmf = [1/8] * 8
     d = dit.Distribution(outcomes, pmf)
@@ -247,7 +246,7 @@ def test_rvfunctions3():
     assert_equal(d.outcomes, outcomes)
 
 def test_rvfunctions4():
-    # Smoke test
+    # Smoke test int tuples from_hexes
     outcomes = ['000', '001', '010', '011', '100', '101', '110', '111']
     outcomes = [tuple(map(int, o)) for o in outcomes]
     pmf = [1/8] * 8
@@ -274,7 +273,7 @@ def test_rvfunctions_ints():
 def test_rvfunctions_toolarge():
     letters = 'abcd'
     outcomes = itertools.product(letters, repeat=3)
-    outcomes = map(''.join, outcomes)
+    outcomes = list(map(''.join, outcomes))
     d = dit.Distribution(outcomes, [1/64]*64, validate=False)
     rvf = dit.RVFunctions(d)
     partition = [(d.outcomes[i],) for i in range(len(d))]
