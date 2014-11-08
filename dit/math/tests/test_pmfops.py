@@ -17,6 +17,13 @@ def test_perturb_one():
     d3 = d2.round(2)
     np.testing.assert_allclose(d, d3)
 
+def test_perturb_one_square():
+    # Smoke test
+    d = np.array([0, .5, .5])
+    d2 = module.perturb_support(d, .00001, shape='square')
+    d3 = d2.round(2)
+    np.testing.assert_allclose(d, d3)
+
 def test_perturb_many():
     # Smoke test
     d = np.array([[0, .5, .5], [.5, .5, .0]])
