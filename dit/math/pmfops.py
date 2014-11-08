@@ -54,7 +54,7 @@ def perturb_support(pmf, eps=.1, shape='ball', prng=None):
         uniformly from the unit circle centered around the pmf in ilr
         coordinates. In both cases, the region is then scaled by `eps`.
     prng : NumPy RandomState
-        A random number generator.
+        A random number generator. If `None`, then `dit.math.prng` is used.
 
     Returns
     -------
