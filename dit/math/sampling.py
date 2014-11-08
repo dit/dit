@@ -14,6 +14,7 @@ import dit.exceptions
 __all__ = (
     'sample',
     'ball',
+    'norm',
 )
 
 def sample(dist, size=None, rand=None, prng=None):
@@ -154,6 +155,8 @@ def ball(n, size=None, prng=None):
     ----------
     size : int
         The number of samples to draw from the unit n-ball.
+    prng : NumPy RandomState
+        A random number generator. If `None`, then `dit.math.prng` is used.
 
     Returns
     -------
@@ -177,7 +180,6 @@ def ball(n, size=None, prng=None):
         samples = samples[0]
 
     return samples
-
 
 def _ball(n, size, prng):
     """
@@ -255,6 +257,92 @@ def _3ball_cylinder(size, prng):
     x = r * np.cos(theta)
     y = r * np.sin(theta)
     return np.array([x, y, z]).transpose()
+
+def norm(pmf, ilrcov=None, size=None, prng=None):
+    """
+    Returns normally distributed mass functions with mean equal to `pmf`.
+
+    Parameters
+    ----------
+    pmf : NumPy array, shape (n,)
+        The probability mass function about which samples are drawn.
+    ilrcov : float, NumPy array with shape (n-1,) or (n-1,n-1)
+        The covariance matrix in isometric log-ratio coordinates. If a float,
+        then a covariance matrix is constructed as a scalar multiple of the
+        identity matrix---e.g. spherical covariance. If `ilrcov` is a 1D
+        NumPy array, then it specifies the diagonal of the covariance matrix,
+        all non-diagonal elements are set equal to zero. Otherwise, `ilrcov`
+        should be an (n-1, n-1) 2D symmetric and positive semi-definite matrix.
+        If `None`, then an identity matrix is used as the covariance matrix.
+    size : int
+        The number of samples to draw. Default is to return a single sample.
+    prng : NumPy RandomState
+        A random number generator. If `None`, then `dit.math.prng` is used.
+
+    Return
+    ------
+    samples : NumPy array, shape (n,) or (`size`, n)
+        The samples. If `size` is `None`, then a single sample is returned.
+
+    """
+    if prng is None:
+        prng = dit.math.prng
+
+    pmf = np.asarray(pmf)
+    if len(pmf.shape) != 1:
+        raise dit.exceptions.ditException('`pmf` must be a 1D array.')
+
+    ilrmean = dit.math.aitchison.ilr(pmf)
+    n = len(pmf)
+
+    # Determine ilr covariance matrix. Include some simple checks since
+    # its shape (n-1, n-1) can be a common source of error. But note, we are
+    # not checking symmetry or positive semi-definiteness.
+    if ilrcov is None:
+        # unit covariance
+        ilrcov = np.eye(n-1)
+    else:
+        ilrcov = np.asarray(ilrcov)
+        D = len(ilrcov.shape)
+        if D == 0:
+            # spherical covariance
+            ilrcov = ilrcov * np.eye(n-1)
+        elif D == 1:
+            # diagonal covariance
+            if ilrcov.shape != (n-1,):
+                msg = '`ilrcov` must have shape (n-1,)'
+                raise dit.exceptions.ditException(msg)
+
+            x = np.eye(n - 1)
+            x[np.diag(n-1)] = ilrcov
+            ilrcov = x
+        elif D == 2:
+            # user specified covariance
+            if ilrcov.shape != (n-1, n-1):
+                msg = '`ilrcov` must have shape (n-1, n-1)'
+                raise dit.exceptions.ditException(msg)
+            pass
+        else:
+            raise dit.exceptions.ditException('`ilrcov` must be a 2D array.')
+
+    if size is None:
+        k = 1
+    else:
+        k = size
+
+    samples = _norm(ilrmean, ilrcov, k, prng)
+    if size is None:
+        samples = samples[0]
+    return samples
+
+def _norm(ilrmean, ilrcov, size, prng):
+    """
+    Low-level sampling of normally distributed pmfs about a mean pmf.
+
+    """
+    samples = prng.multivariate_normal(ilrmean, ilrcov, size)
+    samples = dit.math.aitchison.ilr_inv(samples)
+    return samples
 
 # Load the cython function if possible
 
