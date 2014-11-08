@@ -314,14 +314,13 @@ def norm(pmf, ilrcov=None, size=None, prng=None):
                 raise dit.exceptions.ditException(msg)
 
             x = np.eye(n - 1)
-            x[np.diag(n-1)] = ilrcov
+            x[np.diag_indices(n-1)] = ilrcov
             ilrcov = x
         elif D == 2:
             # user specified covariance
             if ilrcov.shape != (n-1, n-1):
                 msg = '`ilrcov` must have shape (n-1, n-1)'
                 raise dit.exceptions.ditException(msg)
-            pass
         else:
             raise dit.exceptions.ditException('`ilrcov` must be a 2D array.')
 

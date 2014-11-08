@@ -115,3 +115,64 @@ def test_3ball_cylinder():
     ])
     assert_equal(x.shape, (3, 3))
     np.testing.assert_allclose(x, x_)
+
+def test_norm_smoketest():
+    d = np.array([.2, .3, .5])
+
+    # prng is None
+    dit.math.prng.seed(0)
+    x = module.norm(d)
+    x_ = np.array([ 0.49606291,  0.13201838,  0.37191871])
+    np.testing.assert_allclose(x, x_)
+
+    # prng is not None
+    dit.math.prng.seed(0)
+    x = module.norm(d, prng=dit.math.prng)
+    np.testing.assert_allclose(x, x_)
+
+    # size is not None
+    dit.math.prng.seed(0)
+    x = module.norm(d, size=1)
+    np.testing.assert_allclose(x, np.asarray([x_]))
+
+def test_norm_spherical_cov():
+    d = np.array([.2, .3, .5])
+    dit.math.prng.seed(0)
+    x = module.norm(d, .3)
+    x_ = np.array([ 0.34790127,  0.20240029,  0.44969844])
+    np.testing.assert_allclose(x, x_)
+
+def test_norm_diagonal_cov():
+    d = np.array([.2, .3, .5])
+    dit.math.prng.seed(0)
+    x = dit.math.norm(d, np.array([.3, .5]))
+    x_ = np.array([ 0.33458841,  0.40485058,  0.26056101])
+    np.testing.assert_allclose(x, x_)
+
+def test_norm_cov():
+    d = np.array([.2, .3, .5])
+    dit.math.prng.seed(0)
+    ilrcov = np.array([[.3, .5],[.5, .4]])
+    x = dit.math.norm(d, ilrcov, size=3)
+    x_ = np.array([
+        [ 0.05811867,  0.22717217,  0.71470916],
+        [ 0.10462618,  0.1505414 ,  0.74483242],
+        [ 0.05204168,  0.32024176,  0.62771657]
+    ])
+    np.testing.assert_allclose(x, x_)
+
+def test_norm_badshape_cov():
+    d = np.array([.2, .3, .5])
+    dit.math.prng.seed(0)
+    ilrcov = np.array([[.3, .5, .1],[.5, .4, .3], [.2, .5, .3]])
+    assert_raises(dit.exceptions.ditException, dit.math.norm, d, ilrcov)
+
+    ilrcov = np.array([.3, .5, .1])
+    assert_raises(dit.exceptions.ditException, dit.math.norm, d, ilrcov)
+
+    ilrcov = np.array(np.random.rand(16).reshape(2,2,4))
+    assert_raises(dit.exceptions.ditException, dit.math.norm, d, ilrcov)
+
+def test_norm_toomany():
+    d = np.array([[.2, .3, .5], [.5, .2, .3]])
+    assert_raises(dit.exceptions.ditException, dit.math.norm, d)
