@@ -64,7 +64,7 @@ chance of it landing on its edge. Here is how we might represent the coin in
    >>> d = dit.Distribution(['H', 'T', 'E'], [.4, .4, .2])
    >>> print d
    Class:          Distribution
-   Alphabet:       ('E', H', 'T') for all rvs
+   Alphabet:       ('E', 'H', 'T') for all rvs
    Base:           linear
    Outcome Class:  str
    Outcome Length: 1
