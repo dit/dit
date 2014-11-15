@@ -1,3 +1,3 @@
 """
-Tests for dit.esoteric.
+Tests for dit.other.
 """

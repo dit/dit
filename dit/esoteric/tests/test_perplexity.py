@@ -1,5 +1,5 @@
 """
-Tests for dit.esoteric.perplexity.
+Tests for dit.other.perplexity.
 """
 
 from __future__ import division
@@ -8,7 +8,7 @@ from nose.tools import assert_almost_equal
 
 from dit import (ScalarDistribution as SD,
                  Distribution as D)
-from dit.esoteric import perplexity as P
+from dit.other import perplexity as P
 from six.moves import range # pylint: disable=redefined-builtin
 
 

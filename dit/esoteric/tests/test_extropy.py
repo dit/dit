@@ -1,5 +1,5 @@
 """
-Tests for dit.esoteric.extropy.
+Tests for dit.other.extropy.
 """
 
 from __future__ import division
@@ -10,7 +10,7 @@ import numpy as np
 
 from dit import Distribution as D, ScalarDistribution as SD
 from dit.shannon import entropy as H
-from dit.esoteric import extropy as J
+from dit.other import extropy as J
 
 def test_J1():
     """ Test that H = J for two probabilities """

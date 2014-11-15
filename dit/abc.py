@@ -9,7 +9,7 @@ from dit import (Distribution as D,
 from dit.divergences import (jensen_shannon_divergence as JSD,
                             )
 
-from dit.esoteric import (extropy as J,
+from dit.other import (extropy as J,
                           perplexity as P,
                          )
 
