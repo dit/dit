@@ -190,11 +190,11 @@ def main():
         'dit',
         'dit.algorithms',
         'dit.divergences',
-        'dit.esoteric',
         'dit.example_dists',
         'dit.inference',
         'dit.math',
         'dit.multivariate',
+        'dit.other',
         'dit.shannon',
         'dit.utils',
     ]

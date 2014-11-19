@@ -90,7 +90,7 @@ Calculate the Shannon entropy and extropy of the joint distribution.
 
    >>> dit.shannon.entropy(d)
    1.5219280948873621
-   >>> dit.esoteric.extropy(d)
+   >>> dit.other.extropy(d)
    1.1419011889093373
 
 Create a distribution where ``Z = xor(X, Y)``.
