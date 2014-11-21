@@ -53,7 +53,7 @@ Calculate the Shannon entropy and extropy of the joint distribution.
     Out[10]: 1.5219280948873621
 
     @doctest float
-    In [11]: dit.esoteric.extropy(d)
+    In [11]: dit.other.extropy(d)
     Out[11]: 1.1419011889093373
 
 Create a distribution representing the :math:`\mathbf{xor}` logic function.
