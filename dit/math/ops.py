@@ -31,10 +31,13 @@ def get_ops(base):
         The base for the Operations instance.
 
     """
-    if base == 'linear':
-        ops = LinearOperations()
+    # Let's not initialize unless we have to.
+    if base in cache:
+        ops = cache[base]
     else:
+        # This assumes that 'linear' is in cache.
         ops = LogOperations(base)
+        cache[base] = ops
     return ops
 
 def exp_func(b):
@@ -669,3 +672,9 @@ class LogOperations(Operations):
         """
         z = -x
         return z
+
+cache = {
+    'linear' : LinearOperations(),
+    2: LogOperations(2),
+    'e': LogOperations('e')
+}
