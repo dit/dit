@@ -13,9 +13,14 @@ def entropy_pmf(pmf):
 
     Assumption: Linearly distributed probabilities.
 
+    Parameters
+    ----------
+    pmf : NumPy array, shape (k,) or (n,k)
+        Returns the entropy over the last index.
+
     """
     pmf = np.asarray(pmf)
-    return np.nansum(-pmf * np.log2(pmf))
+    return np.nansum(-pmf * np.log2(pmf), axis=-1)
 
 def entropy(dist, rvs=None, rv_names=None):
     """

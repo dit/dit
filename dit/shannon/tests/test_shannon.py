@@ -6,17 +6,24 @@ from __future__ import division
 
 from nose.tools import assert_almost_equal
 
+import numpy as np
+
 from dit import Distribution as D, ScalarDistribution as SD
 from dit.shannon import (entropy as H,
                          mutual_information as I,
                          conditional_entropy as CH,
                          entropy_pmf)
 
-def test_H0():
+def test_entropy_pmf1d():
     """ Test the entropy of a fair coin """
     d = [.5, .5]
     assert_almost_equal(entropy_pmf(d), 1.0)
 
+def test_entropy_pmf2d():
+    """ Test the entropy of a fair coin """
+    d = np.array([[1,0],[.5, .5]])
+    H = np.array([0, 1])
+    np.testing.assert_allclose(entropy_pmf(d), H)
 
 def test_H1():
     """ Test the entropy of a fair coin """
