@@ -31,15 +31,9 @@ def close(double x, double y, double rtol, double atol):
     if not xinf == yinf:
         return False
 
-    cdef bint xgz, ygz
     if xinf:
-        # If they are inf, make sure the signs are the same.
-        xgz = x>0
-        ygz = y>0
-        if (xgz and not ygz) or (not xgz and ygz):
-            return False
-        else:
-            return True
+        # If they are both inf, make sure the signs are the same.
+        return (x > 0) == (y > 0)
     else:
         # Otherwise, make sure they are close.
         return fabs(x-y) <= atol + rtol * fabs(y)
