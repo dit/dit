@@ -4,6 +4,7 @@ Abstract implementation of dense random vectors.
 """
 
 import itertools
+import numpy as np
 
 class AbstractDenseDistribution(object):
     """
@@ -130,8 +131,8 @@ class AbstractDenseDistribution(object):
         p : NumPy array, shape (m,n)
             The representation of the distribution in terms of the parameters
             of the original distribution. The number of rows, m, is equal to:
-                m = self.n_symbols**len(indexes)
-                n = self.n_symbols**(self.n_variables - len(indexes))
+                m = self.n_symbols ** len(indexes)
+                n = self.n_symbols ** (self.n_variables - len(indexes))
 
         """
         if cache is None:
@@ -204,13 +205,13 @@ class AbstractDenseDistribution(object):
         ----------
         indexes : list or set
             A list or set of integers, specifying which indexes to keep. In
-            truth, the index values do not matter since the new Joint object
-            only needs to know the word length. However, we do some checks to
-            make sure the indexes are valid.
+            truth, the index values do not matter since the new distribution
+            object only needs to know the word length. However, we do some
+            checks to make sure the indexes are valid.
 
         Returns
         -------
-        d : Joint
+        d : AbstractDenseDistribution
             The new abstract representation of the marignal distribution.
 
        """
@@ -219,7 +220,7 @@ class AbstractDenseDistribution(object):
             msg = 'Invalid indexes.'
             raise Exception(msg)
 
-        d = Joint(len(indexes), self.n_symbols)
+        d = AbstractDenseDistribution(len(indexes), self.n_symbols)
         return d
 
 def distribution_constraint(indexes1, indexes2, distribution):
@@ -249,7 +250,7 @@ def distribution_constraint(indexes1, indexes2, distribution):
     indexes2 : tuple
         A tuple of integers representing the indexes of the second distribution.
         The length of indexes1 must equal the length of indexes2.
-    joint : None or Joint
+    distribution : AbstractDenseDistribution
         An abstract joint distribution compatible with the indexes.
 
     Returns
@@ -265,11 +266,11 @@ def distribution_constraint(indexes1, indexes2, distribution):
         raise Exception("Incompatible distributions.")
 
     cache = {}
-    n_elements = joint.n_elements
-    d1 = joint.parameter_array(indexes1, cache=cache)
-    d2 = joint.parameter_array(indexes2, cache=cache)
-    A = np.zeros( (len(d1), joint.n_elements), dtype=int)
-    b = np.zeros(joint.n_elements, dtype=int)
+    n_elements = distribution.n_elements
+    d1 = distribution.parameter_array(indexes1, cache=cache)
+    d2 = distribution.parameter_array(indexes2, cache=cache)
+    A = np.zeros( (len(d1), distribution.n_elements), dtype=int)
+    b = np.zeros(distribution.n_elements, dtype=int)
 
     for idx, (w1, w2) in enumerate(zip(d1,d2)):
         symdiff = set.symmetric_difference(set(w1), set(w2))
