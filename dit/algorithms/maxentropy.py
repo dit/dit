@@ -12,6 +12,8 @@ import bisect
 import numpy as np
 import dit
 
+from dit.abstractdist import AbstractDenseDistribution
+
 def as_full_rank(A, b):
     """
     From a linear system Ax = b, return Bx = c such that B has full rank.
@@ -50,6 +52,8 @@ def as_full_rank(A, b):
         The LHS for the linear constraints.
     c : array-like, shape (q,) or (q, 1)
         The RHS for the linear constraints.
+    rank : int
+        The rank of B.
 
     """
     try:
@@ -75,7 +79,7 @@ def as_full_rank(A, b):
     B = np.dot(D, Vh)
     c = np.dot(Ut, b)
 
-    return B, c
+    return B, c, rank
 
 
 class PhantomArray(object):
@@ -85,8 +89,11 @@ class PhantomArray(object):
     The wrapper provides NumPy
 
     """
-    def __init__(self, lookup):
+    def __init__(self, lookup, n_variables, n_symbols):
         self.lookup = lookup
+        self.n_variables = n_variables
+        self.n_symbols = n_symbols
+        self.n_elements = n_symbols ** n_variables
 
     def __getitem__(self, idx):
         try:
@@ -97,6 +104,8 @@ class PhantomArray(object):
             # Iterable. Return a NumPy array of the elements.
             return np.array([self.lookup.get(i, 0) for i in idx])
 
+    def __len__(self):
+        return self.n_elements
 
 def cartesian_product_view(dist):
     """
@@ -129,7 +138,7 @@ def cartesian_product_view(dist):
     array([ 0.5, 0., 0.5, 0. ])
 
     """
-    symbols = list(sorted(set.union(*map(set,dist.alphabet))))
+    symbols = list(sorted(set.union(*map(set, dist.alphabet))))
     n_variables = dist.outcome_length()
     n_symbols = len(symbols)
 
@@ -141,5 +150,78 @@ def cartesian_product_view(dist):
             index += idx * n_symbols ** (n_variables - 1 - i)
         lookup[index] = p
 
-    return PhantomArray(lookup), n_variables, n_symbols
+    pmf = PhantomArray(lookup, n_variables, n_symbols)
+    return pmf, n_variables, n_symbols
 
+
+def linear_constraints(pmf, n_variables, n_symbols, m):
+    """
+    Returns `A` and `b` in `A x = b`, for a system of marginal constraints.
+
+    The resulting matrix `A` is not guaranteed to have full rank.
+
+    Parameters
+    ----------
+    pmf : array-like, shape ( n_symbols ** n_variables, )
+        The probability mass function of the distribution. The pmf must have
+        a Cartesian product sample space with the same sample space used for
+        each random variable.
+    n_variables : int
+        The number of random variables.
+    n_symbols : int
+        The number of symbols that each random variable can be.
+    m : int
+        The size of the marginals to constrain. When `m=2`, pairwise marginals
+        are constrained to equal the pairwise marginals in `pmf`. When `m=3`,
+        three-way marginals are constrained to equal those in `pmf.
+
+    Returns
+    -------
+    A : array-like, shape (p, q)
+        The matrix defining the marginal equality constraints and also the
+        normalization constraint. The number of rows is:
+            p = C(n_variables, m) * n_symbols ** m + 1
+        where C() is the choose formula.. The number of columns is:
+            q = n_symbols ** n_variables
+
+    b : array-like, (p,)
+        The RHS of the linear equality constraints.
+
+    """
+    if m > n_variables:
+        msg = "Cannot constrain {0}-way marginals"
+        msg += " with only {1} random variables."
+        msg = msg.format(m, n_variables)
+        raise ValueError(msg)
+
+    d = AbstractDenseDistribution(n_variables, n_symbols)
+
+    # Begin with the normalization constraint.
+    A = [ np.ones(d.n_elements) ]
+    b = [ 1 ]
+
+    # Now add all the marginal constraints.
+    if m > 0:
+        cache = {}
+        for rvs in itertools.combinations(range(n_variables), m):
+            for idx in d.parameter_array(rvs, cache=cache):
+                bvec = np.zeros(d.n_elements)
+                bvec[idx] = 1
+                A.append(bvec)
+                b.append(pmf[idx].sum())
+
+    A = np.asarray(A)
+    b = np.asarray(b)
+
+    return A, b
+
+
+def constraint_rank(dist, m):
+    """
+    Returns the rank of the linear constraint matrix.
+
+    """
+    pmf, n_variables, n_symbols = cartesian_product_view(dist)
+    A, b = linear_constraints(pmf, n_variables, n_symbols, m)
+    C, d, rank = as_full_rank(A, b)
+    return rank
