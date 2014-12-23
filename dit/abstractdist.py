@@ -6,6 +6,11 @@ Abstract implementation of dense random vectors.
 import itertools
 import numpy as np
 
+__all__ = [
+    'AbstractDenseDistribution',
+    'distribution_constraint'
+]
+
 class AbstractDenseDistribution(object):
     """
     An abstract, dense distribution.
