@@ -78,3 +78,68 @@ def as_full_rank(A, b):
     return B, c
 
 
+class PhantomArray(object):
+    """
+    A simple wrapper around a sparse pmf specified by a lookup table.
+
+    The wrapper provides NumPy
+
+    """
+    def __init__(self, lookup):
+        self.lookup = lookup
+
+    def __getitem__(self, idx):
+        try:
+            idx[0]
+        except:
+            return self.lookup.get(idx, 0)
+        else:
+            # Iterable. Return a NumPy array of the elements.
+            return np.array([self.lookup.get(i, 0) for i in idx])
+
+
+def cartesian_product_view(dist):
+    """
+    Return a dense Cartesian product view of the `dist`.
+
+    In a Cartesian product view, we union the sample space of each random
+    variable and then use it in a Cartesian product that defines the sample
+    space for the entire distribution.
+
+    Parameters
+    ----------
+    dist : distribution
+        The distribution to make dense.
+
+    Returns
+    -------
+    pa : PhantomArray
+        The dense, Cartesian product representation of the pmf of `dist`.
+    n_variables : int
+        The number of random variables in the distribution.
+    n_symbols : int
+        The number of symbols in the sample space for a single random variable.
+
+    Examples
+    --------
+    >>> import dit
+    >>> d = dit.Distribution(['00', '10'], [.5, .5])
+    >>> pa, n, k = cartesian_product_view(d)
+    >>> pa[[0,1,2,3]]
+    array([ 0.5, 0., 0.5, 0. ])
+
+    """
+    symbols = list(sorted(set.union(*map(set,dist.alphabet))))
+    n_variables = dist.outcome_length()
+    n_symbols = len(symbols)
+
+    lookup = {}
+    for outcome, p in dist.zipped():
+        index = 0
+        for i, symbol in enumerate(outcome):
+            idx = bisect.bisect_left(symbols, symbol)
+            index += idx * n_symbols ** (n_variables - 1 - i)
+        lookup[index] = p
+
+    return PhantomArray(lookup), n_variables, n_symbols
+
