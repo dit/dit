@@ -1,6 +1,15 @@
 """
 Maximum entropy with marginal distribution constraints.
 
+Note: We are actually doing the maximum entropy optimization. So we have not
+built in the fact that the solution is an exponential family.
+
+Also, this doesn't seem to work that well in practice. The optimization
+simply fails to converge. We might need to assume the exponential form
+and then fit the params to match the marginals. Perhaps exact gradient
+and Hessians might help, or maybe even some rescaling of the linear
+constraints.
+
 """
 
 from __future__ import print_function
@@ -10,7 +19,10 @@ import itertools
 import bisect
 
 import numpy as np
+import numdifftools
+
 import dit
+
 
 from dit.abstractdist import AbstractDenseDistribution
 
@@ -89,11 +101,13 @@ class PhantomArray(object):
     The wrapper provides NumPy
 
     """
-    def __init__(self, lookup, n_variables, n_symbols):
+    def __init__(self, lookup, n_variables, n_symbols, symbols):
         self.lookup = lookup
         self.n_variables = n_variables
         self.n_symbols = n_symbols
+        self.symbols = symbols
         self.n_elements = n_symbols ** n_variables
+
 
     def __getitem__(self, idx):
         try:
@@ -106,6 +120,7 @@ class PhantomArray(object):
 
     def __len__(self):
         return self.n_elements
+
 
 def cartesian_product_view(dist):
     """
@@ -142,15 +157,17 @@ def cartesian_product_view(dist):
     n_variables = dist.outcome_length()
     n_symbols = len(symbols)
 
+    pmf_original = dit.copypmf(dist, base='linear')
+
     lookup = {}
-    for outcome, p in dist.zipped():
+    for outcome, p in zip(dist.outcomes, pmf_original):
         index = 0
         for i, symbol in enumerate(outcome):
             idx = bisect.bisect_left(symbols, symbol)
             index += idx * n_symbols ** (n_variables - 1 - i)
         lookup[index] = p
 
-    pmf = PhantomArray(lookup, n_variables, n_symbols)
+    pmf = PhantomArray(lookup, n_variables, n_symbols, symbols)
     return pmf, n_variables, n_symbols
 
 
@@ -210,13 +227,13 @@ def linear_constraints(pmf, n_variables, n_symbols, m):
                 A.append(bvec)
                 b.append(pmf[idx].sum())
 
-    A = np.asarray(A)
-    b = np.asarray(b)
+    A = np.asarray(A, dtype=float)
+    b = np.asarray(b, dtype=float)
 
     return A, b
 
 
-def constraint_rank(dist, m):
+def linear_constraint_rank(dist, m):
     """
     Returns the rank of the linear constraint matrix.
 
@@ -225,3 +242,205 @@ def constraint_rank(dist, m):
     A, b = linear_constraints(pmf, n_variables, n_symbols, m)
     C, d, rank = as_full_rank(A, b)
     return rank
+
+
+def negentropy(p):
+    """
+    Entropy which operates on vectors of length N.
+
+    """
+    return np.nansum(p * np.log2(p))
+
+
+class MaximumEntropy(object):
+    """
+    Find maximum entropy distribution subject to matching k-way marginals.
+
+    """
+    def __init__(self, dist, k, prng=None):
+        """
+        Initialize optimizer.
+
+        Parameters
+        ----------
+        dist : distribution
+            The distribution used to specify the marginal constraints.
+        k : int
+            The number of variables in the constrained marginals.
+
+        """
+        self.k = k
+        if isinstance(dist, PhantomArray):
+            self.dist = None
+            self.pmf = dist
+        else:
+            self.dist = dist
+            pmf, n_variables, n_symbols = cartesian_product_view(dist)
+            self.pmf = pmf
+
+        self.n_variables = self.pmf.n_variables
+        self.n_symbols = self.pmf.n_symbols
+
+        if prng is None:
+            prng = np.random.RandomState()
+        self.prng = prng
+
+        self.tol = {}
+
+        self.initial = None
+        self.init()
+
+
+    def init(self):
+
+        # Dimension of optimization variable
+        self.n = len(self.pmf)
+
+        # Number of nonlinear constraints
+        self.m = 0
+
+        self.build_gradient_hessian()
+        self.build_nonnegativity_constraints()
+        self.build_linear_equality_constraints()
+        self.build_F()
+
+
+    def build_gradient_hessian(self):
+
+        import numdifftools
+
+        self.func = negentropy
+        self.gradient = numdifftools.Gradient(negentropy)
+        self.hessian = numdifftools.Hessian(negentropy)
+
+
+    def build_nonnegativity_constraints(self):
+        from cvxopt import matrix
+
+        # Dimension of optimization variable
+        n = self.n
+
+        # Nonnegativity constraint
+        #
+        # We have M = N = 0 (no 2nd order cones or positive semidefinite cones)
+        # So, K = l where l is the dimension of the nonnegative orthant. Thus,
+        # we have l = n.
+        G = matrix( -1 * np.eye(n) )   # G should have shape: (K,n) = (n,n)
+        h = matrix( np.zeros((n,1)) )  # h should have shape: (K,1) = (n,1)
+
+        self.G = G
+        self.h = h
+
+
+    def build_linear_equality_constraints(self):
+        from cvxopt import matrix
+
+        # Dimension of optimization variable
+        n = self.n
+
+        args = (self.pmf, self.n_variables, self.n_symbols, self.k)
+        A, b = linear_constraints(*args)
+        A, b, rank = as_full_rank(A, b)
+
+        A = matrix(A)
+        b = matrix(b)  # now a column vector
+
+        self.A = A
+        self.b = b
+
+
+    def build_F(self):
+        from cvxopt import matrix
+
+        n = self.n
+        m = self.m
+
+        def F(x=None, z=None):
+            # x has shape: (n,1)   and is the distribution
+            # z has shape: (m+1,1) and is the Hessian of f_0
+
+            if x is None and z is None:
+                # Initial point is the original distribution.
+                #d = self.pmf[np.arange(self.pmf.n_elements)]
+                d = self.initial_dist()
+                #d = np.ones(n) / n
+                return (m, matrix(d))
+
+            xarr = np.array(x)[:,0]
+
+            # Verify that x is in domain.
+            # Does G,h and A,b take care of this?
+            #
+            if np.any(xarr > 1) or np.any(xarr < 0):
+                return None
+            if not np.allclose(np.sum(xarr), 1, **self.tol):
+                return None
+
+            # Using automatic differentiators for now.
+            f = self.func(xarr)
+            Df = self.gradient(xarr)
+            Df = matrix(Df.reshape((1, n)))
+
+            if z is None:
+                return (f, Df)
+            H = self.hessian(xarr)
+            H = matrix(H)
+
+            return (f, Df, z[0] * H)
+
+        self.F = F
+
+
+    def initial_dist(self):
+        return self.prng.dirichlet([1] * self.n)
+
+
+    def optimize(self, show_progress=False):
+        from cvxopt.solvers import cp, options
+
+        old = options.get('show_progress', None)
+        out = None
+
+        try:
+            options['show_progress'] = show_progress
+            with np.errstate(divide='ignore', invalid='ignore'):
+                result = cp(F=self.F,
+                            G=self.G,
+                            h=self.h,
+                            dims={'l':self.n, 'q':[], 's':[]},
+                            A=self.A,
+                            b=self.b)
+        except:
+            raise
+        else:
+            self.result = result
+            out = np.asarray(result['x'])
+        finally:
+            if old is None:
+                del options['show_progress']
+            else:
+                options['show_progress'] = old
+
+        return out
+
+
+def maxent_dists(dist, k_max=None, show_progress=True):
+
+    pmf, n_variables, n_symbols = cartesian_product_view(dist)
+
+    if k_max is None:
+        k_max = n_variables
+
+    outcomes = list(dist._product(pmf.symbols, repeat=n_variables))
+
+    dists = []
+    for k in range(k_max + 1):
+        print()
+        print("Constraining maxent dist to match {0}-way marginals.".format(k))
+        print()
+        opt = MaximumEntropy(pmf, k)
+        pmf_opt = opt.optimize(show_progress=show_progress)
+        d = dit.Distribution(outcomes, pmf_opt)
+        dists.append(d)
+
+    return dists
