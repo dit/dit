@@ -33,6 +33,7 @@ __all__ = (
     'product_maker',
     'require_keys',
     'str_product',
+    'digits',
 )
 
 ######################################################
@@ -553,3 +554,65 @@ def ordered_partitions(seq, tuples=False):
             partition = list(map(frozenset, partition))
             for perm in permutations(partition):
                 yield perm
+
+def digits(n, base, alphabet=None, pad=0, big_endian=True):
+    """
+    Returns `n` as a sequence of indexes into an alphabet.
+
+    Parameters
+    ----------
+    n : int
+        The number to convert into a sequence of indexes.
+    base : int
+        The desired base of the sequence representation. The base must be
+        greater than or equal to 2.
+    alphabet : iterable
+        If specified, then the indexes are converted into symbols using
+        the specified alphabet.
+    pad : int
+        If  `True`, the resultant sequence is padded with zeros.
+    big_endian : bool
+        If `True`, then the resultant sequence has the least significant
+        digits at the end. This is standard for Western culture.
+
+    Returns
+    -------
+    sequence : list
+        The digits representation of `n`.
+
+    Examples
+    --------
+    >>> digits(6, base=2, pad=4)
+    [0, 1, 1, 0]
+
+    >>> ''.join(digits(6, base=2, pad=4, alphabet='xo'))
+    'xoox'
+
+    """
+    # http://stackoverflow.com/a/2088440
+
+    if base < 2 or int(base) != base:
+        raise ValueError('`base` must be an integer greater than 2')
+
+    if alphabet is not None:
+        if len(alphabet) != base:
+            raise ValueError('Length of `alphabet` must equal `base`.')
+
+    sequence = []
+    while True:
+        sequence.append(n % base)
+        if n < base:
+            break
+        n //= base
+
+    if pad:
+        zeros = [0] * (pad - len(sequence))
+        sequence.extend(zeros)
+
+    if big_endian:
+        sequence.reverse()
+
+    if alphabet is not None:
+        sequence = [alphabet[i] for i in sequence]
+
+    return sequence
