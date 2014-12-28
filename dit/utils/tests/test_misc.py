@@ -6,7 +6,7 @@ from nose.tools import assert_equal, assert_false, assert_raises, assert_true
 
 from dit.utils.misc import flatten, is_string_like, partitions, partitions2, \
                            ordered_partitions, require_keys, partition_set, \
-                           abstract_method
+                           abstract_method, digits
 from six import u
 
 def test_flatten1():
@@ -83,3 +83,28 @@ def test_abstract_method():
     def an_abstract_method():
         pass
     assert_raises(NotImplementedError, an_abstract_method)
+
+class TestDigits():
+    def test_bad_base(self):
+        assert_raises(ValueError, digits, 3, 1)
+
+    def test_nonint_base(self):
+        assert_raises(ValueError, digits, 3, 3.2)
+
+    def test_bad_alphabet(self):
+        assert_raises(ValueError, digits, 3, 2, alphabet=[1,2,3])
+
+    def test_with_alphabet(self):
+        x = digits(3, 2, alphabet=[0, 1])
+        assert_equal(x, [1, 1])
+
+    def test_with_pad(self):
+        x = digits(3, 2, pad=4, alphabet=[0, 1])
+        assert_equal(x, [0, 0, 1, 1])
+
+    def test_little_endian(self):
+        x = digits(2, 2)
+        assert_equal(x, [1, 0])
+
+        x = digits(2, 2, big_endian=False)
+        assert_equal(x, [0, 1])
