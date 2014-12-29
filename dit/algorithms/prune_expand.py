@@ -51,7 +51,7 @@ def pruned_samplespace(d, sample_space=None):
                      sample_space=sample_space, base=d.get_base())
     return pd
 
-def expanded_samplespace(d, alphabets=None):
+def expanded_samplespace(d, alphabets=None, union=True):
     """
     Returns a new distribution with an expanded sample space.
 
@@ -70,6 +70,10 @@ def expanded_samplespace(d, alphabets=None):
         Each alphabet specifies the alphabet to be used for a single index
         random variable. The sample space of the new distribution will be the
         Cartesian product of these alphabets.
+
+    union : bool
+        If True, then the alphabet for each random variable is unioned.
+        The unioned alphabet is then used for each random variable.
 
     Returns
     -------
@@ -90,6 +94,11 @@ def expanded_samplespace(d, alphabets=None):
         L = d.outcome_length()
         if len(alphabets) != L:
             raise Exception("You need to provide {0} alphabets".format(L))
+
+    if union:
+        alphabet = set.union(*map(set, alphabets))
+        alphabet = list(sorted(alphabet))
+        alphabets = [alphabet] * len(alphabets)
 
     if d.is_joint():
         sample_space = CartesianProduct(alphabets, d._product)
