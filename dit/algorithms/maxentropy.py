@@ -171,7 +171,7 @@ def cartesian_product_view(dist):
     return pmf, n_variables, n_symbols
 
 
-def linear_constraints(pmf, n_variables, n_symbols, m):
+def marginal_constraints(pmf, n_variables, n_symbols, m):
     """
     Returns `A` and `b` in `A x = b`, for a system of marginal constraints.
 
@@ -233,13 +233,13 @@ def linear_constraints(pmf, n_variables, n_symbols, m):
     return A, b
 
 
-def linear_constraint_rank(dist, m):
+def marginal_constraint_rank(dist, m):
     """
-    Returns the rank of the linear constraint matrix.
+    Returns the rank of the marginal constraint matrix.
 
     """
     pmf, n_variables, n_symbols = cartesian_product_view(dist)
-    A, b = linear_constraints(pmf, n_variables, n_symbols, m)
+    A, b = marginal_constraints(pmf, n_variables, n_symbols, m)
     C, d, rank = as_full_rank(A, b)
     return rank
 
@@ -339,7 +339,7 @@ class MaximumEntropy(object):
         n = self.n
 
         args = (self.pmf, self.n_variables, self.n_symbols, self.k)
-        A, b = linear_constraints(*args)
+        A, b = marginal_constraints(*args)
         A, b, rank = as_full_rank(A, b)
 
         A = matrix(A)
@@ -424,9 +424,14 @@ class MaximumEntropy(object):
         return out
 
 
-def maxent_dists(dist, k_max=None, show_progress=True):
+def maxent_dists(dist, k_max=None, jitter=True, show_progress=True):
 
     pmf, n_variables, n_symbols = cartesian_product_view(dist)
+
+    if jitter:
+        # This is sometimes necessary. If your distribution does not have
+        # full support than convergence can be difficult to come by.
+        pmf = dit.math.pmfops.jittered(pmf)
 
     if k_max is None:
         k_max = n_variables
