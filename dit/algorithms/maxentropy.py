@@ -5,10 +5,13 @@ Note: We are actually doing the maximum entropy optimization. So we have not
 built in the fact that the solution is an exponential family.
 
 Also, this doesn't seem to work that well in practice. The optimization
-simply fails to converge. We might need to assume the exponential form
-and then fit the params to match the marginals. Perhaps exact gradient
-and Hessians might help, or maybe even some rescaling of the linear
-constraints.
+simply fails to converge for many distributions. Xor() works great, but And()
+fails to converge for 2-way marginals. Random distributions seem to work.
+Jittering the distributions sometimes helps.
+
+We might need to assume the exponential form and then fit the params to match
+the marginals. Perhaps exact gradient and Hessians might help, or maybe even
+some rescaling of the linear constraints.
 
 """
 
@@ -107,7 +110,6 @@ class PhantomArray(object):
         self.n_symbols = n_symbols
         self.symbols = symbols
         self.n_elements = n_symbols ** n_variables
-
 
     def __getitem__(self, idx):
         try:
@@ -254,10 +256,10 @@ def negentropy(p):
 
 class MaximumEntropy(object):
     """
-    Find maximum entropy distribution subject to matching k-way marginals.
+    Find maximum entropy distribution.
 
     """
-    def __init__(self, dist, k, prng=None):
+    def __init__(self, dist, prng=None):
         """
         Initialize optimizer.
 
@@ -265,11 +267,8 @@ class MaximumEntropy(object):
         ----------
         dist : distribution
             The distribution used to specify the marginal constraints.
-        k : int
-            The number of variables in the constrained marginals.
 
         """
-        self.k = k
         if isinstance(dist, PhantomArray):
             self.dist = None
             self.pmf = dist
@@ -280,6 +279,7 @@ class MaximumEntropy(object):
 
         self.n_variables = self.pmf.n_variables
         self.n_symbols = self.pmf.n_symbols
+        self.n_elements = self.pmf.n_elements
 
         if prng is None:
             prng = np.random.RandomState()
@@ -335,18 +335,15 @@ class MaximumEntropy(object):
     def build_linear_equality_constraints(self):
         from cvxopt import matrix
 
-        # Dimension of optimization variable
-        n = self.n
+        # Normalization constraint only
+        A = [ np.ones(self.n_elements) ]
+        b = [ 1 ]
 
-        args = (self.pmf, self.n_variables, self.n_symbols, self.k)
-        A, b = marginal_constraints(*args)
-        A, b, rank = as_full_rank(A, b)
+        A = np.asarray(A, dtype=float)
+        b = np.asarray(b, dtype=float)
 
-        A = matrix(A)
-        b = matrix(b)  # now a column vector
-
-        self.A = A
-        self.b = b
+        self.A = matrix(A)
+        self.b = matrix(b)  # now a column vector
 
 
     def build_F(self):
@@ -424,14 +421,61 @@ class MaximumEntropy(object):
         return out
 
 
-def maxent_dists(dist, k_max=None, jitter=True, show_progress=True):
+class MarginalMaximumEntropy(MaximumEntropy):
+    """
+    Find maximum entropy distribution subject to k-way marginal constraints.
 
-    pmf, n_variables, n_symbols = cartesian_product_view(dist)
+    k=0 should reproduce the behavior of MaximumEntropy.
+
+    """
+    def __init__(self, dist, k, prng=None):
+        """
+        Initialize optimizer.
+
+        Parameters
+        ----------
+        dist : distribution
+            The distribution used to specify the marginal constraints.
+        k : int
+            The number of variables in the constrained marginals.
+
+        """
+        self.k = k
+        super(MarginalMaximumEntropy, self).__init__(dist, prng=prng)
+
+
+    def build_linear_equality_constraints(self):
+        from cvxopt import matrix
+
+        # Dimension of optimization variable
+        n = self.n
+
+        args = (self.pmf, self.n_variables, self.n_symbols, self.k)
+        A, b = marginal_constraints(*args)
+        A, b, rank = as_full_rank(A, b)
+        if rank > n:
+            raise ValueError('More independent constraints than parameters.')
+
+        A = matrix(A)
+        b = matrix(b)  # now a column vector
+
+        self.A = A
+        self.b = b
+
+
+def marginal_maxent_dists(dist, k_max=None, jitter=True, show_progress=True):
+    """
+    Return the marginal-constrained maximum entropy distributions.
+
+    """
+    dist = dit.expanded_samplespace(dist, union=True)
 
     if jitter:
         # This is sometimes necessary. If your distribution does not have
         # full support than convergence can be difficult to come by.
-        pmf = dit.math.pmfops.jittered(pmf)
+        dist.pmf = dit.math.pmfops.jittered(dist.pmf)
+
+    pmf, n_variables, n_symbols = cartesian_product_view(dist)
 
     if k_max is None:
         k_max = n_variables
@@ -443,7 +487,7 @@ def maxent_dists(dist, k_max=None, jitter=True, show_progress=True):
         print()
         print("Constraining maxent dist to match {0}-way marginals.".format(k))
         print()
-        opt = MaximumEntropy(pmf, k)
+        opt = MarginalMaximumEntropy(pmf, k)
         pmf_opt = opt.optimize(show_progress=show_progress)
         d = dit.Distribution(outcomes, pmf_opt)
         dists.append(d)
