@@ -77,6 +77,7 @@ def as_full_rank(A, b):
         from numpy import linalg
 
     A = np.atleast_2d(A)
+    b = np.asarray(b)
 
     U, S, Vh = linalg.svd(A)
 
@@ -101,7 +102,7 @@ class PhantomArray(object):
     """
     A simple wrapper around a sparse pmf specified by a lookup table.
 
-    The wrapper provides NumPy
+    The wrapper provides NumPy indexing.
 
     """
     def __init__(self, lookup, n_variables, n_symbols, symbols):
@@ -240,10 +241,170 @@ def marginal_constraint_rank(dist, m):
     Returns the rank of the marginal constraint matrix.
 
     """
-    pmf, n_variables, n_symbols = cartesian_product_view(dist)
+    dist = dit.expanded_samplespace(dist)
+    dist.make_dense()
+    n_variables = dist.outcome_length()
+    n_symbols = len(dist.alphabet[0])
+    pmf = dist.pmf
+
     A, b = marginal_constraints(pmf, n_variables, n_symbols, m)
     C, d, rank = as_full_rank(A, b)
     return rank
+
+
+def moment(f, pmf, center=0, n=1):
+    """
+    Return the nth moment of `f` about `center`, distributed by `pmf`.
+
+    Explicitly:   \sum_i (f(i) - center)**n p(i)
+
+    Note, `pmf` is the joint distribution. So n=1 can be used even when
+    calculating covariances such as <xx> and <xy>. The first would actually
+    be a 2nd moment, while the second would be a mixed 1st moment.
+
+    Parameters
+    ----------
+    f : array-like
+        The numerical values assigned to each outcome of `p`.
+    pmf : array-like
+        The pmf for a distribution, linear-distributed values.
+    center : float
+        Calculate a centered moment.
+    n : int
+        The moment to calculate.
+
+    """
+    return ((f - center)**n * pmf).sum()
+
+
+def moment_constraints(pmf, n_variables, symbol_map, m, with_replacement=True):
+    """
+    Returns `A` and `b` in `A x = b`, for an Ising-like system.
+
+    If without replacement, we include only m-way first-moment constraints
+    where each element is distinct. So <xx> and <yy> would not be included if
+    n_variables=2 and m=2.
+
+    The function we take means of is:  f(x) = \prod_i x_i
+
+    The resulting matrix `A` is not guaranteed to have full rank.
+
+    Parameters
+    ----------
+    pmf : array-like, shape ( n_symbols ** n_variables, )
+        The probability mass function of the distribution. The pmf must have
+        a Cartesian product sample space with the same sample space used for
+        each random variable.
+    n_variables : int
+        The number of random variables.
+    symbol_map : array-like
+        A mapping from the ith symbol to a real number that is to be used in
+        the calculation of moments. For example, symbol_map=[-1, 1] corresponds
+        to the typical Ising model.
+    m : int | list
+        The size of the moments to constrain. When `m=2`, pairwise means
+        are constrained to equal the pairwise means in `pmf`. When `m=3`,
+        three-way means are constrained to equal those in `pmf.
+        If m is a list, then include all m-way moments in the list.
+    with_replacement : bool
+        If `True`, variables are selected with replacement. The standard Ising
+        does not select with replacement, and so terms like <xx>, <yy> do not
+        appear for m=2. When `True`, we are constraining the entire moment
+        matrix.
+
+    Returns
+    -------
+    A : array-like, shape (p, q)
+        The matrix defining the marginal equality constraints and also the
+        normalization constraint. The number of rows is:
+            p = C(n_variables, m) * n_symbols ** m + 1
+        where C() is the choose formula. The number of columns is:
+            q = n_symbols ** n_variables
+
+    b : array-like, (p,)
+        The RHS of the linear equality constraints.
+
+    """
+    n_symbols = len(symbol_map)
+    d = AbstractDenseDistribution(n_variables, n_symbols)
+
+    if len(pmf) != d.n_elements:
+        raise ValueError('Length of `pmf` != n_symbols ** n_variables')
+
+    # Begin with the normalization constraint.
+    A = [ np.ones(d.n_elements) ]
+    b = [ 1 ]
+
+
+    try:
+        m[0]
+    except TypeError:
+        mvals = [m]
+    except IndexError:
+        # m is empty list
+        pass
+    else:
+        mvals = m
+
+    if with_replacement:
+        combinations = itertools.combinations_with_replacement
+    else:
+        combinations = itertools.combinations
+
+    # Now add all the moment constraints.
+    for m in mvals:
+        if m < 1:
+            continue
+
+        outcomes = list(itertools.product(symbol_map, repeat=n_variables))
+        outcomes = np.asarray(outcomes)
+        for rvs in combinations(range(n_variables), m):
+            # Make it a list for NumPy indexing
+            rvs = list(rvs)
+            f = np.array([outcome[rvs].prod() for outcome in outcomes])
+            mean = moment(f, pmf, n=1)
+            A.append(f)
+            b.append(mean)
+
+    A = np.asarray(A, dtype=float)
+    b = np.asarray(b, dtype=float)
+
+    return A, b
+
+
+def moment_constraint_rank(dist, m, symbol_map=None, cumulative=True, with_replacement=True):
+    """
+    Returns the rank of the moment constraint matrix.
+
+    """
+    if cumulative:
+        mvals = range(m + 1)
+    else:
+        mvals = [m]
+
+    dist = dit.expanded_samplespace(dist)
+    dist.make_dense()
+    n_variables = dist.outcome_length()
+    n_symbols = len(dist.alphabet[0])
+    pmf = dist.pmf
+
+    # Symbol map
+    if symbol_map is None:
+        symbol_map = range(n_symbols)
+
+    A, b = moment_constraints(pmf, n_variables, symbol_map, mvals,
+                              with_replacement=with_replacement)
+    C, d, rank = as_full_rank(A, b)
+
+    return rank
+
+
+def ising_constraint_rank(dist, m, symbol_map=None, cumulative=True):
+    """
+    Returns the rank of the Ising constraint matrix.
+
+    """
+    return moment_constraint_rank(dist, m, symbol_map, cumulative, with_replacement=False)
 
 
 def negentropy(p):
@@ -269,17 +430,17 @@ class MaximumEntropy(object):
             The distribution used to specify the marginal constraints.
 
         """
-        if isinstance(dist, PhantomArray):
-            self.dist = None
-            self.pmf = dist
-        else:
-            self.dist = dist
-            pmf, n_variables, n_symbols = cartesian_product_view(dist)
-            self.pmf = pmf
+        if not isinstance(dist._sample_space, dit.samplespace.CartesianProduct):
+            dist = dit.expanded_samplespace(dist, union=True)
 
-        self.n_variables = self.pmf.n_variables
-        self.n_symbols = self.pmf.n_symbols
-        self.n_elements = self.pmf.n_elements
+        if not dist.is_dense():
+            dist.make_dense()
+
+        self.dist = dist
+        self.pmf = dist.pmf
+        self.n_variables = dist.outcome_length()
+        self.n_symbols = len(dist.alphabet[0])
+        self.n_elements = len(dist)
 
         if prng is None:
             prng = np.random.RandomState()
@@ -358,7 +519,7 @@ class MaximumEntropy(object):
 
             if x is None and z is None:
                 # Initial point is the original distribution.
-                #d = self.pmf[np.arange(self.pmf.n_elements)]
+                #d = self.pmf[np.arange(self.n_elements)]
                 d = self.initial_dist()
                 #d = np.ones(n) / n
                 return (m, matrix(d))
@@ -462,32 +623,35 @@ class MarginalMaximumEntropy(MaximumEntropy):
         self.A = A
         self.b = b
 
-
 def marginal_maxent_dists(dist, k_max=None, jitter=True, show_progress=True):
     """
     Return the marginal-constrained maximum entropy distributions.
 
     """
     dist = dit.expanded_samplespace(dist, union=True)
+    dist.make_dense()
 
     if jitter:
         # This is sometimes necessary. If your distribution does not have
         # full support than convergence can be difficult to come by.
         dist.pmf = dit.math.pmfops.jittered(dist.pmf)
 
-    pmf, n_variables, n_symbols = cartesian_product_view(dist)
+    pmf = dist.pmf
+    n_variables = dist.outcome_length()
+    n_symbols = len(dist.alphabet[0])
+    symbols = dist.alphabet[0]
 
     if k_max is None:
         k_max = n_variables
 
-    outcomes = list(dist._product(pmf.symbols, repeat=n_variables))
+    outcomes = list(dist._product(symbols, repeat=n_variables))
 
     dists = []
     for k in range(k_max + 1):
         print()
         print("Constraining maxent dist to match {0}-way marginals.".format(k))
         print()
-        opt = MarginalMaximumEntropy(pmf, k)
+        opt = MarginalMaximumEntropy(dist, k)
         pmf_opt = opt.optimize(show_progress=show_progress)
         d = dit.Distribution(outcomes, pmf_opt)
         dists.append(d)
