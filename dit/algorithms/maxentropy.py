@@ -26,8 +26,15 @@ import numdifftools
 
 import dit
 
-
 from dit.abstractdist import AbstractDenseDistribution
+
+__all__ = [
+    'MarginalMaximumEntropy',
+    'MomentMaximumEntropy',
+    'marginal_maxent_dists',
+    'moment_maxent_dists',
+]
+
 
 def as_full_rank(A, b):
     """
@@ -644,6 +651,13 @@ class MomentMaximumEntropy(MaximumEntropy):
         symbol_map : list
             The mapping from states to real numbers. This is used while taking
             moments.
+        cumulative : bool
+            If `True`, include all moments less than or equal to `k`.
+        with_replacement : bool
+            If `True`, then variables are selected for moments with replacement.
+            The standard Ising model selects without replacement.
+        prng : RandomState
+            A pseudorandom number generator.
 
         """
         self.k = k
@@ -682,6 +696,18 @@ def marginal_maxent_dists(dist, k_max=None, jitter=True, show_progress=True):
     """
     Return the marginal-constrained maximum entropy distributions.
 
+    Parameters
+    ----------
+    dist : distribution
+        The distribution used to constrain the maxent distributions.
+    k_max : int
+        The maximum order to calculate.
+    jitter : bool | float
+        When `True` or a float, we perturb the distribution slightly before
+        proceeding. This can sometimes help with convergence.
+    show-progress : bool
+        If `True`, show convergence progress to stdout.
+
     """
     dist = dit.expanded_samplespace(dist, union=True)
     dist.make_dense()
@@ -714,9 +740,28 @@ def marginal_maxent_dists(dist, k_max=None, jitter=True, show_progress=True):
     return dists
 
 
-def moment_maxent_dists(dist, symbol_map, k_max=None, jitter=True, with_replacement=True, show_progress=True):
+def moment_maxent_dists(dist, symbol_map, k_max=None, jitter=True,
+                        with_replacement=True, show_progress=True):
     """
     Return the marginal-constrained maximum entropy distributions.
+
+    Parameters
+    ----------
+    dist : distribution
+        The distribution used to constrain the maxent distributions.
+    symbol_map : iterable
+        A list whose elements are the real values that each state is assigned
+        while calculating moments. Typical values are [-1, 1] or [0, 1].
+    k_max : int
+        The maximum order to calculate.
+    jitter : bool | float
+        When `True` or a float, we perturb the distribution slightly before
+        proceeding. This can sometimes help with convergence.
+    with_replacement : bool
+        If `True`, then variables are selected for moments with replacement.
+        The standard Ising model selects without replacement.
+    show-progress : bool
+        If `True`, show convergence progress to stdout.
 
     """
     dist = dit.expanded_samplespace(dist, union=True)
