@@ -133,9 +133,15 @@ class ShannonPartition(object):
         """
         Use PrettyTable to create a nice table.
         """
+        return self.to_string()
+
+    def to_string(self, digits=3):
+        """
+        Use PrettyTable to create a nice table.
+        """
         table = PrettyTable(['measure', 'bits'])
         ### TODO: add some logic for the format string, so things look nice with arbitrary values
-        table.float_format['bits'] = ' 5.3'
+        table.float_format['bits'] = ' 5.{0}'.format(digits)
         for (rvs, crvs), value in reversed(sorted(self.atoms.items(), key=(lambda row: len(row[0][1])))):
             if abs(value) < 1e-10: # TODO: make more robust
                 value = 0.0        # gets rid of pesky -0.0 display values
