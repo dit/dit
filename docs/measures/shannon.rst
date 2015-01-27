@@ -154,7 +154,7 @@ information it doesn't:
       Generalized as the sum of the information in the individual variables
       minus the joint.
 
-   :py:func:`dit.multivariate.binding.binding_information`
+   :py:func:`dit.multivariate.binding_information.binding_information`
       Generalized as the joint minus the entropy of each variable conditioned on
       the others.
 
