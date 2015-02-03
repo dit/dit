@@ -195,6 +195,10 @@ def _ball(n, size, prng):
     samples : NumPy array, shape (`size`, `n`)
         Points within the unit `n`-ball.
 
+    References
+    ----------
+    .. [1] http://math.stackexchange.com/a/87238
+
     """
     R = prng.rand(size, 1)**(1/n)
     X = prng.randn(size, n)
@@ -341,6 +345,88 @@ def _norm(ilrmean, ilrcov, size, prng):
     """
     samples = prng.multivariate_normal(ilrmean, ilrcov, size)
     samples = dit.math.aitchison.ilr_inv(samples)
+    return samples
+
+
+def _annulus2(rmin, rmax, size=None, prng=None):
+    """
+    Return samples uniformly distributed within an annulus of a 2-sphere.
+
+    Parameters
+    ----------
+    rmin : float
+        The minimum radius.
+    rmax : float
+        The maximum radius.
+    size : int
+        The number of samples to draw.
+    prng : NumPy RandomState
+        A random number generator. If `None`, then `dit.math.prng` is used.
+
+    Returns
+    -------
+    samples : NumPy array, shape (`size`, 2)
+        Points within the annulus of a 2-ball.
+
+    References
+    ----------
+    .. [1] http://stackoverflow.com/a/9048443
+
+    """
+    if size is None:
+        s = 1
+    else:
+        s = size
+
+    if prng is None:
+        prng = dit.math.prng
+
+    U = prng.rand(size)
+    r = np.sqrt(U * (rmax**2 - rmin**2) + rmin**2)
+
+    theta = prng.rand(size) * 2 * np.pi
+
+    samples = np.array([r * np.cos(theta), r * np.sin(theta)])
+    samples = samples.transpose()
+
+    if size is None:
+        samples = samples[0]
+
+    return samples
+
+def annulus2(pmf, rmin, rmax, size=None, prng=None):
+    """
+    Returns pmfs uniformly distributed in an annulus around `pmf`.
+
+    `pmf` must live on the 2-simplex.
+
+    Parameters
+    ----------
+    pmf : NumPy array, shape (3,)
+        The probability mass function about which samples are drawn.
+    rmin : float
+        The minimum radius.
+    rmax : float
+        The maximum radius.
+    size : int
+        The number of samples to draw.
+    prng : NumPy RandomState
+        A random number generator. If `None`, then `dit.math.prng` is used.
+
+    Returns
+    -------
+    samples : NumPy array, shape (`size`, 2)
+        Points within the annulus around `pmf`.
+
+    """
+    samples = _annulus2(rmin, rmax, size, prng)
+    ilrpmf = dit.math.aitchison.ilr(np.asarray(pmf))
+    samples += ilrpmf
+    samples = dit.math.aitchison.ilr_inv(samples)
+
+    if size is None:
+        samples = samples[0]
+
     return samples
 
 # Load the cython function if possible
