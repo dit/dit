@@ -22,7 +22,6 @@ import itertools
 import bisect
 
 import numpy as np
-import numdifftools
 
 import dit
 
