@@ -53,7 +53,7 @@ def coinformation(dist, rvs=None, crvs=None, rv_names=None):
 
     Using random variable indexes instead of random variable names:
 
-    >>> dit.multivariate.coinformation(d, [0,1,2], rv_names=False)
+    >>> dit.multivariate.coinformation(d, [0,1,2], rv_mode='indexes')
     -1.0
 
     The mutual information I[X:Z] is given by:

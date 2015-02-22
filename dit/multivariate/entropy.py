@@ -45,7 +45,7 @@ def entropy(dist, rvs=None, crvs=None, rv_names=None):
 
     We can do this using random variables indexes too.
 
-    >>> dit.multivariate.entropy(d, [0,1,2], rv_names=False)
+    >>> dit.multivariate.entropy(d, [0,1,2], rv_mode='indexes')
     2.0
 
     The joint entropy H[X,Z] is given by:
