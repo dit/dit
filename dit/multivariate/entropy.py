@@ -29,6 +29,36 @@ def entropy(dist, rvs=None, crvs=None, rv_names=None):
     -------
     H : float
         The entropy.
+
+    Examples
+    --------
+    Let's construct a 3-variable distribution for the XOR logic gate and name
+    the random variables X, Y, and Z.
+
+    >>> d = dit.example_dists.Xor()
+    >>> d.set_rv_names(['X', 'Y', 'Z'])
+
+    The joint entropy of H[X,Y,Z] is:
+
+    >>> dit.multivariate.entropy(d, 'XYZ')
+    2.0
+
+    We can do this using random variables indexes too.
+
+    >>> dit.multivariate.entropy(d, [0,1,2], rv_names=False)
+    2.0
+
+    The joint entropy H[X,Z] is given by:
+
+    >>> dit.multivariate.entropy(d, 'XZ')
+    1.0
+
+    Conditional entropy can be calculated by passing in the conditional
+    random variables. The conditional entropy H[Y|X] is:
+
+    >>> dit.multivariate.entropy(d, 'Y', 'X')
+    1.0
+
     """
     if dist.is_joint():
         if rvs is None:
