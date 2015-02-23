@@ -7,7 +7,7 @@ from ..npdist import Distribution
 from ..algorithms import insert_meet
 from ..shannon import conditional_entropy as H
 
-def gk_common_information(dist, rvs=None, crvs=None, rv_names=None):
+def gk_common_information(dist, rvs=None, crvs=None, rv_mode=None):
     """
     Returns the Gacs-Korner common information K[X1:X2...] over the random
     variables in `rvs`.
@@ -23,11 +23,13 @@ def gk_common_information(dist, rvs=None, crvs=None, rv_names=None):
     crvs : list, None
         The indexes of the random variables to condition the common information
         by. If none, than there is no conditioning.
-    rv_names : bool, None
-        If `True`, then the elements of `rvs` are treated as random variable
-        names. If `False`, then the elements of `rvs` are treated as random
-        variable indexes.  If `None`, then the value `True` is used if the
-        distribution has specified names for its random variables.
+    rv_mode : str, None
+        Specifies how to interpret `rvs` and `crvs`. Valid options are:
+        {'indices', 'names'}. If equal to 'indices', then the elements of
+        `crvs` and `rvs` are interpreted as random variable indices. If equal
+        to 'names', the the elements are interpreted as random variable names.
+        If `None`, then the value of `dist._rv_mode` is consulted, which
+        defaults to 'indices'.
 
     Returns
     -------
@@ -35,8 +37,8 @@ def gk_common_information(dist, rvs=None, crvs=None, rv_names=None):
         The Gacs-Korner common information of the distribution.
 
     """
-    rvs, crvs, rv_names = normalize_rvs(dist, rvs, crvs, rv_names)
-    crvs = parse_rvs(dist, crvs, rv_names)[1]
+    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
+    crvs = parse_rvs(dist, crvs, rv_mode)[1]
 
     outcomes, pmf = zip(*dist.zipped(mode='patoms'))
     # The GK-common information is sensitive to zeros in the sample space.
@@ -44,7 +46,7 @@ def gk_common_information(dist, rvs=None, crvs=None, rv_names=None):
     d = Distribution(outcomes, pmf, sample_space=outcomes)
     d.set_rv_names(dist.get_rv_names())
 
-    d2 = insert_meet(d, -1, rvs, rv_names)
+    d2 = insert_meet(d, -1, rvs, rv_mode=rv_mode)
 
     common = [d2.outcome_length() - 1]
 
