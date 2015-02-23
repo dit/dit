@@ -10,10 +10,10 @@ Consider the following distribution:
 When we marginalize, we only iterate over the elements explicitly stored in
 the pmf. Before this module was implemented, whenever the sample space of a
 distribution was not explicitly specified, we took the outcomes to be the
-sample space. This had undesirable side effects. For example, d.marginal([0])
-would only have a sample space of ['0']. What we really would like is to be
-able to marginalize the sample space as well, so that we get a marginal
-sample space of ['0', '1'].
+sample space, in this case ['00', '01']. This had undesirable side effects.
+For example, d.marginal([0]) would only have a sample space of ['0']. What we
+really would like is to be able to marginalize the sample space as well, so
+that we get a marginal sample space of ['0', '1'].
 
 However, the only way to achieve that is the iterate over the entire sample
 space.  But while coalescing, we chose to iterate through the explicitly stored
@@ -36,7 +36,8 @@ experience the penalty discussed above.
 
 """
 from .helpers import (
-    parse_rvs, get_outcome_ctor, construct_alphabets, get_product_func
+    parse_rvs, get_outcome_ctor, construct_alphabets, get_product_func,
+    RV_MODES,
 )
 from .utils import OrderedDict
 
@@ -169,7 +170,7 @@ class SampleSpace(ScalarSampleSpace):
 
         """
         # We allow repeats and want to keep the order. We don't need the names.
-        parse = lambda rv: parse_rvs(self, rv, rv_names=False,
+        parse = lambda rv: parse_rvs(self, rv, rv_mode=RV_MODES.INDICES,
                                                unique=False, sort=False)[1]
         indexes = [parse(rv) for rv in rvs]
 
@@ -209,8 +210,8 @@ class SampleSpace(ScalarSampleSpace):
         """
         # For marginals, we must have unique indexes. Additionally, we do
         # not allow the order of the random variables to change. So we sort.
-        rv_names = False
-        rvs, indexes = parse_rvs(self, rvs, rv_names, unique=True, sort=True)
+        rv_mode = RV_MODES.INDICES
+        rvs, indexes = parse_rvs(self, rvs, rv_mode, unique=True, sort=True)
 
         # Marginalization is a special case of coalescing where there is only
         # one new random variable and it is composed of a strict subset of
@@ -234,7 +235,8 @@ class SampleSpace(ScalarSampleSpace):
             A new sample space with indexes in `rvs` marginalized away.
 
         """
-        rvs, indexes = parse_rvs(self, rvs, rv_names=False)
+        rv_mode = RV_MODES.INDICES
+        rvs, indexes = parse_rvs(self, rvs, rv_mode=rv_mode)
         indexes = set(indexes)
         all_indexes = range(self.outcome_length())
         marginal_indexes = [i for i in all_indexes if i not in indexes]
@@ -363,7 +365,8 @@ class CartesianProduct(SampleSpace):
 
         """
         # We allow repeats and want to keep the order. We don't need the names.
-        parse = lambda rv: parse_rvs(self, rv, rv_names=False,
+        rv_mode = RV_MODES.INDICES
+        parse = lambda rv: parse_rvs(self, rv, rv_mode=rv_mode,
                                                unique=False, sort=False)[1]
         indexes = [parse(rv) for rv in rvs]
 
