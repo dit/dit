@@ -91,11 +91,10 @@ def default_opener(filename):
         The path of the file to be opened.
 
     """
-    cmds = {
-        'darwin': ['open'],
-        'linux2': ['xdg-open'],
-        'win32': ['cmd.exe', '/c', 'start', '']
-    }
+    cmds = {'darwin': ['open'],
+            'linux2': ['xdg-open'], # Python 2.x
+            'linux': ['xdg-open'],  # Python 3.x
+            'win32': ['cmd.exe', '/c', 'start', '']}
     cmd = cmds[sys.platform] + [filename]
     subprocess.call(cmd)
 
