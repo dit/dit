@@ -10,8 +10,10 @@ from dit.divergences import (jensen_shannon_divergence as JSD,
                             )
 
 from dit.other import (extropy as J,
-                          perplexity as P,
-                         )
+                       perplexity as P,
+                       cumulative_residual_entropy as CRE,
+                       generalized_cumulative_residual_entropy as GCRE,
+                      )
 
 from dit.multivariate import (binding_information as B,
                               coinformation as I,
@@ -54,6 +56,8 @@ _divergences = [
 _others = [
     'P',    # the perplexity
     'J',    # the extropy
+    'CRE'   # the cumulative residual entropy
+    'GCRE'  # the generalized cumulative residual entropy
 ]
 
 __all__ = _dists + _shannon + _shannon_ext + _divergences + _others
