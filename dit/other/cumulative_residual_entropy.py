@@ -5,13 +5,14 @@ cumulative residual entropy.
 
 from functools import partial, update_wrapper
 
-from six import range
+from iterutils import pairwise
+
+from six.moves import range # pylint: disable=redefined-builtin
 
 import numpy as np
 
 from .. import ScalarDistribution as SD
 from ..algorithms.stats import _numerical_test
-from ..exceptions import ditException
 
 def _cumulative_residual_entropy(dist, generalized=False):
     """
@@ -35,7 +36,7 @@ def _cumulative_residual_entropy(dist, generalized=False):
     --------
     """
     _numerical_test(dist)
-    eps = ((e if generalized else abs(e), p) for e, p in d.zipped())
+    eps = ((e if generalized else abs(e), p) for e, p in dist.zipped())
     events, probs = zip(*sorted(eps))
     cdf = { a: p for a, p in zip(events, np.cumsum(probs)) }
     terms = []
@@ -70,19 +71,27 @@ def cumulative_residual_entropy(dist, generalized=False):
     if not dist.is_joint():
         return _cumulative_residual_entropy(dist, generalized)
     length = dist.outcome_length()
-    margs = [SD.from_distribution(dist.marginal([i]) for i in range(length))]
+    margs = [SD.from_distribution(dist.marginal([i])) for i in range(length)]
     cres = np.array([_cumulative_residual_entropy(m, generalized) for m in margs])
     return cres
 
-def conditional_cumulative_residual_entropy(dist, generalized=False):
+def conditional_cumulative_residual_entropy(dist, rv, crvs, generalized=False):
     """
     Returns the conditional cumulative residual entropy.
 
     Parameters
     ----------
+    dist : Distribution
+    rv : list, None
+    crvs : list, None
+    generalized : bool
+        Wheither to integrate from zero over the CDF or to integrate from zero
+        over the CDF of the absolute value.
 
     Returns
     -------
+    CCRE : ScalarDistribution
+        The conditional cumulative residual entropy.
 
     Examples
     --------
