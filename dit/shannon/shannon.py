@@ -4,6 +4,7 @@ Some basic Shannon information quantities.
 """
 
 from ..math import LogOperations
+from ..helpers import RV_MODES
 
 import numpy as np
 
@@ -22,12 +23,13 @@ def entropy_pmf(pmf):
     pmf = np.asarray(pmf)
     return np.nansum(-pmf * np.log2(pmf), axis=-1)
 
-def entropy(dist, rvs=None, rv_names=None):
+def entropy(dist, rvs=None, rv_mode=None):
     """
     Returns the entropy H[X] over the random variables in `rvs`.
 
     If the distribution represents linear probabilities, then the entropy
-    is calculated with units of 'bits' (base-2).
+    is calculated with units of 'bits' (base-2). Otherwise, the entropy is
+    calculated in whatever base that matches the distribution's pmf.
 
     Parameters
     ----------
@@ -38,11 +40,12 @@ def entropy(dist, rvs=None, rv_names=None):
         The indexes of the random variable used to calculate the entropy.
         If None, then the entropy is calculated over all random variables.
         This should remain `None` for ScalarDistributions.
-    rv_names : bool
-        If `True`, then the elements of `rvs` are treated as random variable
-        names. If `False`, then the elements of `rvs` are treated as random
-        variable indexes.  If `None`, then the value `True` is used if the
-        distribution has specified names for its random variables.
+    rv_mode : str, None
+        Specifies how to interpret the elements of `rvs`. Valid options are:
+        {'indices', 'names'}. If equal to 'indices', then the elements of
+        `rvs` are interpreted as random variable indices. If equal to 'names',
+        the the elements are interpreted as random variable names. If `None`,
+        then the value of `dist._rv_mode` is consulted.
 
     Returns
     -------
@@ -59,16 +62,14 @@ def entropy(dist, rvs=None, rv_names=None):
         # Assume linear probability for binary entropy.
         import dit
         dist = dit.ScalarDistribution([dist, 1-dist])
-        rvs = None
-        rv_names = False
 
     if dist.is_joint():
         if rvs is None:
             # Set to entropy of entire distribution
             rvs = range(dist.outcome_length())
-            rv_names = False
+            rv_mode = RV_MODES.INDICES
 
-        d = dist.marginal(rvs, rv_names=rv_names)
+        d = dist.marginal(rvs, rv_mode=rv_mode)
     else:
         d = dist
 
@@ -84,7 +85,7 @@ def entropy(dist, rvs=None, rv_names=None):
     H = np.nansum(terms)
     return H
 
-def conditional_entropy(dist, rvs_X, rvs_Y, rv_names=None):
+def conditional_entropy(dist, rvs_X, rvs_Y, rv_mode=None):
     """
     Returns the conditional entropy of H[X|Y].
 
@@ -99,11 +100,12 @@ def conditional_entropy(dist, rvs_X, rvs_Y, rv_names=None):
         The indexes of the random variables defining X.
     rvs_Y : list, None
         The indexes of the random variables defining Y.
-    rv_names : bool
-        If `True`, then the elements of `rvs_X` and `rvs_Y` are treated as
-        random variable names. If `False`, then their elements are treated as
-        random variable indexes.  If `None`, then the value `True` is used if
-        the distribution has specified names for its random variables.
+    rv_mode : str, None
+        Specifies how to interpret the elements of `rvs`. Valid options are:
+        {'indices', 'names'}. If equal to 'indices', then the elements of
+        `rvs` are interpreted as random variable indices. If equal to 'names',
+        the the elements are interpreted as random variable names. If `None`,
+        then the value of `dist._rv_mode` is consulted.
 
     Returns
     -------
@@ -116,12 +118,12 @@ def conditional_entropy(dist, rvs_X, rvs_Y, rv_names=None):
         # instead of 1e-12 or something smaller.
         return 0.0
 
-    MI_XY = mutual_information(dist, rvs_Y, rvs_X, rv_names)
-    H_X = entropy(dist, rvs_X, rv_names)
+    MI_XY = mutual_information(dist, rvs_Y, rvs_X, rv_mode=rv_mode)
+    H_X = entropy(dist, rvs_X, rv_mode=rv_mode)
     H_XgY = H_X - MI_XY
     return H_XgY
 
-def mutual_information(dist, rvs_X, rvs_Y, rv_names=None):
+def mutual_information(dist, rvs_X, rvs_Y, rv_mode=None):
     """
     Returns the mutual information I[X:Y].
 
@@ -136,11 +138,12 @@ def mutual_information(dist, rvs_X, rvs_Y, rv_names=None):
         The indexes of the random variables defining X.
     rvs_Y : list, None
         The indexes of the random variables defining Y.
-    rv_names : bool
-        If `True`, then the elements of `rvs_X` and `rvs_Y` are treated as
-        random variable names. If `False`, then their elements are treated as
-        random variable indexes.  If `None`, then the value `True` is used if
-        the distribution has specified names for its random variables.
+    rv_mode : str, None
+        Specifies how to interpret the elements of `rvs`. Valid options are:
+        {'indices', 'names'}. If equal to 'indices', then the elements of
+        `rvs` are interpreted as random variable indices. If equal to 'names',
+        the the elements are interpreted as random variable names. If `None`,
+        then the value of `dist._rv_mode` is consulted.
 
     Returns
     -------
@@ -148,10 +151,10 @@ def mutual_information(dist, rvs_X, rvs_Y, rv_names=None):
         The mutual information I[X:Y].
 
     """
-    H_X = entropy(dist, rvs_X, rv_names)
-    H_Y = entropy(dist, rvs_Y, rv_names)
+    H_X = entropy(dist, rvs_X, rv_mode=rv_mode)
+    H_Y = entropy(dist, rvs_Y, rv_mode=rv_mode)
     # Make sure to union the indexes. This handles the case when X and Y
     # do not partition the set of all indexes.
-    H_XY = entropy(dist, set(rvs_X) | set(rvs_Y), rv_names)
+    H_XY = entropy(dist, set(rvs_X) | set(rvs_Y), rv_mode=rv_mode)
     I = H_X + H_Y - H_XY
     return I
