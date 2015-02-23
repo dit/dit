@@ -78,7 +78,8 @@ from .helpers import (
     get_outcome_ctor,
     get_product_func,
     parse_rvs,
-    reorder
+    reorder,
+    RV_MODES
 )
 
 from .samplespace import SampleSpace, CartesianProduct
@@ -703,7 +704,7 @@ class Distribution(ScalarDistribution):
         return v
 
 
-    def coalesce(self, rvs, rv_names=None, extract=False):
+    def coalesce(self, rvs, rv_mode=None, extract=False):
         """
         Returns a new joint distribution after coalescing random variables.
 
@@ -721,6 +722,12 @@ class Distribution(ScalarDistribution):
             `rvs` must be at least one.  The inner sequences need not be
             pairwise mutually exclusive with one another, and each can contain
             repeated random variables.
+        rv_mode : str, None
+            Specifies how to interpret the elements of `rvs`. Valid options
+            are: {'indices', 'names'}. If equal to 'indices', then the elements
+            of `rvs` are interpreted as random variable indices. If equal to
+            'names', the the elements are interpreted as random variable names.
+            If `None`, then the value of `dist._rv_mode` is consulted.
         extract : bool
             If the length of `rvs` is 1 and `extract` is `True`, then instead
             of the new outcomes being 1-tuples, we extract the sole element to
@@ -764,8 +771,8 @@ class Distribution(ScalarDistribution):
         from array import array
 
         # We allow repeats and want to keep the order. We don't need the names.
-        parse = lambda rv: parse_rvs(self, rv, rv_names=rv_names,
-                                                unique=False, sort=False)[1]
+        parse = lambda rv: parse_rvs(self, rv, rv_mode=rv_mode,
+                                     unique=False, sort=False)[1]
         indexes = [parse(rv) for rv in rvs]
 
         # Determine how new outcomes are constructed.
@@ -843,7 +850,7 @@ class Distribution(ScalarDistribution):
             {'indices', 'names'}. If equal to 'indices', then the elements
             of `crvs` and `rvs` are interpreted as random variable indices.
             If equal to 'names', the the elements are interpreted as random
-            varible names. If `None`, then the value of `self.rv_mode` is
+            varible names. If `None`, then the value of `self._rv_mode` is
             consulted, which defaults to 'indices'.
         extract : bool
             If the length of either `crvs` or `rvs` is 1 and `extract` is
@@ -871,7 +878,7 @@ class Distribution(ScalarDistribution):
         # Marginalize the random variables not in crvs or rvs
         if len(union) < self.outcome_length():
             mapping = dict(zip(sorted(union), range(len(union))))
-            d = self.marginal(union, rv_names='indices')
+            d = self.marginal(union, rv_mode=RV_MODES.INDICES)
             # Now we need to shift the indices to their new index values.
             cindexes = [mapping[idx] for idx in cindexes]
             indexes = [mapping[idx] for idx in indexes]
@@ -884,8 +891,8 @@ class Distribution(ScalarDistribution):
         sparse = d.is_sparse()
         d.make_sparse()
 
-        cdist = d.marginal(cindexes, rv_names='indices')
-        dist = d.marginal(indexes, rv_names='indices')
+        cdist = d.marginal(cindexes, rv_mode=RV_MODES.INDICES)
+        dist = d.marginal(indexes, rv_mode=RV_MODES.INDICES)
         sample_space = dist._sample_space
         rv_names = dist.get_rv_names()
 
@@ -1069,7 +1076,7 @@ class Distribution(ScalarDistribution):
 
         return h
 
-    def marginal(self, rvs, rv_names=None):
+    def marginal(self, rvs, rv_mode=None):
         """
         Returns a marginal distribution.
 
@@ -1077,12 +1084,12 @@ class Distribution(ScalarDistribution):
         ----------
         rvs : list
             The random variables to keep. All others are marginalized.
-        rv_names : bool
-            If `True`, then the elements of `rvs` are treated as names of
-            random variables. If `False`, then the elements of `rvs` are
-            treated as indexes of random variables. If `None`, then the value
-            `True` is used if the distribution has set names for its random
-            variables; otherwise it is set to `False`.
+        rv_mode : str, None
+            Specifies how to interpret the elements of `rvs`. Valid options
+            are: {'indices', 'names'}. If equal to 'indices', then the elements
+            of `rvs` are interpreted as random variable indices. If equal to
+            'names', the the elements are interpreted as random variable names.
+            If `None`, then the value of `self._rv_mode` is consulted.
 
         Returns
         -------
@@ -1091,20 +1098,20 @@ class Distribution(ScalarDistribution):
             kept and all others marginalized.
 
         """
-        # For marginals, we do must have unique indexes. Additionally, we do
+        # For marginals, we must have unique indexes. Additionally, we do
         # not allow the order of the random variables to change. So we sort.
-        # We parse the rv_names now, so that we can reassign their names
+        # We parse the rv_mode now, so that we can reassign their names
         # after coalesce has finished.
-        rvs, indexes = parse_rvs(self, rvs, rv_names, unique=True, sort=True)
+        rvs, indexes = parse_rvs(self, rvs, rv_mode, unique=True, sort=True)
 
         ## Eventually, add in a method specialized for dense distributions.
         ## This one would work only with the pmf, and not the outcomes.
 
         # Marginalization is a special case of coalescing where there is only
         # one new random variable and it is composed of a strict subset of
-        # the orignal random variables, with no duplicates, that maintains
+        # the original random variables, with no duplicates, that maintains
         # the order of the original random variables.
-        d = self.coalesce([indexes], rv_names=False, extract=True)
+        d = self.coalesce([indexes], rv_mode=RV_MODES.INDICES, extract=True)
 
         # Handle parts of d that are not settable through initialization.
 
@@ -1124,7 +1131,7 @@ class Distribution(ScalarDistribution):
         d._mask = tuple(False if i in indexes else True for i in range(L))
         return d
 
-    def marginalize(self, rvs, rv_names=None):
+    def marginalize(self, rvs, rv_mode=None):
         """
         Returns a new distribution after marginalizing random variables.
 
@@ -1132,10 +1139,13 @@ class Distribution(ScalarDistribution):
         ----------
         rvs : list
             The random variables to marginalize. All others are kept.
-        rv_names : bool
-            If `True`, then the elements of `rvs` are treated as names of
-            random variables. If `False`, then the elements of `rvs` are
-            treated as indexes of random variables.
+        rv_mode : str, None
+            Specifies how to interpret the elements of `rvs`. Valid options
+            are: {'indices', 'names'}. If equal to 'indices', then the elements
+            of `rvs` are interpreted as random variable indices. If equal to
+            'names', the the elements are interpreted as random variable names.
+            If `None`, then the value of `self._rv_mode` is consulted.
+
 
         Returns
         -------
@@ -1144,11 +1154,11 @@ class Distribution(ScalarDistribution):
             marginalized and all others kept.
 
         """
-        rvs, indexes = parse_rvs(self, rvs, rv_names)
+        rvs, indexes = parse_rvs(self, rvs, rv_mode)
         indexes = set(indexes)
         all_indexes = range(self.outcome_length())
         marginal_indexes = [i for i in all_indexes if i not in indexes]
-        d = self.marginal(marginal_indexes, rv_names=False)
+        d = self.marginal(marginal_indexes, rv_mode=RV_MODES.INDICES)
         return d
 
     def set_rv_names(self, rv_names):

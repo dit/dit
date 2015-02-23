@@ -40,6 +40,10 @@ constructor_map = {
 }
 
 class RV_Mode(object):
+    """
+    Class to manage how rvs and crvs are specified and interpreted.
+
+    """
     INDICES = 0
     NAMES = 1
 
@@ -48,6 +52,7 @@ class RV_Mode(object):
         'indices': INDICES,
         'names': NAMES,
         None: None,
+        # Deprecated stuff:
         True: NAMES,
         False: INDICES
     }
@@ -62,7 +67,8 @@ class RV_Mode(object):
             raise KeyError('Invalid value for `rv_mode`')
 
         if item in self._deprecated:
-            msg = 'Deprecated value for `rv_mode`: {0!r}'.format(item)
+            msg = 'Deprecated value for `rv_mode`: {0!r}.'.format(item)
+            msg += ' See docstring for new conventions.'
             warnings.warn(msg, DeprecationWarning)
 
         return mode
@@ -101,8 +107,6 @@ def construct_alphabets(outcomes):
         When not all outcomes have the same length.
 
     """
-    ## Assumption: len(outcomes) > 0
-
     # During validation, each outcome is checked to be of the proper class,
     # length, and also a sequence.  However, this function is called before
     # validation and will result in hard to decipher error messages if we
@@ -192,14 +196,14 @@ def get_product_func(klass):
 
     return product
 
-def normalize_rvs(dist, rvs, crvs, rv_names):
+def normalize_rvs(dist, rvs, crvs, rv_mode):
     """
-    For use in multivariate information measures.
+    Perform common tasks useful for multivariate information measures.
 
     Parameters
     ----------
     dist : Distribution
-        The distribution to get the variable names for.
+        The distribution that will be operated on.
 
     rvs : list, None
         List of random variables to use in this measure.
@@ -207,11 +211,14 @@ def normalize_rvs(dist, rvs, crvs, rv_names):
     crvs : list, None
         List of random variables to condition on.
 
-    rv_names : bool, None
-        If `True`, then the elements of `rvs` are treated as random variable
-        names. If `False`, then the elements of `rvs` are treated as random
-        variable indexes.  If `None`, then the value `True` is used if the
-        distribution has specified names for its random variables.
+    rv_mode : str, None
+        Specifies how to interpret `rvs` and `crvs`. Valid options are:
+        {'indices', 'names'}. If equal to 'indices', then the elements of
+        `crvs` and `rvs` are interpreted as random variable indices. If equal
+        to 'names', the the elements are interpreted as random variable names.
+        If `None`, then the value of `dist._rv_mode` is consulted, which
+        defaults to 'indices'.
+
 
     Returns
     -------
@@ -221,7 +228,8 @@ def normalize_rvs(dist, rvs, crvs, rv_names):
     crvs : list
         The explicit random variables to condition on.
 
-    rv_names : bool
+    rv_mode : bool
+        The value of rv_mode that should be used.
 
 
     Raises
@@ -233,16 +241,16 @@ def normalize_rvs(dist, rvs, crvs, rv_names):
         if rvs is None:
             # Set to total correlation of entire distribution
             rvs = [[i] for i in range(dist.outcome_length())]
-            rv_names = False
+            rv_mode = RV_MODES.INDICES
         if crvs is None:
             crvs = []
     else:
         msg = "The information measure requires a joint distribution."
         raise ditException(msg)
 
-    return rvs, crvs, rv_names
+    return rvs, crvs, rv_mode
 
-def parse_rvs(dist, rvs, rv_names=None, unique=True, sort=True):
+def parse_rvs(dist, rvs, rv_mode=None, unique=True, sort=True):
     """
     Returns the indices of the random variables in `rvs`.
 
@@ -253,11 +261,12 @@ def parse_rvs(dist, rvs, rv_names=None, unique=True, sort=True):
     rvs : list
         The list of random variables. This is either a list of random
         variable indexes or a list of random variable names.
-    rv_names : bool
-        If `True`, then the elements of `rvs` are treated as random variable
-        names. If `False`, then the elements of `rvs` are treated as random
-        variable indexes.  If `None`, then the value `True` is used if the
-        distribution has specified names for its random variables.
+    rv_mode : str, None
+        Specifies how to interpret the elements of `rvs`. Valid options are:
+        {'indices', 'names'}. If equal to 'indices', then the elements of
+        `rvs` are interpreted as random variable indices. If equal to 'names',
+        the the elements are interpreted as random variable names. If `None`,
+        then the value of `dist._rv_mode` is consulted.
     unique : bool
         If `True`, then require that no random variable is repeated in `rvs`.
         If there are any duplicates, an exception is raised. If `False`, random
@@ -278,9 +287,9 @@ def parse_rvs(dist, rvs, rv_names=None, unique=True, sort=True):
         If `rvs` cannot be converted properly into indexes.
 
     """
-    if rv_names is None:
-        rv_names = dist._rv_mode
-    rv_mode = RV_MODES[rv_names]
+    if rv_mode is None:
+        rv_mode = dist._rv_mode
+    rv_mode = RV_MODES[rv_mode]
 
     # Quick check for the empty set. Interpretation: no random variables.
     if len(rvs) == 0:
@@ -292,7 +301,7 @@ def parse_rvs(dist, rvs, rv_names=None, unique=True, sort=True):
         raise ditException(msg)
 
     if rv_mode == RV_MODES.NAMES:
-        # Then `rvs` contained random variable names.
+        # Then `rvs` contains random variable names.
         # We convert these to indexes.
 
         if dist._rvs is None:
@@ -314,7 +323,8 @@ def parse_rvs(dist, rvs, rv_names=None, unique=True, sort=True):
     all_indexes = set(range(dist.outcome_length()))
     good_indexes = all_indexes.intersection(indexes)
     if len(good_indexes) != len(set(indexes)):
-        msg = '`rvs` contains invalid random variables, {0}, {1} {2}'.format(indexes, good_indexes, rv_mode)
+        msg = '`rvs` contains invalid random variables, {0}, {1} {2}.'
+        msg = msg.format(indexes, good_indexes, rv_mode)
         raise ditException(msg)
 
     # Sort the random variable names (or indexes) by their index.

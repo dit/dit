@@ -55,7 +55,7 @@ from collections import defaultdict
 from six.moves import map, range, zip # pylint: disable=redefined-builtin
 
 import dit
-from ..helpers import parse_rvs
+from ..helpers import parse_rvs, RV_MODES
 from ..math import sigma_algebra, atom_set
 from ..utils import lexico_key
 
@@ -67,7 +67,7 @@ def sigma_algebra_sort(sigalg):
     sigalg.sort(key=lexico_key)
     return sigalg
 
-def induced_sigalg(dist, rvs, rv_names=None):
+def induced_sigalg(dist, rvs, rv_mode=None):
     """
     Returns the induced sigma-algebra of the random variable defined by `rvs`.
 
@@ -78,11 +78,12 @@ def induced_sigalg(dist, rvs, rv_names=None):
     rvs : list
         The indexes of the random variable used to calculate the induced
         sigma algebra.
-    rv_names : bool
-        If `True`, then the elements of `rvs` are treated as random variable
-        names. If `False`, then the elements of `rvs` are treated as random
-        variable indexes.  If `None`, then the value `True` is used if the
-        distribution has specified names for its random variables.
+    rv_mode : str, None
+        Specifies how to interpret the elements of `rvs`. Valid options are:
+        {'indices', 'names'}. If equal to 'indices', then the elements of
+        `rvs` are interpreted as random variable indices. If equal to 'names',
+        the the elements are interpreted as random variable names. If `None`,
+        then the value of `dist._rv_mode` is consulted.
 
     Returns
     -------
@@ -100,7 +101,7 @@ def induced_sigalg(dist, rvs, rv_names=None):
     #
     # Step 2 may not be necessary.
     #
-    indexes = parse_rvs(dist, rvs, rv_names=rv_names, unique=True, sort=True)[1]
+    indexes = parse_rvs(dist, rvs, rv_mode=rv_mode, unique=True, sort=True)[1]
 
     # This creates a mapping from new outcomes (defined by rvs) to the
     # original outcomes which map to those new outcomes. This defines a
@@ -118,7 +119,7 @@ def induced_sigalg(dist, rvs, rv_names=None):
     F = sigma_algebra(atoms)
     return F
 
-def join_sigalg(dist, rvs, rv_names=None):
+def join_sigalg(dist, rvs, rv_mode=None):
     """
     Returns the sigma-algebra of the join of random variables defined by `rvs`.
 
@@ -131,11 +132,12 @@ def join_sigalg(dist, rvs, rv_names=None):
         joined with the other lists.  Each random variable can defined as a
         series of unique indexes.  Multiple random variables can use the same
         index. For example, [[0,1],[1,2]].
-    rv_names : bool
-        If `True`, then the elements of `rvs` are treated as random variable
-        names. If `False`, then the elements of `rvs` are treated as random
-        variable indexes.  If `None`, then the value `True` is used if the
-        distribution has specified names for its random variables.
+    rv_mode : str, None
+        Specifies how to interpret the elements of `rvs`. Valid options are:
+        {'indices', 'names'}. If equal to 'indices', then the elements of
+        `rvs` are interpreted as random variable indices. If equal to 'names',
+        the the elements are interpreted as random variable names. If `None`,
+        then the value of `dist._rv_mode` is consulted.
 
     Returns
     -------
@@ -145,11 +147,13 @@ def join_sigalg(dist, rvs, rv_names=None):
     """
     # We require unique indexes within each random variable and want the
     # indexes in distribution order. We don't need the names.
-    parse = lambda rv: parse_rvs(dist, rv, rv_names=rv_names,
+    parse = lambda rv: parse_rvs(dist, rv, rv_mode=rv_mode,
                                            unique=False, sort=True)[1]
     indexes = [parse(rv) for rv in rvs]
 
-    sigalgs = [induced_sigalg(dist, rv, rv_names=False) for rv in indexes]
+
+    sigalgs = [induced_sigalg(dist, rv, rv_mode=RV_MODES.INDICES)
+               for rv in indexes]
 
     # \sigma( X join Y ) = \sigma( \sigma(X) \cup \sigma(Y) )
     # Union all the sigma algebras.
@@ -157,7 +161,7 @@ def join_sigalg(dist, rvs, rv_names=None):
     jsa = sigma_algebra(union_sa)
     return jsa
 
-def meet_sigalg(dist, rvs, rv_names=None):
+def meet_sigalg(dist, rvs, rv_mode=None):
     """
     Returns the sigma-algebra of the meet of random variables defined by `rvs`.
 
@@ -170,11 +174,12 @@ def meet_sigalg(dist, rvs, rv_names=None):
         met with the other lists.  Each random variable can defined as a
         series of unique indexes.  Multiple random variables can use the same
         index. For example, [[0,1],[1,2]].
-    rv_names : bool
-        If `True`, then the elements of `rvs` are treated as random variable
-        names. If `False`, then the elements of `rvs` are treated as random
-        variable indexes.  If `None`, then the value `True` is used if the
-        distribution has specified names for its random variables.
+    rv_mode : str, None
+        Specifies how to interpret the elements of `rvs`. Valid options are:
+        {'indices', 'names'}. If equal to 'indices', then the elements of
+        `rvs` are interpreted as random variable indices. If equal to 'names',
+        the the elements are interpreted as random variable names. If `None`,
+        then the value of `dist._rv_mode` is consulted.
 
     Returns
     -------
@@ -184,11 +189,12 @@ def meet_sigalg(dist, rvs, rv_names=None):
     """
     # We require unique indexes within each random variable and want the
     # indexes in distribution order. We don't need the names.
-    parse = lambda rv: parse_rvs(dist, rv, rv_names=rv_names,
+    parse = lambda rv: parse_rvs(dist, rv, rv_mode=rv_mode,
                                            unique=False, sort=True)[1]
     indexes = [parse(rv) for rv in rvs]
 
-    sigalgs = [induced_sigalg(dist, rv, rv_names=False) for rv in indexes]
+    sigalgs = [induced_sigalg(dist, rv, rv_mode=RV_MODES.INDICES)
+               for rv in indexes]
 
     # \sigma( X meet Y ) = \sigma(X) \cap \sigma(Y) )
     # Intersect all the sigma algebras.
@@ -236,7 +242,7 @@ def dist_from_induced_sigalg(dist, sigalg, int_outcomes=True):
     d = ScalarDistribution(outcomes, pmf, base=dist.get_base())
     return d
 
-def join(dist, rvs, rv_names=None, int_outcomes=True):
+def join(dist, rvs, rv_mode=None, int_outcomes=True):
     """
     Returns the distribution of the join of random variables defined by `rvs`.
 
@@ -249,11 +255,12 @@ def join(dist, rvs, rv_names=None, int_outcomes=True):
         joined with the other lists.  Each random variable can defined as a
         series of unique indexes.  Multiple random variables can use the same
         index. For example, [[0,1],[1,2]].
-    rv_names : bool
-        If `True`, then the elements of `rvs` are treated as random variable
-        names. If `False`, then the elements of `rvs` are treated as random
-        variable indexes.  If `None`, then the value `True` is used if the
-        distribution has specified names for its random variables.
+    rv_mode : str, None
+        Specifies how to interpret the elements of `rvs`. Valid options are:
+        {'indices', 'names'}. If equal to 'indices', then the elements of
+        `rvs` are interpreted as random variable indices. If equal to 'names',
+        the the elements are interpreted as random variable names. If `None`,
+        then the value of `dist._rv_mode` is consulted.
     int_outcomes : bool
         If `True`, then the outcomes of the join are relabeled as integers
         instead of as the atoms of the induced sigma-algebra.
@@ -264,11 +271,11 @@ def join(dist, rvs, rv_names=None, int_outcomes=True):
         The distribution of the join.
 
     """
-    join_sa = join_sigalg(dist, rvs, rv_names)
+    join_sa = join_sigalg(dist, rvs, rv_mode)
     d = dist_from_induced_sigalg(dist, join_sa, int_outcomes)
     return d
 
-def meet(dist, rvs, rv_names=None, int_outcomes=True):
+def meet(dist, rvs, rv_mode=None, int_outcomes=True):
     """
     Returns the distribution of the meet of random variables defined by `rvs`.
 
@@ -281,11 +288,12 @@ def meet(dist, rvs, rv_names=None, int_outcomes=True):
         met with the other lists.  Each random variable can defined as a
         series of unique indexes.  Multiple random variables can use the same
         index. For example, [[0,1],[1,2]].
-    rv_names : bool
-        If `True`, then the elements of `rvs` are treated as random variable
-        names. If `False`, then the elements of `rvs` are treated as random
-        variable indexes.  If `None`, then the value `True` is used if the
-        distribution has specified names for its random variables.
+    rv_mode : str, None
+        Specifies how to interpret the elements of `rvs`. Valid options are:
+        {'indices', 'names'}. If equal to 'indices', then the elements of
+        `rvs` are interpreted as random variable indices. If equal to 'names',
+        the the elements are interpreted as random variable names. If `None`,
+        then the value of `dist._rv_mode` is consulted.
     int_outcomes : bool
         If `True`, then the outcomes of the meet are relabeled as integers
         instead of as the atoms of the induced sigma-algebra.
@@ -296,7 +304,7 @@ def meet(dist, rvs, rv_names=None, int_outcomes=True):
         The distribution of the meet.
 
     """
-    meet_sa = meet_sigalg(dist, rvs, rv_names)
+    meet_sa = meet_sigalg(dist, rvs, rv_mode)
     d = dist_from_induced_sigalg(dist, meet_sa, int_outcomes)
     return d
 
@@ -364,7 +372,7 @@ def insert_rv(dist, idx, sigalg):
     d = dit.modify_outcomes(dist, new_outcome_ctor)
     return d
 
-def insert_join(dist, idx, rvs, rv_names=None):
+def insert_join(dist, idx, rvs, rv_mode=None):
     """
     Returns a new distribution with the join inserted at index `idx`.
 
@@ -383,11 +391,12 @@ def insert_join(dist, idx, rvs, rv_names=None):
         met with the other lists.  Each random variable can defined as a
         series of unique indexes.  Multiple random variables can use the same
         index. For example, [[0,1],[1,2]].
-    rv_names : bool
-        If `True`, then the elements of `rvs` are treated as random variable
-        names. If `False`, then the elements of `rvs` are treated as random
-        variable indexes.  If `None`, then the value `True` is used if the
-        distribution has specified names for its random variables.
+    rv_mode : str, None
+        Specifies how to interpret the elements of `rvs`. Valid options are:
+        {'indices', 'names'}. If equal to 'indices', then the elements of
+        `rvs` are interpreted as random variable indices. If equal to 'names',
+        the the elements are interpreted as random variable names. If `None`,
+        then the value of `dist._rv_mode` is consulted.
 
     Returns
     -------
@@ -395,11 +404,11 @@ def insert_join(dist, idx, rvs, rv_names=None):
         The new distribution with the join at index `idx`.
 
     """
-    jsa = join_sigalg(dist, rvs, rv_names)
+    jsa = join_sigalg(dist, rvs, rv_mode)
     d = insert_rv(dist, idx, jsa)
     return d
 
-def insert_meet(dist, idx, rvs, rv_names=None):
+def insert_meet(dist, idx, rvs, rv_mode=None):
     """
     Returns a new distribution with the meet inserted at index `idx`.
 
@@ -418,11 +427,12 @@ def insert_meet(dist, idx, rvs, rv_names=None):
         met with the other lists.  Each random variable can defined as a
         series of unique indexes.  Multiple random variables can use the same
         index. For example, [[0,1],[1,2]].
-    rv_names : bool
-        If `True`, then the elements of `rvs` are treated as random variable
-        names. If `False`, then the elements of `rvs` are treated as random
-        variable indexes.  If `None`, then the value `True` is used if the
-        distribution has specified names for its random variables.
+    rv_mode : str, None
+        Specifies how to interpret the elements of `rvs`. Valid options are:
+        {'indices', 'names'}. If equal to 'indices', then the elements of
+        `rvs` are interpreted as random variable indices. If equal to 'names',
+        the the elements are interpreted as random variable names. If `None`,
+        then the value of `dist._rv_mode` is consulted.
 
     Returns
     -------
@@ -430,6 +440,6 @@ def insert_meet(dist, idx, rvs, rv_names=None):
         The new distribution with the meet at index `idx`.
 
     """
-    msa = meet_sigalg(dist, rvs, rv_names)
+    msa = meet_sigalg(dist, rvs, rv_mode)
     d = insert_rv(dist, idx, msa)
     return d
