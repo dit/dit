@@ -19,7 +19,7 @@ def entropy(dist, rvs=None, crvs=None, rv_mode=None):
         None, then the entropy is calculated over all random variables.
     crvs : list, None
         The indexes of the random variables to condition on. If None, then no
-        variables are condition on.
+        variables are conditioned on.
     rv_mode : str, None
         Specifies how to interpret `rvs` and `crvs`. Valid options are:
         {'indices', 'names'}. If equal to 'indices', then the elements of

@@ -204,13 +204,10 @@ def normalize_rvs(dist, rvs, crvs, rv_mode):
     ----------
     dist : Distribution
         The distribution that will be operated on.
-
     rvs : list, None
         List of random variables to use in this measure.
-
     crvs : list, None
         List of random variables to condition on.
-
     rv_mode : str, None
         Specifies how to interpret `rvs` and `crvs`. Valid options are:
         {'indices', 'names'}. If equal to 'indices', then the elements of
@@ -219,18 +216,14 @@ def normalize_rvs(dist, rvs, crvs, rv_mode):
         If `None`, then the value of `dist._rv_mode` is consulted, which
         defaults to 'indices'.
 
-
     Returns
     -------
     rvs : list
         The explicit random variables to use.
-
     crvs : list
         The explicit random variables to condition on.
-
     rv_mode : bool
         The value of rv_mode that should be used.
-
 
     Raises
     ------
@@ -239,7 +232,7 @@ def normalize_rvs(dist, rvs, crvs, rv_mode):
     """
     if dist.is_joint():
         if rvs is None:
-            # Set to total correlation of entire distribution
+            # Set so that each random variable is its own group.
             rvs = [[i] for i in range(dist.outcome_length())]
             rv_mode = RV_MODES.INDICES
         if crvs is None:

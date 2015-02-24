@@ -101,11 +101,12 @@ def conditional_entropy(dist, rvs_X, rvs_Y, rv_mode=None):
     rvs_Y : list, None
         The indexes of the random variables defining Y.
     rv_mode : str, None
-        Specifies how to interpret the elements of `rvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `rvs` are interpreted as random variable indices. If equal to 'names',
-        the the elements are interpreted as random variable names. If `None`,
-        then the value of `dist._rv_mode` is consulted.
+        Specifies how to interpret the elements of `rvs_X` and `rvs_Y`. Valid
+        options are: {'indices', 'names'}. If equal to 'indices', then the
+        elements of `rvs_X` and `rvs_Y` are interpreted as random variable
+        indices. If equal to 'names', the the elements are interpreted as
+        random variable names. If `None`, then the value of `dist._rv_mode`
+        is consulted.
 
     Returns
     -------
@@ -118,7 +119,7 @@ def conditional_entropy(dist, rvs_X, rvs_Y, rv_mode=None):
         # instead of 1e-12 or something smaller.
         return 0.0
 
-    MI_XY = mutual_information(dist, rvs_Y, rvs_X, rv_mode=rv_mode)
+    MI_XY = mutual_information(dist, rvs_X, rvs_Y, rv_mode=rv_mode)
     H_X = entropy(dist, rvs_X, rv_mode=rv_mode)
     H_XgY = H_X - MI_XY
     return H_XgY
