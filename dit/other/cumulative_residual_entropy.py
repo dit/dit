@@ -13,6 +13,11 @@ import numpy as np
 
 from .. import ScalarDistribution as SD
 from ..algorithms.stats import _numerical_test
+from ..helpers import normalize_rvs
+
+__all__ = ['cumulative_residual_entropy',
+           'generalized_cumulative_residual_entropy',
+          ]
 
 def _cumulative_residual_entropy(dist, generalized=False):
     """
@@ -38,7 +43,7 @@ def _cumulative_residual_entropy(dist, generalized=False):
     _numerical_test(dist)
     eps = ((e if generalized else abs(e), p) for e, p in dist.zipped())
     events, probs = zip(*sorted(eps))
-    cdf = { a: p for a, p in zip(events, np.cumsum(probs)) }
+    cdf = {a: p for a, p in zip(events, np.cumsum(probs))}
     terms = []
     for a, b in pairwise(events):
         pgx = cdf[a]
@@ -57,8 +62,8 @@ def cumulative_residual_entropy(dist, generalized=False):
         The distribution to compute the cumulative residual entropy of each
         index for.
     generalized : bool
-        Wheither to integrate from zero over the CDF or to integrate from zero
-        over the CDF of the absolute value.
+        Wheither to integrate from zero over the CDF of the absolute value
+        or from negative infinity over the CDF.
 
     Returns
     -------
@@ -75,7 +80,7 @@ def cumulative_residual_entropy(dist, generalized=False):
     cres = np.array([_cumulative_residual_entropy(m, generalized) for m in margs])
     return cres
 
-def conditional_cumulative_residual_entropy(dist, rv, crvs, generalized=False):
+def conditional_cumulative_residual_entropy(dist, rv, crvs=None, generalized=False):
     """
     Returns the conditional cumulative residual entropy.
 
@@ -85,8 +90,8 @@ def conditional_cumulative_residual_entropy(dist, rv, crvs, generalized=False):
     rv : list, None
     crvs : list, None
     generalized : bool
-        Wheither to integrate from zero over the CDF or to integrate from zero
-        over the CDF of the absolute value.
+        Wheither to integrate from zero over the CDF of the absolute value
+        or from negative infinity over the CDF.
 
     Returns
     -------
