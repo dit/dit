@@ -90,10 +90,10 @@ def channel_capacity(cdists, marginal=None, rtol=None, atol=None):
         raise ditException(msg)
 
     cc_iter = next_cc(carr)
-    cc, pmf = cc_iter.next()
+    cc, pmf = next(cc_iter)
     old_cc = 0
     while not np.isclose(cc, old_cc, rtol=rtol, atol=atol):
-        old_cc, (cc, pmf) = cc, cc_iter.next()
+        old_cc, (cc, pmf) = cc, next(cc_iter)
 
     if marginal is not None:
         marginal_opt = marginal.copy()

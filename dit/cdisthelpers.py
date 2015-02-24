@@ -40,9 +40,9 @@ def outcome_iter(outcome_X, outcome_Y, mask_Y):
     it_Y = iter(outcome_Y)
     for mask in mask_Y:
         if mask:
-            yield it_X.next()
+            yield next(it_X)
         else:
-            yield it_Y.next()
+            yield next(it_Y)
 
 def joint_from_factors(mdist, cdists, strict=True):
     """
