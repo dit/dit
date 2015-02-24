@@ -24,6 +24,15 @@ matrix:
     - python: "pypy"
     - env: FROM_SOURCE=true
 
+    - python: "3.2"
+      env: OPTIONAL_DEPS=true
+
+    - python: "3.3"
+      env: OPTIONAL_DEPS=true
+
+    - python: "3.4"
+      env: OPTIONAL_DEPS=true
+
 env:
   global:
     # Install from wheels *only*.
