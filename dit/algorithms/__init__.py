@@ -9,3 +9,4 @@ from .stats import mean, median, mode, standard_deviation, central_moment, \
 from .prune_expand import pruned_samplespace, expanded_samplespace
 from .information_partitions import ShannonPartition
 from .maxentropy import *
+from .channelcapacity import channel_capacity
