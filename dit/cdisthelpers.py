@@ -14,12 +14,12 @@ __all__ = [
     'joint_from_factors',
 ]
 
-def cdist_array(cdists):
+def cdist_array(cdists, base='linear', mode='asis'):
     """
     Returns a 2D array for P(Y|X). Rows are X, columns are Y.
 
     """
-    dists = [copypmf(d, base='linear', mode='asis') for d in cdists]
+    dists = [copypmf(d, base=base, mode=mode) for d in cdists]
     return np.vstack(dists)
 
 def mask_is_complementary(mask1, mask2):

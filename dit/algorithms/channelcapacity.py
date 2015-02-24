@@ -6,6 +6,7 @@ Simple implementation for channel capacity.
 import numpy as np
 import dit
 
+from ..exceptions import ditException
 from ..cdisthelpers import (
     cdist_array,
     mask_is_complementary,
@@ -81,7 +82,8 @@ def channel_capacity(cdists, marginal=None, rtol=None, atol=None):
             yield cc, r
 
     # Build the array for P(Y|X)
-    carr = cdist_array(cdists)
+    # We need Y dense so that we search the appropriate space.
+    carr = cdist_array(cdists, base='linear', mode='dense')
 
     if marginal and len(marginal) != carr.shape[0]:
         msg = 'len(mdist) != len(cdists)'
