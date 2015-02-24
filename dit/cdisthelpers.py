@@ -133,9 +133,10 @@ def joint_from_factors(mdist, cdists, strict=True):
     d = dit.Distribution(outcomes, list(XY_pmf.flat),
                          sparse=True, trim=False)
 
-    rv_names = outcome_iter(mdist.get_rv_names(),
-                            cdists[0].get_rv_names(),
-                            cdist_mask)
-    d.set_rv_names(list(rv_names))
+    X_rv_names = mdist.get_rv_names()
+    Y_rv_names = cdists[0].get_rv_names()
+    if X_rv_names and Y_rv_names:
+        rv_names = outcome_iter(X_rv_names, Y_rv_names, cdist_mask)
+        d.set_rv_names(list(rv_names))
 
     return d
