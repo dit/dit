@@ -25,11 +25,11 @@ def channel_capacity(cdists, marginal=None, rtol=None, atol=None):
     cdists : list
         A list of conditional distributions. For each ``x=outcomes[i]``, the
         corresponding element ``cdists[i]`` should represent P(Y | X=x).
-    marginal : dist | None
+    marginal : distribution | None
         The marginal distribution P(X) that goes with P(Y|X). This is optional,
         but if provided, then it is used to construct a Distribution object
         for the distribution P*(X) which achieves the channel capacity.
-        If ``None`` then P(X) is returned as a NumPy array.
+        If ``None`` then P*(X) is returned as a NumPy array.
     rtol : None
         Relative tolerance used to determine convergence criterion. This is
         passed to ``np.isclose``.
@@ -47,9 +47,9 @@ def channel_capacity(cdists, marginal=None, rtol=None, atol=None):
 
     Examples
     --------
-    >>> d = dit.random_distribution(2, 2)
-    >>> marginal_true, cdists = d.condition_on([0])
-    >>> cc, marginal_opt = channel_capacity(marginal_true.outcomes, cdists)
+    >>> d = dit.random_distribution(3, 2)
+    >>> mdist_true, cdists = d.condition_on([1])
+    >>> cc, mdist_opt = channel_capacity(cdists, mdist_true)
 
     """
     if rtol is None:

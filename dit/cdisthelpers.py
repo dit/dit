@@ -48,7 +48,6 @@ def joint_from_factors(mdist, cdists, strict=True):
     """
     Returns a joint distribution P(X,Y) built from P(X) and P(Y|X).
 
-
     Parameters
     ----------
     mdist : Distribution
@@ -73,6 +72,15 @@ def joint_from_factors(mdist, cdists, strict=True):
     ditException
         When ``strict=True`` and the masks for ``mdist`` and ``cdists`` are
         not compatible with each other.
+
+    Examples
+    --------
+    >>> d = dit.random_distribution(5, 2)
+    >>> d.set_rv_names('ABCDE')
+    >>> pBD, pACEgBD = d.condition_on('BD')
+    >>> pABCDE = dit.joint_from_factors(pBD, pACEgBD)
+    >>> pABCDE.is_approx_equal(d)
+    True
 
     """
     # We assume that the mask is the same each dist in cdists.
@@ -113,12 +121,16 @@ def joint_from_factors(mdist, cdists, strict=True):
     XY_pmf = YgX_pmf * X_pmf[:, np.newaxis]
 
     ctor = cdists[0]._outcome_ctor
-    outcomes = np.array([
-        [ctor(outcome_iter(X, Y, cdist_mask)) for Y in cdists[i].outcomes]
-        for i, X in enumerate(X_outcomes)
-    ], dtype=object)
+    # We can't use NumPy for the outcomes, since an array of tuples is
+    # automatically turned into a 2D array. We could initialize as a 1D
+    # object array, but we'd still have to populate through for loops.
+    # So we might as well avoid NumPy here.
+    outcomes = []
+    for i, X in enumerate(X_outcomes):
+        tmp = [ctor(outcome_iter(X, Y, cdist_mask)) for Y in cdists[i].outcomes]
+        outcomes.extend(tmp)
 
-    d = dit.Distribution(list(outcomes.flat), list(XY_pmf.flat),
+    d = dit.Distribution(outcomes, list(XY_pmf.flat),
                          sparse=True, trim=False)
 
     rv_names = outcome_iter(mdist.get_rv_names(),
