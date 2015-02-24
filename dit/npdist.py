@@ -157,7 +157,7 @@ def _make_distribution(outcomes, pmf, base,
         d._sample_space = SampleSpace(outcomes)
 
     # Set the mask
-    d._mask = tuple(False for _ in range(len(outcomes[0])))
+    d._mask = d._new_mask()
 
     d._meta['is_sparse'] = sparse
 
@@ -489,7 +489,7 @@ class Distribution(ScalarDistribution):
         self.alphabet = tuple(alphabets)
 
         # Mask
-        self._mask = tuple(False for _ in range(len(self.alphabet)))
+        self._mask = self._new_mask()
 
         if sparse:
             self.make_sparse(trim=trim)
@@ -555,6 +555,40 @@ class Distribution(ScalarDistribution):
         self.ops = get_ops(base)
 
         return outcomes, pmf
+
+    def _new_mask(self, from_mask=None, complement=None):
+        """
+        Creates a new mask for the distribution.
+
+        Parameters
+        ----------
+        from_mask : iter | None
+            Create a mask from an existing mask. If ``None``, then a mask
+            will be created which is ``False`` for each random variable.
+
+        complement : bool
+            If ``True``, invert the mask that would have been built.
+            This includes inverting the mask when ``from_mask=None``.
+
+        Returns
+        -------
+        mask : tuple
+            The newly created mask.
+
+        """
+        if from_mask is None:
+            L = self.outcome_length(masked=False)
+            mask = [False for _ in range(L)]
+        else:
+            mask = [bool(b) for b in from_mask]
+
+        if complement:
+            mask = [not b for b in mask]
+
+        mask = tuple(mask)
+
+        self._mask = mask
+        return mask
 
     @classmethod
     def from_distribution(cls, dist, base=None, prng=None):
@@ -740,17 +774,17 @@ class Distribution(ScalarDistribution):
 
         Examples
         --------
-        If we have a joint distribution over 3 random variables such as:
-            Z = (X,Y,Z)
+        If we have a joint distribution ``d`` over 3 random variables such as:
+            A = (X,Y,Z)
         and would like a new joint distribution over 6 random variables:
-            Z = (X,Y,Z,X,Y,Z)
+            B = (X,Y,Z,X,Y,Z)
         then this is achieved as:
-            d.coalesce([[0,1,2,0,1,2]], extract=True)
+            >>> B = d.coalesce([[0,1,2,0,1,2]], extract=True)
 
         If you want:
-            Z = ((X,Y), (Y,Z))
+            B = ((X,Y), (Y,Z))
         Then you do:
-            d.coalesce([[0,1],[1,2]])
+            >>> B = d.coalesce([[0,1],[1,2]])
 
         Notes
         -----
@@ -830,9 +864,9 @@ class Distribution(ScalarDistribution):
 
     def condition_on(self, crvs, rvs=None, rv_mode=None, extract=False):
         """
-        Returns distributions conditioned on random variables `crvs`.
+        Returns distributions conditioned on random variables ``crvs``.
 
-        Optionally, `rvs` specifies which random variables should remain.
+        Optionally, ``rvs`` specifies which random variables should remain.
 
         NOTE: Eventually this will return a conditional distribution.
 
@@ -842,27 +876,52 @@ class Distribution(ScalarDistribution):
             The random variables to condition on.
         rvs : list, None
             The random variables for the resulting conditional distributions.
-            Any random variable not represented in the union of `crvs` and
-            `rvs` will be marginalized. If `None`, then every random variable
-            not appearing in `crvs` is used.
+            Any random variable not represented in the union of ``crvs`` and
+            ``rvs`` will be marginalized. If ``None``, then every random
+            variable not appearing in ``crvs`` is used.
         rv_mode : str, None
-            Specifies how to interpret `crvs` and `rvs`. Valid options are:
+            Specifies how to interpret ``crvs`` and ``rvs``. Valid options are:
             {'indices', 'names'}. If equal to 'indices', then the elements
-            of `crvs` and `rvs` are interpreted as random variable indices.
+            of ``crvs`` and ``rvs`` are interpreted as random variable indices.
             If equal to 'names', the the elements are interpreted as random
-            varible names. If `None`, then the value of `self._rv_mode` is
+            varible names. If ``None``, then the value of ``self._rv_mode`` is
             consulted, which defaults to 'indices'.
         extract : bool
-            If the length of either `crvs` or `rvs` is 1 and `extract` is
-            `True`, then instead of the new outcomes being 1-tuples, we extract
-            the sole element to create scalar distributions.
+            If the length of either ``crvs`` or ``rvs`` is 1 and ``extract`` is
+            ``True``, then instead of the new outcomes being 1-tuples, we
+            extract the sole element to create scalar distributions.
 
         Returns
         -------
         cdist : dist
             The distribution of the conditioned random variables.
         dists : list of distributions
-            The conditional distributions for each outcome in `cdist`.
+            The conditional distributions for each outcome in ``cdist``.
+
+        Examples
+        --------
+        First we build a distribution P(X,Y,Z) representing the XOR logic gate.
+
+        >>> pXYZ = dit.example_dists.Xor()
+        >>> pXYZ.set_rv_names('XYZ')
+
+        We can obtain the conditional distributions P(X,Z|Y) and the marginal
+        of the conditioned variable P(Y) as follows::
+
+        >>> pY, pXZgY = pXYZ.condition_on('Y')
+
+        If we specify ``rvs='Z'``, then only 'Z' is kept and thus, 'X' is
+        marginalized out::
+
+        >>> pY, pZgY = pXYZ.condition_on('Y', rvs='Z')
+
+        We can condition on two random variables::
+
+        >>> pXY, pZgXY = pXYZ.condition_on('XY')
+
+        The equivalent call using indexes is:
+
+        >>> pXY, pZgXY = pXYZ.condition_on([0, 1], rv_mode='indexes')
 
         """
         crvs, cindexes = parse_rvs(self, crvs, rv_mode, unique=True, sort=True)
@@ -890,6 +949,9 @@ class Distribution(ScalarDistribution):
         # It's just easier to not worry about conditioning on zero probs.
         sparse = d.is_sparse()
         d.make_sparse()
+
+        # Note that any previous mask of d from the marginalization will be
+        # ignored when we take new marginals. This is desirable here.
 
         cdist = d.marginal(cindexes, rv_mode=RV_MODES.INDICES)
         dist = d.marginal(indexes, rv_mode=RV_MODES.INDICES)
@@ -921,8 +983,11 @@ class Distribution(ScalarDistribution):
         dists = [Distribution(dist.outcomes, pmfs[i], sparse=sparse,
                  base=base, sample_space=sample_space, validate=False)
                  for i in range(pmfs.shape[0])]
-        for dist in dists:
-            dist.set_rv_names(rv_names)
+
+        # Set the masks and r.v. names for each conditional distribution.
+        for dd in dists:
+            dd._new_mask(from_mask=dist._mask)
+            dd.set_rv_names(rv_names)
 
         if extract:
             if len(cindexes) == 1:
