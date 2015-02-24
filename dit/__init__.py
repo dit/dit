@@ -22,6 +22,7 @@ from .npdist import Distribution
 from .samplespace import ScalarSampleSpace, SampleSpace, CartesianProduct
 from .distconst import *
 from .helpers import copypmf
+from .cdisthelpers import joint_from_factors
 from .algorithms import pruned_samplespace, expanded_samplespace
 
 import dit.algorithms
