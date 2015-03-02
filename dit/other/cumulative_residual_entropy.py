@@ -5,8 +5,6 @@ cumulative residual entropy.
 
 from functools import partial, update_wrapper
 
-from iterutils import pairwise
-
 from six.moves import range # pylint: disable=redefined-builtin
 
 import numpy as np
@@ -14,6 +12,7 @@ import numpy as np
 from .. import ScalarDistribution as SD
 from ..algorithms.stats import _numerical_test
 from ..helpers import normalize_rvs
+from ..utils import pairwise
 
 __all__ = ['cumulative_residual_entropy',
            'generalized_cumulative_residual_entropy',

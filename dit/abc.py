@@ -56,8 +56,8 @@ _divergences = [
 _others = [
     'P',    # the perplexity
     'J',    # the extropy
-    'CRE'   # the cumulative residual entropy
-    'GCRE'  # the generalized cumulative residual entropy
+    'CRE',  # the cumulative residual entropy
+    'GCRE', # the generalized cumulative residual entropy
 ]
 
 __all__ = _dists + _shannon + _shannon_ext + _divergences + _others

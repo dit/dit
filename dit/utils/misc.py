@@ -8,13 +8,14 @@
 from __future__ import absolute_import
 
 from collections import Iterable
+from itertools import tee
 import os
 import sys
 import subprocess
 import warnings
 
 import six
-from six.moves import range # pylint: disable=redefined-builtin
+from six.moves import range, zip # pylint: disable=redefined-builtin
 
 __all__ = (
     'Property',
@@ -34,6 +35,7 @@ __all__ = (
     'require_keys',
     'str_product',
     'digits',
+    'pairwise',
 )
 
 ######################################################
@@ -615,3 +617,9 @@ def digits(n, base, alphabet=None, pad=0, big_endian=True):
         sequence = [alphabet[i] for i in sequence]
 
     return sequence
+
+def pairwise(iterable):
+    "s -> (s0,s1), (s1,s2), (s2, s3), ..."
+    a, b = tee(iterable)
+    next(b, None)
+    return zip(a, b)
