@@ -264,6 +264,9 @@ class Operations(object):
     def invert(self, x):
         """ Abstract base class """
         raise NotImplementedError
+    def normalize(self, x):
+        """ Abstract base class """
+        raise NotImplementedError
 
 class LinearOperations(Operations):
     """
@@ -408,7 +411,7 @@ class LinearOperations(Operations):
         """
         Returns the element-wise multiplicative inverse of x.
 
-        Operation: z = 1/x
+        Operation: z[i] = 1/x[i]
 
         Parameters
         ----------
@@ -422,6 +425,26 @@ class LinearOperations(Operations):
 
         """
         z = 1/x
+        return z
+
+    def normalize(self, x):
+        """
+        Returns a normalized version of x.
+
+        Operation: z[i] = x[i] / sum(x)
+
+        Parameters
+        ----------
+        x : NumPy array, shape (n,)
+            The array to normalize.
+
+        Returns
+        -------
+        z : NumPy array, shape (n,)
+            The normalized array.
+
+        """
+        z = x / x.sum()
         return z
 
 def set_add(ops):
@@ -514,6 +537,7 @@ def set_add_reduce(ops):
     Set the add_reduce method on the LogOperations instance.
 
     """
+    # https://github.com/numpy/numpy/issues/4599
     base = ops.base
     if base == 2:
         def add_reduce(self, x, func=np.logaddexp2):
@@ -672,6 +696,29 @@ class LogOperations(Operations):
         """
         z = -x
         return z
+
+    def normalize(self, x):
+        """
+        Returns a normalized version of x.
+
+        Non-log equivalent operation: z[i] = x[i] / sum(x)
+
+        Parameters
+        ----------
+        x : NumPy array, shape (n,)
+            The array to normalize.
+
+        Returns
+        -------
+        z : NumPy array, shape (n,)
+            The normalized array.
+
+        """
+        # The API way would be:  mult(x, invert( add_reduce(x) ))
+        # We'll avoid some of those function calls.
+        z = x - self.add_reduce(x)
+        return z
+
 
 cache = {
     'linear' : LinearOperations(),
