@@ -1,9 +1,9 @@
 .. cumulative_residual_entropy.rst
 .. py:module:: dit.other.cumulative_residual_entropy
 
-*******
+***************************
 Cumulative Residual Entropy
-*******
+***************************
 
 The cumulative residual entropy :cite:`Rao2004` is an alternative to the
 differential Shannon entropy. The differential entropy has many issues,
@@ -14,13 +14,20 @@ continuous distribution, the discrete entropy does not limit to the differential
 numerically different random variables, such as a die labeled [1, 2, 3, 4, 5, 6]
 and one lebeled [1, 2, 3, 4, 5, 100].
 
+.. note::
+
+   The Cumulative Residual Entropy is unrelated to :doc:`residual_entropy`.
+
 .. math::
 
-   \CRE[X] = -\sum_{x \in X} p(|X| > x) \log_2 p(|X| > x)
+   \CRE[X] = -\int_0^\infty p(|X| > x) \log_2 p(|X| > x) \dx
 
-.. todo::
+The genearlized form integrates over the intire set of reals rather than just
+the positive ones:
 
-   Generalized form.
+.. math::
+
+   \GCRE[X] = -\int_{-\infty}^\infty p(X > x) \log_2 p(X > x) \dx
 
 .. todo::
 

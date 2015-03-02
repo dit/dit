@@ -80,7 +80,7 @@ def cumulative_residual_entropy(dist, generalized=False):
     cres = np.array([_cumulative_residual_entropy(m, generalized) for m in margs])
     return cres
 
-def conditional_cumulative_residual_entropy(dist, rv, crvs=None, generalized=False):
+def conditional_cumulative_residual_entropy(dist, rv, crvs=None, rv_mode=None, generalized=False):
     """
     Returns the conditional cumulative residual entropy.
 
