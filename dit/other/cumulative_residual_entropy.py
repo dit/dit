@@ -42,7 +42,7 @@ def _cumulative_residual_entropy(dist, generalized=False):
     _numerical_test(dist)
     eps = ((e if generalized else abs(e), p) for e, p in dist.zipped())
     events, probs = zip(*sorted(eps))
-    cdf = {a: p for a, p in zip(events, np.cumsum(probs))}
+    cdf = dict((a, p) for a, p in zip(events, np.cumsum(probs)))
     terms = []
     for a, b in pairwise(events):
         pgx = cdf[a]
