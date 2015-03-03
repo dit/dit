@@ -3,19 +3,18 @@ The (generalized) cumulative residual entropy and conditional (generalized)
 cumulative residual entropy.
 """
 
-from functools import partial, update_wrapper
-
-from six.moves import range # pylint: disable=redefined-builtin
+from six.moves import range # pylint: disable=redefined-builtin,import-error
 
 import numpy as np
 
-from .. import ScalarDistribution as SD
+from .. import Distribution as D, ScalarDistribution as SD
 from ..algorithms.stats import _numerical_test
-from ..helpers import normalize_rvs
 from ..utils import pairwise
 
 __all__ = ['cumulative_residual_entropy',
            'generalized_cumulative_residual_entropy',
+           'conditional_cumulative_residual_entropy',
+           'conditional_generalized_cumulative_residual_entropy',
           ]
 
 def _cumulative_residual_entropy(dist, generalized=False):
@@ -50,36 +49,68 @@ def _cumulative_residual_entropy(dist, generalized=False):
         terms.append(term)
     return -np.nansum(terms)
 
-def cumulative_residual_entropy(dist, generalized=False):
+def generalized_cumulative_residual_entropy(dist, extract=False):
+    """
+    The generalized cumulative residual entropy is a generalized from of the
+    cumulative residual entropy. Rarther than integrating from 0 to infinty over
+    the absolute value of the CDF.
+
+    Parameters
+    ----------
+    dist : Distribution
+        The distribution to compute the generalized cumulative residual entropy
+        of each index for.
+    extract : bool
+        If True and `dist.outcome_length()` is 1, return the single GCRE value
+        rather than a length-1 array.
+
+    Returns
+    -------
+    GCREs : ndarray
+        The generalized cumulative residual entropy for each index.
+
+    Examples
+    --------
+    """
+    if not dist.is_joint():
+        return _cumulative_residual_entropy(dist, generalized=True)
+    length = dist.outcome_length()
+    margs = [SD.from_distribution(dist.marginal([i])) for i in range(length)]
+    cres = np.array([_cumulative_residual_entropy(m, generalized=True) for m in margs])
+    if len(cres) == 1 and extract:
+        cres = cres[0]
+    return cres
+
+def cumulative_residual_entropy(dist, extract=False):
     """
     The cumulative residual entropy is an alternative to the Shannon
-    differential entropy with several advantagious properties.
+    differential entropy with several desirable properties including
+    non-negativity.
 
     Parameters
     ----------
     dist : Distribution
         The distribution to compute the cumulative residual entropy of each
         index for.
-    generalized : bool
-        Wheither to integrate from zero over the CDF of the absolute value
-        or from negative infinity over the CDF.
+    extract : bool
+        If True and `dist.outcome_length()` is 1, return the single GCRE value
+        rather than a length-1 array.
 
     Returns
     -------
     CREs : ndarray
-        The (generalized) cumulative residual entropy for each index.
+        The cumulative residual entropy for each index.
 
     Examples
     --------
     """
     if not dist.is_joint():
-        return _cumulative_residual_entropy(dist, generalized)
-    length = dist.outcome_length()
-    margs = [SD.from_distribution(dist.marginal([i])) for i in range(length)]
-    cres = np.array([_cumulative_residual_entropy(m, generalized) for m in margs])
-    return cres
+        return _cumulative_residual_entropy(dist, generalized=False)
+    es, ps = zip(*[(tuple(abs(ei) for ei in e), p) for e, p in dist.zipped()])
+    abs_dist = D(es, ps)
+    return generalized_cumulative_residual_entropy(abs_dist, extract)
 
-def conditional_cumulative_residual_entropy(dist, rv, crvs=None, rv_mode=None, generalized=False):
+def conditional_cumulative_residual_entropy(dist, rv, crvs=None, rv_mode=None):
     """
     Returns the conditional cumulative residual entropy.
 
@@ -88,9 +119,6 @@ def conditional_cumulative_residual_entropy(dist, rv, crvs=None, rv_mode=None, g
     dist : Distribution
     rv : list, None
     crvs : list, None
-    generalized : bool
-        Wheither to integrate from zero over the CDF of the absolute value
-        or from negative infinity over the CDF.
 
     Returns
     -------
@@ -100,7 +128,34 @@ def conditional_cumulative_residual_entropy(dist, rv, crvs=None, rv_mode=None, g
     Examples
     --------
     """
-    pass
+    if crvs is None:
+        crvs = []
+    mdist, cdists = dist.condition_on(crvs=crvs, rvs=[rv], rv_mode=rv_mode)
+    cres = [cumulative_residual_entropy(cd, extract=True) for cd in cdists]
+    ccre = SD(cres, mdist.pmf)
+    return ccre
 
-generalized_cumulative_residual_entropy = partial(cumulative_residual_entropy, generalized=True)
-update_wrapper(generalized_cumulative_residual_entropy, cumulative_residual_entropy)
+def conditional_generalized_cumulative_residual_entropy(dist, rv, crvs=None, rv_mode=None):
+    """
+    Returns the conditional cumulative residual entropy.
+
+    Parameters
+    ----------
+    dist : Distribution
+    rv : list, None
+    crvs : list, None
+
+    Returns
+    -------
+    CCRE : ScalarDistribution
+        The conditional cumulative residual entropy.
+
+    Examples
+    --------
+    """
+    if crvs is None:
+        crvs = []
+    mdist, cdists = dist.condition_on(crvs=crvs, rvs=[rv], rv_mode=rv_mode)
+    cres = [generalized_cumulative_residual_entropy(cd, extract=True) for cd in cdists]
+    ccre = SD(cres, mdist.pmf)
+    return ccre
