@@ -74,6 +74,13 @@ class TestLinear(object):
         for i, p in enumerate(prods):
             assert_almost_equal(self.ops.mult_reduce(np.arange(1, i+2)), p)
 
+    def test_normalize(self):
+        X = np.ones(3)
+        Y = self.ops.normalize(X)
+        Y_ = X / 3
+        npt.assert_allclose(Y, Y_)
+
+
 class TestLog2(object):
     def setUp(self):
         self.ops = LogOperations(2)
@@ -129,6 +136,15 @@ class TestLog2(object):
         for i, p in enumerate(prods):
             npt.assert_allclose(self.ops.mult_reduce(nums[:i+1]), p)
         npt.assert_allclose(self.ops.mult_reduce(np.array([])), self.ops.one)
+
+    def test_normalize(self):
+        W = np.ones(3)
+        X = self.ops.log(W)
+        Y = self.ops.normalize(X)
+        Z = self.ops.exp(Y)
+        Z_ = W / 3
+        npt.assert_allclose(Z, Z_)
+
 
 class TestLog3(TestLog2):
     def setUp(self):
