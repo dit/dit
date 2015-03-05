@@ -49,7 +49,7 @@ def _gm(x):
     Returns
     -------
     x_gm : NumPy array, shape (k,)
-        The k geometric means of the k compositions in `x`.
+        The geometric means for the k compositions in `x`.
 
     """
     last_axis = -1
@@ -57,6 +57,25 @@ def _gm(x):
 
     return x_gm
 
+def _log2_gm(x):
+    """
+    Returns the log of the geometric means for the rows in `x`.
+
+    Parameters
+    ----------
+    x : NumPy array, shape (k,n)
+        The k compositions whose geometric means are to be computed.
+
+    Returns
+    -------
+    x_loggm : NumPy array, shape (k,)
+        The log geometric means for the k compositions in `x`.
+
+    """
+    last_axis = -1
+    x_loggm = 1 / x.shape[last_axis] * np.log2(x).sum(axis=last_axis)
+
+    return x_loggm
 
 def closure(x):
     """Returns the closure operation applied to the composition x.
@@ -196,10 +215,10 @@ def inner(x, y):
     x = np.atleast_2d(x)
     y = np.atleast_2d(y)
 
-    x_gm = _gm(x)[:, np.newaxis]
-    y_gm = _gm(y)[:, np.newaxis]
+    x_loggm = _log2_gm(x)[:, np.newaxis]
+    y_loggm = _log2_gm(y)[:, np.newaxis]
 
-    z = log2(x / x_gm) * log2(y / y_gm)
+    z = (log2(x) - x_loggm) * (log2(y) - y_loggm)
     z = z.sum(axis=1)
 
     if single:
@@ -270,8 +289,8 @@ def clr(x):
         single = False
 
     x = np.atleast_2d(x)
-    x_gm = _gm(x)[:, np.newaxis]
-    y = log2(x / x_gm)
+    x_loggm = _log2_gm(x)[:, np.newaxis]
+    y = log2(x) - x_loggm
 
     if single:
         y = y[0]
@@ -307,7 +326,7 @@ def alr(x):
 
     x = np.atleast_2d(x)
 
-    y = log2(x[:, :-1] / x[:, -1][:, np.newaxis])
+    y = log2(x[:, :-1]) - log2(x[:, -1][:, np.newaxis])
 
     if single:
         y = y[0]
@@ -350,8 +369,9 @@ def ilr(x):
     x = np.atleast_2d(x)
 
     rng = np.arange(1, x.shape[1])
-    gm = (x.cumprod(axis=1)[:, :-1])**(1/rng)
-    y = log2(gm / x[:, 1:])
+    #gm = (x.cumprod(axis=1)[:, :-1])**(1/rng)
+    loggm = 1 / rng * log2(x).cumsum(axis=1)[:, :-1]
+    y = loggm - log2(x[:, 1:])
     y *= np.sqrt([i/(i+1) for i in rng]) # same coefficient for each column
 
     if single:
@@ -506,7 +526,18 @@ def ilr_inv(xilr):
 
     b = basis(xilr.shape[1])
     for i in range(xilr.shape[0]):
-        x[i] = closure(power(b, xilr[i]).prod(axis=0))
+        # Here is what you'd normally do:
+        #
+        # closure(power(b, xilr[i]).prod(axis=0))
+        #
+        # but the product is multiplying a bunch a small numbers and it will
+        # overflow to zero. This makes the closure operation fail.
+        # Instead, we need to do everything with logs.
+        #
+        poww = power(b, xilr[i])
+        logprods = ops.mult_reduce(log2(poww), axis=0)
+        logprobs = ops.normalize(logprods)
+        x[i] = ops.exp(logprobs)
 
     if single:
         x = x[0]
