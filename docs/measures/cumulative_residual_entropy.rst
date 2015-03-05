@@ -33,4 +33,8 @@ the positive ones:
 
    Compute some examples.
 
+.. todo::
+
+   discuss the conditional forms.
+
 .. autofunction:: dit.other.cumulative_residual_entropy.cumulative_residual_entropy
