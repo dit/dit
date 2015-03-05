@@ -95,12 +95,17 @@ def validate_outcomes(outcomes, sample_space):
     and that their lengths are the same too.  It does not verify that the
     items are indexable though.
 
+    If the sample space supports the __in__ operator, then this will be
+    linear in the number of outcomes. If not, then this will have to do an
+    O(number of items in the sample space) for each outcome. This can be
+    problematic if the sample space is large.
+
     Parameters
     ----------
     outcomes : list
         The outcomes that will be checked against the sample space.
     sample_space : iterable
-        An iterable over the sample space.
+        The sample space.
 
     Returns
     -------
@@ -114,12 +119,9 @@ def validate_outcomes(outcomes, sample_space):
 
     """
     # Make sure the outcomes are in the outcome space.
-    outcomes = set(outcomes)
-    sample_space = set(sample_space)
-    bad = outcomes.difference(sample_space)
-    L = len(bad)
-    if L > 0:
-        raise InvalidOutcome(bad, single=(L == 1))
+    for outcome in outcomes:
+        if outcome not in sample_space:
+            raise InvalidOutcome(bad, single=True)
 
     return True
 

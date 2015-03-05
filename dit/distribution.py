@@ -356,7 +356,8 @@ class BaseDistribution(object):
 
         """
         from .validate import validate_outcomes
-        v = validate_outcomes(self.outcomes, self.sample_space())
+        # Provide the actual sample space, not an iterator over it.
+        v = validate_outcomes(self.outcomes, self._sample_space)
         return v
 
     def _validate_normalization(self):
