@@ -12,6 +12,7 @@ import numpy as np
 
 from numpy import allclose
 
+import dit
 from dit.exceptions import ditException
 from dit.math import LogOperations
 ops = LogOperations(2)
@@ -20,7 +21,7 @@ exp2 = ops.exp
 
 from dit.math.aitchison import (alr, alr_inv, basis, closure, clr, clr_inv,
                                 dist, ilr, ilr_inv, inner, norm, perturbation,
-                                power, subcomposition)
+                                power, subcomposition, _gm, _log2_gm)
 
 def assert_almost_equal_array(x, y):
     for i, j in zip(x.ravel(), y.ravel()):
@@ -363,5 +364,32 @@ def test_subcomposition():
     y = np.array([1, 2, 3]) / 6
     np.testing.assert_allclose(subcomposition(x, [0, 1, 2]), y)
 
+def test_gm():
+    """
+    Make sure loggm and gm agree.
 
+    """
+    x = np.array([1, 2, 3, 4])
+    gm = _gm(x)
+    loggm = _log2_gm(x)
+    np.testing.assert_allclose(np.log2(gm), loggm)
 
+def test_ilr_inv_underflow():
+    """
+    Make sure ilv_inv still works in potential underflow situations.
+
+    """
+    # We need a lot of small probabilities so their products will underflow
+    # if we don't use logarithms properly.
+    d = dit.example_dists.summed_dice(.5, 1)
+    d = dit.expanded_samplespace(d, union=True)
+    d.make_dense()
+
+    prng = d.prng
+    prng.seed(0)
+    tol = 1e-5
+
+    pmf_ = dit.math.pmfops.replace_zeros(d.pmf, tol, prng=prng)
+    ilrpmf = dit.math.aitchison.ilr(pmf_)
+    pmf = dit.math.aitchison.ilr_inv(ilrpmf)
+    np.testing.assert_allclose(pmf, pmf_)
