@@ -119,9 +119,12 @@ def validate_outcomes(outcomes, sample_space):
 
     """
     # Make sure the outcomes are in the outcome space.
+    bad = []
     for outcome in outcomes:
         if outcome not in sample_space:
-            raise InvalidOutcome(bad, single=True)
+            bad.append(outcome)
+    if bad:
+        raise InvalidOutcome(bad, single=(len(bad) == 1))
 
     return True
 
@@ -252,4 +255,3 @@ def validate_outcome_length(outcomes):
         raise ditException('Not all outcomes have the same length.')
     else:
         return True
-
