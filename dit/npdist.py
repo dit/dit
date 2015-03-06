@@ -446,7 +446,7 @@ class Distribution(ScalarDistribution):
             self._outcome_ctor = sample_space._outcome_ctor
             self._product = sample_space._product
             self._sample_space = sample_space
-            alphabets = construct_alphabets(list(sample_space))
+            alphabets = sample_space.alphabets
         else:
             if sample_space is None:
                 ss = outcomes
@@ -814,6 +814,9 @@ class Distribution(ScalarDistribution):
             ctor_o = lambda x: x[0]
         else:
             ctor_o = tuple
+            if extract:
+                raise Exception('Cannot extract with more than one rv.')
+
         # Determine how elements of new outcomes are constructed.
         ctor_i = self._outcome_ctor
 

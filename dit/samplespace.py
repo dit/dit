@@ -258,6 +258,7 @@ class CartesianProduct(SampleSpace):
                               else set(alphabet) for alphabet in alphabets]
 
         self.alphabet_sizes = tuple(len(alphabet) for alphabet in alphabets)
+
         if product is None:
             # Let's try to guess.
             # If every alphabet has the class str, let's use that.
@@ -265,12 +266,30 @@ class CartesianProduct(SampleSpace):
                        for alphabet in self.alphabets]
             if len(set(klasses)) == 1 and klasses[0] == str:
                 product = get_product_func(str)
+                outcome_class = str
             else:
                 product = itertools.product
+                outcome_class = tuple
+        elif product == itertools.product:
+            outcome_class = tuple
+        else:
+            # Determine the outcome class...
+            try:
+                # Gather one sample from each alphabet to create a smaller,
+                # but still representative, alphabet.
+                smaller = [[next(iter(alpha))] for alpha in self.alphabets]
+                outcome_class = next(product(*smaller)).__class__
+            except:
+                # If any of self.alphabets is a extremely large, possibly
+                # itself a CartesianProduct, then this might give a MemoryError
+                # since itertools.product() consumes each iterable upfront.
+                #
+                outcome_class = next(product(*self.alphabets)).__class__
+
         self._product = product
         self._length = np.prod(self.alphabet_sizes, dtype=int)
         self._outcome_length = len(self.alphabet_sizes)
-        self._outcome_class = next(self._product(*self.alphabets)).__class__
+        self._outcome_class = outcome_class
         self._outcome_ctor = get_outcome_ctor(self._outcome_class)
 
         # Used for calculating indexes
@@ -281,6 +300,18 @@ class CartesianProduct(SampleSpace):
 
     def __contains__(self, item):
         return all([x in self._alphabet_sets[i] for i, x in enumerate(item)])
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+
+        return self._alphabet_sets == other._alphabet_sets
+
+    def __le__(self, other):
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+
+        return self._alphabets <= other._alphabets
 
     def __iter__(self):
         return self._product(*self.alphabets)
