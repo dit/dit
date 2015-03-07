@@ -446,7 +446,10 @@ class Distribution(ScalarDistribution):
             self._outcome_ctor = sample_space._outcome_ctor
             self._product = sample_space._product
             self._sample_space = sample_space
-            alphabets = sample_space.alphabets
+            if isinstance(sample_space, CartesianProduct):
+                alphabets = sample_space.alphabets
+            else:
+                alphabets = construct_alphabets(sample_space._samplespace)
         else:
             if sample_space is None:
                 ss = outcomes
