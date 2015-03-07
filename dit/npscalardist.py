@@ -767,7 +767,7 @@ class ScalarDistribution(BaseDistribution):
 
         return z
 
-    def is_approx_equal(self, other):
+    def is_approx_equal(self, other, rtol=None, atol=None):
         """
         Returns `True` is `other` is approximately equal to this distribution.
 
@@ -778,37 +778,35 @@ class ScalarDistribution(BaseDistribution):
         ----------
         other : distribution
             The distribution to compare against.
+        rtol : float
+            The relative tolerance to use when comparing probabilities.
+            See :func:`dit.math.close` for more information.
+        atol : float
+            The absolute tolerance to use when comparing probabilities.
+            See :func:`dit.math.close` for more information.
 
         Notes
         -----
-        The distributions need not have the same base or even same length.
+        The distributions need not have the length, but they must have the
+        same base.
 
         """
-        # The set of all specified outcomes (some may be null outcomes).
-        ss1 = None
-        if self.is_dense() or other.is_dense():
-            # Note, we are not checking the outcomes which are in `other`
-            # but not in `self`.  However, this will be checked when we make
-            # sure that the sample spaces are the same.
-            ss1 = tuple(self.sample_space())
-            outcomes = ss1
-        else:
-            # Note `self` and `other` could each have outcomes in the sample
-            # space that are not in their `outcomes` variable.  This will be
-            # checked when we verify that the sample spaces are the same.
-            outcomes = set(self.outcomes)
-            outcomes.update(other.outcomes)
+        if rtol is None:
+            rtol = ditParams['rtol']
+        if atol is None:
+            atol = ditParams['atol']
 
-        # Potentially nonzero probabilities must be equal.
-        for outcome in outcomes:
-            if not close(self[outcome], other[outcome]):
+        # We assume the distributions are properly normalized.
+
+        # Potentially nonzero probabilities from self must equal those from
+        # others. No need to check the other way around since we will verify
+        # that the sample spaces are equal.
+        for outcome in self.outcomes:
+            if not close(self[outcome], other[outcome], rtol=rtol, atol=atol):
                 return False
 
         # Outcome spaces must be equal.
-        if ss1 is None:
-            ss1 = tuple(self.sample_space())
-        ss2 = tuple(other.sample_space())
-        if ss1 != ss2:
+        if self._sample_space != other._sample_space:
             return False
 
         return True
