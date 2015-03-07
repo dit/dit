@@ -12,17 +12,28 @@ __all__ = ['insert_mss']
 
 def partial_match(first, second, places):
     """
+    Returns whether `second` is a marginal outcome at `places` of `first`.
     """
     return tuple([first[i] for i in places]) == tuple(second)
 
-def insert_mss(dist, idx=-1, rvs, crvs=None, rv_mode=None):
+def insert_mss(dist, idx=-1, rvs, about=None, rv_mode=None):
     """
+    Insert the minimal sufficient statistic of `rvs` about `about`.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    Examples
+    --------
     """
-    mapping = parse_rvs(dist, crvs)[1]
+    mapping = parse_rvs(dist, about)[1]
 
     partition = defaultdict(list)
 
-    md, cds = dist.condition_on(rvs=rvs, crvs=crvs, rv_mode=rv_mode)
+    md, cds = dist.condition_on(rvs=rvs, crvs=about, rv_mode=rv_mode)
 
     for outcome, cd in zip(md.outcomes, cds):
         matches = [ o for o in dist.outcomes if partial_match(o, outcome, mapping) ]

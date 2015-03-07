@@ -54,6 +54,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   TEX.Macro("iless", "\\preceq");
   TEX.Macro("imore", "\\succeq");
   TEX.Macro("ieq", "\\cong");
+  TEX.Macro("mss", "\\searrow");
 
   // don't use stix, it's pretty ugly
   MathJax.Hub.Config({
