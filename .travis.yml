@@ -100,9 +100,9 @@ after_success:
   - cd $TRAVIS_BUILD_DIR
   # Report coverage for 2.7 only.
   - if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then
-    python fixcoverage.py "$VIRTUAL_ENV/lib/python.*/site-packages/dit/" "$TRAVIS_BUILD_DIR/dit/";
-    coveralls;
-  fi
+      python fixcoverage.py "$VIRTUAL_ENV/lib/python.*/site-packages/dit/" "$TRAVIS_BUILD_DIR/dit/";
+      coveralls;
+    fi
 
 notifications:
   email: false
