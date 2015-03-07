@@ -72,7 +72,8 @@ def test_init11():
     pmf = [1/2, 1/2]
     d = Distribution(outcomes, pmf)
     sd = ScalarDistribution.from_distribution(d)
-    assert_true(d.is_approx_equal(sd))
+    # Different sample space representations
+    assert_false(d.is_approx_equal(sd))
 
 def test_init12():
     outcomes = ['0', '1']
@@ -80,7 +81,8 @@ def test_init12():
     d = Distribution(outcomes, pmf)
     sd = ScalarDistribution.from_distribution(d, base=10)
     d.set_base(10)
-    assert_true(d.is_approx_equal(sd))
+    # Different sample space representations
+    assert_false(d.is_approx_equal(sd))
 
 def test_add_mul():
     d1 = ScalarDistribution([1/3, 2/3])
