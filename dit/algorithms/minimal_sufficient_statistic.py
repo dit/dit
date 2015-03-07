@@ -4,11 +4,14 @@
 
 from collections import defaultdict
 
-from .lattice import insert_rv
-from ..helpers import parse_rvs, normalize_rvs
+from .lattice import dist_from_induced_sigalg, insert_rv
+from ..helpers import parse_rvs
 from ..math import sigma_algebra
 
-__all__ = ['insert_mss']
+__all__ = ['mss_sigalg',
+           'insert_mss',
+           'mss',
+          ]
 
 def partial_match(first, second, places):
     """
@@ -16,9 +19,10 @@ def partial_match(first, second, places):
     """
     return tuple([first[i] for i in places]) == tuple(second)
 
-def insert_mss(dist, idx=-1, rvs, about=None, rv_mode=None):
+def mss_sigalg(dist, rvs, about=None, rv_mode=None):
     """
-    Insert the minimal sufficient statistic of `rvs` about `about`.
+    Construct the sigma algebra for the minimal sufficient statistic of `rvs`
+    about `about`.
 
     Parameters
     ----------
@@ -44,8 +48,36 @@ def insert_mss(dist, idx=-1, rvs, about=None, rv_mode=None):
         else:
             eq[cd].extend(matches)
 
-    sa = sigma_algebra(map(frozenset, eq.values()))
+    mss_sa = sigma_algebra(map(frozenset, eq.values()))
 
-    new_dist = insert_rv(dist, idx, sa)
+    return mss_sa
 
+def insert_mss(dist, idx=-1, rvs, about=None, rv_mode=None):
+    """
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    Examples
+    --------
+    """
+    mss_sa = mss_sigalg(dist, rvs, about, rv_mode)
+    new_dist = insert_rv(dist, idx, mss_sa)
     return new_dist
+
+def mss(dist, rvs, about=None, rv_mode=None, int_outcomes=True):
+    """
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    Examples
+    --------
+    """
+    mss_sa = mss_sigalg
+    d = dist_from_induced_sigalg(dist, mss_sa, int_outcomes)
+    return d
