@@ -66,6 +66,18 @@ class BaseSampleSpace(Set):
         # Store a set for O(1) lookup.
         self._set = set(samplespace)
 
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+
+        return self._samplespace == other._samplespace
+
+    def __le__(self, other):
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+
+        return tuple(self._samplespace) <= tuple(other._samplespace)
+
     def __len__(self):
         return self._length
 
@@ -303,13 +315,17 @@ class CartesianProduct(SampleSpace):
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
-            return NotImplemented
+            # raising NotImplemented will default to iterating through
+            # the entire sample space. Let's just make this false.
+            return False
 
         return self._alphabet_sets == other._alphabet_sets
 
     def __le__(self, other):
         if not isinstance(other, self.__class__):
-            return NotImplemented
+            # raising NotImplemented will default to iterating through
+            # the entire sample space. Let's just make this false.
+            return False
 
         return self._alphabets <= other._alphabets
 
