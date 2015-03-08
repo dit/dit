@@ -17,6 +17,7 @@ Contents:
    generalinfo
    notation
    distributions
+   operations
    measures
    zreferences
    changelog
@@ -30,4 +31,3 @@ Contents:
    * :ref:`genindex`
    * :ref:`modindex`
    * :ref:`search`
-
