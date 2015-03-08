@@ -16,7 +16,7 @@ import numpy as np
 __all__ = [
     'convex_combination',
     'downsample',
-    'jittered'
+    'jittered',
     'perturb_support',
     'replace_zeros',
 ]
@@ -454,4 +454,3 @@ def projections(pmf, subdivisions, ops=None):
 _methods = {
     'componentL1': downsample_componentL1
 }
-

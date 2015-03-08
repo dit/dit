@@ -272,7 +272,6 @@ def distribution_constraint(indexes1, indexes2, distribution):
         raise Exception("Incompatible distributions.")
 
     cache = {}
-    n_elements = distribution.n_elements
     d1 = distribution.parameter_array(indexes1, cache=cache)
     d2 = distribution.parameter_array(indexes2, cache=cache)
     A = np.zeros( (len(d1), distribution.n_elements), dtype=int)
@@ -324,4 +323,3 @@ def brute_marginal_array(d, rvs, rv_mode=None):
     arr = nz.reshape( (n_rows, len(nz) / n_rows) )
 
     return arr
-

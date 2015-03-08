@@ -6,6 +6,9 @@
    :target: https://coveralls.io/r/dit/dit?branch=master
 .. image:: https://readthedocs.org/projects/dit/badge/?version=latest
    :target: https://readthedocs.org/projects/dit/?badge=latest
+.. image:: https://landscape.io/github/dit/dit/master/landscape.svg?style=flat
+   :target: https://landscape.io/github/dit/dit/master
+   :alt: Code Health
 
 Documentation:
   http://docs.dit.io

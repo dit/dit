@@ -34,7 +34,6 @@ from .exceptions import (
     InvalidOutcome,
 )
 
-import dit.math
 from .math import get_ops, LinearOperations, close
 from .params import ditParams
 from .helpers import reorder
@@ -97,7 +96,7 @@ def _make_distribution(outcomes, pmf=None, sample_space=None,
     else:
         if sample_space is None:
             sample_space = outcomes
-        d._sample_space = ScalarSampleSpapce(sample_space)
+        d._sample_space = ScalarSampleSpace(sample_space)
 
     # For scalar dists, the alphabet is the sample space.
     d.alphabet = tuple(d._sample_space)

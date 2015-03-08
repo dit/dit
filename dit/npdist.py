@@ -74,12 +74,11 @@ from .npscalardist import ScalarDistribution
 
 from .helpers import (
     construct_alphabets,
-    copypmf,
     get_outcome_ctor,
     get_product_func,
     parse_rvs,
     reorder,
-    RV_MODES
+    RV_MODES,
 )
 
 from .samplespace import SampleSpace, CartesianProduct
@@ -1374,5 +1373,3 @@ class Distribution(ScalarDistribution):
         s = s[:-1]
 
         return s
-
-

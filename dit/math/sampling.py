@@ -381,10 +381,10 @@ def _annulus2(rmin, rmax, size=None, prng=None):
     if prng is None:
         prng = dit.math.prng
 
-    U = prng.rand(size)
+    U = prng.rand(s)
     r = np.sqrt(U * (rmax**2 - rmin**2) + rmin**2)
 
-    theta = prng.rand(size) * 2 * np.pi
+    theta = prng.rand(s) * 2 * np.pi
 
     samples = np.array([r * np.cos(theta), r * np.sin(theta)])
     samples = samples.transpose()
@@ -442,4 +442,3 @@ try: # pragma: no cover
     _samples = _samples_discrete__cython
 except ImportError: # pragma: no cover
     _samples = _samples_discrete__python
-

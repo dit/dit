@@ -15,8 +15,7 @@ some rescaling of the linear constraints.
 
 """
 
-from __future__ import print_function
-from __future__ import division
+from __future__ import division, print_function
 
 import itertools
 
@@ -177,7 +176,7 @@ def marginal_constraint_rank(dist, m):
     pmf = dist.pmf
 
     A, b = marginal_constraints(pmf, n_variables, n_symbols, m)
-    C, d, rank = as_full_rank(A, b)
+    _, _, rank = as_full_rank(A, b)
     return rank
 
 
@@ -324,7 +323,7 @@ def moment_constraint_rank(dist, m, symbol_map=None, cumulative=True, with_repla
 
     A, b = moment_constraints(pmf, n_variables, mvals, symbol_map,
                               with_replacement=with_replacement)
-    C, d, rank = as_full_rank(A, b)
+    _, _, rank = as_full_rank(A, b)
 
     return rank
 
@@ -639,9 +638,7 @@ def marginal_maxent_dists(dist, k_max=None, jitter=True, show_progress=True):
         # full support than convergence can be difficult to come by.
         dist.pmf = dit.math.pmfops.jittered(dist.pmf)
 
-    pmf = dist.pmf
     n_variables = dist.outcome_length()
-    n_symbols = len(dist.alphabet[0])
     symbols = dist.alphabet[0]
 
     if k_max is None:
@@ -694,9 +691,7 @@ def moment_maxent_dists(dist, symbol_map, k_max=None, jitter=True,
         # full support than convergence can be difficult to come by.
         dist.pmf = dit.math.pmfops.jittered(dist.pmf)
 
-    pmf = dist.pmf
     n_variables = dist.outcome_length()
-    n_symbols = len(dist.alphabet[0])
     symbols = dist.alphabet[0]
 
     if k_max is None:
@@ -721,5 +716,3 @@ def moment_maxent_dists(dist, symbol_map, k_max=None, jitter=True,
         dists.append(d)
 
     return dists
-
-

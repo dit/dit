@@ -10,7 +10,6 @@ from ..exceptions import ditException
 from ..cdisthelpers import (
     cdist_array,
     mask_is_complementary,
-    joint_from_factors,
 )
 
 __all__ = [
