@@ -188,7 +188,7 @@ def bindcallargs_leq32(_fUnCtIoN_, *args, **kwargs):
     bkwargs = dict((kwonlyarg, callargs[kwonlyarg]) for kwonlyarg in spec.kwonlyargs)
     # Add in kwonlydefaults for unspecified kwonlyargs only.
     if spec.kwonlydefaults is not None:
-        bkwargs.update(dict([(k, v) for k in spec.kwonlydefaults
+        bkwargs.update(dict([(k, v) for k in spec.kwonlydefaults.items()
                              if k not in bkwargs]))
     # Add in varkw.
     if spec.varkw is not None:
