@@ -1,3 +1,4 @@
+contextlib2
 Cython
 ipython
 iterutils

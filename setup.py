@@ -186,6 +186,9 @@ def main():
     if sys.version_info[:2] == (2, 6):
         install_requires.append('ordereddict >= 1.1')
 
+    if sys.version_info[:2] <= (3, 3):
+        install_requires.append('contextlib2')
+
     packages = [
         'dit',
         'dit.algorithms',
