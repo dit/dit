@@ -4,7 +4,9 @@
    :target: https://travis-ci.org/dit/dit
 .. image:: https://coveralls.io/repos/dit/dit/badge.png?branch=master
    :target: https://coveralls.io/r/dit/dit?branch=master
-   
+.. image:: https://readthedocs.org/projects/dit/badge/?version=latest
+   :target: https://readthedocs.org/projects/dit/?badge=latest
+
 Documentation:
   http://docs.dit.io
 
@@ -43,7 +45,7 @@ Code and bug tracker:
 
 License:
   BSD 2-Clause, see LICENSE.txt for details.
-  
+
 Quickstart
 ----------
 
