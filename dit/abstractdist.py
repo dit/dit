@@ -8,7 +8,8 @@ import numpy as np
 
 __all__ = [
     'AbstractDenseDistribution',
-    'distribution_constraint'
+    'distribution_constraint',
+    'brute_marginal_array',
 ]
 
 class AbstractDenseDistribution(object):
@@ -283,3 +284,44 @@ def distribution_constraint(indexes1, indexes2, distribution):
         A[(idx,),tuple(symdiff)] = vec
 
     return A, b
+
+def brute_marginal_array(d, rvs, rv_mode=None):
+    """A brute force computation of the marginal array.
+
+    The parameter array tells which elements of the joint pmf must be summed
+    to yield each element of the marginal distribution specified by `indexes`.
+
+    This is more general than AbstractDenseDistribution since it allows the
+    alphabet to vary with each random variable. It still requires a Cartestian
+    product sample space, however.
+
+    TODO: Expand this to construct arrays for coalescings as well.
+
+    """
+    from dit.helpers import parse_rvs, RV_MODES
+
+    # We need to filter the indexes for duplicates, etc. So that we can be
+    # sure that when we query the joint outcome, we have the right indexes.
+    rvs, indexes = parse_rvs(d, rvs, rv_mode, unique=True, sort=True)
+    marginal = d.marginal(indexes, rv_mode=RV_MODES.INDICES)
+
+    shape = (len(marginal._sample_space), len(d._sample_space))
+    arr = np.zeros(shape, dtype=int)
+
+    mindex = marginal._sample_space.index
+    for i, joint_outcome in enumerate(d._sample_space):
+        outcome = [joint_outcome[j] for j in indexes]
+        outcome = marginal._outcome_ctor(outcome)
+        idx = mindex(outcome)
+        arr[idx, i] = 1
+
+    # Now we need to turn this into a sparse matrix where there are only as
+    # many columns as there are nonzero elements in each row.
+
+    # Apply nonzero, use [1] to get only the columns
+    nz = np.nonzero(arr)[1]
+    n_rows = len(marginal._sample_space)
+    arr = nz.reshape( (n_rows, len(nz) / n_rows) )
+
+    return arr
+
