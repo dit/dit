@@ -31,6 +31,7 @@ def partial_match(first, second, places):
     -------
     match : bool
         Whether `first` and `second` match or not.
+
     """
     return tuple([first[i] for i in places]) == tuple(second)
 
@@ -69,6 +70,7 @@ def mss_sigalg(dist, rvs, about=None, rv_mode=None):
                frozenset({'000', '011'}),
                frozenset({'101', '110'}),
                frozenset({'000', '011', '101', '110'})})
+
     """
     mapping = parse_rvs(dist, about)[1]
 
@@ -130,12 +132,12 @@ def insert_mss(dist, idx, rvs, about=None, rv_mode=None):
     Outcome Class:  str
     Outcome Length: 4
     RV Names:       None
-
     x      p(x)
     0000   0.25
     0110   0.25
     1011   0.25
     1101   0.25
+
     """
     mss_sa = mss_sigalg(dist, rvs, about, rv_mode)
     new_dist = insert_rv(dist, idx, mss_sa)
@@ -176,10 +178,10 @@ def mss(dist, rvs, about=None, rv_mode=None, int_outcomes=True):
     Class:    ScalarDistribution
     Alphabet: (0, 1)
     Base:     linear
-
     x   p(x)
     0   0.5
     1   0.5
+
     """
     mss_sa = mss_sigalg(dist, rvs, about, rv_mode)
     d = dist_from_induced_sigalg(dist, mss_sa, int_outcomes)
