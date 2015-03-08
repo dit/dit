@@ -2,6 +2,7 @@ jsonschema
 mistune
 ipython
 iterutils
+contextlib2
 numpy
 releases
 six
