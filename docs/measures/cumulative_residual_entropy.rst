@@ -20,14 +20,14 @@ and one lebeled [1, 2, 3, 4, 5, 100].
 
 .. math::
 
-   \CRE[X] = -\int_{0}^{\infty} p(|X| > x) \log_{2} p(|X| > x) \dx
+   \CRE[X] = -\int_{0}^{\infty} p(|X| > x) \log_{2} p(|X| > x) dx
 
 The genearlized form integrates over the intire set of reals rather than just
 the positive ones:
 
 .. math::
 
-   \GCRE[X] = -\int_{-\infty}^{\infty} p(X > x) \log_{2} p(X > x) \dx
+   \GCRE[X] = -\int_{-\infty}^{\infty} p(X > x) \log_{2} p(X > x) dx
 
 .. todo::
 
