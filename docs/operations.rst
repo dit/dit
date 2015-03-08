@@ -23,7 +23,7 @@ We can construct the join of two random variables:
 
 .. math::
 
-   X \join Y = \max {V | V \imore X \land V \imore Y}
+   X \join Y = \max \{ V | V \imore X \land V \imore Y \}
 
 Where :math:`\max` is understood to be maximizing with respect to the entropy.
 
@@ -37,7 +37,7 @@ We can construct the meet of two random variabls:
 
 .. math::
 
-   X \meet Y = \max { V | V \iless X \land V \iless Y}
+   X \meet Y = \max \{ V | V \iless X \land V \iless Y \}
 
 Where :math:`\min` is understood to be minimizing with respect to the entropy.
 
@@ -52,7 +52,7 @@ This method constructs the minimal sufficient statistic of :math:`X` about
 
 .. math::
 
-   X \mss Y = \min { V | V \iless X \land \I[X:Y] = \I[V:Y] }
+   X \mss Y = \min \{ V | V \iless X \land \I[X:Y] = \I[V:Y] \}
 
 Again, :math:`\min` is understood to be over entropies.
 

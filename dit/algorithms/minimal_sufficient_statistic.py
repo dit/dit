@@ -168,7 +168,7 @@ def mss(dist, rvs, about=None, rv_mode=None, int_outcomes=True):
 
     Returns
     -------
-    d : Distribution
+    d : ScalarDistribution
         The distribution of the minimal sufficient statistic.
 
     Examples
