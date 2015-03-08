@@ -45,6 +45,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   TEX.Macro("JSD", "\\op{JSD}");
   TEX.Macro("J", "\\op{J}");
   TEX.Macro("TSE", "\\op{TSE}");
+  TEX.Macro("CRE", "\\op{\mathcal{E}}");
+  TEX.Macro("GCRE", "\\op{\mathcal{E^\prime}}");
 
   // some binary operators
   TEX.Macro("meet", "\\curlywedge");
