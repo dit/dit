@@ -123,7 +123,6 @@ def test_ccre_3():
     """
     d = conditional_uniform2()
     ccre = CCRE(d, 1, [0])
-    print(ccre)
     uniforms = sorted([ CRE(uniform(i-2, 3)) for i in range(5) ])
     assert_array_almost_equal(ccre.outcomes, uniforms)
 
