@@ -5,4 +5,4 @@ releases
 six
 sphinx
 sphinxcontrib-bibtex
-sphinxcontrib-napoleon
+sphinxcontrib-napoleon==0.2.11
