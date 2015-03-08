@@ -330,3 +330,13 @@ x        p(x)
     s = d.to_string(str_outcomes=True)
     assert_equal(s, s_)
 
+def test_really_big_words():
+    """
+    Test to ensure that large but sparse outcomes are fast.
+    """
+    outcomes = ['01'*45, '10'*45]
+    pmf = [1/2]*2
+    d = Distribution(outcomes, pmf)
+    d = d.coalesce([range(30), range(30, 60), range(60, 90)])
+    new_outcomes = (('10'*15,)*3, ('01'*15,)*3)
+    assert_equal(d.outcomes, new_outcomes)
