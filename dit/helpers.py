@@ -16,7 +16,7 @@ import numpy as np
 from six.moves import map, range, zip # pylint: disable=redefined-builtin
 
 # dit
-from .exceptions import ditException, InvalidDistribution, InvalidOutcome
+from .exceptions import ditException, InvalidOutcome
 from .utils import product_maker
 
 
@@ -385,7 +385,7 @@ def copypmf(d, base=None, mode='asis'):
         The pmf of the distribution.
 
     """
-    from dit.math import LinearOperations, LogOperations, get_ops
+    from dit.math import get_ops
     from dit.params import validate_base
 
     # Sanitize inputs, need numerical base for old base.

@@ -374,9 +374,7 @@ def _annulus2(rmin, rmax, size=None, prng=None):
 
     """
     if size is None:
-        s = 1
-    else:
-        s = size
+        size = 1
 
     if prng is None:
         prng = dit.math.prng
@@ -442,4 +440,3 @@ try: # pragma: no cover
     _samples = _samples_discrete__cython
 except ImportError: # pragma: no cover
     _samples = _samples_discrete__python
-

@@ -429,7 +429,7 @@ class CartesianProduct(SampleSpace):
 
     def sort(self):
         alphabets = []
-        for i, alphabet in enumerate(self.alphabets):
+        for alphabet in self.alphabets:
             if isinstance(alphabet, SampleSpace):
                 alphabet.sort()
             else:

@@ -34,7 +34,6 @@ from .exceptions import (
     InvalidOutcome,
 )
 
-import dit.math
 from .math import get_ops, LinearOperations, close
 from .params import ditParams
 from .helpers import reorder
