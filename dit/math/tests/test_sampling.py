@@ -176,3 +176,15 @@ def test_norm_badshape_cov():
 def test_norm_toomany():
     d = np.array([[.2, .3, .5], [.5, .2, .3]])
     assert_raises(dit.exceptions.ditException, dit.math.norm, d)
+
+def test__annulus2_nosize():
+    # When size is None, it should just return the sample.
+    prng = np.random.RandomState()
+    samples = dit.math.sampling._annulus2(0, 1, size=None, prng=prng)
+    assert_equal(samples.shape, (2,))
+
+def test__annulus2_size():
+    # When size is not None, it should return an array of the samples.
+    prng = np.random.RandomState()
+    samples = dit.math.sampling._annulus2(0, 1, size=1, prng=prng)
+    assert_equal(samples.shape, (1,2))

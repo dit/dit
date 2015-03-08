@@ -374,15 +374,17 @@ def _annulus2(rmin, rmax, size=None, prng=None):
 
     """
     if size is None:
-        size = 1
+        s = 1
+    else:
+        s = size
 
     if prng is None:
         prng = dit.math.prng
 
-    U = prng.rand(size)
+    U = prng.rand(s)
     r = np.sqrt(U * (rmax**2 - rmin**2) + rmin**2)
 
-    theta = prng.rand(size) * 2 * np.pi
+    theta = prng.rand(s) * 2 * np.pi
 
     samples = np.array([r * np.cos(theta), r * np.sin(theta)])
     samples = samples.transpose()
