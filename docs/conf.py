@@ -212,12 +212,15 @@ macros = r'''
 \newcommand{\JSD}  {\op{JSD}}
 \newcommand{\J}    {\op{J}}
 \newcommand{\TSE}  {\op{TSE}}
+\newcommand{\CRE}  {\op{\mathcal{E}}}
+\newcommand{\GCRE} {\op{\mathcal{E^\prime}}}
 
 \newcommand{\meet} {\curlywedge}
 \newcommand{\join} {\curlyvee}
 \newcommand{\iless}{\preceq}
 \newcommand{\imore}{\succeq}
 \newcommand{\ieq}  {\cong}
+\newcommand{\mss}  {\searrow}
 '''
 
 latex_elements = {
