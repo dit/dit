@@ -1,5 +1,5 @@
 .. jensen_shannon_divergence.rst
-.. py:module:: dit.multivariate.jensen_shannon_divergence
+.. py:module:: dit.divergences.jensen_shannon_divergence
 
 *************************
 Jensen-Shannon Divergence

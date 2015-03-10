@@ -39,7 +39,7 @@ entropy of that common random variable is the Gács-Körner common information:
    \K[X_0 : X_1] &= \max_{f(X_0) = g(X_1) = V} \H[V] \\
                  &= \H[X_0 \meet X_1]
 
-.. image:: ../images/idiagrams/k_xy.png
+.. image:: ../../images/idiagrams/k_xy.png
    :alt: The Gács-Körner common information :math:`\K[X:Y]`
    :width: 342px
    :align: center
@@ -67,7 +67,7 @@ As a canonical example, consider the following:
 .. note::
    It is important that we set the `sample_space` argument. If it is `None`
    then the Cartesian product of each alphabet, and in such a case the meet
-   will trivially be degenerate. 
+   will trivially be degenerate.
 
 So, the Gács-Körner common information is 1.5 bits. But what is the common
 random variable?
@@ -121,7 +121,7 @@ amount of redundancy is an open problem, but one proposal is:
 
    \I[X_0 \meet X_1 : Y]
 
-.. image:: ../images/idiagrams/red_xy.png
+.. image:: ../../images/idiagrams/red_xy.png
    :alt: The zero-error redundancy :math:`\K[X\meetY:Z]`
    :width: 357px
    :align: center
@@ -168,7 +168,7 @@ variate version:
 
    0 \leq \K[X_0 : \dots : X_n] \leq \min_{i, j \in \{0..n\}} \I[X_i : X_j]
 
-.. image:: ../images/idiagrams/k_xyz.png
+.. image:: ../../images/idiagrams/k_xyz.png
    :alt: The Gács-Körner common information :math:`\K[X:Y:Z]`
    :width: 357px
    :align: center

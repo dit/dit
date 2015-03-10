@@ -18,7 +18,7 @@ Contents:
    notation
    distributions
    operations
-   measures
+   measures/measures
    zreferences
    changelog
 
