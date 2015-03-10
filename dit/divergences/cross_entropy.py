@@ -4,7 +4,7 @@ The cross entropy.
 
 import numpy as np
 
-from ..exceptions import ditException, InvalidOutcome
+from ..exceptions import InvalidOutcome
 from ..helpers import normalize_rvs
 from ..utils import flatten
 
@@ -39,7 +39,7 @@ def cross_entropy(dist1, dist2, rvs=None, crvs=None, rv_mode=None):
 
     p1s, q1s = get_pmfs_like(dist1, dist2, rvs+crvs, rv_mode)
     xH = -np.nansum(p1s * np.log2(q1s))
-    
+
     if crvs:
         p2s, q2s = get_pmfs_like(dist1, dist2, crvs, rv_mode)
         xH2 = -np.nansum(p2s * np.log2(q2s))
