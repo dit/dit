@@ -37,4 +37,4 @@ def test_insert_mss():
     d = insert_mss(d, -1, [2, 3], [0, 1])
     d = d.marginal([4, 5])
     dist = Distribution(['01', '10', '11'], [1/3, 1/3, 1/3])
-    assert_true(d.is_approx_equal(d))
+    assert_true(d.is_approx_equal(dist))
