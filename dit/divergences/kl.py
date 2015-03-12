@@ -1,3 +1,28 @@
+"""
+These are special interest implementations that should be used only in
+very particular situations.
+
+cross_entropy_pmf
+relative_entropy_pmf
+DKL_pmf
+    These functions should be used only if the pmfs that are passed in have
+    the same exact length and correspond to the same outcome probabilities.
+    They also assume linear distributed probabilities. The expected use case
+    is when one is working with a family of distributions (or pmfs) all of
+    which have the same exact sample space. For example, normally distributed
+    pmfs can be generated as: dit.math.norm([.5, .5], size=5). You can
+    pass those distributions to sklearn.metrics.pairwise_distance with
+    metric=DKL_pmf.
+
+cross_entropy
+relative_entropy
+DKL
+    These functions should be used only if the sample spaces of the passed in
+    distributions are identical (so both the same size and the same order).
+    The two distributions can have pmfs in different bases.
+
+"""
+
 import dit
 import numpy as np
 
