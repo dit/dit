@@ -43,6 +43,9 @@ from the use of the Shannon entropy.
    Rényi entropy) and the Jensen-Tsallis divergence (where :math:`\Psi` is the
    Tsallis entropy).
 
+The square root of the Jensen-Shannon divergence, :math:`\sqrt{\JSD}`, is a true
+metric between distributions.
+
 .. todo::
 
    discuss how JSD = I(X:M) where X is indicator and M is mixture.

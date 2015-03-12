@@ -5,8 +5,12 @@
 Multivariate
 ************
 
-Multivariate measures of information. These are all linear combinations of atoms
-from an I-diagram.
+Multivariate measures of information generally attempt to capture some global
+property of a joint distribution. For example, they might attempt to quantify
+how much information is shared among the random variables, or quantify how
+"non-indpendent" in the joint distribution is. The first batch are all linear
+combinations of atoms from an I-diagram, and are therefore computable using only
+the entropy of subsets of the distribution.
 
 .. toctree::
    :maxdepth: 2
@@ -20,7 +24,8 @@ from an I-diagram.
    tse_complexity
 
 The next set of measures are based on the definition of an auxiliary random
-variable.
+variable, generally one which in some way captures the information common to the
+random variables.
 
 .. toctree::
    :maxdepth: 2

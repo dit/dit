@@ -5,7 +5,8 @@
 Other Measures
 **************
 
-Other measures of information.
+Other measures of information. These are generally based around alternatives to
+the Shannon entropy proposed for a variety of reasons.
 
 .. toctree::
    :maxdepth: 2
