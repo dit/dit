@@ -13,6 +13,10 @@ import dit
 from ..distconst import mixture_distribution
 from ..shannon import entropy as H, entropy_pmf as H_pmf
 
+__all__ = ('jensen_shannon_divergence',
+           'jensen_shannon_divergence_pmf',
+          )
+
 def jensen_shannon_divergence_pmf(pmfs, weights=None):
     """
     The Jensen-Shannon Divergence: H(sum(w_i*P_i)) - sum(w_i*H(P_i)).
