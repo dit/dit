@@ -16,22 +16,8 @@ random variables:
 .. toctree::
    :maxdepth: 2
 
-   measures/shannon
-   measures/entropy
-   measures/coinformation
-   measures/total_correlation
-   measures/binding_information
-   measures/residual_entropy
-
-The next group of measures are Shannon-esque measures. These are measure that,
-while not quite based directly on the canonical Shannon measures like above,
-they are directly comparable and can be expressed on information-diagrams:
-
-.. toctree::
-   :maxdepth: 2
-
-   measures/interaction_information
-   measures/gk_common_information
+   shannon
+   multivariate/multivariate
 
 This next group of measures can not be represented on information diagrams, and
 can not really be directly compared to the measures above:
@@ -39,14 +25,11 @@ can not really be directly compared to the measures above:
 .. toctree::
    :maxdepth: 2
 
-   measures/perplexity
-   measures/extropy
-   measures/tse_complexity
-   measures/cumulative_residual_entropy
+   other/other
 
 There are also measures of "distance" or divergence:
 
 .. toctree::
    :maxdepth: 2
 
-   measures/jensen_shannon_divergence
+   divergences/divergences

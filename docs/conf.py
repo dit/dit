@@ -199,21 +199,25 @@ htmlhelp_basename = 'ditdoc'
 
 macros = r'''
 \newcommand{\op}[1]{\ensuremath{\operatorname{#1}}}
+
 \renewcommand{\H}  {\op{H}}   % No more Erd\H{o}s
 \newcommand{\I}    {\op{I}}
 \newcommand{\T}    {\op{T}}
 \newcommand{\B}    {\op{B}}
 \newcommand{\R}    {\op{R}}
 \newcommand{\II}   {\op{II}}
-\renewcommand{\P}  {\op{P}}
-\newcommand{\K}    {\op{K}}
-\newcommand{\DKL}  {\op{D_{KL}}}
-\newcommand{\xH}   {\op{xH}}
-\newcommand{\JSD}  {\op{JSD}}
-\newcommand{\J}    {\op{J}}
 \newcommand{\TSE}  {\op{TSE}}
+
+\newcommand{\K}    {\op{K}}
+
+\renewcommand{\P}  {\op{P}}
+\newcommand{\J}    {\op{J}}
 \newcommand{\CRE}  {\op{\mathcal{E}}}
 \newcommand{\GCRE} {\op{\mathcal{E^\prime}}}
+
+\newcommand{\xH}   {\op{xH}}
+\newcommand{\DKL}  {\op{D_{KL}}}
+\newcommand{\JSD}  {\op{D_{JS}}}
 
 \newcommand{\meet} {\curlywedge}
 \newcommand{\join} {\curlyvee}

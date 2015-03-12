@@ -17,7 +17,7 @@ inclusion/exclusion sum:
 
 This can be visuallized on an i-diagram as below:
 
-.. image:: ../images/idiagrams/i_xyz.png
+.. image:: ../../images/idiagrams/i_xyz.png
    :alt: The co-information :math:`\I[X:Y:Z]`
    :width: 357px
    :align: center

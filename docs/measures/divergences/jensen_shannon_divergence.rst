@@ -1,5 +1,5 @@
 .. jensen_shannon_divergence.rst
-.. py:module:: dit.multivariate.jensen_shannon_divergence
+.. py:module:: dit.divergences.jensen_shannon_divergence
 
 *************************
 Jensen-Shannon Divergence
@@ -42,6 +42,9 @@ from the use of the Shannon entropy.
    Some people look at the Jensen-Rényi divergence (where :math:`\Psi` is the
    Rényi entropy) and the Jensen-Tsallis divergence (where :math:`\Psi` is the
    Tsallis entropy).
+
+The square root of the Jensen-Shannon divergence, :math:`\sqrt{\JSD}`, is a true
+metric between distributions.
 
 .. todo::
 

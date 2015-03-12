@@ -6,7 +6,9 @@ from dit import (Distribution as D,
                  ScalarDistribution as SD,
                 )
 
-from dit.divergences import (jensen_shannon_divergence as JSD,
+from dit.divergences import (cross_entropy as xH,
+                             kullback_leibler_divergence as DKL,
+                             jensen_shannon_divergence as JSD,
                             )
 
 from dit.other import (extropy as J,
@@ -38,17 +40,19 @@ _shannon = [
     'T',    # the conditional total correlation [multi-information/integration]
     'B',    # the conditional binding information [dual total correlation]
     'R',    # the conditional residual entropy [erasure entropy]
+    'TSE',  # the TSE complexity
 ]
 
 # measures representable on i-diagrams
 _shannon_ext = [
     'K',    # the Gacs-Korner common information [meet entropy]
     'II',   # the interaction information
-    'TSE',  # the TSE complexity
 ]
 
 # measures of distance between distriutions
 _divergences = [
+    'xH',   # the cross entropy
+    'DKL',  # the Kullback-Leibler divergence
     'JSD',  # the Jensen-Shannon divergence
 ]
 

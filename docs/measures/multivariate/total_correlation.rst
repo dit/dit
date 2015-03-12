@@ -16,7 +16,7 @@ whole and the sum of its parts:
    \T[X_{0:n}] &= \sum \H[X_i] - \H[X_{0:n}] \\
                &= \sum_{x_{0:n} \in X_{0:n}} p(x_{0:n}) \log_2 \frac{p(x_{0:n})}{\prod p(x_i)}
 
-.. image:: ../images/idiagrams/t_xyz.png
+.. image:: ../../images/idiagrams/t_xyz.png
    :alt: The total correlation :math:`\T[X:Y:Z]`
    :width: 357px
    :align: center
