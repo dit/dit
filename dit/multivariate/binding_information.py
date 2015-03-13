@@ -5,6 +5,11 @@ The binding information and residual entropy.
 from ..shannon import conditional_entropy as H
 from ..helpers import normalize_rvs
 
+__all__ = ('binding_information',
+           'dual_total_correlation',
+           'residual_entropy',
+          )
+
 def binding_information(dist, rvs=None, crvs=None, rv_mode=None):
     """
     Parameters
@@ -87,3 +92,6 @@ def residual_entropy(dist, rvs=None, crvs=None, rv_mode=None):
             for rv in rvs)
 
     return R
+
+
+dual_total_correlation = binding_information
