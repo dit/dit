@@ -1,4 +1,5 @@
 ignore-paths:
   - dit/abc.py
+  - dit/utils/exitstack.py
 ignore-patterns:
   - __init__.py
