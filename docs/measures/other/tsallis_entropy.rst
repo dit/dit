@@ -4,3 +4,8 @@
 ***************
 Tsallis Entropy
 ***************
+
+
+
+
+.. autofunction:: dit.other.tsallis_entropy.tsallis_entropy
