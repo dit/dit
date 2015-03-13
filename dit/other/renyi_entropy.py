@@ -2,7 +2,9 @@
 Renyi Entropy
 """
 
-from numpy import log2
+from __future__ import division
+
+import numpy as np
 
 from ..helpers import normalize_rvs
 from ..utils import flatten
@@ -51,18 +53,18 @@ def renyi_entropy(dist, order, rvs=None, rv_mode=None):
         raise ValueError(msg)
 
     if dist.is_joint and rvs is not None:
-        rvs = flatten(normalize_rvs(rvs, None, rv_mode)[0])
+        rvs = list(flatten(normalize_rvs(dist, rvs, None, rv_mode)[0]))
         dist = dist.marginal(rvs, rv_mode)
 
     pmf = dist.pmf
 
     if order == 0:
-        H_a = log2(pmf.size)
+        H_a = np.log2(pmf.size)
     elif order == 1:
         H_a = entropy(dist)
     elif order == np.inf:
-        H_a = -log2(pmf.max())
+        H_a = -np.log2(pmf.max())
     else:
-        H_a = 1/(1-order) * log2((pmf**order).sum())
+        H_a = 1/(1-order) * np.log2((pmf**order).sum())
 
     return H_a

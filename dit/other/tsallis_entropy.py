@@ -2,6 +2,8 @@
 Tsallis Entropy
 """
 
+from __future__ import division
+
 import numpy as np
 
 from ..helpers import normalize_rvs
@@ -46,12 +48,8 @@ def tsallis_entropy(dist, order, rvs=None, rv_mode=None):
         Raised if `order` is not a non-negative float.
 
     """
-    if order < 0:
-        msg = "`order` must be a non-negative real number"
-        raise ValueError(msg)
-
     if dist.is_joint and rvs is not None:
-        rvs = flatten(normalize_rvs(rvs, None, rv_mode)[0])
+        rvs = list(flatten(normalize_rvs(dist, rvs, None, rv_mode)[0]))
         dist = dist.marginal(rvs, rv_mode)
 
     pmf = dist.pmf
