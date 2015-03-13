@@ -34,12 +34,13 @@ def binding_information(dist, rvs=None, crvs=None, rv_mode=None):
     Returns
     -------
     B : float
-        The binding information
+        The binding information.
 
     Raises
     ------
     ditException
-        Raised if `dist` is not a joint distribution.
+        Raised if `dist` is not a joint distribution or if `rvs` or `crvs`
+        contain non-existant random variables.
     """
     rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
 
@@ -77,12 +78,13 @@ def residual_entropy(dist, rvs=None, crvs=None, rv_mode=None):
     Returns
     -------
     R : float
-        The residual entropy
+        The residual entropy.
 
     Raises
     ------
     ditException
-        Raised if `dist` is not a joint distribution.
+        Raised if `dist` is not a joint distribution or if `rvs` or `crvs`
+        contain non-existant random variables.
     """
     rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
 

@@ -33,6 +33,11 @@ def entropy(dist, rvs=None, crvs=None, rv_mode=None):
     H : float
         The entropy.
 
+    Raises
+    ------
+    ditException
+        Raised if `rvs` or `crvs` contain non-existant random variables.
+
     Examples
     --------
     Let's construct a 3-variable distribution for the XOR logic gate and name
