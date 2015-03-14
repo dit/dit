@@ -36,6 +36,11 @@ def gk_common_information(dist, rvs=None, crvs=None, rv_mode=None):
     K : float
         The Gacs-Korner common information of the distribution.
 
+    Raises
+    ------
+    ditException
+        Raised if `rvs` or `crvs` contain non-existant random variables.
+
     """
     rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
     crvs = parse_rvs(dist, crvs, rv_mode)[1]

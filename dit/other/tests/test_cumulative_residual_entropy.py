@@ -128,8 +128,22 @@ def test_ccre_3():
 
 def test_cgcre_1():
     """
+    Test the CGCRE against known values.
     """
     d = conditional_uniform2()
     cgcre = CGCRE(d, 1, [0])
     uniforms = [ GCRE(uniform(i)) for i in range(1, 6) ]
     assert_array_almost_equal(cgcre.outcomes, uniforms)
+
+def test_cgcre_2():
+    """
+    Test that independent RVs have CGCRE = GCRE.
+    """
+    d = miwin()
+    for crvs in combinations([0, 1, 2], 2):
+        rv = (set([0, 1, 2]) - set(crvs)).pop()
+        ccre1 = CGCRE(d, rv, crvs)
+        ccre2 = CGCRE(d, rv)
+        yield assert_almost_equal, GCRE(d)[rv], mean(ccre1)
+        yield assert_almost_equal, GCRE(d)[rv], mean(ccre2)
+        yield assert_almost_equal, standard_deviation(ccre1), 0

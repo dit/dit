@@ -29,12 +29,13 @@ def total_correlation(dist, rvs=None, crvs=None, rv_mode=None):
     Returns
     -------
     T : float
-        The total correlation
+        The total correlation.
 
     Raises
     ------
     ditException
-        Raised if `dist` is not a joint distribution.
+        Raised if `dist` is not a joint distribution or if `rvs` or `crvs`
+        contain non-existant random variables.
     """
     rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
 
