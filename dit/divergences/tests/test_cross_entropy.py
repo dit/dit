@@ -14,6 +14,9 @@ from dit.exceptions import ditException
 from dit.multivariate import entropy
 
 def get_dists():
+    """
+    Construct several example distributions.
+    """
     d1 = Distribution(['0', '1'], [1/2, 1/2])
     d2 = Distribution(['0', '2'], [1/2, 1/2])
     d3 = Distribution(['0', '1', '2'], [1/3, 1/3, 1/3])
