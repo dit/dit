@@ -1,9 +1,6 @@
 contextlib2
-Cython
-ipython
-iterutils
+iterutils >= 0.1.6
 networkx
-numpy
+numpy >= 1.6
 prettytable
-six
-
+six >= 1.4.0
