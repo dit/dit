@@ -16,7 +16,8 @@ and one lebeled [1, 2, 3, 4, 5, 100].
 
 .. note::
 
-   The Cumulative Residual Entropy is unrelated to :doc:`residual_entropy`.
+   The Cumulative Residual Entropy is unrelated to
+   :doc:`../multivariate/residual_entropy`.
 
 .. math::
 
