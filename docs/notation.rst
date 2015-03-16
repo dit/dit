@@ -10,6 +10,11 @@ mathematical expressions. Here we will describe this notation.
 Basic Notation
 ==============
 
+A random variable :math:`X` consists of *outcomes* :math:`x` from an *alphabet*
+:math:`\mathcal{X}`. As such, we write the entropy of a distribution as
+:math:`\H[X] = \sum_{x \in \mathcal{X}} p(x) \log_2 p(x)`, where :math:`p(x)`
+denote the probability of the outcome :math:`x` occuring.
+
 Many distributions are *joint* distribution. In the absence of variable names,
 we index each random variable with a subscript. For example, a distribution over
 three variables is written :math:`X_0X_1X_2`. As a shorthand, we also denote
