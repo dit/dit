@@ -29,7 +29,7 @@ import numpy as np
 
 import dit
 
-from dit.abstractdist import AbstractDenseDistribution, brute_marginal_array
+from dit.abstractdist import AbstractDenseDistribution, get_abstract_dist
 
 from .optutil import as_full_rank, CVXOPT_Template
 
@@ -78,23 +78,12 @@ def marginal_constraints(dist, m, with_normalization=True):
 
     pmf = dist.pmf
 
-    if dist.is_homogeneous():
-        n_variables = dist.outcome_length()
-        n_symbols = len(dist.alphabet[0])
-        n_elements = n_symbols ** n_variables
-        d = AbstractDenseDistribution(n_variables, n_symbols)
-    else:
-        n_variables = dist.outcome_length()
-        n_elements = np.prod(map(len, dist.alphabet))
-        class D(object):
-            def parameter_array(self, indexes, cache=None):
-                return brute_marginal_array(dist, indexes, rv_mode='indexes')
-        d = D()
+    d = get_abstract_dist(dist)
 
-    if m > n_variables:
+    if m > d.n_variables:
         msg = "Cannot constrain {0}-way marginals"
         msg += " with only {1} random variables."
-        msg = msg.format(m, n_variables)
+        msg = msg.format(m, d.n_variables)
         raise ValueError(msg)
 
     A = []
@@ -108,7 +97,7 @@ def marginal_constraints(dist, m, with_normalization=True):
     # Now add all the marginal constraints.
     if m > 0:
         cache = {}
-        for rvs in itertools.combinations(range(n_variables), m):
+        for rvs in itertools.combinations(range(d.n_variables), m):
             for idx in d.parameter_array(rvs, cache=cache):
                 bvec = np.zeros(d.n_elements)
                 bvec[idx] = 1

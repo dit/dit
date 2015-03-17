@@ -10,6 +10,7 @@ __all__ = [
     'AbstractDenseDistribution',
     'distribution_constraint',
     'brute_marginal_array',
+    'get_abstract_dist',
 ]
 
 class AbstractDenseDistribution(object):
@@ -323,3 +324,25 @@ def brute_marginal_array(d, rvs, rv_mode=None):
     arr = nz.reshape( (n_rows, len(nz) / n_rows) )
 
     return arr
+
+def get_abstract_dist(dist):
+    """
+    Returns an abstract representation of the distribution.
+
+    For now, it hacks in a way to deal with non-homogeneous Cartesian product
+    sample spaces.
+
+    """
+    if dist.is_homogeneous():
+        n_variables = dist.outcome_length()
+        n_symbols = len(dist.alphabet[0])
+        d = AbstractDenseDistribution(n_variables, n_symbols)
+    else:
+        class D(object):
+            n_variables = dist.outcome_length()
+            n_elements = np.prod(map(len, dist.alphabet))
+            def parameter_array(self, indexes, cache=None):
+                return brute_marginal_array(dist, indexes, rv_mode='indexes')
+        d = D()
+
+    return d

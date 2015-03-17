@@ -257,7 +257,7 @@ class CVXOPT_Template(object):
                 result = cp(F=self.F,
                             G=self.G,
                             h=self.h,
-                            dims={'l':self.n, 'q':[], 's':[]},
+                            dims={'l':self.G.size[0], 'q':[], 's':[]},
                             A=self.A,
                             b=self.b)
         except:
