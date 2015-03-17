@@ -173,4 +173,4 @@ variate version:
    :width: 357px
    :align: center
 
-.. autofunction:: dit.multivariate.gk_common_information.gk_common_information
+.. autofunction:: gk_common_information

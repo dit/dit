@@ -74,4 +74,4 @@ Further, the following inequalities holds in the other direction:
 
     \H_{2} \le 2 \H_{\infty}
 
-.. autofunction:: dit.other.renyi_entropy.renyi_entropy
+.. autofunction:: renyi_entropy

@@ -67,4 +67,4 @@ correaltion of :math:`A \cup B` is:
 
    Add more examples, perhaps from real-world usage.
 
-.. autofunction:: dit.multivariate.total_correlation.total_correlation
+.. autofunction:: total_correlation

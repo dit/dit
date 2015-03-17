@@ -30,4 +30,4 @@ The binding information satisfies the following two inequalities:
 
    Show some examples, perhaps from the Abdallah paper.
 
-.. autofunction:: dit.multivariate.binding_information.binding_information
+.. autofunction:: binding_information

@@ -54,4 +54,4 @@ metric between distributions.
 
    Add examples.
 
-.. autofunction:: dit.divergences.jensen_shannon_divergence.jensen_shannon_divergence
+.. autofunction:: jensen_shannon_divergence

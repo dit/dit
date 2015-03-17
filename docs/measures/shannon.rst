@@ -76,7 +76,7 @@ The entropy of multiple variables is computed in a similar manner:
 Its intuition is also the same: the average number of binary questions required
 to identify a joint event from the distribution.
 
-.. autofunction:: dit.shannon.shannon.entropy
+.. autofunction:: entropy
 
 Conditional Entropy
 ===================
@@ -113,7 +113,7 @@ variables:
 Here, the second variable tells us nothing about the first so we are left with
 the one bit of information a coin flip has.
 
-.. autofunction:: dit.shannon.shannon.conditional_entropy
+.. autofunction:: conditional_entropy
 
 Mutual Information
 ==================
@@ -158,7 +158,7 @@ information it doesn't:
       Generalized as the joint minus the entropy of each variable conditioned on
       the others.
 
-.. autofunction:: dit.shannon.shannon.mutual_information
+.. autofunction:: mutual_information
 
 Visualization of Information
 ============================

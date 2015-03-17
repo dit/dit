@@ -1,11 +1,12 @@
 .. kullback_leiber_divergence.rst
-.. py:module:: dit.divergences.kullback_leiber_divergence
+.. py:module:: dit.divergences.kullback_leibler_divergence
 
 ***************************
 Kullback-Leibler Divergence
 ***************************
 
-The Kullback-Leibler divergence, sometimes also called the *relative entropy*, is defined as:
+The Kullback-Leibler divergence, sometimes also called the *relative entropy*,
+is defined as:
 
 .. math::
 
@@ -15,4 +16,4 @@ The Kullback-Leibler divergence, sometimes also called the *relative entropy*, i
 
    More discussion, examples.
 
-.. autofunction:: dit.divergences.kullback_leibler_divergence.kullback_leibler_divergence
+.. autofunction:: kullback_leibler_divergence

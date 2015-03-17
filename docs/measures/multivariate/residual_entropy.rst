@@ -30,4 +30,4 @@ The residual entropy, or erasure entropy, is a dual to the binding information.
 
    Add some good examples.
 
-.. autofunction:: dit.multivariate.binding_information.residual_entropy
+.. autofunction:: residual_entropy

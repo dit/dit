@@ -26,4 +26,4 @@ The conditional perplexity is defined in the natural way:
 
    Add some good examples.
 
-.. autofunction:: dit.other.perplexity.perplexity
+.. autofunction:: perplexity

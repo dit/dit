@@ -77,4 +77,4 @@ coinformation can not be used to measure redundancy or synergy.
    :cite:`Griffith2013` and references therein for the current status of the
    problem.
 
-.. autofunction:: dit.multivariate.coinformation.coinformation
+.. autofunction:: coinformation

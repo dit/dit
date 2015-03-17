@@ -23,4 +23,4 @@ those subsystems:
 
     \TE[X, Y] = \TE[X] + \TE[Y] + (1-q)\TE[X]\TE[Y]
 
-.. autofunction:: dit.other.tsallis_entropy.tsallis_entropy
+.. autofunction:: tsallis_entropy
