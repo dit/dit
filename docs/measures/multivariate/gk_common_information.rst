@@ -48,21 +48,19 @@ As a canonical example, consider the following:
 
 .. ipython::
 
-   In [1]: from __future__ import division
+   In [1]: from dit import Distribution as D
 
-   In [2]: from dit import Distribution as D
+   In [2]: from dit.multivariate import gk_common_information as K
 
-   In [3]: from dit.multivariate import gk_common_information as K
+   In [3]: outcomes = ['00', '01', '10', '11', '22', '33']
 
-   In [4]: outcomes = ['00', '01', '10', '11', '22', '33']
+   In [4]: pmf = [1/8, 1/8, 1/8, 1/8, 1/4, 1/4]
 
-   In [5]: pmf = [1/8, 1/8, 1/8, 1/8, 1/4, 1/4]
-
-   In [6]: d = D(outcomes, pmf, sample_space=outcomes)
+   In [5]: d = D(outcomes, pmf, sample_space=outcomes)
 
    @doctest float
-   In [7]: K(d)
-   Out[7]: 1.5
+   In [6]: K(d)
+   Out[6]: 1.5
 
 .. note::
    It is important that we set the `sample_space` argument. If it is `None`
@@ -74,11 +72,11 @@ random variable?
 
 .. ipython::
 
-   In [8]: from dit.algorithms import insert_meet
+   In [7]: from dit.algorithms import insert_meet
 
-   In [9]: crv = insert_meet(d, -1, [[0],[1]])
+   In [8]: crv = insert_meet(d, -1, [[0],[1]])
 
-   In [10]: print(crv)
+   In [9]: print(crv)
    Class:          Distribution
    Alphabet:       (('0', '1', '2', '3'), ('0', '1', '2', '3'), ('2', '0', '1'))
    Base:           linear
@@ -130,19 +128,19 @@ This quantity can be computed easily using dit:
 
 .. ipython::
 
-   In [11]: from dit.example_dists import RdnXor
+   In [10]: from dit.example_dists import RdnXor
 
-   In [12]: from dit.shannon import mutual_information as I
+   In [11]: from dit.shannon import mutual_information as I
 
-   In [13]: d = RdnXor()
+   In [12]: d = RdnXor()
 
-   In [15]: d = dit.pruned_samplespace(d)
+   In [13]: d = dit.pruned_samplespace(d)
 
    In [14]: d = insert_meet(d, -1, [[0],[1]])
 
    @doctest float
-   In [16]: I(d, [3], [2])
-   Out[16]: 1.0
+   In [15]: I(d, [3], [2])
+   Out[15]: 1.0
 
 :math:`n`-Variables
 ===================
