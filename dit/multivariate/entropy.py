@@ -3,8 +3,9 @@ A version of the entropy with signature common to the other multivariate
 measures.
 """
 
-from ..helpers import RV_MODES
+from ..helpers import normalize_rvs
 from ..shannon import conditional_entropy, entropy as shannon_entropy
+from ..utils import flatten
 
 def entropy(dist, rvs=None, crvs=None, rv_mode=None):
     """
@@ -32,6 +33,11 @@ def entropy(dist, rvs=None, crvs=None, rv_mode=None):
     -------
     H : float
         The entropy.
+
+    Raises
+    ------
+    ditException
+        Raised if `rvs` or `crvs` contain non-existant random variables.
 
     Examples
     --------
@@ -64,13 +70,10 @@ def entropy(dist, rvs=None, crvs=None, rv_mode=None):
 
     """
     if dist.is_joint():
-        if rvs is None:
-            # Set to entropy of entire distribution
-            rvs = list(range(dist.outcome_length()))
-            rv_mode = RV_MODES.INDICES
-        if crvs is None:
-            crvs = []
+        rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
+        rvs = list(flatten(rvs))
+        H = conditional_entropy(dist, rvs, crvs, rv_mode=rv_mode)
     else:
-        return shannon_entropy(dist)
+        H = shannon_entropy(dist)
 
-    return conditional_entropy(dist, rvs, crvs, rv_mode=rv_mode)
+    return H

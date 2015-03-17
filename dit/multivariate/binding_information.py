@@ -5,6 +5,11 @@ The binding information and residual entropy.
 from ..shannon import conditional_entropy as H
 from ..helpers import normalize_rvs
 
+__all__ = ('binding_information',
+           'dual_total_correlation',
+           'residual_entropy',
+          )
+
 def binding_information(dist, rvs=None, crvs=None, rv_mode=None):
     """
     Parameters
@@ -29,12 +34,13 @@ def binding_information(dist, rvs=None, crvs=None, rv_mode=None):
     Returns
     -------
     B : float
-        The binding information
+        The binding information.
 
     Raises
     ------
     ditException
-        Raised if `dist` is not a joint distribution.
+        Raised if `dist` is not a joint distribution or if `rvs` or `crvs`
+        contain non-existant random variables.
     """
     rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
 
@@ -72,12 +78,13 @@ def residual_entropy(dist, rvs=None, crvs=None, rv_mode=None):
     Returns
     -------
     R : float
-        The residual entropy
+        The residual entropy.
 
     Raises
     ------
     ditException
-        Raised if `dist` is not a joint distribution.
+        Raised if `dist` is not a joint distribution or if `rvs` or `crvs`
+        contain non-existant random variables.
     """
     rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
 
@@ -87,3 +94,6 @@ def residual_entropy(dist, rvs=None, crvs=None, rv_mode=None):
             for rv in rvs)
 
     return R
+
+
+dual_total_correlation = binding_information

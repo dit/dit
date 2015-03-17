@@ -38,7 +38,8 @@ def coinformation(dist, rvs=None, crvs=None, rv_mode=None):
     Raises
     ------
     ditException
-        Raised if `dist` is not a joint distribution.
+        Raised if `dist` is not a joint distribution or if `rvs` or `crvs`
+        contain non-existant random variables.
 
     Examples
     --------

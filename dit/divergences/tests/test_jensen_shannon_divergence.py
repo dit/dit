@@ -6,7 +6,7 @@ from nose.tools import assert_almost_equal, assert_raises
 
 from dit import Distribution
 from dit.exceptions import ditException
-from dit.divergences import (
+from dit.divergences.jensen_shannon_divergence import (
     jensen_shannon_divergence as JSD,
     jensen_shannon_divergence_pmf as JSD_pmf
 )

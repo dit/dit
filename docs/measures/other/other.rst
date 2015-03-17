@@ -11,6 +11,8 @@ the Shannon entropy proposed for a variety of reasons.
 .. toctree::
    :maxdepth: 2
 
+   cumulative_residual_entropy
+   renyi_entropy
+   tsallis_entropy
    perplexity
    extropy
-   cumulative_residual_entropy
