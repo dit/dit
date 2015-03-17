@@ -17,7 +17,7 @@ from six.moves import map, range, zip # pylint: disable=redefined-builtin
 
 # dit
 from .exceptions import ditException, InvalidOutcome
-from .utils import product_maker
+from .utils import flatten, product_maker
 
 
 def str_outcome_ctor(iterable):
@@ -237,6 +237,8 @@ def normalize_rvs(dist, rvs, crvs, rv_mode):
             rv_mode = RV_MODES.INDICES
         if crvs is None:
             crvs = []
+        else:
+            crvs = list(flatten(crvs))
     else:
         msg = "The information measure requires a joint distribution."
         raise ditException(msg)
