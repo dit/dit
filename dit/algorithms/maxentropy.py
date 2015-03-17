@@ -25,6 +25,8 @@ import dit
 
 from dit.abstractdist import AbstractDenseDistribution
 
+from .optutil import as_full_rank, CVXOPT_Template
+
 __all__ = [
     'MarginalMaximumEntropy',
     'MomentMaximumEntropy',
@@ -33,76 +35,7 @@ __all__ = [
 ]
 
 
-def as_full_rank(A, b):
-    """
-    From a linear system Ax = b, return Bx = c such that B has full rank.
-
-    In CVXOPT, linear constraints are denoted as: Ax = b. A has shape (p, n)
-    and must have full rank. x has shape (n, 1), and so b has shape (p, 1).
-    Let's assume that we have:
-
-        rank(A) = q <= n
-
-    This is a typical situation if you are doing optimization, where you have
-    an under-determined system and are using some criterion for selecting out
-    a particular solution. Now, it may happen that q < p, which means that some
-    of your constraint equations are not independent. Since CVXOPT requires
-    that A have full rank, we must isolate an equivalent system Bx = c which
-    does have full rank. We use SVD for this. So A = U \Sigma V^*, where
-    U is (p, p), \Sigma is (p, n) and V^* is (n, n). Then:
-
-        \Sigma V^* x = U^{-1} b
-
-    We take B = \Sigma V^* and c = U^T b, where we use U^T instead of U^{-1}
-    for computational efficiency (and since U is orthogonal). But note, we
-    take only the cols of U and rows of \Sigma that have nonzero singular
-    values.
-
-    Parameters
-    ----------
-    A : array-like, shape (p, n)
-        The LHS for the linear constraints.
-    b : array-like, shape (p,) or (p, 1)
-        The RHS for the linear constraints.
-
-    Returns
-    -------
-    B : array-like, shape (q, n)
-        The LHS for the linear constraints.
-    c : array-like, shape (q,) or (q, 1)
-        The RHS for the linear constraints.
-    rank : int
-        The rank of B.
-
-    """
-    try:
-        from scipy import linalg
-    except ImportError:
-        from numpy import linalg
-
-    A = np.atleast_2d(A)
-    b = np.asarray(b)
-
-    U, S, Vh = linalg.svd(A)
-
-    tol = S.max() * max(A.shape) * np.finfo(S.dtype).eps
-    rank = np.sum(S > tol)
-
-    Ut = U[:, :rank].transpose()
-
-    # See scipy.linalg.diagsvd for details.
-    # Note that we only take the first 'rank' rows/cols of S.
-    part = np.diag(S[:rank])
-    typ = part.dtype.char
-    D = np.r_['-1', part, np.zeros((rank, A.shape[1] - rank), typ)]
-
-    B = np.dot(D, Vh)
-    c = np.dot(Ut, b)
-
-    return B, c, rank
-
-
-def marginal_constraints(pmf, n_variables, n_symbols, m):
+def marginal_constraints(pmf, n_variables, n_symbols, m, with_normalization=True):
     """
     Returns `A` and `b` in `A x = b`, for a system of marginal constraints.
 
@@ -122,6 +55,8 @@ def marginal_constraints(pmf, n_variables, n_symbols, m):
         The size of the marginals to constrain. When `m=2`, pairwise marginals
         are constrained to equal the pairwise marginals in `pmf`. When `m=3`,
         three-way marginals are constrained to equal those in `pmf.
+    with_normalization : bool
+        If true, include a constraint for normalization.
 
     Returns
     -------
@@ -144,9 +79,13 @@ def marginal_constraints(pmf, n_variables, n_symbols, m):
 
     d = AbstractDenseDistribution(n_variables, n_symbols)
 
+    A = []
+    b = []
+
     # Begin with the normalization constraint.
-    A = [ np.ones(d.n_elements) ]
-    b = [ 1 ]
+    if with_normalization:
+        A.append( np.ones(d.n_elements) )
+        b.append( 1 )
 
     # Now add all the marginal constraints.
     if m > 0:
@@ -344,171 +283,13 @@ def negentropy(p):
     return np.nansum(p * np.log2(p))
 
 
-class MaximumEntropy(object):
+class MaximumEntropy(CVXOPT_Template):
     """
     Find maximum entropy distribution.
 
     """
-    def __init__(self, dist, prng=None):
-        """
-        Initialize optimizer.
-
-        Parameters
-        ----------
-        dist : distribution
-            The distribution used to specify the marginal constraints.
-
-        """
-        if not isinstance(dist._sample_space, dit.samplespace.CartesianProduct):
-            dist = dit.expanded_samplespace(dist, union=True)
-
-        if not dist.is_dense():
-            dist.make_dense()
-
-        self.dist = dist
-        self.pmf = dist.pmf
-        self.n_variables = dist.outcome_length()
-        self.n_symbols = len(dist.alphabet[0])
-        self.n_elements = len(dist)
-
-        if prng is None:
-            prng = np.random.RandomState()
-        self.prng = prng
-
-        self.tol = {}
-
-        self.initial = None
-        self.init()
-
-
-    def init(self):
-
-        # Dimension of optimization variable
-        self.n = len(self.pmf)
-
-        # Number of nonlinear constraints
-        self.m = 0
-
-        self.build_gradient_hessian()
-        self.build_nonnegativity_constraints()
-        self.build_linear_equality_constraints()
-        self.build_F()
-
-
-    def build_gradient_hessian(self):
-
-        import numdifftools
-
+    def build_function(self):
         self.func = negentropy
-        self.gradient = numdifftools.Gradient(negentropy)
-        self.hessian = numdifftools.Hessian(negentropy)
-
-
-    def build_nonnegativity_constraints(self):
-        from cvxopt import matrix
-
-        # Dimension of optimization variable
-        n = self.n
-
-        # Nonnegativity constraint
-        #
-        # We have M = N = 0 (no 2nd order cones or positive semidefinite cones)
-        # So, K = l where l is the dimension of the nonnegative orthant. Thus,
-        # we have l = n.
-        G = matrix( -1 * np.eye(n) )   # G should have shape: (K,n) = (n,n)
-        h = matrix( np.zeros((n,1)) )  # h should have shape: (K,1) = (n,1)
-
-        self.G = G
-        self.h = h
-
-
-    def build_linear_equality_constraints(self):
-        from cvxopt import matrix
-
-        # Normalization constraint only
-        A = [ np.ones(self.n_elements) ]
-        b = [ 1 ]
-
-        A = np.asarray(A, dtype=float)
-        b = np.asarray(b, dtype=float)
-
-        self.A = matrix(A)
-        self.b = matrix(b)  # now a column vector
-
-
-    def build_F(self):
-        from cvxopt import matrix
-
-        n = self.n
-        m = self.m
-
-        def F(x=None, z=None):
-            # x has shape: (n,1)   and is the distribution
-            # z has shape: (m+1,1) and is the Hessian of f_0
-
-            if x is None and z is None:
-                # Initial point is the original distribution.
-                #d = self.pmf[np.arange(self.n_elements)]
-                d = self.initial_dist()
-                #d = np.ones(n) / n
-                return (m, matrix(d))
-
-            xarr = np.array(x)[:,0]
-
-            # Verify that x is in domain.
-            # Does G,h and A,b take care of this?
-            #
-            if np.any(xarr > 1) or np.any(xarr < 0):
-                return None
-            if not np.allclose(np.sum(xarr), 1, **self.tol):
-                return None
-
-            # Using automatic differentiators for now.
-            f = self.func(xarr)
-            Df = self.gradient(xarr)
-            Df = matrix(Df.reshape((1, n)))
-
-            if z is None:
-                return (f, Df)
-            H = self.hessian(xarr)
-            H = matrix(H)
-
-            return (f, Df, z[0] * H)
-
-        self.F = F
-
-
-    def initial_dist(self):
-        return self.prng.dirichlet([1] * self.n)
-
-
-    def optimize(self, show_progress=False):
-        from cvxopt.solvers import cp, options
-
-        old = options.get('show_progress', None)
-        out = None
-
-        try:
-            options['show_progress'] = show_progress
-            with np.errstate(divide='ignore', invalid='ignore'):
-                result = cp(F=self.F,
-                            G=self.G,
-                            h=self.h,
-                            dims={'l':self.n, 'q':[], 's':[]},
-                            A=self.A,
-                            b=self.b)
-        except:
-            raise
-        else:
-            self.result = result
-            out = np.asarray(result['x'])
-        finally:
-            if old is None:
-                del options['show_progress']
-            else:
-                options['show_progress'] = old
-
-        return out
 
 
 class MarginalMaximumEntropy(MaximumEntropy):
@@ -518,7 +299,7 @@ class MarginalMaximumEntropy(MaximumEntropy):
     k=0 should reproduce the behavior of MaximumEntropy.
 
     """
-    def __init__(self, dist, k, prng=None):
+    def __init__(self, dist, k, tol=None, prng=None):
         """
         Initialize optimizer.
 
@@ -531,7 +312,7 @@ class MarginalMaximumEntropy(MaximumEntropy):
 
         """
         self.k = k
-        super(MarginalMaximumEntropy, self).__init__(dist, prng=prng)
+        super(MarginalMaximumEntropy, self).__init__(dist, tol=tol, prng=prng)
 
 
     def build_linear_equality_constraints(self):
@@ -559,7 +340,7 @@ class MomentMaximumEntropy(MaximumEntropy):
     k=0 should reproduce the behavior of MaximumEntropy.
 
     """
-    def __init__(self, dist, k, symbol_map, cumulative=True, with_replacement=True, prng=None):
+    def __init__(self, dist, k, symbol_map, cumulative=True, with_replacement=True, tol=None, prng=None):
         """
         Initialize optimizer.
 
@@ -577,6 +358,8 @@ class MomentMaximumEntropy(MaximumEntropy):
         with_replacement : bool
             If `True`, then variables are selected for moments with replacement.
             The standard Ising model selects without replacement.
+        tol : float | None
+            The desired convergence tolerance.
         prng : RandomState
             A pseudorandom number generator.
 
@@ -585,7 +368,7 @@ class MomentMaximumEntropy(MaximumEntropy):
         self.symbol_map = symbol_map
         self.cumulative = cumulative
         self.with_replacement = with_replacement
-        super(MomentMaximumEntropy, self).__init__(dist, prng=prng)
+        super(MomentMaximumEntropy, self).__init__(dist, tol=tol, prng=prng)
 
 
     def build_linear_equality_constraints(self):
