@@ -12,7 +12,7 @@ distribution is tightly coupled.
 
 .. math::
 
-   \TSE[X] = \sum_{k=1}^{|X|} \left( {N \choose k}^{-1} \sum_{\substack{y \subseteq X \\ |y|=k}} \left( \H[y] \right) - \frac{k}{|X|}\H[X] \right)
+   \TSE[X|Z] = \sum_{k=1}^{|X|} \left( {N \choose k}^{-1} \sum_{\substack{y \subseteq X \\ |y|=k}} \left( \H[y|Z] \right) - \frac{k}{|X|}\H[X|Z] \right)
 
 .. todo::
 
