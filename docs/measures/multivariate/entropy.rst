@@ -5,7 +5,8 @@
 Entropy
 *******
 
-This is a general entropy function, handling conditional joint entropy.
+The entropy measures the total amount of information contained in a set of
+random variables, potentially excluding the information contain in others.
 
 .. math::
 

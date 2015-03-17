@@ -5,7 +5,7 @@
 Divergences
 ***********
 
-Divergences are measures of "distance" between distributions:
+Divergences are measures of comparison between distributions:
 
 .. toctree::
    :maxdepth: 2

@@ -18,7 +18,7 @@ The entropy measures how much information is in a random variable :math:`X`.
 
 .. math::
 
-   \H[X] = -\sum_{x \in X} p(x) \log_2 p(x)
+   \H[X] = -\sum_{x \in \mathcal{X}} p(x) \log_2 p(x)
 
 What do we mean by "how much information"? Basically, we mean the average number
 of yes-no questions one would have to ask to determine an outcome from the
@@ -26,24 +26,22 @@ distribution. In the simplest case, consider a sure thing:
 
 .. ipython::
 
-   In [1]: from __future__ import division
-
-   In [2]: d = dit.Distribution(['H'], [1])
+   In [1]: d = dit.Distribution(['H'], [1])
 
    @doctest float
-   In [3]: dit.shannon.entropy(d)
-   Out[3]: 0.0
+   In [2]: dit.shannon.entropy(d)
+   Out[2]: 0.0
 
 So since we know that the outcome from our distribution will always be `H`, we
 have to ask zero questions to figure that out. If however we have a fair coin:
 
 .. ipython::
 
-   In [4]: d = dit.Distribution(['H', 'T'], [1/2, 1/2])
+   In [3]: d = dit.Distribution(['H', 'T'], [1/2, 1/2])
 
    @doctest float
-   In [5]: dit.shannon.entropy(d)
-   Out[5]: 1.0
+   In [4]: dit.shannon.entropy(d)
+   Out[4]: 1.0
 
 The entropy tells us that we must ask one question to determine whether an `H`
 or `T` was the outcome of the coin flip. Now what if there are three outcomes?
@@ -51,11 +49,11 @@ Let's consider the following situation:
 
 .. ipython::
 
-   In [6]: d = dit.Distribution(['A', 'B', 'C'], [1/2, 1/4, 1/4])
+   In [5]: d = dit.Distribution(['A', 'B', 'C'], [1/2, 1/4, 1/4])
 
    @doctest float
-   In [7]: dit.shannon.entropy(d)
-   Out[7]: 1.5
+   In [6]: dit.shannon.entropy(d)
+   Out[6]: 1.5
 
 Here we find that the entropy is 1.5 bits. How do we ask one and a half
 questions on average? Well, if our first question is "was it `A`?" and it is
@@ -92,11 +90,11 @@ As a simple example, consider two identical variables:
 
 .. ipython::
 
-   In [8]: d = dit.Distribution(['HH', 'TT'], [1/2, 1/2])
+   In [7]: d = dit.Distribution(['HH', 'TT'], [1/2, 1/2])
 
    @doctest float
-   In [9]: dit.shannon.conditional_entropy(d, [0], [1])
-   Out[9]: 0.0
+   In [8]: dit.shannon.conditional_entropy(d, [0], [1])
+   Out[8]: 0.0
 
 We see that knowing the second variable tells us everything about the first,
 leaving zero entropy. On the other end of the spectrum, two independent
@@ -104,11 +102,11 @@ variables:
 
 .. ipython::
 
-   In [10]: d = dit.Distribution(['HH', 'HT', 'TH', 'TT'], [1/4]*4)
+   In [9]: d = dit.Distribution(['HH', 'HT', 'TH', 'TT'], [1/4]*4)
 
    @doctest float
-   In [11]: dit.shannon.conditional_entropy(d, [0], [1])
-   Out[11]: 1.0
+   In [10]: dit.shannon.conditional_entropy(d, [0], [1])
+   Out[10]: 1.0
 
 Here, the second variable tells us nothing about the first so we are left with
 the one bit of information a coin flip has.
@@ -147,16 +145,16 @@ information it doesn't:
    The mutual information generalized to the multivariate case in three
    different ways:
 
-   :py:func:`dit.multivariate.coinformation.coinformation`
+   :doc:`multivariate/coinformation`
       Generalized as the information which *all* variables contribute to.
 
-   :py:func:`dit.multivariate.total_correlation.total_correlation`
+   :doc:`multivariate/total_correlation`
       Generalized as the sum of the information in the individual variables
-      minus the joint.
+      minus the information in the whole.
 
-   :py:func:`dit.multivariate.binding_information.binding_information`
-      Generalized as the joint minus the entropy of each variable conditioned on
-      the others.
+   :doc:`multivariate/binding_information`
+      Generalized as the joint entropy minus the entropy of each variable
+      conditioned on the others.
 
 .. autofunction:: mutual_information
 
