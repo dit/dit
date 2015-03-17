@@ -42,7 +42,8 @@ extensions = ['releases',
              ]
 
 ipython_mplbackend = None
-ipython_execlines = ['import numpy as np',
+ipython_execlines = ['from __future__ import division, print_function',
+                     'import numpy as np',
                      'import dit']
 
 # Use our local configuration for mathjax:
