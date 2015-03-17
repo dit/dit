@@ -13,6 +13,12 @@ We might need to assume the exponential form and then fit the params to match
 the marginals. Perhaps exact gradient and Hessians might help, or maybe even
 some rescaling of the linear constraints.
 
+
+TODO:
+
+This code for moment-based maximum entropy needs to be updated so that it can
+handle any Cartesian product sample space, rather than just homogeneous ones.
+
 """
 
 from __future__ import division, print_function
@@ -23,7 +29,7 @@ import numpy as np
 
 import dit
 
-from dit.abstractdist import AbstractDenseDistribution
+from dit.abstractdist import AbstractDenseDistribution, brute_marginal_array
 
 from .optutil import as_full_rank, CVXOPT_Template
 
@@ -35,7 +41,7 @@ __all__ = [
 ]
 
 
-def marginal_constraints(pmf, n_variables, n_symbols, m, with_normalization=True):
+def marginal_constraints(dist, m, with_normalization=True):
     """
     Returns `A` and `b` in `A x = b`, for a system of marginal constraints.
 
@@ -43,18 +49,14 @@ def marginal_constraints(pmf, n_variables, n_symbols, m, with_normalization=True
 
     Parameters
     ----------
-    pmf : array-like, shape ( n_symbols ** n_variables, )
-        The probability mass function of the distribution. The pmf must have
-        a Cartesian product sample space with the same sample space used for
-        each random variable.
-    n_variables : int
-        The number of random variables.
-    n_symbols : int
-        The number of symbols that each random variable can be.
+    dist : distribution
+        The distribution from which the marginal constraints are constructed.
+
     m : int
         The size of the marginals to constrain. When `m=2`, pairwise marginals
         are constrained to equal the pairwise marginals in `pmf`. When `m=3`,
         three-way marginals are constrained to equal those in `pmf.
+
     with_normalization : bool
         If true, include a constraint for normalization.
 
@@ -64,20 +66,36 @@ def marginal_constraints(pmf, n_variables, n_symbols, m, with_normalization=True
         The matrix defining the marginal equality constraints and also the
         normalization constraint. The number of rows is:
             p = C(n_variables, m) * n_symbols ** m + 1
-        where C() is the choose formula.. The number of columns is:
+        where C() is the choose formula. The number of columns is:
             q = n_symbols ** n_variables
 
     b : array-like, (p,)
         The RHS of the linear equality constraints.
 
     """
+    assert dist.is_dense()
+    assert dist.get_base() == 'linear'
+
+    pmf = dist.pmf
+
+    if dist.is_homogeneous():
+        n_variables = dist.outcome_length()
+        n_symbols = len(dist.alphabet[0])
+        n_elements = n_symbols ** n_variables
+        d = AbstractDenseDistribution(n_variables, n_symbols)
+    else:
+        n_variables = dist.outcome_length()
+        n_elements = np.prod(map(len, dist.alphabet))
+        class D(object):
+            def parameter_array(self, indexes, cache=None):
+                return brute_marginal_array(dist, indexes, rv_mode='indexes')
+        d = D()
+
     if m > n_variables:
         msg = "Cannot constrain {0}-way marginals"
         msg += " with only {1} random variables."
         msg = msg.format(m, n_variables)
         raise ValueError(msg)
-
-    d = AbstractDenseDistribution(n_variables, n_symbols)
 
     A = []
     b = []
@@ -114,7 +132,7 @@ def marginal_constraint_rank(dist, m):
     n_symbols = len(dist.alphabet[0])
     pmf = dist.pmf
 
-    A, b = marginal_constraints(pmf, n_variables, n_symbols, m)
+    A, b = marginal_constraints(dist, m)
     _, _, rank = as_full_rank(A, b)
     return rank
 
@@ -321,8 +339,7 @@ class MarginalMaximumEntropy(MaximumEntropy):
         # Dimension of optimization variable
         n = self.n
 
-        args = (self.pmf, self.n_variables, self.n_symbols, self.k)
-        A, b = marginal_constraints(*args)
+        A, b = marginal_constraints(self.dist, self.k)
         A, b, rank = as_full_rank(A, b)
         if rank > n:
             raise ValueError('More independent constraints than parameters.')
