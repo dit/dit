@@ -28,15 +28,13 @@ exemplifying this, consider "giant bit" distributions:
 
 .. ipython::
 
-   In [1]: from __future__ import division
+   In [1]: from dit import Distribution as D
 
-   In [2]: from dit import Distribution as D
-
-   In [3]: from dit.multivariate import coinformation as I
+   In [2]: from dit.multivariate import coinformation as I
 
    @doctest float
-   In [4]: [ I(D(['0'*n, '1'*n], [1/2, 1/2])) for n in range(2, 6) ]
-   Out[4]: [1.0, 1.0, 1.0, 1.0]
+   In [3]: [ I(D(['0'*n, '1'*n], [1/2, 1/2])) for n in range(2, 6) ]
+   Out[3]: [1.0, 1.0, 1.0, 1.0]
 
 This verifies intuition that the entire one bit of the distribution's entropy is
 condensed in a single atom. One notable property of the co-information is that
@@ -44,13 +42,13 @@ for :math:`n \geq 3` it can be negative. For example:
 
 .. ipython::
 
-   In [5]: from dit.example_dists import Xor
+   In [4]: from dit.example_dists import Xor
 
-   In [6]: d = Xor()
+   In [5]: d = Xor()
 
    @doctest float
-   In [7]: I(d)
-   Out[7]: -1.0
+   In [6]: I(d)
+   Out[6]: -1.0
 
 Based on these two examples one might get the impression that the co-information
 is positive for "redundant" distributions and negative for "synergistic"
@@ -59,13 +57,13 @@ distribution:
 
 .. ipython::
 
-   In [8]: from dit.example_dists import n_mod_m
+   In [7]: from dit.example_dists import n_mod_m
 
-   In [9]: d = n_mod_m(4, 2)
+   In [8]: d = n_mod_m(4, 2)
 
    @doctest float
-   In [10]: I(d)
-   Out[10]: 1.0
+   In [9]: I(d)
+   Out[9]: 1.0
 
 Meaning that the co-information is positive for both the most redundant
 distribution, the giant bit, and the most synergistic, the parity. Therefore the
