@@ -63,8 +63,14 @@ correaltion of :math:`A \cup B` is:
 
    \T[A \cup B] = \T[A] + \T[B] + \I[A : B]
 
-.. todo::
+.. ipython::
 
-   Add more examples, perhaps from real-world usage.
+   In [18]: from dit.multivariate import coinformation as I
+
+   In [19]: d = n_mod_m(4, 3)
+
+   @doctest
+   In [20]: T(d) == T(d, [[0], [1]]) + T(d, [[2], [3]]) + I(d, [[0, 1], [2, 3]])
+   Out[20]: True
 
 .. autofunction:: total_correlation
