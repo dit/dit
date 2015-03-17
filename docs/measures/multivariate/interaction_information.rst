@@ -30,6 +30,6 @@ The extension to :math:`n>3` proceeds recursively. For example,
 
 .. seealso::
 
-   For more information, see :py:func:`dit.multivariate.coinformation.coinformation`.
+   For more information, see :doc:`coinformation`.
 
 .. autofunction:: interaction_information

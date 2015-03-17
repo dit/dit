@@ -34,8 +34,8 @@ distribution. In the simplest case, consider a sure thing:
    In [3]: dit.shannon.entropy(d)
    Out[3]: 0.0
 
-So is we know that the outcome from our distribution will always be `H`, we have
-to ask zero questions to figure that out. If however we have a fair coin:
+So since we know that the outcome from our distribution will always be `H`, we
+have to ask zero questions to figure that out. If however we have a fair coin:
 
 .. ipython::
 
@@ -170,30 +170,48 @@ set difference. Because of this we can use Venn-like diagrams to represent the
 information in and shared between random variables. These diagrams are called
 *information diagrams* or i-diagrams for short.
 
+This first image pictographically shades the area of the i-diagram which
+contains the information corresponding to :math:`\H[X_0]`.
+
 .. image:: ../images/idiagrams/h_x.png
    :alt: The entropy :math:`\H[X_0]`
    :width: 342px
    :align: center
+
+Similarly, this one shades the information corresponding to :math:`\H[X_1]`.
 
 .. image:: ../images/idiagrams/h_y.png
    :alt: The entropy :math:`\H[X_1]`
    :width: 342px
    :align: center
 
+This image shades the information corresponding to :math:`\H[X_0, X_1]`. Notice
+that it is the union of the prior two, and not their sum (e.g. that overlap
+region is not double-counted).
+
 .. image:: ../images/idiagrams/h_xy.png
    :alt: The joint entropy :math:`\H[X_0,X_1]`
    :width: 342px
    :align: center
+
+Next, the conditional entropy of :math:`X_0` conditioned on :math:`X_1`,
+:math:`\H[X_0|X_1]`, is displayed. It consists of the area contained in the
+:math:`X_0` circle but not contained in :math:`X_1` circle.
 
 .. image:: ../images/idiagrams/h_xgy.png
    :alt: The conditional entropy :math:`\H[X_0|X_1]`
    :width: 342px
    :align: center
 
+In the same vein, here the conditional entropy :math:`\H[X_1|X_0]` is shaded.
+
 .. image:: ../images/idiagrams/h_ygx.png
    :alt: The conditional entropy :math:`\H[X_1|X_0]`
    :width: 342px
    :align: center
+
+Finally, the mutual information between :math:`X_0` and :math:`X_1`,
+:math:`I[X_0:X_1]` is drawn. It is the region where the two circles overlap.
 
 .. image:: ../images/idiagrams/i_xy.png
    :alt: The mutual information :math:`\I[X_0:X_1]`
