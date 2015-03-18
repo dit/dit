@@ -27,4 +27,7 @@ The conditional perplexity is defined in the natural way:
    Add some good examples.
 
 
+API
+===
+
 .. autofunction:: perplexity

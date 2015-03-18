@@ -57,4 +57,7 @@ with equality if and only if :math:`p = q`. This makes it a `premetric
 <http://en.wikipedia.org/wiki/Metric_(mathematics)#Premetrics>`_.
 
 
+API
+===
+
 .. autofunction:: kullback_leibler_divergence

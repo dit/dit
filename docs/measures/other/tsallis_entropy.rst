@@ -25,4 +25,7 @@ those subsystems:
     \TE[X, Y] = \TE[X] + \TE[Y] + (1-q)\TE[X]\TE[Y]
 
 
+API
+===
+
 .. autofunction:: tsallis_entropy

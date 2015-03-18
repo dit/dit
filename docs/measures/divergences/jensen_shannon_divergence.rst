@@ -117,4 +117,7 @@ mutual information between which urn I drew the ball from, and the color of the
 ball drawn.
 
 
+API
+===
+
 .. autofunction:: jensen_shannon_divergence

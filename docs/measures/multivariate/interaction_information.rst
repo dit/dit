@@ -33,4 +33,7 @@ The extension to :math:`n > 3` proceeds recursively. For example,
    For more information, see :doc:`coinformation`.
 
 
+API
+===
+
 .. autofunction:: interaction_information

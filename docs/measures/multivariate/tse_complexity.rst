@@ -19,4 +19,7 @@ distribution is tightly coupled.
    Come up with some examples to verify the claim about coupling.
 
 
+API
+===
+
 .. autofunction:: tse_complexity

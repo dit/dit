@@ -77,4 +77,7 @@ shared among the variables.
    :align: center
 
 
+API
+===
+
 .. autofunction:: binding_information

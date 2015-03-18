@@ -42,4 +42,7 @@ with any other.
    :align: center
 
 
+API
+===
+
 .. autofunction:: residual_entropy

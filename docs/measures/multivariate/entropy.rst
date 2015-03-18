@@ -66,4 +66,8 @@ variable joint distributions.
    :width: 357px
    :align: center
 
+
+API
+===
+
 .. autofunction:: entropy

@@ -82,4 +82,7 @@ among.
    :align: center
 
 
+API
+===
+
 .. autofunction:: total_correlation

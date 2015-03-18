@@ -81,4 +81,7 @@ centermost atom is shaded:
    :align: center
 
 
+API
+===
+
 .. autofunction:: coinformation

@@ -81,4 +81,7 @@ Further, the following inequalities holds in the other direction:
     \H_{2} \le 2 \H_{\infty}
 
 
+API
+===
+
 .. autofunction:: renyi_entropy

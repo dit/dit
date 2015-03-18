@@ -62,4 +62,7 @@ So in representing :math:`p` using :math:`q`, we of course must at least use
 Kullback-Leibler divergence of :math:`q` from :math:`p`.
 
 
+API
+===
+
 .. autofunction:: cross_entropy

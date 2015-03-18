@@ -176,4 +176,7 @@ variate version:
    :align: center
 
 
+API
+===
+
 .. autofunction:: gk_common_information
