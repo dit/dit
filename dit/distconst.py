@@ -32,7 +32,7 @@ __all__ = [
     'uniform_scalar_distribution',
     'insert_rvf',
     'RVFunctions',
-    'independent_distribution',
+    'product_distribution',
 ]
 
 def mixture_distribution(dists, weights, merge=False):
@@ -760,7 +760,7 @@ class RVFunctions(object):
         return func
 
 
-def independent_distribution(dist, rvs=None, rv_mode=None):
+def product_distribution(dist, rvs=None, rv_mode=None):
     """
     Returns a new distribution which is the product of marginals.
 
@@ -774,7 +774,7 @@ def independent_distribution(dist, rvs=None, rv_mode=None):
         defines the marginal distribution used to create the new distribution.
         The inner sequences must be pairwise mutually exclusive, but not every
         random variable in the original distribution must be specified. If
-        `None`, then an independent distribution of one-way marginals is
+        `None`, then a product distribution of one-way marginals is
         constructed.
 
     rv_mode : str, None
@@ -804,13 +804,11 @@ def independent_distribution(dist, rvs=None, rv_mode=None):
         raise Exception('The elements of `rvs` have nonzero intersection.')
 
     marginals = [dist.marginal(index_list) for index_list in indexes]
-
     ctor = dist._outcome_ctor
+    ops = dist.ops
 
     outcomes = []
     pmf = []
-
-    ops = dist.ops
     for pairs in product(*[marg.zipped() for marg in marginals]):
         outcome = []
         prob = []
