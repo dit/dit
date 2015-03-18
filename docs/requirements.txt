@@ -1,6 +1,6 @@
 contextlib2
 ipython[nbconvert]
-iterutils >= 1.6
+iterutils >= 0.1.6
 numpy >= 1.6
 releases
 six >= 1.4
