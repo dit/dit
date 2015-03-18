@@ -36,7 +36,8 @@ from .optutil import as_full_rank, CVXOPT_Template
 __all__ = [
     'MarginalMaximumEntropy',
     'MomentMaximumEntropy',
-    'marginal_maxent_dists',
+    # Use version provided by maxentropyfw.py
+    #'marginal_maxent_dists',
     'moment_maxent_dists',
 ]
 
