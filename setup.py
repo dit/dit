@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Installation script for Dit.
+Installation script for dit.
 
 """
 
@@ -46,7 +46,7 @@ def write_version():
     target = os.path.join(base, 'dit', 'version.py')
     fh = open(target, 'w')
     text = '''"""
-Version information for Dit, created during installation.
+Version information for dit, created during installation.
 """
 
 __version__ = '%s'
@@ -176,18 +176,12 @@ def main():
 
     data_files = ()
 
-    install_requires = [
-        'numpy >= 1.6',
-        'iterutils >= 0.1.6',
-        'prettytable',
-        'networkx',
-        'six >= 1.4.0', # 1.4.0 includes six.moves.range.
-    ]
-    if sys.version_info[:2] == (2, 6):
-        install_requires.append('ordereddict >= 1.1')
+    with open('requirements.txt') as reqs:
+        install_requires = reqs.read().splitlines()
 
     if sys.version_info[:2] <= (3, 3):
-        install_requires.append('contextlib2')
+        with open('requirements_lt33.txt') as reqs:
+            install_requires.extend(reqs.read().splitlines())
 
     packages = [
         'dit',
@@ -237,8 +231,8 @@ if __name__ == '__main__':
         print("To install, run 'python setup.py install'\n")
 
     v = sys.version_info[:2]
-    if v < (2, 6):
-        msg = "Dit requires Python version >2.6"
+    if v < (2, 7):
+        msg = "dit requires Python version >= 2.7"
         print(msg.format(v))
         sys.exit(-1)
 
