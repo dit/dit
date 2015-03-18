@@ -216,7 +216,7 @@ macros = r'''
 \newcommand{\CRE}  {\op{\mathcal{E}}}
 \newcommand{\GCRE} {\op{\mathcal{E^\prime}}}
 \newcommand{\RE}   {\op{H_{\alpha}}}
-\newcomamnd{\TE}   {\op{S_q}}
+\newcommand{\TE}   {\op{S_q}}
 
 \newcommand{\xH}   {\op{xH}}
 \newcommand{\DKL}  {\op{D_{KL}}}
