@@ -104,9 +104,9 @@ The Gács-Körner common information is the largest "circle" that entirely fits
 within the mutual information's "football":
 
 .. image:: ../../images/idiagrams/k_xy.png
-:alt: The Gács-Körner common information :math:`\K[X:Y]`
-:width: 342px
-:align: center
+   :alt: The Gács-Körner common information :math:`\K[X:Y]`
+   :width: 342px
+   :align: center
 
 
 Properties & Uses
@@ -132,7 +132,7 @@ amount of redundancy is an open problem, but one proposal is:
 Which can be visualized as this:
 
 .. image:: ../../images/idiagrams/red_xy.png
-   :alt: The zero-error redundancy :math:`\K[X\meetY:Z]`
+   :alt: The zero-error redundancy :math:`\I[X\meetY:Z]`
    :width: 357px
    :align: center
 

@@ -14,10 +14,29 @@ distribution is tightly coupled.
 
    \TSE[X|Z] = \sum_{k=1}^{|X|} \left( {N \choose k}^{-1} \sum_{\substack{y \subseteq X \\ |y|=k}} \left( \H[y|Z] \right) - \frac{k}{|X|}\H[X|Z] \right)
 
-.. todo::
+Two distributions which might be considered tightly coupled are the "giant bit"
+and the "parity" distributions:
 
-   Come up with some examples to verify the claim about coupling.
+.. ipython::
 
+   In [54]: from dit.multivariate import tse_complexity
+
+   In [55]: from dit.example_dists import Xor
+
+   In [56]: d1 = Xor()
+
+   @doctest float
+   In [57]: tse_complexity(d1)
+   Out[57]: 1.0
+
+   In [58]: d2 = dit.Distribution(['000', '111'], [1/2, 1/2])
+
+   @doctest float
+   In [59]: tse_complexity(d2)
+   Out[59]: 1.0
+
+The TSE Complexity assigns them both a value of :math:`1.0` bits, which is the
+maximal value the TSE takes over trivariate, binary alphabet distributions.
 
 API
 ===
