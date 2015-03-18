@@ -77,6 +77,9 @@ Its intuition is also the same: the average number of binary questions required
 to identify a joint event from the distribution.
 
 
+API
+---
+
 .. autofunction:: entropy
 
 
@@ -115,6 +118,9 @@ variables:
 Here, the second variable tells us nothing about the first so we are left with
 the one bit of information a coin flip has.
 
+
+API
+---
 
 .. autofunction:: conditional_entropy
 
@@ -162,6 +168,9 @@ information it doesn't:
       Generalized as the joint entropy minus the entropy of each variable
       conditioned on the others.
 
+
+API
+---
 
 .. autofunction:: mutual_information
 
