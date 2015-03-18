@@ -332,3 +332,53 @@ def test_RVFunctions_from_partition():
     d = dit.insert_rvf(d, bf.from_partition(partition))
     outcomes = ('000', '011', '101', '110')
     assert_equal(d.outcomes, outcomes)
+
+def test_independent():
+    """
+    Smoke test for independent_distribution().
+
+    """
+    d = dit.example_dists.Xor()
+    d_iid = dit.independent_distribution(d)
+    d_truth = dit.uniform_distribution(3, ['01'])
+    d_truth = dit.modify_outcomes(d_truth, lambda x: ''.join(x))
+    assert_true(d_truth.is_approx_equal(d_iid))
+
+def test_independent_nonjoint():
+    """
+    Test independent_distribution() from a ScalarDistribution.
+
+    """
+    d = dit.ScalarDistribution([.5, .5])
+    assert_raises(Exception, dit.independent_distribution, d)
+
+def test_independent_with_rvs1():
+    """
+    Test independent_distribution() with an rvs specification.
+
+    """
+    d = dit.example_dists.Xor()
+    d_iid = dit.independent_distribution(d, [[0,1], [2]])
+    d_truth = dit.uniform_distribution(3, ['01'])
+    d_truth = dit.modify_outcomes(d_truth, lambda x: ''.join(x))
+    assert_true(d_truth.is_approx_equal(d_iid))
+
+def test_independent_with_rvs2():
+    """
+    Test independent_distribution() with an rvs specification.
+
+    """
+    d = dit.example_dists.Xor()
+    d_iid = dit.independent_distribution(d, [[0,1]])
+    d_truth = dit.uniform_distribution(2, ['01'])
+    d_truth = dit.modify_outcomes(d_truth, lambda x: ''.join(x))
+    assert_true(d_truth.is_approx_equal(d_iid))
+
+def test_independent_with_badrvs():
+    """
+    Test independent_distribution() with overlapping rvs specification.
+
+    """
+    d = dit.example_dists.Xor()
+    assert_raises(Exception, dit.independent_distribution, d, [[0,1], [0]])
+

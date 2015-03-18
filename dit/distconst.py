@@ -11,8 +11,11 @@ from __future__ import division
 import numpy as np
 from six.moves import map, range, zip # pylint: disable=redefined-builtin
 
+from itertools import product
+
 from .distribution import BaseDistribution
 from .exceptions import ditException
+from .helpers import parse_rvs
 from .npdist import Distribution
 from .npscalardist import ScalarDistribution
 from .validate import validate_pmf
@@ -28,7 +31,8 @@ __all__ = [
     'uniform_distribution',
     'uniform_scalar_distribution',
     'insert_rvf',
-    'RVFunctions'
+    'RVFunctions',
+    'independent_distribution',
 ]
 
 def mixture_distribution(dists, weights, merge=False):
@@ -754,3 +758,68 @@ class RVFunctions(object):
                 result = outcome in outcomes
                 return str(int(result))
         return func
+
+
+def independent_distribution(dist, rvs=None, rv_mode=None):
+    """
+    Returns a new distribution which is the product of marginals.
+
+    Parameters
+    ----------
+    dist : distribution
+        The original distribution.
+
+    rvs : sequence
+        A sequence whose elements are also sequences.  Each inner sequence
+        defines the marginal distribution used to create the new distribution.
+        The inner sequences must be pairwise mutually exclusive, but not every
+        random variable in the original distribution must be specified. If
+        `None`, then an independent distribution of one-way marginals is
+        constructed.
+
+    rv_mode : str, None
+        Specifies how to interpret the elements of `rvs`. Valid options
+        are: {'indices', 'names'}. If equal to 'indices', then the elements
+        of `rvs` are interpreted as random variable indices. If equal to
+        'names', the the elements are interpreted as random variable names.
+        If `None`, then the value of `dist._rv_mode` is consulted.
+
+
+    """
+    if not dist.is_joint():
+        raise Exception("A joint distribution is required.")
+
+    if rvs is None:
+        n_rvs = dist.outcome_length()
+        indexes = [[i] for i in range(n_rvs)]
+    else:
+        # We do not allow repeats and want to keep the order.
+        # Use argument [1] since we don't need the names.
+        parse = lambda rv: parse_rvs(dist, rv, rv_mode=rv_mode,
+                                     unique=True, sort=False)[1]
+        indexes = [parse(rv) for rv in rvs]
+
+    all_indexes = [idx for index_list in indexes for idx in index_list]
+    if len(all_indexes) != len(set(all_indexes)):
+        raise Exception('The elements of `rvs` have nonzero intersection.')
+
+    marginals = [dist.marginal(index_list) for index_list in indexes]
+
+    ctor = dist._outcome_ctor
+
+    outcomes = []
+    pmf = []
+
+    ops = dist.ops
+    for pairs in product(*[marg.zipped() for marg in marginals]):
+        outcome = []
+        prob = []
+        for pair in pairs:
+            outcome.extend(pair[0])
+            prob.append(pair[1])
+        outcomes.append( ctor(outcome) )
+        pmf.append( ops.mult_reduce(prob) )
+
+    d = Distribution(outcomes, pmf, validate=False)
+    return d
+
