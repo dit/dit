@@ -14,17 +14,28 @@ information that is shared among the variables. It is defined as:
    \B[X_{0:n}] &= \H[X_{0:n}] - \sum \H[X_i | X_{\{0..n\}/i}] \\
                &= - \sum_{x_{0:n} \in X_{0:n}} p(x_{0:n}) \log_2 \frac{p(x_{0:n})}{\prod p(x_i|x_{\{0:n\}/i})}
 
-.. image:: ../../images/idiagrams/b_xyz.png
-   :alt: The binding information :math:`\B[X:Y:Z]`
-   :width: 357px
-   :align: center
 
-The binding information satisfies the following two inequalities:
+Relationship to Other Measures
+===============================
+
+The binding information obeys particular bounds related to both the
+:doc:`entropy` and the :doc:`total_correlation`:
 
 .. math::
 
    0 \leq & \B[X_{0:n}] \leq \H[X_{0:n}] \\
    \frac{\T[X_{0:n}]}{n-1} \leq & \B[X_{0:n}] \leq (n-1)\T[X_{0:n}]
+
+Visualization
+=============
+
+The binding information, as seen below, consists equally of the information
+shared among the variables.
+
+.. image:: ../../images/idiagrams/b_xyz.png
+   :alt: The binding information :math:`\B[X:Y:Z]`
+   :width: 357px
+   :align: center
 
 .. todo::
 

@@ -16,7 +16,7 @@ The first batch are all linear combinations of atoms from an I-diagram, and are
 therefore computable using only the entropy of subsets of the distribution.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    entropy
    coinformation
@@ -33,6 +33,6 @@ variable, generally one which in some way captures the information common to the
 random variables.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    gk_common_information
