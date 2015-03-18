@@ -41,11 +41,6 @@ entropy of that common random variable is the Gács-Körner common information:
    \K[X_0 : X_1] &= \max_{f(X_0) = g(X_1) = V} \H[V] \\
                  &= \H[X_0 \meet X_1]
 
-.. image:: ../../images/idiagrams/k_xy.png
-   :alt: The Gács-Körner common information :math:`\K[X:Y]`
-   :width: 342px
-   :align: center
-
 As a canonical example, consider the following:
 
 .. ipython::
@@ -102,6 +97,18 @@ is a 0 or a 1, there is no way to know if :math:`x_1` is a 0 or a 1 and vice
 versa. Therefore we aggregate 0s and 1s into 2.
 
 
+Visualization
+-------------
+
+The Gács-Körner common information is the largest "circle" that entirely fits
+within the mutual information's "football":
+
+.. image:: ../../images/idiagrams/k_xy.png
+:alt: The Gács-Körner common information :math:`\K[X:Y]`
+:width: 342px
+:align: center
+
+
 Properties & Uses
 -----------------
 
@@ -121,6 +128,8 @@ amount of redundancy is an open problem, but one proposal is:
 .. math::
 
    \I[X_0 \meet X_1 : Y]
+
+Which can be visualized as this:
 
 .. image:: ../../images/idiagrams/red_xy.png
    :alt: The zero-error redundancy :math:`\K[X\meetY:Z]`
@@ -157,18 +166,26 @@ defined similarly:
    \K[X_0 : \ldots : X_n] &= \max_{\substack{V = f_0(X_0) \\ \vdots \\ V = f_n(X_n)}} \H[V] \\
                           &= \H[X_0 \meet \ldots \meet X_n]
 
-The common information is a monotonically decreasing function:
+The common information is a monotonically decreasing function in the number of
+variables:
 
 .. math::
 
    \K[X_0 : \ldots : X_{n-1}] \ge \K[X_0 : \ldots : X_n]
 
 The multivariate common information follows a similar inequality as the two
-variate version:
+variable version:
 
 .. math::
 
    0 \leq \K[X_0 : \dots : X_n] \leq \min_{i, j \in \{0..n\}} \I[X_i : X_j]
+
+Visualization
+-------------
+
+Here, as above, the Gács-Körner common information among three variables is the
+largest "circle" this time fiting in the vaguely triangular :doc:`coinformation`
+region.
 
 .. image:: ../../images/idiagrams/k_xyz.png
    :alt: The Gács-Körner common information :math:`\K[X:Y:Z]`
