@@ -19,4 +19,5 @@ The extropy :cite:`Lad2011` is a dual to the entropy. It is defined by:
 
    Compute some examples from the paper.
 
+
 .. autofunction:: extropy

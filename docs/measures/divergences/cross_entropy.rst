@@ -61,4 +61,5 @@ So in representing :math:`p` using :math:`q`, we of course must at least use
 :math:`\H[p]` bits -- the minimum required to represent :math:`p` -- plus the
 Kullback-Leibler divergence of :math:`q` from :math:`p`.
 
+
 .. autofunction:: cross_entropy

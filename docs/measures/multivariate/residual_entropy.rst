@@ -23,6 +23,7 @@ variable is erased.
 
    Add some good examples.
 
+
 Visualization
 =============
 
@@ -39,5 +40,6 @@ with any other.
    :alt: The residual entropy :math:`\R[X:Y:Z]`
    :width: 357px
    :align: center
+
 
 .. autofunction:: residual_entropy

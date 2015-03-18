@@ -12,6 +12,7 @@ entropy to the case where entropy is nonextensive. It is given by:
 
     \TE[X] = \frac{1}{q - 1} \left( 1 - \sum_{x \in \mathcal{X}} p(x)^q \right)
 
+
 Non-additivity
 ==============
 
@@ -22,5 +23,6 @@ those subsystems:
 .. math::
 
     \TE[X, Y] = \TE[X] + \TE[Y] + (1-q)\TE[X]\TE[Y]
+
 
 .. autofunction:: tsallis_entropy

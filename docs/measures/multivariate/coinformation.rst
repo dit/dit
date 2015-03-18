@@ -68,6 +68,7 @@ coinformation can not be used to measure redundancy or synergy.
    :cite:`Griffith2013` and references therein for the current status of the
    problem.
 
+
 Visualization
 =============
 
@@ -78,5 +79,6 @@ centermost atom is shaded:
    :alt: The co-information :math:`\I[X:Y:Z]`
    :width: 357px
    :align: center
+
 
 .. autofunction:: coinformation

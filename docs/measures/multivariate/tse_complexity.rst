@@ -18,4 +18,5 @@ distribution is tightly coupled.
 
    Come up with some examples to verify the claim about coupling.
 
+
 .. autofunction:: tse_complexity

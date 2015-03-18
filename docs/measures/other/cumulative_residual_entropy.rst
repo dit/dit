@@ -38,9 +38,11 @@ the positive ones:
 
    discuss the conditional forms.
 
+
 .. autofunction:: cumulative_residual_entropy
 
 .. autofunction:: generalized_cumulative_residual_entropy
+
 
 Conditional Cumulative Residual Entropy
 =======================================

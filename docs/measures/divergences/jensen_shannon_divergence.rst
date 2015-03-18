@@ -74,11 +74,13 @@ from the use of the Shannon entropy.
    :doc:`../other/renyi_entropy`) and the Jensen-Tsallis divergence (where
    :math:`\Psi` is the :doc:`../other/tsallis_entropy`).
 
+
 Metric
 ======
 
 The square root of the Jensen-Shannon divergence, :math:`\sqrt{\JSD}`, is a true
 metric between distributions.
+
 
 Relationship to the Other Measures
 ==================================
@@ -86,6 +88,7 @@ Relationship to the Other Measures
 The Jensen-Shannon divergence can be derived from other, more well known
 information measures; notably the Kullback-Leibler divergence and the mutual
 information.
+
 
 Kullback-Leibler Divergence
 ---------------------------
@@ -97,6 +100,7 @@ The Jensen-Shannon divergence is the average Kullback-Leibler divergence of
 
    \JSD[X || Y] &= \frac{1}{2} \left( \DKL[X || M] + \DKL[Y || M] \right) \\
    M &= \frac{X + Y}{2}
+
 
 Mutual Information
 ------------------
@@ -111,5 +115,6 @@ indicator variable over :math:`X` and :math:`Y`. In essence, if :math:`X` and
 of the urns and draw a ball from it, then the Jensen-Shannon divergence is the
 mutual information between which urn I drew the ball from, and the color of the
 ball drawn.
+
 
 .. autofunction:: jensen_shannon_divergence

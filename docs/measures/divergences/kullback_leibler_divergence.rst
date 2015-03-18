@@ -40,6 +40,7 @@ representing a biased coin by a fair one:
 That is, it costs us :math:`0.1887` bits of wasted overhead by using a
 mismatched distribution.
 
+
 Not a Metric
 ============
 
@@ -54,5 +55,6 @@ property:
 
 with equality if and only if :math:`p = q`. This makes it a `premetric
 <http://en.wikipedia.org/wiki/Metric_(mathematics)#Premetrics>`_.
+
 
 .. autofunction:: kullback_leibler_divergence

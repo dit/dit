@@ -19,7 +19,7 @@ Interaction information was first studied in the 3-variable case which, for
 
    \II(X_0:X_1:X_2) = \I(X_0:X_1|X_2) - \I(X_0:X_1)
 
-The extension to :math:`n>3` proceeds recursively. For example,
+The extension to :math:`n > 3` proceeds recursively. For example,
 
 .. math::
 
@@ -31,5 +31,6 @@ The extension to :math:`n>3` proceeds recursively. For example,
 .. seealso::
 
    For more information, see :doc:`coinformation`.
+
 
 .. autofunction:: interaction_information

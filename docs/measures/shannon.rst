@@ -11,6 +11,7 @@ are **Information Theory, Inference and Learning Algorithms** by MacKay
 :cite:`MacKay2003` and **Information Theory and Network Coding** by Yeung
 :cite:`Yeung2008`.
 
+
 Entropy
 =======
 
@@ -62,6 +63,7 @@ time we need to ask a follow up question: "was it `B`?". So half the time we
 need to ask one question, and the other half of the time we need to ask two
 questions. In other words, we need to ask 1.5 questions on average.
 
+
 Joint Entropy
 -------------
 
@@ -74,7 +76,9 @@ The entropy of multiple variables is computed in a similar manner:
 Its intuition is also the same: the average number of binary questions required
 to identify a joint event from the distribution.
 
+
 .. autofunction:: entropy
+
 
 Conditional Entropy
 ===================
@@ -111,7 +115,9 @@ variables:
 Here, the second variable tells us nothing about the first so we are left with
 the one bit of information a coin flip has.
 
+
 .. autofunction:: conditional_entropy
+
 
 Mutual Information
 ==================
@@ -156,7 +162,9 @@ information it doesn't:
       Generalized as the joint entropy minus the entropy of each variable
       conditioned on the others.
 
+
 .. autofunction:: mutual_information
+
 
 Visualization of Information
 ============================

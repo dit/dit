@@ -9,6 +9,7 @@ The Gács-Körner common information :cite:`Gacs1973` take a very direct approac
 to the idea of common information. It extracts a random variable that is
 contained within each of the random variables under consideration.
 
+
 The Common Information Game
 ===========================
 
@@ -23,6 +24,7 @@ knowledge of the joint random variable and the particular outcome of their
 marginal variable. The matching symbols produced by the players are called the
 *common random variable* and the entropy of that variable is the Gács-Körner
 common information, :math:`\K`.
+
 
 Two Variables
 =============
@@ -99,6 +101,7 @@ This is because :math:`f` and :math:`g` must act independently: if :math:`x_0`
 is a 0 or a 1, there is no way to know if :math:`x_1` is a 0 or a 1 and vice
 versa. Therefore we aggregate 0s and 1s into 2.
 
+
 Properties & Uses
 -----------------
 
@@ -142,6 +145,7 @@ This quantity can be computed easily using dit:
    In [15]: I(d, [3], [2])
    Out[15]: 1.0
 
+
 :math:`n`-Variables
 ===================
 
@@ -170,5 +174,6 @@ variate version:
    :alt: The Gács-Körner common information :math:`\K[X:Y:Z]`
    :width: 357px
    :align: center
+
 
 .. autofunction:: gk_common_information

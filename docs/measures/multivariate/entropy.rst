@@ -49,6 +49,7 @@ Taken together, we would then expect the joint entropy to be :math:`1.5` bits:
    In [4]: entropy(d)
    Out[4]: 1.5
 
+
 Visualization
 =============
 
