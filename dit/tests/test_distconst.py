@@ -396,7 +396,7 @@ def test_random_dist_structure():
     Test random_dist_structure()
 
     """
-    for i in xrange(10):
+    for i in range(10):
         d = dit.random_dist_structure(3, 3)
         words = {''.join(word) for word in itertools.product('012', repeat=3)}
         diff = set(d.outcomes) - words
