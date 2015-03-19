@@ -19,9 +19,38 @@ the information lost by sporatic erasures in a channel. The idea here is that
 only the information uncorrelated with other random variables is lost if that
 variable is erased.
 
-.. todo::
+If a joint distribution consists of independent random variables, the residual
+entropy is equal to the :doc:`entropy`:
 
-   Add some good examples.
+.. ipython::
+
+   In [1]: from dit.multivariate import entropy, residual_entropy
+
+   In [2]: d = dit.uniform_distribution(3, 2)
+
+   @doctest
+   In [3]: entropy(d) == residual_entropy(d)
+   Out[3]: True
+
+Another simple example is a distribution where one random variable is
+independent of the others:
+
+.. ipython::
+
+   In [1]: d = dit.uniform(['000', '001', '110', '111'])
+
+   @doctest float
+   In [2]: residual_entropy(d)
+   Out[2]: 1.0
+
+If we ask for the residual entropy of only the latter two random variables, the
+middle one is now independent of the others and so the residual entropy grows:
+
+.. ipython::
+
+   @doctest float
+   In [4]: residual_entropy(d, [[1], [2]])
+   Out[4]: 2.0
 
 
 Visualization

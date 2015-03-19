@@ -27,17 +27,15 @@ outcomes and the probability mass function:
 
 .. ipython::
 
-   In [1]: from __future__ import division
+   In [1]: from dit import Distribution
 
-   In [2]: from dit import Distribution
+   In [2]: outcomes = ['000', '011', '101', '110']
 
-   In [3]: outcomes = ['000', '011', '101', '110']
+   In [3]: pmf = [1/4]*4
 
-   In [4]: pmf = [1/4]*4
+   In [4]: xor = Distribution(outcomes, pmf)
 
-   In [5]: xor = Distribution(outcomes, pmf)
-
-   In [6]: print(xor)
+   In [5]: print(xor)
    Class:          Distribution
    Alphabet:       ('0', '1') for all rvs
    Base:           linear
@@ -56,11 +54,11 @@ outcomes to probabilities:
 
 .. ipython::
 
-   In [7]: outcomes_probs = {'000': 1/4, '011': 1/4, '101': 1/4, '110': 1/4}
+   In [6]: outcomes_probs = {'000': 1/4, '011': 1/4, '101': 1/4, '110': 1/4}
 
-   In [8]: xor2 = Distribution(outcomes_probs)
+   In [7]: xor2 = Distribution(outcomes_probs)
 
-   In [9]: print(xor2)
+   In [8]: print(xor2)
    Class:          Distribution
    Alphabet:       ('0', '1') for all rvs
    Base:           linear
@@ -81,8 +79,9 @@ To verify that these two distributions are the same, we can use the
 
 .. ipython::
 
-   In [10]: xor.is_approx_equal(xor2)
-   Out[10]: True
+   @doctest
+   In [9]: xor.is_approx_equal(xor2)
+   Out[9]: True
 
 .. automethod:: Distribution.is_approx_equal
 
