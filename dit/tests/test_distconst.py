@@ -382,3 +382,23 @@ def test_product_with_badrvs():
     d = dit.example_dists.Xor()
     assert_raises(Exception, dit.product_distribution, d, [[0,1], [0]])
 
+def test_all_dist_structures():
+    """
+    Test all_dist_structures().
+
+    """
+    for n, k in [(2, 2), (2, 3), (3, 2)]:
+        num_dists = len(list(dit.all_dist_structures(n, k)))
+        yield assert_equal, num_dists, 2**(k**n)-1
+
+def test_random_dist_structure():
+    """
+    Test random_dist_structure()
+
+    """
+    for i in xrange(10):
+        d = dit.random_dist_structure(3, 3)
+        words = {''.join(word) for word in itertools.product('012', repeat=3)}
+        diff = set(d.outcomes) - words
+        yield assert_equal, diff, set()
+        yield assert_true, 0 < len(d.outcomes) <= 3**3
