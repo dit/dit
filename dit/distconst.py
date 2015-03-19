@@ -12,12 +12,16 @@ import numpy as np
 from six.moves import map, range, zip # pylint: disable=redefined-builtin
 
 from itertools import product
+from iterutils import powerset
+
+from random import randint
 
 from .distribution import BaseDistribution
 from .exceptions import ditException
 from .helpers import parse_rvs
 from .npdist import Distribution
 from .npscalardist import ScalarDistribution
+from .utils import digits
 from .validate import validate_pmf
 
 
@@ -33,6 +37,9 @@ __all__ = [
     'insert_rvf',
     'RVFunctions',
     'product_distribution',
+    'uniform',
+    'all_dist_structures',
+    'random_dist_structure',
 ]
 
 def mixture_distribution(dists, weights, merge=False):
@@ -409,8 +416,6 @@ def uniform_distribution(outcome_length, alphabet_size):
     >>> d = dit.uniform_distribution(2, [['H','T']])
 
     """
-    from itertools import product
-
     try:
         int(alphabet_size)
     except TypeError:
@@ -436,6 +441,32 @@ def uniform_distribution(outcome_length, alphabet_size):
     d = Distribution(outcomes, pmf, base='linear')
 
     return d
+
+def uniform(outcomes):
+    """
+    Produces a uniform distribution over `outcomes`.
+
+    Parameters
+    ----------
+    outcomes : iterable
+        The set of outcomes with which to construct the distribution.
+
+    Returns
+    -------
+    d : Distribution
+        A uniform distribution over `outcomes`.
+
+    Raises
+    ------
+    ditException
+        Raised if the elements of `outcomes` do not all have the same length.
+    TypeError
+        Raised if `outcomes` is not iterable.
+    """
+    outcomes = list(outcomes)
+    length = len(outcomes)
+    pmf = [1/length]*length
+    return Distribution(outcomes, pmf)
 
 def insert_rvf(d, func, index=-1):
     """
@@ -821,3 +852,73 @@ def product_distribution(dist, rvs=None, rv_mode=None):
     d = Distribution(outcomes, pmf, validate=False)
     return d
 
+def all_dist_structures(outcome_length, alphabet_size):
+    """
+    Return an iterator of distributions over the
+    2**(`alphabet_size`**`outcome_length`) possible combinations of joint
+    events.
+
+    Parameters
+    ----------
+    outcome_length : int
+        The length of outcomes to consider.
+    alphabet_length : int
+        The size of the alphabet for each random variable.
+
+    Yields
+    ------
+    d : Distribution
+        A uniform distribution over a subset of the possible joint events.
+    """
+    alphabet = ''.join(str(i) for i in range(alphabet_size))
+    words = product(alphabet, repeat=outcome_length)
+    topologies = powerset(words)
+    next(topologies) # the first element is the null set
+    for t in topologies:
+        outcomes = [ ''.join(_) for _ in t]
+        yield uniform(outcomes)
+
+def _int_to_dist(number, outcome_length, alphabet_size):
+    """
+    Construct the `number`th distribution over `outcome_length` variables each
+    with an alphabet of size `alphabet_size`.
+
+    Parameters
+    ----------
+    number : int
+        The index of the distribution to construct.
+    outcome_length : int
+        The number of random variables in each joint event.
+    alphabet_size : int
+        The size of the alphabet for each random variable.
+
+    Returns
+    -------
+    d : Distribution
+        A uniform distribution over the joint event specified by the parameters.
+    """
+    alphabet = ''.join(str(i) for i in range(alphabet_size))
+    words = product(alphabet, repeat=outcome_length)
+    events = digits(number, 2, pad=alphabet_size**outcome_length, big_endian=False)
+    outcomes = [ ''.join(word) for include, word in zip(events, words) if include ]
+    return uniform(outcomes)
+
+def random_dist_structure(outcome_length, alphabet_size):
+    """
+    Return a uniform distribution over a random subset of the
+    `alphabet_size`**`outcome_length` possible joint events.
+
+    Parameters
+    ----------
+    outcome_length : int
+        The number of random variables in each joint event.
+    alphabet_size : int
+        The size of the alphabet for each random variable.
+
+    Returns
+    -------
+    d : Distribution
+        A uniform distribution over a random subset of joint events.
+    """
+    bound = 2**(alphabet_size**outcome_length)
+    return _int_to_dist(randint(0, bound), outcome_length, alphabet_size)
