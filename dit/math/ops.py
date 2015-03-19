@@ -264,6 +264,9 @@ class Operations(object):
     def invert(self, x):
         """ Abstract base class """
         raise NotImplementedError
+    def normalize(self, x):
+        """ Abstract base class """
+        raise NotImplementedError
 
 class LinearOperations(Operations):
     """
@@ -332,7 +335,7 @@ class LinearOperations(Operations):
         x += y
         return x
 
-    def add_reduce(self, x):
+    def add_reduce(self, x, axis=None):
         """
         Performs an `addition' reduction on `x`.
 
@@ -346,7 +349,7 @@ class LinearOperations(Operations):
             The summation of the elements in `x`.
 
         """
-        z = x.sum()
+        z = x.sum(axis=axis)
         return z
 
     def mult(self, x, y):
@@ -389,7 +392,7 @@ class LinearOperations(Operations):
         x *= y
         return x
 
-    def mult_reduce(self, x):
+    def mult_reduce(self, x, axis=None):
         """
         Performs an `multiplication' reduction on `x`.
 
@@ -401,14 +404,14 @@ class LinearOperations(Operations):
             The product of the elements in `x`.
 
         """
-        z = np.prod(x)
+        z = np.prod(x, axis=axis)
         return z
 
     def invert(self, x):
         """
         Returns the element-wise multiplicative inverse of x.
 
-        Operation: z = 1/x
+        Operation: z[i] = 1/x[i]
 
         Parameters
         ----------
@@ -422,6 +425,29 @@ class LinearOperations(Operations):
 
         """
         z = 1/x
+        return z
+
+    def normalize(self, x, axis=None):
+        """
+        Returns a normalized version of x.
+
+        Operation: z[i] = x[i] / sum(x)
+
+        If x is 2D and axis is None, then normalization is over all elements.
+        Use axis=-1 to normalize each row of x.
+
+        Parameters
+        ----------
+        x : NumPy array, shape (n,)
+            The array to normalize.
+
+        Returns
+        -------
+        z : NumPy array, shape (n,)
+            The normalized array.
+
+        """
+        z = x / x.sum(axis=None)
         return z
 
 def set_add(ops):
@@ -514,29 +540,30 @@ def set_add_reduce(ops):
     Set the add_reduce method on the LogOperations instance.
 
     """
+    # https://github.com/numpy/numpy/issues/4599
     base = ops.base
     if base == 2:
-        def add_reduce(self, x, func=np.logaddexp2):
+        def add_reduce(self, x, axis=None, func=np.logaddexp2):
             if len(x) == 0:
                 # Since logaddexp.identity is None, we handle it separately.
                 z = self.zero
             else:
                 # Note, we are converting to a NumPy array, if necessary.
-                z = func.reduce(x, dtype=float)
+                z = func.reduce(x, axis=axis, dtype=float)
             return z
 
     elif base == 'e' or close(base, np.e):
-        def add_reduce(self, x, func=np.logaddexp):
+        def add_reduce(self, x, axis=None, func=np.logaddexp):
             if len(x) == 0:
                 # Since logaddexp.identity is None, we handle it separately.
                 z = self.zero
             else:
                 # Note, we are converting to a NumPy array, if necessary.
-                z = func.reduce(x, dtype=float)
+                z = func.reduce(x, axis=axis, dtype=float)
             return z
 
     else:
-        def add_reduce(self, x):
+        def add_reduce(self, x, axis=None):
             if len(x) == 0:
                 # Since logaddexp.identity is None, we handle it separately.
                 z = self.zero
@@ -544,7 +571,7 @@ def set_add_reduce(ops):
                 # Note, we are converting to a NumPy array, if necessary.
                 # Change the base-2, add, and then convert back.
                 x2 = x * np.log2(base)
-                z = np.logaddexp2.reduce(x2, dtype=float)
+                z = np.logaddexp2.reduce(x2, axis=axis, dtype=float)
                 z /= np.log2(base)
             return z
 
@@ -639,7 +666,7 @@ class LogOperations(Operations):
         x += y
         return x
 
-    def mult_reduce(self, x):
+    def mult_reduce(self, x, axis=None):
         """
         Performs an `multiplication' reduction on `x`.
 
@@ -652,7 +679,7 @@ class LogOperations(Operations):
         # The identity for addition in NumPy is zero.
         # This corresponds to an identity of 1 for log operations, and this is
         # exactly the desired identity for multiplying probabilities.
-        z = x.sum()
+        z = x.sum(axis=axis)
         return z
 
     def invert(self, x):
@@ -672,6 +699,32 @@ class LogOperations(Operations):
         """
         z = -x
         return z
+
+    def normalize(self, x, axis=None):
+        """
+        Returns a normalized version of x.
+
+        Non-log equivalent operation: z[i] = x[i] / sum(x)
+
+        If x is 2D and axis is None, then normalization is over all elements.
+        Use axis=-1 to normalize each row of x.
+
+        Parameters
+        ----------
+        x : NumPy array, shape (n,)
+            The array to normalize.
+
+        Returns
+        -------
+        z : NumPy array, shape (n,)
+            The normalized array.
+
+        """
+        # The API way would be:  mult(x, invert( add_reduce(x) ))
+        # We'll avoid some of those function calls.
+        z = x - self.add_reduce(x, axis=axis)
+        return z
+
 
 cache = {
     'linear' : LinearOperations(),

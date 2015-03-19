@@ -101,17 +101,7 @@ class CVXOPT_Template(object):
             A NumPy-compatible pseudorandom number generator.
 
         """
-        if not isinstance(dist._sample_space, dit.samplespace.CartesianProduct):
-            dist = dit.expanded_samplespace(dist, union=True)
-
-        if not dist.is_dense():
-            if len(dist._sample_space) > 1e4:
-                import warnings
-                msg = "Sample space has more than 10k elements."
-                msg += " This could be slow."
-                warnings.warn(msg)
-            dist.make_dense()
-
+        dist = prepare_dist(dist)
         self.dist = dist
         self.pmf = dist.pmf
         self.n_variables = dist.outcome_length()
@@ -138,12 +128,15 @@ class CVXOPT_Template(object):
         # Number of nonlinear constraints
         self.m = 0
 
+        self.prep()
         self.build_function()
         self.build_gradient_hessian()
         self.build_nonnegativity_constraints()
         self.build_linear_equality_constraints()
         self.build_F()
 
+    def prep(self):
+        pass
 
     def build_function(self):
         self.func = lambda x: x.sum()
@@ -271,3 +264,51 @@ class CVXOPT_Template(object):
 
         return out
 
+
+class Bunch:
+    def __init__(self, **kwds):
+        self.__dict__.update(kwds)
+
+
+def prepare_dist(dist):
+    if not isinstance(dist._sample_space, dit.samplespace.CartesianProduct):
+        dist = dit.expanded_samplespace(dist, union=True)
+
+    if not dist.is_dense():
+        if len(dist._sample_space) > 1e4:
+            import warnings
+            msg = "Sample space has more than 10k elements."
+            msg += " This could be slow."
+            warnings.warn(msg)
+        dist.make_dense()
+
+    return dist
+
+
+def op_runner(objective, constraints, **kwargs):
+    """
+    Minimize the objective specified by the constraints.
+
+    The objective must be linear in the variables.
+    This uses cvxopt.modeling.
+
+    """
+    from cvxopt.solvers import options
+    from cvxopt.modeling import variable, op
+
+    old_options = options.copy()
+
+    opt = op(objective, constraints)
+
+    try:
+        options.clear()
+        options.update(kwargs)
+        with np.errstate(divide='ignore', invalid='ignore'):
+            opt.solve()
+    except:
+        raise
+    finally:
+        options.clear()
+        options.update(old_options)
+
+    return opt

@@ -31,7 +31,7 @@ import dit
 
 from dit.abstractdist import AbstractDenseDistribution, get_abstract_dist
 
-from .optutil import as_full_rank, CVXOPT_Template
+from .optutil import as_full_rank, CVXOPT_Template, prepare_dist, Bunch
 
 __all__ = [
     'MarginalMaximumEntropy',
@@ -40,6 +40,45 @@ __all__ = [
     #'marginal_maxent_dists',
     'moment_maxent_dists',
 ]
+
+
+def isolate_zeros(dist, k):
+    """
+    Determines if there are any elements of the optimization vector that must
+    be zero.
+
+    If p(marginal) = 0, then every component of the joint that contributes to
+    that marginal probability must be exactly zero for all feasible solutions.
+
+    """
+    assert dist.is_dense()
+    assert dist.get_base() == 'linear'
+
+    d = get_abstract_dist(dist)
+    n_variables = d.n_variables
+    n_elements = d.n_elements
+
+    rvs = range(n_variables)
+    zero_elements = np.zeros(n_elements, dtype=int)
+    cache = {}
+    pmf = dist.pmf
+    if k > 0:
+        for subrvs in itertools.combinations(rvs, k):
+            marray = d.parameter_array(subrvs, cache=cache)
+            for idx in marray:
+                # Convert the sparse nonzero elements to a dense boolean array
+                bvec = np.zeros(n_elements, dtype=int)
+                bvec[idx] = 1
+                p = pmf[idx].sum()
+                if np.isclose(p, 0):
+                    zero_elements += bvec
+
+    zero = np.nonzero(zero_elements)[0]
+    zeroset = set(zero)
+    nonzero = [i for i in range(n_elements) if i not in zeroset]
+    variables = Bunch(nonzero=nonzero, zero=zero)
+
+    return variables
 
 
 def marginal_constraints(dist, m, with_normalization=True):
@@ -116,8 +155,7 @@ def marginal_constraint_rank(dist, m):
     Returns the rank of the marginal constraint matrix.
 
     """
-    dist = dit.expanded_samplespace(dist)
-    dist.make_dense()
+    dist = prepare_dist(dist)
     n_variables = dist.outcome_length()
     n_symbols = len(dist.alphabet[0])
     pmf = dist.pmf
@@ -258,8 +296,8 @@ def moment_constraint_rank(dist, m, symbol_map=None, cumulative=True, with_repla
     else:
         mvals = [m]
 
-    dist = dit.expanded_samplespace(dist)
-    dist.make_dense()
+
+    dist = prepare_dist(dist)
     n_variables = dist.outcome_length()
     n_symbols = len(dist.alphabet[0])
     pmf = dist.pmf
@@ -288,7 +326,8 @@ def negentropy(p):
     Entropy which operates on vectors of length N.
 
     """
-    return np.nansum(p * np.log2(p))
+    negH = np.nansum(p * np.log2(p))
+    return negH
 
 
 class MaximumEntropy(CVXOPT_Template):
@@ -322,6 +361,15 @@ class MarginalMaximumEntropy(MaximumEntropy):
         self.k = k
         super(MarginalMaximumEntropy, self).__init__(dist, tol=tol, prng=prng)
 
+    def prep(self):
+
+        # We are only removed elements which should be fixed at zero.
+        # This means they don't contribute to the entropy, so there is no
+        # need to adjust the function. Also, we are using numdifftools.
+        self.variables = isolate_zeros(self.dist, self.k)
+
+        # Make self.n reflect only the size of the nonzero elements.
+        self.n = len(self.variables.nonzero)
 
     def build_linear_equality_constraints(self):
         from cvxopt import matrix
@@ -330,15 +378,49 @@ class MarginalMaximumEntropy(MaximumEntropy):
         n = self.n
 
         A, b = marginal_constraints(self.dist, self.k)
-        A, b, rank = as_full_rank(A, b)
-        if rank > n:
-            raise ValueError('More independent constraints than parameters.')
 
-        A = matrix(A)
+        # Reduce the size of the constraint matrix
+        Asmall = A[:, self.variables.nonzero]
+        Asmall, b, rank = as_full_rank(Asmall, b)
+        if rank > Asmall.shape[1]:
+            raise ValueError('More independent constraints than free parameters.')
+
+        Asmall = matrix(Asmall)
         b = matrix(b)  # now a column vector
 
-        self.A = A
+        self.A = Asmall
         self.b = b
+
+    def initial_dist(self):
+        from .maxentropyfw import initial_point
+        initial_x, _ = initial_point(self.dist, self.k, A=self.A, b=self.b,
+                                 isolated=self.variables, show_progress=False)
+        return initial_x
+
+    def build_gradient_hessian(self):
+
+        ln2 = np.log(2)
+        def gradient(xarr):
+            # This operates only on nonzero elements.
+
+            # All of the optimization elements should be greater than zero
+            # But occasional they might go slightly negative or zero.
+            # In those cases, we will just set the gradient to zero and keep the
+            # value fixed from that point forward.
+            bad_x = xarr <= 0
+            grad = np.log2(xarr) + 1 / ln2
+            grad[bad_x] = 0
+            return grad
+
+        def hessian(xarr):
+            bad_x = xarr <= 0
+            diag = 1 / xarr / ln2
+            diag[bad_x] = 0
+            return np.diag(diag)
+
+        self.gradient = gradient
+        self.hessian = hessian
+
 
 class MomentMaximumEntropy(MaximumEntropy):
     """
@@ -420,8 +502,7 @@ def marginal_maxent_dists(dist, k_max=None, jitter=True, show_progress=True):
         If `True`, show convergence progress to stdout.
 
     """
-    dist = dit.expanded_samplespace(dist, union=True)
-    dist.make_dense()
+    dist = prepare_dist(dist)
 
     if jitter:
         # This is sometimes necessary. If your distribution does not have
@@ -434,7 +515,7 @@ def marginal_maxent_dists(dist, k_max=None, jitter=True, show_progress=True):
     if k_max is None:
         k_max = n_variables
 
-    outcomes = list(dist._product(symbols, repeat=n_variables))
+    outcomes = list(dist.sample_space())
 
     dists = []
     for k in range(k_max + 1):
@@ -443,7 +524,10 @@ def marginal_maxent_dists(dist, k_max=None, jitter=True, show_progress=True):
         print()
         opt = MarginalMaximumEntropy(dist, k)
         pmf_opt = opt.optimize(show_progress=show_progress)
-        d = dit.Distribution(outcomes, pmf_opt)
+        pmf_opt = pmf_opt.reshape(pmf_opt.shape[0])
+        pmf = np.zeros(len(dist.pmf))
+        pmf[opt.variables.nonzero] = pmf_opt
+        d = dit.Distribution(outcomes, pmf)
         dists.append(d)
 
     return dists
@@ -473,8 +557,7 @@ def moment_maxent_dists(dist, symbol_map, k_max=None, jitter=True,
         If `True`, show convergence progress to stdout.
 
     """
-    dist = dit.expanded_samplespace(dist, union=True)
-    dist.make_dense()
+    dist = prepare_dist(dist)
 
     if jitter:
         # This is sometimes necessary. If your distribution does not have
@@ -502,6 +585,7 @@ def moment_maxent_dists(dist, symbol_map, k_max=None, jitter=True,
         print()
         opt = MomentMaximumEntropy(dist, k, symbol_map, with_replacement=with_replacement)
         pmf_opt = opt.optimize(show_progress=show_progress)
+        pmf_opt = pmf_opt.reshape(pmf_opt.shape[0])
         d = dit.Distribution(outcomes, pmf_opt)
         dists.append(d)
 

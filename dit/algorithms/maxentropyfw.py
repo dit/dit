@@ -14,109 +14,14 @@ import numpy as np
 import dit
 from dit.abstractdist import get_abstract_dist
 
-from .optutil import as_full_rank, CVXOPT_Template
-from .maxentropy import marginal_constraints
+from .optutil import (
+    as_full_rank, prepare_dist, op_runner
+)
+from .maxentropy import marginal_constraints, isolate_zeros
 
 __all__ = [
     'marginal_maxent_dists',
 ]
-
-
-class Bunch:
-    def __init__(self, **kwds):
-        self.__dict__.update(kwds)
-
-
-def prepare_dist(dist):
-    if not isinstance(dist._sample_space, dit.samplespace.CartesianProduct):
-        dist = dit.expanded_samplespace(dist, union=True)
-
-    if not dist.is_dense():
-        if len(dist._sample_space) > 1e4:
-            import warnings
-            msg = "Sample space has more than 10k elements."
-            msg += " This could be slow."
-            warnings.warn(msg)
-        dist.make_dense()
-
-    return dist
-
-
-def op_runner(objective, constraints, **kwargs):
-    from cvxopt.solvers import options
-    from cvxopt.modeling import variable, op
-
-    old_options = options.copy()
-
-    opt = op(objective, constraints)
-
-    try:
-        options.clear()
-        options.update(kwargs)
-        with np.errstate(divide='ignore', invalid='ignore'):
-            opt.solve()
-    except:
-        raise
-    finally:
-        options.clear()
-        options.update(old_options)
-
-    return opt
-
-
-def isolate_zeros(dist, k):
-    """
-    Determines if there are any elements of the optimization vector that must
-    be zero.
-
-    If p(marginal) = 0, then every component of the joint that contributes to
-    that marginal probability must be exactly zero for all feasible solutions.
-
-    """
-    assert dist.is_dense()
-    assert dist.get_base() == 'linear'
-
-    d = get_abstract_dist(dist)
-    n_variables = d.n_variables
-    n_elements = d.n_elements
-
-    rvs = range(n_variables)
-    zero_elements = np.zeros(n_elements, dtype=int)
-    cache = {}
-    pmf = dist.pmf
-    for subrvs in itertools.combinations(rvs, k):
-        marray = d.parameter_array(subrvs, cache=cache)
-        for idx in marray:
-            # Convert the sparse nonzero elements to a dense boolean array
-            bvec = np.zeros(n_elements, dtype=int)
-            bvec[idx] = 1
-            p = pmf[idx].sum()
-            if np.isclose(p, 0):
-                zero_elements += bvec
-
-    A = []
-    b = []
-    zero = []
-    for i, is_zero in enumerate(zero_elements):
-        if is_zero:
-            eq = np.zeros(n_elements, dtype=int)
-            eq[i] = 1
-            A.append(eq)
-            b.append(0)
-            zero.append(i)
-
-    if A:
-        A = np.asarray(A)
-        b = np.asarray(b)
-    else:
-        A = None
-        b = None
-
-    zeroset = set(zero)
-    nonzero = [i for i in range(n_elements) if i not in zeroset]
-    variables = Bunch(nonzero=nonzero, zero=zero)
-
-    return A, b, variables
 
 
 def initial_point(dist, k, A=None, b=None, isolated=None, **kwargs):
@@ -128,13 +33,17 @@ def initial_point(dist, k, A=None, b=None, isolated=None, **kwargs):
     from cvxopt.modeling import variable
 
     if isolated is None:
-        _, __, variables = isolate_zeros(dist, k)
+        variables = isolate_zeros(dist, k)
+    else:
+        variables = isolated
 
     if A is None or b is None:
         A, b = marginal_constraints(dist, k)
 
         # Reduce the size of A so that only nonzero elements are searched.
+        # Also make it full rank.
         Asmall = A[:, variables.nonzero]
+        Asmall, b, rank = as_full_rank(Asmall, b)
         Asmall = matrix(Asmall)
         b = matrix(b)
     else:
@@ -149,19 +58,23 @@ def initial_point(dist, k, A=None, b=None, isolated=None, **kwargs):
     x = variable(n)
     t = variable()
 
-    tol = 1e-8
+    tols = [1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3]
+    for tol in tols:
+        constraints = []
+        constraints.append( (-tol <= Asmall * x - b) )
+        constraints.append( ( Asmall * x - b <= tol) )
+        constraints.append( (x >= t) )
 
-    constraints = []
-    constraints.append( (-tol <= Asmall * x - b) )
-    constraints.append( ( Asmall * x - b <= tol) )
-    constraints.append( (x >= t) )
+        # Objective to minimize
+        objective = -t
 
-    # Objective to minimize
-    objective = -t
-
-    opt = op_runner(objective, constraints, **kwargs)
-    if opt.status != 'optimal':
-        raise Exception('Could not find valid initial point.')
+        opt = op_runner(objective, constraints, **kwargs)
+        if opt.status == 'optimal':
+            #print("Found initial point with tol={}".format(tol))
+            break
+    else:
+        msg = 'Could not find valid initial point: {}'
+        raise Exception(msg.format(opt.status))
 
     # Grab the optimized x
     optvariables = opt.variables()
@@ -218,7 +131,7 @@ def check_feasibility(dist, k, **kwargs):
     return opt
 
 
-def frank_wolfe(objective, gradient, A, b, initial_x, maxiters=1000, tol=1e-3, verbose=True):
+def frank_wolfe(objective, gradient, A, b, initial_x, maxiters=1000, tol=1e-4, verbose=True):
     """
     Uses the Frank--Wolfe algorithm to minimize the convex objective.
 
@@ -293,14 +206,19 @@ def negentropy(p):
 def marginal_maxent(dist, k, **kwargs):
     from cvxopt import matrix
 
-    _, __, variables = isolate_zeros(dist, k)
     A, b = marginal_constraints(dist, k)
 
+    # Reduce the size of A so that only nonzero elements are searched.
+    # Also make it full rank.
+    variables = isolate_zeros(dist, k)
     Asmall = A[:, variables.nonzero]
+    Asmall, b, rank = as_full_rank(Asmall, b)
     Asmall = matrix(Asmall)
     b = matrix(b)
 
-    initial_x, _ = initial_point(dist, k, A=Asmall, b=b, show_progress=False)
+    initial_x, _ = initial_point(dist, k, A=Asmall, b=b,
+                                 isolated=variables,
+                                 show_progress=False)
     initial_x = matrix(initial_x)
     objective = negentropy
 
@@ -330,7 +248,7 @@ def marginal_maxent(dist, k, **kwargs):
     xfinal = np.zeros(A.shape[1])
     xfinal[nonzero] = x
 
-    return xfinal, obj
+    return xfinal, obj#, Asmall, b, variables
 
 def marginal_maxent_dists(dist, k_max=None, maxiters=1000, tol=1e-3, verbose=False):
     """
@@ -354,14 +272,14 @@ def marginal_maxent_dists(dist, k_max=None, maxiters=1000, tol=1e-3, verbose=Fal
 
     outcomes = list(dist._sample_space)
 
-    # Optimization for the k=0 and k=1 cases are slow since you have to optimze
+    # Optimization for the k=0 and k=1 cases are slow since you have to optimize
     # the full space. We also know the answer in these cases.
 
+    # This is safe since the distribution must be dense.
     k0 = dit.Distribution(outcomes, [1]*len(outcomes), validate=False)
     k0.normalize()
 
     k1 = dit.product_distribution(dist)
-
 
     dists = [k0, k1]
     for k in range(k_max + 1):
