@@ -396,9 +396,9 @@ def test_random_dist_structure():
     Test random_dist_structure()
 
     """
+    words = {''.join(word) for word in itertools.product('012', repeat=3)}
     for i in xrange(10):
         d = dit.random_dist_structure(3, 3)
-        words = {''.join(word) for word in itertools.product('012', repeat=3)}
         diff = set(d.outcomes) - words
         yield assert_equal, diff, set()
         yield assert_true, 0 < len(d.outcomes) <= 3**3
