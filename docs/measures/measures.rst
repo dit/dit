@@ -27,7 +27,8 @@ can not really be directly compared to the measures above:
 
    other/other
 
-There are also measures of "distance" or divergence:
+There are also measures of "distance" or divergence between two (and im some
+cases, more) distribution:
 
 .. toctree::
    :maxdepth: 2

@@ -16,11 +16,6 @@ whole and the sum of its parts:
    \T[X_{0:n}] &= \sum \H[X_i] - \H[X_{0:n}] \\
                &= \sum_{x_{0:n} \in X_{0:n}} p(x_{0:n}) \log_2 \frac{p(x_{0:n})}{\prod p(x_i)}
 
-.. image:: ../../images/idiagrams/t_xyz.png
-   :alt: The total correlation :math:`\T[X:Y:Z]`
-   :width: 357px
-   :align: center
-
 Two nice features of the total correlation are that it is non-negative and that
 it is zero if and only if the random variables :math:`X_{0:n}` are all
 independent. Some baseline behavior is good to note also. First its behavior
@@ -63,8 +58,31 @@ correaltion of :math:`A \cup B` is:
 
    \T[A \cup B] = \T[A] + \T[B] + \I[A : B]
 
-.. todo::
+.. ipython::
 
-   Add more examples, perhaps from real-world usage.
+   In [18]: from dit.multivariate import coinformation as I
 
-.. autofunction:: dit.multivariate.total_correlation.total_correlation
+   In [19]: d = n_mod_m(4, 3)
+
+   @doctest
+   In [20]: T(d) == T(d, [[0], [1]]) + T(d, [[2], [3]]) + I(d, [[0, 1], [2, 3]])
+   Out[20]: True
+
+
+Visualization
+=============
+
+The total correlation consists of all information that is shared among the
+variables, and weights each piece according to how many variables it is shared
+among.
+
+.. image:: ../../images/idiagrams/t_xyz.png
+   :alt: The total correlation :math:`\T[X:Y:Z]`
+   :width: 357px
+   :align: center
+
+
+API
+===
+
+.. autofunction:: total_correlation

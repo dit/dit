@@ -12,6 +12,19 @@ entropy to the case where entropy is nonextensive. It is given by:
 
     \TE[X] = \frac{1}{q - 1} \left( 1 - \sum_{x \in \mathcal{X}} p(x)^q \right)
 
+.. ipython::
+
+   In [1]: from dit.other import tsallis_entropy
+
+   In [2]: from dit.example_dists import n_mod_m
+
+   In [3]: d = n_mod_m(4, 3)
+
+   @doctest float
+   In [4]: tsallis_entropy(d, 4)
+   Out[4]: 0.33331639824552489
+
+
 Non-additivity
 ==============
 
@@ -23,4 +36,8 @@ those subsystems:
 
     \TE[X, Y] = \TE[X] + \TE[Y] + (1-q)\TE[X]\TE[Y]
 
-.. autofunction:: dit.other.tsallis_entropy.tsallis_entropy
+
+API
+===
+
+.. autofunction:: tsallis_entropy

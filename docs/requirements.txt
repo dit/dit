@@ -1,11 +1,8 @@
-jsonschema
-mistune
-ipython
-iterutils
 contextlib2
-numpy
+ipython[nbconvert]
+iterutils >= 0.1.6
+numpy >= 1.6
 releases
-six
-sphinx
+six >= 1.4
+sphinx >= 1.3
 sphinxcontrib-bibtex
-sphinxcontrib-napoleon==0.2.11

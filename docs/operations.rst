@@ -23,9 +23,9 @@ We can construct the join of two random variables:
 
 .. math::
 
-   X \join Y = \max \{ V | V \imore X \land V \imore Y \}
+   X \join Y = \min \{ V | V \imore X \land V \imore Y \}
 
-Where :math:`\max` is understood to be maximizing with respect to the entropy.
+Where :math:`\min` is understood to be minimizing with respect to the entropy.
 
 .. autofunction:: dit.algorithms.lattice.join
 .. autofunction:: dit.algorithms.lattice.insert_join
@@ -39,7 +39,7 @@ We can construct the meet of two random variabls:
 
    X \meet Y = \max \{ V | V \iless X \land V \iless Y \}
 
-Where :math:`\min` is understood to be minimizing with respect to the entropy.
+Where :math:`\max` is understood to be maximizing with respect to the entropy.
 
 .. autofunction:: dit.algorithms.lattice.meet
 .. autofunction:: dit.algorithms.lattice.insert_meet

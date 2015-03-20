@@ -5,10 +5,10 @@
 Divergences
 ***********
 
-Divergences are measures of "distance" between distributions:
+Divergences are measures of comparison between distributions:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    cross_entropy
    kullback_leibler_divergence

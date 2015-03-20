@@ -11,53 +11,54 @@
    :alt: Code Health
 
 Documentation:
-  http://docs.dit.io
+   http://docs.dit.io
 
 Downloads:
-  Coming soon.
+   Coming soon.
 
 Dependencies:
-  * Python 2.7, 3.2, or 3.3
-  * numpy
-  * iterutils
-  * six
-  * contextlib2
-  * prettytable
-  * networkx
+   * Python 2.7, 3.2, 3.3, or 3.4
+   * numpy
+   * iterutils
+   * six
+   * contextlib2
+   * prettytable
+   * networkx
 
 Optional Dependencies:
-  * cython
+   * cython
 
 Install:
-  Until ``dit`` is available on PyPI, the easiest way to install is:
+   Until ``dit`` is available on PyPI, the easiest way to install is:
 
-  .. code-block:: bash
+   .. code-block:: bash
 
       pip install git+https://github.com/dit/dit/#egg=dit
 
-  Alternatively, you can clone this repository, move into the newly created ``dit`` directory, and then install the package:
+   Alternatively, you can clone this repository, move into the newly created
+   ``dit`` directory, and then install the package:
 
-  .. code-block:: bash
+   .. code-block:: bash
 
       git clone https://github.com/dit/dit.git
       cd dit
       pip install .
 
 Mailing list:
-  None
+   None
 
 Code and bug tracker:
-  https://github.com/dit/dit
+   https://github.com/dit/dit
 
 License:
-  BSD 2-Clause, see LICENSE.txt for details.
+   BSD 2-Clause, see LICENSE.txt for details.
 
 Quickstart
 ----------
 
-The basic usage of ``dit`` corresponds to creating distributions, modifying
-them if need be, and then computing properties of those distributions.
-First, we import:
+The basic usage of ``dit`` corresponds to creating distributions, modifying them
+if need be, and then computing properties of those distributions. First, we
+import:
 
 .. code:: python
 
@@ -122,7 +123,8 @@ Create a distribution where ``Z = xor(X, Y)``.
    101   0.25
    110   0.25
 
-Calculate the Shannon mutual informations ``I[X:Z]``, ``I[Y:Z]``, and ``I[X,Y:Z]``.
+Calculate the Shannon mutual informations ``I[X:Z]``, ``I[Y:Z]``, and
+``I[X,Y:Z]``.
 
 .. code:: python
 
@@ -153,8 +155,8 @@ Then print its probabilities as fractions, showing the mask.
    1*0   1/4
    1*1   1/4
 
-Convert the distribution probabilities to log (base 3.5)
-probabilities, and access its probability mass function.
+Convert the distribution probabilities to log (base 3.5) probabilities, and
+access its probability mass function.
 
 .. code:: python
 
