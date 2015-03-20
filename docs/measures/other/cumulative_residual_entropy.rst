@@ -71,9 +71,28 @@ intire set of reals rather than just the positive ones:
 Conditional Cumulative Residual Entropy
 =======================================
 
+The conditional cumulative residual entropy :math:`\CRE[X|Y]` is a distribution
+with the same probability mass function as :math:`Y`, and the outcome associated
+with :math:`p(y)` is equal to the cumulative residual entropy over probabilities
+conditioned on :math:`Y = y`. In this sense the conditional cumulative residual
+entropy is more akin to a distribution over :math:`\H[X|Y=y]` than the single
+scalar quantity :math:`\H[X|Y]`.
+
+.. math::
+
+   \CRE[X|Y] = - \int_{0}^{\infty} p(|X| > x | Y) \log_{2} p(|X| > x | Y) dx
+
 
 Conditional Generalized Cumulative Residual Entropy
 ---------------------------------------------------
+
+Conceptually the conditional generalized cumulative residual entropy is the same
+as the non-generalized form, but integrated over the entire real line rather
+than just the positive:
+
+.. math::
+
+   \GCRE[X|Y] = - \int_{-\infty}^{\infty} p(X > x | Y) \log_{2} p(X > x | Y) dx
 
 
 API
