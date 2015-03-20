@@ -8,6 +8,8 @@ from nose.tools import assert_equal, assert_false, assert_raises, assert_true
 
 import itertools
 
+from six.moves import range
+
 import numpy as np
 import numpy.testing as npt
 
@@ -397,7 +399,7 @@ def test_random_dist_structure():
 
     """
     words = {''.join(word) for word in itertools.product('012', repeat=3)}
-    for i in xrange(10):
+    for i in range(10):
         d = dit.random_dist_structure(3, 3)
         diff = set(d.outcomes) - words
         yield assert_equal, diff, set()

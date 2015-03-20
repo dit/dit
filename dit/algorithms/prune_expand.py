@@ -7,6 +7,7 @@ This can be important when calculating meet and join random variables. It
 is also important for the calculations of various PID quantities.
 
 """
+from six.moves import map
 
 from dit.samplespace import ScalarSampleSpace, SampleSpace, CartesianProduct
 
@@ -89,7 +90,7 @@ def expanded_samplespace(d, alphabets=None, union=True):
     if alphabets is None:
         # Note, we sort the alphabets now, so we are possibly changing the
         # order of the original sample space.
-        alphabets = map(sorted, d.alphabet)
+        alphabets = list(map(sorted, d.alphabet))
     else:
         L = d.outcome_length()
         if len(alphabets) != L:
