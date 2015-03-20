@@ -18,7 +18,7 @@ The entropy and the extropy satisify the following relationship:
 
    \H[X] + \J[X] = \sum_{x \in \mathcal{X}} \H[p(x), 1-p(x)] = \sum_{x \in \mathcal{X}} \J[p(x), 1-p(x)]
 
- Unfortunately, the extropy does not yet have any intuitive interpretation.
+Unfortunately, the extropy does not yet have any intuitive interpretation.
 
 .. ipython::
 

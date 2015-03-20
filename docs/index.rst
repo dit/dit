@@ -9,6 +9,17 @@
 
 ``dit`` is *the* python module for all your discrete information theory needs.
 
+Throught this documentation we will assume that the following lines of code have
+already been run:
+
+.. ipython::
+
+   In [1]: from __future__ import division # true division on py2.7
+
+   In [2]: import dit
+
+   In [3]: import numpy as np
+
 Contents:
 
 .. toctree::
