@@ -1,38 +1,42 @@
 Documentation:
-  http://docs.dit.io
+   http://docs.dit.io
 
 Downloads:
-  Coming soon.
+   Coming soon.
 
 Dependencies:
-  * Python 2.6, 2.7, 3.2, or 3.3
-  * numpy
-  * iterutils
-  * six
+   * Python 2.7, 3.2, 3.3, or 3.4
+   * numpy
+   * iterutils
+   * six
+   * contextlib2
+   * prettytable
+   * networkx
 
 Optional Dependencies:
-  * cython
+   * cython
 
 Install:
-  Until ``dit`` is available on PyPI, the easiest way to install is:
+   Until ``dit`` is available on PyPI, the easiest way to install is:
 
-  .. code-block:: bash
+   .. code-block:: bash
 
       pip install git+https://github.com/dit/dit/#egg=dit
 
-  Alternatively, you can clone this repository, move into the newly created ``dit`` directory, and then install the package:
+   Alternatively, you can clone this repository, move into the newly created
+   ``dit`` directory, and then install the package:
 
-  .. code-block:: bash
+   .. code-block:: bash
 
       git clone https://github.com/dit/dit.git
       cd dit
       pip install .
 
 Mailing list:
-  None
+   None
 
 Code and bug tracker:
-  https://github.com/dit/dit
+   https://github.com/dit/dit
 
 License:
-  BSD 2-Clause, see LICENSE.txt for details.
+   BSD 2-Clause, see LICENSE.txt for details.

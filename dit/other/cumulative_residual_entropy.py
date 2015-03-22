@@ -127,8 +127,22 @@ def conditional_cumulative_residual_entropy(dist, rv, crvs=None, rv_mode=None):
     Parameters
     ----------
     dist : Distribution
+        The distribution to compute the conditional cumulative residual entropy
+        of.
     rv : list, None
+        The possibly joint random variable to compute the conditional cumulative
+        residual entropy of. If `None`, then all variables not in `crvs` are
+        used.
     crvs : list, None
+        The random variables to condition on. If `None`, nothing is conditioned
+        on.
+    rv_mode : str, None
+        Specifies how to interpret `rvs` and `crvs`. Valid options are:
+        {'indices', 'names'}. If equal to 'indices', then the elements of
+        `crvs` and `rvs` are interpreted as random variable indices. If equal
+        to 'names', the the elements are interpreted as random variable names.
+        If `None`, then the value of `dist._rv_mode` is consulted, which
+        defaults to 'indices'.
 
     Returns
     -------
@@ -167,8 +181,22 @@ def conditional_generalized_cumulative_residual_entropy(dist, rv, crvs=None, rv_
     Parameters
     ----------
     dist : Distribution
+        The distribution to compute the conditional generalized cumulative
+        residual entropy of.
     rv : list, None
+        The possibly joint random variable to compute the conditional
+        generalized cumulative residual entropy of. If `None`, then all
+        variables not in `crvs` are used.
     crvs : list, None
+        The random variables to condition on. If `None`, nothing is conditioned
+        on.
+    rv_mode : str, None
+        Specifies how to interpret `rvs` and `crvs`. Valid options are:
+        {'indices', 'names'}. If equal to 'indices', then the elements of
+        `crvs` and `rvs` are interpreted as random variable indices. If equal
+        to 'names', the the elements are interpreted as random variable names.
+        If `None`, then the value of `dist._rv_mode` is consulted, which
+        defaults to 'indices'.
 
     Returns
     -------

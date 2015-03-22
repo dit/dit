@@ -5,7 +5,8 @@
 Perplexity
 **********
 
-The perplexity is a trivial measure to make the entropy more intuitive.
+The perplexity is a trivial measure to make the :doc:`../multivariate/entropy`
+more intuitive:
 
 .. math::
 
@@ -22,8 +23,20 @@ The conditional perplexity is defined in the natural way:
 
    \P[X|Y] = 2^{\H[X|Y]}
 
-.. todo::
+We can see that the `xor` distribution is "4-way" perplexed:
 
-   Add some good examples.
+.. ipython::
 
-.. autofunction:: dit.other.perplexity.perplexity
+   In [1]: from dit.other import perplexity
+
+   In [2]: from dit.example_dists import Xor
+
+   @doctest float
+   In [3]: perplexity(Xor())
+   Out[3]: 4.0
+
+
+API
+===
+
+.. autofunction:: perplexity

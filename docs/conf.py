@@ -35,14 +35,15 @@ extensions = ['releases',
               'sphinx.ext.mathjax',
               'sphinx.ext.todo',
               'sphinx.ext.viewcode',
-              'sphinxcontrib.napoleon',
+              'sphinx.ext.napoleon',
               'sphinxcontrib.bibtex',
               'IPython.sphinxext.ipython_console_highlighting',
               'IPython.sphinxext.ipython_directive',
              ]
 
 ipython_mplbackend = None
-ipython_execlines = ['import numpy as np',
+ipython_execlines = ['from __future__ import division, print_function',
+                     'import numpy as np',
                      'import dit']
 
 # Use our local configuration for mathjax:
@@ -62,7 +63,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'dit'
-copyright = u'2013, dit contributors'
+copyright = u'2013-2015, dit contributors'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -215,7 +216,7 @@ macros = r'''
 \newcommand{\CRE}  {\op{\mathcal{E}}}
 \newcommand{\GCRE} {\op{\mathcal{E^\prime}}}
 \newcommand{\RE}   {\op{H_{\alpha}}}
-\newcomamnd{\TE}   {\op{S_q}}
+\newcommand{\TE}   {\op{S_q}}
 
 \newcommand{\xH}   {\op{xH}}
 \newcommand{\DKL}  {\op{D_{KL}}}
