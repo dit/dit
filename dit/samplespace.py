@@ -269,7 +269,10 @@ class CartesianProduct(SampleSpace):
         self._alphabet_sets = [alphabet if isinstance(alphabet, SampleSpace)
                               else set(alphabet) for alphabet in alphabets]
 
-        self.alphabet_sizes = tuple(len(alphabet) for alphabet in alphabets)
+        try:
+            self.alphabet_sizes = tuple(len(alphabet) for alphabet in alphabets)
+        except OverflowError:
+            self.alphabet_sizes = tuple(alphabet.__len__() for alphabet in alphabets)
 
         if product is None:
             # Let's try to guess.
