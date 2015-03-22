@@ -300,6 +300,11 @@ class CartesianProduct(SampleSpace):
 
         self._product = product
         self._length = np.prod(self.alphabet_sizes, dtype=int)
+        if self._length < 0:
+            # numerical overflow, use pure python:
+            from operator import mul
+            from six.moves import reduce
+            self._length = reduce(mul, self.alphabet_sizes)
         self._outcome_length = len(self.alphabet_sizes)
         self._outcome_class = outcome_class
         self._outcome_ctor = get_outcome_ctor(self._outcome_class)
