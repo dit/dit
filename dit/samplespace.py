@@ -272,6 +272,8 @@ class CartesianProduct(SampleSpace):
         try:
             self.alphabet_sizes = tuple(len(alphabet) for alphabet in alphabets)
         except OverflowError:
+            # len() always returns an int, never a python long, so if
+            # alphabet.__len__() is larger than a 64bit int, len() will overflow
             self.alphabet_sizes = tuple(alphabet.__len__() for alphabet in alphabets)
 
         if product is None:
@@ -304,7 +306,7 @@ class CartesianProduct(SampleSpace):
         self._product = product
         self._length = np.prod(self.alphabet_sizes, dtype=int)
         if self._length < 0:
-            # numerical overflow, use pure python:
+            # numerical overflow in np.prod, use pure python:
             from operator import mul
             from six.moves import reduce
             self._length = reduce(mul, self.alphabet_sizes)
