@@ -7,7 +7,9 @@ Installation script for dit.
 
 from __future__ import print_function
 
+import ast
 import os
+import re
 import sys
 import warnings
 
@@ -22,6 +24,12 @@ import distutils
 from distutils.core import Extension
 from distutils.command import install_data
 from distutils.command.build_ext import build_ext
+
+_version_re = re.compile(r'__version__\s+=\s+(.*)')
+
+with open('dit/__init__.py', 'rb') as f:
+    version = str(ast.literal_eval(_version_re.search(
+        f.read().decode('utf-8')).group(1)))
 
 class my_install_data(install_data.install_data):
     # A custom install_data command, which will install it's files
@@ -40,20 +48,6 @@ def has_cython():
         return True
     except ImportError:
         return False
-
-def write_version():
-    """Creates a file containing version information."""
-    target = os.path.join(base, 'dit', 'version.py')
-    fh = open(target, 'w')
-    text = '''"""
-Version information for dit, created during installation.
-"""
-
-__version__ = '%s'
-
-'''
-    fh.write(text % release.version)
-    fh.close()
 
 def check_opt(name):
     x = eval('has_{0}()'.format(name.lower()))
@@ -102,7 +96,6 @@ def hack_distutils(debug=False, fast_link=True):
 def main():
     ## Probably, we don't need this anymore?
     hack_distutils()
-    #write_version()
 
     # Handle optional extensions.
     opt = {}
@@ -201,7 +194,7 @@ def main():
 
     kwds = {
         'name':                 "dit",
-        'version':              "0.0.1dev",
+        'version':              version,
         'url':                  "http://dit.io",
 
         'packages':             packages,
