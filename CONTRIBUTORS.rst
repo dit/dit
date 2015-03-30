@@ -17,7 +17,7 @@ sources, academic advisors, users, etc.
 
 Do you want to make your contribution known? If you have commit access, edit
 this file and add your name. If you do not have commit access, feel free to open
-a `ticket <https://github.com/dit/dit/issues/new>`_ or get in contact with one
+an `issue <https://github.com/dit/dit/issues/new>`_ or get in contact with one
 of the official team `members <https://github.com/dit?tab=members>`_.
 
 A supplementary (but still incomplete) list of contributors is given by the list
