@@ -72,10 +72,10 @@ Funding
 -------
 ``dit`` acknowledges support from the following:
 
-    | ARO grant W911NF-12-1-0288
-    | DARPA Physical Intelligence Subcontract No. 9060-000709
-    | NSF Grant No. PHY-0748828
-    | John Templeton Foundation through a grant to the Santa Fe Institute to study complexity.
-    | U.S. Army Research Laboratory and the U.S. Army Research Office under contract number W911NF-13-1-0340.
+- U.S. Army Research Office grant number W911NF-12-1-0288
+- DARPA Physical Intelligence under subcontract number 9060-000709
+- NSF grant number PHY-0748828
+- John Templeton Foundation through a grant to the Santa Fe Institute to study complexity.
+- U.S. Army Research Laboratory and the U.S. Army Research Office under contract number W911NF-13-1-0340.
 
 
