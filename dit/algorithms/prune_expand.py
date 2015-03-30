@@ -87,21 +87,21 @@ def expanded_samplespace(d, alphabets=None, union=True):
     sample space if not sample space is provided.
 
     """
+    joint = d.is_joint()
+
     if alphabets is None:
         # Note, we sort the alphabets now, so we are possibly changing the
         # order of the original sample space.
         alphabets = list(map(sorted, d.alphabet))
-    else:
-        L = d.outcome_length()
-        if len(alphabets) != L:
-            raise Exception("You need to provide {0} alphabets".format(L))
+    elif joint and len(alphabets) != d.outcome_length():
+        raise Exception("You need to provide {0} alphabets".format(L))
 
-    if union:
+    if joint and union:
         alphabet = set.union(*map(set, alphabets))
         alphabet = list(sorted(alphabet))
         alphabets = [alphabet] * len(alphabets)
 
-    if d.is_joint():
+    if joint:
         sample_space = CartesianProduct(alphabets, d._product)
     else:
         sample_space = ScalarSampleSpace(alphabets)
