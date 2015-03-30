@@ -26,13 +26,13 @@ This can be obtained via::
 
     git log --raw | grep "^Author: " | sort | uniq
 
-----------------
+
 Original Authors
 ----------------
 | chebee7i
 | Ryan G. James
 
-------------
+
 Contributors
 ------------
 chebee7i
@@ -40,6 +40,7 @@ chebee7i
 Ryan G. James
     GitHub: `Autoplectic <https://github.com/Autoplectic>`_
 
+=======
 Support
 =======
 ``dit`` and those who have contributed to ``dit`` have received support throughout
