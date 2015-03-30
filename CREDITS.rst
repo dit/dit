@@ -26,16 +26,14 @@ This can be obtained via::
 
     git log --raw | grep "^Author: " | sort | uniq
 
-
-================
 Original Authors
-================
+----------------
 | chebee7i
 | Ryan G. James
 
-============
+
 Contributors
-============
+------------
 chebee7i
     GitHub: `chebee7i <https://github.com/chebee7i>`_
 Ryan G. James
@@ -50,9 +48,8 @@ contributed to ``dit`` and a support acknowledgment does not appear below, pleas
 help us remedy the situation, and similarly, please let us know if you'd like
 something modified or corrected.
 
-===============
 Research Groups
-===============
+---------------
 ``dit`` acknowledges support from the following:
 
     | Complexity Sciences Center
@@ -69,9 +66,8 @@ Research Groups
     | University of Colorado-Boulder
     | PI: Elizabeth Bradley
 
-=======
 Funding
-=======
+-------
 ``dit`` acknowledges support from the following:
 
 - U.S. Army Research Office grant number W911NF-12-1-0288
