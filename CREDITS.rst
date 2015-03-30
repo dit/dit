@@ -52,6 +52,7 @@ something modified or corrected.
 
 Research Groups
 ---------------
+``dit`` acknowledges support from the following:
 
     | Complexity Sciences Center
     | Department of Physics
