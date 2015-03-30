@@ -1,6 +1,8 @@
-============
-Introduction
-============
+.. contents::
+
+=============
+Contributions
+=============
 
 This file contains an incomplete list of people who have contributed to ``dit``.
 It is intended to be an *inclusive* list, and anyone who has contributed and wishes 
