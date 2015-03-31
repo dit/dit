@@ -57,14 +57,14 @@ from six.moves import map, range, zip # pylint: disable=redefined-builtin
 import dit
 from ..helpers import parse_rvs, RV_MODES
 from ..math import sigma_algebra, atom_set
-from ..utils import lexico_key
+from ..utils import quasilexico_key
 
 def sigma_algebra_sort(sigalg):
     """
-    Put the sigma algebra in lexicographical order.
+    Put the sigma algebra in quasi-lexicographical order.
     """
     sigalg = [tuple(sorted(cet)) for cet in sigalg]
-    sigalg.sort(key=lexico_key)
+    sigalg.sort(key=quasilexico_key)
     return sigalg
 
 def induced_sigalg(dist, rvs, rv_mode=None):
@@ -230,7 +230,7 @@ def dist_from_induced_sigalg(dist, sigalg, int_outcomes=True):
     atoms = atom_set(sigalg)
     if int_outcomes:
         atoms = [sorted(atom) for atom in atoms]
-        atoms.sort(key=lexico_key)
+        atoms.sort(key=quasilexico_key)
 
     pmf = [dist.event_probability(atom) for atom in atoms]
     if int_outcomes:
@@ -341,7 +341,7 @@ def insert_rv(dist, idx, sigalg):
     # Provide sane sorting of atoms
     atoms = atom_set(sigalg)
     atoms = [sorted(atom) for atom in atoms]
-    atoms.sort(key=lexico_key)
+    atoms.sort(key=quasilexico_key)
     labels = range(len(atoms))
     if dist._outcome_class == str:
         # Then the labels for the new random variable must be strings.

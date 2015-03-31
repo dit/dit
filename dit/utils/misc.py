@@ -25,7 +25,7 @@ __all__ = (
     'flatten',
     'get_fobj',
     'is_string_like',
-    'lexico_key',
+    'quasilexico_key',
     'ordered_partitions',
     'OrderedDict',
     'partitions',
@@ -216,14 +216,22 @@ def is_string_like(obj):
         return False
     return True
 
-def lexico_key(x):
-    """Returns a key suitable for a lexicographic sort.
+def quasilexico_key(x):
+    """Returns a key suitable for a quasi-lexicographic sort [1]_.
+
+    Objects are sorted by length first, then lexicographically.
 
     Examples
     --------
     >>> L = ['a', 'aa', 'b']
-    >>> sorted(L, key=lexico_key)
+    >>> sorted(L, key=quasilexico_key)
     ['a', 'b', 'aa']
+
+    References
+    ----------
+    .. [1] Calude, Cristian (1994). Information and randomness. An algorithmic
+           perspective. EATCS Monographs on Theoretical Computer Science.
+           Springer-Verlag. p. 1.
 
     """
     return (len(x), x)
@@ -510,7 +518,7 @@ def partitions(seq, tuples=False):
 
             # Convert the partition into a sorted tuple of sorted tuples.
             # Sort by smallest parts first, then lexicographically.
-            partition = tuple(sorted(partition, key=lexico_key))
+            partition = tuple(sorted(partition, key=quasilexico_key))
 
             yield partition
 
