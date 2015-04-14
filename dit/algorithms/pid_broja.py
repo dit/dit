@@ -9,7 +9,8 @@ import numpy as np
 import dit
 
 from dit.abstractdist import AbstractDenseDistribution, get_abstract_dist
-from dit.algorithms.optutil import CVXOPT_Template, as_full_rank, Bunch
+from dit.algorithms.optutil import CVXOPT_Template, as_full_rank, Bunch, op_runner
+from dit.algorithms.maxentropyfw import frank_wolfe
 
 def prepare_dist(dist, sources, target, rv_mode=None):
     """
@@ -246,6 +247,8 @@ def extra_constraints(dist, k):
 
     fixed = sorted(fixed.items())
     fixed_indexes, fixed_values = zip(*fixed)
+    fixed_indexes = list(fixed_indexes)
+    fixed_values = list(fixed_values)
     free = [i for i in range(n_elements) if i not in set(fixed_indexes)]
     fixed_nonzeros = [i for i in fixed_indexes if i in set(nonzeros)]
 
@@ -277,7 +280,7 @@ class PID_BROJA(CVXOPT_Template):
         Quantifying Unique Information. Entropy 2014, 16, 2161-2183.
 
     """
-    def __init__(self, dist, sources, target, k=2, rv_mode=None, extra_constraints=True, tol=None, prng=None):
+    def __init__(self, dist, sources, target, k=2, rv_mode=None, extra_constraints=True, tol=None, prng=None, verbose=False):
         """
         Initialize an optimizer for the partial information framework.
 
@@ -321,11 +324,9 @@ class PID_BROJA(CVXOPT_Template):
         self.dist = prepare_dist(dist, sources, target, rv_mode=rv_mode)
         self.k = k
         self.extra_constraints = extra_constraints
+        self.verbose = verbose
 
         super(PID_BROJA, self).__init__(self.dist, tol=tol, prng=prng)
-
-        self.pmf_copy = self.pmf.copy()
-
 
     def prep(self):
         # We are going to remove all zero and fixed elements.
@@ -335,14 +336,30 @@ class PID_BROJA(CVXOPT_Template):
         # to do with the fixed elements. But y_i = (M x)_i depends on having
         # the full vector x. So when we calculate the objective, we will
         # need to reconstruct the full x vector and calculate
+        self.pmf_copy = self.pmf.copy()
+
         if self.extra_constraints:
             self.vartypes = extra_constraints(self.dist, self.k)
 
             # Update the effective number of parameters
             # This will carryover and fix the inequality constraints.
             self.n = len(self.vartypes.free)
+            fnz = self.vartypes.fixed_nonzeros
+            self.normalization = 1 - self.pmf_copy[fnz].sum()
         else:
-            self.vartypes = None
+            warn = "This probably won't work...too many optimization variables."
+            if self.verbose:
+                print(warn)
+            indexes = np.arange(len(self.pmf))
+            variables = Bunch(
+                free=indexes,
+                fixed=[],
+                fixed_values=[],
+                fixed_nonzeros=[],
+                zeros=[],
+                nonzeros=indexes)
+            self.vartypes = variables
+            self.normalization = 1
 
     def build_function(self):
 
@@ -352,23 +369,33 @@ class PID_BROJA(CVXOPT_Template):
         Osize = np.prod(map(len, self.dist.alphabet[:-1]))
         block = np.ones((Bsize, Bsize))
         blocks = [block] * Osize
-        M = block_diag(*blocks)
+        self.M = M = block_diag(*blocks)
 
-        M_free = M[:, self.vartypes.free]
+        # Construct submatrices used for free and fixed nonzero parameters.
+        M_col_free = M[:, self.vartypes.free]
         fnz = self.vartypes.fixed_nonzeros
-        M_fnz = M[:, fnz]
+        M_col_fnz = M[:, fnz]
         x_fnz = self.pmf[fnz]
-        y_fnz_offset = np.dot(M_fnz, x_fnz)
+        self.y_partial_fnz = y_partial_fnz = np.dot(M_col_fnz, x_fnz)
 
-        self.M_free = M_free
-        self.y_fnz_offset = y_fnz_offset
+        def negH_YgXis(x_free):
+            """
+            Calculates -H[Y | X_1, \ldots, X_n] using only the free variables.
 
-        def negH_YgXis(pmf):
-            y_free = np.dot(M_free, pmf)
-            y = y_free + y_fnz_offset
+            """
+            # Convert back to a NumPy 1D array
+            try:
+                x_free = np.asarray(x_free).transpose()[0]
+            except IndexError:
+                assert(x_free.size[1] == 0)
+                x_free = np.array([])
+
+            y_partial_free = np.dot(M_col_free, x_free)
+            # y_partial_zero == 0, so no need to calculate or add it.
+            y = y_partial_free + y_partial_fnz
             nonzeros = self.vartypes.nonzeros
             y_nonzero = y[nonzeros]
-            self.pmf_copy[self.vartypes.free] = pmf
+            self.pmf_copy[self.vartypes.free] = x_free
             x_nonzero = self.pmf_copy[nonzeros]
             terms = x_nonzero * np.log2(x_nonzero / y_nonzero)
             return np.nansum(terms)
@@ -379,6 +406,8 @@ class PID_BROJA(CVXOPT_Template):
         from cvxopt import matrix
 
         A, b = marginal_constraints(self.dist, self.k)
+        self.A_full = A
+        self.b_full = b
 
         # Reduce the size of the constraint matrix
         if self.extra_constraints:
@@ -390,10 +419,13 @@ class PID_BROJA(CVXOPT_Template):
             Asmall = A
 
         if Asmall.shape[1] == 0:
+            # No free parameters
             Asmall = None
             b = None
         else:
+            #print Asmall[0], b[0]
             Asmall, b, rank = as_full_rank(Asmall, b)
+            #print Asmall[0], b[0]
             if rank > Asmall.shape[1]:
                 msg = 'More independent constraints than free parameters.'
                 raise ValueError(msg)
@@ -404,126 +436,224 @@ class PID_BROJA(CVXOPT_Template):
         self.A = Asmall
         self.b = b
 
+    def build_gradient_hessian(self):
+
+        from cvxopt import matrix
+
+        def gradient(x_free):
+            """Return the gradient of the free elements only.
+
+            The gradient is:
+
+                (\grad f)_j = \log_b x_j / y_j  + 1 / \log_b
+                             - 1 / \log_b \sum_i x_i / y_i M_{ij}
+
+            Our task here is return the elements corresponding to the
+            free indexes of the grad(x).
+
+            """
+            # Convert back to a NumPy 1D array
+            x_free = np.asarray(x_free).transpose()[0]
+
+            nonzeros = self.vartypes.nonzeros
+            free = self.vartypes.free
+
+            # First, we need to obtain y_nonzero.
+            M_col_free = self.M[:, self.vartypes.free]
+            y_partial_free = np.dot(M_col_free, x_free)
+            y = y_partial_free + self.y_partial_fnz
+            y_nonzero = y[nonzeros]
+
+            # We also need x_nonzero
+            self.pmf_copy[self.vartypes.free] = x_free
+            x_nonzero = self.pmf_copy[nonzeros]
+
+            # The last term:
+            #   \sum_i  x_i / y_i M_{ij}
+            # will have nonzero contributions only from the nonzero rows.
+            M_row_nonzero = self.M[nonzeros, :]
+            last = (x_nonzero / y_nonzero)[:, np.newaxis] * M_row_nonzero
+            last = last.sum(axis=0)
+            last_free = 1 / np.log(2) * last[free]
+
+            # Indirectly:
+            #grad = x / y + 1/np.log(2) - 1/np.log(2) * last
+            #grad_free = grad[free]
+
+            # Directly:
+            grad_free = x_free / y[free] + 1 / np.log(2) - last_free
+
+            return matrix(grad_free)
+
+        self.gradient = gradient
+
+        def hessian(x_free):
+            raise NotImplementedError
+
+        self.hessian = hessian
+
+
     def initial_dist(self):
-        d = self.prng.dirichlet([1] * self.n)
         """
-        #x = InitialPoint(self.dist)
+        Find an initial point in the interior of the feasible set.
 
-        from pymisc import to_mma
-
-        print("Finding initial feasible point.")
-        d = x.optimize(maxiters=10, show_progress=True)[:, 0]
-        #d = pmf_AND2(.37, .12)
-        print d.round(3)
-        print "Done"
-        print
         """
-        return d
+        from cvxopt import matrix
+        from cvxopt.modeling import variable
+
+        A = self.A
+        b = self.b
+
+        # Assume they are already CVXOPT matrices
+        if self.vartypes and A.size[1] != len(self.vartypes.free):
+            msg = 'A must be the reduced equality constraint matrix.'
+            raise Exception(msg)
+
+        n = len(self.vartypes.free)
+        x = variable(n)
+        t = variable()
+
+        tols = [1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3]
+        for tol in tols:
+            constraints = []
+            constraints.append( (-tol <= A * x - b) )
+            constraints.append( ( A * x - b <= tol) )
+            constraints.append( (x >= t) )
+
+            # Objective to minimize
+            objective = -t
+
+            opt = op_runner(objective, constraints)
+            if opt.status == 'optimal':
+                #print("Found initial point with tol={}".format(tol))
+                break
+        else:
+            msg = 'Could not find valid initial point: {}'
+            raise Exception(msg.format(opt.status))
+
+        # Grab the optimized x. Perhaps there is a more reliable way to get
+        # x rather than t. For now,w e check the length.
+        optvariables = opt.variables()
+        if len(optvariables[0]) == n:
+            xopt = optvariables[0].value
+        else:
+            xopt = optvariables[1].value
+
+        # Turn values close to zero to be exactly equal to zero.
+        xopt = np.array(xopt)[:,0]
+        xopt[np.abs(xopt) < tol] = 0
+        # Normalize properly accounting for fixed nonzero values.
+        xopt /= xopt.sum()
+        xopt *= self.normalization
+
+        # Do not build the full vector since this is input to the reduced
+        # optimization problem.
+        #xx = np.zeros(len(dist.pmf))
+        #xx[variables.nonzero] = xopt
+
+        return xopt, opt
+
+    def optimize(self, **kwargs):
+        from cvxopt import matrix
+
+        objective = self.func
+        gradient = self.gradient
+
+        if self.A is None:
+            # No free constraints.
+            assert( len(self.vartypes.fixed) == len(self.pmf) )
+            if self.verbose:
+                print("No free parameters. Optimization unnecessary.")
+            self.pmf_copy[self.vartypes.fixed] = self.vartypes.fixed_values
+            xfinal = self.pmf_copy.copy()
+            xfinal_free = xfinal[self.vartypes.free]
+            opt = self.func(matrix(xfinal_free))
+            return xfinal, opt
+
+        A = matrix(self.A)
+        b = matrix(self.b)
+        if self.verbose:
+            print("Finding initial distribution.")
+        initial_x = matrix(self.initial_dist()[0])
 
 
-def entropy(p):
-    return -np.nansum(p * np.log2(p))
+        m = "Optimizing from initial distribution using Frank-Wolfe algorithm."
+        if self.verbose:
+            print(m)
 
-def cmi(pmf):
-    # Binary rvs: p(X_0, X_1, Y)
-    # f0(p) := I[ X_0 : Y | X_1 ] = H[ Y | X_1] - H[Y | X_0, X_1]
-    n_variables = 3
-    n_symbols = 2
-    d = AbstractDenseDistribution(n_variables, n_symbols)
+        x, obj = frank_wolfe(objective, gradient, A, b, initial_x, **kwargs)
+        # x is currently a matrix
+        x = np.asarray(x).transpose()[0]
 
+        # Subnormalize it.
+        x *= self.normalization
+        self.xfinal = x
 
-    H_X0X1Y = entropy(pmf)
+        # Rebuild the full distribution as a NumPy array
+        self.pmf_copy[self.vartypes.free] = x
+        xfinal_full = self.pmf_copy.copy()
 
-    idx_X0X1 = d.parameter_array([0, 1])
-    p_X0X1 = np.array([ pmf[idx].sum() for idx in idx_X0X1 ])
-    H_X0X1 = entropy(p_X0X1)
+        return xfinal_full, obj
 
-    idx_X1 = d.parameter_array([1])
-    p_X1 = np.array([ pmf[idx].sum() for idx in idx_X1 ])
-    H_X1 = entropy(p_X1)
-
-    idx_X1Y = d.parameter_array([1, 2])
-    p_X1Y = np.array([ pmf[idx].sum() for idx in idx_X1Y ])
-    H_X1Y = entropy(p_X1Y)
-
-    cmi = H_X1Y - H_X1 - H_X0X1Y + H_X0X1
-    return -cmi
-
-def negH_YgX1X2(pmf):
-    """
-    Calculate -H[Y | X_0, X_1].
-
-    """
-    n_variables = 3
-    n_symbols = 2
-    d = AbstractDenseDistribution(n_variables, n_symbols)
-
-    H_X0X1Y = entropy(pmf)
-
-    idx_X0X1 = d.parameter_array([0, 1])
-    p_X0X1 = np.array([ pmf[idx].sum() for idx in idx_X0X1 ])
-    H_X0X1 = entropy(p_X0X1)
-
-    H_YgX0X1 = H_X0X1Y - H_X0X1
-
-    return -H_YgX0X1
+def to_dist(self, x):
+    d = self.dist.copy()
+    d.pmf[:] = x
+    return d
 
 def pi_decomp(d, d_opt):
     u0 = dit.multivariate.coinformation(d_opt, [[2],[0]], [1])
     u1 = dit.multivariate.coinformation(d_opt, [[2],[1]], [0])
     mi0 = dit.shannon.mutual_information(d_opt, [0], [2])
+    mi0_test = dit.shannon.mutual_information(d, [0], [2])
     rdn = mi0 - u0
     mi = dit.shannon.mutual_information(d, [0,1], [2])
     syn = mi - mi0 - u1
 
     return syn, u0, u1, rdn
 
-def pmf_AND(x1):
-    """
-    Conforming pmfs for the AND distribution.
-
-    """
-    return np.array([x1, 0, 1/2 - x1, 0, 1/2 - x1, 0, -1/4 + x1, 1/4])
-
-def AND2():
-    d = dit.example_dists.And()
-    d.make_dense()
-    d.pmf = np.array([3,1,3,1,3,1,1,3], dtype=float)  / 16
-    return d
-
-def pmf_AND2(x1, x2):
-    return np.array([x1, x2, 3/8 - x1, 1/8 - x2, 3/8 - x1, 1/8 - x2, -1/8 + x1, 1/8 + x2])
-
-
-def main():
-    d = dit.example_dists.And()
-    d = AND2()
-    x = Optimizer(d, negH_YgX1X2)
-
-    #x = Optimizer(d, cmi)
-    print d
-    print
-    pmf_opt = x.optimize(show_progress=True)
-
-    mi = dit.shannon.mutual_information(d, [0,1], [2])
-    d_opt = dit.Distribution(d.outcomes, pmf_opt)
-    print
-    print d_opt
-
-    print
-    print "I[X1, X2 : Y] = ", mi
-    print
-    print "syn, u1, u2, rdn"
-    print pi_decomp(d, d_opt)
-
-def dice():
+def dice(a, b):
     # DoF: 85, 36, 15, 10, 5, 0
-    d = dit.example_dists.summed_dice(1, 5)
+    d = dit.example_dists.summed_dice(a, b)
     x = PID_BROJA(d, [[0], [1]], [2], extra_constraints=True)
-    #pmf_opt = x.optimize(show_progress=True)
+    pmf_opt, obj = x.optimize()
+    d_opt = x.dist.copy()
+    d_opt.pmf[:] = pmf_opt
+    print pi_decomp(x.dist, d_opt)
     return x
+
+def demo():
+    import matplotlib.pyplot as plt
+
+    f, axes = plt.subplots(1, 3)
+
+    bvals = range(1, 7)
+    avals = np.linspace(0, 1, num=10)
+    for b in bvals:
+        decomps = []
+        for a in avals:
+            print ("**** {}, {} *****".format(a, b))
+            d = dit.example_dists.summed_dice(a, b)
+            x = PID_BROJA(d, [[0], [1]], [2], extra_constraints=True)
+
+            pmf_opt, obj = x.optimize()
+            d_opt = x.dist.copy()
+            d_opt.pmf[:] = pmf_opt
+            decomps.append(pi_decomp(x.dist, d_opt))
+        decomps = np.asarray(decomps)
+        # redundancy
+        axes[0].plot(avals, decomps[:, -1], label="{}".format(b))
+        # unique
+        axes[1].plot(avals, decomps[:, -2], label="{}".format(b))
+        # synergy
+        axes[2].plot(avals, decomps[:, 0], label="{}".format(b))
+
+    axes[0].set_title('Redundancy')
+    axes[1].set_title('Unique')
+    axes[2].set_title('Synergy')
+
+    plt.show()
+
 
 
 if __name__ == '__main__':
-    dice()
-    pass
+    z = dice(1  , 3)
