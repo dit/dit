@@ -33,8 +33,8 @@ def as_full_rank(A, b):
 
     We take B = \Sigma V^* and c = U^T b, where we use U^T instead of U^{-1}
     for computational efficiency (and since U is orthogonal). But note, we
-    take only the cols of U and rows of \Sigma that have nonzero singular
-    values.
+    take only the cols of U (which are rows in U^{-1}) and rows of \Sigma that
+    have nonzero singular values.
 
     Parameters
     ----------
@@ -89,12 +89,6 @@ class CVXOPT_Template(object):
         ----------
         dist : distribution
             The distribution that is used during optimization.
-        extra_constraints : bool
-            When possible, additional constraints beyond the required marginal
-            constraints are added to the optimization problem. These exist
-            values of the input and output that satisfy p(inputs | outputs) = 1
-            and p(outputs | inputs) = 1. In that case, p(inputs, outputs) is
-            equal to q(inputs, outputs) for all q in the feasible set.
         tol : float | None
             The desired convergence tolerance.
         prng : RandomState
@@ -131,7 +125,7 @@ class CVXOPT_Template(object):
         self.prep()
         self.build_function()
         self.build_gradient_hessian()
-        self.build_nonnegativity_constraints()
+        self.build_linear_inequality_constraints()
         self.build_linear_equality_constraints()
         self.build_F()
 
@@ -150,7 +144,7 @@ class CVXOPT_Template(object):
         self.hessian = numdifftools.Hessian(self.func)
 
 
-    def build_nonnegativity_constraints(self):
+    def build_linear_inequality_constraints(self):
         from cvxopt import matrix
 
         # Dimension of optimization variable
@@ -282,12 +276,18 @@ def prepare_dist(dist):
             warnings.warn(msg)
         dist.make_dense()
 
+    # We also need linear probabilities.
+    dist.set_base('linear')
+
     return dist
 
 
 def op_runner(objective, constraints, **kwargs):
     """
     Minimize the objective specified by the constraints.
+
+    This safely let's you pass options to the solver and restores their values
+    once the optimization process has completed.
 
     The objective must be linear in the variables.
     This uses cvxopt.modeling.
@@ -303,6 +303,7 @@ def op_runner(objective, constraints, **kwargs):
     try:
         options.clear()
         options.update(kwargs)
+        # Ignore 0 log 0 warnings.
         with np.errstate(divide='ignore', invalid='ignore'):
             opt.solve()
     except:

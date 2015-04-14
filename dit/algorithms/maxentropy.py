@@ -363,23 +363,25 @@ class MarginalMaximumEntropy(MaximumEntropy):
 
     def prep(self):
 
-        # We are only removed elements which should be fixed at zero.
+        # We are only removing elements which should be fixed at zero.
         # This means they don't contribute to the entropy, so there is no
         # need to adjust the function. Also, we are using numdifftools.
         self.variables = isolate_zeros(self.dist, self.k)
 
-        # Make self.n reflect only the size of the nonzero elements.
+        # Make self.n reflect only the size of the nonzero elements. This
+        # automatically adjusts the size of G for the inequality constraint.
         self.n = len(self.variables.nonzero)
 
     def build_linear_equality_constraints(self):
         from cvxopt import matrix
 
-        # Dimension of optimization variable
-        n = self.n
-
         A, b = marginal_constraints(self.dist, self.k)
 
         # Reduce the size of the constraint matrix
+        # Since we are only removing elements which are exactly zero, then
+        # the constraint equations are unchanged. E.g. the normalization is
+        # still that the nonzero values should add to 1.
+
         Asmall = A[:, self.variables.nonzero]
         Asmall, b, rank = as_full_rank(Asmall, b)
         if rank > Asmall.shape[1]:
@@ -474,15 +476,15 @@ class MomentMaximumEntropy(MaximumEntropy):
         args = (self.pmf, self.n_variables, k, self.symbol_map)
         kwargs = {'with_replacement': self.with_replacement}
         A, b = moment_constraints(*args, **kwargs)
-        A, b, rank = as_full_rank(A, b)
+        AA, bb, rank = as_full_rank(A, b)
         if rank > n:
             raise ValueError('More independent constraints than parameters.')
 
-        A = matrix(A)
-        b = matrix(b)  # now a column vector
+        AA = matrix(AA)
+        bb = matrix(bb)  # now a column vector
 
-        self.A = A
-        self.b = b
+        self.A = AA
+        self.b = bb
 
 
 def marginal_maxent_dists(dist, k_max=None, jitter=True, show_progress=True):
