@@ -2,13 +2,15 @@
 Various utilities that can be helpful for optimization problems.
 
 """
-from __future__ import division
+from __future__ import division, print_function
 
 from collections import defaultdict
 import itertools
 
 import numpy as np
 import dit
+
+from .frankwolfe import frank_wolfe
 
 
 def as_full_rank(A, b):
