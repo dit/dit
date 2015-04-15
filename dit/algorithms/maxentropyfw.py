@@ -9,13 +9,16 @@ This uses the Frank-Wolfe algorithm:
 from __future__ import print_function
 
 import itertools
+import logging
+
 import numpy as np
 
 import dit
 from dit.abstractdist import get_abstract_dist
+from dit.utils import basic_logger
 
 from .optutil import (
-    as_full_rank, prepare_dist, op_runner
+    as_full_rank, prepare_dist, op_runner, frank_wolfe
 )
 from .maxentropy import marginal_constraints, isolate_zeros
 
@@ -131,70 +134,6 @@ def check_feasibility(dist, k, **kwargs):
     return opt
 
 
-def frank_wolfe(objective, gradient, A, b, initial_x, maxiters=1000, tol=1e-4, verbose=True):
-    """
-    Uses the Frank--Wolfe algorithm to minimize the convex objective.
-
-    Assumes x should be nonnegative.
-
-    """
-    # All variables should be cvxopt variables, not NumPy arrays
-    from cvxopt import matrix
-    from cvxopt.modeling import variable
-
-    assert(A.size[1] == initial_x.size[0])
-
-    n = initial_x.size[0]
-    x = initial_x
-    xdiff = 0
-
-    TOL = 1e-7
-    verbosechunk = maxiters / 10
-    for i in range(maxiters):
-        obj = objective(x)
-        grad = gradient(x)
-
-        xbar = variable(n)
-
-        new_objective = grad.T * xbar
-        constraints = []
-        constraints.append( ( xbar >= 0 ) )
-        constraints.append( (-TOL <= A * xbar - b) )
-        constraints.append( ( A * xbar - b <= TOL) )
-
-        opt = op_runner(new_objective, constraints, show_progress=False)
-        if opt.status != 'optimal':
-            msg = "\tDid not find optimal direction on iteration {}: {}"
-            print(msg.format(i, opt.status))
-
-        # Calculate optimality gap
-        xbar_opt = opt.variables()[0].value
-        opt_bd = grad.T * (xbar_opt - x)
-
-        if verbose and i % verbosechunk == 0:
-            msg = "i={:6}  obj={:10.7f}  opt_bd={:10.7f}  xdiff={:12.10f}"
-            print(msg.format(i, obj, opt_bd[0,0], xdiff))
-
-        xnew = (i * x + 2 * xbar_opt) / (i + 2)
-        xdiff = np.linalg.norm(xnew - x)
-        x = xnew
-
-        if (xdiff < tol):
-            obj = objective(x)
-            break
-    else:
-        msg = "Only converged to xdiff={:12.10f} after {} iterations. Desired: {}"
-        print(msg.format(xdiff, maxiters, tol))
-
-    # Cleanup
-    xopt = np.array(x)
-    xopt[np.abs(xopt) < tol] = 0
-    xopt /= xopt.sum()
-
-
-    return xopt, obj
-
-
 def negentropy(p):
     """
     Entropy which operates on vectors of length N.
@@ -206,6 +145,9 @@ def negentropy(p):
 def marginal_maxent(dist, k, **kwargs):
     from cvxopt import matrix
 
+    verbose = kwargs.get('verbose', False)
+    logger = basic_logger('dit.maxentropy', verbose)
+
     A, b = marginal_constraints(dist, k)
 
     # Reduce the size of A so that only nonzero elements are searched.
@@ -216,9 +158,16 @@ def marginal_maxent(dist, k, **kwargs):
     Asmall = matrix(Asmall)
     b = matrix(b)
 
+    # Set cvx info level based on logging.INFO level.
+    if logger.isEnabledFor(logging.INFO):
+        show_progress = True
+    else:
+        show_progress = False
+
+    logger.info("Finding initial distribution.")
     initial_x, _ = initial_point(dist, k, A=Asmall, b=b,
                                  isolated=variables,
-                                 show_progress=False)
+                                 show_progress=show_progress)
     initial_x = matrix(initial_x)
     objective = negentropy
 
@@ -241,6 +190,7 @@ def marginal_maxent(dist, k, **kwargs):
         grad[bad_x] = 0
         return matrix(grad)
 
+    logger.info("Finding maximum entropy distribution.")
     x, obj = frank_wolfe(objective, gradient, Asmall, b, initial_x, **kwargs)
     x = np.asarray(x).transpose()[0]
 
@@ -301,4 +251,3 @@ def marginal_maxent_dists(dist, k_max=None, maxiters=1000, tol=1e-3, verbose=Fal
     dists.append(dist)
 
     return dists
-

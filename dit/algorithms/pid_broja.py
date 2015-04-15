@@ -2,15 +2,18 @@
 
 from __future__ import division
 
+import logging
 from collections import defaultdict
 import itertools
 
 import numpy as np
 import dit
 
+from dit.utils import basic_logger
 from dit.abstractdist import AbstractDenseDistribution, get_abstract_dist
-from dit.algorithms.optutil import CVXOPT_Template, as_full_rank, Bunch, op_runner
-from dit.algorithms.maxentropyfw import frank_wolfe
+from dit.algorithms.optutil import (
+    CVXOPT_Template, as_full_rank, Bunch, op_runner, frank_wolfe
+)
 
 def prepare_dist(dist, sources, target, rv_mode=None):
     """
@@ -266,13 +269,15 @@ def extra_constraints(dist, k):
 
     return variables
 
-class PID_BROJA(CVXOPT_Template):
+class UniqueInformation(CVXOPT_Template):
     """
-    An optimizer for the partial information framework that restricts to
-    matching pairwise marginals for each input with the output.
+    An optimizer for the unique information.
 
     Inputs are: X_0, X_1, ..., X_n
     Output is: Y
+
+    We find a distribution that matches all pairwise marginals for each input
+    with the output: P(X_i, Y), that maximizes the H[Y | X_1, ..., X_n].
 
     This is based off:
 
@@ -280,7 +285,7 @@ class PID_BROJA(CVXOPT_Template):
         Quantifying Unique Information. Entropy 2014, 16, 2161-2183.
 
     """
-    def __init__(self, dist, sources, target, k=2, rv_mode=None, extra_constraints=True, tol=None, prng=None, verbose=False):
+    def __init__(self, dist, sources, target, k=2, rv_mode=None, extra_constraints=True, tol=None, prng=None, verbose=None):
         """
         Initialize an optimizer for the partial information framework.
 
@@ -313,9 +318,15 @@ class PID_BROJA(CVXOPT_Template):
             The desired convergence tolerance.
         prng : RandomState
             A NumPy-compatible pseudorandom number generator.
-
+        verbose : int
+            An integer representing the logging level ala the ``logging``
+            module. If `None`, then (effectively) the log level is set to
+            `WARNING`. For a bit more information, set this to `logging.INFO`.
+            For a bit less, set this to `logging.ERROR`, or perhaps 100.
 
         """
+        self.logger = basic_logger('dit.pid_broja', verbose)
+
         # Store the original parameters in case we want to construct an
         # "uncoalesced" distribution from the optimial distribution.
         self.dist_original = dist
@@ -326,7 +337,7 @@ class PID_BROJA(CVXOPT_Template):
         self.extra_constraints = extra_constraints
         self.verbose = verbose
 
-        super(PID_BROJA, self).__init__(self.dist, tol=tol, prng=prng)
+        super(UniqueInformation, self).__init__(self.dist, tol=tol, prng=prng)
 
     def prep(self):
         # We are going to remove all zero and fixed elements.
@@ -347,9 +358,9 @@ class PID_BROJA(CVXOPT_Template):
             fnz = self.vartypes.fixed_nonzeros
             self.normalization = 1 - self.pmf_copy[fnz].sum()
         else:
-            warn = "This probably won't work...too many optimization variables."
-            if self.verbose:
-                print(warn)
+            warn = "This probably won't work: too many optimization variables."
+            self.logger.warn(warn)
+
             indexes = np.arange(len(self.pmf))
             variables = Bunch(
                 free=indexes,
@@ -509,6 +520,12 @@ class PID_BROJA(CVXOPT_Template):
             msg = 'A must be the reduced equality constraint matrix.'
             raise Exception(msg)
 
+        # Set cvx info level based on logging.INFO level.
+        if self.logger.isEnabledFor(logging.INFO):
+            show_progress = True
+        else:
+            show_progress = False
+
         n = len(self.vartypes.free)
         x = variable(n)
         t = variable()
@@ -523,7 +540,7 @@ class PID_BROJA(CVXOPT_Template):
             # Objective to minimize
             objective = -t
 
-            opt = op_runner(objective, constraints)
+            opt = op_runner(objective, constraints, show_progress=show_progress)
             if opt.status == 'optimal':
                 #print("Found initial point with tol={}".format(tol))
                 break
@@ -562,8 +579,7 @@ class PID_BROJA(CVXOPT_Template):
         if self.A is None:
             # No free constraints.
             assert( len(self.vartypes.fixed) == len(self.pmf) )
-            if self.verbose:
-                print("No free parameters. Optimization unnecessary.")
+            self.logger.info("No free parameters. Optimization unnecessary.")
             self.pmf_copy[self.vartypes.fixed] = self.vartypes.fixed_values
             xfinal = self.pmf_copy.copy()
             xfinal_free = xfinal[self.vartypes.free]
@@ -572,14 +588,20 @@ class PID_BROJA(CVXOPT_Template):
 
         A = matrix(self.A)
         b = matrix(self.b)
-        if self.verbose:
-            print("Finding initial distribution.")
+        self.logger.info("Finding initial distribution.")
         initial_x = matrix(self.initial_dist()[0])
 
 
         m = "Optimizing from initial distribution using Frank-Wolfe algorithm."
-        if self.verbose:
-            print(m)
+        self.logger.info(m)
+
+        # Set logging level for Frank-Wolfe if we are at logging.INFO level.
+        if self.logger.isEnabledFor(logging.INFO):
+            verbose = logging.INFO
+        else:
+            verbose = None
+        if verbose not in kwargs:
+            kwargs['verbose'] = verbose
 
         x, obj = frank_wolfe(objective, gradient, A, b, initial_x, **kwargs)
         # x is currently a matrix
@@ -595,11 +617,6 @@ class PID_BROJA(CVXOPT_Template):
 
         return xfinal_full, obj
 
-def to_dist(self, x):
-    d = self.dist.copy()
-    d.pmf[:] = x
-    return d
-
 def pi_decomp(d, d_opt):
     u0 = dit.multivariate.coinformation(d_opt, [[2],[0]], [1])
     u1 = dit.multivariate.coinformation(d_opt, [[2],[1]], [0])
@@ -614,7 +631,7 @@ def pi_decomp(d, d_opt):
 def dice(a, b):
     # DoF: 85, 36, 15, 10, 5, 0
     d = dit.example_dists.summed_dice(a, b)
-    x = PID_BROJA(d, [[0], [1]], [2], extra_constraints=True)
+    x = UniqueInformation(d, [[0], [1]], [2], extra_constraints=True)
     pmf_opt, obj = x.optimize()
     d_opt = x.dist.copy()
     d_opt.pmf[:] = pmf_opt
@@ -633,7 +650,7 @@ def demo():
         for a in avals:
             print ("**** {}, {} *****".format(a, b))
             d = dit.example_dists.summed_dice(a, b)
-            x = PID_BROJA(d, [[0], [1]], [2], extra_constraints=True)
+            x = PID_BROJA(d, [[0], [1]], [2], extra_constraints=True, verbose=20)
 
             pmf_opt, obj = x.optimize()
             d_opt = x.dist.copy()
@@ -653,7 +670,5 @@ def demo():
 
     plt.show()
 
-
-
 if __name__ == '__main__':
-    z = dice(1  , 3)
+    z = dice(1, 3)
