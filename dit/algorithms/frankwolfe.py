@@ -73,7 +73,7 @@ def frank_wolfe(objective, gradient, A, b, initial_x, maxiters=2000, tol=1e-4, c
     # Set up a custom logger.
     logger = basic_logger('dit.frankwolfe', verbose)
 
-    # Set cvx info level based on logging.INFO level.
+    # Set cvx info level based on logging.DEBUG level.
     if logger.isEnabledFor(logging.DEBUG):
         show_progress = True
     else:
@@ -111,11 +111,12 @@ def frank_wolfe(objective, gradient, A, b, initial_x, maxiters=2000, tol=1e-4, c
         xbar_opt = opt.variables()[0].value
         opt_bd = grad.T * (xbar_opt - x)
 
-        if i % verbosechunk == 0:
-            msg = "i={:6}  obj={:10.7f}  opt_bd={:10.7f}  xdiff={:12.10f}"
-            logger.debug("\n")
+        msg = "i={:6}  obj={:10.7f}  opt_bd={:10.7f}  xdiff={:12.10f}"
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug(msg.format(i, obj, opt_bd[0,0], xdiff))
+            logger.debug("")
+        elif i % verbosechunk == 0:
             logger.info(msg.format(i, obj, opt_bd[0,0], xdiff))
-            logger.debug("\n")
 
         xnew = (i * x + 2 * xbar_opt) / (i + 2)
         xdiff = np.linalg.norm(xnew - x)
