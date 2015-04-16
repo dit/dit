@@ -226,7 +226,7 @@ def marginal_maxent_dists(dist, k_max=None, maxiters=1000, tol=1e-3, verbose=Fal
     # the full space. We also know the answer in these cases.
 
     # This is safe since the distribution must be dense.
-    k0 = dit.Distribution(outcomes, [1]*len(outcomes), validate=False)
+    k0 = dit.Distribution(outcomes, [1]*len(outcomes), base='linear', validate=False)
     k0.normalize()
 
     k1 = dit.product_distribution(dist)
@@ -234,10 +234,9 @@ def marginal_maxent_dists(dist, k_max=None, maxiters=1000, tol=1e-3, verbose=Fal
     dists = [k0, k1]
     for k in range(k_max + 1):
         if verbose:
-            print()
             print("Constraining maxent dist to match {0}-way marginals.".format(k))
 
-        if k in [0, 1, k_max]:
+        if k in [0, 1, n_variables]:
             continue
 
         kwargs = {'maxiters': maxiters, 'tol': tol, 'verbose': verbose}
@@ -248,6 +247,7 @@ def marginal_maxent_dists(dist, k_max=None, maxiters=1000, tol=1e-3, verbose=Fal
 
     # To match the all-way marginal is to match itself. Again, this is a time
     # savings decision, even though the optimization should be fast.
-    dists.append(dist)
+    if k_max == n_variables:
+        dists.append(dist)
 
     return dists
