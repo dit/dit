@@ -159,6 +159,7 @@ def _make_distribution(outcomes, pmf, base,
     d._mask = d._new_mask()
 
     d._meta['is_sparse'] = sparse
+    d.rvs = [[i] for i in range(d.outcome_length())]
 
     return d
 
@@ -484,11 +485,14 @@ class Distribution(ScalarDistribution):
         # Force the distribution to be numerical and a NumPy array.
         self.pmf = np.asarray(pmf, dtype=float)
 
+
         # Tuple outcomes, and an index.
         self.outcomes = tuple(outcomes)
         self._outcomes_index = index
 
         self.alphabet = tuple(alphabets)
+
+        self.rvs = [[i] for i in range(self.outcome_length())]
 
         # Mask
         self._mask = self._new_mask()
