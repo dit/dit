@@ -248,10 +248,13 @@ def extra_constraints(dist, k):
     for i, p in determined.items():
         fixed[i] = p
 
-    fixed = sorted(fixed.items())
-    fixed_indexes, fixed_values = zip(*fixed)
-    fixed_indexes = list(fixed_indexes)
-    fixed_values = list(fixed_values)
+    if fixed:
+        fixed = sorted(fixed.items())
+        fixed_indexes, fixed_values = list(zip(*fixed))
+    else:
+        fixed_indexes = []
+        fixed_values = []
+
     free = [i for i in range(n_elements) if i not in set(fixed_indexes)]
     fixed_nonzeros = [i for i in fixed_indexes if i in set(nonzeros)]
 
@@ -669,6 +672,76 @@ def demo():
     axes[2].set_title('Synergy')
 
     plt.show()
+
+def unique_informations(d, sources, target, rv_mode=None, extra_constraints=True, tol=None, prng=None, verbose=None):
+    """
+    Returns the unique information each source has about the target.
+
+    Parameters
+    ----------
+    dist : distribution
+        The distribution used to calculate the partial information.
+    sources : list of lists
+        The sources random variables. Each random variable specifies a list
+        of random variables in `dist` that define a source.
+    target : list
+        The random variables in `dist` that define the target.
+    rv_mode : str, None
+        Specifies how to interpret the elements of each source and the
+        target. Valid options are: {'indices', 'names'}. If equal to
+        'indices', then the elements of each source and the target are
+        interpreted as random variable indices. If equal to 'names', the
+        elements are interpreted as random variable names. If `None`, then
+        the value of `dist._rv_mode` is consulted.
+    extra_constraints : bool
+        When possible, additional constraints beyond the required marginal
+        constraints are added to the optimization problem. These exist
+        values of the input and output that satisfy p(inputs | outputs) = 1
+        In that case, p(inputs, outputs) is equal to q(inputs, outputs) for
+        all q in the feasible set.
+    tol : float | None
+        The desired convergence tolerance.
+    prng : RandomState
+        A NumPy-compatible pseudorandom number generator.
+    verbose : int
+        An integer representing the logging level ala the ``logging``
+        module. If `None`, then (effectively) the log level is set to
+        `WARNING`. For a bit more information, set this to `logging.INFO`.
+        For a bit less, set this to `logging.ERROR`, or perhaps 100.
+
+    Returns
+    -------
+    ui : array-like
+        The unique information that each source has about the target rv.
+    mi_opt : float
+        The total mutual information between the sources and the target for
+        the optimized distribution.
+    mi_orig : float
+        The total mutual information between the sources and the target for
+        the original (true) distribution.
+
+    Notes
+    -----
+    The nonunique information would be `mi_orig - ui.sum()`.
+
+    """
+    x = UniqueInformation(d, sources, target, k=2, rv_mode=rv_mode,
+                          extra_constraints=extra_constraints, tol=tol,
+                          prng=prng, verbose=verbose)
+    pmf, obj = x.optimize()
+    d_orig = x.dist
+    d_opt = d_orig.copy()
+    d_opt.pmf[:] = pmf
+    n = d_opt.outcome_length()
+    uis = []
+    for rv in range(n-1):
+        others = range(rv) + range(rv+1, n-1)
+        ui = dit.multivariate.coinformation(d_opt, [[rv], [n-1]], others)
+        uis.append(ui)
+    mi_opt = dit.multivariate.coinformation(d_opt, [[n-1], range(n-1)])
+    mi_orig = dit.multivariate.coinformation(d_orig, [[n-1], range(n-1)])
+    return np.array(uis), mi_opt, mi_orig
+
 
 if __name__ == '__main__':
     z = dice(1, 3)
