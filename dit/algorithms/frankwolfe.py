@@ -17,6 +17,7 @@ Frank-Wolfe algorithm.
 
 from __future__ import print_function
 
+import logging
 import numpy as np
 
 from dit.utils import basic_logger
@@ -72,6 +73,12 @@ def frank_wolfe(objective, gradient, A, b, initial_x, maxiters=2000, tol=1e-4, c
     # Set up a custom logger.
     logger = basic_logger('dit.frankwolfe', verbose)
 
+    # Set cvx info level based on logging.INFO level.
+    if logger.isEnabledFor(logging.DEBUG):
+        show_progress = True
+    else:
+        show_progress = False
+
     assert(A.size[1] == initial_x.size[0])
 
     n = initial_x.size[0]
@@ -92,7 +99,8 @@ def frank_wolfe(objective, gradient, A, b, initial_x, maxiters=2000, tol=1e-4, c
         constraints.append( (-TOL <= A * xbar - b) )
         constraints.append( ( A * xbar - b <= TOL) )
 
-        opt = op_runner(new_objective, constraints, show_progress=False)
+        logger.debug('FW Iteration: {}'.format(i))
+        opt = op_runner(new_objective, constraints, show_progress=show_progress)
         if opt.status != 'optimal':
             msg = '\tFrank-Wolfe: Did not find optimal direction on '
             msg += 'iteration {}: {}'
@@ -105,7 +113,9 @@ def frank_wolfe(objective, gradient, A, b, initial_x, maxiters=2000, tol=1e-4, c
 
         if i % verbosechunk == 0:
             msg = "i={:6}  obj={:10.7f}  opt_bd={:10.7f}  xdiff={:12.10f}"
+            logger.debug("\n")
             logger.info(msg.format(i, obj, opt_bd[0,0], xdiff))
+            logger.debug("\n")
 
         xnew = (i * x + 2 * xbar_opt) / (i + 2)
         xdiff = np.linalg.norm(xnew - x)
