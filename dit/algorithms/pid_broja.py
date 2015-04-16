@@ -15,6 +15,8 @@ from dit.algorithms.optutil import (
     CVXOPT_Template, as_full_rank, Bunch, op_runner, frank_wolfe
 )
 
+__all__ = ['unique_informations']
+
 def prepare_dist(dist, sources, target, rv_mode=None):
     """
     Prepares a ``dit`` distribution for the optimization process.
