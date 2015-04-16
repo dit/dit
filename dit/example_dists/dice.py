@@ -3,6 +3,19 @@ from __future__ import division
 import itertools
 import dit
 
+def iid_sum(n, k=2):
+    """
+    Returns a distribution relating n iid uniform draws to their sum.
+
+    """
+    alphabet = range(k)
+    outcomes = list(itertools.product(alphabet, repeat=n))
+    pmf = [1] * len(outcomes)
+    d = dit.Distribution(outcomes, pmf, base='linear', validate=False)
+    d.normalize()
+    d = dit.insert_rvf(d, lambda x: (sum(x),) )
+    return d
+
 def summed_dice(a=1, b=1):
     """
     Two die X and Y are summed to form Z in the following way:
