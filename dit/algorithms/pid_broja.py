@@ -1,6 +1,6 @@
  # -*- coding: utf-8 -*-
 
-from __future__ import division
+from __future__ import division, print_function
 
 import logging
 from collections import defaultdict
@@ -439,9 +439,9 @@ class UniqueInformation(CVXOPT_Template):
             Asmall = None
             b = None
         else:
-            #print Asmall[0], b[0]
+            #print(Asmall[0], b[0])
             Asmall, b, rank = as_full_rank(Asmall, b)
-            #print Asmall[0], b[0]
+            #print(Asmall[0], b[0])
             if rank > Asmall.shape[1]:
                 msg = 'More independent constraints than free parameters.'
                 raise ValueError(msg)
@@ -640,7 +640,7 @@ def dice(a, b):
     pmf_opt, obj = x.optimize()
     d_opt = x.dist.copy()
     d_opt.pmf[:] = pmf_opt
-    print pi_decomp(x.dist, d_opt)
+    print(pi_decomp(x.dist, d_opt))
     return x
 
 def demo():
@@ -653,7 +653,7 @@ def demo():
     for b in bvals:
         decomps = []
         for a in avals:
-            print ("**** {}, {} *****".format(a, b))
+            print("**** {}, {} *****".format(a, b))
             d = dit.example_dists.summed_dice(a, b)
             x = PID_BROJA(d, [[0], [1]], [2], extra_constraints=True, verbose=20)
 
