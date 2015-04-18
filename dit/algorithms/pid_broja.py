@@ -655,7 +655,7 @@ def demo():
         for a in avals:
             print("**** {}, {} *****".format(a, b))
             d = dit.example_dists.summed_dice(a, b)
-            x = PID_BROJA(d, [[0], [1]], [2], extra_constraints=True, verbose=20)
+            x = UniqueInformation(d, [[0], [1]], [2], extra_constraints=True, verbose=20)
 
             pmf_opt, obj = x.optimize()
             d_opt = x.dist.copy()
