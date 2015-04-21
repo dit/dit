@@ -35,8 +35,8 @@ Install:
 
       pip install git+https://github.com/dit/dit/#egg=dit
 
-   Alternatively, you can clone this repository, move into the newly created
-   ``dit`` directory, and then install the package:
+   Alternatively, you can clone this repository, move into the newly created ``dit`` directory, 
+   and then install the package. Be sure to include the period (.) in the install command:
 
    .. code-block:: bash
 
