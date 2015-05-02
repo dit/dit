@@ -16,7 +16,7 @@ import six
 
 import dit
 
-__all__ = ['build_distribution']
+__all__ = ['distribution_from_bayesnet']
 
 def sanitize_inputs(digraph, nodes, attr):
     """
@@ -158,7 +158,7 @@ def build_pfuncs(digraph, rv_names, attr, outcome_ctor):
     return pfuncs
 
 
-def build_distribution(digraph, nodes=None, attr='dist'):
+def distribution_from_bayesnet(digraph, nodes=None, attr='dist'):
     """
     Returns a distribution built from a Bayesian network.
 
@@ -210,5 +210,6 @@ def build_distribution(digraph, nodes=None, attr='dist'):
     pmf = [ops.mult_reduce([pfuncs[rv](outcome) for rv in rv_names])
            for outcome in outcomes]
 
-    dist = dit.Distribution(outcomes, pmf, sample_space=sample_space)
+    dist = dit.Distribution(outcomes, pmf,
+                            sample_space=sample_space, base=ops.get_base())
     return dist

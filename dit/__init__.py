@@ -23,6 +23,7 @@ from .npdist import Distribution
 # Order does not matter for these
 from .samplespace import ScalarSampleSpace, SampleSpace, CartesianProduct
 from .distconst import *
+from .bgm import *
 from .helpers import copypmf
 from .cdisthelpers import joint_from_factors
 from .algorithms import pruned_samplespace, expanded_samplespace
