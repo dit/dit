@@ -248,11 +248,14 @@ def distribution_from_bayesnet(digraph, nodes=None, sample_space=None, attr='dis
 
     Examples
     --------
-    Here is the Xor using functions.
+    The Xor logic gate has the following structure:
 
         >>> g = nx.DiGraph()
         >>> g.add_edge(0, 2)
         >>> g.add_edge(1, 2)
+
+    Let's add distributions to it using functions.
+
         >>> uniform = lambda node_val, parents: 0.5
         >>> def xor(node_val, parents):
         ...     if '1' == parents[0] == parents[1]:
@@ -267,11 +270,8 @@ def distribution_from_bayesnet(digraph, nodes=None, sample_space=None, attr='dis
         >>> ss = ['000', '001', '010', '011', '100', '101', '110', '111']
         >>> d = dit.distribution_from_bayesnet(g, sample_space=ss)
 
-    Here is the Xor using distributions.
+    Alternatively, we could add distributions using Distribution objects.
 
-        >>> g = nx.DiGraph()
-        >>> g.add_edge(0, 2)
-        >>> g.add_edge(1, 2)
         >>> uniform = dit.uniform_distribution(1, 2)
         >>> sample_space1 = [(0,), (1,)]
         >>> one = dit.Distribution(sample_space1, [0, 1])
@@ -283,9 +283,9 @@ def distribution_from_bayesnet(digraph, nodes=None, sample_space=None, attr='dis
         >>> g.node[2]['dist'] = xor
         >>> d = dit.distribution_from_bayesnet(g)
 
-    Now, we can add some noise whenever the output would normally be 1.
+    We can add noise whenever the output would normally be 1.
 
-        >>> noisy = dit.Distribution(sample_space, [.05, .95])
+        >>> noisy = dit.Distribution(sample_space, [.1, .9])
         >>> dists = [zero, noisy, noisy, zero]
         >>> g.node[2]['dist'][1] = dists
         >>> d = dit.distribution_from_bayesnet(g)
