@@ -248,22 +248,47 @@ def distribution_from_bayesnet(digraph, nodes=None, sample_space=None, attr='dis
 
     Examples
     --------
-    >>> g = nx.DiGraph()
-    >>> g.add_edge(0, 2)
-    >>> g.add_edge(1, 2)
-    >>> uniform = lambda node_val, parents: 0.5
-    >>> def xor(node_val, parents):
-    ...     if '1' == parents[0] == parents[1]:
-    ...         desired_output = '1'
-    ...     else:
-    ...         desired_output = '0'
-    ...     return int(node_val == desired_output)
-    ...
-    >>> g.node[0]['dist'] = uniform
-    >>> g.node[1]['dist'] = uniform
-    >>> g.node[2]['dist'] = xor
-    >>> ss = ['000', '001', '010', '011', '100', '101', '110', '111']
-    >>> d = dit.distribution_from_bayesnet(g, sample_space=ss)
+    Here is the Xor using functions.
+
+        >>> g = nx.DiGraph()
+        >>> g.add_edge(0, 2)
+        >>> g.add_edge(1, 2)
+        >>> uniform = lambda node_val, parents: 0.5
+        >>> def xor(node_val, parents):
+        ...     if '1' == parents[0] == parents[1]:
+        ...         desired_output = '1'
+        ...     else:
+        ...         desired_output = '0'
+        ...     return int(node_val == desired_output)
+        ...
+        >>> g.node[0]['dist'] = uniform
+        >>> g.node[1]['dist'] = uniform
+        >>> g.node[2]['dist'] = xor
+        >>> ss = ['000', '001', '010', '011', '100', '101', '110', '111']
+        >>> d = dit.distribution_from_bayesnet(g, sample_space=ss)
+
+    Here is the Xor using distributions.
+
+        >>> g = nx.DiGraph()
+        >>> g.add_edge(0, 2)
+        >>> g.add_edge(1, 2)
+        >>> uniform = dit.uniform_distribution(1, 2)
+        >>> sample_space1 = [(0,), (1,)]
+        >>> one = dit.Distribution(sample_space1, [0, 1])
+        >>> zero = dit.Distribution(sample_space1, [1, 0])
+        >>> sample_space2 = [(0, 0), (0, 1), (1, 0), (1, 1)]
+        >>> xor = [ sample_space2, [zero, one, one, zero]]
+        >>> g.node[0]['dist'] = uniform
+        >>> g.node[1]['dist'] = uniform
+        >>> g.node[2]['dist'] = xor
+        >>> d = dit.distribution_from_bayesnet(g)
+
+    Now, we can add some noise whenever the output would normally be 1.
+
+        >>> noisy = dit.Distribution(sample_space, [.05, .95])
+        >>> dists = [zero, noisy, noisy, zero]
+        >>> g.node[2]['dist'][1] = dists
+        >>> d = dit.distribution_from_bayesnet(g)
 
     """
     rv_names, ops, callables = sanitize_inputs(digraph, nodes, attr)
