@@ -212,23 +212,3 @@ def build_distribution(digraph, nodes=None, attr='dist'):
 
     dist = dit.Distribution(outcomes, pmf, sample_space=sample_space)
     return dist
-
-
-import dit
-import networkx as nx
-
-x = nx.DiGraph()
-d = dit.example_dists.Xor()
-#d.set_rv_names('XYZ')
-rv_mode = 'indices'
-cdist, dists = d.condition_on([0, 1], rv_mode=rv_mode)
-x.add_edge(0, 2)
-x.add_edge(1, 2)
-x.node[2]['dist'] = (cdist.outcomes, dists)
-x.node[0]['dist'] = cdist.marginal([0], rv_mode=rv_mode)
-x.node[1]['dist'] = cdist.marginal([1], rv_mode=rv_mode)
-d2 = build_distribution(x, [0,1,2])
-print d2
-x.node[0]['dist'].pmf[:] = dit.random_distribution(1, 2).pmf
-d3 = build_distribution(x, [0,1,2])
-print d3
