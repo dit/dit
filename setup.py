@@ -126,9 +126,6 @@ def main():
             import numpy as np
         except ImportError:
             msg = "Please install NumPy first."
-            msg = "Alternatively, disable Cython extensions:\n\n"
-            msg += "    python setup.py install --nocython\n"
-            msg += "    pip install --install-option='--nocython'\n\n"
             print(msg)
             raise
 
@@ -190,6 +187,7 @@ def main():
     ]
 
     # Tests
+    # This includes for bdist only. sdist uses MANIFEST.in
     package_data = dict(zip(packages, [['tests/*.py']]*len(packages)))
 
     kwds = {
