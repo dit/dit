@@ -212,4 +212,6 @@ def distribution_from_bayesnet(digraph, nodes=None, attr='dist'):
 
     dist = dit.Distribution(outcomes, pmf,
                             sample_space=sample_space, base=ops.get_base())
+    dist.set_rv_names(rv_names)
+
     return dist
