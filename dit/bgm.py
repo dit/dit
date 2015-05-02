@@ -36,14 +36,22 @@ def sanitize_inputs(digraph, nodes, attr):
             msg = "Node {} has invalid rv names: {}".format(node, names)
             raise ValueError(msg)
 
-    ops = None
+    ops = dit.math.get_ops('linear')
+    is_callable = []
     for rv in digraph:
         # Make sure we have dists for each node.
+
         try:
             val = digraph.node[rv][attr]
         except KeyError:
             msg = "Node {} is missing its distributions.".format(rv)
             raise ValueError(msg)
+
+        if callable(val):
+            is_callable.append(1)
+            continue
+        else:
+            is_callable.append(0)
 
         # Make sure the rv names are appropriate.
         if digraph.in_degree(rv) == 0:
@@ -58,10 +66,10 @@ def sanitize_inputs(digraph, nodes, attr):
 
         for dist in dists:
             validate_names(rv, dist)
-
-    else:
-        # Use the last dist to get the base.
-        ops = dist.ops
+        else:
+            # Use the last dist to get the base.
+            # No worries if this gets overwritten with each rv.
+            ops = dist.ops
 
     # Get a good set of random variable names.
     if nodes is None:
@@ -75,7 +83,15 @@ def sanitize_inputs(digraph, nodes, attr):
             raise ValueError(msg)
         rv_names = nodes
 
-    return rv_names, ops
+    n_callable = sum(is_callable)
+    if 0 < n_callable < len(rv_names):
+        # Then some distributions were callable while others were not.
+        msg = "All distributions must be callable if any are."
+        raise Exception(msg)
+
+    all_callable = bool(n_callable)
+
+    return rv_names, ops, all_callable
 
 
 def build_samplespace(digraph, rv_names, attr):
@@ -97,8 +113,8 @@ def build_samplespace(digraph, rv_names, attr):
             except AttributeError:
                 dist = val[1][0]
 
-        # Since we are assuming each random is completely alone and factored.
-        # We can just take the alphabet. This will need to change eventually.
+        # Since we are assuming each rv is completely alone and factored, we
+        # can just take the alphabet. This will need to change eventually.
         try:
             alphabet = dist._sample_space.alphabets[0]
         except AttributeError:
@@ -124,20 +140,26 @@ def build_pfuncs(digraph, rv_names, attr, outcome_ctor):
     """
     rv_index = dict(zip(rv_names, range(len(rv_names))))
     pfuncs = {}
+    parents_index = {}
+
     for rv in rv_names:
         parents = list(digraph.predecessors(rv))
         parents.sort(key=rv_index.__getitem__)
+        parents_index[rv] = parents
+
+        val = digraph.node[rv][attr]
+        if callable(val):
+            pfuncs[rv] = val
+            continue
 
         if not parents:
-            dist = digraph.node[rv][attr]
             # Bind the distribution to dist, immediately.
             # http://docs.python-guide.org/en/latest/writing/gotchas/#late-binding-closures
-            def prob(outcome, dist=dist):
+            def prob(outcome, dist=val):
                 rv_outcome = outcome_ctor([ outcome[rv_index[rv]] ])
                 return dist[rv_outcome]
 
         else:
-            val = digraph.node[rv][attr]
             try:
                 val.values()
             except AttributeError:
@@ -146,19 +168,28 @@ def build_pfuncs(digraph, rv_names, attr, outcome_ctor):
             else:
                 dists = val
 
-            def prob(outcome, dist=dist):
-                rv_outcome = outcome_ctor([ outcome[rv_index[rv]] ])
+            def prob(outcome, dists=dists):
+                node_outcome = outcome_ctor([ outcome[rv_index[rv]] ])
                 parent_vals = [outcome[rv_index[parent]] for parent in parents]
                 parent_outcome = outcome_ctor(parent_vals)
                 dist = dists[parent_outcome]
-                return dist[rv_outcome]
+                return dist[node_outcome]
 
         pfuncs[rv] = prob
 
-    return pfuncs
+    # Create a function for callable dists that returns the node value and
+    # the parents via a dict.
+    def get_values(rv, outcome):
+        node_val = outcome[rv_index[rv]]
+        parents = parents_index[rv]
+        parent_vals = [outcome[rv_index[parent]] for parent in parents]
+        parents = dict(zip(parents, parent_vals))
+        return node_val, parents
+
+    return pfuncs, get_values
 
 
-def distribution_from_bayesnet(digraph, nodes=None, attr='dist'):
+def distribution_from_bayesnet(digraph, nodes=None, sample_space=None, attr='dist'):
     """
     Returns a distribution built from a Bayesian network.
 
@@ -178,17 +209,31 @@ def distribution_from_bayesnet(digraph, nodes=None, attr='dist'):
         nodes are sortable. The reason we assume they are sortable is because
         the parent values must correspond to the node order and thus, we need
         an unambiguous ordering that the user could have known ahead of time.
+    sample_space : SampleSpace
+        If provided, this specifies the outcomes of the distribution to be
+        constructed. The distributions stored on the nodes are assumed to be
+        compatible with this space. If functions are stored on the nodes, then
+        this parameter must be provided.
     attr : str
         The attribute for each node that holds the conditional distributions.
-        The attribute value can take a variety of forms. It can be a list of
-        two lists, such as (parents, dists) which holds the parents and the
-        conditional distributions: `dists[i] = P(X_i | Y_i = parents[i])`.
-        It can also be an dict-like structure `dists[y] = P(X | Y = y)`.
-        If the node has no in-degree, then it should store the distribution.
-        All distributions should have random variable names assigned that match
-        the nodes in the graph, or alternatively, all nodes in the graph should
-        be integers. The order of these lists (or dict) does not matter, but
-        for nodes that have parents, the order of the random variables that
+        The attribute value can take a variety of forms.
+
+        It can be a function. The function must take two arguments. The first
+        is the value of random variable for the current node. The second is
+        a dictionary of keyed by parents whose values are the values of the
+        random variables corresponding to the parents. The function should
+        return the probability P(node_val|parent_vals).
+
+        It can be a list, such as [parents, dists], that holds the parents and
+        the conditional distributions: `dists[i] = P(X_i | Y_i = parents[i])`.
+        It can also be a dict-like structure so that `dists[y]` is a
+        distribution representing P(X | Y = y)`. If the node has no in-degree,
+        then the attribute value should store the distribution only. When using
+        distributions, each should have random variable names assigned that
+        match the nodes in the graph, or alternatively, all nodes in the graph
+        should be integers and then random variable names are not necessary.
+        The order of elements within these lists (or the dict) does not matter,
+        but for nodes that have parents, the order of the random variables that
         specify the parents, must match the order of ``nodes``. So for example,
         if the node order is [2, 1, 0] and node 1 has parents 0 and 2. Then the
         parents for node 1 will be such that the first element corresponds to
@@ -201,14 +246,48 @@ def distribution_from_bayesnet(digraph, nodes=None, attr='dist'):
     dist : Distribution
         The joint distribution.
 
+    Examples
+    --------
+    >>> g = nx.DiGraph()
+    >>> g.add_edge(0, 2)
+    >>> g.add_edge(1, 2)
+    >>> uniform = lambda node_val, parents: 0.5
+    >>> def xor(node_val, parents):
+    ...     if '1' == parents[0] == parents[1]:
+    ...         desired_output = '1'
+    ...     else:
+    ...         desired_output = '0'
+    ...     return int(node_val == desired_output)
+    ...
+    >>> g.node[0]['dist'] = uniform
+    >>> g.node[1]['dist'] = uniform
+    >>> g.node[2]['dist'] = xor
+    >>> ss = ['000', '001', '010', '011', '100', '101', '110', '111']
+    >>> d = dit.distribution_from_bayesnet(g, sample_space=ss)
+
     """
-    rv_names, ops = sanitize_inputs(digraph, nodes, attr)
-    sample_space = build_samplespace(digraph, rv_names, attr)
-    pfuncs = build_pfuncs(digraph, rv_names, attr, sample_space._outcome_ctor)
+    rv_names, ops, callables = sanitize_inputs(digraph, nodes, attr)
+    if callables:
+        if sample_space is None:
+            msg = 'sample_space must be specified since the '
+            msg += 'distributions were callable.'
+            raise ValueError(msg)
+        if not isinstance(sample_space, dit.SampleSpace):
+            sample_space = dit.SampleSpace(sample_space)
+    else:
+        sample_space = build_samplespace(digraph, rv_names, attr)
+
+    ctor = sample_space._outcome_ctor
+    pfuncs, get_values = build_pfuncs(digraph, rv_names, attr, ctor)
 
     outcomes = list(sample_space)
-    pmf = [ops.mult_reduce([pfuncs[rv](outcome) for rv in rv_names])
-           for outcome in outcomes]
+    mult = ops.mult_reduce
+    if callables:
+        pmf = [ mult([pfuncs[rv](*get_values(rv, outcome)) for rv in rv_names])
+                for outcome in outcomes ]
+    else:
+        pmf = [ops.mult_reduce([pfuncs[rv](outcome) for rv in rv_names])
+               for outcome in outcomes]
 
     dist = dit.Distribution(outcomes, pmf,
                             sample_space=sample_space, base=ops.get_base())
