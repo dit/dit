@@ -40,6 +40,7 @@ from .helpers import (
     RV_MODES,
 )
 from .utils import OrderedDict
+from .exceptions import InvalidOutcome
 
 try:
     from collections.abc import Set
@@ -321,7 +322,16 @@ class CartesianProduct(SampleSpace):
         self._shifts = np.array(shifts)
 
     def __contains__(self, item):
-        return all([x in self._alphabet_sets[i] for i, x in enumerate(item)])
+        try:
+            iterator = enumerate(item)
+        except TypeError:
+            msg = '{!r} is not iterable, and thus, is not a valid outcome.'
+            raise InvalidOutcome(item, msg=msg.format(item))
+
+        if len(item) != len(self._alphabet_sets):
+            return False
+
+        return all([x in self._alphabet_sets[i] for i, x in iterator])
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
