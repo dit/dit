@@ -5,10 +5,7 @@ import dit
 import networkx as nx
 
 def test_distribution_from_bayesnet_nonames():
-    """
-    Smoke test without rv names.
-
-    """
+    # Smoke test without rv names.
     x = nx.DiGraph()
     d = dit.example_dists.Xor()
     cdist, dists = d.condition_on([0, 1])
@@ -27,11 +24,11 @@ def test_distribution_from_bayesnet_nonames():
     d4 = dit.distribution_from_bayesnet(x)
     assert_true( d.is_approx_equal(d4) )
 
-def test_distribution_from_bayesnet_names():
-    """
-    Smoke test with rv names.
+    del x.node[1]['dist']
+    assert_raises(ValueError, dit.distribution_from_bayesnet, x)
 
-    """
+def test_distribution_from_bayesnet_names():
+    # Smoke test with rv names.
     x = nx.DiGraph()
     d = dit.example_dists.Xor()
     d.set_rv_names(['A', 'B', 'C'])
@@ -55,10 +52,7 @@ def test_distribution_from_bayesnet_names():
     assert_true( d.is_approx_equal(d3) )
 
 def test_distribution_from_bayesnet_func():
-    """
-    Smoke test with distributions as functions.
-
-    """
+    # Smoke test with distributions as functions.
     x = nx.DiGraph()
     x.add_edge('A', 'C')
     x.add_edge('B', 'C')
@@ -92,17 +86,17 @@ def test_distribution_from_bayesnet_func():
     ss = ['000', '001', '010', '011', '100', '101', '110', '111']
     d3 = dit.distribution_from_bayesnet(x, sample_space=ss)
     # Can't test using is_approx_equal, since one has SampleSpace and the
-    # other has CartesianProduct as sample spaces.
+    # other has CartesianProduct as sample spaces. So is_approx_equal would
+    # always be False.
     assert_true( np.allclose(d.pmf, d3.pmf) )
     assert_equal( list(d.sample_space()), list(d3.sample_space()) )
 
 
 
 def test_distribution_from_bayesnet_error():
-    """
-    Test distribution_from_bayesnet with functions and distributions.
+    # Test distribution_from_bayesnet with functions and distributions.
+    # This is not allowed and should fail.
 
-    """
     x = nx.DiGraph()
     x.add_edge('A', 'C')
     x.add_edge('B', 'C')
@@ -146,11 +140,16 @@ def test_bad_names2():
     cdist, dists = d.condition_on([0, 1])
     x.add_edge(0, 2)
     x.add_edge(1, 2)
-    x.node[2]['dist'] = (cdist.outcomes, dists)
+
+    # Node 2 should have more than one dist. If we pass just a distribution in,
+    # as if it had no parents, then an exception should raise.
+
+    #x.node[2]['dist'] = (cdist.outcomes, dists)
+    x.node[2]['dist'] = cdist.marginal([0])
     x.node[0]['dist'] = cdist.marginal([0])
-    dd = cdist.marginal([1])
-    dd.set_rv_names(['A'])
-    x.node[1]['dist'] = dd
-    assert_raises(ValueError, dit.distribution_from_bayesnet, x)
-    del x.node[1]['dist']
-    assert_raises(ValueError, dit.distribution_from_bayesnet, x)
+    x.node[1]['dist'] = cdist.marginal([1])
+    assert_raises(Exception, dit.distribution_from_bayesnet, x)
+
+    # If they don't have the same length, it's invalid too.
+    x.node[2]['dist'] = (cdist.outcomes, dists[:0])
+    assert_raises(Exception, dit.distribution_from_bayesnet, x)
