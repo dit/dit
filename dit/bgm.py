@@ -24,18 +24,6 @@ def sanitize_inputs(digraph, nodes, attr):
 
     """
     all_nodes = set(digraph.nodes())
-
-    def validate_names(node, dist):
-        names = dist.get_rv_names()
-        if names is None:
-            names = set(range(dist.outcome_length()))
-        else:
-            names = set(names)
-
-        if not names.issubset(all_nodes):
-            msg = "Node {} has invalid rv names: {}".format(node, names)
-            raise ValueError(msg)
-
     ops = dit.math.get_ops('linear')
     is_callable = []
     for rv in digraph:
@@ -59,17 +47,22 @@ def sanitize_inputs(digraph, nodes, attr):
             dists = [val]
         else:
             # A distribution for each value of the parents.
-            try:
-                dists = val.values()
-            except AttributeError:
-                outcomes, dists = val
 
-        for dist in dists:
-            validate_names(rv, dist)
-        else:
-            # Use the last dist to get the base.
-            # No worries if this gets overwritten with each rv.
-            ops = dist.ops
+            # This helps find mistakes more easily!
+            if isinstance(val, dit.Distribution):
+                msg = 'Node {} has an invalid dist specification.'
+                raise Exception(msg.format(rv))
+
+            if isinstance(val, dict):
+                dists = val.values()
+            else:
+                outcomes, dists = val
+                if len(outcomes) != len(dists):
+                    msg = 'Node {} has an invalid dist specification.'
+                    raise Exception(msg.format(rv))
+
+        # No worries if this gets overwritten with each rv.
+        ops = dists[0].ops
 
     # Get a good set of random variable names.
     if nodes is None:
@@ -153,22 +146,21 @@ def build_pfuncs(digraph, rv_names, attr, outcome_ctor):
             continue
 
         if not parents:
-            # Bind the distribution to dist, immediately.
+            # Immediately bind variables since we are in a for loop.
             # http://docs.python-guide.org/en/latest/writing/gotchas/#late-binding-closures
-            def prob(outcome, dist=val):
+            def prob(outcome, dist=val, rv=rv):
                 rv_outcome = outcome_ctor([ outcome[rv_index[rv]] ])
                 return dist[rv_outcome]
 
         else:
-            try:
+            if isinstance(val, dict):
                 val.values()
-            except AttributeError:
+                dists = val
+            else:
                 outcomes, dists = val
                 dists = dict(zip(outcomes, dists))
-            else:
-                dists = val
 
-            def prob(outcome, dists=dists):
+            def prob(outcome, dists=dists, parents=parents, rv=rv):
                 node_outcome = outcome_ctor([ outcome[rv_index[rv]] ])
                 parent_vals = [outcome[rv_index[parent]] for parent in parents]
                 parent_outcome = outcome_ctor(parent_vals)
@@ -225,7 +217,7 @@ def distribution_from_bayesnet(digraph, nodes=None, sample_space=None, attr='dis
         return the probability P(node_val|parent_vals).
 
         It can be a list, such as [parents, dists], that holds the parents and
-        the conditional distributions: `dists[i] = P(X_i | Y_i = parents[i])`.
+        the conditional distributions: `dists[i] = P(X | Y_i = parents[i])`.
         It can also be a dict-like structure so that `dists[y]` is a
         distribution representing P(X | Y = y)`. If the node has no in-degree,
         then the attribute value should store the distribution only. When using
