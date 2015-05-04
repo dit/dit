@@ -14,6 +14,7 @@ generated from S_0.
 """
 import six
 
+import numpy as np
 import dit
 
 __all__ = ['distribution_from_bayesnet']
