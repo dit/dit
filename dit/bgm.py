@@ -307,7 +307,7 @@ def distribution_from_bayesnet(digraph, nodes=None, sample_space=None, attr='dis
                for outcome in outcomes]
 
     # Technically, we shouldn't need this but some values must be underflowing.
-    pmf = ops.normalize(pmf)
+    pmf = ops.normalize(np.asarray(pmf))
 
     dist = dit.Distribution(outcomes, pmf,
                             sample_space=sample_space, base=ops.get_base())
