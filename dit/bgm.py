@@ -306,6 +306,9 @@ def distribution_from_bayesnet(digraph, nodes=None, sample_space=None, attr='dis
         pmf = [ops.mult_reduce([pfuncs[rv](outcome) for rv in rv_names])
                for outcome in outcomes]
 
+    # Technically, we shouldn't need this but some values must be underflowing.
+    pmf = ops.normalize(pmf)
+
     dist = dit.Distribution(outcomes, pmf,
                             sample_space=sample_space, base=ops.get_base())
     dist.set_rv_names(rv_names)
