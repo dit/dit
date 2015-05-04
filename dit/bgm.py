@@ -62,7 +62,7 @@ def sanitize_inputs(digraph, nodes, attr):
                     raise Exception(msg.format(rv))
 
         # No worries if this gets overwritten with each rv.
-        ops = dists[0].ops
+        ops = next(iter(dists)).ops
 
     # Get a good set of random variable names.
     if nodes is None:
