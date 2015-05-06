@@ -5,6 +5,7 @@ Distributions based on circuits with independent inputs.
 from __future__ import division
 
 from dit import Distribution
+import dit
 
 def Unq():
     """
@@ -39,22 +40,22 @@ def Xor():
     d = Distribution(outcomes, pmf)
     return d
 
-def And():
+def And(k=2):
     """
     [0] and [1] = [2]
     """
-    pmf = [1/4] * 4
-    outcomes = ['000', '010', '100', '111']
-    d = Distribution(outcomes, pmf)
+    d = dit.uniform_distribution(k, ['01'])
+    d = dit.distconst.modify_outcomes(d, lambda x: ''.join(x))
+    d = dit.insert_rvf(d, lambda x: '1' if all(map(bool, map(int, x))) else '0')
     return d
 
-def Or():
+def Or(k=2):
     """
     [0] or [1] = [2]
     """
-    pmf = [1/4] * 4
-    outcomes = ['000', '011', '101', '111']
-    d = Distribution(outcomes, pmf)
+    d = dit.uniform_distribution(k, ['01'])
+    d = dit.distconst.modify_outcomes(d, lambda x: ''.join(x))
+    d = dit.insert_rvf(d, lambda x: '1' if any(map(bool, map(int, x))) else '0')
     return d
 
 def RdnXor():
