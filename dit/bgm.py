@@ -50,6 +50,7 @@ def sanitize_inputs(digraph, nodes, attr):
             # A distribution for each value of the parents.
 
             # This helps find mistakes more easily!
+            # We need [parents, dists] rather than a single distribution.
             if isinstance(val, dit.Distribution):
                 msg = 'Node {} has an invalid dist specification.'
                 raise Exception(msg.format(rv))
