@@ -110,9 +110,16 @@ def marginal_constraints(dist, k, normalization=True):
     target_rvs = tuple(rvs[-1:])
     source_rvs = tuple(rvs[:-1])
 
+    try:
+        k, source_rvs = k
+        source_rvs = tuple(source_rvs)
+    except TypeError:
+        pass
+
+    assert k >= 1
     marginal_size = k
     submarginal_size = marginal_size - 1
-    assert submarginal_size >= 1
+    #assert submarginal_size >= 1
 
     # p( source_{k-1}, target ) = q( source_{k-1}, target )
     cache = {}
@@ -185,9 +192,15 @@ def extra_constraints(dist, k):
     target_rvs = tuple(rvs[-1:])
     source_rvs = tuple(rvs[:-1])
 
+    try:
+        k, _ = k
+    except TypeError:
+        pass
+
     marginal_size = k
+    assert k >= 1
     submarginal_size = marginal_size - 1
-    assert submarginal_size >= 1
+    #assert submarginal_size >= 1
 
     ### Find values that are fixed at zero
 
@@ -633,6 +646,18 @@ def pi_decomp(d, d_opt):
 
     return syn, u0, u1, rdn
 
+def calculate_synergy(pmf_opt, ui):
+    d = ui.dist
+    d_opt = d.copy()
+    d_opt.pmf[:] = pmf_opt
+    # Original sources
+    original_sources = ui._params.sources
+    sources = range(len(original_sources))
+    target = [len(sources)]
+    mi = dit.multivariate.coinformation(d, [sources, target])
+    mi_opt = dit.multivariate.coinformation(d_opt, [sources, target])
+    return mi - mi_opt
+
 def dice(a, b):
     # DoF: 85, 36, 15, 10, 5, 0
     d = dit.example_dists.summed_dice(a, b)
@@ -675,7 +700,7 @@ def demo():
 
     plt.show()
 
-def unique_informations(d, sources, target, rv_mode=None, extra_constraints=True, tol=None, prng=None, verbose=None):
+def unique_informations(d, sources, target, k=2, rv_mode=None, extra_constraints=True, tol=None, prng=None, verbose=None):
     """
     Returns the unique information each source has about the target.
 
@@ -688,6 +713,9 @@ def unique_informations(d, sources, target, rv_mode=None, extra_constraints=True
         of random variables in `dist` that define a source.
     target : list
         The random variables in `dist` that define the target.
+    k : int
+        The size of the marginals that are constrained to equal marginals
+        from `dist`. For the calculation of unique information, we use k=2.
     rv_mode : str, None
         Specifies how to interpret the elements of each source and the
         target. Valid options are: {'indices', 'names'}. If equal to
@@ -727,7 +755,7 @@ def unique_informations(d, sources, target, rv_mode=None, extra_constraints=True
     The nonunique information would be `mi_orig - ui.sum()`.
 
     """
-    x = UniqueInformation(d, sources, target, k=2, rv_mode=rv_mode,
+    x = UniqueInformation(d, sources, target, k=k, rv_mode=rv_mode,
                           extra_constraints=extra_constraints, tol=tol,
                           prng=prng, verbose=verbose)
     pmf, obj = x.optimize()
@@ -742,7 +770,9 @@ def unique_informations(d, sources, target, rv_mode=None, extra_constraints=True
         uis.append(ui)
     mi_opt = dit.multivariate.coinformation(d_opt, [[n-1], range(n-1)])
     mi_orig = dit.multivariate.coinformation(d_orig, [[n-1], range(n-1)])
-    return np.array(uis), mi_opt, mi_orig
+    rdn = dit.multivariate.coinformation(d_opt, [[i] for i in range(n)])
+    syn = mi_orig - mi_opt
+    return np.array(uis), rdn, syn, mi_orig, mi_opt
 
 
 if __name__ == '__main__':
