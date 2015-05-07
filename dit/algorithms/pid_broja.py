@@ -1,7 +1,8 @@
  # -*- coding: utf-8 -*-
 """
-
-unique_informations() doesn't work for d = Unq()
+Partial information decompositions
+    and
+Maxent decompositions of I[sources : target]
 
 """
 
