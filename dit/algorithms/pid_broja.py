@@ -1,4 +1,10 @@
  # -*- coding: utf-8 -*-
+"""
+
+unique_informations() doesn't work for d = Unq()
+
+"""
+
 
 from __future__ import division, print_function
 
@@ -15,7 +21,7 @@ from dit.algorithms.optutil import (
     CVXOPT_Template, as_full_rank, Bunch, op_runner, frank_wolfe
 )
 
-__all__ = ['unique_informations']
+__all__ = ['unique_informations', 'k_informations', 'k_synergy']
 
 def prepare_dist(dist, sources, target, rv_mode=None):
     """
@@ -66,7 +72,7 @@ def prepare_dist(dist, sources, target, rv_mode=None):
 
     return d
 
-def marginal_constraints(dist, k, normalization=True):
+def marginal_constraints(dist, k, normalization=True, source_marginal=False):
     """
     Builds the k-way marginal constraints.
 
@@ -124,10 +130,18 @@ def marginal_constraints(dist, k, normalization=True):
     # p( source_{k-1}, target ) = q( source_{k-1}, target )
     cache = {}
     for subrvs in itertools.combinations(source_rvs, submarginal_size):
-        rvs = subrvs + target_rvs
-        marray = d.parameter_array(rvs, cache=cache)
+        marg_rvs = subrvs + target_rvs
+        marray = d.parameter_array(marg_rvs, cache=cache)
         for idx in marray:
             # Convert the sparse nonzero elements to a dense boolean array
+            bvec = np.zeros(n_elements)
+            bvec[idx] = 1
+            A.append(bvec)
+            b.append(pmf[idx].sum())
+
+    if source_marginal:
+        marray = d.parameter_array(source_rvs, cache=cache)
+        for idx in marray:
             bvec = np.zeros(n_elements)
             bvec[idx] = 1
             A.append(bvec)
@@ -150,7 +164,8 @@ def extra_constraints(dist, k):
     1. If any marginal probability is zero, then all joint probabilities which
        contributed to that marginal probability must also be zero.
 
-    2. Now suppose we to find when p({x_i}, y) = q({x_i}, y).
+    2. Now suppose we want to find out when p({x_i}, y) = q({x_i}, y).
+
        For every (k-1)-subset, g_k(x), we have:
 
           p(g_k(x), y) = q(g_k(x), y)
@@ -158,13 +173,15 @@ def extra_constraints(dist, k):
        So we have:
 
           p(y) = q(y)
-          p(g_k(x) | y) = q(g_k(x) | y)
+          p(g_k(x) | y) = q(g_k(x) | y)    provided k > 1.
+
+       If k = 1, we cannot proceed.
 
        Now suppose that for every i, we had:
 
           p(x_i | y) = \delta(x_i, f_i(y))
 
-       Then,
+       Then, it follows that:
 
           q(x_i | y) = \delta(x_i, f_i(y))
 
@@ -193,6 +210,7 @@ def extra_constraints(dist, k):
     source_rvs = tuple(rvs[:-1])
 
     try:
+        # Ignore source restrictions.
         k, _ = k
     except TypeError:
         pass
@@ -224,13 +242,16 @@ def extra_constraints(dist, k):
 
     # First identify each p(input_i | output) = 1
     determined = defaultdict(lambda : [0] * len(source_rvs))
-    for i, source_rv in enumerate(source_rvs):
-        md, cdists = dist.condition_on(target_rvs, rvs=[source_rv])
-        for target_outcome, cdist in zip(md.outcomes, cdists):
-            # cdist is dense
-            if np.isclose(cdist.pmf, 1).sum() == 1:
-                # Then p(source_rv | target_rvs) = 1
-                determined[target_outcome][i] = 1
+
+    # If there is no source rv because k=1, then nothing can be determined.
+    if submarginal_size:
+        for i, source_rv in enumerate(source_rvs):
+            md, cdists = dist.condition_on(target_rvs, rvs=[source_rv])
+            for target_outcome, cdist in zip(md.outcomes, cdists):
+                # cdist is dense
+                if np.isclose(cdist.pmf, 1).sum() == 1:
+                    # Then p(source_rv | target_rvs) = 1
+                    determined[target_outcome][i] = 1
 
     is_determined = {}
     for outcome, det_vector in determined.items():
@@ -266,6 +287,8 @@ def extra_constraints(dist, k):
     if fixed:
         fixed = sorted(fixed.items())
         fixed_indexes, fixed_values = list(zip(*fixed))
+        fixed_indexes = list(fixed_indexes)
+        fixed_values = list(fixed_values)
     else:
         fixed_indexes = []
         fixed_values = []
@@ -287,7 +310,7 @@ def extra_constraints(dist, k):
 
     return variables
 
-class UniqueInformation(CVXOPT_Template):
+class MaximumConditionalEntropy(CVXOPT_Template):
     """
     An optimizer for the unique information.
 
@@ -303,7 +326,7 @@ class UniqueInformation(CVXOPT_Template):
         Quantifying Unique Information. Entropy 2014, 16, 2161-2183.
 
     """
-    def __init__(self, dist, sources, target, k=2, rv_mode=None, extra_constraints=True, tol=None, prng=None, verbose=None):
+    def __init__(self, dist, sources, target, k=2, rv_mode=None, extra_constraints=True, source_marginal=False, tol=None, prng=None, verbose=None):
         """
         Initialize an optimizer for the partial information framework.
 
@@ -319,6 +342,7 @@ class UniqueInformation(CVXOPT_Template):
         k : int
             The size of the marginals that are constrained to equal marginals
             from `dist`. For the calculation of unique information, we use k=2.
+            Note that these marginals include the target random variable.
         rv_mode : str, None
             Specifies how to interpret the elements of each source and the
             target. Valid options are: {'indices', 'names'}. If equal to
@@ -332,6 +356,12 @@ class UniqueInformation(CVXOPT_Template):
             values of the input and output that satisfy p(inputs | outputs) = 1
             In that case, p(inputs, outputs) is equal to q(inputs, outputs) for
             all q in the feasible set.
+        source_marginal : bool
+            If `True`, also require that the source marginal distribution
+            p(X_1, ..., X_n) is matched. This will yield a distribution such
+            that S^k := H(q) - H(p) is the information that is not captured
+            by matching the k-way marginals that include the target. k=1
+            is the mutual information between the sources and the target.
         tol : float | None
             The desired convergence tolerance.
         prng : RandomState
@@ -353,9 +383,10 @@ class UniqueInformation(CVXOPT_Template):
         self.dist = prepare_dist(dist, sources, target, rv_mode=rv_mode)
         self.k = k
         self.extra_constraints = extra_constraints
+        self.source_marginal = source_marginal
         self.verbose = verbose
 
-        super(UniqueInformation, self).__init__(self.dist, tol=tol, prng=prng)
+        super(MaximumConditionalEntropy, self).__init__(self.dist, tol=tol, prng=prng)
 
     def prep(self):
         # We are going to remove all zero and fixed elements.
@@ -376,7 +407,8 @@ class UniqueInformation(CVXOPT_Template):
             fnz = self.vartypes.fixed_nonzeros
             self.normalization = 1 - self.pmf_copy[fnz].sum()
         else:
-            warn = "This probably won't work: too many optimization variables."
+            warn = "This might not work if there are too many "
+            warn += "optimization variables."
             self.logger.warn(warn)
 
             indexes = np.arange(len(self.pmf))
@@ -434,7 +466,8 @@ class UniqueInformation(CVXOPT_Template):
     def build_linear_equality_constraints(self):
         from cvxopt import matrix
 
-        A, b = marginal_constraints(self.dist, self.k)
+        smarg = self.source_marginal
+        A, b = marginal_constraints(self.dist, self.k, source_marginal=smarg)
         self.A_full = A
         self.b_full = b
 
@@ -661,7 +694,7 @@ def calculate_synergy(pmf_opt, ui):
 def dice(a, b):
     # DoF: 85, 36, 15, 10, 5, 0
     d = dit.example_dists.summed_dice(a, b)
-    x = UniqueInformation(d, [[0], [1]], [2], extra_constraints=True)
+    x = MaximumConditionalEntropy(d, [[0], [1]], [2], extra_constraints=True)
     pmf_opt, obj = x.optimize()
     d_opt = x.dist.copy()
     d_opt.pmf[:] = pmf_opt
@@ -680,7 +713,7 @@ def demo():
         for a in avals:
             print("**** {}, {} *****".format(a, b))
             d = dit.example_dists.summed_dice(a, b)
-            x = UniqueInformation(d, [[0], [1]], [2], extra_constraints=True, verbose=20)
+            x = MaximumConditionalEntropy(d, [[0], [1]], [2], extra_constraints=True, verbose=20)
 
             pmf_opt, obj = x.optimize()
             d_opt = x.dist.copy()
@@ -699,6 +732,154 @@ def demo():
     axes[2].set_title('Synergy')
 
     plt.show()
+
+def k_synergy(d, sources, target, k=2, rv_mode=None, extra_constraints=True, tol=None, prng=None, verbose=None):
+    """
+    Returns the k-synergy.
+
+    The k-synergy is the amount of I[sources : target] that is not captured by
+    matching the k-way marginals, which include the source, and the marginal
+    source distribution. When k=1, we only match p(target) and the source
+    marginal, p(source marginal). So the k-synergy will be equal to the mutual
+    information I[sources: target].
+
+    Parameters
+    ----------
+    dist : distribution
+        The distribution used to calculate the partial information.
+    sources : list of lists
+        The sources random variables. Each random variable specifies a list
+        of random variables in `dist` that define a source.
+    target : list
+        The random variables in `dist` that define the target.
+    k : int
+        The size of the marginals that are constrained to equal marginals
+        from `dist`. For the calculation of unique information, we use k=2.
+    rv_mode : str, None
+        Specifies how to interpret the elements of each source and the
+        target. Valid options are: {'indices', 'names'}. If equal to
+        'indices', then the elements of each source and the target are
+        interpreted as random variable indices. If equal to 'names', the
+        elements are interpreted as random variable names. If `None`, then
+        the value of `dist._rv_mode` is consulted.
+    extra_constraints : bool
+        When possible, additional constraints beyond the required marginal
+        constraints are added to the optimization problem. These exist
+        values of the input and output that satisfy p(inputs | outputs) = 1
+        In that case, p(inputs, outputs) is equal to q(inputs, outputs) for
+        all q in the feasible set.
+    tol : float | None
+        The desired convergence tolerance.
+    prng : RandomState
+        A NumPy-compatible pseudorandom number generator.
+    verbose : int
+        An integer representing the logging level ala the ``logging``
+        module. If `None`, then (effectively) the log level is set to
+        `WARNING`. For a bit more information, set this to `logging.INFO`.
+        For a bit less, set this to `logging.ERROR`, or perhaps 100.
+
+    Returns
+    -------
+    ui : array-like
+        The unique information that each source has about the target rv.
+    rdn : float
+        The redundancy calculated from the optimized distribution.
+    syn : float
+        The synergy calculated by subtracting the optimized mutual information
+        I[sources : target] from the true mutual information.
+    mi_orig : float
+        The total mutual information between the sources and the target for
+        the original (true) distribution.
+    mi_opt : float
+        The total mutual information between the sources and the target for
+        the optimized distribution.
+
+    """
+    x = MaximumConditionalEntropy(d, sources, target, k=k, rv_mode=rv_mode,
+                          extra_constraints=extra_constraints,
+                          source_marginal=True, tol=tol,
+                          prng=prng, verbose=verbose)
+    pmf, obj = x.optimize()
+    d_orig = x.dist
+    d_opt = d_orig.copy()
+    d_opt.pmf[:] = pmf
+    H_opt = dit.multivariate.entropy(d_opt)
+    H_orig = dit.multivariate.entropy(d_orig)
+    return H_opt - H_orig
+
+def k_informations(d, sources, target, rv_mode=None, extra_constraints=True, tol=None, prng=None, verbose=None):
+    """
+    Returns the amount of I[sources:target] captured by matching k-way
+    marginals that include the target and the source marginal distribution.
+
+    Parameters
+    ----------
+    dist : distribution
+        The distribution used to calculate the partial information.
+    sources : list of lists
+        The sources random variables. Each random variable specifies a list
+        of random variables in `dist` that define a source.
+    target : list
+        The random variables in `dist` that define the target.
+    k : int
+        The size of the marginals that are constrained to equal marginals
+        from `dist`. For the calculation of unique information, we use k=2.
+    rv_mode : str, None
+        Specifies how to interpret the elements of each source and the
+        target. Valid options are: {'indices', 'names'}. If equal to
+        'indices', then the elements of each source and the target are
+        interpreted as random variable indices. If equal to 'names', the
+        elements are interpreted as random variable names. If `None`, then
+        the value of `dist._rv_mode` is consulted.
+    extra_constraints : bool
+        When possible, additional constraints beyond the required marginal
+        constraints are added to the optimization problem. These exist
+        values of the input and output that satisfy p(inputs | outputs) = 1
+        In that case, p(inputs, outputs) is equal to q(inputs, outputs) for
+        all q in the feasible set.
+    tol : float | None
+        The desired convergence tolerance.
+    prng : RandomState
+        A NumPy-compatible pseudorandom number generator.
+    verbose : int
+        An integer representing the logging level ala the ``logging``
+        module. If `None`, then (effectively) the log level is set to
+        `WARNING`. For a bit more information, set this to `logging.INFO`.
+        For a bit less, set this to `logging.ERROR`, or perhaps 100.
+
+    Returns
+    -------
+    infos : array-like, (len(sources),)
+        The k-way informations. infos[i] corresponds to the additional
+        amount of information gained about the total mutual information
+        in moving from matching the (i+1)-way marginals to the (i+2)-way
+        marginals (plus the source marginals). So infos[0] is how much
+        you gain about I[sources:target] in moving from 1-way to 2-way
+        marginals (with source) and source marginals.
+
+    """
+    nonkinfos = []
+    x = MaximumConditionalEntropy(d, sources, target, k=1, rv_mode=rv_mode,
+                          extra_constraints=extra_constraints,
+                          source_marginal=True, tol=tol,
+                          prng=prng, verbose=verbose)
+
+    n = x.dist.outcome_length()
+    while x.k <= n:
+        pmf, obj = x.optimize()
+        d_orig = x.dist
+        d_opt = d_orig.copy()
+        d_opt.pmf[:] = pmf
+        H_opt = dit.multivariate.entropy(d_opt)
+        H_orig = dit.multivariate.entropy(d_orig)
+        nonkinfo = H_opt - H_orig
+        nonkinfos.append(nonkinfo)
+        x.k += 1
+        x.init()
+
+    nonkinfos.reverse()
+    diffs = np.diff(nonkinfos)
+    return np.asarray(list(reversed(diffs)))
 
 def unique_informations(d, sources, target, k=2, rv_mode=None, extra_constraints=True, tol=None, prng=None, verbose=None):
     """
@@ -743,19 +924,24 @@ def unique_informations(d, sources, target, k=2, rv_mode=None, extra_constraints
     -------
     ui : array-like
         The unique information that each source has about the target rv.
-    mi_opt : float
-        The total mutual information between the sources and the target for
-        the optimized distribution.
+    rdn : float
+        The redundancy calculated from the optimized distribution.
+    syn : float
+        The synergy calculated by subtracting the optimized mutual information
+        I[sources : target] from the true mutual information.
     mi_orig : float
         The total mutual information between the sources and the target for
         the original (true) distribution.
+    mi_opt : float
+        The total mutual information between the sources and the target for
+        the optimized distribution.
 
     Notes
     -----
     The nonunique information would be `mi_orig - ui.sum()`.
 
     """
-    x = UniqueInformation(d, sources, target, k=k, rv_mode=rv_mode,
+    x = MaximumConditionalEntropy(d, sources, target, k=k, rv_mode=rv_mode,
                           extra_constraints=extra_constraints, tol=tol,
                           prng=prng, verbose=verbose)
     pmf, obj = x.optimize()
