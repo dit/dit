@@ -63,7 +63,8 @@ def sanitize_inputs(digraph, nodes, attr):
                     msg = 'Node {} has an invalid dist specification.'
                     raise Exception(msg.format(rv))
 
-        # No worries if this gets overwritten with each rv.
+        # No worries if this gets overwritten with each rv, as it had better
+        # be the same for each rv.
         ops = next(iter(dists)).ops
 
     # Get a good set of random variable names.
@@ -305,8 +306,8 @@ def distribution_from_bayesnet(digraph, nodes=None, sample_space=None, attr='dis
         pmf = [ mult([pfuncs[rv](*get_values(rv, outcome)) for rv in rv_names])
                 for outcome in outcomes ]
     else:
-        pmf = [ops.mult_reduce([pfuncs[rv](outcome) for rv in rv_names])
-               for outcome in outcomes]
+        pmf = [ mult([pfuncs[rv](outcome) for rv in rv_names])
+               for outcome in outcomes ]
 
     # Technically, we shouldn't need this but some values must be underflowing.
     pmf = ops.normalize(np.asarray(pmf))
