@@ -191,7 +191,7 @@ def modify_outcomes(dist, ctor):
     d = dist.__class__(outcomes, dist.pmf, base=dist.get_base())
     return d
 
-def random_scalar_distribution(n, alpha=None, prng=None):
+def random_scalar_distribution(n, base=None, alpha=None, prng=None):
     """
     Returns a random scalar distribution over `n` outcomes.
 
@@ -203,6 +203,9 @@ def random_scalar_distribution(n, alpha=None, prng=None):
     ----------
     n : int | list
         The number of outcomes, or a list containing the outcomes.
+
+    base : float, 'linear', 'e'
+        The desired base for the distribution probabilities.
 
     alpha : list | None
         The concentration parameters defining that the Dirichlet distribution
@@ -228,9 +231,14 @@ def random_scalar_distribution(n, alpha=None, prng=None):
 
     pmf = prng.dirichlet(alpha)
     d.pmf = pmf
+
+    # Maybe we should use ditParams['base'] when base is None?
+    if base is not None:
+        d.set_base(base)
+
     return d
 
-def random_distribution(outcome_length, alphabet_size, alpha=None, prng=None):
+def random_distribution(outcome_length, alphabet_size, base=None, alpha=None, prng=None):
     """
     Returns a random distribution drawn uniformly from the simplex.
 
@@ -249,6 +257,9 @@ def random_distribution(outcome_length, alphabet_size, alpha=None, prng=None):
         integer, then the alphabet will consist of integers from 0 to k-1 where
         k is the alphabet size.  If a list, then the elements are used as the
         alphabet.
+
+    base : float, 'linear', 'e'
+        The desired base for the distribution probabilities.
 
     alpha : list | None
         The concentration parameters defining that the Dirichlet distribution
@@ -275,6 +286,11 @@ def random_distribution(outcome_length, alphabet_size, alpha=None, prng=None):
 
     pmf = prng.dirichlet(alpha)
     d.pmf = pmf
+
+    # Maybe we should use ditParams['base'] when base is None?
+    if base is not None:
+        d.set_base(base)
+
     return d
 
 def simplex_grid(length, subdivisions, using=None, inplace=False):
@@ -354,7 +370,7 @@ def simplex_grid(length, subdivisions, using=None, inplace=False):
                 d.pmf[:] = pmf
                 yield d
 
-def uniform_scalar_distribution(n):
+def uniform_scalar_distribution(n, base=None):
     """
     Returns a uniform scalar distribution over `n` outcomes.
 
@@ -380,9 +396,13 @@ def uniform_scalar_distribution(n):
     pmf = [1/nOutcomes] * nOutcomes
     d = ScalarDistribution(outcomes, pmf, base='linear')
 
+    # Maybe we should use ditParams['base'] when base is None?
+    if base is not None:
+        d.set_base(base)
+
     return d
 
-def uniform_distribution(outcome_length, alphabet_size):
+def uniform_distribution(outcome_length, alphabet_size, base=None):
     """
     Returns a uniform distribution.
 
@@ -398,6 +418,9 @@ def uniform_distribution(outcome_length, alphabet_size):
         If a list, then the elements are used as the alphabet for each random
         variable.  If the list has a single element, then it will be used
         as the alphabet for each random variable.
+
+    base : float, 'linear', 'e'
+        The desired base for the distribution probabilities.
 
     Returns
     -------
@@ -440,9 +463,13 @@ def uniform_distribution(outcome_length, alphabet_size):
     outcomes = tuple(product(*alphabet))
     d = Distribution(outcomes, pmf, base='linear')
 
+    # Maybe we should use ditParams['base'] when base is None?
+    if base is not None:
+        d.set_base(base)
+
     return d
 
-def uniform(outcomes):
+def uniform(outcomes, base=None):
     """
     Produces a uniform distribution over `outcomes`.
 
@@ -450,6 +477,9 @@ def uniform(outcomes):
     ----------
     outcomes : iterable
         The set of outcomes with which to construct the distribution.
+
+    base : float, 'linear', 'e'
+        The desired base for the distribution probabilities.
 
     Returns
     -------
@@ -466,7 +496,13 @@ def uniform(outcomes):
     outcomes = list(outcomes)
     length = len(outcomes)
     pmf = [1/length]*length
-    return Distribution(outcomes, pmf)
+    d = Distribution(outcomes, pmf)
+
+    # Maybe we should use ditParams['base'] when base is None?
+    if base is not None:
+        d.set_base(base)
+
+    return d
 
 def insert_rvf(d, func, index=-1):
     """
@@ -791,7 +827,7 @@ class RVFunctions(object):
         return func
 
 
-def product_distribution(dist, rvs=None, rv_mode=None):
+def product_distribution(dist, rvs=None, rv_mode=None, base=None):
     """
     Returns a new distribution which is the product of marginals.
 
@@ -815,6 +851,18 @@ def product_distribution(dist, rvs=None, rv_mode=None):
         'names', the the elements are interpreted as random variable names.
         If `None`, then the value of `dist._rv_mode` is consulted.
 
+    base : float, 'linear', 'e'
+        The desired base for the distribution probabilities.
+
+    Returns
+    -------
+    d : Distribution
+        The product distribution.
+
+    Examples
+    --------
+    >>> d = dit.example_dists.Xor()
+    >>> pd = product_distribution(d, [(0,), (1,), (2,)])
 
     """
     if not dist.is_joint():
@@ -850,6 +898,11 @@ def product_distribution(dist, rvs=None, rv_mode=None):
         pmf.append( ops.mult_reduce(prob) )
 
     d = Distribution(outcomes, pmf, validate=False)
+
+    # Maybe we should use ditParams['base'] when base is None?
+    if base is not None:
+        d.set_base(base)
+
     return d
 
 def all_dist_structures(outcome_length, alphabet_size):
