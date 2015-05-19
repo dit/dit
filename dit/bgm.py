@@ -303,10 +303,10 @@ def distribution_from_bayesnet(digraph, nodes=None, sample_space=None, attr='dis
     outcomes = list(sample_space)
     mult = ops.mult_reduce
     if callables:
-        pmf = [ mult([pfuncs[rv](*get_values(rv, outcome)) for rv in rv_names])
+        pmf = [ mult(np.asarray([pfuncs[rv](*get_values(rv, outcome)) for rv in rv_names]))
                 for outcome in outcomes ]
     else:
-        pmf = [ mult([pfuncs[rv](outcome) for rv in rv_names])
+        pmf = [ mult(np.asarray([pfuncs[rv](outcome) for rv in rv_names]))
                for outcome in outcomes ]
 
     # Technically, we shouldn't need this but some values must be underflowing.
