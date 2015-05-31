@@ -12,12 +12,13 @@ def total_correlation(dist, rvs=None, crvs=None, rv_mode=None):
     dist : Distribution
         The distribution from which the total correlation is calculated.
     rvs : list, None
-        The indexes of the random variable used to calculate the total
-        correlation. If None, then the total correlation is calculated
-        over all random variables.
+        A list of lists. Each inner list specifies the indexes of the random
+        variables used to calculate the total correlation. If None, then the
+        total correlation is calculated over all random variables, which is
+        equivalent to passing `rvs=dist.rvs`.
     crvs : list, None
-        The indexes of the random variables to condition on. If None, then no
-        variables are condition on.
+        A single list of indexes specifying the random variables to condition
+        on. If None, then no variables are conditioned on.
     rv_mode : str, None
         Specifies how to interpret `rvs` and `crvs`. Valid options are:
         {'indices', 'names'}. If equal to 'indices', then the elements of
@@ -30,6 +31,14 @@ def total_correlation(dist, rvs=None, crvs=None, rv_mode=None):
     -------
     T : float
         The total correlation.
+
+    Examples
+    --------
+    >>> d = dit.example_dists.Xor()
+    >>> dit.multivariate.total_correlation(d)
+    1.0
+    >>> dit.multivariate.total_correlation(d, rvs=[[0], [1]])
+    0.0
 
     Raises
     ------
