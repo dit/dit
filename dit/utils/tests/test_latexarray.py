@@ -37,3 +37,24 @@ def test_to_latex5():
     y = la.to_latex(x, decimals=2)
     y_ = '\\newcolumntype{X}{D{.}{.}{2,2}}\n\\begin{array}{*{3}{X}}\n  0.05 & 0.22 & 0.10 \\\\\n  0.04 & -0.08 & 0.15 \\\\\n  -0.06 & 0.39 & 0.46 \\\\\n  -0.12 & 0.29 & 0.03\n\\end{array}'
     assert_equal(y, y_)
+
+def test_to_latex_exact1():
+    x = np.array([1, 2, 3, 10, .1])
+    y = la.to_latex(x, exact=True)
+    y_ = '\\begin{array}{*{5}{c}}\n  1 & 2 & 3 & 10 & \\frac{1}{10}\n\\end{array}'
+    assert_equal(y, y_)
+
+def test_to_latex_exact2():
+    x = 0.12345
+    y = la.to_latex(x, exact=.01)
+    y_ = '\\begin{array}{*{1}{c}}\n  \\frac{1}{8}\n\\end{array}'
+    assert_equal(y, y_)
+
+    y = la.to_latex(x, exact=.001)
+    y_ = '\\begin{array}{*{1}{c}}\n  \\frac{7}{57}\n\\end{array}'
+    assert_equal(y, y_)
+
+def test_to_pdf():
+    x = 0.1
+    # This generates a temporary file...
+    y = la.to_pdf(x, show=False)
