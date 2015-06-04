@@ -4,7 +4,7 @@ Tests for dit.divergences.kullback_leiber_divergence.
 
 from __future__ import division
 
-from nose.tools import assert_almost_equal, assert_not_equal, assert_raises
+from nose.tools import assert_almost_equal, assert_not_equal, assert_raises, assert_greater
 
 import numpy as np
 
@@ -54,6 +54,22 @@ def test_positive_definite():
                 assert_almost_equal(divergence(dist, dist, alpha), 0)
             assert_almost_equal(hellinger_sum(dist, dist, alpha), 1)
 
+def test_positivity():
+    """
+    Tests that the divergence functions return positive values for non-equal arguments.
+    """
+    alphas = [0.1, 0.5, 1, 1.5]
+    divergences = [alpha_divergence, renyi_divergence, tsallis_divergence, hellinger_divergence]
+    test_dists = [get_dists_2(), get_dists_3()]
+    for alpha in alphas:
+        for dists in test_dists:
+            for dist1 in dists:
+                for dist2 in dists:
+                    if dist1 == dist2:
+                        continue
+                    for divergence in divergences:
+                        assert_greater(divergence(dist1, dist2, alpha), 0)
+
 def test_alpha_symmetry():
     """
     Tests the alpha -> -alpha symmetry for the alpha divergence, and a similar symmetry for the Hellinger divergence.
@@ -71,7 +87,6 @@ def test_divergences_to_kl():
     """
     Tests that the generalized divergences properly fall back to KL for the appropriate values of alpha, and not otherwise.
     """
-
     test_dists = [get_dists_2(), get_dists_3()]
     for dists in test_dists:
         for dist1 in dists:
