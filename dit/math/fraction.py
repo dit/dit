@@ -4,16 +4,35 @@
 """
 Function for calculating the simplest faction from a float.
 
-http://stackoverflow.com/questions/4266741/check-if-a-number-is-rational-in-python
+An alternative approach is to use:
+
+    >>> from fractions import Fraction
+    >>> x = .12345
+    >>> y = Fraction(x)
+    >>> y.limit_denominator(10)
+    Fraction(1, 8)
+    >>> y.limit_denominator(100)
+    Fraction(10, 81)
+
+But usually, we are interested in a fraction that matches within some tolerance
+and the max denominator that gives a particular tolerance is not obvious.
 
 """
+from __future__ import division
+
 from fractions import Fraction
 from math import modf
 
 __all__ = ['approximate_fraction']
 
 def simplest_fraction_in_interval(x, y):
-    """Return the fraction with the lowest denominator in [x,y]."""
+    """
+    Return the fraction with the lowest denominator in the interval [x, y].
+
+    """
+
+    # http://stackoverflow.com/questions/4266741/check-if-a-number-is-rational-in-python
+
     if x == y:
         # The algorithm will not terminate if x and y are equal.
         raise ValueError("Equal arguments.")
@@ -26,8 +45,8 @@ def simplest_fraction_in_interval(x, y):
         return Fraction(0)
     else:
         # Remainder and Coefficient of continued fractions for x and y.
-        xr, xc = modf(1/x)
-        yr, yc = modf(1/y)
+        xr, xc = modf(1 / x)
+        yr, yc = modf(1 / y)
         if xc < yc:
             return Fraction(1, int(xc) + 1)
         elif yc < xc:
@@ -51,4 +70,3 @@ def approximate_fraction(x, e):
 
     """
     return simplest_fraction_in_interval(x - e, x + e)
-
