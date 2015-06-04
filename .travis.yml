@@ -4,8 +4,8 @@
 language: python
 
 python:
+  # We don't actually use the Travis Python, but this keeps it organized.
   - "2.7"
-  - "3.2"
   - "3.3"
   - "3.4"
   - "pypy"
@@ -17,25 +17,12 @@ matrix:
     - python: "3.4"
       env: FROM_SOURCE=true
 
-
   allow_failures:
     # 3.4 and pypy Wheels are not yet available.
     - python: "pypy"
     - env: FROM_SOURCE=true
 
-    - python: "3.2"
-      env: OPTIONAL_DEPS=true
-
-    - python: "3.3"
-      env: OPTIONAL_DEPS=true
-
-    - python: "3.4"
-      env: OPTIONAL_DEPS=true
-
 env:
-  global:
-    # Install from wheels *only*.
-    - PIPINSTALL="pip install -v --use-wheel --no-index --find-links=http://wheels.astropy.org --find-links=http://wheels2.astropy.org"
   matrix:
     - OPTIONAL_DEPS=true
     - OPTIONAL_DEPS=false
@@ -44,34 +31,44 @@ before_install:
   ### Prepare the system to install prerequisites or dependencies
   - uname -a
   - printenv
-  - pip install --upgrade setuptools
-  - pip install --upgrade pip
-  - pip install wheel
-  - pip --version
+  - sudo apt-get update -qq
+
+  # We do this conditionally because it saves us some downloading if the
+  # version is the same.
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
+    else
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+    fi
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  # Useful for debugging any issues with conda
+  - conda info -a
 
 install:
   ### Install any prerequisites or dependencies necessary to run the build.
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pip numpy
+  - if [ "${OPTIONAL_DEPS}" == "true" ]; then conda install -n test-environment Cython; fi
 
   # Skipping pydot (not 3.x compatible)
   # Skipping gdal (errors during pip installs)
-  - sudo apt-get update -qq
-  - if [ "${FROM_SOURCE}" != "true" ]; then $PIPINSTALL numpy; fi
-  - if [ "${OPTIONAL_DEPS}" == "true" ]; then $PIPINSTALL Cython; fi
 
-  # Try to install latest and greatest from source.
-  - if [ "${FROM_SOURCE}" == "true" ]; then pip install --upgrade numpy Cython; fi
+  - source activate test-environment
 
 before_script:
   ### Use this to prepare your build for testing
-  - pip install --upgrade nose
-  - pip install --upgrade coverage
-  - pip install --upgrade coveralls
+  - conda install -n test-environment nose coverage
+  - pip install coveralls
 
 script:
   - printenv PWD
   - pip install .
 
   - export DIT_INSTALL=`pip show dit | grep Location | awk '{print $2"/dit"}'`
+  - echo "DIT_INSTALL=$DIT_INSTALL"
 
   # nose 1.3.0 does not tell coverage to only cover the requested
   # package (except during the report).  So to restrict coverage, we must
@@ -99,7 +96,7 @@ after_success:
   - cd $TRAVIS_BUILD_DIR
   # Report coverage for 2.7 only.
   - if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then
-      python fixcoverage.py "$VIRTUAL_ENV/lib/python.*/site-packages/dit/" "$TRAVIS_BUILD_DIR/dit/";
+      python fixcoverage.py ".*/dit/" "$TRAVIS_BUILD_DIR/dit/";
       coveralls;
     fi
 
