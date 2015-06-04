@@ -3,6 +3,7 @@ Tests for dit.utils.latexarray.
 """
 
 from nose.tools import assert_equal
+from nose import SkipTest
 
 import numpy as np
 import dit.utils.latexarray as la
@@ -55,6 +56,13 @@ def test_to_latex_exact2():
     assert_equal(y, y_)
 
 def test_to_pdf():
+    import subprocess
+    try:
+        subprocess.call('pdflatex')
+        subprocess.call('pdfcrop')
+    except OSError:
+        raise SkipTest()
+
     x = 0.1
     # This generates a temporary file...
     y = la.to_pdf(x, show=False)
