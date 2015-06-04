@@ -8,8 +8,20 @@ from nose.tools import assert_equal, assert_false, assert_true
 import os
 from dit.utils import cd, named_tempfile, tempdir
 
+import tempfile
+
 def test_cd():
     with cd('/'):
+        assert_equal(os.getcwd(), '/')
+
+def test_cd_bad_oldcwd():
+    # Test attempting to go back to a directory that no longer exists.
+    name = tempfile.mkdtemp()
+    with cd(name):
+        assert_equal(os.getcwd(), name)
+        with cd('/'):
+            assert_equal(os.getcwd(), '/')
+            os.rmdir(name)
         assert_equal(os.getcwd(), '/')
 
 def test_named_tempfile1():
