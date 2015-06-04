@@ -233,7 +233,7 @@ def to_pdf(a, exact=False,
         latexfobj = EC(named_tempfile(dir=tmpdir, suffix='.tex'))
 
         # Write the latex file
-        latexfobj.write(latex)
+        latexfobj.write(latex.encode('utf8'))
         latexfobj.close()
 
         # Compile to PDF

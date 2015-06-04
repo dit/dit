@@ -4,6 +4,7 @@ Tests for dit.utils.latexarray.
 
 from nose.tools import assert_equal
 from nose import SkipTest
+import os
 
 import numpy as np
 import dit.utils.latexarray as la
@@ -57,11 +58,11 @@ def test_to_latex_exact2():
 
 def test_to_pdf():
     import subprocess
-    try:
-        subprocess.call('pdflatex')
-        subprocess.call('pdfcrop')
-    except OSError:
-        raise SkipTest()
+    with open(os.devnull, 'w') as fp:
+        error = subprocess.call('pdflatex --help', shell=True, stdout=fp, stderr=fp)
+        error |= subprocess.call('pdfcrop --help', shell=True, stdout=fp, stderr=fp)
+        if error:
+            raise SkipTest()
 
     x = 0.1
     # This generates a temporary file...

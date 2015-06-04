@@ -6,7 +6,9 @@ Useful context managers.
 import contextlib
 import os
 import shutil
+import sys
 import tempfile
+import io
 
 from .bindargs import bindcallargs
 
@@ -42,6 +44,7 @@ def named_tempfile(*args, **kwargs):
     args = list(args)
     args[-1] = False
 
+    mode = args[0]
     ntf = tempfile.NamedTemporaryFile(*args, **kwargs)
     try:
         yield ntf

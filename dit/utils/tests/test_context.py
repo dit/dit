@@ -29,7 +29,7 @@ def test_named_tempfile1():
     with named_tempfile() as tempfile:
         name = tempfile.name
         assert_true(os.path.isfile(name))
-        tempfile.write('hello'.encode('ascii'))
+        tempfile.write('hello'.encode('utf8'))
         tempfile.close()
         assert_true(os.path.isfile(name))
     assert_false(os.path.isfile(name))
@@ -40,7 +40,7 @@ def test_named_tempfile2():
     with named_tempfile(delete=True) as tempfile:
         name = tempfile.name
         assert_true(os.path.isfile(name))
-        tempfile.write('hello'.encode('ascii'))
+        tempfile.write('hello'.encode('utf8'))
         tempfile.close()
         assert_true(os.path.isfile(name))
     assert_false(os.path.isfile(name))
