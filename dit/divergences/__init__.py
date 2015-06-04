@@ -16,4 +16,12 @@ from .kullback_leibler_divergence import (
     relative_entropy,
 )
 
+from .generalized_divergences import (
+    alpha_divergence,
+    hellinger_divergence,
+    renyi_divergence,
+    tsallis_divergence,
+    hellinger_sum,
+)
+
 from . import pmf
