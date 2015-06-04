@@ -22,7 +22,7 @@ __all__ = ('double_power_sum',
 ## http://arxiv.org/pdf/1105.3259v1.pdf
 ## http://mitran-lab.amath.unc.edu:8082/subversion/grants/Proposals/2013/DOE-DataCentric/biblio/LieseVajdaDivergencesInforTheory.pdf
 
-def double_power_sum(dist1, dist2, exp1, exp2, rvs=None, crvs=None, rv_mode=None):
+def double_power_sum(dist1, dist2, exp1=1, exp2=1, rvs=None, crvs=None, rv_mode=None):
     """A common generalization of the sums needed to compute the Hellinger and alpha divergences below.
 
     Parameters
@@ -31,6 +31,10 @@ def double_power_sum(dist1, dist2, exp1, exp2, rvs=None, crvs=None, rv_mode=None
         The first distribution in the Kullback-Leibler divergence.
     dist2 : Distribution
         The second distribution in the Kullback-Leibler divergence.
+    exp1 : float, 1
+        Exponent used in the power sum
+    exp2 : float, 1
+        Exponent used in the power sum
     rvs : list, None
         The indexes of the random variable used to calculate the
         Kullback-Leibler divergence between. If None, then the Kullback-Leibler
@@ -79,6 +83,8 @@ def hellinger_sum(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None):
         The first distribution in the Kullback-Leibler divergence.
     dist2 : Distribution
         The second distribution in the Kullback-Leibler divergence.
+    alpha : float, 1
+        Exponent parameterizing the sum
     rvs : list, None
         The indexes of the random variable used to calculate the
         Kullback-Leibler divergence between. If None, then the Kullback-Leibler
@@ -117,6 +123,8 @@ def hellinger_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=No
         The first distribution in the Kullback-Leibler divergence.
     dist2 : Distribution
         The second distribution in the Kullback-Leibler divergence.
+    alpha : float, 1
+        The divergence is a one parameter family
     rvs : list, None
         The indexes of the random variable used to calculate the
         Kullback-Leibler divergence between. If None, then the Kullback-Leibler
@@ -157,6 +165,8 @@ def tsallis_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None
         The first distribution in the Kullback-Leibler divergence.
     dist2 : Distribution
         The second distribution in the Kullback-Leibler divergence.
+    alpha : float, 1
+        The divergence is a one parameter family
     rvs : list, None
         The indexes of the random variable used to calculate the
         Kullback-Leibler divergence between. If None, then the Kullback-Leibler
@@ -198,6 +208,8 @@ def renyi_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None):
         The first distribution in the Kullback-Leibler divergence.
     dist2 : Distribution
         The second distribution in the Kullback-Leibler divergence.
+    alpha : float, 1
+        The divergence is a one parameter family
     rvs : list, None
         The indexes of the random variable used to calculate the
         Kullback-Leibler divergence between. If None, then the Kullback-Leibler
@@ -238,6 +250,8 @@ def alpha_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None):
         The first distribution in the Kullback-Leibler divergence.
     dist2 : Distribution
         The second distribution in the Kullback-Leibler divergence.
+    alpha : float, 1
+        The divergence is a one parameter family
     rvs : list, None
         The indexes of the random variable used to calculate the
         Kullback-Leibler divergence between. If None, then the Kullback-Leibler
