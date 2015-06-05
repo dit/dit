@@ -11,6 +11,7 @@ import numpy as np
 from dit import Distribution
 from dit.exceptions import ditException
 from dit.divergences import kullback_leibler_divergence, alpha_divergence, renyi_divergence, tsallis_divergence, hellinger_divergence, hellinger_sum
+from dit.other import renyi_entropy
 
 def get_dists_1():
     """
@@ -118,3 +119,18 @@ def test_exceptions():
         for divergence in divergences:
             for alpha in alphas:
                 yield assert_raises, ditException, divergence, first, second, alpha, rvs, crvs
+
+def test_renyi():
+    """
+    Consistency test for Renyi entropy and Renyi divergence
+    """
+    dist1 = Distribution(['0', '1', '2'], [1/4, 1/2, 1/4])
+    uniform = Distribution(['0', '1', '2'], [1/3, 1/3, 1/3])
+    alphas = [0, 1, 2, 0.5]
+    for alpha in alphas:
+        h = renyi_entropy(dist1, alpha)
+        h_u = renyi_entropy(uniform, alpha)
+        div = renyi_divergence(dist1, uniform, alpha)
+        assert_almost_equal(h, h_u - div) 
+    
+
