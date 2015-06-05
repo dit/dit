@@ -305,7 +305,9 @@ def alpha_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None):
 
 def f_divergence(dist1, dist2, f, rvs=None, crvs=None, rv_mode=None):
     """
-    The Csiszar f-divergence of `dist1` and `dist2`.
+    The Csiszar f-divergence of `dist1` and `dist2`. Note that it is typically
+    more accurate to use a specialized divergence function when available
+    due to roundoff errors and small probability effects.
     
     Parameters
     ----------
