@@ -11,7 +11,7 @@ import numpy as np
 from dit import Distribution
 from dit.exceptions import ditException
 from dit.divergences import kullback_leibler_divergence, alpha_divergence, renyi_divergence, tsallis_divergence, hellinger_divergence, hellinger_sum
-from dit.other import renyi_entropy
+from dit.other import renyi_entropy, tsallis_entropy
 
 def get_dists_1():
     """
@@ -73,7 +73,8 @@ def test_positivity():
 
 def test_alpha_symmetry():
     """
-    Tests the alpha -> -alpha symmetry for the alpha divergence, and a similar symmetry for the Hellinger divergence.
+    Tests the alpha -> -alpha symmetry for the alpha divergence, and a similar 
+    symmetry for the Hellinger and Renyi divergences.
     """
     alphas = [-1, 0, 0.5, 1, 2]
     test_dists = [get_dists_2(), get_dists_3()]
@@ -83,6 +84,7 @@ def test_alpha_symmetry():
                 for dist2 in dists:
                     assert_almost_equal(alpha_divergence(dist1, dist2, alpha), alpha_divergence(dist2, dist1, -alpha))
                     assert_almost_equal((1.-alpha)*hellinger_divergence(dist1, dist2, alpha), alpha*hellinger_divergence(dist2, dist1, 1.-alpha))
+                    assert_almost_equal((1.-alpha)*renyi_divergence(dist1, dist2, alpha), alpha*renyi_divergence(dist2, dist1, 1.-alpha))
 
 def test_divergences_to_kl():
     """
@@ -120,6 +122,18 @@ def test_exceptions():
             for alpha in alphas:
                 yield assert_raises, ditException, divergence, first, second, alpha, rvs, crvs
 
+def test_renyi_values():
+    """
+    Test specific values of the Renyi divergence.
+    """
+    d1 = Distribution(['0', '1'], [0, 1])
+    d2 = Distribution(['0', '1'], [1/2, 1/2])
+    d3 = Distribution(['0', '1'], [1, 0])
+
+    assert_almost_equal(renyi_divergence(d1, d2, 1/2), np.log2(2))
+    assert_almost_equal(renyi_divergence(d2, d3, 1/2), np.log2(2))
+    assert_almost_equal(renyi_divergence(d1, d3, 1/2), np.inf)
+
 def test_renyi():
     """
     Consistency test for Renyi entropy and Renyi divergence
@@ -132,5 +146,5 @@ def test_renyi():
         h_u = renyi_entropy(uniform, alpha)
         div = renyi_divergence(dist1, uniform, alpha)
         assert_almost_equal(h, h_u - div) 
-    
+
 

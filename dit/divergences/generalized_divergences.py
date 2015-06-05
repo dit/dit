@@ -20,6 +20,7 @@ __all__ = ('double_power_sum',
 
 ### References for Divergence Formulas ###
 ## http://arxiv.org/pdf/1105.3259v1.pdf
+## http://arxiv.org/pdf/1206.2459.pdf
 ## http://mitran-lab.amath.unc.edu:8082/subversion/grants/Proposals/2013/DOE-DataCentric/biblio/LieseVajdaDivergencesInforTheory.pdf
 
 def double_power_sum(dist1, dist2, exp1=1, exp2=1, rvs=None, crvs=None, rv_mode=None):
@@ -301,4 +302,54 @@ def alpha_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None):
                          rvs=rvs, crvs=crvs, rv_mode=rv_mode)
     return 4*(1.-s)/(1.-alpha*alpha)
 
+def f_divergence(dist1, dist2, f, rvs=None, crvs=None, rv_mode=None):
+    """
+    The Csiszar f-divergence of `dist1` and `dist2`.
+    
+    Parameters
+    ----------
+    dist1 : Distribution
+        The first distribution in the f-divergence.
+    dist2 : Distribution
+        The second distribution in the f-divergence.
+    f : function
+        The auxillary function defining the f-divergence
+    rvs : list, None
+        The indexes of the random variable used to calculate the
+        f-divergence between. If None, then the 
+        f-divergence is calculated over all random variables.
+    rv_mode : str, None
+        Specifies how to interpret `rvs` and `crvs`. Valid options are:
+        {'indices', 'names'}. If equal to 'indices', then the elements of
+        `crvs` and `rvs` are interpreted as random variable indices. If equal
+        to 'names', the the elements are interpreted as random variable names.
+        If `None`, then the value of `dist._rv_mode` is consulted, which
+        defaults to 'indices'.
+
+    Returns
+    -------
+    dkl : float
+        The f-divergence between `dist1` and `dist2`.
+
+    Raises
+    ------
+    ditException
+        Raised if either `dist1` or `dist2` doesn't have `rvs` or, if `rvs` is
+        None, if `dist2` has an outcome length different than `dist1`.
+
+    """
+    
+    rvs, crvs, rv_mode = normalize_rvs(dist1, rvs, crvs, rv_mode)
+    rvs, crvs = list(flatten(rvs)), list(flatten(crvs))
+    normalize_rvs(dist2, rvs, crvs, rv_mode)
+
+    p1s, q1s = get_pmfs_like(dist1, dist2, rvs+crvs, rv_mode)
+    vfunc = np.vectorize(f)
+    div = np.nansum(vfunc(p1s) * q1s - vfunc(q1s) * q1s)
+
+    if crvs:
+        p2s, q2s = get_pmfs_like(dist1, dist2, crvs, rv_mode)
+        div = np.nansum(vfunc(p2s) * q2s - vfunc(q2s) * q2s)
+
+    return div
 
