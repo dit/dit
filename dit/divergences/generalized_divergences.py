@@ -28,17 +28,15 @@ def double_power_sum(dist1, dist2, exp1=1, exp2=1, rvs=None, crvs=None, rv_mode=
     Parameters
     ----------
     dist1 : Distribution
-        The first distribution in the Kullback-Leibler divergence.
-    dist2 : Distribution
-        The second distribution in the Kullback-Leibler divergence.
+        The first distribution in the sum.
+        The second distribution in the sum.
     exp1 : float, 1
         Exponent used in the power sum
     exp2 : float, 1
         Exponent used in the power sum
     rvs : list, None
-        The indexes of the random variable used to calculate the
-        Kullback-Leibler divergence between. If None, then the Kullback-Leibler
-        divergence is calculated over all random variables.
+        The indexes of the random variable used to calculate the sum.
+        If None, then the sum is calculated over all random variables.
     rv_mode : str, None
         Specifies how to interpret `rvs` and `crvs`. Valid options are:
         {'indices', 'names'}. If equal to 'indices', then the elements of
@@ -80,15 +78,15 @@ def hellinger_sum(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None):
     Parameters
     ----------
     dist1 : Distribution
-        The first distribution in the Kullback-Leibler divergence.
-    dist2 : Distribution
-        The second distribution in the Kullback-Leibler divergence.
-    alpha : float, 1
-        Exponent parameterizing the sum
+        The first distribution in the sum.
+        The second distribution in the sum.
+    exp1 : float, 1
+        Exponent used in the power sum
+    exp2 : float, 1
+        Exponent used in the power sum
     rvs : list, None
-        The indexes of the random variable used to calculate the
-        Kullback-Leibler divergence between. If None, then the Kullback-Leibler
-        divergence is calculated over all random variables.
+        The indexes of the random variable used to calculate the sum.
+        If None, then the sum is calculated over all random variables.
     rv_mode : str, None
         Specifies how to interpret `rvs` and `crvs`. Valid options are:
         {'indices', 'names'}. If equal to 'indices', then the elements of
@@ -120,14 +118,14 @@ def hellinger_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=No
     Parameters
     ----------
     dist1 : Distribution
-        The first distribution in the Kullback-Leibler divergence.
+        The first distribution in the Hellinger divergence.
     dist2 : Distribution
-        The second distribution in the Kullback-Leibler divergence.
+        The second distribution in the Hellinger divergence.
     alpha : float, 1
         The divergence is a one parameter family
     rvs : list, None
         The indexes of the random variable used to calculate the
-        Kullback-Leibler divergence between. If None, then the Kullback-Leibler
+        Hellinger divergence between. If None, then the Hellinger
         divergence is calculated over all random variables.
     rv_mode : str, None
         Specifies how to interpret `rvs` and `crvs`. Valid options are:
@@ -162,14 +160,14 @@ def tsallis_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None
     Parameters
     ----------
     dist1 : Distribution
-        The first distribution in the Kullback-Leibler divergence.
+        The first distribution in the Tsallis divergence.
     dist2 : Distribution
-        The second distribution in the Kullback-Leibler divergence.
+        The second distribution in the Tsallis divergence.
     alpha : float, 1
         The divergence is a one parameter family
     rvs : list, None
         The indexes of the random variable used to calculate the
-        Kullback-Leibler divergence between. If None, then the Kullback-Leibler
+        Tsallis divergence between. If None, then the Tsallis
         divergence is calculated over all random variables.
     rv_mode : str, None
         Specifies how to interpret `rvs` and `crvs`. Valid options are:
@@ -205,14 +203,14 @@ def renyi_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None):
     Parameters
     ----------
     dist1 : Distribution
-        The first distribution in the Kullback-Leibler divergence.
+        The first distribution in the Renyi divergence.
     dist2 : Distribution
-        The second distribution in the Kullback-Leibler divergence.
+        The second distribution in the Renyi divergence.
     alpha : float, 1
         The divergence is a one parameter family
     rvs : list, None
         The indexes of the random variable used to calculate the
-        Kullback-Leibler divergence between. If None, then the Kullback-Leibler
+        Renyi divergence between. If None, then the Renyi
         divergence is calculated over all random variables.
     rv_mode : str, None
         Specifies how to interpret `rvs` and `crvs`. Valid options are:
@@ -247,14 +245,14 @@ def alpha_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None):
     Parameters
     ----------
     dist1 : Distribution
-        The first distribution in the Kullback-Leibler divergence.
+        The first distribution in the alpha divergence.
     dist2 : Distribution
-        The second distribution in the Kullback-Leibler divergence.
+        The second distribution in the alpha divergence.
     alpha : float, 1
         The divergence is a one parameter family
     rvs : list, None
         The indexes of the random variable used to calculate the
-        Kullback-Leibler divergence between. If None, then the Kullback-Leibler
+        alpha divergence between. If None, then the alpha
         divergence is calculated over all random variables.
     rv_mode : str, None
         Specifies how to interpret `rvs` and `crvs`. Valid options are:
