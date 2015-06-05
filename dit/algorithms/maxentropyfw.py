@@ -64,9 +64,9 @@ def initial_point(dist, k, A=None, b=None, isolated=None, **kwargs):
     tols = [1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3]
     for tol in tols:
         constraints = []
-        constraints.append( (-tol <= Asmall * x - b) )
-        constraints.append( ( Asmall * x - b <= tol) )
-        constraints.append( (x >= t) )
+        constraints.append((-tol <= Asmall * x - b))
+        constraints.append((Asmall * x - b <= tol))
+        constraints.append((x >= t))
 
         # Objective to minimize
         objective = -t
@@ -87,7 +87,7 @@ def initial_point(dist, k, A=None, b=None, isolated=None, **kwargs):
         xopt = optvariables[1].value
 
     # Turn values close to zero to be exactly equal to zero.
-    xopt = np.array(xopt)[:,0]
+    xopt = np.array(xopt)[:, 0]
     xopt[np.abs(xopt) < tol] = 0
     xopt /= xopt.sum()
 
@@ -97,7 +97,6 @@ def initial_point(dist, k, A=None, b=None, isolated=None, **kwargs):
     #xx[variables.nonzero] = xopt
 
     return xopt, opt
-
 
 def check_feasibility(dist, k, **kwargs):
     """
@@ -121,8 +120,8 @@ def check_feasibility(dist, k, **kwargs):
     t = variable()
 
     c1 = (-t <= A * x - b)
-    c2 = ( A * x - b <= t)
-    c3 = ( x >= 0 )
+    c2 = (A * x - b <= t)
+    c3 = (x >= 0)
 
     objective = t
     constraints = [c1, c2, c3]
@@ -132,7 +131,6 @@ def check_feasibility(dist, k, **kwargs):
         raise Exception('Not feasible')
 
     return opt
-
 
 def negentropy(p):
     """
