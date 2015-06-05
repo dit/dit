@@ -152,7 +152,7 @@ def build_pfuncs(digraph, rv_names, attr, outcome_ctor):
             # Immediately bind variables since we are in a for loop.
             # http://docs.python-guide.org/en/latest/writing/gotchas/#late-binding-closures
             def prob(outcome, dist=val, rv=rv):
-                rv_outcome = outcome_ctor([ outcome[rv_index[rv]] ])
+                rv_outcome = outcome_ctor([outcome[rv_index[rv]]])
                 return dist[rv_outcome]
 
         else:
@@ -164,7 +164,7 @@ def build_pfuncs(digraph, rv_names, attr, outcome_ctor):
                 dists = dict(zip(outcomes, dists))
 
             def prob(outcome, dists=dists, parents=parents, rv=rv):
-                node_outcome = outcome_ctor([ outcome[rv_index[rv]] ])
+                node_outcome = outcome_ctor([outcome[rv_index[rv]]])
                 parent_vals = [outcome[rv_index[parent]] for parent in parents]
                 parent_outcome = outcome_ctor(parent_vals)
                 dist = dists[parent_outcome]
@@ -303,11 +303,11 @@ def distribution_from_bayesnet(digraph, nodes=None, sample_space=None, attr='dis
     outcomes = list(sample_space)
     mult = ops.mult_reduce
     if callables:
-        pmf = [ mult(np.asarray([pfuncs[rv](*get_values(rv, outcome)) for rv in rv_names]))
-                for outcome in outcomes ]
+        pmf = [mult(np.asarray([pfuncs[rv](*get_values(rv, outcome)) for rv in rv_names]))
+               for outcome in outcomes]
     else:
-        pmf = [ mult(np.asarray([pfuncs[rv](outcome) for rv in rv_names]))
-               for outcome in outcomes ]
+        pmf = [mult(np.asarray([pfuncs[rv](outcome) for rv in rv_names]))
+               for outcome in outcomes]
 
     # Technically, we shouldn't need this but some values must be underflowing.
     pmf = ops.normalize(np.asarray(pmf))
