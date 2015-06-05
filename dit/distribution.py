@@ -48,7 +48,7 @@ from .exceptions import ditException
 from six.moves import map, zip # pylint: disable=redefined-builtin
 
 def prepare_string(dist, digits=None, exact=False, tol=1e-9,
-                         show_mask=False, str_outcomes=False):
+                   show_mask=False, str_outcomes=False):
     """
     Prepares a distribution for a string representation.
 
@@ -102,7 +102,7 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9,
             msg = '`show_mask` can be `True` only for joint distributions'
             raise ditException(msg)
 
-        if show_mask != True and show_mask != False:
+        if not show_mask != True and show_mask != False:
             # The user is specifying what the mask should look like.
             wc = show_mask
         else:
