@@ -151,7 +151,7 @@ def hellinger_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=No
         None, if `dist2` has an outcome length different than `dist1`.
 
     """
-    
+
     if alpha == 1:
         return kullback_leibler_divergence(dist1, dist2, rvs=rvs,
                                            crvs=crvs, rv_mode=rv_mode)
@@ -255,9 +255,9 @@ def renyi_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None):
 
 def alpha_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None):
     """
-    The alpha divergence of `dist1` and `dist2`, as used in Information 
-    Geometry. Note there is more than one inequivalent definition of 
-    "alpha divergence" in the literature, this one comes 
+    The alpha divergence of `dist1` and `dist2`, as used in Information
+    Geometry. Note there is more than one inequivalent definition of
+    "alpha divergence" in the literature, this one comes
     from http://en.wikipedia.org/wiki/Information_geometry .
 
     Parameters
@@ -294,12 +294,12 @@ def alpha_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None):
     """
 
     if alpha == 1:
-        return kullback_leibler_divergence(dist1, dist2, rvs=rvs, 
+        return kullback_leibler_divergence(dist1, dist2, rvs=rvs,
                                            crvs=crvs, rv_mode=rv_mode)
     if alpha == -1:
-        return kullback_leibler_divergence(dist2, dist1, rvs=rvs, 
+        return kullback_leibler_divergence(dist2, dist1, rvs=rvs,
                                            crvs=crvs, rv_mode=rv_mode)
-    s = double_power_sum(dist1, dist2, (1.-alpha)/2, (1.+alpha)/2, 
+    s = double_power_sum(dist1, dist2, (1.-alpha)/2, (1.+alpha)/2,
                          rvs=rvs, crvs=crvs, rv_mode=rv_mode)
     return 4*(1.-s)/(1.-alpha*alpha)
 
@@ -308,7 +308,7 @@ def f_divergence(dist1, dist2, f, rvs=None, crvs=None, rv_mode=None):
     The Csiszar f-divergence of `dist1` and `dist2`. Note that it is typically
     more accurate to use a specialized divergence function when available
     due to roundoff errors and small probability effects.
-    
+
     Parameters
     ----------
     dist1 : Distribution
@@ -319,7 +319,7 @@ def f_divergence(dist1, dist2, f, rvs=None, crvs=None, rv_mode=None):
         The auxillary function defining the f-divergence
     rvs : list, None
         The indexes of the random variable used to calculate the
-        f-divergence between. If None, then the 
+        f-divergence between. If None, then the
         f-divergence is calculated over all random variables.
     rv_mode : str, None
         Specifies how to interpret `rvs` and `crvs`. Valid options are:
@@ -341,7 +341,7 @@ def f_divergence(dist1, dist2, f, rvs=None, crvs=None, rv_mode=None):
         None, if `dist2` has an outcome length different than `dist1`.
 
     """
-    
+
     rvs, crvs, rv_mode = normalize_rvs(dist1, rvs, crvs, rv_mode)
     rvs, crvs = list(flatten(rvs)), list(flatten(crvs))
     normalize_rvs(dist2, rvs, crvs, rv_mode)
