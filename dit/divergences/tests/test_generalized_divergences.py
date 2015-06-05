@@ -168,12 +168,6 @@ def test_f_divergence(places=1):
         def f(x):
             return (np.power(x, 1. - alpha) - 1.) / (alpha - 1.)
         return f
-    
-    #f = lambda x: -np.log2(x)
-    #test_functions = [
-        #(lambda x: -np.log2(x), kullback_leibler_divergence),
-        #(lambda x: x * np.log2(x), kullback_leibler_divergence),
-        #]
     test_functions = []
     alphas = [0.1, 0.5, 1.1]
     for alpha in alphas:
@@ -188,5 +182,3 @@ def test_f_divergence(places=1):
                 div1 = f_divergence(dist1, dist2, f)
                 div2 = div_func(dist1, dist2)
                 assert_almost_equal(div1, div2, places=1)
-
-
