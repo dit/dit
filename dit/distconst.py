@@ -894,8 +894,8 @@ def product_distribution(dist, rvs=None, rv_mode=None, base=None):
         for pair in pairs:
             outcome.extend(pair[0])
             prob.append(pair[1])
-        outcomes.append( ctor(outcome) )
-        pmf.append( ops.mult_reduce(prob) )
+        outcomes.append(ctor(outcome))
+        pmf.append(ops.mult_reduce(prob))
 
     d = Distribution(outcomes, pmf, validate=False)
 
@@ -928,7 +928,7 @@ def all_dist_structures(outcome_length, alphabet_size):
     topologies = powerset(words)
     next(topologies) # the first element is the null set
     for t in topologies:
-        outcomes = [ ''.join(_) for _ in t]
+        outcomes = [''.join(_) for _ in t]
         yield uniform(outcomes)
 
 def _int_to_dist(number, outcome_length, alphabet_size):
@@ -953,7 +953,7 @@ def _int_to_dist(number, outcome_length, alphabet_size):
     alphabet = ''.join(str(i) for i in range(alphabet_size))
     words = product(alphabet, repeat=outcome_length)
     events = digits(number, 2, pad=alphabet_size**outcome_length, big_endian=False)
-    outcomes = [ ''.join(word) for include, word in zip(events, words) if include ]
+    outcomes = [''.join(word) for include, word in zip(events, words) if include ]
     return uniform(outcomes)
 
 def random_dist_structure(outcome_length, alphabet_size):
