@@ -1,5 +1,5 @@
 """
-Tests for dit.divergences.kullback_leiber_divergence.
+Tests for dit.divergences.kullback_leibler_divergence.
 """
 
 from __future__ import division

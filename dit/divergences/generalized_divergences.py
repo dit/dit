@@ -22,6 +22,7 @@ __all__ = ('double_power_sum',
 ## http://arxiv.org/pdf/1105.3259v1.pdf
 ## http://arxiv.org/pdf/1206.2459.pdf
 ## http://mitran-lab.amath.unc.edu:8082/subversion/grants/Proposals/2013/DOE-DataCentric/biblio/LieseVajdaDivergencesInforTheory.pdf
+## Crooks: http://threeplusone.com/on_information.pdf
 
 def double_power_sum(dist1, dist2, exp1=1, exp2=1, rvs=None, crvs=None, rv_mode=None):
     """
@@ -345,11 +346,11 @@ def f_divergence(dist1, dist2, f, rvs=None, crvs=None, rv_mode=None):
 
     p1s, q1s = get_pmfs_like(dist1, dist2, rvs+crvs, rv_mode)
     vfunc = np.vectorize(f)
-    div = np.nansum(vfunc(p1s) * q1s - vfunc(q1s) * q1s)
+    div = np.nansum(vfunc(np.divide(p1s, q1s)) * q1s)
 
     if crvs:
         p2s, q2s = get_pmfs_like(dist1, dist2, crvs, rv_mode)
-        div = np.nansum(vfunc(p2s) * q2s - vfunc(q2s) * q2s)
+        div = np.nansum(vfunc(np.divide(p2s, q2s)) * q2s)
 
     return div
 

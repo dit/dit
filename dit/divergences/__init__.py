@@ -21,6 +21,7 @@ from .generalized_divergences import (
     hellinger_divergence,
     renyi_divergence,
     tsallis_divergence,
+    f_divergence,
     hellinger_sum,
 )
 

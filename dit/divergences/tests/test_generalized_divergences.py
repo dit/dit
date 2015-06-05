@@ -1,8 +1,9 @@
 """
-Tests for dit.divergences.kullback_leiber_divergence.
+Tests for dit.divergences.kullback_leibler_divergence.
 """
 
 from __future__ import division
+from functools import partial
 
 from nose.tools import assert_almost_equal, assert_not_equal, assert_raises, assert_greater
 
@@ -10,7 +11,7 @@ import numpy as np
 
 from dit import Distribution
 from dit.exceptions import ditException
-from dit.divergences import kullback_leibler_divergence, alpha_divergence, renyi_divergence, tsallis_divergence, hellinger_divergence, hellinger_sum
+from dit.divergences import kullback_leibler_divergence, alpha_divergence, renyi_divergence, tsallis_divergence, hellinger_divergence, f_divergence, hellinger_sum
 from dit.other import renyi_entropy, tsallis_entropy
 
 def get_dists_1():
@@ -146,5 +147,46 @@ def test_renyi():
         h_u = renyi_entropy(uniform, alpha)
         div = renyi_divergence(dist1, uniform, alpha)
         assert_almost_equal(h, h_u - div) 
+
+def test_f_divergence(places=1):
+    """
+    Tests various known relations of f-divergences to other divergences.
+    """
+    def f_alpha(alpha):
+        if alpha == 1:
+            def f(x):
+                return x * np.log2(x)
+        elif alpha == -1:
+            def f(x):
+                return - np.log2(x)
+        else:
+            def f(x):
+                return 4. / (1. - alpha*alpha) * (1. - np.power(x, (1. + alpha)/2))
+        return f
+    
+    def f_tsallis(alpha):
+        def f(x):
+            return (np.power(x, 1. - alpha) - 1.) / (alpha - 1.)
+        return f
+    
+    #f = lambda x: -np.log2(x)
+    #test_functions = [
+        #(lambda x: -np.log2(x), kullback_leibler_divergence),
+        #(lambda x: x * np.log2(x), kullback_leibler_divergence),
+        #]
+    test_functions = []
+    alphas = [0.1, 0.5, 1.1]
+    for alpha in alphas:
+        test_functions.append((f_alpha(alpha), partial(alpha_divergence, alpha=alpha)))
+        test_functions.append((f_tsallis(alpha), partial(tsallis_divergence, alpha=alpha)))
+    dists = get_dists_3()
+    for dist1 in dists:
+        for dist2 in dists:
+            if dist1 == dist2:
+                continue
+            for f, div_func in test_functions:
+                div1 = f_divergence(dist1, dist2, f)
+                div2 = div_func(dist1, dist2)
+                assert_almost_equal(div1, div2, places=1)
 
 
