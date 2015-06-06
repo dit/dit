@@ -102,7 +102,7 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9,
             msg = '`show_mask` can be `True` only for joint distributions'
             raise ditException(msg)
 
-        if not show_mask != True and show_mask != False:
+        if show_mask != True and show_mask != False:
             # The user is specifying what the mask should look like.
             wc = show_mask
         else:
