@@ -12,7 +12,6 @@ Example:  ./build public_html
 
 from __future__ import print_function
 
-import datetime
 import os
 import shutil
 import subprocess
@@ -50,7 +49,7 @@ def update_gitrepo():
 def main():
     try:
         min_delay = int(sys.argv[2]) * 60
-    except:
+    except IndexError:
         min_delay = 0
 
     # Build only if enough time has passed.

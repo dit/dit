@@ -131,8 +131,8 @@ def marginal_constraints(dist, m, with_normalization=True):
 
     # Begin with the normalization constraint.
     if with_normalization:
-        A.append( np.ones(d.n_elements) )
-        b.append( 1 )
+        A.append(np.ones(d.n_elements))
+        b.append(1)
 
     # Now add all the marginal constraints.
     if m > 0:
@@ -246,8 +246,8 @@ def moment_constraints(pmf, n_variables, m, symbol_map, with_replacement=True):
         raise ValueError(msg.format(symbol_map))
 
     # Begin with the normalization constraint.
-    A = [ np.ones(d.n_elements) ]
-    b = [ 1 ]
+    A = [np.ones(d.n_elements)]
+    b = [1]
 
 
     try:
@@ -286,7 +286,8 @@ def moment_constraints(pmf, n_variables, m, symbol_map, with_replacement=True):
     return A, b
 
 
-def moment_constraint_rank(dist, m, symbol_map=None, cumulative=True, with_replacement=True):
+def moment_constraint_rank(dist, m, symbol_map=None,
+                           cumulative=True, with_replacement=True):
     """
     Returns the rank of the moment constraint matrix.
 
@@ -318,7 +319,8 @@ def ising_constraint_rank(dist, m, symbol_map=None, cumulative=True):
     Returns the rank of the Ising constraint matrix.
 
     """
-    return moment_constraint_rank(dist, m, symbol_map, cumulative, with_replacement=False)
+    return moment_constraint_rank(dist, m, symbol_map, cumulative,
+                                  with_replacement=False)
 
 
 def negentropy(p):
@@ -396,7 +398,8 @@ class MarginalMaximumEntropy(MaximumEntropy):
     def initial_dist(self):
         from .maxentropyfw import initial_point
         initial_x, _ = initial_point(self.dist, self.k, A=self.A, b=self.b,
-                                 isolated=self.variables, show_progress=False)
+                                     isolated=self.variables,
+                                     show_progress=False)
         return initial_x
 
     def build_gradient_hessian(self):
@@ -431,7 +434,8 @@ class MomentMaximumEntropy(MaximumEntropy):
     k=0 should reproduce the behavior of MaximumEntropy.
 
     """
-    def __init__(self, dist, k, symbol_map, cumulative=True, with_replacement=True, tol=None, prng=None):
+    def __init__(self, dist, k, symbol_map, cumulative=True,
+                 with_replacement=True, tol=None, prng=None):
         """
         Initialize optimizer.
 

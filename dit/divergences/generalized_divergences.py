@@ -24,7 +24,8 @@ __all__ = ('double_power_sum',
 ## http://mitran-lab.amath.unc.edu:8082/subversion/grants/Proposals/2013/DOE-DataCentric/biblio/LieseVajdaDivergencesInforTheory.pdf
 ## Crooks: http://threeplusone.com/on_information.pdf
 
-def double_power_sum(dist1, dist2, exp1=1, exp2=1, rvs=None, crvs=None, rv_mode=None):
+def double_power_sum(dist1, dist2, exp1=1, exp2=1, rvs=None, crvs=None,
+                     rv_mode=None):
     """
     A common generalization of the sums needed to compute the Hellinger
     and alpha divergences below.
@@ -114,7 +115,8 @@ def hellinger_sum(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None):
     return double_power_sum(dist1, dist2, alpha, 1.-alpha,
                             rvs=rvs, crvs=crvs, rv_mode=rv_mode)
 
-def hellinger_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None):
+def hellinger_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None,
+                         rv_mode=None):
     # http://mitran-lab.amath.unc.edu:8082/subversion/grants/Proposals/2013/DOE-DataCentric/biblio/LieseVajdaDivergencesInforTheory.pdf
     """
     The Hellinger divergence of `dist1` and `dist2`.
@@ -159,7 +161,8 @@ def hellinger_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=No
                       crvs=crvs, rv_mode=rv_mode)
     return (s-1.)/(alpha-1.)
 
-def tsallis_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None):
+def tsallis_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None,
+                       rv_mode=None):
     """
     The Tsallis divergence of `dist1` and `dist2`.
 
@@ -245,7 +248,7 @@ def renyi_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None):
 
     # D_R = log D_alpha / (alpha-1)
     if alpha == 1:
-        div = kullback_leibler_divergence(dist1, dist2, rvs=rvs, 
+        div = kullback_leibler_divergence(dist1, dist2, rvs=rvs,
                                           crvs=crvs, rv_mode=rv_mode)
     else:
         s = hellinger_sum(dist1, dist2, rvs=rvs,
