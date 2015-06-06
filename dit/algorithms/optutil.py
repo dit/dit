@@ -157,8 +157,8 @@ class CVXOPT_Template(object):
         # We have M = N = 0 (no 2nd order cones or positive semidefinite cones)
         # So, K = l where l is the dimension of the nonnegative orthant. Thus,
         # we have l = n.
-        G = matrix( -1 * np.eye(n) )   # G should have shape: (K,n) = (n,n)
-        h = matrix( np.zeros((n,1)) )  # h should have shape: (K,1) = (n,1)
+        G = matrix(-1 * np.eye(n))   # G should have shape: (K,n) = (n,n)
+        h = matrix(np.zeros((n,1)))  # h should have shape: (K,1) = (n,1)
 
         self.G = G
         self.h = h
@@ -168,8 +168,8 @@ class CVXOPT_Template(object):
         from cvxopt import matrix
 
         # Normalization constraint only
-        A = [ np.ones(self.n_elements) ]
-        b = [ 1 ]
+        A = [np.ones(self.n_elements)]
+        b = [1]
 
         A = np.asarray(A, dtype=float)
         b = np.asarray(b, dtype=float)
@@ -196,7 +196,7 @@ class CVXOPT_Template(object):
                 d = self.initial_dist()
                 return (m, matrix(d))
 
-            xarr = np.array(x)[:,0]
+            xarr = np.array(x)[:, 0]
 
             # Verify that x is in domain.
             # Does G,h and A,b take care of this?

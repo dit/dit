@@ -101,18 +101,18 @@ class AbstractDenseDistribution(object):
         rows = list(range(n_symbols))
         for t in range(n_variables):
             Xt = rvs[t]
-            blocks = range( n_symbols**t )
+            blocks = range(n_symbols**t)
             blockCols = n_symbols**(n_variables - t - 1)
             cols = range(blockCols)
             locations = itertools.product(blocks, rows, cols)
             for idx, (block, row, col) in enumerate(locations):
-                i,j = row, block * blockCols + col
-                Xt[i,j] = idx
+                i, j = row, block * blockCols + col
+                Xt[i, j] = idx
 
         # Convert rvs to a 2D array of sets.
         # This makes it quicker to form marginals.
-        self.rvs = rvs_set = np.empty( (n_variables, n_symbols), dtype=object )
-        indexes = itertools.product( range(n_variables), range(n_symbols) )
+        self.rvs = rvs_set = np.empty((n_variables, n_symbols), dtype=object)
+        indexes = itertools.product(range(n_variables), range(n_symbols))
         for index in indexes:
             rvs_set[index] = set(rvs[index])
 
@@ -166,12 +166,12 @@ class AbstractDenseDistribution(object):
                 cache[indexes] = p = self.rvs[idx]
 
             # If indexes are consecutive from zero, then we can do these easily.
-            elif (indexes[0] == 0) and ( np.all(np.diff(indexes) == 1) ):
+            elif (indexes[0] == 0) and (np.all(np.diff(indexes) == 1)):
                 p = np.arange( self.n_symbols**self.n_variables )
                 shape = (self.n_symbols**len(indexes),
                          self.n_symbols**(self.n_variables - len(indexes)))
-                p = p.reshape( shape )
-                cache[indexes] = p = np.array([ set(row) for row in p ])
+                p = p.reshape(shape)
+                cache[indexes] = p = np.array([set(row) for row in p])
 
             else:
                 # We take intersections to find the parameters for each word.
@@ -179,11 +179,11 @@ class AbstractDenseDistribution(object):
                 # need to implement this recursively from the left.
 
                 # Note, we catch len(indexes) == 1 earlier.
-                left = calculate( indexes[:-1] )
-                right = calculate( indexes[-1:] )
+                left = calculate(indexes[:-1])
+                right = calculate(indexes[-1:])
 
                 # The new p is a Cartestian product of the row intersections.
-                p = np.empty( len(left) * len(right), dtype=object)
+                p = np.empty(len(left) * len(right), dtype=object)
                 for i, (rowL, rowR) in enumerate(itertools.product(left, right)):
                     p[i] = rowL.intersection(rowR)
                 cache[indexes] = p
@@ -196,7 +196,7 @@ class AbstractDenseDistribution(object):
             p = calculate(indexes)
 
         # p is a 1D array of sets. Convert it to a 2D array.
-        p = np.array([ sorted(element) for element in p ])
+        p = np.array([sorted(element) for element in p])
 
         # If each set is not of the same length, then NumPy will create
         # a 1D array with dtype=object.  This should not happen.
@@ -275,13 +275,13 @@ def distribution_constraint(indexes1, indexes2, distribution):
     cache = {}
     d1 = distribution.parameter_array(indexes1, cache=cache)
     d2 = distribution.parameter_array(indexes2, cache=cache)
-    A = np.zeros( (len(d1), distribution.n_elements), dtype=int)
+    A = np.zeros((len(d1), distribution.n_elements), dtype=int)
     b = np.zeros(distribution.n_elements, dtype=int)
 
-    for idx, (w1, w2) in enumerate(zip(d1,d2)):
+    for idx, (w1, w2) in enumerate(zip(d1, d2)):
         symdiff = set.symmetric_difference(set(w1), set(w2))
         vec = [1 if i in w1 else -1 for i in symdiff]
-        A[(idx,),tuple(symdiff)] = vec
+        A[(idx,), tuple(symdiff)] = vec
 
     return A, b
 
@@ -321,7 +321,7 @@ def brute_marginal_array(d, rvs, rv_mode=None):
     # Apply nonzero, use [1] to get only the columns
     nz = np.nonzero(arr)[1]
     n_rows = len(marginal._sample_space)
-    arr = nz.reshape( (n_rows, len(nz) / n_rows) )
+    arr = nz.reshape((n_rows, len(nz) / n_rows))
 
     return arr
 

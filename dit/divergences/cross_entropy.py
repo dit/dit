@@ -64,7 +64,7 @@ def get_pmfs_like(d1, d2, rvs, rv_mode=None):
     dp = d1.marginal(rvs, rv_mode)
     dq = d2.marginal(rvs, rv_mode)
     ps = dp.pmf
-    qs = np.asarray([ get_prob(dq, o) for o in dp.outcomes ])
+    qs = np.asarray([get_prob(dq, o) for o in dp.outcomes])
     return ps, qs
 
 def cross_entropy(dist1, dist2, rvs=None, crvs=None, rv_mode=None):

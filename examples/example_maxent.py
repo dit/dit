@@ -3,8 +3,12 @@ from __future__ import print_function
 import dit
 import numpy as np
 
-# The functions will import this for you...just make sure you have it.
-import cvxopt
+try:
+    # The functions will import this for you...just make sure you have it.
+    import cvxopt
+except ImportError:
+    print("Module cvxopt is required")
+    exit()
 
 def print_output(d, maxent_dists):
     # Calculate the entropy for each.

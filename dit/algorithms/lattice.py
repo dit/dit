@@ -148,9 +148,8 @@ def join_sigalg(dist, rvs, rv_mode=None):
     # We require unique indexes within each random variable and want the
     # indexes in distribution order. We don't need the names.
     parse = lambda rv: parse_rvs(dist, rv, rv_mode=rv_mode,
-                                           unique=False, sort=True)[1]
+                                 unique=False, sort=True)[1]
     indexes = [parse(rv) for rv in rvs]
-
 
     sigalgs = [induced_sigalg(dist, rv, rv_mode=RV_MODES.INDICES)
                for rv in indexes]

@@ -1,9 +1,8 @@
- # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Partial information decompositions
     and
 Maxent decompositions of I[sources : target]
-
 """
 
 
@@ -23,6 +22,7 @@ from dit.algorithms.optutil import (
 )
 
 __all__ = ['unique_informations', 'k_informations', 'k_synergy']
+
 
 def prepare_dist(dist, sources, target, rv_mode=None):
     """
@@ -109,8 +109,8 @@ def marginal_constraints(dist, k, normalization=True, source_marginal=False):
 
     # Normalization: \sum_i q_i = 1
     if normalization:
-        A.append( np.ones(n_elements) )
-        b.append( 1 )
+        A.append(np.ones(n_elements))
+        b.append(1)
 
     # Random variables
     rvs = range(n_variables)
@@ -242,7 +242,7 @@ def extra_constraints(dist, k):
     ### Find values that match the original joint.
 
     # First identify each p(input_i | output) = 1
-    determined = defaultdict(lambda : [0] * len(source_rvs))
+    determined = defaultdict(lambda: [0] * len(source_rvs))
 
     # If there is no source rv because k=1, then nothing can be determined.
     if submarginal_size:
@@ -327,7 +327,9 @@ class MaximumConditionalEntropy(CVXOPT_Template):
         Quantifying Unique Information. Entropy 2014, 16, 2161-2183.
 
     """
-    def __init__(self, dist, sources, target, k=2, rv_mode=None, extra_constraints=True, source_marginal=False, tol=None, prng=None, verbose=None):
+    def __init__(self, dist, sources, target, k=2, rv_mode=None,
+                 extra_constraints=True, source_marginal=False, tol=None,
+                 prng=None, verbose=None):
         """
         Initialize an optimizer for the partial information framework.
 
@@ -449,7 +451,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
             try:
                 x_free = np.asarray(x_free).transpose()[0]
             except IndexError:
-                assert(x_free.size[1] == 0)
+                assert (x_free.size[1] == 0)
                 x_free = np.array([])
 
             y_partial_free = np.dot(M_col_free, x_free)
@@ -585,9 +587,9 @@ class MaximumConditionalEntropy(CVXOPT_Template):
         tols = [1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3]
         for tol in tols:
             constraints = []
-            constraints.append( (-tol <= A * x - b) )
-            constraints.append( ( A * x - b <= tol) )
-            constraints.append( (x >= t) )
+            constraints.append((-tol <= A * x - b))
+            constraints.append((A * x - b <= tol))
+            constraints.append((x >= t))
 
             # Objective to minimize
             objective = -t
@@ -609,7 +611,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
             xopt = optvariables[1].value
 
         # Turn values close to zero to be exactly equal to zero.
-        xopt = np.array(xopt)[:,0]
+        xopt = np.array(xopt)[:, 0]
         xopt[np.abs(xopt) < tol] = 0
         # Normalize properly accounting for fixed nonzero values.
         xopt /= xopt.sum()
@@ -630,7 +632,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
 
         if self.A is None:
             # No free constraints.
-            assert( len(self.vartypes.fixed) == len(self.pmf) )
+            assert (len(self.vartypes.fixed) == len(self.pmf))
             self.logger.info("No free parameters. Optimization unnecessary.")
             self.pmf_copy[self.vartypes.fixed] = self.vartypes.fixed_values
             xfinal = self.pmf_copy.copy()
@@ -670,12 +672,12 @@ class MaximumConditionalEntropy(CVXOPT_Template):
         return xfinal_full, obj
 
 def pi_decomp(d, d_opt):
-    u0 = dit.multivariate.coinformation(d_opt, [[2],[0]], [1])
-    u1 = dit.multivariate.coinformation(d_opt, [[2],[1]], [0])
+    u0 = dit.multivariate.coinformation(d_opt, [[2], [0]], [1])
+    u1 = dit.multivariate.coinformation(d_opt, [[2], [1]], [0])
     mi0 = dit.shannon.mutual_information(d_opt, [0], [2])
     mi0_test = dit.shannon.mutual_information(d, [0], [2])
     rdn = mi0 - u0
-    mi = dit.shannon.mutual_information(d, [0,1], [2])
+    mi = dit.shannon.mutual_information(d, [0, 1], [2])
     syn = mi - mi0 - u1
 
     return syn, u0, u1, rdn
@@ -706,7 +708,6 @@ def demo():
     import matplotlib.pyplot as plt
 
     f, axes = plt.subplots(1, 3)
-
     bvals = range(1, 7)
     avals = np.linspace(0, 1, num=10)
     for b in bvals:
@@ -714,8 +715,8 @@ def demo():
         for a in avals:
             print("**** {}, {} *****".format(a, b))
             d = dit.example_dists.summed_dice(a, b)
-            x = MaximumConditionalEntropy(d, [[0], [1]], [2], extra_constraints=True, verbose=20)
-
+            x = MaximumConditionalEntropy(d, [[0], [1]], [2],
+                                          extra_constraints=True, verbose=20)
             pmf_opt, obj = x.optimize()
             d_opt = x.dist.copy()
             d_opt.pmf[:] = pmf_opt
@@ -734,7 +735,8 @@ def demo():
 
     plt.show()
 
-def k_synergy(d, sources, target, k=2, rv_mode=None, extra_constraints=True, tol=None, prng=None, verbose=None):
+def k_synergy(d, sources, target, k=2, rv_mode=None, extra_constraints=True,
+              tol=None, prng=None, verbose=None):
     """
     Returns the k-synergy.
 
@@ -797,9 +799,9 @@ def k_synergy(d, sources, target, k=2, rv_mode=None, extra_constraints=True, tol
 
     """
     x = MaximumConditionalEntropy(d, sources, target, k=k, rv_mode=rv_mode,
-                          extra_constraints=extra_constraints,
-                          source_marginal=True, tol=tol,
-                          prng=prng, verbose=verbose)
+                                  extra_constraints=extra_constraints,
+                                  source_marginal=True, tol=tol, prng=prng,
+                                  verbose=verbose)
     pmf, obj = x.optimize()
     d_orig = x.dist
     d_opt = d_orig.copy()
@@ -808,7 +810,8 @@ def k_synergy(d, sources, target, k=2, rv_mode=None, extra_constraints=True, tol
     H_orig = dit.multivariate.entropy(d_orig)
     return H_opt - H_orig
 
-def k_informations(d, sources, target, rv_mode=None, extra_constraints=True, tol=None, prng=None, verbose=None):
+def k_informations(d, sources, target, rv_mode=None, extra_constraints=True,
+                   tol=None, prng=None, verbose=None):
     """
     Returns the amount of I[sources:target] captured by matching k-way
     marginals that include the target and the source marginal distribution.
@@ -861,10 +864,9 @@ def k_informations(d, sources, target, rv_mode=None, extra_constraints=True, tol
     """
     nonkinfos = []
     x = MaximumConditionalEntropy(d, sources, target, k=1, rv_mode=rv_mode,
-                          extra_constraints=extra_constraints,
-                          source_marginal=True, tol=tol,
-                          prng=prng, verbose=verbose)
-
+                                  extra_constraints=extra_constraints,
+                                  source_marginal=True, tol=tol, prng=prng,
+                                  verbose=verbose)
     n = x.dist.outcome_length()
     while x.k <= n:
         pmf, obj = x.optimize()
@@ -882,7 +884,9 @@ def k_informations(d, sources, target, rv_mode=None, extra_constraints=True, tol
     diffs = np.diff(nonkinfos)
     return np.asarray(list(reversed(diffs)))
 
-def unique_informations(d, sources, target, k=2, rv_mode=None, extra_constraints=True, tol=None, prng=None, verbose=None):
+def unique_informations(d, sources, target, k=2, rv_mode=None,
+                        extra_constraints=True, tol=None, prng=None,
+                        verbose=None):
     """
     Returns the unique information each source has about the target.
 
@@ -942,9 +946,9 @@ def unique_informations(d, sources, target, k=2, rv_mode=None, extra_constraints
     The nonunique information would be `mi_orig - ui.sum()`.
 
     """
-    x = MaximumConditionalEntropy(d, sources, target, k=k, rv_mode=rv_mode,
-                          extra_constraints=extra_constraints, tol=tol,
-                          prng=prng, verbose=verbose)
+    x = MaximumConditionalEntropy(d, sources, target, k=k, rv_mode=rv_mode, 
+                                  extra_constraints=extra_constraints, tol=tol,
+                                  prng=prng, verbose=verbose)
     pmf, obj = x.optimize()
     d_orig = x.dist
     d_opt = d_orig.copy()

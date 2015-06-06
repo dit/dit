@@ -13,7 +13,7 @@ def iid_sum(n, k=2):
     pmf = [1] * len(outcomes)
     d = dit.Distribution(outcomes, pmf, base='linear', validate=False)
     d.normalize()
-    d = dit.insert_rvf(d, lambda x: (sum(x),) )
+    d = dit.insert_rvf(d, lambda x: (sum(x),))
     return d
 
 def summed_dice(a=1, b=1):
@@ -45,7 +45,7 @@ def summed_dice(a=1, b=1):
         A Bivariate Measure of Redundant Information
 
     """
-    outcomes = list(itertools.product(range(1,7), repeat=2))
+    outcomes = list(itertools.product(range(1, 7), repeat=2))
 
     def pmf_func(i, j):
         return a / 36 + (1 - a) * int(i == j) / 6
@@ -54,5 +54,5 @@ def summed_dice(a=1, b=1):
     d = dit.Distribution(outcomes, pmf)
 
     b = int(b)
-    d = dit.insert_rvf(d, lambda x: (x[0] + b * x[1],) )
+    d = dit.insert_rvf(d, lambda x: (x[0] + b * x[1],))
     return d

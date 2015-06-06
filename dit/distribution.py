@@ -48,7 +48,7 @@ from .exceptions import ditException
 from six.moves import map, zip # pylint: disable=redefined-builtin
 
 def prepare_string(dist, digits=None, exact=False, tol=1e-9,
-                         show_mask=False, str_outcomes=False):
+                   show_mask=False, str_outcomes=False):
     """
     Prepares a distribution for a string representation.
 

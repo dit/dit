@@ -22,7 +22,8 @@ import numpy as np
 
 from dit.utils import basic_logger
 
-def frank_wolfe(objective, gradient, A, b, initial_x, maxiters=2000, tol=1e-4, clean=True, verbose=None):
+def frank_wolfe(objective, gradient, A, b, initial_x,
+                maxiters=2000, tol=1e-4, clean=True, verbose=None):
     """
     Uses the Frank--Wolfe algorithm to minimize the convex objective.
 
@@ -79,7 +80,7 @@ def frank_wolfe(objective, gradient, A, b, initial_x, maxiters=2000, tol=1e-4, c
     else:
         show_progress = False
 
-    assert(A.size[1] == initial_x.size[0])
+    assert (A.size[1] == initial_x.size[0])
 
     n = initial_x.size[0]
     x = initial_x
@@ -95,9 +96,9 @@ def frank_wolfe(objective, gradient, A, b, initial_x, maxiters=2000, tol=1e-4, c
 
         new_objective = grad.T * xbar
         constraints = []
-        constraints.append( ( xbar >= 0 ) )
-        constraints.append( (-TOL <= A * xbar - b) )
-        constraints.append( ( A * xbar - b <= TOL) )
+        constraints.append((xbar >= 0))
+        constraints.append((-TOL <= A * xbar - b))
+        constraints.append((A * xbar - b <= TOL))
 
         logger.debug('FW Iteration: {}'.format(i))
         opt = op_runner(new_objective, constraints, show_progress=show_progress)
@@ -113,16 +114,16 @@ def frank_wolfe(objective, gradient, A, b, initial_x, maxiters=2000, tol=1e-4, c
 
         msg = "i={:6}  obj={:10.7f}  opt_bd={:10.7f}  xdiff={:12.10f}"
         if logger.isEnabledFor(logging.DEBUG):
-            logger.debug(msg.format(i, obj, opt_bd[0,0], xdiff))
+            logger.debug(msg.format(i, obj, opt_bd[0, 0], xdiff))
             logger.debug("")
         elif i % verbosechunk == 0:
-            logger.info(msg.format(i, obj, opt_bd[0,0], xdiff))
+            logger.info(msg.format(i, obj, opt_bd[0, 0], xdiff))
 
         xnew = (i * x + 2 * xbar_opt) / (i + 2)
         xdiff = np.linalg.norm(xnew - x)
         x = xnew
 
-        if (xdiff < tol):
+        if xdiff < tol:
             obj = objective(x)
             break
     else:
