@@ -800,7 +800,7 @@ def k_synergy(d, sources, target, k=2, rv_mode=None, extra_constraints=True,
     """
     x = MaximumConditionalEntropy(d, sources, target, k=k, rv_mode=rv_mode,
                                   extra_constraints=extra_constraints,
-                                  source_marginal=True, tol=tol,prng=prng,
+                                  source_marginal=True, tol=tol, prng=prng,
                                   verbose=verbose)
     pmf, obj = x.optimize()
     d_orig = x.dist
@@ -946,9 +946,9 @@ def unique_informations(d, sources, target, k=2, rv_mode=None,
     The nonunique information would be `mi_orig - ui.sum()`.
 
     """
-    x = MaximumConditionalEntropy(d, sources, target, k=k, rv_mode=rv_mode,
-                                 extra_constraints=extra_constraints, tol=tol,
-                                 prng=prng, verbose=verbose)
+    x = MaximumConditionalEntropy(d, sources, target, k=k, rv_mode=rv_mode, 
+                                  extra_constraints=extra_constraints, tol=tol,
+                                  prng=prng, verbose=verbose)
     pmf, obj = x.optimize()
     d_orig = x.dist
     d_opt = d_orig.copy()
