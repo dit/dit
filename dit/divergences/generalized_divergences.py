@@ -35,7 +35,7 @@ def double_power_sum(dist1, dist2, exp1=1, exp2=1, rvs=None, crvs=None, rv_mode=
         The first distribution in the sum.
         The second distribution in the sum.
     exp1 : float, 1
-        Fisrt exponent used in the power sum.
+        First exponent used in the power sum.
     exp2 : float, 1
         Second exponent used in the power sum.
     rvs : list, None
