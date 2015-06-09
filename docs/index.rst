@@ -7,14 +7,15 @@
 ``dit``: discrete information theory
 ************************************
 
-``dit`` is *the* python module for all your discrete information theory needs.
+``dit`` is a Python package for discrete information theory.
 
-Throught this documentation we will assume that the following lines of code have
-already been run:
+For a quick tour, see the :ref:`Quickstart <quickstart>`. Otherwise, work
+your way through the various sections. Note that all code snippets in this
+documentation assume that the following lines of code have already been run:
 
 .. ipython::
 
-   In [1]: from __future__ import division # true division on py2.7
+   In [1]: from __future__ import division # true division for Python 2.7
 
    In [2]: import dit
 

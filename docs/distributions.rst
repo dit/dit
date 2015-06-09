@@ -84,11 +84,3 @@ To verify that these two distributions are the same, we can use the
    Out[9]: True
 
 .. automethod:: Distribution.is_approx_equal
-
-.. todo::
-
-   Add examples.
-
-.. todo::
-
-   Add discussion.
