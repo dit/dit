@@ -404,3 +404,9 @@ def test_random_dist_structure():
         diff = set(d.outcomes) - words
         yield assert_equal, diff, set()
         yield assert_true, 0 < len(d.outcomes) <= 3**3
+
+def test_coarsegrain():
+    d = dit.example_dists.Xor()
+    d2 = dit.modify_outcomes(d, lambda x: '1' if '1' in x else '0')
+    assert_equal(d2.outcomes, ('0', '1'))
+    np.testing.assert_allclose(d2.pmf, [.25, .75])

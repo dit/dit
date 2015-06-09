@@ -13,6 +13,7 @@ from six.moves import map, range, zip # pylint: disable=redefined-builtin
 
 from itertools import product
 from iterutils import powerset
+from collections import OrderedDict
 
 from random import randint
 
@@ -188,7 +189,13 @@ def modify_outcomes(dist, ctor):
     >>> d2 = dit.modify_outcomes(d, lambda x: x + 1)
     """
     outcomes = tuple(map(ctor, dist.outcomes))
-    d = dist.__class__(outcomes, dist.pmf, base=dist.get_base())
+    ops = dist.ops
+    newdist = {}
+    for outcome, p in zip(outcomes, dist.pmf):
+        newdist[outcome] = ops.add(p, newdist.get(outcome, ops.zero))
+    outcomes = list(newdist.keys())
+    pmf = np.array(list(newdist.values()))
+    d = dist.__class__(outcomes, pmf, base=dist.get_base())
     return d
 
 def random_scalar_distribution(n, base=None, alpha=None, prng=None):
