@@ -5,8 +5,8 @@ Functions for computing minimal sufficient statistics.
 
 from collections import defaultdict
 
-from .lattice import dist_from_induced_sigalg, insert_rv
-from ..helpers import parse_rvs
+from .lattice import dist_from_induced_sigalg, insert_join, insert_rv
+from ..helpers import flatten, parse_rvs, normalize_rvs
 from ..math import sigma_algebra
 
 __all__ = ['mss_sigalg',
@@ -185,4 +185,46 @@ def mss(dist, rvs, about=None, rv_mode=None, int_outcomes=True):
     """
     mss_sa = mss_sigalg(dist, rvs, about, rv_mode)
     d = dist_from_induced_sigalg(dist, mss_sa, int_outcomes)
+    return d
+
+def insert_joint_mss(dist, idx, rvs=None, rv_mode=None):
+    """
+    Returns a new distribution with the join of the minimal sufficient statistic
+    of each random variable in `rvs` about all the other variables.
+
+    Parameters
+    ----------
+    dist : Distribution
+        The distribution contiaining the random variables from which the joint
+        minimal sufficent statistic will be computed.
+    idx : int
+        The location in the distribution to insert the joint minimal sufficient
+        statistic.
+    rvs : list
+        A list of random variables to be compressed into a joint minimal
+        sufficient statistic.
+    rv_mode : str, None
+        Specifies how to interpret the elements of `rvs`. Valid options are:
+        {'indices', 'names'}. If equal to 'indices', then the elements of
+        `rvs` are interpreted as random variable indices. If equal to 'names',
+        the the elements are interpreted as random variable names. If `None`,
+        then the value of `dist._rv_mode` is consulted.
+
+    """
+    rvs, _, rv_mode = normalize_rvs(dist, rvs, None, rv_mode)
+
+    d = dist.copy()
+    l1 = d.outcome_length()
+
+    rvs = set( tuple(rv) for rv in rvs )
+
+    for rv in rvs:
+        d = insert_mss(d, -1, list(rv), list(flatten(rvs-set([rv]))))
+
+    l2 = d.outcome_length()
+
+    idx = -1 if idx > l1 else idx
+    d = insert_join(d, idx, [[i] for i in range(l1, l2)])
+    delta = 0 if idx == -1 else 1
+    d = d.marginalize([i + delta for i in range(l1, l2)])
     return d

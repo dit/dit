@@ -8,5 +8,6 @@ from .coinformation import coinformation
 from .entropy import entropy
 from .gk_common_information import gk_common_information
 from .interaction_information import interaction_information
+from .joint_mss import joint_mss_entropy
 from .total_correlation import total_correlation
 from .tse_complexity import tse_complexity
