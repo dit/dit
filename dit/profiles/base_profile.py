@@ -35,6 +35,9 @@ class BaseProfile(object):
         left, height = zip(*self.profile.items())
         ax.bar(left, height, width=1)
 
+        ax.set_xticks([ i+0.5 for i in self.profile ])
+        ax.set_xticklabels([ str(i+1) for i in self.profile ])
+
         ax.set_xlabel(self.xlabel)
         ax.set_ylabel(self.ylabel)
 
