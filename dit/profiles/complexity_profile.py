@@ -5,14 +5,21 @@ Implement the ``complexity profile'' from [Y. Bar-Yam. Multiscale complexity/ent
 from collections import defaultdict
 
 from ..algorithms import ShannonPartition
-from .base_profile import BaseProfile
+from .base_profile import BaseProfile, profile_docstring
 
 class ComplexityProfile(BaseProfile):
-    """
-    """
+    __docstring__ = profile_docstring.format(name='ComplexityProfile',
+                                             static_attributes='',
+                                             attributes='',
+                                             methods='')
 
     def _compute(self):
         """
+        Compute the complexity profile.
+
+        Implementation Notes
+        --------------------
+        This make use of the ShannonPartition. There may be more efficient methods.
         """
         sp = ShannonPartition(self.dist)
         profile = defaultdict(float)
