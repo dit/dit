@@ -4,14 +4,16 @@ Implement the ``complexity profile'' from [Y. Bar-Yam. Multiscale complexity/ent
 
 from collections import defaultdict
 
+import numpy as np
+
 from ..algorithms import ShannonPartition
 from .base_profile import BaseProfile, profile_docstring
 
 class ComplexityProfile(BaseProfile):
-    __docstring__ = profile_docstring.format(name='ComplexityProfile',
-                                             static_attributes='',
-                                             attributes='',
-                                             methods='')
+    __doc__ = profile_docstring.format(name='ComplexityProfile',
+                                       static_attributes='',
+                                       attributes='',
+                                       methods='')
 
     def _compute(self):
         """
@@ -30,3 +32,4 @@ class ComplexityProfile(BaseProfile):
         for level in levels:
             profile[level] += profile[level+1]
         self.profile = dict(profile)
+        self.widths = np.ones(len(self.profile))

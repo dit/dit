@@ -15,10 +15,10 @@ from ..shannon import entropy as H
 from .base_profile import BaseProfile, profile_docstring
 
 class SchneidmanProfile(BaseProfile):
-    __docstring__ = profile_docstring.format(name='SchneidmanProfile',
-                                             static_attributes='',
-                                             attributes='',
-                                             methods='')
+    __doc__ = profile_docstring.format(name='SchneidmanProfile',
+                                       static_attributes='',
+                                       attributes='',
+                                       methods='')
 
     def _compute(self):
         """
@@ -31,4 +31,5 @@ class SchneidmanProfile(BaseProfile):
         dists = marginal_maxent_dists(self.dist)
         diffs = -np.diff([ H(d) for d in dists ])
         # diffs = [ D(b,a) for a, b in pairwise(dists) ]
-        self.profile = dict( (i, v) for i, v in enumerate(diffs) )
+        self.profile = dict( (i+1, v) for i, v in enumerate(diffs) )
+        self.widths = np.ones(len(self.profile))

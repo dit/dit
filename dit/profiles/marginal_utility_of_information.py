@@ -40,7 +40,8 @@ def get_lp_form(dist):
         The bounds on the individual elements of `x`
     """
     pa = list(frozenset(s) for s in powerset(flatten(dist.rvs)))[1:]
-    sp = sorted(ShannonPartition(dist).atoms.items())
+    ents = ShannonPartition(dist)
+    sp = sorted(ents.atoms.items())
     atoms = list(frozenset(flatten(a[0])) for a, _ in sp)
 
     A = []
@@ -55,7 +56,7 @@ def get_lp_form(dist):
             if pa_V & atom:
                 cond[j] = 1
         A.append(cond)
-        b.append(H(dist, pa_V))
+        b.append(ents[([pa_V], [])])
         # constraint (ii)
         if pa_W < pa_V:
             cond = np.zeros(len(atoms))
@@ -63,7 +64,7 @@ def get_lp_form(dist):
                 if (pa_V & atom) and not (pa_W & atom):
                     cond[j] = 1
             A.append(cond)
-            b.append(H(dist, pa_V) - H(dist, pa_W))
+            b.append(ents[([pa_V], [])] - ents[([pa_W], [])])
         # constraint (iii)
         cond = np.zeros(len(atoms))
         for j, atom in enumerate(atoms):
@@ -76,7 +77,7 @@ def get_lp_form(dist):
             if ((pa_V & pa_W) & atom):
                 cond[j] -= 1
             A.append(cond)
-            b.append(H(dist, pa_V) + H(dist, pa_W) - H(dist, pa_V | pa_W) - H(dist, pa_V & pa_W))
+            b.append(ents[([pa_V], [])] + ents[([pa_W], [])] - ents[([pa_V | pa_W], [])] - ents[([pa_V & pa_W], [])])
 
     A.append([1]*len(atoms))
     b.append(0)
@@ -113,10 +114,10 @@ def max_util_of_info(c, A, b, bounds, y):
     return maximum_utility_of_information
 
 class MUIProfile(BaseProfile):
-    __docstring__ = profile_docstring.format(name='MUIProfile',
-                                             static_attributes='',
-                                             attributes='',
-                                             methods='')
+    __doc__ = profile_docstring.format(name='MUIProfile',
+                                       static_attributes='',
+                                       attributes='',
+                                       methods='')
 
     xlabel = "scale [bits]"
     ylabel = "marginal utility of information"
@@ -126,7 +127,18 @@ class MUIProfile(BaseProfile):
         Compute the Marginal Utility of Information.
         """
         c, A, b, bounds = get_lp_form(self.dist)
-        ent = H(dist)
-        pnts = np.linspace(0, ent, 100*ent)
+        ent = H(self.dist)
+        pnts = np.linspace(0, ent, 100*ent + 1)
         maxui = [ max_util_of_info(c, A, b, bounds, y) for y in pnts ]
-        self.profile = dict(zip(pnts, np.gradient(maxui, np.diff(pnts)[0])))
+        mui = np.round(np.gradient(maxui, np.diff(pnts)[0]), 7)
+        vals = np.array(np.unique(mui, return_index=True, return_counts=True))
+        vals = vals.T[vals[-1] > 1]
+        self.profile = dict( (pnts[int(row[1]) - (1 if row[1] > 0 else 0)], row[0]) for row in vals )
+        self.widths = np.diff(self.profile.keys() + [ent])
+
+    def draw(self, ax=None):
+        ax = super(MUIProfile, self).draw(ax=ax)
+        pnts = np.arange(int(self.profile.keys()[-1] + self.widths[-1]) + 1)
+        ax.set_xticks(pnts)
+        ax.set_xticklabels(pnts)
+        return ax

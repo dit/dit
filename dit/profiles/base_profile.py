@@ -22,6 +22,7 @@ Attributes
 ----------
 dist : Distribution
 profile : dict
+widths : [float]
 {attributes}
 
 Methods
@@ -51,6 +52,7 @@ class BaseProfile(object):
     ----------
     dist : Distribution
     profile : dict
+    widths : [float]
 
     Methods
     -------
@@ -107,10 +109,10 @@ class BaseProfile(object):
             ax = plt.figure().gca()
 
         left, height = zip(*self.profile.items())
-        ax.bar(left, height, width=1)
+        ax.bar(left, height, width=self.widths)
 
         ax.set_xticks([ i+0.5 for i in self.profile ])
-        ax.set_xticklabels([ str(i+1) for i in self.profile ])
+        ax.set_xticklabels([ str(i) for i in self.profile ])
 
         ax.set_xlabel(self.xlabel)
         ax.set_ylabel(self.ylabel)
