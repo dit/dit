@@ -142,3 +142,5 @@ class MUIProfile(BaseProfile):
         ax.set_xticks(pnts)
         ax.set_xticklabels(pnts)
         return ax
+
+MUIProfile.draw.__doc__ = BaseProfile.draw.__doc__
