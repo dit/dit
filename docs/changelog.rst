@@ -4,6 +4,8 @@ Changelog
 
 * :release:`1.0.0 <future>`
 
+* :feature:`13` Add the Joint Minimal Sufficient Statistic
+* :feature:`87` Add Renyi, Tsallis, Hellinger, and alpha divergences.
 * :feature:`4` Add the Tsallis entropy.
 * :feature:`3` Add the Renyi entropy.
 * :support:`58` Alias Dual Total Correlation as Binding Information.
