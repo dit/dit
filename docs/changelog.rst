@@ -4,7 +4,9 @@ Changelog
 
 * :release:`1.0.0 <future>`
 
-* :feature:`13` Add the Joint Minimal Sufficient Statistic
+* :feature:`96` Add the marginal utility of information.
+* :feature:`95` Add the complexity profile.
+* :feature:`13` Add the Joint Minimal Sufficient Statistic.
 * :feature:`87` Add Renyi, Tsallis, Hellinger, and alpha divergences.
 * :feature:`4` Add the Tsallis entropy.
 * :feature:`3` Add the Renyi entropy.
