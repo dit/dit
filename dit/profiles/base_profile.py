@@ -83,13 +83,13 @@ class BaseProfile(object):
         self._compute()
 
     @abstractmethod
-    def _compute(self):
+    def _compute(self): # pragma: no cover
         """
         Abstract method to compute the profile.
         """
         pass
 
-    def draw(self, ax=None):
+    def draw(self, ax=None): # pragma: no cover
         """
         Draw the profile using matplotlib.
 

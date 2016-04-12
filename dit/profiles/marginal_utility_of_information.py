@@ -136,11 +136,11 @@ class MUIProfile(BaseProfile):
         self.profile = dict( (pnts[int(row[1]) - (1 if row[1] > 0 else 0)], row[0]) for row in vals )
         self.widths = np.diff(self.profile.keys() + [ent])
 
-    def draw(self, ax=None):
+    def draw(self, ax=None): # pragma: no cover
         ax = super(MUIProfile, self).draw(ax=ax)
         pnts = np.arange(int(self.profile.keys()[-1] + self.widths[-1]) + 1)
         ax.set_xticks(pnts)
         ax.set_xticklabels(pnts)
         return ax
 
-MUIProfile.draw.__doc__ = BaseProfile.draw.__doc__
+MUIProfile.draw.__func__.__doc__ = BaseProfile.draw.__doc__
