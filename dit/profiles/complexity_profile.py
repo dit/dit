@@ -1,5 +1,6 @@
 """
-Implement the ``complexity profile'' from [Y. Bar-Yam. Multiscale complexity/entropy. Advances in Complex Systems, 7(01):47-63, 2004].
+Implement the ``complexity profile'' from [Y. Bar-Yam. Multiscale
+complexity/entropy. Advances in Complex Systems, 7(01):47-63, 2004].
 """
 
 from collections import defaultdict
@@ -21,7 +22,8 @@ class ComplexityProfile(BaseProfile):
 
         Implementation Notes
         --------------------
-        This make use of the ShannonPartition. There may be more efficient methods.
+        This make use of the ShannonPartition. There may be more efficient
+        methods.
         """
         sp = ShannonPartition(self.dist)
         profile = defaultdict(float)

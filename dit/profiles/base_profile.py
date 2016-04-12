@@ -111,8 +111,8 @@ class BaseProfile(object):
         left, height = zip(*self.profile.items())
         ax.bar(left, height, width=self.widths)
 
-        ax.set_xticks([ i+0.5 for i in self.profile ])
-        ax.set_xticklabels([ str(i) for i in self.profile ])
+        ax.set_xticks([i+0.5 for i in self.profile])
+        ax.set_xticklabels([str(i) for i in self.profile])
 
         ax.set_xlabel(self.xlabel)
         ax.set_ylabel(self.ylabel)

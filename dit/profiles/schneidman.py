@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """
-Schneidman's ``connected information'' decomposition: [Schneidman, Elad, et al. "Network information and connected correlations." Physical review letters 91.23 (2003): 238701]
+Schneidman's ``connected information'' decomposition: [Schneidman, Elad, et al.
+"Network information and connected correlations." Physical review letters 91.23
+(2003): 238701]
 """
 
 # from iterutils import pairwise
@@ -26,10 +28,11 @@ class SchneidmanProfile(BaseProfile):
 
         Implementation Notes
         --------------------
-        This uses the Frank-Wolfe implementation to find the maxent distributions.
+        This uses the Frank-Wolfe implementation to find the maxent
+        distributions.
         """
         dists = marginal_maxent_dists(self.dist)
-        diffs = -np.diff([ H(d) for d in dists ])
+        diffs = -np.diff([H(d) for d in dists])
         # diffs = [ D(b,a) for a, b in pairwise(dists) ]
-        self.profile = dict( (i+1, v) for i, v in enumerate(diffs) )
+        self.profile = dict((i+1, v) for i, v in enumerate(diffs))
         self.widths = np.ones(len(self.profile))

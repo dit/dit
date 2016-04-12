@@ -77,7 +77,10 @@ def get_lp_form(dist):
             if ((pa_V & pa_W) & atom):
                 cond[j] -= 1
             A.append(cond)
-            b.append(ents[([pa_V], [])] + ents[([pa_W], [])] - ents[([pa_V | pa_W], [])] - ents[([pa_V & pa_W], [])])
+            b.append(ents[([pa_V], [])] +
+                     ents[([pa_W], [])] -
+                     ents[([pa_V | pa_W], [])] -
+                     ents[([pa_V & pa_W], [])])
 
     A.append([1]*len(atoms))
     b.append(0)
@@ -85,9 +88,9 @@ def get_lp_form(dist):
     A = np.array(A)
     b = np.array(b)
 
-    c = np.array([ -len(atom) for atom in atoms ]) # negative for minimization
+    c = np.array([-len(atom) for atom in atoms]) # negative for minimization
 
-    bounds = [ (0, val) if val > 0 else (val, 0) for _, val in sp ]
+    bounds = [(0, val) if val > 0 else (val, 0) for _, val in sp]
 
     return c, A, b, bounds
 
@@ -133,7 +136,7 @@ class MUIProfile(BaseProfile):
         mui = np.round(np.gradient(maxui, np.diff(pnts)[0]), 7)
         vals = np.array(np.unique(mui, return_index=True, return_counts=True))
         vals = vals.T[vals[-1] > 1]
-        self.profile = dict( (pnts[int(row[1]) - (1 if row[1] > 0 else 0)], row[0]) for row in vals )
+        self.profile = dict((pnts[int(row[1]) - (1 if row[1] > 0 else 0)], row[0]) for row in vals)
         self.widths = np.diff(self.profile.keys() + [ent])
 
     def draw(self, ax=None): # pragma: no cover
