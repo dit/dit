@@ -20,7 +20,7 @@ from dit.utils import flatten
 
 __all__ = ['MUIProfile']
 
-def get_lp_form(dist):
+def get_lp_form(dist, ents):
     """
     Construct the constraint matrix for computing the maximum utility of information in linear programming cononical form.
 
@@ -41,7 +41,6 @@ def get_lp_form(dist):
         The bounds on the individual elements of `x`
     """
     pa = list(frozenset(s) for s in powerset(flatten(dist.rvs)))[1:]
-    ents = ShannonPartition(dist)
     sp = sorted(ents.atoms.items())
     atoms = list(frozenset(flatten(a[0])) for a, v in sp if not close(v, 0))
 
@@ -133,14 +132,18 @@ class MUIProfile(BaseProfile):
         """
         Compute the Marginal Utility of Information.
         """
-        c, A, b, bounds = get_lp_form(self.dist)
-        ent = H(self.dist)
-        pnts = np.linspace(0, ent, 100*ent + 1)
+        sp = ShannonPartition(self.dist)
+        c, A, b, bounds = get_lp_form(self.dist, sp)
+        ent = sum(sp.atoms.values())
+
+        atoms = sp.atoms.values()
+        ps = powerset(atoms)
+        pnts = [v for v in set(sum(ss) for ss in ps) if 0 <= v <= ent]
+
         maxui = [max_util_of_info(c, A, b, bounds, y) for y in pnts]
-        mui = np.round(np.gradient(maxui, np.diff(pnts)[0]), 7)
-        vals = np.array(np.unique(mui, return_index=True, return_counts=True))
-        vals = vals.T[vals[-1] > 1]
-        self.profile = dict((pnts[int(row[1]) - (1 if row[1] > 0 else 0)], row[0]) for row in vals)
+        mui = np.round(np.diff(maxui)/np.diff(pnts), 7)
+        vals = np.array(np.unique(mui, return_index=True))
+        self.profile = dict((pnts[int(row[1])], row[0]) for row in vals.T)
         self.widths = np.diff(self.profile.keys() + [ent])
 
     def draw(self, ax=None): # pragma: no cover
