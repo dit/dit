@@ -27,6 +27,9 @@ variable. The alphabet for each random variable is a set.
 
 """
 
+from itertools import product
+import numbers
+
 from .distribution import BaseDistribution
 from .exceptions import (
     ditException,
@@ -499,16 +502,24 @@ class ScalarDistribution(BaseDistribution):
         and sample space.
 
         """
-        # Copy to make sure we don't lose precision when converting.
-        d2 = other.copy(base=self.get_base())
+        if issubclass(type(other), ScalarDistribution):
+            from collections import defaultdict
+            # Copy to make sure we don't lose precision when converting.
+            d2 = other.copy(base=self.get_base())
 
-        # If self is dense, the result will be dense.
-        # If self is sparse, the result will be sparse.
-        d = self.copy()
-        for outcome, prob in d2.zipped():
-            d[outcome] = d.ops.add(d[outcome], prob)
+            dist = defaultdict(float)
+            for (o1, p1), (o2, p2) in product(self.zipped(), d2.zipped()):
+                dist[o1+o2] += self.ops.mult(p1, p2)
 
-        return d
+            return ScalarDistribution(*zip(*dist.items()))
+
+        elif issubclass(type(other), numbers.Number):
+            from .distconst import modify_outcomes
+            d = modify_outcomes(self, lambda x: x+other)
+            return d
+        else:
+            msg = "Cannot add types {0} and {1}"
+            raise ditException(msg.format(type(other), type(self)))
 
     def __radd__(self, other):
         return self.__add__(other)
@@ -527,9 +538,13 @@ class ScalarDistribution(BaseDistribution):
         Note, we do not implement distribution-to-distribution multiplication.
 
         """
-        d = self.copy()
-        d.ops.mult_inplace(d.pmf, other)
-        return d
+        if issubclass(type(other), numbers.Number):
+            from .distconst import modify_outcomes
+            d = modify_outcomes(self, lambda x: x*other)
+            return d
+        else:
+            msg = "Cannot multiply types {0} and {1}"
+            raise ditException(msg.format(type(other), type(self)))
 
     def __rmul__(self, other):
         return self.__mul__(other)
