@@ -138,7 +138,8 @@ class MUIProfile(BaseProfile):
 
         atoms = sp.atoms.values()
         ps = powerset(atoms)
-        pnts = [v for v in set(sum(ss) for ss in ps) if 0 <= v <= ent]
+        pnts = np.unique(np.round([sum(ss) for ss in ps], 7))
+        pnts = [v for v in pnts if 0 <= v <= ent]
 
         maxui = [max_util_of_info(c, A, b, bounds, y) for y in pnts]
         mui = np.round(np.diff(maxui)/np.diff(pnts), 7)
