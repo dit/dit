@@ -26,8 +26,6 @@ at initialization and the alphabet is a tuple of alphabets for each random
 variable. The alphabet for each random variable is a set.
 
 """
-
-from itertools import product
 import numbers
 
 from .distribution import BaseDistribution
@@ -492,6 +490,22 @@ class ScalarDistribution(BaseDistribution):
 
         return d
 
+    def __meta_magic(self, other, op, msg):
+        """
+        """
+        if issubclass(type(other), ScalarDistribution):
+            from .distconst import _combine_scalar_dists
+            return _combine_scalar_dists(self, other, op)
+
+        elif issubclass(type(other), numbers.Number):
+            from .distconst import modify_outcomes
+            d = modify_outcomes(self, lambda x: op(x, other))
+            return d
+
+        else:
+            raise ditException(msg.format(type(self), type(other)))
+
+
     def __add__(self, other):
         """
         Addition of distributions of the same kind, or addition by a scalar.
@@ -502,24 +516,9 @@ class ScalarDistribution(BaseDistribution):
         and sample space.
 
         """
-        if issubclass(type(other), ScalarDistribution):
-            from collections import defaultdict
-            # Copy to make sure we don't lose precision when converting.
-            d2 = other.copy(base=self.get_base())
-
-            dist = defaultdict(float)
-            for (o1, p1), (o2, p2) in product(self.zipped(), d2.zipped()):
-                dist[o1+o2] += self.ops.mult(p1, p2)
-
-            return ScalarDistribution(*zip(*dist.items()))
-
-        elif issubclass(type(other), numbers.Number):
-            from .distconst import modify_outcomes
-            d = modify_outcomes(self, lambda x: x+other)
-            return d
-        else:
-            msg = "Cannot add types {0} and {1}"
-            raise ditException(msg.format(type(other), type(self)))
+        op = lambda x, y: x + y
+        msg = "Cannot add types {0} and {1}"
+        return self.__meta_magic(other, op, msg)
 
     def __radd__(self, other):
         return self.__add__(other)
@@ -534,24 +533,9 @@ class ScalarDistribution(BaseDistribution):
         and sample space.
 
         """
-        if issubclass(type(other), ScalarDistribution):
-            from collections import defaultdict
-            # Copy to make sure we don't lose precision when converting.
-            d2 = other.copy(base=self.get_base())
-
-            dist = defaultdict(float)
-            for (o1, p1), (o2, p2) in product(self.zipped(), d2.zipped()):
-                dist[o1-o2] += self.ops.mult(p1, p2)
-
-            return ScalarDistribution(*zip(*dist.items()))
-
-        elif issubclass(type(other), numbers.Number):
-            from .distconst import modify_outcomes
-            d = modify_outcomes(self, lambda x: x-other)
-            return d
-        else:
-            msg = "Cannot add types {0} and {1}"
-            raise ditException(msg.format(type(other), type(self)))
+        op = lambda x, y: x - y
+        msg = "Cannot subtract types {0} and {1}"
+        return self.__meta_magic(other, op, msg)
 
     def __rsub__(self, other):
         """
@@ -563,49 +547,119 @@ class ScalarDistribution(BaseDistribution):
         and sample space.
 
         """
-        if issubclass(type(other), ScalarDistribution):
-            from collections import defaultdict
-            # Copy to make sure we don't lose precision when converting.
-            d2 = other.copy(base=self.get_base())
-
-            dist = defaultdict(float)
-            for (o1, p1), (o2, p2) in product(self.zipped(), d2.zipped()):
-                dist[o2-o1] += self.ops.mult(p1, p2)
-
-            return ScalarDistribution(*zip(*dist.items()))
-
-        elif issubclass(type(other), numbers.Number):
-            from .distconst import modify_outcomes
-            d = modify_outcomes(self, lambda x: other-x)
-            return d
-        else:
-            msg = "Cannot add types {0} and {1}"
-            raise ditException(msg.format(type(other), type(self)))
+        op = lambda x, y: y - x
+        msg = "Cannot subtract types {1} and {0}"
+        return self.__meta_magic(other, op, msg)
 
     def __mul__(self, other):
         """
         Scalar multiplication on distributions.
 
-        `other` is assumed to have the same base as `self`.
-
-        The appropriate operation is performed assuming that the scalar
-        multiple is of the same base as `self`. If vanilla scalar
-        multiplication is desired, perform the operation directly on
-        `self.pmf`.
-
-        Note, we do not implement distribution-to-distribution multiplication.
-
         """
-        if issubclass(type(other), numbers.Number):
-            from .distconst import modify_outcomes
-            d = modify_outcomes(self, lambda x: x*other)
-            return d
-        else:
-            msg = "Cannot multiply types {0} and {1}"
-            raise ditException(msg.format(type(other), type(self)))
+        op = lambda x, y: x * y
+        msg = "Cannot multiply types {0} and {1}"
+        return self.__meta_magic(other, op, msg)
 
     def __rmul__(self, other):
         return self.__mul__(other)
+
+    def __div__(self, other):
+        """
+        """
+        op = lambda x, y: x / y
+        msg = "Cannot divide types {0} by {1}"
+        return self.__meta_magic(other, op, msg)
+
+    def __rdiv__(self, other):
+        """
+        """
+        op = lambda x, y: y / x
+        msg = "Cannot divide types {1} by {0}"
+        return self.__meta_magic(other, op, msg)
+
+    def __truediv__(self, other):
+        """
+        """
+        op = lambda x, y: (1.0*x) / y
+        msg = "Cannot divide types {0} by {1}"
+        return self.__meta_magic(other, op, msg)
+
+    def __rtruediv__(self, other):
+        """
+        """
+        op = lambda x, y: (1.0*y) / x
+        msg = "Cannot divide types {1} by {0}"
+        return self.__meta_magic(other, op, msg)
+
+    def __floordiv__(self, other):
+        """
+        """
+        op = lambda x, y: x // y
+        msg = "Cannot divide types {0} by {1}"
+        return self.__meta_magic(other, op, msg)
+
+    def __rfloordiv__(self, other):
+        """
+        """
+        op = lambda x, y: y // x
+        msg = "Cannot divide types {1} by {0}"
+        return self.__meta_magic(other, op, msg)
+
+    def __mod__(self, other):
+        """
+        """
+        op = lambda x, y: x % y
+        msg = "Cannot mod types {0} by {1}"
+        return self.__meta_magic(other, op, msg)
+
+    def __rmod__(self, other):
+        """
+        """
+        op = lambda x, y: y % x
+        msg = "Cannot mod types {1} by {0}"
+        return self.__meta_magic(other, op, msg)
+
+    def __lt__(self, other):
+        """
+        """
+        op = lambda x, y: x < y
+        msg = "Cannot compare types {0} and {1}"
+        return self.__meta_magic(other, op, msg)
+
+    def __le__(self, other):
+        """
+        """
+        op = lambda x, y: x <= y
+        msg = "Cannot compare types {0} and {1}"
+        return self.__meta_magic(other, op, msg)
+
+    def __eq__(self, other):
+        """
+        """
+        op = lambda x, y: x == y
+        msg = "Cannot test equality of types {0} and {1}"
+        return self.__meta_magic(other, op, msg)
+
+    def __ne__(self, other):
+        """
+        """
+        op = lambda x, y: x != y
+        msg = "Cannot test equality of types {0} and {1}"
+        return self.__meta_magic(other, op, msg)
+
+    def __gt__(self, other):
+        """
+        """
+        op = lambda x, y: x > y
+        msg = "Cannot compare types {0} and {1}"
+        return self.__meta_magic(other, op, msg)
+
+    def __ge__(self, other):
+        """
+        """
+        op = lambda x, y: x >= y
+        msg = "Cannot compare types {0} and {1}"
+        return self.__meta_magic(other, op, msg)
 
     def __contains__(self, outcome):
         """

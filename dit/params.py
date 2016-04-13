@@ -116,6 +116,7 @@ defaultParams = {'rtol': (1e-7, validate_float),
                  'base': (2, validate_base),
                  'text.usetex': (False, validate_boolean),
                  'text.font': ('ascii', validate_text),
+                 'print.exact': (False, validate_boolean),
                 }
 
 ## Dictionary relating deprecated parameter names to new parameter names.
@@ -126,4 +127,3 @@ ditParams = set_params()
 
 ditParamsDefault = DITParams([(key, tup[0]) \
                              for key, tup in defaultParams.items()])
-
