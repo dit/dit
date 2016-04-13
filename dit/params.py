@@ -117,6 +117,7 @@ defaultParams = {'rtol': (1e-7, validate_float),
                  'text.usetex': (False, validate_boolean),
                  'text.font': ('ascii', validate_text),
                  'print.exact': (False, validate_boolean),
+                 'repr.print': (False, validate_boolean),
                 }
 
 ## Dictionary relating deprecated parameter names to new parameter names.

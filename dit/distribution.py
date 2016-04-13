@@ -325,6 +325,14 @@ class BaseDistribution(object):
         """
         return len(self.outcomes)
 
+    def __repr__(self):
+        """
+        """
+        if ditParams['repr.print']:
+            return self.to_string()
+        else:
+            return super(self, BaseDistribution).__repr__()
+
     def __reversed__(self):
         """
         Returns a reverse iterator over the outcomes.
