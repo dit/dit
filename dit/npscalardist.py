@@ -27,6 +27,8 @@ variable. The alphabet for each random variable is a set.
 
 """
 import numbers
+from collections import defaultdict
+from itertools import product
 
 from .distribution import BaseDistribution
 from .exceptions import (
@@ -660,6 +662,26 @@ class ScalarDistribution(BaseDistribution):
         op = lambda x, y: x >= y
         msg = "Cannot compare types {0} and {1}"
         return self.__meta_magic(other, op, msg)
+
+    def __matmul__(self, other):
+        """
+        """
+        if isinstance(type(other), ScalarDistribution):
+            from .npdist import Distribution
+            # Copy to make sure we don't lose precision when converting.
+            d2 = other.copy(base=self.get_base())
+
+            dist = defaultdict(float)
+            for (o1, p1), (o2, p2) in product(self.zipped(), d2.zipped()):
+                dist[(o1, o2)] += self.ops.mult(p1, p2)
+
+            return Distribution(*zip(*dist.items()), base=self.get_base())
+        else:
+            msg = "Cannot construct a joint from types {0} and {1}"
+            raise ditException(msg.format(type(self), type(other)))
+
+    def __rmatmul__(self, other):
+        return other.__matmul__(self)
 
     def __contains__(self, outcome):
         """

@@ -1008,4 +1008,4 @@ def _combine_scalar_dists(d1, d2, op):
     for (o1, p1), (o2, p2) in product(d1.zipped(), d2.zipped()):
         dist[op(o1, o2)] += d1.ops.mult(p1, p2)
 
-    return ScalarDistribution(*zip(*dist.items()))
+    return ScalarDistribution(*zip(*dist.items()), base=d1.get_base())
