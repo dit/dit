@@ -494,7 +494,7 @@ class ScalarDistribution(BaseDistribution):
 
     def __add__(self, other):
         """
-        Addition of distributions of the same kind.
+        Addition of distributions of the same kind, or addition by a scalar.
 
         `other` is assumed to have the same base as `self`.
 
@@ -523,6 +523,64 @@ class ScalarDistribution(BaseDistribution):
 
     def __radd__(self, other):
         return self.__add__(other)
+
+    def __sub__(self, other):
+        """
+        Subtraction of distributions of the same kind, or by a scalar
+
+        `other` is assumed to have the same base as `self`.
+
+        The other distribution is assumed to have the same meta information
+        and sample space.
+
+        """
+        if issubclass(type(other), ScalarDistribution):
+            from collections import defaultdict
+            # Copy to make sure we don't lose precision when converting.
+            d2 = other.copy(base=self.get_base())
+
+            dist = defaultdict(float)
+            for (o1, p1), (o2, p2) in product(self.zipped(), d2.zipped()):
+                dist[o1-o2] += self.ops.mult(p1, p2)
+
+            return ScalarDistribution(*zip(*dist.items()))
+
+        elif issubclass(type(other), numbers.Number):
+            from .distconst import modify_outcomes
+            d = modify_outcomes(self, lambda x: x-other)
+            return d
+        else:
+            msg = "Cannot add types {0} and {1}"
+            raise ditException(msg.format(type(other), type(self)))
+
+    def __rsub__(self, other):
+        """
+        Subtraction of distributions of the same kind, or by a scalar
+
+        `other` is assumed to have the same base as `self`.
+
+        The other distribution is assumed to have the same meta information
+        and sample space.
+
+        """
+        if issubclass(type(other), ScalarDistribution):
+            from collections import defaultdict
+            # Copy to make sure we don't lose precision when converting.
+            d2 = other.copy(base=self.get_base())
+
+            dist = defaultdict(float)
+            for (o1, p1), (o2, p2) in product(self.zipped(), d2.zipped()):
+                dist[o2-o1] += self.ops.mult(p1, p2)
+
+            return ScalarDistribution(*zip(*dist.items()))
+
+        elif issubclass(type(other), numbers.Number):
+            from .distconst import modify_outcomes
+            d = modify_outcomes(self, lambda x: other-x)
+            return d
+        else:
+            msg = "Cannot add types {0} and {1}"
+            raise ditException(msg.format(type(other), type(self)))
 
     def __mul__(self, other):
         """
