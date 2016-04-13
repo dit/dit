@@ -137,7 +137,6 @@ class MUIProfile(BaseProfile):
         ent = H(self.dist)
         pnts = np.linspace(0, ent, 100*ent + 1)
         maxui = [max_util_of_info(c, A, b, bounds, y) for y in pnts]
-        print(maxui)
         mui = np.round(np.gradient(maxui, np.diff(pnts)[0]), 7)
         vals = np.array(np.unique(mui, return_index=True, return_counts=True))
         vals = vals.T[vals[-1] > 1]
