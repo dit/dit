@@ -14,6 +14,7 @@ import numpy as np
 from scipy.optimize import linprog
 
 from dit.algorithms import ShannonPartition
+from dit.math import close
 from dit.multivariate import entropy as H
 from dit.utils import flatten
 
@@ -42,55 +43,58 @@ def get_lp_form(dist):
     pa = list(frozenset(s) for s in powerset(flatten(dist.rvs)))[1:]
     ents = ShannonPartition(dist)
     sp = sorted(ents.atoms.items())
-    atoms = list(frozenset(flatten(a[0])) for a, _ in sp)
+    atoms = list(frozenset(flatten(a[0])) for a, v in sp if not close(v, 0))
 
     A = []
     b = []
     c = []
     bounds = []
 
-    for pa_W, pa_V in product(pa, pa):
-        # constraint (i)
-        cond = np.zeros(len(atoms))
-        for j, atom in enumerate(atoms):
-            if pa_V & atom:
-                cond[j] = 1
-        A.append(cond)
-        b.append(ents[([pa_V], [])])
-        # constraint (ii)
-        if pa_W < pa_V:
+    for pa_V, pa_W in product(pa, pa):
+        if pa_V == pa_W:
+            # constraint (i)
             cond = np.zeros(len(atoms))
             for j, atom in enumerate(atoms):
-                if (pa_V & atom) and not (pa_W & atom):
+                if pa_V & atom:
                     cond[j] = 1
             A.append(cond)
-            b.append(ents[([pa_V], [])] - ents[([pa_W], [])])
-        # constraint (iii)
-        cond = np.zeros(len(atoms))
-        for j, atom in enumerate(atoms):
-            if (pa_V & atom):
-                cond[j] += 1
-            if (pa_W & atom):
-                cond[j] += 1
-            if ((pa_V | pa_W) & atom):
-                cond[j] -= 1
-            if ((pa_V & pa_W) & atom):
-                cond[j] -= 1
-            A.append(cond)
-            b.append(ents[([pa_V], [])] +
-                     ents[([pa_W], [])] -
-                     ents[([pa_V | pa_W], [])] -
-                     ents[([pa_V & pa_W], [])])
+            b.append(ents[([pa_V], [])])
+
+        else:
+            # constraint (ii)
+            if pa_W < pa_V:
+                cond = np.zeros(len(atoms))
+                for j, atom in enumerate(atoms):
+                    if (pa_V & atom) and not (pa_W & atom):
+                        cond[j] = 1
+                A.append(cond)
+                b.append(ents[([pa_V], [])] - ents[([pa_W], [])])
+            # constraint (iii)
+            cond = np.zeros(len(atoms))
+            for j, atom in enumerate(atoms):
+                if (pa_V & atom):
+                    cond[j] += 1
+                if (pa_W & atom):
+                    cond[j] += 1
+                if ((pa_V | pa_W) & atom):
+                    cond[j] -= 1
+                if ((pa_V & pa_W) & atom):
+                    cond[j] -= 1
+                A.append(cond)
+                b.append(ents[([pa_V], [])] +
+                         ents[([pa_W], [])] -
+                         ents[([pa_V | pa_W], [])] -
+                         ents[([pa_V & pa_W], [])])
 
     A.append([1]*len(atoms))
-    b.append(0)
+    b.append(0) # placeholder for y
 
     A = np.array(A)
     b = np.array(b)
 
     c = np.array([-len(atom) for atom in atoms]) # negative for minimization
 
-    bounds = [(0, val) if val > 0 else (val, 0) for _, val in sp]
+    bounds = [(min(0, val), max(0, val)) for _, val in sp if not close(val, 0)]
 
     return c, A, b, bounds
 
@@ -132,7 +136,8 @@ class MUIProfile(BaseProfile):
         c, A, b, bounds = get_lp_form(self.dist)
         ent = H(self.dist)
         pnts = np.linspace(0, ent, 100*ent + 1)
-        maxui = [ max_util_of_info(c, A, b, bounds, y) for y in pnts ]
+        maxui = [max_util_of_info(c, A, b, bounds, y) for y in pnts]
+        print(maxui)
         mui = np.round(np.gradient(maxui, np.diff(pnts)[0]), 7)
         vals = np.array(np.unique(mui, return_index=True, return_counts=True))
         vals = vals.T[vals[-1] > 1]
