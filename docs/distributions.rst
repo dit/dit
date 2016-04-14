@@ -14,6 +14,13 @@ Numpy-based ScalarDistribution
 
 ScalarDistribution specific stuff.
 
+Playing with ScalarDistributions
+--------------------------------
+
+
+API
+---
+
 .. automethod:: ScalarDistribution.__init__
 
 
