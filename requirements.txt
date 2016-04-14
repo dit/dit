@@ -4,3 +4,4 @@ networkx
 numpy >= 1.6
 prettytable
 six >= 1.4.0
+scipy >= 0.15.0
