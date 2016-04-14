@@ -356,7 +356,7 @@ def simplex_grid(length, subdivisions, using=None, inplace=False):
     if using is None:
         using = random_scalar_distribution(length)
 
-    if using == tuple:
+    if using is tuple:
         for pmf in gen:
             yield pmf
     elif not isinstance(using, BaseDistribution):

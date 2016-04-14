@@ -74,7 +74,7 @@ def test_positivity():
 
 def test_alpha_symmetry():
     """
-    Tests the alpha -> -alpha symmetry for the alpha divergence, and a similar 
+    Tests the alpha -> -alpha symmetry for the alpha divergence, and a similar
     symmetry for the Hellinger and Renyi divergences.
     """
     alphas = [-1, 0, 0.5, 1, 2]
@@ -96,11 +96,11 @@ def test_divergences_to_kl():
         for dist1 in dists:
             for dist2 in dists:
                 assert_almost_equal(alpha_divergence(dist1, dist2, alpha=-1), kullback_leibler_divergence(dist2, dist1))
-                if dist1 != dist2:
+                if dist1 is not dist2:
                     assert_not_equal(alpha_divergence(dist1, dist2, alpha=0), kullback_leibler_divergence(dist2, dist1))
                 for divergence in [renyi_divergence, tsallis_divergence, alpha_divergence, hellinger_divergence]:
                     assert_almost_equal(divergence(dist1, dist2, alpha=1), kullback_leibler_divergence(dist1, dist2))
-                    if dist1 != dist2:
+                    if dist1 is not dist2:
                         assert_not_equal(alpha_divergence(dist1, dist2, alpha=0), kullback_leibler_divergence(dist2, dist1))
                         assert_not_equal(alpha_divergence(dist1, dist2, alpha=2), kullback_leibler_divergence(dist2, dist1))
 
@@ -146,7 +146,7 @@ def test_renyi():
         h = renyi_entropy(dist1, alpha)
         h_u = renyi_entropy(uniform, alpha)
         div = renyi_divergence(dist1, uniform, alpha)
-        assert_almost_equal(h, h_u - div) 
+        assert_almost_equal(h, h_u - div)
 
 def test_f_divergence(places=1):
     """
@@ -163,7 +163,7 @@ def test_f_divergence(places=1):
             def f(x):
                 return 4. / (1. - alpha*alpha) * (1. - np.power(x, (1. + alpha)/2))
         return f
-    
+
     def f_tsallis(alpha):
         def f(x):
             return (np.power(x, 1. - alpha) - 1.) / (alpha - 1.)

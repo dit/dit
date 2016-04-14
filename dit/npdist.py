@@ -1269,7 +1269,7 @@ class Distribution(ScalarDistribution):
             self._rv_mode = 'names'
 
 
-    def to_string(self, digits=None, exact=False, tol=1e-9, show_mask=False,
+    def to_string(self, digits=None, exact=None, tol=1e-9, show_mask=False,
                         str_outcomes=False):
         """
         Returns a string representation of the distribution.
@@ -1307,6 +1307,9 @@ class Distribution(ScalarDistribution):
         from .distribution import prepare_string
 
         from six import StringIO
+
+        if exact is None:
+            exact = ditParams['print.exact']
 
         s = StringIO()
 

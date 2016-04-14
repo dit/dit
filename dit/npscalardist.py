@@ -666,7 +666,7 @@ class ScalarDistribution(BaseDistribution):
     def __matmul__(self, other):
         """
         """
-        if isinstance(type(other), ScalarDistribution):
+        if issubclass(type(other), ScalarDistribution):
             from .npdist import Distribution
             # Copy to make sure we don't lose precision when converting.
             d2 = other.copy(base=self.get_base())
@@ -680,7 +680,7 @@ class ScalarDistribution(BaseDistribution):
             msg = "Cannot construct a joint from types {0} and {1}"
             raise ditException(msg.format(type(self), type(other)))
 
-    def __rmatmul__(self, other):
+    def __rmatmul__(self, other): # pragma: no cover
         return other.__matmul__(self)
 
     def __contains__(self, outcome):

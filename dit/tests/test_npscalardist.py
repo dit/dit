@@ -8,7 +8,10 @@ from nose.tools import assert_almost_equal, assert_equal, assert_raises, \
                        assert_true, assert_false
 from numpy.testing import assert_array_almost_equal
 
+from itertools import product
+
 from dit import Distribution, ScalarDistribution
+from dit.distconst import uniform_scalar_distribution
 from dit.exceptions import ditException, InvalidDistribution, InvalidOutcome
 
 def test_init1():
@@ -84,13 +87,6 @@ def test_init12():
     # Different sample space representations
     assert_false(d.is_approx_equal(sd))
 
-def test_add_mul():
-    d1 = ScalarDistribution([1/3, 2/3])
-    d2 = ScalarDistribution([2/3, 1/3])
-    d3 = ScalarDistribution([1/2, 1/2])
-    d4 = 0.5*(d1 + d2)
-    assert_true(d3.is_approx_equal(d4))
-
 def test_del1():
     d = ScalarDistribution([1/2, 1/2])
     del d[1]
@@ -159,3 +155,110 @@ def test_is_approx_equal3():
     d1 = ScalarDistribution([1/2, 1/2], sample_space=(0, 1, 2))
     d2 = ScalarDistribution([1/2, 1/2])
     assert_false(d1.is_approx_equal(d2))
+
+def test_add():
+    d1 = uniform_scalar_distribution(range(3))
+    d2 = uniform_scalar_distribution(range(1, 4))
+    d3 = ScalarDistribution([0, 1, 2, 3, 4], [1/9, 2/9, 3/9, 2/9, 1/9])
+    assert_true((d1+1).is_approx_equal(d2))
+    assert_true((1+d1).is_approx_equal(d2))
+    assert_true((d2).is_approx_equal(d1+1))
+    assert_true((d2).is_approx_equal(1+d1))
+    assert_true((d1+d1).is_approx_equal(d3))
+
+def test_sub():
+    d1 = uniform_scalar_distribution(range(3))
+    d2 = uniform_scalar_distribution(range(1, 4))
+    d3 = ScalarDistribution([-2, -1, 0, 1, 2], [1/9, 2/9, 3/9, 2/9, 1/9])
+    assert_true((d2-1).is_approx_equal(d1))
+    assert_true((3-d2).is_approx_equal(d1))
+    assert_true((d1).is_approx_equal(d2-1))
+    assert_true((d1).is_approx_equal(3-d2))
+    assert_true((d1-d1).is_approx_equal(d3))
+
+def test_mul():
+    d1 = uniform_scalar_distribution(range(1, 3))
+    d2 = ScalarDistribution([1, 2, 4], [0.25, 0.5, 0.25])
+    d3 = ScalarDistribution([2, 4], [0.5, 0.5])
+    assert_true((d1*d1).is_approx_equal(d2))
+    assert_true((d1*2).is_approx_equal(d3))
+    assert_true((2*d1).is_approx_equal(d3))
+
+def test_div():
+    d1 = uniform_scalar_distribution([2,4,6])
+    d2 = uniform_scalar_distribution([1,2,3,4,6])
+    d3 = uniform_scalar_distribution([1,2,3])
+    d4 = uniform_scalar_distribution([12,6,4,3,2])
+    d5 = uniform_scalar_distribution([1,2])
+    d6 = ScalarDistribution([1,2,3,4,6], [1/6,1/3,1/6,1/6,1/6])
+    assert_true((d1/2).is_approx_equal(d3))
+    assert_true((12/d2).is_approx_equal(d4))
+    assert_true((d1/d5).is_approx_equal(d6))
+
+def test_floordiv():
+    d1 = uniform_scalar_distribution(range(1, 7))
+    d2 = ScalarDistribution([0,1,2,3], [1/6,1/3,1/3,1/6])
+    d3 = ScalarDistribution([1,2,3,6], [1/2,1/6,1/6,1/6])
+    d4 = uniform_scalar_distribution(range(1, 3))
+    d5 = ScalarDistribution([0,1,2,3,4,5,6],[1/12,1/4,1/4,1/6,1/12,1/12,1/12])
+    assert_true((d1//2).is_approx_equal(d2))
+    assert_true((6//d1).is_approx_equal(d3))
+    assert_true((d1//d4).is_approx_equal(d5))
+
+def test_mod():
+    d1 = uniform_scalar_distribution(range(1,7))
+    d2 = uniform_scalar_distribution(range(2))
+    d3 = uniform_scalar_distribution(range(1,3))
+    d4 = ScalarDistribution([0,1],[3/4,1/4])
+    assert_true((d1%2).is_approx_equal(d2))
+    assert_true((5%d3).is_approx_equal(d2))
+    assert_true((d1%d3).is_approx_equal(d4))
+
+def test_lt():
+    d1 = uniform_scalar_distribution(range(1,7))
+    d2 = uniform_scalar_distribution(range(2))
+    d3 = ScalarDistribution([True, False], [11/12, 1/12])
+    assert_true((d1 < 4).is_approx_equal(d2))
+    assert_true((d2 < d1).is_approx_equal(d3))
+
+def test_le():
+    d1 = uniform_scalar_distribution(range(1,7))
+    d2 = uniform_scalar_distribution(range(2))
+    d3 = ScalarDistribution([True], [1])
+    assert_true((d1 <= 3).is_approx_equal(d2))
+    assert_true((d2 <= d1).is_approx_equal(d3))
+
+def test_eq():
+    d1 = uniform_scalar_distribution(range(1,7))
+    d2 = ScalarDistribution([True, False], [1/6, 5/6])
+    assert_true((d1 == 6).is_approx_equal(d2))
+    assert_true((d1 == d1).is_approx_equal(d2))
+
+def test_ne():
+    d1 = uniform_scalar_distribution(range(1,7))
+    d2 = ScalarDistribution([True, False], [5/6, 1/6])
+    assert_true((d1 != 6).is_approx_equal(d2))
+    assert_true((d1 != d1).is_approx_equal(d2))
+
+def test_gt():
+    d1 = uniform_scalar_distribution(range(1,7))
+    d2 = uniform_scalar_distribution(range(2))
+    d3 = ScalarDistribution([True, False], [11/12, 1/12])
+    assert_true((d1 > 3).is_approx_equal(d2))
+    assert_true((d1 > d2).is_approx_equal(d3))
+
+def test_ge():
+    d1 = uniform_scalar_distribution(range(1,7))
+    d2 = uniform_scalar_distribution(range(2))
+    d3 = ScalarDistribution([True], [1])
+    assert_true((d1 >= 4).is_approx_equal(d2))
+    assert_true((d1 >= d2).is_approx_equal(d3))
+
+def test_matmul():
+    d1 = uniform_scalar_distribution(range(1,7))
+    d2 = Distribution(list(product(d1.outcomes, repeat=2)), [1/36]*36)
+    assert_true((d1.__matmul__(d1)).is_approx_equal(d2))
+
+def test_cmp_fail():
+    d1 = uniform_scalar_distribution(range(1,7))
+    assert_raises(ditException, lambda x: x + '0', d1)
