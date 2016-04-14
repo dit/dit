@@ -31,6 +31,7 @@ Contents:
    distributions
    operations
    measures/measures
+   profiles
    zreferences
    changelog
 

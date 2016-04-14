@@ -1,0 +1,120 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+The base information profile.
+"""
+
+from abc import ABCMeta, abstractmethod
+
+profile_docstring = """
+{name}
+
+Static Attributes
+-----------------
+xlabel : str
+    The label for the x-axis when plotting.
+ylabel : str
+    The label for the y-axis when plotting.
+{static_attributes}
+
+Attributes
+----------
+dist : Distribution
+profile : dict
+widths : [float]
+{attributes}
+
+Methods
+-------
+draw
+    Plot the profile
+{methods}
+
+Private Methods
+---------------
+_compute
+    Compute the profile
+"""
+
+class BaseProfile(object):
+    """
+    BaseProfile
+
+    Static Attributes
+    -----------------
+    xlabel : str
+        The label for the x-axis when plotting.
+    ylabel : str
+        The label for the y-axis when plotting.
+
+    Attributes
+    ----------
+    dist : Distribution
+    profile : dict
+    widths : [float]
+
+    Methods
+    -------
+    draw
+        Plot the profile.
+
+    Abstract Methods
+    ----------------
+    _compute
+        Compute the profile.
+    """
+    __metaclass__ = ABCMeta
+
+    xlabel = 'scale'
+    ylabel = 'information [bits]'
+
+    def __init__(self, dist):
+        """
+        Initialize the profile.
+
+        Parameters
+        ----------
+        dist : Distribution
+            The distribution to compute the profile for.
+        """
+        super(BaseProfile, self).__init__()
+        self.dist = dist
+        self._compute()
+
+    @abstractmethod
+    def _compute(self): # pragma: no cover
+        """
+        Abstract method to compute the profile.
+        """
+        pass
+
+    def draw(self, ax=None): # pragma: no cover
+        """
+        Draw the profile using matplotlib.
+
+        Parameters
+        ----------
+        ax : axis
+            The axis to draw the profile on. If None, a new axis is created.
+
+        Returns
+        -------
+        ax : axis
+            The axis with profile.
+        """
+        import matplotlib.pyplot as plt
+
+        if ax is None:
+            ax = plt.figure().gca()
+
+        left, height = zip(*self.profile.items())
+        ax.bar(left, height, width=self.widths)
+
+        ax.set_xticks([i+0.5 for i in self.profile])
+        ax.set_xticklabels([str(i) for i in self.profile])
+
+        ax.set_xlabel(self.xlabel)
+        ax.set_ylabel(self.ylabel)
+
+        return ax
