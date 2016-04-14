@@ -1,2 +1,4 @@
 Cython
+cvxopt
 ipython
+scipy >= 0.15.0

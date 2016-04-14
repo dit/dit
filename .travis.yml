@@ -63,10 +63,12 @@ before_script:
   ### Use this to prepare your build for testing
   - conda install -n test-environment nose coverage
   - pip install coveralls
+  - conda install scipy cvxopt
 
 script:
   - printenv PWD
   - pip install .
+  - pip install -r requirements_optional.txt
 
   - export DIT_INSTALL=`pip show dit | grep Location | awk '{print $2"/dit"}'`
   - echo "DIT_INSTALL=$DIT_INSTALL"

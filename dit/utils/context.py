@@ -60,5 +60,3 @@ def tempdir(*args, **kwargs):
         yield tmpdir
     finally:
         shutil.rmtree(tmpdir)
-
-
