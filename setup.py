@@ -182,6 +182,7 @@ def main():
         'dit.math',
         'dit.multivariate',
         'dit.other',
+        'dit.profiles',
         'dit.shannon',
         'dit.utils',
     ]
