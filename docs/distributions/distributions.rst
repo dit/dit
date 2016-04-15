@@ -1,12 +1,12 @@
 .. distributions.rst
-.. py:module:: dit.distribution
 
 *************
 Distributions
 *************
 
-Here we describe how to create, modify, and manipulate distribution objects.
+Distributions in :mod:`dit` come in two different flavors: :class:`~dit.ScalarDistribution` and :class:`~dit.Distribution`. :class:`~dit.ScalarDistribution` is used for representing distributions over real numbers, and have many features related to that. :class:`~dit.Distribution` is used for representing joint distributions, and therefore has many features related to marginalizing, conditioning, and otherwise exploring the relationships between random variables.
 
-.. include:: npscalardist.rst
+.. toctree::
 
-.. include:: npdist.rst
+   npscalardist.rst
+   npdist.rst
