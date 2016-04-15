@@ -28,7 +28,7 @@ Contents:
 
    generalinfo
    notation
-   distributions
+   distributions/distributions
    operations
    measures/measures
    profiles

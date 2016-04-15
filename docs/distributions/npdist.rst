@@ -1,29 +1,4 @@
-.. distributions.rst
-.. py:module:: dit.distribution
-
-*************
-Distributions
-*************
-
-Here we describe how to create, modify, and manipulate distribution objects.
-
-.. py:module:: dit.npscalardist
-
-Numpy-based ScalarDistribution
-==============================
-
-ScalarDistribution specific stuff.
-
-Playing with ScalarDistributions
---------------------------------
-
-
-API
----
-
-.. automethod:: ScalarDistribution.__init__
-
-
+.. npdist.rst
 .. py:module:: dit.npdist
 
 Numpy-based Distribution
