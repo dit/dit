@@ -261,4 +261,8 @@ def test_matmul():
 
 def test_cmp_fail():
     d1 = uniform_scalar_distribution(range(1,7))
-    assert_raises(ditException, lambda x: x + '0', d1)
+    assert_raises(NotImplementedError, lambda x: x + '0', d1)
+
+def test_matmul_fail():
+    d1 = uniform_scalar_distribution(range(1,7))
+    assert_raises(NotImplementedError, lambda x: x.__matmul__('0'), d1)

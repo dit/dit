@@ -494,18 +494,30 @@ class ScalarDistribution(BaseDistribution):
 
     def __meta_magic(self, other, op, msg):
         """
+        Private method to implement generic comparisons or operations
+        outcome-wise between ScalarDistributions and either scalars or another
+        ScalarDistribution.
+
+        Parameters
+        ----------
+        other : ScalarDistribution or scalar
+            The object to compare or operate against.
+        op : function
+            The comparison or operator to implement.
+        msg : str
+            The error message to raise if the objects are not comparible.
         """
-        if issubclass(type(other), ScalarDistribution):
+        if isinstance(other, ScalarDistribution):
             from .distconst import _combine_scalar_dists
             return _combine_scalar_dists(self, other, op)
 
-        elif issubclass(type(other), numbers.Number):
+        elif isinstance(other, numbers.Number):
             from .distconst import modify_outcomes
             d = modify_outcomes(self, lambda x: op(x, other))
             return d
 
         else:
-            raise ditException(msg.format(type(self), type(other)))
+            raise NotImplementedError(msg.format(type(self), type(other)))
 
 
     def __add__(self, other):
@@ -666,7 +678,7 @@ class ScalarDistribution(BaseDistribution):
     def __matmul__(self, other):
         """
         """
-        if issubclass(type(other), ScalarDistribution):
+        if isinstance(other, ScalarDistribution):
             from .npdist import Distribution
             # Copy to make sure we don't lose precision when converting.
             d2 = other.copy(base=self.get_base())
@@ -678,15 +690,18 @@ class ScalarDistribution(BaseDistribution):
             return Distribution(*zip(*dist.items()), base=self.get_base())
         else:
             msg = "Cannot construct a joint from types {0} and {1}"
-            raise ditException(msg.format(type(self), type(other)))
+            raise NotImplementedError(msg.format(type(self), type(other)))
 
     def __rmatmul__(self, other): # pragma: no cover
         return other.__matmul__(self)
 
     def __hash__(self):
         """
+        ToDo
+        ----
+        Create a real hash function here.
         """
-        return hash(self.__dict__.values())
+        return id(self)
 
     def __contains__(self, outcome):
         """
