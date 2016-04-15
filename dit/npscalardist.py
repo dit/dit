@@ -522,13 +522,8 @@ class ScalarDistribution(BaseDistribution):
 
     def __add__(self, other):
         """
-        Addition of distributions of the same kind, or addition by a scalar.
-
-        `other` is assumed to have the same base as `self`.
-
-        The other distribution is assumed to have the same meta information
-        and sample space.
-
+        Addition of ScalarDistribution with either a scalar or another
+        Scalardistribution.
         """
         op = lambda x, y: x + y
         msg = "Cannot add types {0} and {1}"
@@ -539,13 +534,8 @@ class ScalarDistribution(BaseDistribution):
 
     def __sub__(self, other):
         """
-        Subtraction of distributions of the same kind, or by a scalar
-
-        `other` is assumed to have the same base as `self`.
-
-        The other distribution is assumed to have the same meta information
-        and sample space.
-
+        Subtraction of ScalarDistribution with either a scalar or another
+        Scalardistribution.
         """
         op = lambda x, y: x - y
         msg = "Cannot subtract types {0} and {1}"
@@ -553,13 +543,8 @@ class ScalarDistribution(BaseDistribution):
 
     def __rsub__(self, other):
         """
-        Subtraction of distributions of the same kind, or by a scalar
-
-        `other` is assumed to have the same base as `self`.
-
-        The other distribution is assumed to have the same meta information
-        and sample space.
-
+        Subtraction of ScalarDistribution from either a scalar or another
+        Scalardistribution.
         """
         op = lambda x, y: y - x
         msg = "Cannot subtract types {1} and {0}"
@@ -567,8 +552,8 @@ class ScalarDistribution(BaseDistribution):
 
     def __mul__(self, other):
         """
-        Scalar multiplication on distributions.
-
+        Multiplication of ScalarDistribution with either a scalar or another
+        ScalarDistribution.
         """
         op = lambda x, y: x * y
         msg = "Cannot multiply types {0} and {1}"
@@ -579,6 +564,8 @@ class ScalarDistribution(BaseDistribution):
 
     def __div__(self, other):
         """
+        Division of ScalarDistribution with either a scalar or another
+        Scalardistribution.
         """
         op = lambda x, y: x / y
         msg = "Cannot divide types {0} by {1}"
@@ -586,6 +573,8 @@ class ScalarDistribution(BaseDistribution):
 
     def __rdiv__(self, other):
         """
+        Division of ScalarDistribution from either a scalar or another
+        Scalardistribution.
         """
         op = lambda x, y: y / x
         msg = "Cannot divide types {1} by {0}"
@@ -593,6 +582,8 @@ class ScalarDistribution(BaseDistribution):
 
     def __truediv__(self, other):
         """
+        Division of ScalarDistribution with either a scalar or another
+        Scalardistribution.
         """
         op = lambda x, y: (1.0*x) / y
         msg = "Cannot divide types {0} by {1}"
@@ -600,6 +591,8 @@ class ScalarDistribution(BaseDistribution):
 
     def __rtruediv__(self, other):
         """
+        Division of ScalarDistribution from either a scalar or another
+        Scalardistribution.
         """
         op = lambda x, y: (1.0*y) / x
         msg = "Cannot divide types {1} by {0}"
@@ -607,6 +600,8 @@ class ScalarDistribution(BaseDistribution):
 
     def __floordiv__(self, other):
         """
+        Integer division of ScalarDistribution with either a scalar or another
+        Scalardistribution.
         """
         op = lambda x, y: x // y
         msg = "Cannot divide types {0} by {1}"
@@ -614,6 +609,8 @@ class ScalarDistribution(BaseDistribution):
 
     def __rfloordiv__(self, other):
         """
+        Integer division of ScalarDistribution from either a scalar or another
+        Scalardistribution.
         """
         op = lambda x, y: y // x
         msg = "Cannot divide types {1} by {0}"
@@ -621,6 +618,8 @@ class ScalarDistribution(BaseDistribution):
 
     def __mod__(self, other):
         """
+        Modulo of ScalarDistribution with either a scalar or another
+        Scalardistribution.
         """
         op = lambda x, y: x % y
         msg = "Cannot mod types {0} by {1}"
@@ -628,6 +627,8 @@ class ScalarDistribution(BaseDistribution):
 
     def __rmod__(self, other):
         """
+        Modulo of ScalarDistribution from either a scalar or another
+        Scalardistribution.
         """
         op = lambda x, y: y % x
         msg = "Cannot mod types {1} by {0}"
@@ -635,6 +636,8 @@ class ScalarDistribution(BaseDistribution):
 
     def __lt__(self, other):
         """
+        Determine the distribution of outcomes that are less than either a
+        scalar or another ScalarDistribution.
         """
         op = lambda x, y: x < y
         msg = "Cannot compare types {0} and {1}"
@@ -642,6 +645,8 @@ class ScalarDistribution(BaseDistribution):
 
     def __le__(self, other):
         """
+        Determine the distribution of outcomes that are less than or equal to
+        either a scalar or another ScalarDistribution.
         """
         op = lambda x, y: x <= y
         msg = "Cannot compare types {0} and {1}"
@@ -649,6 +654,8 @@ class ScalarDistribution(BaseDistribution):
 
     def __eq__(self, other):
         """
+        Determine the distribution of outcomes that are equal to either a scalar
+        or another ScalarDistribution.
         """
         op = lambda x, y: x == y
         msg = "Cannot test equality of types {0} and {1}"
@@ -656,6 +663,8 @@ class ScalarDistribution(BaseDistribution):
 
     def __ne__(self, other):
         """
+        Determine the distribution of outcomes that are not equal to either a
+        scalar or another ScalarDistribution.
         """
         op = lambda x, y: x != y
         msg = "Cannot test equality of types {0} and {1}"
@@ -663,6 +672,8 @@ class ScalarDistribution(BaseDistribution):
 
     def __gt__(self, other):
         """
+        Determine the distribution of outcomes that are greater than either a
+        scalar or another ScalarDistribution.
         """
         op = lambda x, y: x > y
         msg = "Cannot compare types {0} and {1}"
@@ -670,6 +681,8 @@ class ScalarDistribution(BaseDistribution):
 
     def __ge__(self, other):
         """
+        Determine the distribution of outcomes that are greater than or equal to
+        either a scalar or another ScalarDistribution.
         """
         op = lambda x, y: x >= y
         msg = "Cannot compare types {0} and {1}"
@@ -677,6 +690,8 @@ class ScalarDistribution(BaseDistribution):
 
     def __matmul__(self, other):
         """
+        Construct the cartesian product of `self` and `other`, as though they
+        were independent.
         """
         if isinstance(other, ScalarDistribution):
             from .npdist import Distribution
