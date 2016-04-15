@@ -683,6 +683,11 @@ class ScalarDistribution(BaseDistribution):
     def __rmatmul__(self, other): # pragma: no cover
         return other.__matmul__(self)
 
+    def __hash__(self):
+        """
+        """
+        return hash(self.__dict__.values())
+
     def __contains__(self, outcome):
         """
         Returns `True` if `outcome` is in self.outcomes.
