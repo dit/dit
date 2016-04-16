@@ -94,11 +94,8 @@ after_success:
   # paths, but coveralls does not seem to care.
   - cp .coverage $TRAVIS_BUILD_DIR
   - cd $TRAVIS_BUILD_DIR
-  # Report coverage for 2.7 only.
-  - if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then
-      python fixcoverage.py ".*/dit/" "$TRAVIS_BUILD_DIR/dit/";
-      coveralls;
-    fi
+  - python fixcoverage.py ".*/dit/" "$TRAVIS_BUILD_DIR/dit/"
+  - coveralls
 
 notifications:
   email: false
