@@ -524,6 +524,39 @@ class ScalarDistribution(BaseDistribution):
         """
         Addition of ScalarDistribution with either a scalar or another
         Scalardistribution.
+
+        Example
+        -------
+        >>> d6 + 3
+        Class:    ScalarDistribution
+        Alphabet: (4, 5, 6, 7, 8, 9)
+        Base:     linear
+
+        x   p(x)
+        4   1/6
+        5   1/6
+        6   1/6
+        7   1/6
+        8   1/6
+        9   1/6
+
+        >>> d6 + d6
+        Class:    ScalarDistribution
+        Alphabet: (2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
+        Base:     linear
+
+        x    p(x)
+        2    1/36
+        3    1/18
+        4    1/12
+        5    1/9
+        6    5/36
+        7    1/6
+        8    5/36
+        9    1/9
+        10   1/12
+        11   1/18
+        12   1/36
         """
         op = lambda x, y: x + y
         msg = "Cannot add types {0} and {1}"
@@ -536,6 +569,39 @@ class ScalarDistribution(BaseDistribution):
         """
         Subtraction of ScalarDistribution with either a scalar or another
         Scalardistribution.
+
+        Example
+        -------
+        >>> d6 - 3
+        Class:    ScalarDistribution
+        Alphabet: (-2, -1, 0, 1, 2, 3)
+        Base:     linear
+
+        x    p(x)
+        -2   1/6
+        -1   1/6
+        0    1/6
+        1    1/6
+        2    1/6
+        3    1/6
+
+        >>> d6 - d6
+        Class:    ScalarDistribution
+        Alphabet: (-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5)
+        Base:     linear
+
+        x    p(x)
+        -5   1/36
+        -4   1/18
+        -3   1/12
+        -2   1/9
+        -1   5/36
+        0    1/6
+        1    5/36
+        2    1/9
+        3    1/12
+        4    1/18
+        5    1/36
         """
         op = lambda x, y: x - y
         msg = "Cannot subtract types {0} and {1}"
@@ -545,6 +611,39 @@ class ScalarDistribution(BaseDistribution):
         """
         Subtraction of ScalarDistribution from either a scalar or another
         Scalardistribution.
+
+        Example
+        -------
+        >>> 10 - d6
+        Class:    ScalarDistribution
+        Alphabet: (4, 5, 6, 7, 8, 9)
+        Base:     linear
+
+        x   p(x)
+        4   1/6
+        5   1/6
+        6   1/6
+        7   1/6
+        8   1/6
+        9   1/6
+
+        >>> d6 - d6
+        Class:    ScalarDistribution
+        Alphabet: (-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5)
+        Base:     linear
+
+        x    p(x)
+        -5   1/36
+        -4   1/18
+        -3   1/12
+        -2   1/9
+        -1   5/36
+        0    1/6
+        1    5/36
+        2    1/9
+        3    1/12
+        4    1/18
+        5    1/36
         """
         op = lambda x, y: y - x
         msg = "Cannot subtract types {1} and {0}"
@@ -554,6 +653,46 @@ class ScalarDistribution(BaseDistribution):
         """
         Multiplication of ScalarDistribution with either a scalar or another
         ScalarDistribution.
+
+        Example
+        -------
+        >>> 2 * d6
+        Class:    ScalarDistribution
+        Alphabet: (2, 4, 6, 8, 10, 12)
+        Base:     linear
+
+        x    p(x)
+        2    1/6
+        4    1/6
+        6    1/6
+        8    1/6
+        10   1/6
+        12   1/6
+
+        >>> d6 * d6
+        Class:    ScalarDistribution
+        Alphabet: (1, 2, 3, 4, 5, 6, 8, 9, 10, 12, 15, 16, 18, 20, 24, 25, 30, 36)
+        Base:     linear
+
+        x    p(x)
+        1    1/36
+        2    1/18
+        3    1/18
+        4    1/12
+        5    1/18
+        6    1/9
+        8    1/18
+        9    1/36
+        10   1/18
+        12   1/9
+        15   1/18
+        16   1/36
+        18   1/18
+        20   1/18
+        24   1/18
+        25   1/36
+        30   1/18
+        36   1/36
         """
         op = lambda x, y: x * y
         msg = "Cannot multiply types {0} and {1}"
@@ -566,6 +705,51 @@ class ScalarDistribution(BaseDistribution):
         """
         Division of ScalarDistribution with either a scalar or another
         Scalardistribution.
+
+        Example
+        -------
+        >>> d6 / 3
+        Class:    ScalarDistribution
+        Alphabet: (0.3333333333333333, 0.6666666666666666, 1.0, 1.3333333333333333, 1.6666666666666667, 2.0)
+        Base:     linear
+
+        x                p(x)
+        0.333333333333   1/6
+        0.666666666667   1/6
+        1.0              1/6
+        1.33333333333    1/6
+        1.66666666667    1/6
+        2.0              1/6
+
+        >>> d6 / d6
+        Class:    ScalarDistribution
+        Alphabet: (0.16666666666666666, 0.2, 0.25, 0.3333333333333333, 0.4, 0.5, 0.6, 0.6666666666666666, 0.75, 0.8, 0.8333333333333334, 1.0, 1.2, 1.25, 1.3333333333333333, 1.5, 1.6666666666666667, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0)
+        Base:     linear
+
+        x                p(x)
+        0.166666666667   1/36
+        0.2              1/36
+        0.25             1/36
+        0.333333333333   1/18
+        0.4              1/36
+        0.5              1/12
+        0.6              1/36
+        0.666666666667   1/18
+        0.75             1/36
+        0.8              1/36
+        0.833333333333   1/36
+        1.0              1/6
+        1.2              1/36
+        1.25             1/36
+        1.33333333333    1/36
+        1.5              1/18
+        1.66666666667    1/36
+        2.0              1/12
+        2.5              1/36
+        3.0              1/18
+        4.0              1/36
+        5.0              1/36
+        6.0              1/36
         """
         op = lambda x, y: x / y
         msg = "Cannot divide types {0} by {1}"
@@ -575,6 +759,51 @@ class ScalarDistribution(BaseDistribution):
         """
         Division of ScalarDistribution from either a scalar or another
         Scalardistribution.
+
+        Example
+        -------
+        >>> 6 / d6
+        Class:    ScalarDistribution
+        Alphabet: (1.0, 1.2, 1.5, 2.0, 3.0, 6.0)
+        Base:     linear
+
+        x     p(x)
+        1.0   1/6
+        1.2   1/6
+        1.5   1/6
+        2.0   1/6
+        3.0   1/6
+        6.0   1/6
+
+        >>> d6 / d6
+        Class:    ScalarDistribution
+        Alphabet: (0.16666666666666666, 0.2, 0.25, 0.3333333333333333, 0.4, 0.5, 0.6, 0.6666666666666666, 0.75, 0.8, 0.8333333333333334, 1.0, 1.2, 1.25, 1.3333333333333333, 1.5, 1.6666666666666667, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0)
+        Base:     linear
+
+        x                p(x)
+        0.166666666667   1/36
+        0.2              1/36
+        0.25             1/36
+        0.333333333333   1/18
+        0.4              1/36
+        0.5              1/12
+        0.6              1/36
+        0.666666666667   1/18
+        0.75             1/36
+        0.8              1/36
+        0.833333333333   1/36
+        1.0              1/6
+        1.2              1/36
+        1.25             1/36
+        1.33333333333    1/36
+        1.5              1/18
+        1.66666666667    1/36
+        2.0              1/12
+        2.5              1/36
+        3.0              1/18
+        4.0              1/36
+        5.0              1/36
+        6.0              1/36
         """
         op = lambda x, y: y / x
         msg = "Cannot divide types {1} by {0}"
@@ -584,6 +813,51 @@ class ScalarDistribution(BaseDistribution):
         """
         Division of ScalarDistribution with either a scalar or another
         Scalardistribution.
+
+        Example
+        -------
+        >>> d6 / 3
+        Class:    ScalarDistribution
+        Alphabet: (0.3333333333333333, 0.6666666666666666, 1.0, 1.3333333333333333, 1.6666666666666667, 2.0)
+        Base:     linear
+
+        x                p(x)
+        0.333333333333   1/6
+        0.666666666667   1/6
+        1.0              1/6
+        1.33333333333    1/6
+        1.66666666667    1/6
+        2.0              1/6
+
+        >>> d6 / d6
+        Class:    ScalarDistribution
+        Alphabet: (0.16666666666666666, 0.2, 0.25, 0.3333333333333333, 0.4, 0.5, 0.6, 0.6666666666666666, 0.75, 0.8, 0.8333333333333334, 1.0, 1.2, 1.25, 1.3333333333333333, 1.5, 1.6666666666666667, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0)
+        Base:     linear
+
+        x                p(x)
+        0.166666666667   1/36
+        0.2              1/36
+        0.25             1/36
+        0.333333333333   1/18
+        0.4              1/36
+        0.5              1/12
+        0.6              1/36
+        0.666666666667   1/18
+        0.75             1/36
+        0.8              1/36
+        0.833333333333   1/36
+        1.0              1/6
+        1.2              1/36
+        1.25             1/36
+        1.33333333333    1/36
+        1.5              1/18
+        1.66666666667    1/36
+        2.0              1/12
+        2.5              1/36
+        3.0              1/18
+        4.0              1/36
+        5.0              1/36
+        6.0              1/36
         """
         op = lambda x, y: (1.0*x) / y
         msg = "Cannot divide types {0} by {1}"
@@ -593,6 +867,51 @@ class ScalarDistribution(BaseDistribution):
         """
         Division of ScalarDistribution from either a scalar or another
         Scalardistribution.
+
+        Example
+        -------
+        >>> 6 / d6
+        Class:    ScalarDistribution
+        Alphabet: (1.0, 1.2, 1.5, 2.0, 3.0, 6.0)
+        Base:     linear
+
+        x     p(x)
+        1.0   1/6
+        1.2   1/6
+        1.5   1/6
+        2.0   1/6
+        3.0   1/6
+        6.0   1/6
+
+        >>> d6 / d6
+        Class:    ScalarDistribution
+        Alphabet: (0.16666666666666666, 0.2, 0.25, 0.3333333333333333, 0.4, 0.5, 0.6, 0.6666666666666666, 0.75, 0.8, 0.8333333333333334, 1.0, 1.2, 1.25, 1.3333333333333333, 1.5, 1.6666666666666667, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0)
+        Base:     linear
+
+        x                p(x)
+        0.166666666667   1/36
+        0.2              1/36
+        0.25             1/36
+        0.333333333333   1/18
+        0.4              1/36
+        0.5              1/12
+        0.6              1/36
+        0.666666666667   1/18
+        0.75             1/36
+        0.8              1/36
+        0.833333333333   1/36
+        1.0              1/6
+        1.2              1/36
+        1.25             1/36
+        1.33333333333    1/36
+        1.5              1/18
+        1.66666666667    1/36
+        2.0              1/12
+        2.5              1/36
+        3.0              1/18
+        4.0              1/36
+        5.0              1/36
+        6.0              1/36
         """
         op = lambda x, y: (1.0*y) / x
         msg = "Cannot divide types {1} by {0}"
@@ -602,6 +921,32 @@ class ScalarDistribution(BaseDistribution):
         """
         Integer division of ScalarDistribution with either a scalar or another
         Scalardistribution.
+
+        Example
+        -------
+        >>> d6 // 3
+        Class:    ScalarDistribution
+        Alphabet: (0, 1, 2)
+        Base:     linear
+
+        x   p(x)
+        0   1/3
+        1   1/2
+        2   1/6
+
+        >>> d6 // d6
+        Class:    ScalarDistribution
+        Alphabet: (0, 1, 2, 3, 4, 5, 6)
+        Base:     linear
+
+        x   p(x)
+        0   5/12
+        1   1/3
+        2   1/9
+        3   1/18
+        4   1/36
+        5   1/36
+        6   1/36
         """
         op = lambda x, y: x // y
         msg = "Cannot divide types {0} by {1}"
@@ -611,6 +956,32 @@ class ScalarDistribution(BaseDistribution):
         """
         Integer division of ScalarDistribution from either a scalar or another
         Scalardistribution.
+
+        Example
+        -------
+        >>> 3 // d6
+        Class:    ScalarDistribution
+        Alphabet: (0, 1, 3)
+        Base:     linear
+
+        x   p(x)
+        0   1/2
+        1   1/3
+        3   1/6
+
+        >>> d6 // d6
+        Class:    ScalarDistribution
+        Alphabet: (0, 1, 2, 3, 4, 5, 6)
+        Base:     linear
+
+        x   p(x)
+        0   5/12
+        1   1/3
+        2   1/9
+        3   1/18
+        4   1/36
+        5   1/36
+        6   1/36
         """
         op = lambda x, y: y // x
         msg = "Cannot divide types {1} by {0}"
@@ -620,6 +991,30 @@ class ScalarDistribution(BaseDistribution):
         """
         Modulo of ScalarDistribution with either a scalar or another
         Scalardistribution.
+
+        Example
+        -------
+        >>> d6 % 2
+        Class:    ScalarDistribution
+        Alphabet: (0, 1)
+        Base:     linear
+
+        x   p(x)
+        0   1/2
+        1   1/2
+
+        >>> d6 % d6
+        Class:    ScalarDistribution
+        Alphabet: (0, 1, 2, 3, 4, 5)
+        Base:     linear
+
+        x   p(x)
+        0   7/18
+        1   5/18
+        2   1/6
+        3   1/12
+        4   1/18
+        5   1/36
         """
         op = lambda x, y: x % y
         msg = "Cannot mod types {0} by {1}"
@@ -629,6 +1024,31 @@ class ScalarDistribution(BaseDistribution):
         """
         Modulo of ScalarDistribution from either a scalar or another
         Scalardistribution.
+
+        Example
+        -------
+        >>> 3 % d6
+        Class:    ScalarDistribution
+        Alphabet: (0, 1, 3)
+        Base:     linear
+
+        x   p(x)
+        0   1/3
+        1   1/6
+        3   1/2
+
+        >>> d6 % d6
+        Class:    ScalarDistribution
+        Alphabet: (0, 1, 2, 3, 4, 5)
+        Base:     linear
+
+        x   p(x)
+        0   7/18
+        1   5/18
+        2   1/6
+        3   1/12
+        4   1/18
+        5   1/36
         """
         op = lambda x, y: y % x
         msg = "Cannot mod types {1} by {0}"
@@ -638,6 +1058,9 @@ class ScalarDistribution(BaseDistribution):
         """
         Determine the distribution of outcomes that are less than either a
         scalar or another ScalarDistribution.
+
+        Example
+        -------
         """
         op = lambda x, y: x < y
         msg = "Cannot compare types {0} and {1}"
@@ -647,6 +1070,9 @@ class ScalarDistribution(BaseDistribution):
         """
         Determine the distribution of outcomes that are less than or equal to
         either a scalar or another ScalarDistribution.
+
+        Example
+        -------
         """
         op = lambda x, y: x <= y
         msg = "Cannot compare types {0} and {1}"
@@ -656,6 +1082,9 @@ class ScalarDistribution(BaseDistribution):
         """
         Determine the distribution of outcomes that are equal to either a scalar
         or another ScalarDistribution.
+
+        Example
+        -------
         """
         op = lambda x, y: x == y
         msg = "Cannot test equality of types {0} and {1}"
@@ -665,6 +1094,9 @@ class ScalarDistribution(BaseDistribution):
         """
         Determine the distribution of outcomes that are not equal to either a
         scalar or another ScalarDistribution.
+
+        Example
+        -------
         """
         op = lambda x, y: x != y
         msg = "Cannot test equality of types {0} and {1}"
@@ -674,6 +1106,9 @@ class ScalarDistribution(BaseDistribution):
         """
         Determine the distribution of outcomes that are greater than either a
         scalar or another ScalarDistribution.
+
+        Example
+        -------
         """
         op = lambda x, y: x > y
         msg = "Cannot compare types {0} and {1}"
@@ -683,6 +1118,9 @@ class ScalarDistribution(BaseDistribution):
         """
         Determine the distribution of outcomes that are greater than or equal to
         either a scalar or another ScalarDistribution.
+
+        Example
+        -------
         """
         op = lambda x, y: x >= y
         msg = "Cannot compare types {0} and {1}"
@@ -692,6 +1130,9 @@ class ScalarDistribution(BaseDistribution):
         """
         Construct the cartesian product of `self` and `other`, as though they
         were independent.
+
+        Example
+        -------
         """
         if isinstance(other, ScalarDistribution):
             from .npdist import Distribution
