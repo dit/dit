@@ -86,7 +86,7 @@ Consider example 1, which contains three independent bits. Each of these bits ar
 
 .. ipython::
 
-   In [11]: ComplexityProfile(ex1).draw()
+   In [11]: ComplexityProfile(ex1).draw();
 
 .. image:: images/profiles/complexity_profile_example_1.png
    :alt: The complexity profile for example 1
@@ -97,7 +97,7 @@ Whereas in example 2, all the information is in the center, and so each scale of
 
 .. ipython::
 
-   In [12]: ComplexityProfile(ex2).draw()
+   In [12]: ComplexityProfile(ex2).draw();
 
 .. image:: images/profiles/complexity_profile_example_2.png
    :alt: The complexity profile for example 2
@@ -108,7 +108,7 @@ Both bits in example 3 are at a scale of at least 1, but only the shared bit per
 
 .. ipython::
 
-   In [13]: ComplexityProfile(ex3).draw()
+   In [13]: ComplexityProfile(ex3).draw();
 
 .. image:: images/profiles/complexity_profile_example_3.png
    :alt: The complexity profile for example 3
@@ -119,7 +119,7 @@ Finally, example 4 (where each variable is the ``exclusive or`` of the other two
 
 .. ipython::
 
-   In [14]: ComplexityProfile(ex4).draw()
+   In [14]: ComplexityProfile(ex4).draw();
 
 .. image:: images/profiles/complexity_profile_example_4.png
    :alt: The complexity profile for example 4
@@ -135,7 +135,7 @@ For the first example, each bit is independent and so basically must be extracte
 
 .. ipython::
 
-   In [15]: MUIProfile(ex1).draw()
+   In [15]: MUIProfile(ex1).draw();
 
 .. image:: images/profiles/mui_profile_example_1.png
    :alt: The MUI profile for example 1
@@ -146,7 +146,7 @@ In the second example, there is only one bit total to be extracted, but it is sh
 
 .. ipython::
 
-   In [16]: MUIProfile(ex2).draw()
+   In [16]: MUIProfile(ex2).draw();
 
 .. image:: images/profiles/mui_profile_example_2.png
    :alt: The MUI profile for example 2
@@ -157,7 +157,7 @@ For the third example, for the first one bit of :math:`y` we can pull from the s
 
 .. ipython::
 
-   In [17]: MUIProfile(ex3).draw()
+   In [17]: MUIProfile(ex3).draw();
 
 .. image:: images/profiles/mui_profile_example_3.png
    :alt: The MUI profile for example 3
@@ -168,7 +168,7 @@ Lastly, the ``xor`` example:
 
 .. ipython::
 
-   In [18]: MUIProfile(ex4).draw()
+   In [18]: MUIProfile(ex4).draw();
 
 .. image:: images/profiles/mui_profile_example_4.png
    :alt: The MUI profile for example 4
@@ -184,7 +184,7 @@ In the first example, all the random variables are independent already, so fixin
 
 .. ipython::
 
-   In [19]: SchneidmanProfile(ex1).draw()
+   In [19]: SchneidmanProfile(ex1).draw();
 
 .. image:: images/profiles/schneidman_profile_example_1.png
    :alt: The Schneidman profile for example 1
@@ -195,7 +195,7 @@ In the second example, by learning the pairwise marginals, we reduce the entropy
 
 .. ipython::
 
-   In [20]: SchneidmanProfile(ex2).draw()
+   In [20]: SchneidmanProfile(ex2).draw();
 
 .. image:: images/profiles/schneidman_profile_example_2.png
    :alt: The Schneidman profile for example 2
@@ -206,7 +206,7 @@ For the third example, learning pairwise marginals only reduces the entropy by o
 
 .. ipython::
 
-   In [21]: SchneidmanProfile(ex3).draw()
+   In [21]: SchneidmanProfile(ex3).draw();
 
 .. image:: images/profiles/schneidman_profile_example_3.png
    :alt: The Schneidman profile for example 3
@@ -217,7 +217,7 @@ And for the ``xor``, all bits appear independent until fixing the three-way marg
 
 .. ipython::
 
-   In [22]: SchneidmanProfile(ex4).draw()
+   In [22]: SchneidmanProfile(ex4).draw();
 
 .. image:: images/profiles/schneidman_profile_example_4.png
    :alt: The Schneidman profile for example 4

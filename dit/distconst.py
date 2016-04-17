@@ -13,7 +13,7 @@ from six.moves import map, range, zip # pylint: disable=redefined-builtin
 
 from itertools import product
 from iterutils import powerset
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 
 from random import randint
 
@@ -356,7 +356,7 @@ def simplex_grid(length, subdivisions, using=None, inplace=False):
     if using is None:
         using = random_scalar_distribution(length)
 
-    if using == tuple:
+    if using is tuple:
         for pmf in gen:
             yield pmf
     elif not isinstance(using, BaseDistribution):
@@ -982,3 +982,30 @@ def random_dist_structure(outcome_length, alphabet_size):
     """
     bound = 2**(alphabet_size**outcome_length)
     return _int_to_dist(randint(0, bound), outcome_length, alphabet_size)
+
+def _combine_scalar_dists(d1, d2, op):
+    """
+    Combines `d1` and `d2` according to `op`, as though they are independent.
+
+    Parameters
+    ----------
+    d1 : ScalarDistribution
+        The first distribution
+    d2 : ScalarDistribution
+        The second distribution
+    op : function
+        Function used to combine outcomes
+
+    Returns
+    -------
+    d : ScalarDistribution
+        The two distributions combined via `op`
+    """
+    # Copy to make sure we don't lose precision when converting.
+    d2 = d2.copy(base=d1.get_base())
+
+    dist = defaultdict(float)
+    for (o1, p1), (o2, p2) in product(d1.zipped(), d2.zipped()):
+        dist[op(o1, o2)] += d1.ops.mult(p1, p2)
+
+    return ScalarDistribution(*zip(*dist.items()), base=d1.get_base())

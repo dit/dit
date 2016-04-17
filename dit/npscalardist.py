@@ -26,6 +26,9 @@ at initialization and the alphabet is a tuple of alphabets for each random
 variable. The alphabet for each random variable is a set.
 
 """
+import numbers
+from collections import defaultdict
+from itertools import product
 
 from .distribution import BaseDistribution
 from .exceptions import (
@@ -489,50 +492,819 @@ class ScalarDistribution(BaseDistribution):
 
         return d
 
+    def __meta_magic(self, other, op, msg):
+        """
+        Private method to implement generic comparisons or operations
+        outcome-wise between ScalarDistributions and either scalars or another
+        ScalarDistribution.
+
+        Parameters
+        ----------
+        other : ScalarDistribution or scalar
+            The object to compare or operate against.
+        op : function
+            The comparison or operator to implement.
+        msg : str
+            The error message to raise if the objects are not comparible.
+        """
+        if isinstance(other, ScalarDistribution):
+            from .distconst import _combine_scalar_dists
+            return _combine_scalar_dists(self, other, op)
+
+        elif isinstance(other, numbers.Number):
+            from .distconst import modify_outcomes
+            d = modify_outcomes(self, lambda x: op(x, other))
+            return d
+
+        else:
+            raise NotImplementedError(msg.format(type(self), type(other)))
+
+
     def __add__(self, other):
         """
-        Addition of distributions of the same kind.
+        Addition of ScalarDistribution with either a scalar or another
+        Scalardistribution.
 
-        `other` is assumed to have the same base as `self`.
+        Example
+        -------
+        >>> d6 + 3
+        Class:    ScalarDistribution
+        Alphabet: (4, 5, 6, 7, 8, 9)
+        Base:     linear
 
-        The other distribution is assumed to have the same meta information
-        and sample space.
+        x   p(x)
+        4   1/6
+        5   1/6
+        6   1/6
+        7   1/6
+        8   1/6
+        9   1/6
 
+        >>> d6 + d6
+        Class:    ScalarDistribution
+        Alphabet: (2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
+        Base:     linear
+
+        x    p(x)
+        2    1/36
+        3    1/18
+        4    1/12
+        5    1/9
+        6    5/36
+        7    1/6
+        8    5/36
+        9    1/9
+        10   1/12
+        11   1/18
+        12   1/36
         """
-        # Copy to make sure we don't lose precision when converting.
-        d2 = other.copy(base=self.get_base())
-
-        # If self is dense, the result will be dense.
-        # If self is sparse, the result will be sparse.
-        d = self.copy()
-        for outcome, prob in d2.zipped():
-            d[outcome] = d.ops.add(d[outcome], prob)
-
-        return d
+        op = lambda x, y: x + y
+        msg = "Cannot add types {0} and {1}"
+        return self.__meta_magic(other, op, msg)
 
     def __radd__(self, other):
         return self.__add__(other)
 
+    def __sub__(self, other):
+        """
+        Subtraction of ScalarDistribution with either a scalar or another
+        Scalardistribution.
+
+        Example
+        -------
+        >>> d6 - 3
+        Class:    ScalarDistribution
+        Alphabet: (-2, -1, 0, 1, 2, 3)
+        Base:     linear
+
+        x    p(x)
+        -2   1/6
+        -1   1/6
+        0    1/6
+        1    1/6
+        2    1/6
+        3    1/6
+
+        >>> d6 - d6
+        Class:    ScalarDistribution
+        Alphabet: (-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5)
+        Base:     linear
+
+        x    p(x)
+        -5   1/36
+        -4   1/18
+        -3   1/12
+        -2   1/9
+        -1   5/36
+        0    1/6
+        1    5/36
+        2    1/9
+        3    1/12
+        4    1/18
+        5    1/36
+        """
+        op = lambda x, y: x - y
+        msg = "Cannot subtract types {0} and {1}"
+        return self.__meta_magic(other, op, msg)
+
+    def __rsub__(self, other):
+        """
+        Subtraction of ScalarDistribution from either a scalar or another
+        Scalardistribution.
+
+        Example
+        -------
+        >>> 10 - d6
+        Class:    ScalarDistribution
+        Alphabet: (4, 5, 6, 7, 8, 9)
+        Base:     linear
+
+        x   p(x)
+        4   1/6
+        5   1/6
+        6   1/6
+        7   1/6
+        8   1/6
+        9   1/6
+
+        >>> d6 - d6
+        Class:    ScalarDistribution
+        Alphabet: (-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5)
+        Base:     linear
+
+        x    p(x)
+        -5   1/36
+        -4   1/18
+        -3   1/12
+        -2   1/9
+        -1   5/36
+        0    1/6
+        1    5/36
+        2    1/9
+        3    1/12
+        4    1/18
+        5    1/36
+        """
+        op = lambda x, y: y - x
+        msg = "Cannot subtract types {1} and {0}"
+        return self.__meta_magic(other, op, msg)
+
     def __mul__(self, other):
         """
-        Scalar multiplication on distributions.
+        Multiplication of ScalarDistribution with either a scalar or another
+        ScalarDistribution.
 
-        `other` is assumed to have the same base as `self`.
+        Example
+        -------
+        >>> 2 * d6
+        Class:    ScalarDistribution
+        Alphabet: (2, 4, 6, 8, 10, 12)
+        Base:     linear
 
-        The appropriate operation is performed assuming that the scalar
-        multiple is of the same base as `self`. If vanilla scalar
-        multiplication is desired, perform the operation directly on
-        `self.pmf`.
+        x    p(x)
+        2    1/6
+        4    1/6
+        6    1/6
+        8    1/6
+        10   1/6
+        12   1/6
 
-        Note, we do not implement distribution-to-distribution multiplication.
+        >>> d6 * d6
+        Class:    ScalarDistribution
+        Alphabet: (1, 2, 3, 4, 5, 6, 8, 9, 10, 12, 15, 16, 18, 20, 24, 25, 30, 36)
+        Base:     linear
 
+        x    p(x)
+        1    1/36
+        2    1/18
+        3    1/18
+        4    1/12
+        5    1/18
+        6    1/9
+        8    1/18
+        9    1/36
+        10   1/18
+        12   1/9
+        15   1/18
+        16   1/36
+        18   1/18
+        20   1/18
+        24   1/18
+        25   1/36
+        30   1/18
+        36   1/36
         """
-        d = self.copy()
-        d.ops.mult_inplace(d.pmf, other)
-        return d
+        op = lambda x, y: x * y
+        msg = "Cannot multiply types {0} and {1}"
+        return self.__meta_magic(other, op, msg)
 
     def __rmul__(self, other):
         return self.__mul__(other)
+
+    def __div__(self, other):
+        """
+        Division of ScalarDistribution with either a scalar or another
+        Scalardistribution.
+
+        Example
+        -------
+        >>> d6 / 3
+        Class:    ScalarDistribution
+        Alphabet: (0.3333333333333333, 0.6666666666666666, 1.0, 1.3333333333333333, 1.6666666666666667, 2.0)
+        Base:     linear
+
+        x                p(x)
+        0.333333333333   1/6
+        0.666666666667   1/6
+        1.0              1/6
+        1.33333333333    1/6
+        1.66666666667    1/6
+        2.0              1/6
+
+        >>> d6 / d6
+        Class:    ScalarDistribution
+        Alphabet: (0.16666666666666666, 0.2, 0.25, 0.3333333333333333, 0.4, 0.5, 0.6, 0.6666666666666666, 0.75, 0.8, 0.8333333333333334, 1.0, 1.2, 1.25, 1.3333333333333333, 1.5, 1.6666666666666667, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0)
+        Base:     linear
+
+        x                p(x)
+        0.166666666667   1/36
+        0.2              1/36
+        0.25             1/36
+        0.333333333333   1/18
+        0.4              1/36
+        0.5              1/12
+        0.6              1/36
+        0.666666666667   1/18
+        0.75             1/36
+        0.8              1/36
+        0.833333333333   1/36
+        1.0              1/6
+        1.2              1/36
+        1.25             1/36
+        1.33333333333    1/36
+        1.5              1/18
+        1.66666666667    1/36
+        2.0              1/12
+        2.5              1/36
+        3.0              1/18
+        4.0              1/36
+        5.0              1/36
+        6.0              1/36
+        """
+        op = lambda x, y: x / y
+        msg = "Cannot divide types {0} by {1}"
+        return self.__meta_magic(other, op, msg)
+
+    def __rdiv__(self, other):
+        """
+        Division of ScalarDistribution from either a scalar or another
+        Scalardistribution.
+
+        Example
+        -------
+        >>> 6 / d6
+        Class:    ScalarDistribution
+        Alphabet: (1.0, 1.2, 1.5, 2.0, 3.0, 6.0)
+        Base:     linear
+
+        x     p(x)
+        1.0   1/6
+        1.2   1/6
+        1.5   1/6
+        2.0   1/6
+        3.0   1/6
+        6.0   1/6
+
+        >>> d6 / d6
+        Class:    ScalarDistribution
+        Alphabet: (0.16666666666666666, 0.2, 0.25, 0.3333333333333333, 0.4, 0.5, 0.6, 0.6666666666666666, 0.75, 0.8, 0.8333333333333334, 1.0, 1.2, 1.25, 1.3333333333333333, 1.5, 1.6666666666666667, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0)
+        Base:     linear
+
+        x                p(x)
+        0.166666666667   1/36
+        0.2              1/36
+        0.25             1/36
+        0.333333333333   1/18
+        0.4              1/36
+        0.5              1/12
+        0.6              1/36
+        0.666666666667   1/18
+        0.75             1/36
+        0.8              1/36
+        0.833333333333   1/36
+        1.0              1/6
+        1.2              1/36
+        1.25             1/36
+        1.33333333333    1/36
+        1.5              1/18
+        1.66666666667    1/36
+        2.0              1/12
+        2.5              1/36
+        3.0              1/18
+        4.0              1/36
+        5.0              1/36
+        6.0              1/36
+        """
+        op = lambda x, y: y / x
+        msg = "Cannot divide types {1} by {0}"
+        return self.__meta_magic(other, op, msg)
+
+    def __truediv__(self, other):
+        """
+        Division of ScalarDistribution with either a scalar or another
+        Scalardistribution.
+
+        Example
+        -------
+        >>> d6 / 3
+        Class:    ScalarDistribution
+        Alphabet: (0.3333333333333333, 0.6666666666666666, 1.0, 1.3333333333333333, 1.6666666666666667, 2.0)
+        Base:     linear
+
+        x                p(x)
+        0.333333333333   1/6
+        0.666666666667   1/6
+        1.0              1/6
+        1.33333333333    1/6
+        1.66666666667    1/6
+        2.0              1/6
+
+        >>> d6 / d6
+        Class:    ScalarDistribution
+        Alphabet: (0.16666666666666666, 0.2, 0.25, 0.3333333333333333, 0.4, 0.5, 0.6, 0.6666666666666666, 0.75, 0.8, 0.8333333333333334, 1.0, 1.2, 1.25, 1.3333333333333333, 1.5, 1.6666666666666667, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0)
+        Base:     linear
+
+        x                p(x)
+        0.166666666667   1/36
+        0.2              1/36
+        0.25             1/36
+        0.333333333333   1/18
+        0.4              1/36
+        0.5              1/12
+        0.6              1/36
+        0.666666666667   1/18
+        0.75             1/36
+        0.8              1/36
+        0.833333333333   1/36
+        1.0              1/6
+        1.2              1/36
+        1.25             1/36
+        1.33333333333    1/36
+        1.5              1/18
+        1.66666666667    1/36
+        2.0              1/12
+        2.5              1/36
+        3.0              1/18
+        4.0              1/36
+        5.0              1/36
+        6.0              1/36
+        """
+        op = lambda x, y: (1.0*x) / y
+        msg = "Cannot divide types {0} by {1}"
+        return self.__meta_magic(other, op, msg)
+
+    def __rtruediv__(self, other):
+        """
+        Division of ScalarDistribution from either a scalar or another
+        Scalardistribution.
+
+        Example
+        -------
+        >>> 6 / d6
+        Class:    ScalarDistribution
+        Alphabet: (1.0, 1.2, 1.5, 2.0, 3.0, 6.0)
+        Base:     linear
+
+        x     p(x)
+        1.0   1/6
+        1.2   1/6
+        1.5   1/6
+        2.0   1/6
+        3.0   1/6
+        6.0   1/6
+
+        >>> d6 / d6
+        Class:    ScalarDistribution
+        Alphabet: (0.16666666666666666, 0.2, 0.25, 0.3333333333333333, 0.4, 0.5, 0.6, 0.6666666666666666, 0.75, 0.8, 0.8333333333333334, 1.0, 1.2, 1.25, 1.3333333333333333, 1.5, 1.6666666666666667, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0)
+        Base:     linear
+
+        x                p(x)
+        0.166666666667   1/36
+        0.2              1/36
+        0.25             1/36
+        0.333333333333   1/18
+        0.4              1/36
+        0.5              1/12
+        0.6              1/36
+        0.666666666667   1/18
+        0.75             1/36
+        0.8              1/36
+        0.833333333333   1/36
+        1.0              1/6
+        1.2              1/36
+        1.25             1/36
+        1.33333333333    1/36
+        1.5              1/18
+        1.66666666667    1/36
+        2.0              1/12
+        2.5              1/36
+        3.0              1/18
+        4.0              1/36
+        5.0              1/36
+        6.0              1/36
+        """
+        op = lambda x, y: (1.0*y) / x
+        msg = "Cannot divide types {1} by {0}"
+        return self.__meta_magic(other, op, msg)
+
+    def __floordiv__(self, other):
+        """
+        Integer division of ScalarDistribution with either a scalar or another
+        Scalardistribution.
+
+        Example
+        -------
+        >>> d6 // 3
+        Class:    ScalarDistribution
+        Alphabet: (0, 1, 2)
+        Base:     linear
+
+        x   p(x)
+        0   1/3
+        1   1/2
+        2   1/6
+
+        >>> d6 // d6
+        Class:    ScalarDistribution
+        Alphabet: (0, 1, 2, 3, 4, 5, 6)
+        Base:     linear
+
+        x   p(x)
+        0   5/12
+        1   1/3
+        2   1/9
+        3   1/18
+        4   1/36
+        5   1/36
+        6   1/36
+        """
+        op = lambda x, y: x // y
+        msg = "Cannot divide types {0} by {1}"
+        return self.__meta_magic(other, op, msg)
+
+    def __rfloordiv__(self, other):
+        """
+        Integer division of ScalarDistribution from either a scalar or another
+        Scalardistribution.
+
+        Example
+        -------
+        >>> 3 // d6
+        Class:    ScalarDistribution
+        Alphabet: (0, 1, 3)
+        Base:     linear
+
+        x   p(x)
+        0   1/2
+        1   1/3
+        3   1/6
+
+        >>> d6 // d6
+        Class:    ScalarDistribution
+        Alphabet: (0, 1, 2, 3, 4, 5, 6)
+        Base:     linear
+
+        x   p(x)
+        0   5/12
+        1   1/3
+        2   1/9
+        3   1/18
+        4   1/36
+        5   1/36
+        6   1/36
+        """
+        op = lambda x, y: y // x
+        msg = "Cannot divide types {1} by {0}"
+        return self.__meta_magic(other, op, msg)
+
+    def __mod__(self, other):
+        """
+        Modulo of ScalarDistribution with either a scalar or another
+        Scalardistribution.
+
+        Example
+        -------
+        >>> d6 % 2
+        Class:    ScalarDistribution
+        Alphabet: (0, 1)
+        Base:     linear
+
+        x   p(x)
+        0   1/2
+        1   1/2
+
+        >>> d6 % d6
+        Class:    ScalarDistribution
+        Alphabet: (0, 1, 2, 3, 4, 5)
+        Base:     linear
+
+        x   p(x)
+        0   7/18
+        1   5/18
+        2   1/6
+        3   1/12
+        4   1/18
+        5   1/36
+        """
+        op = lambda x, y: x % y
+        msg = "Cannot mod types {0} by {1}"
+        return self.__meta_magic(other, op, msg)
+
+    def __rmod__(self, other):
+        """
+        Modulo of ScalarDistribution from either a scalar or another
+        Scalardistribution.
+
+        Example
+        -------
+        >>> 3 % d6
+        Class:    ScalarDistribution
+        Alphabet: (0, 1, 3)
+        Base:     linear
+
+        x   p(x)
+        0   1/3
+        1   1/6
+        3   1/2
+
+        >>> d6 % d6
+        Class:    ScalarDistribution
+        Alphabet: (0, 1, 2, 3, 4, 5)
+        Base:     linear
+
+        x   p(x)
+        0   7/18
+        1   5/18
+        2   1/6
+        3   1/12
+        4   1/18
+        5   1/36
+        """
+        op = lambda x, y: y % x
+        msg = "Cannot mod types {1} by {0}"
+        return self.__meta_magic(other, op, msg)
+
+    def __lt__(self, other):
+        """
+        Determine the distribution of outcomes that are less than either a
+        scalar or another ScalarDistribution.
+
+        Example
+        -------
+        >>> d6 < 4
+        Class:    ScalarDistribution
+        Alphabet: (False, True)
+        Base:     linear
+
+        x       p(x)
+        False   1/2
+        True    1/2
+
+        >>> d6 < d6
+        Class:    ScalarDistribution
+        Alphabet: (False, True)
+        Base:     linear
+
+        x       p(x)
+        False   7/12
+        True    5/12
+        """
+        op = lambda x, y: x < y
+        msg = "Cannot compare types {0} and {1}"
+        return self.__meta_magic(other, op, msg)
+
+    def __le__(self, other):
+        """
+        Determine the distribution of outcomes that are less than or equal to
+        either a scalar or another ScalarDistribution.
+
+        Example
+        -------
+        >>> d6 <= 4
+        Class:    ScalarDistribution
+        Alphabet: (False, True)
+        Base:     linear
+
+        x       p(x)
+        False   1/3
+        True    2/3
+
+        >>> d6 <= d6
+        Class:    ScalarDistribution
+        Alphabet: (False, True)
+        Base:     linear
+
+        x       p(x)
+        False   5/12
+        True    7/12
+        """
+        op = lambda x, y: x <= y
+        msg = "Cannot compare types {0} and {1}"
+        return self.__meta_magic(other, op, msg)
+
+    def __eq__(self, other):
+        """
+        Determine the distribution of outcomes that are equal to either a scalar
+        or another ScalarDistribution.
+
+        Example
+        -------
+        >>> d6 == 6
+        Class:    ScalarDistribution
+        Alphabet: (False, True)
+        Base:     linear
+
+        x       p(x)
+        False   5/6
+        True    1/6
+
+        >>> d6 == d6
+        Class:    ScalarDistribution
+        Alphabet: (False, True)
+        Base:     linear
+
+        x       p(x)
+        False   5/6
+        True    1/6
+        """
+        op = lambda x, y: x == y
+        msg = "Cannot test equality of types {0} and {1}"
+        return self.__meta_magic(other, op, msg)
+
+    def __ne__(self, other):
+        """
+        Determine the distribution of outcomes that are not equal to either a
+        scalar or another ScalarDistribution.
+
+        Example
+        -------
+        >>> d6 != 6
+        Class:    ScalarDistribution
+        Alphabet: (False, True)
+        Base:     linear
+
+        x       p(x)
+        False   1/6
+        True    5/6
+
+        >>> d6 != d6
+        Class:    ScalarDistribution
+        Alphabet: (False, True)
+        Base:     linear
+
+        x       p(x)
+        False   1/6
+        True    5/6
+        """
+        op = lambda x, y: x != y
+        msg = "Cannot test equality of types {0} and {1}"
+        return self.__meta_magic(other, op, msg)
+
+    def __gt__(self, other):
+        """
+        Determine the distribution of outcomes that are greater than either a
+        scalar or another ScalarDistribution.
+
+        Example
+        -------
+        >>> d6 > 3
+        Class:    ScalarDistribution
+        Alphabet: (False, True)
+        Base:     linear
+
+        x       p(x)
+        False   1/2
+        True    1/2
+
+        >>> d6 > d6
+        Class:    ScalarDistribution
+        Alphabet: (False, True)
+        Base:     linear
+
+        x       p(x)
+        False   7/12
+        True    5/12
+        """
+        op = lambda x, y: x > y
+        msg = "Cannot compare types {0} and {1}"
+        return self.__meta_magic(other, op, msg)
+
+    def __ge__(self, other):
+        """
+        Determine the distribution of outcomes that are greater than or equal to
+        either a scalar or another ScalarDistribution.
+
+        Example
+        -------
+        >>> d6 >= 4
+        Class:    ScalarDistribution
+        Alphabet: (False, True)
+        Base:     linear
+
+        x       p(x)
+        False   1/2
+        True    1/2
+
+        >>> d6 >= d6
+        Class:    ScalarDistribution
+        Alphabet: (False, True)
+        Base:     linear
+
+        x       p(x)
+        False   5/12
+        True    7/12
+        """
+        op = lambda x, y: x >= y
+        msg = "Cannot compare types {0} and {1}"
+        return self.__meta_magic(other, op, msg)
+
+    def __matmul__(self, other):
+        """
+        Construct the cartesian product of `self` and `other`, as though they
+        were independent.
+
+        Example
+        -------
+        >>> d6 @ d6
+        Class:          Distribution
+        Alphabet:       (1, 2, 3, 4, 5, 6) for all rvs
+        Base:           linear
+        Outcome Class:  tuple
+        Outcome Length: 2
+        RV Names:       None
+
+        x        p(x)
+        (1, 1)   1/36
+        (1, 2)   1/36
+        (1, 3)   1/36
+        (1, 4)   1/36
+        (1, 5)   1/36
+        (1, 6)   1/36
+        (2, 1)   1/36
+        (2, 2)   1/36
+        (2, 3)   1/36
+        (2, 4)   1/36
+        (2, 5)   1/36
+        (2, 6)   1/36
+        (3, 1)   1/36
+        (3, 2)   1/36
+        (3, 3)   1/36
+        (3, 4)   1/36
+        (3, 5)   1/36
+        (3, 6)   1/36
+        (4, 1)   1/36
+        (4, 2)   1/36
+        (4, 3)   1/36
+        (4, 4)   1/36
+        (4, 5)   1/36
+        (4, 6)   1/36
+        (5, 1)   1/36
+        (5, 2)   1/36
+        (5, 3)   1/36
+        (5, 4)   1/36
+        (5, 5)   1/36
+        (5, 6)   1/36
+        (6, 1)   1/36
+        (6, 2)   1/36
+        (6, 3)   1/36
+        (6, 4)   1/36
+        (6, 5)   1/36
+        (6, 6)   1/36
+        """
+        if isinstance(other, ScalarDistribution):
+            from .npdist import Distribution
+            # Copy to make sure we don't lose precision when converting.
+            d2 = other.copy(base=self.get_base())
+
+            dist = defaultdict(float)
+            for (o1, p1), (o2, p2) in product(self.zipped(), d2.zipped()):
+                dist[(o1, o2)] += self.ops.mult(p1, p2)
+
+            return Distribution(*zip(*dist.items()), base=self.get_base())
+        else:
+            msg = "Cannot construct a joint from types {0} and {1}"
+            raise NotImplementedError(msg.format(type(self), type(other)))
+
+    def __rmatmul__(self, other): # pragma: no cover
+        return other.__matmul__(self)
+
+    def __hash__(self):
+        """
+        ToDo
+        ----
+        Create a real hash function here.
+        """
+        return id(self)
 
     def __contains__(self, outcome):
         """

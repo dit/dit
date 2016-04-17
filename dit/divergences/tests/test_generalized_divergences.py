@@ -5,6 +5,8 @@ Tests for dit.divergences.kullback_leibler_divergence.
 from __future__ import division
 from functools import partial
 
+from itertools import combinations, product
+
 from nose.tools import assert_almost_equal, assert_not_equal, assert_raises, assert_greater
 
 import numpy as np
@@ -13,6 +15,8 @@ from dit import Distribution
 from dit.exceptions import ditException
 from dit.divergences import kullback_leibler_divergence, alpha_divergence, renyi_divergence, tsallis_divergence, hellinger_divergence, f_divergence, hellinger_sum
 from dit.other import renyi_entropy, tsallis_entropy
+
+divergences = [alpha_divergence, renyi_divergence, tsallis_divergence, hellinger_divergence]
 
 def get_dists_1():
     """
@@ -49,7 +53,6 @@ def test_positive_definite():
     Tests that divergences are zero when the input distributions are the same, and that the Hellinger sum is equal to 1.
     """
     alphas = [0, 1, 2, 0.5]
-    divergences = [alpha_divergence, renyi_divergence, tsallis_divergence, hellinger_divergence]
     for dist in get_dists_1():
         for alpha in alphas:
             for divergence in divergences:
@@ -61,31 +64,26 @@ def test_positivity():
     Tests that the divergence functions return positive values for non-equal arguments.
     """
     alphas = [0.1, 0.5, 1, 1.5]
-    divergences = [alpha_divergence, renyi_divergence, tsallis_divergence, hellinger_divergence]
     test_dists = [get_dists_2(), get_dists_3()]
     for alpha in alphas:
         for dists in test_dists:
-            for dist1 in dists:
-                for dist2 in dists:
-                    if dist1 == dist2:
-                        continue
-                    for divergence in divergences:
-                        assert_greater(divergence(dist1, dist2, alpha), 0)
+            for dist1, dist2 in combinations(dists, 2):
+                for divergence in divergences:
+                    assert_greater(divergence(dist1, dist2, alpha), 0)
 
 def test_alpha_symmetry():
     """
-    Tests the alpha -> -alpha symmetry for the alpha divergence, and a similar 
+    Tests the alpha -> -alpha symmetry for the alpha divergence, and a similar
     symmetry for the Hellinger and Renyi divergences.
     """
     alphas = [-1, 0, 0.5, 1, 2]
     test_dists = [get_dists_2(), get_dists_3()]
     for alpha in alphas:
         for dists in test_dists:
-            for dist1 in dists:
-                for dist2 in dists:
-                    assert_almost_equal(alpha_divergence(dist1, dist2, alpha), alpha_divergence(dist2, dist1, -alpha))
-                    assert_almost_equal((1.-alpha)*hellinger_divergence(dist1, dist2, alpha), alpha*hellinger_divergence(dist2, dist1, 1.-alpha))
-                    assert_almost_equal((1.-alpha)*renyi_divergence(dist1, dist2, alpha), alpha*renyi_divergence(dist2, dist1, 1.-alpha))
+            for dist1, dist2 in product(dists, repeat=2):
+                assert_almost_equal(alpha_divergence(dist1, dist2, alpha), alpha_divergence(dist2, dist1, -alpha))
+                assert_almost_equal((1.-alpha)*hellinger_divergence(dist1, dist2, alpha), alpha*hellinger_divergence(dist2, dist1, 1.-alpha))
+                assert_almost_equal((1.-alpha)*renyi_divergence(dist1, dist2, alpha), alpha*renyi_divergence(dist2, dist1, 1.-alpha))
 
 def test_divergences_to_kl():
     """
@@ -93,16 +91,19 @@ def test_divergences_to_kl():
     """
     test_dists = [get_dists_2(), get_dists_3()]
     for dists in test_dists:
-        for dist1 in dists:
-            for dist2 in dists:
-                assert_almost_equal(alpha_divergence(dist1, dist2, alpha=-1), kullback_leibler_divergence(dist2, dist1))
-                if dist1 != dist2:
+        for dist1, dist2 in product(dists, repeat=2):
+            assert_almost_equal(alpha_divergence(dist1, dist2, alpha=-1), kullback_leibler_divergence(dist2, dist1))
+
+            if dist1 is not dist2:
+                assert_not_equal(alpha_divergence(dist1, dist2, alpha=0), kullback_leibler_divergence(dist2, dist1))
+
+            for divergence in divergences:
+
+                assert_almost_equal(divergence(dist1, dist2, alpha=1), kullback_leibler_divergence(dist1, dist2))
+
+                if dist1 is not dist2:
                     assert_not_equal(alpha_divergence(dist1, dist2, alpha=0), kullback_leibler_divergence(dist2, dist1))
-                for divergence in [renyi_divergence, tsallis_divergence, alpha_divergence, hellinger_divergence]:
-                    assert_almost_equal(divergence(dist1, dist2, alpha=1), kullback_leibler_divergence(dist1, dist2))
-                    if dist1 != dist2:
-                        assert_not_equal(alpha_divergence(dist1, dist2, alpha=0), kullback_leibler_divergence(dist2, dist1))
-                        assert_not_equal(alpha_divergence(dist1, dist2, alpha=2), kullback_leibler_divergence(dist2, dist1))
+                    assert_not_equal(alpha_divergence(dist1, dist2, alpha=2), kullback_leibler_divergence(dist2, dist1))
 
 def test_exceptions():
     """
@@ -116,7 +117,6 @@ def test_exceptions():
              [d3, d4, [1], None],
              [d5, d1, [0], [1]],
              [d4, d3, [1], [0]]]
-    divergences = [alpha_divergence, renyi_divergence, tsallis_divergence, hellinger_divergence]
     alphas = [0, 1, 2, 0.5]
     for first, second, rvs, crvs in tests:
         for divergence in divergences:
@@ -146,7 +146,7 @@ def test_renyi():
         h = renyi_entropy(dist1, alpha)
         h_u = renyi_entropy(uniform, alpha)
         div = renyi_divergence(dist1, uniform, alpha)
-        assert_almost_equal(h, h_u - div) 
+        assert_almost_equal(h, h_u - div)
 
 def test_f_divergence(places=1):
     """
@@ -163,7 +163,7 @@ def test_f_divergence(places=1):
             def f(x):
                 return 4. / (1. - alpha*alpha) * (1. - np.power(x, (1. + alpha)/2))
         return f
-    
+
     def f_tsallis(alpha):
         def f(x):
             return (np.power(x, 1. - alpha) - 1.) / (alpha - 1.)

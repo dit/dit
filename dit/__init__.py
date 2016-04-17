@@ -33,5 +33,6 @@ import dit.divergences
 import dit.example_dists
 import dit.inference
 import dit.other
+import dit.profiles
 import dit.multivariate
 import dit.shannon

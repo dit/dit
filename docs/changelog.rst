@@ -4,6 +4,7 @@ Changelog
 
 * :release:`1.0.0 <future>`
 
+* :feature:`63` Add scalar operations for ScalarDistributions.
 * :feature:`96` Add the marginal utility of information.
 * :feature:`95` Add the complexity profile.
 * :feature:`13` Add the Joint Minimal Sufficient Statistic.

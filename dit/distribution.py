@@ -45,6 +45,8 @@ from .math import approximate_fraction
 
 from .exceptions import ditException
 
+from .params import ditParams
+
 from six.moves import map, zip # pylint: disable=redefined-builtin
 
 def prepare_string(dist, digits=None, exact=False, tol=1e-9,
@@ -323,6 +325,14 @@ class BaseDistribution(object):
         """
         return len(self.outcomes)
 
+    def __repr__(self):
+        """
+        """
+        if ditParams['repr.print']:
+            return self.to_string()
+        else:
+            return super(self, BaseDistribution).__repr__()
+
     def __reversed__(self):
         """
         Returns a reverse iterator over the outcomes.
@@ -586,7 +596,7 @@ class BaseDistribution(object):
         """
         return dict(self.zipped())
 
-    def to_string(self, digits=None, exact=False, tol=1e-9):
+    def to_string(self, digits=None, exact=None, tol=1e-9):
         """
         Returns a string representation of the distribution.
 
@@ -615,6 +625,9 @@ class BaseDistribution(object):
         """
         from six import StringIO
         s = StringIO()
+
+        if exact is None:
+            exact = ditParams['print.exact']
 
         x = prepare_string(self, digits, exact, tol)
         pmf, outcomes, base, colsep, max_length, pstr = x
@@ -753,4 +766,3 @@ class BaseDistribution(object):
 
     def __rmul__(self, other):
         raise NotImplementedError
-
