@@ -1061,6 +1061,23 @@ class ScalarDistribution(BaseDistribution):
 
         Example
         -------
+        >>> d6 < 4
+        Class:    ScalarDistribution
+        Alphabet: (False, True)
+        Base:     linear
+
+        x       p(x)
+        False   1/2
+        True    1/2
+
+        >>> d6 < d6
+        Class:    ScalarDistribution
+        Alphabet: (False, True)
+        Base:     linear
+
+        x       p(x)
+        False   7/12
+        True    5/12
         """
         op = lambda x, y: x < y
         msg = "Cannot compare types {0} and {1}"
@@ -1073,6 +1090,23 @@ class ScalarDistribution(BaseDistribution):
 
         Example
         -------
+        >>> d6 <= 4
+        Class:    ScalarDistribution
+        Alphabet: (False, True)
+        Base:     linear
+
+        x       p(x)
+        False   1/3
+        True    2/3
+
+        >>> d6 <= d6
+        Class:    ScalarDistribution
+        Alphabet: (False, True)
+        Base:     linear
+
+        x       p(x)
+        False   5/12
+        True    7/12
         """
         op = lambda x, y: x <= y
         msg = "Cannot compare types {0} and {1}"
@@ -1085,6 +1119,23 @@ class ScalarDistribution(BaseDistribution):
 
         Example
         -------
+        >>> d6 == 6
+        Class:    ScalarDistribution
+        Alphabet: (False, True)
+        Base:     linear
+
+        x       p(x)
+        False   5/6
+        True    1/6
+
+        >>> d6 == d6
+        Class:    ScalarDistribution
+        Alphabet: (False, True)
+        Base:     linear
+
+        x       p(x)
+        False   5/6
+        True    1/6
         """
         op = lambda x, y: x == y
         msg = "Cannot test equality of types {0} and {1}"
@@ -1097,6 +1148,23 @@ class ScalarDistribution(BaseDistribution):
 
         Example
         -------
+        >>> d6 != 6
+        Class:    ScalarDistribution
+        Alphabet: (False, True)
+        Base:     linear
+
+        x       p(x)
+        False   1/6
+        True    5/6
+
+        >>> d6 != d6
+        Class:    ScalarDistribution
+        Alphabet: (False, True)
+        Base:     linear
+
+        x       p(x)
+        False   1/6
+        True    5/6
         """
         op = lambda x, y: x != y
         msg = "Cannot test equality of types {0} and {1}"
@@ -1109,6 +1177,23 @@ class ScalarDistribution(BaseDistribution):
 
         Example
         -------
+        >>> d6 > 3
+        Class:    ScalarDistribution
+        Alphabet: (False, True)
+        Base:     linear
+
+        x       p(x)
+        False   1/2
+        True    1/2
+
+        >>> d6 > d6
+        Class:    ScalarDistribution
+        Alphabet: (False, True)
+        Base:     linear
+
+        x       p(x)
+        False   7/12
+        True    5/12
         """
         op = lambda x, y: x > y
         msg = "Cannot compare types {0} and {1}"
@@ -1121,6 +1206,23 @@ class ScalarDistribution(BaseDistribution):
 
         Example
         -------
+        >>> d6 >= 4
+        Class:    ScalarDistribution
+        Alphabet: (False, True)
+        Base:     linear
+
+        x       p(x)
+        False   1/2
+        True    1/2
+
+        >>> d6 >= d6
+        Class:    ScalarDistribution
+        Alphabet: (False, True)
+        Base:     linear
+
+        x       p(x)
+        False   5/12
+        True    7/12
         """
         op = lambda x, y: x >= y
         msg = "Cannot compare types {0} and {1}"
@@ -1133,6 +1235,51 @@ class ScalarDistribution(BaseDistribution):
 
         Example
         -------
+        >>> d6 @ d6
+        Class:          Distribution
+        Alphabet:       (1, 2, 3, 4, 5, 6) for all rvs
+        Base:           linear
+        Outcome Class:  tuple
+        Outcome Length: 2
+        RV Names:       None
+
+        x        p(x)
+        (1, 1)   1/36
+        (1, 2)   1/36
+        (1, 3)   1/36
+        (1, 4)   1/36
+        (1, 5)   1/36
+        (1, 6)   1/36
+        (2, 1)   1/36
+        (2, 2)   1/36
+        (2, 3)   1/36
+        (2, 4)   1/36
+        (2, 5)   1/36
+        (2, 6)   1/36
+        (3, 1)   1/36
+        (3, 2)   1/36
+        (3, 3)   1/36
+        (3, 4)   1/36
+        (3, 5)   1/36
+        (3, 6)   1/36
+        (4, 1)   1/36
+        (4, 2)   1/36
+        (4, 3)   1/36
+        (4, 4)   1/36
+        (4, 5)   1/36
+        (4, 6)   1/36
+        (5, 1)   1/36
+        (5, 2)   1/36
+        (5, 3)   1/36
+        (5, 4)   1/36
+        (5, 5)   1/36
+        (5, 6)   1/36
+        (6, 1)   1/36
+        (6, 2)   1/36
+        (6, 3)   1/36
+        (6, 4)   1/36
+        (6, 5)   1/36
+        (6, 6)   1/36
         """
         if isinstance(other, ScalarDistribution):
             from .npdist import Distribution
