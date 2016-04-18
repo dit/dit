@@ -1,4 +1,5 @@
 Cython
 cvxopt
 ipython
+numdifftools
 scipy >= 0.15.0
