@@ -3,7 +3,6 @@ name: dit_env
 dependencies:
   - contextlib2
   - cvxopt
-  - iterutils >= 0.1.6
   - numpy >= 1.6
   - releases
   - scipy >= 0.15
@@ -12,3 +11,4 @@ dependencies:
   - sphinxcontrib-bibtex
   - pip:
     - ipython[nbconvert]
+    - iterutils >= 0.1.6
