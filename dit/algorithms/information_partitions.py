@@ -147,9 +147,9 @@ class ShannonPartition(object):
         ### TODO: add some logic for the format string, so things look nice
         # with arbitrary values
         table.float_format['bits'] = ' 5.{0}'.format(digits)
-        key_function = lambda row: len(row[0][1])
+        key_function = lambda row: (len(row[0][0]), row[0][0], row[0][1])
         items = self.atoms.items()
-        for (rvs, crvs), value in reversed(sorted(items, key=key_function)):
+        for (rvs, crvs), value in sorted(items, key=key_function):
             # gets rid of pesky -0.0 display values
             if close(value, 0.0):
                 value = 0.0
