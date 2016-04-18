@@ -3,6 +3,7 @@ name: dit_env
 dependencies:
   - contextlib2
   - cvxopt
+  - matplotlib
   - numpy >= 1.6
   - scipy >= 0.15
   - six >= 1.4
