@@ -48,5 +48,22 @@ def test_sp3():
                   'I[1:2|0]'
                  ])
     atoms2 = ip.get_atoms()
-    assert_equal(atoms1 - atoms2, set())
-    assert_equal(atoms2 - atoms1, set())
+    assert_equal((atoms1 - atoms2) | (atoms2 - atoms1), set())
+
+def test_sp4():
+    """ Test printing """
+    d = n_mod_m(3, 2)
+    ip = ShannonPartition(d)
+    string = """\
++----------+--------+
+| measure  |  bits  |
++----------+--------+
+| H[2|0,1] |  0.000 |
+| H[1|0,2] |  0.000 |
+| H[0|1,2] |  0.000 |
+| I[1:2|0] |  1.000 |
+| I[0:1|2] |  1.000 |
+| I[0:2|1] |  1.000 |
+| I[0:1:2] | -1.000 |
++----------+--------+"""
+    assert_equal(ip.to_string(), string)

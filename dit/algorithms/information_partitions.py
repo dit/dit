@@ -13,6 +13,7 @@ from prettytable import PrettyTable
 from networkx import DiGraph, dfs_preorder_nodes as children, topological_sort
 
 from ..shannon import entropy as H
+from ..math import close
 
 __all__ = ['ShannonPartition',
           ]
@@ -149,8 +150,9 @@ class ShannonPartition(object):
         key_function = lambda row: len(row[0][1])
         items = self.atoms.items()
         for (rvs, crvs), value in reversed(sorted(items, key=key_function)):
-            if abs(value) < 1e-10: # TODO: make more robust
-                value = 0.0        # gets rid of pesky -0.0 display values
+            # gets rid of pesky -0.0 display values
+            if close(value, 0.0):
+                value = 0.0
             table.add_row([self._stringify(rvs, crvs), value])
         return table.get_string()
 
