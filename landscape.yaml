@@ -3,3 +3,9 @@ ignore-paths:
   - dit/utils/exitstack.py
 ignore-patterns:
   - __init__.py
+requirements:
+  - requirements.txt
+  - requirements-optional.txt
+python-targets:
+  - 2
+  - 3
