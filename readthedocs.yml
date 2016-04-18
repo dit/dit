@@ -1,0 +1,6 @@
+formats:
+  - pdf
+conda:
+  file: doc_environment.yml
+python:
+  pip_install: true
