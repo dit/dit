@@ -7,6 +7,8 @@ The base information profile.
 
 from abc import ABCMeta, abstractmethod
 
+from ..math import close
+
 profile_docstring = """
 {name}
 
@@ -116,5 +118,12 @@ class BaseProfile(object):
 
         ax.set_xlabel(self.xlabel)
         ax.set_ylabel(self.ylabel)
+
+        low, high = ax.get_ylim()
+        if close(low, 0, atol=1e-5):
+            low = -0.1
+        if close(high, 0, atol=1e-5):
+            high = 0.1
+        ax.set_ylim((low, high))
 
         return ax

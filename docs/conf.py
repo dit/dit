@@ -39,12 +39,18 @@ extensions = ['releases',
               'sphinxcontrib.bibtex',
               'IPython.sphinxext.ipython_console_highlighting',
               'IPython.sphinxext.ipython_directive',
+              'matplotlib.sphinxext.plot_directive',
              ]
 
-ipython_mplbackend = None
+ipython_mplbackend = 'agg'
 ipython_execlines = ['from __future__ import division, print_function',
                      'import numpy as np',
-                     'import dit']
+                     'import matplotlib.pyplot as plt',
+                     'plt.rcParams["figure.figsize"] = (6, 4)',
+                     'plt.rcParams["savefig.facecolor"] = (1, 1, 1, 0)',
+                     'import dit',
+                    ]
+ipython_savefig_dir = 'images/mpl_cache'
 
 # Use our local configuration for mathjax:
 mathjax_path = "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML,http://dit.io/MathJax/local/dit.js"
