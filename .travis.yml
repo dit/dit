@@ -61,8 +61,8 @@ install:
 
 before_script:
   ### Use this to prepare your build for testing
-  - conda install -n test-environment nose coverage
-  - pip install coveralls
+  - conda install -n test-environment nose
+  - pip install --upgrade coverage coveralls
   - conda install scipy cvxopt
 
 script:
