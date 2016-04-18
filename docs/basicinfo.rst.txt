@@ -15,6 +15,9 @@ Dependencies:
 
 Optional Dependencies:
    * cython
+   * cvxopt
+   * numdifftools
+   * scipy
 
 Install:
    Until ``dit`` is available on PyPI, the easiest way to install is:

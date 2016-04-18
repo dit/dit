@@ -27,6 +27,9 @@ Dependencies:
 
 Optional Dependencies:
    * cython
+   * cvxopt
+   * numdifftools
+   * scipy
 
 Install:
    Until ``dit`` is available on PyPI, the easiest way to install is:
@@ -35,7 +38,7 @@ Install:
 
       pip install git+https://github.com/dit/dit/#egg=dit
 
-   Alternatively, you can clone this repository, move into the newly created ``dit`` directory, 
+   Alternatively, you can clone this repository, move into the newly created ``dit`` directory,
    and then install the package. Be sure to include the period (.) in the install command:
 
    .. code-block:: bash
