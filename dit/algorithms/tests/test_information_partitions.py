@@ -66,4 +66,4 @@ def test_sp4():
 | I[0:2|1] |  1.000 |
 | I[0:1:2] | -1.000 |
 +----------+--------+"""
-    assert_equal(ip.to_string(), string)
+    assert_equal(str(ip), string)
