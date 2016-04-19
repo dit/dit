@@ -33,7 +33,7 @@ weights:
    In [4]: jensen_shannon_divergence([X, Y])
    Out[4]: 0.5
 
-   @doctest float
+   .. @doctest float
    In [5]: jensen_shannon_divergence([X, Y], [3/4, 1/4])
    Out[5]: 0.40563906222956647
 
@@ -43,7 +43,7 @@ weights:
    In [14]: jensen_shannon_divergence([X, Y, Z])
    Out[14]: 0.79248125036057782
 
-   @doctest float
+   .. @doctest float
    In [15]: jensen_shannon_divergence([X, Y, Z], [1/2, 1/4, 1/4])
    Out[15]: 0.75
 
