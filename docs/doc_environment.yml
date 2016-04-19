@@ -3,14 +3,14 @@ name: dit_env
 dependencies:
   - contextlib2
   - cvxopt
-  - libgfortran = 1
   - matplotlib
+  - mkl
   - numpy
-  - scipy = 0.15.0
   - six >= 1.4
   - sphinx >= 1.3
   - pip:
     - ipython[nbconvert]
     - iterutils >= 0.1.6
     - releases
+    - scipy >= 0.15
     - sphinxcontrib-bibtex
