@@ -86,45 +86,29 @@ Consider example 1, which contains three independent bits. Each of these bits ar
 
 .. ipython::
 
+   @savefig complexity_profile_example_1.png width=500 align=center
    In [11]: ComplexityProfile(ex1).draw();
-
-.. image:: images/profiles/complexity_profile_example_1.png
-   :alt: The complexity profile for example 1
-   :width: 500
-   :align: center
 
 Whereas in example 2, all the information is in the center, and so each scale of the complexity profile picks up that one bit:
 
 .. ipython::
 
+   @savefig complexity_profile_example_2.png width=500 align=center
    In [12]: ComplexityProfile(ex2).draw();
-
-.. image:: images/profiles/complexity_profile_example_2.png
-   :alt: The complexity profile for example 2
-   :width: 500
-   :align: center
 
 Both bits in example 3 are at a scale of at least 1, but only the shared bit persists to scale 2:
 
 .. ipython::
 
+   @savefig complexity_profile_example_3.png width=500 align=center
    In [13]: ComplexityProfile(ex3).draw();
-
-.. image:: images/profiles/complexity_profile_example_3.png
-   :alt: The complexity profile for example 3
-   :width: 500
-   :align: center
 
 Finally, example 4 (where each variable is the ``exclusive or`` of the other two):
 
 .. ipython::
 
+   @savefig complexity_profile_example_4.png width=500 align=center
    In [14]: ComplexityProfile(ex4).draw();
-
-.. image:: images/profiles/complexity_profile_example_4.png
-   :alt: The complexity profile for example 4
-   :width: 500
-   :align: center
 
 Marginal Utility of Information
 ===============================
@@ -135,45 +119,29 @@ For the first example, each bit is independent and so basically must be extracte
 
 .. ipython::
 
+   @savefig mui_profile_example_1.png width=500 align=center
    In [15]: MUIProfile(ex1).draw();
-
-.. image:: images/profiles/mui_profile_example_1.png
-   :alt: The MUI profile for example 1
-   :width: 500
-   :align: center
 
 In the second example, there is only one bit total to be extracted, but it is shared by each pairwise mutual information. Therefore, for each increase in :math:`y` we get a threefold increase in the amount extracted:
 
 .. ipython::
 
+   @savefig mui_profile_example_2.png width=500 align=center
    In [16]: MUIProfile(ex2).draw();
-
-.. image:: images/profiles/mui_profile_example_2.png
-   :alt: The MUI profile for example 2
-   :width: 500
-   :align: center
 
 For the third example, for the first one bit of :math:`y` we can pull from the shared bit, but after that one must pull from the independent bit, so we see a step in the MUI profile:
 
 .. ipython::
 
+   @savefig mui_profile_example_3.png width=500 align=center
    In [17]: MUIProfile(ex3).draw();
-
-.. image:: images/profiles/mui_profile_example_3.png
-   :alt: The MUI profile for example 3
-   :width: 500
-   :align: center
 
 Lastly, the ``xor`` example:
 
 .. ipython::
 
+   @savefig mui_profile_example_4.png width=500 align=center
    In [18]: MUIProfile(ex4).draw();
-
-.. image:: images/profiles/mui_profile_example_4.png
-   :alt: The MUI profile for example 4
-   :width: 500
-   :align: center
 
 Schneidman Profile
 ==================
@@ -184,42 +152,29 @@ In the first example, all the random variables are independent already, so fixin
 
 .. ipython::
 
+   @savefig schneidman_profile_example_1.png width=500 align=center
    In [19]: SchneidmanProfile(ex1).draw();
 
-.. image:: images/profiles/schneidman_profile_example_1.png
-   :alt: The Schneidman profile for example 1
-   :width: 500
-   :align: center
+   @suppress
+   In [20]: plt.ylim((0, 1))
 
 In the second example, by learning the pairwise marginals, we reduce the entropy of the distribution by two bits (from three independent bits, to one giant bit):
 
 .. ipython::
 
+   @savefig schneidman_profile_example_2.png width=500 align=center
    In [20]: SchneidmanProfile(ex2).draw();
-
-.. image:: images/profiles/schneidman_profile_example_2.png
-   :alt: The Schneidman profile for example 2
-   :width: 500
-   :align: center
 
 For the third example, learning pairwise marginals only reduces the entropy by one bit:
 
 .. ipython::
 
+   @savefig schneidman_profile_example_3.png width=500 align=center
    In [21]: SchneidmanProfile(ex3).draw();
-
-.. image:: images/profiles/schneidman_profile_example_3.png
-   :alt: The Schneidman profile for example 3
-   :width: 500
-   :align: center
 
 And for the ``xor``, all bits appear independent until fixing the three-way marginals at which point one bit about the distribution is learned:
 
 .. ipython::
 
+   @savefig schneidman_profile_example_4.png width=500 align=center
    In [22]: SchneidmanProfile(ex4).draw();
-
-.. image:: images/profiles/schneidman_profile_example_4.png
-   :alt: The Schneidman profile for example 4
-   :width: 500
-   :align: center
