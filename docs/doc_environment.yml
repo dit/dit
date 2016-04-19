@@ -1,10 +1,10 @@
 name: dit_env
 
 dependencies:
-  - anaconda
   - contextlib2
   - cvxopt
   - matplotlib
+  - nomkl
   - numpy >= 1.6
   - scipy >= 0.15
   - six >= 1.4

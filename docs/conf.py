@@ -319,5 +319,6 @@ intersphinx_mapping = {'http://docs.python.org/': None}
 
 if on_rtd:
     from sarge import run
-    run("conda update conda -y")
+    run("conda update conda")
+    run("conda remove mkl mkl-service")
     print('ryan updated conda')
