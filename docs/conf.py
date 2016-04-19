@@ -50,7 +50,7 @@ ipython_execlines = ['from __future__ import division, print_function',
                      'plt.rcParams["savefig.facecolor"] = (1, 1, 1, 0)',
                      'import dit',
                     ]
-ipython_savefig_dir = 'images/mpl_cache'
+ipython_savefig_dir = 'images/
 
 # Use our local configuration for mathjax:
 mathjax_path = "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML,http://dit.io/MathJax/local/dit.js"
