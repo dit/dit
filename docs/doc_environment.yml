@@ -5,7 +5,7 @@ dependencies:
   - cvxopt
   - libgfortran = 1
   - matplotlib
-  - mlk
+  - mkl
   - numpy
   - scipy >= 0.15
   - six >= 1.4
