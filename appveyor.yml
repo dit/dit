@@ -3,66 +3,32 @@
 # https://ci.appveyor.com/project/dit/dit
 
 environment:
-  global:
-    # SDK v7.0 MSVC Express 2008's SetEnv.cmd script will fail if the
-    # /E:ON and /V:ON options are not enabled in the batch script intepreter
-    # See: http://stackoverflow.com/a/13751649/163740
-    CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\appveyor\\run_with_env.cmd"
+  # global:
+  #   # SDK v7.0 MSVC Express 2008's SetEnv.cmd script will fail if the
+  #   # /E:ON and /V:ON options are not enabled in the batch script intepreter
+  #   # See: http://stackoverflow.com/a/13751649/163740
+  #   CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\appveyor\\run_with_env.cmd"
 
   matrix:
-    - PYTHON: "C:\\Python27"
-      PYTHON_VERSION: "2.7.9"
-      PYTHON_ARCH: "32"
+    - PY_MAJOR_VER: 2
+      PYTHON_ARCH: "x86"
+    - PY_MAJOR_VER: 3
+      PYTHON_ARCH: "x86_64"
+    - PY_MAJOR_VER: 3
+      PYTHON_ARCH: "x86"
 
-    - PYTHON: "C:\\Python27-x64"
-      PYTHON_VERSION: "2.7.9"
-      PYTHON_ARCH: "64"
-
-    - PYTHON: "C:\\Python33"
-      PYTHON_VERSION: "3.3.5"
-      PYTHON_ARCH: "32"
-
-    - PYTHON: "C:\\Python33-x64"
-      PYTHON_VERSION: "3.3.5"
-      PYTHON_ARCH: "64"
-
-    - PYTHON: "C:\\Python34"
-      PYTHON_VERSION: "3.4.3"
-      PYTHON_ARCH: "32"
-
-    - PYTHON: "C:\\Python34-x64"
-      PYTHON_VERSION: "3.4.3"
-      PYTHON_ARCH: "64"
-
-    - PYTHON: "C:\\Python35"
-      PYTHON_VERSION: "3.5.0"
-      PYTHON_ARCH: "32"
-
-    - PYTHON: "C:\\Python35-x64"
-      PYTHON_VERSION: "3.5.0"
-      PYTHON_ARCH: "64"
-
-install:
-  # Install Python (from the official .msi of http://python.org) and pip when
-  # not already installed.
-  - "powershell .\\appveyor\\install.ps1"
-  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
-
-  # Check that we have the expected version and architecture for Python
-  - "python --version"
-  - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
-
-  # Install the build and runtime dependencies of the project.
-  # - "%CMD_IN_ENV% pip install --timeout=60 -r requirements.txt"
-  - "pip install ."
-
-  - "pip install nose"
-
-# Not a .NET project, we build networkx in the install step instead
-build: false
+build_script:
+  - ps: Start-FileDownload "https://repo.continuum.io/miniconda/Miniconda$env:PY_MAJOR_VER-latest-Windows-$env:PYTHON_ARCH.exe" C:\Miniconda.exe; echo "Finished downloading miniconda"
+  - cmd: C:\Miniconda.exe /S /D=C:\Py
+  - SET PATH=C:\Py;C:\Py\Scripts;C:\Py\Library\bin;%PATH%
+  - conda config --set always_yes yes
+  - conda update conda
+  - conda install cython nose scipy cvxopt
+  - pip install .
+  - pip install -r requirements_optional.txt
 
 test_script:
   # Change to a non-source folder to make sure we run the tests on the
   # installed library.
   - "pushd %TEMP%"
-  - "nosetests --verbosity=2 dit"
+  - "nosetests --verbosity=2 --with-coverage --cover-package=dit dit"
