@@ -1,6 +1,7 @@
 name: dit_env
 
 dependencies:
+  - anaconda
   - contextlib2
   - cvxopt
   - matplotlib
