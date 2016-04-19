@@ -69,7 +69,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'dit'
-copyright = u'2013-2015, dit contributors'
+copyright = u'2013-2016, dit contributors'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -300,8 +300,8 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'dit', u'dit Documentation',
-   u'dit Contributors', 'dit', 'One line description of project.',
-   'Miscellaneous'),
+   u'dit Contributors', 'dit', 'Discrete Information Theory in Python.',
+   'Science'),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -316,10 +316,3 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'http://docs.python.org/': None}
-
-# if on_rtd:
-#     from sarge import run
-#     run("conda update conda")
-#     run("conda remove mkl mkl-service")
-#     run("conda update cvxopt=1.1.7 scipy")
-#     print('ryan updated conda')
