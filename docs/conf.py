@@ -317,9 +317,9 @@ texinfo_documents = [
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'http://docs.python.org/': None}
 
-if on_rtd:
-    from sarge import run
-    run("conda update conda")
-    run("conda remove mkl mkl-service")
-    run("conda update cvxopt=1.1.7 scipy")
-    print('ryan updated conda')
+# if on_rtd:
+#     from sarge import run
+#     run("conda update conda")
+#     run("conda remove mkl mkl-service")
+#     run("conda update cvxopt=1.1.7 scipy")
+#     print('ryan updated conda')

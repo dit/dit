@@ -2,7 +2,7 @@ name: dit_env
 
 dependencies:
   - contextlib2
-  - cvxopt
+  - cvxopt = 1.1.7
   - matplotlib
   - nomkl
   - numpy >= 1.6
