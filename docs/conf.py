@@ -321,5 +321,5 @@ if on_rtd:
     from sarge import run
     run("conda update conda")
     run("conda remove mkl mkl-service")
-    run("conda update cvxopt scipy")
+    run("conda update cvxopt=1.1.7 scipy")
     print('ryan updated conda')
