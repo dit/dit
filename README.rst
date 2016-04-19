@@ -2,10 +2,13 @@
 
 .. image:: https://travis-ci.org/dit/dit.png?branch=master
    :target: https://travis-ci.org/dit/dit
+   :alt: Continuous Integration Status
 .. image:: https://coveralls.io/repos/dit/dit/badge.svg?branch=master
    :target: https://coveralls.io/r/dit/dit?branch=master
+   :alt: Test Coverage Status
 .. image:: https://readthedocs.org/projects/dit/badge/?version=latest
-   :target: https://readthedocs.org/projects/dit/?badge=latest
+   :target: http://dit.readthedocs.org/en/latest/?badge=latest
+   :alt: Documentation Status
 .. image:: https://landscape.io/github/dit/dit/master/landscape.svg?style=flat
    :target: https://landscape.io/github/dit/dit/master
    :alt: Code Health
