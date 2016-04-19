@@ -3,7 +3,6 @@ name: dit_env
 dependencies:
   - contextlib2
   - cvxopt
-  - libgfortran = 1
   - matplotlib
   - nomkl
   - numpy
