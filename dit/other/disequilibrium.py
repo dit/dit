@@ -3,11 +3,17 @@ Disequilibrium, as measured by `Intensive entropic non-triviality measure` by
 P.W. Lamberti, M.T. Martin, A. Plastino, O.A. Rosso.
 """
 
+from __future__ import division
+
 import numpy as np
 
 from ..divergences.pmf import jensen_shannon_divergence as JSD
 from ..helpers import RV_MODES
 from ..shannon import entropy
+
+__all__ = ['disequilibrium',
+           'LMPR_complexity',
+          ]
 
 def disequilibrium(dist, rvs=None, rv_mode=None):
     """
@@ -44,13 +50,15 @@ def disequilibrium(dist, rvs=None, rv_mode=None):
     else:
         d = dist
 
-    pmf = d.copy(base='linear').pmf
+    d = d.copy(base='linear')
+    d.make_dense()
+    pmf = d.pmf
 
     Pe = np.ones_like(pmf)/pmf.size
     Pu = np.zeros_like(pmf); Pu[0] = 1
 
-    J = JSD(np.vstack(pmf, Pe))
-    Q = JSD(np.vstack(Pe, Pu))
+    J = JSD(np.vstack([pmf, Pe]))
+    Q = JSD(np.vstack([Pe, Pu]))
     D = J/Q
 
     return D
