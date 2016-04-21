@@ -1,6 +1,6 @@
 from nose.tools import *
 
-from ..samplespace import SampleSpace, CartesianProduct
+from dit.samplespace import SampleSpace, CartesianProduct
 
 import dit
 

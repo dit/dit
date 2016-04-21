@@ -3,7 +3,7 @@ from __future__ import division
 from nose.tools import *
 
 from fractions import Fraction
-from ..fraction import *
+from dit.math.fraction import *
 
 def test_fraction():
     """Smoke tests to convert float to fraction."""
