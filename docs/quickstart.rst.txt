@@ -17,10 +17,10 @@ chance of it landing on its edge. Here is how we might represent the coin in
 ``dit``.
 
 .. ipython::
-   :doctest:
 
     In [2]: d = dit.Distribution(['H', 'T', 'E'], [.4, .4, .2])
 
+    @doctest
     In [3]: print(d)
     Class:          Distribution
     Alphabet:       ('E', H', 'T') for all rvs
@@ -64,7 +64,6 @@ Here, we have two inputs, :math:`X` and :math:`Y`, and then an output
 :math:`Z = \mathbf{xor}(X,Y)`.
 
 .. ipython::
-   :doctest:
 
     In [6]: import dit.example_dists
 
@@ -72,6 +71,7 @@ Here, we have two inputs, :math:`X` and :math:`Y`, and then an output
 
     In [8]: d.set_rv_names(['X', 'Y', 'Z'])
 
+    @doctest
     In [9]: print(d)
     Class:          Distribution
     Alphabet:       ('0', '1') for all rvs
@@ -107,10 +107,10 @@ Calculate the marginal distribution :math:`P(X,Z)`.
 Then print its probabilities as fractions, showing the mask.
 
 .. ipython::
-   :doctest:
 
     In [15]: d2 = d.marginal(['X', 'Z'])
 
+    @doctest
     In [16]: print(d2.to_string(show_mask=True, exact=True))
     Class:          Distribution
     Alphabet:       ('0', '1') for all rvs

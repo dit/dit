@@ -45,7 +45,7 @@ Not a Metric
 ============
 
 Although the Kullback-Leibler divergence is often used to see how "different"
-two distributions are, it is not a  metric. Importantly, it is neither symmetric
+two distributions are, it is not a metric. Importantly, it is neither symmetric
 nor does it obey the triangle inequality. It does, however, have the following
 property:
 

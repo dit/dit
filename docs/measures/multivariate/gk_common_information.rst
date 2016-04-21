@@ -73,6 +73,7 @@ random variable?
 
    In [8]: crv = insert_meet(d, -1, [[0],[1]])
 
+   @doctest
    In [9]: print(crv)
    Class:          Distribution
    Alphabet:       (('0', '1', '2', '3'), ('0', '1', '2', '3'), ('2', '0', '1'))
