@@ -23,8 +23,8 @@ We next construct a six-sided die:
 
    In [3]: d6 = uniform(1, 7)
 
+   @doctest
    In [4]: d6
-   Out[4]:
    Class:    ScalarDistribution
    Alphabet: (1, 2, 3, 4, 5, 6)
    Base:     linear
@@ -41,8 +41,8 @@ We can perform standard mathematical operations with scalars, such as adding, su
 
 .. ipython::
 
+   @doctest
    In [5]: d6 + 3
-   Out[5]:
    Class:    ScalarDistribution
    Alphabet: (4, 5, 6, 7, 8, 9)
    Base:     linear
@@ -55,8 +55,8 @@ We can perform standard mathematical operations with scalars, such as adding, su
    8   1/6
    9   1/6
 
+   @doctest
    In [6]: d6 - 1
-   Out[6]:
    Class:    ScalarDistribution
    Alphabet: (0, 1, 2, 3, 4, 5)
    Base:     linear
@@ -69,8 +69,8 @@ We can perform standard mathematical operations with scalars, such as adding, su
    4   1/6
    5   1/6
 
+   @doctest
    In [7]: 10 - d6
-   Out[7]:
    Class:    ScalarDistribution
    Alphabet: (4, 5, 6, 7, 8, 9)
    Base:     linear
@@ -83,8 +83,8 @@ We can perform standard mathematical operations with scalars, such as adding, su
    8   1/6
    9   1/6
 
+   @doctest
    In [8]: 2 * d6
-   Out[8]:
    Class:    ScalarDistribution
    Alphabet: (2, 4, 6, 8, 10, 12)
    Base:     linear
@@ -97,8 +97,8 @@ We can perform standard mathematical operations with scalars, such as adding, su
    10   1/6
    12   1/6
 
+   @doctest
    In [9]: d6 % 2
-   Out[9]:
    Class:    ScalarDistribution
    Alphabet: (0, 1)
    Base:     linear
@@ -107,6 +107,7 @@ We can perform standard mathematical operations with scalars, such as adding, su
    0   1/2
    1   1/2
 
+   @doctest
    In [10]: (d6 % 2).is_approx_equal(d6 <= 3)
    Out[10]: True
 
@@ -114,8 +115,8 @@ Furthermore, we can perform such operations with two distributions:
 
 .. ipython::
 
+   @doctest
    In [11]: d6 + d6
-   Out[11]:
    Class:    ScalarDistribution
    Alphabet: (2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
    Base:     linear
@@ -133,8 +134,8 @@ Furthermore, we can perform such operations with two distributions:
    11   1/18
    12   1/36
 
+   @doctest
    In [12]: (d6 + d6) % 4
-   Out[12]:
    Class:    ScalarDistribution
    Alphabet: (0, 1, 2, 3)
    Base:     linear
@@ -145,8 +146,8 @@ Furthermore, we can perform such operations with two distributions:
    2   1/4
    3   5/18
 
+   @doctest
    In [13]: d6 // d6
-   Out[13]:
    Class:    ScalarDistribution
    Alphabet: (0, 1, 2, 3, 4, 5, 6)
    Base:     linear
@@ -160,8 +161,8 @@ Furthermore, we can perform such operations with two distributions:
    5   1/36
    6   1/36
 
+   @doctest
    In [14]:  d6 % (d6 % 2 + 1)
-   Out[14]:
    Class:    ScalarDistribution
    Alphabet: (0, 1)
    Base:     linear
@@ -184,8 +185,8 @@ There are also statistical functions which can be applied to :class:`~dit.Scalar
 
    In [18]: d = binomial(10, 1/3)
 
+   @doctest
    In [19]: d
-   Out[19]:
    Class:    ScalarDistribution
    Alphabet: (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
    Base:     linear

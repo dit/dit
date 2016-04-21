@@ -124,6 +124,7 @@ API
 
 .. autofunction:: conditional_entropy
 
+.. _mutual_information:
 
 Mutual Information
 ==================

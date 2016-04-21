@@ -25,6 +25,7 @@ The I-diagrams for these four examples can be computed thusly:
 
    In [6]: from dit.algorithms import ShannonPartition
 
+   @doctest
    In [7]: print(ShannonPartition(ex1))
    +----------+--------+
    | measure  |  bits  |
@@ -38,6 +39,7 @@ The I-diagrams for these four examples can be computed thusly:
    | I[0:1:2] |  0.000 |
    +----------+--------+
 
+   @doctest
    In [8]: print(ShannonPartition(ex2))
    +----------+--------+
    | measure  |  bits  |
@@ -51,6 +53,7 @@ The I-diagrams for these four examples can be computed thusly:
    | I[0:1:2] |  1.000 |
    +----------+--------+
 
+   @doctest
    In [9]: print(ShannonPartition(ex3))
    +----------+--------+
    | measure  |  bits  |
@@ -64,6 +67,7 @@ The I-diagrams for these four examples can be computed thusly:
    | I[0:1:2] |  0.000 |
    +----------+--------+
 
+   @doctest
    In [10]: print(ShannonPartition(ex4))
    +----------+--------+
    | measure  |  bits  |

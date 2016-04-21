@@ -26,6 +26,9 @@ on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 # If your documentation needs a minimal Sphinx version, state it here.
 needs_sphinx = '1.3'
 
+# All our documentation is python.
+primary_domain = 'py'
+
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['releases',
@@ -113,7 +116,7 @@ add_module_names = False
 pygments_style = 'sphinx'
 
 # A list of ignored prefixes for module index sorting.
-#modindex_common_prefix = []
+modindex_common_prefix = ['dit.']
 
 # Only show todos for local builds, not on the official docs.
 todo_include_todos = not on_rtd

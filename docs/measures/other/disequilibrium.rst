@@ -29,9 +29,11 @@ The LMPR complexity does not necessarily behave as one might intuitively hope. F
 
    In [3]: d2 = dit.Distribution(['000', '011', '101', '110'], [1/4]*4)
 
+   @doctest float
    In [4]: LMPR_complexity(d1)
    Out[4]: 0.28945986160258008
 
+   @doctest float
    In [5]: LMPR_complexity(d2)
    Out[5]: 0.28945986160258008
 

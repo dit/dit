@@ -17,6 +17,7 @@ outcomes and the probability mass function:
 
    In [4]: xor = Distribution(outcomes, pmf)
 
+   @doctest
    In [5]: print(xor)
    Class:          Distribution
    Alphabet:       ('0', '1') for all rvs
@@ -40,6 +41,7 @@ outcomes to probabilities:
 
    In [7]: xor2 = Distribution(outcomes_probs)
 
+   @doctest
    In [8]: print(xor2)
    Class:          Distribution
    Alphabet:       ('0', '1') for all rvs

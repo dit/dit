@@ -20,6 +20,7 @@ chance of it landing on its edge. Here is how we might represent the coin in
 
     In [2]: d = dit.Distribution(['H', 'T', 'E'], [.4, .4, .2])
 
+    @doctest
     In [3]: print(d)
     Class:          Distribution
     Alphabet:       ('E', H', 'T') for all rvs
@@ -70,6 +71,7 @@ Here, we have two inputs, :math:`X` and :math:`Y`, and then an output
 
     In [8]: d.set_rv_names(['X', 'Y', 'Z'])
 
+    @doctest
     In [9]: print(d)
     Class:          Distribution
     Alphabet:       ('0', '1') for all rvs
@@ -108,6 +110,7 @@ Then print its probabilities as fractions, showing the mask.
 
     In [15]: d2 = d.marginal(['X', 'Z'])
 
+    @doctest
     In [16]: print(d2.to_string(show_mask=True, exact=True))
     Class:          Distribution
     Alphabet:       ('0', '1') for all rvs
@@ -136,11 +139,11 @@ probabilities, and access its probability mass function.
 Draw 5 random samples from this distribution.
 
 .. ipython::
+   :doctest:
 
     @suppress
     In [19]: dit.math.prng.seed(1)
 
-    @doctest
     In [19]: d2.rand(5)
     Out[19]: ['01', '10', '00', '01', '00']
 

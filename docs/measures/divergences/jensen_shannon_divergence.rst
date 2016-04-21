@@ -5,17 +5,13 @@
 Jensen-Shannon Divergence
 *************************
 
-The Jensen-Shannon divergence is a principled divergence measure which is always
-finite for finite random variables. It quantifies how "distinguishable" two or
-more distributions are from each other. In its basic form it is:
+The Jensen-Shannon divergence is a principled divergence measure which is always finite for finite random variables. It quantifies how "distinguishable" two or more distributions are from each other. In its basic form it is:
 
 .. math::
 
    \JSD[X || Y] = \H\left[\frac{X + Y}{2}\right] - \frac{\H[X] + \H[Y]}{2}
 
-That is, it is the entropy of the mixture minus the mixture of the entropy. This
-can be generalized to an arbitrary number of random variables with arbitrary
-weights:
+That is, it is the entropy of the mixture minus the mixture of the entropy. This can be generalized to an arbitrary number of random variables with arbitrary weights:
 
 .. math::
 
@@ -33,7 +29,7 @@ weights:
    In [4]: jensen_shannon_divergence([X, Y])
    Out[4]: 0.5
 
-   .. @doctest float
+   @doctest float
    In [5]: jensen_shannon_divergence([X, Y], [3/4, 1/4])
    Out[5]: 0.40563906222956647
 
@@ -43,7 +39,7 @@ weights:
    In [14]: jensen_shannon_divergence([X, Y, Z])
    Out[14]: 0.79248125036057782
 
-   .. @doctest float
+   @doctest float
    In [15]: jensen_shannon_divergence([X, Y, Z], [1/2, 1/4, 1/4])
    Out[15]: 0.75
 
@@ -57,44 +53,35 @@ Where does this equation come from? Consider Jensen's inequality:
 
    \Psi \left( \mathbb{E}(x) \right) \geq \mathbb{E} \left( \Psi(x) \right)
 
-where :math:`\Psi` is a concave function. If we consider the *divergence* of the
-left and right side we find:
+where :math:`\Psi` is a concave function. If we consider the *divergence* of the left and right side we find:
 
 .. math::
 
    \Psi \left( \mathbb{E}(x) \right) - \mathbb{E} \left( \Psi(x) \right) \geq 0
 
-If we make that concave function :math:`\Psi` the Shannon entropy :math:`\H`, we
-get the Jensen-Shannon divergence. Jensen from Jensen's inequality, and Shannon
-from the use of the Shannon entropy.
+If we make that concave function :math:`\Psi` the Shannon entropy :math:`\H`, we get the Jensen-Shannon divergence. Jensen from Jensen's inequality, and Shannon from the use of the Shannon entropy.
 
 .. note::
 
-   Some people look at the Jensen-Rényi divergence (where :math:`\Psi` is the
-   :doc:`../other/renyi_entropy`) and the Jensen-Tsallis divergence (where
-   :math:`\Psi` is the :doc:`../other/tsallis_entropy`).
+   Some people look at the Jensen-Rényi divergence (where :math:`\Psi` is the :doc:`../other/renyi_entropy`) and the Jensen-Tsallis divergence (where :math:`\Psi` is the :doc:`../other/tsallis_entropy`).
 
 
 Metric
 ======
 
-The square root of the Jensen-Shannon divergence, :math:`\sqrt{\JSD}`, is a true
-metric between distributions.
+The square root of the Jensen-Shannon divergence, :math:`\sqrt{\JSD}`, is a true metric between distributions.
 
 
 Relationship to the Other Measures
 ==================================
 
-The Jensen-Shannon divergence can be derived from other, more well known
-information measures; notably the Kullback-Leibler divergence and the mutual
-information.
+The Jensen-Shannon divergence can be derived from other, more well known information measures; notably the :doc:`kullback_leibler_divergence` and the :ref:`mutual_information`.
 
 
-Kullback-Leibler Divergence
+Kullback-Leibler divergence
 ---------------------------
 
-The Jensen-Shannon divergence is the average Kullback-Leibler divergence of
-:math:`X` and :math:`Y` from their mixture distribution, :math:`M`:
+The Jensen-Shannon divergence is the average Kullback-Leibler divergence of :math:`X` and :math:`Y` from their mixture distribution, :math:`M`:
 
 .. math::
 
@@ -109,12 +96,7 @@ Mutual Information
 
    \JSD[X || Y] = \I[Z:M]
 
-where :math:`M` is the mixture distribution as before, and :math:`Z` is an
-indicator variable over :math:`X` and :math:`Y`. In essence, if :math:`X` and
-:math:`Y` are each an urn containing colored balls, and I randomly selected one
-of the urns and draw a ball from it, then the Jensen-Shannon divergence is the
-mutual information between which urn I drew the ball from, and the color of the
-ball drawn.
+where :math:`M` is the mixture distribution as before, and :math:`Z` is an indicator variable over :math:`X` and :math:`Y`. In essence, if :math:`X` and :math:`Y` are each an urn containing colored balls, and I randomly selected one of the urns and draw a ball from it, then the Jensen-Shannon divergence is the mutual information between which urn I drew the ball from, and the color of the ball drawn.
 
 
 API
