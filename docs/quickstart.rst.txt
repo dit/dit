@@ -17,6 +17,7 @@ chance of it landing on its edge. Here is how we might represent the coin in
 ``dit``.
 
 .. ipython::
+   :doctest:
 
     In [2]: d = dit.Distribution(['H', 'T', 'E'], [.4, .4, .2])
 
@@ -63,6 +64,7 @@ Here, we have two inputs, :math:`X` and :math:`Y`, and then an output
 :math:`Z = \mathbf{xor}(X,Y)`.
 
 .. ipython::
+   :doctest:
 
     In [6]: import dit.example_dists
 
@@ -105,6 +107,7 @@ Calculate the marginal distribution :math:`P(X,Z)`.
 Then print its probabilities as fractions, showing the mask.
 
 .. ipython::
+   :doctest:
 
     In [15]: d2 = d.marginal(['X', 'Z'])
 
@@ -136,11 +139,11 @@ probabilities, and access its probability mass function.
 Draw 5 random samples from this distribution.
 
 .. ipython::
+   :doctest:
 
     @suppress
     In [19]: dit.math.prng.seed(1)
 
-    @doctest
     In [19]: d2.rand(5)
     Out[19]: ['01', '10', '00', '01', '00']
 
