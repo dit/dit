@@ -19,7 +19,7 @@ from random import randint
 
 from .distribution import BaseDistribution
 from .exceptions import ditException
-from .helpers import parse_rvs
+from .helpers import RV_MODES, parse_rvs
 from .npdist import Distribution
 from .npscalardist import ScalarDistribution
 from .utils import digits
@@ -876,8 +876,12 @@ def product_distribution(dist, rvs=None, rv_mode=None, base=None):
         raise Exception("A joint distribution is required.")
 
     if rvs is None:
-        n_rvs = dist.outcome_length()
-        indexes = [[i] for i in range(n_rvs)]
+        names = dist.get_rv_names()
+        if names is None:
+            names = range(dist.outcome_length())
+
+        indexes = [[i] for i in names]
+
     else:
         # We do not allow repeats and want to keep the order.
         # Use argument [1] since we don't need the names.
@@ -889,7 +893,7 @@ def product_distribution(dist, rvs=None, rv_mode=None, base=None):
     if len(all_indexes) != len(set(all_indexes)):
         raise Exception('The elements of `rvs` have nonzero intersection.')
 
-    marginals = [dist.marginal(index_list) for index_list in indexes]
+    marginals = [dist.marginal(index_list, rv_mode=rv_mode) for index_list in indexes]
     ctor = dist._outcome_ctor
     ops = dist.ops
 
