@@ -16,3 +16,4 @@ the Shannon entropy proposed for a variety of reasons.
    tsallis_entropy
    perplexity
    extropy
+   disequilibrium

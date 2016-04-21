@@ -10,7 +10,7 @@ has the opposite sign when taken over an odd number of variables:
 
 .. math::
 
-    \II(X_{0:n}) &= (-1)^{n} \cdot \I(X_{0:n})
+    \II(X_{0:n}) = (-1)^{n} \cdot \I(X_{0:n})
 
 Interaction information was first studied in the 3-variable case which, for
 :math:`X_{0:3} = X_0X_1X_2`, takes the following form:
