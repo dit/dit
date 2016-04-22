@@ -6,6 +6,7 @@ Functions for computing minimal sufficient statistics.
 from collections import defaultdict
 
 from .lattice import dist_from_induced_sigalg, insert_join, insert_rv
+from .prune_expand import pruned_samplespace
 from ..helpers import flatten, parse_rvs, normalize_rvs
 from ..math import sigma_algebra
 
@@ -141,7 +142,7 @@ def insert_mss(dist, idx, rvs, about=None, rv_mode=None):
     """
     mss_sa = mss_sigalg(dist, rvs, about, rv_mode)
     new_dist = insert_rv(dist, idx, mss_sa)
-    return new_dist
+    return pruned_samplespace(new_dist)
 
 def mss(dist, rvs, about=None, rv_mode=None, int_outcomes=True):
     """
@@ -228,4 +229,4 @@ def insert_joint_mss(dist, idx, rvs=None, rv_mode=None):
     d = insert_join(d, idx, [[i] for i in range(l1, l2)])
     delta = 0 if idx == -1 else 1
     d = d.marginalize([i + delta for i in range(l1, l2)])
-    return d
+    return pruned_samplespace(d)
