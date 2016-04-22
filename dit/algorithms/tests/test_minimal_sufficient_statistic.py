@@ -6,7 +6,7 @@ from __future__ import division
 
 from nose.tools import assert_almost_equal, assert_true
 
-from dit import Distribution, ScalarDistribution
+from dit import Distribution, ScalarDistribution, pruned_samplespace
 from dit.algorithms import insert_mss, mss, mss_sigalg
 
 def get_gm():
@@ -36,5 +36,5 @@ def test_insert_mss():
     d = insert_mss(d, -1, [0, 1], [2, 3])
     d = insert_mss(d, -1, [2, 3], [0, 1])
     d = d.marginal([4, 5])
-    dist = Distribution(['01', '10', '11'], [1/3, 1/3, 1/3])
+    dist = pruned_samplespace(Distribution(['01', '10', '11'], [1/3, 1/3, 1/3]))
     assert_true(d.is_approx_equal(dist))
