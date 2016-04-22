@@ -5,7 +5,6 @@ ignore-patterns:
   - __init__.py
 requirements:
   - requirements.txt
-  - requirements_optional.txt
 python-targets:
   - 2
   - 3
