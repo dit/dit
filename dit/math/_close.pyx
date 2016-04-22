@@ -22,7 +22,7 @@ if sys.platform in ('win32', 'cygwin'):
     def isnan(double x):
         return _isnan(x)
     def isinf(double x):
-        return not _finite(x)
+        return 1 - _finite(x)
 
 
 def close(double x, double y, double rtol, double atol):
