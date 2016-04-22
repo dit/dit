@@ -5,7 +5,7 @@ Tests for dit.profiles.SchneidmanProfile. Known examples taken from http://arxiv
 from __future__ import division
 
 from nose.tools import assert_dict_equal
-from nose.plubins.attrib import attr
+from nose.plugins.attrib import attr
 from numpy.testing import assert_array_almost_equal
 
 from dit import Distribution
