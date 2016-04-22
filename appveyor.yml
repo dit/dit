@@ -19,7 +19,7 @@ environment:
     - PY_MAJOR_VER: 3
       PYTHON_ARCH: "x86"
       CYTHON: false
-    allow_failures:
+    - allow_failures:
       - PY_MAJOR_VER: 2
         PYTHON_ARCH: "x86"
         CYTHON: true
