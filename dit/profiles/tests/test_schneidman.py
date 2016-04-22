@@ -5,6 +5,7 @@ Tests for dit.profiles.SchneidmanProfile. Known examples taken from http://arxiv
 from __future__ import division
 
 from nose.tools import assert_dict_equal
+from nose.plubins.attrib import attr
 from numpy.testing import assert_array_almost_equal
 
 from dit import Distribution
@@ -16,7 +17,7 @@ ex3 = Distribution(['000', '001', '110', '111'], [1/4]*4)
 ex4 = Distribution(['000', '011', '101', '110'], [1/4]*4)
 examples = [ex1, ex2, ex3, ex4]
 
-
+@attr('windows')
 def test_schneidman_profile():
     """
     Test against known examples.
