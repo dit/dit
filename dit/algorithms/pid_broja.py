@@ -16,10 +16,11 @@ import numpy as np
 import dit
 
 from dit.utils import basic_logger
-from dit.abstractdist import AbstractDenseDistribution, get_abstract_dist
+from dit.abstractdist import get_abstract_dist
 from dit.algorithms.optutil import (
     CVXOPT_Template, as_full_rank, Bunch, op_runner, frank_wolfe
 )
+from dit.exceptions import ditException
 
 __all__ = ['unique_informations', 'k_informations', 'k_synergy']
 
@@ -707,7 +708,7 @@ def dice(a, b):
 def demo():
     import matplotlib.pyplot as plt
 
-    f, axes = plt.subplots(1, 3)
+    _, axes = plt.subplots(1, 3)
     bvals = range(1, 7)
     avals = np.linspace(0, 1, num=10)
     for b in bvals:
@@ -717,7 +718,7 @@ def demo():
             d = dit.example_dists.summed_dice(a, b)
             x = MaximumConditionalEntropy(d, [[0], [1]], [2],
                                           extra_constraints=True, verbose=20)
-            pmf_opt, obj = x.optimize()
+            pmf_opt, _ = x.optimize()
             d_opt = x.dist.copy()
             d_opt.pmf[:] = pmf_opt
             decomps.append(pi_decomp(x.dist, d_opt))
@@ -802,7 +803,7 @@ def k_synergy(d, sources, target, k=2, rv_mode=None, extra_constraints=True,
                                   extra_constraints=extra_constraints,
                                   source_marginal=True, tol=tol, prng=prng,
                                   verbose=verbose)
-    pmf, obj = x.optimize()
+    pmf, _ = x.optimize()
     d_orig = x.dist
     d_opt = d_orig.copy()
     d_opt.pmf[:] = pmf
@@ -869,7 +870,7 @@ def k_informations(d, sources, target, rv_mode=None, extra_constraints=True,
                                   verbose=verbose)
     n = x.dist.outcome_length()
     while x.k <= n:
-        pmf, obj = x.optimize()
+        pmf, _ = x.optimize()
         d_orig = x.dist
         d_opt = d_orig.copy()
         d_opt.pmf[:] = pmf
@@ -946,10 +947,10 @@ def unique_informations(d, sources, target, k=2, rv_mode=None,
     The nonunique information would be `mi_orig - ui.sum()`.
 
     """
-    x = MaximumConditionalEntropy(d, sources, target, k=k, rv_mode=rv_mode, 
+    x = MaximumConditionalEntropy(d, sources, target, k=k, rv_mode=rv_mode,
                                   extra_constraints=extra_constraints, tol=tol,
                                   prng=prng, verbose=verbose)
-    pmf, obj = x.optimize()
+    pmf, _ = x.optimize()
     d_orig = x.dist
     d_opt = d_orig.copy()
     d_opt.pmf[:] = pmf

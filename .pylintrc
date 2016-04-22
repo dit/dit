@@ -21,6 +21,7 @@ persistent=yes
 # usually to register additional checkers.
 load-plugins=
 
+extension-pkg-whitelist=numpy
 
 [MESSAGES CONTROL]
 
