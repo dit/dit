@@ -42,9 +42,10 @@ build_script:
   - conda install nose scipy
   - ps: if ($env:CYTHON -eq '1') { conda install cython }
   - pip install .
+  - pip install nose-cov
 
 test_script:
   # Change to a non-source folder to make sure we run the tests on the
   # installed library.
   - "pushd %TEMP%"
-  - nosetests --verbosity=2 -a '!windows' --with-coverage --cover-package=dit dit
+  - nosetests --verbosity=2 -a '!windows' --ignore-files='(?:^\.|^_,|^setup\.py|^.*3\.py$)' --with-coverage --cover-package=dit dit
