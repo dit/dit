@@ -22,6 +22,7 @@ from dit.multivariate import (binding_information as B,
                               entropy as H,
                               gk_common_information as K,
                               interaction_information as II,
+                              joint_mss_entropy as M,
                               residual_entropy as R,
                               total_correlation as T,
                               tse_complexity as TSE,
@@ -47,6 +48,7 @@ _shannon = [
 _shannon_ext = [
     'K',    # the Gacs-Korner common information [meet entropy]
     'II',   # the interaction information
+    'M',    # the joint minimal sufficient statistic entropy
 ]
 
 # measures of distance between distriutions

@@ -72,7 +72,7 @@ def mss_sigalg(dist, rvs, about=None, rv_mode=None):
                frozenset({'000', '011', '101', '110'})})
 
     """
-    mapping = parse_rvs(dist, about)[1]
+    mapping = parse_rvs(dist, about, rv_mode=rv_mode)[1]
 
     partition = defaultdict(list)
 
@@ -219,7 +219,8 @@ def insert_joint_mss(dist, idx, rvs=None, rv_mode=None):
     rvs = set( tuple(rv) for rv in rvs )
 
     for rv in rvs:
-        d = insert_mss(d, -1, list(rv), list(flatten(rvs-set([rv]))))
+        about = list(flatten(rvs-set([rv])))
+        d = insert_mss(d, -1, rvs=list(rv), about=about, rv_mode=rv_mode)
 
     l2 = d.outcome_length()
 
