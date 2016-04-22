@@ -5,7 +5,8 @@ ignore-patterns:
   - __init__.py
 requirements:
   - requirements.txt
-  - requirements-optional.txt
+  - requirements_optional.txt
 python-targets:
   - 2
   - 3
+max-line-length: 100
