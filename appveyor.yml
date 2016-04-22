@@ -40,7 +40,7 @@ build_script:
   - conda config --set always_yes yes
   - conda update conda
   - conda install nose scipy
-  - ps: if ($env:CYTHON) { conda install cython }
+  - ps: if ($env:CYTHON == '1') { conda install cython }
   - pip install .
 
 test_script:
