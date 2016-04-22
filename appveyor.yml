@@ -30,6 +30,7 @@ environment:
       CYTHON: 1
 
 matrix:
+  fast_finish: true
   allow_failures:
     - CYTHON: 1
 
