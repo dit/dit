@@ -5,11 +5,22 @@
 Low level implementation of scalar `allclose`.
 
 """
+import sys
 
-cdef extern from "math.h":
-    double fabs(double)
-    int isinf(double)
-    int isnan(double)
+if sys.platform in ('win32', 'cygwin'):
+    cdef extern from "float.h":
+        double fabs(double)
+        int _isnan(double)
+        int _isfinite(double)
+    def isnan(double x):
+        return _isnan(x)
+    def isinf(double x):
+        return not _isfinite(x)
+else:
+    cdef extern from "math.h":
+        double fabs(double)
+        int isinf(double)
+        int isnan(double)
 
 def close(double x, double y, double rtol, double atol):
     """Returns True if the scalars x and y are close.
@@ -37,4 +48,3 @@ def close(double x, double y, double rtol, double atol):
     else:
         # Otherwise, make sure they are close.
         return fabs(x-y) <= atol + rtol * fabs(y)
-
