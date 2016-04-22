@@ -13,22 +13,25 @@ environment:
     - PY_MAJOR_VER: 2
       PYTHON_ARCH: "x86"
       CYTHON: false
+    - PY_MAJOR_VER: 2
+      PYTHON_ARCH: "x86"
+      CYTHON: true
     - PY_MAJOR_VER: 3
       PYTHON_ARCH: "x86_64"
       CYTHON: false
     - PY_MAJOR_VER: 3
+      PYTHON_ARCH: "x86_64"
+      CYTHON: true
+    - PY_MAJOR_VER: 3
       PYTHON_ARCH: "x86"
       CYTHON: false
-    - allow_failures:
-      - PY_MAJOR_VER: 2
-        PYTHON_ARCH: "x86"
-        CYTHON: true
-      - PY_MAJOR_VER: 3
-        PYTHON_ARCH: "x86_64"
-        CYTHON: true
-      - PY_MAJOR_VER: 3
-        PYTHON_ARCH: "x86"
-        CYTHON: true
+    - PY_MAJOR_VER: 3
+      PYTHON_ARCH: "x86"
+      CYTHON: true
+
+matrix:
+  allow_failures:
+    - CYTHON: true
 
 build_script:
   - ps: Start-FileDownload "https://repo.continuum.io/miniconda/Miniconda$env:PY_MAJOR_VER-latest-Windows-$env:PYTHON_ARCH.exe" C:\Miniconda.exe; echo "Finished downloading miniconda"
