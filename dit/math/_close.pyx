@@ -15,14 +15,14 @@ cdef extern from "math.h":
 cdef extern from "float.h":
     double fabs(double)
     int _isnan(double)
-    int _isfinite(double)
+    int _finite(double)
 
 
 if sys.platform in ('win32', 'cygwin'):
     def isnan(double x):
         return _isnan(x)
     def isinf(double x):
-        return not _isfinite(x)
+        return not _finite(x)
 
 
 def close(double x, double y, double rtol, double atol):
