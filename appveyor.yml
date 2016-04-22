@@ -47,4 +47,4 @@ test_script:
   # Change to a non-source folder to make sure we run the tests on the
   # installed library.
   - "pushd %TEMP%"
-  - "nosetests --verbosity=2 -a '!windows' --exclude='.*3\.py' --with-coverage --cover-package=dit dit"
+  - "nosetests --verbosity=2 -a '!windows' --exclude=.*3\.py --with-coverage --cover-package=dit dit"
