@@ -1,6 +1,6 @@
 from dit.utils.bindargs import bindcallargs
 
-from nose.tools import *
+from nose.tools import assert_equal, assert_raises
 
 def F1(a, b, c=2, *, d, e, f=5, **kwargs):
     pass

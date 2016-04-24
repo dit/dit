@@ -4,25 +4,29 @@ Tests for dit.utils.context.
 
 from __future__ import unicode_literals
 
+import sys
+
 from nose.tools import assert_equal, assert_false, assert_true
 import os
 from dit.utils import cd, named_tempfile, tempdir
 
 import tempfile
 
+root = 'C:\\' if sys.platform in ('win32', 'cygwin') else '/'
+
 def test_cd():
-    with cd('/'):
-        assert_equal(os.getcwd(), '/')
+    with cd(root):
+        assert_equal(os.getcwd(), root)
 
 def test_cd_bad_oldcwd():
     # Test attempting to go back to a directory that no longer exists.
     name = tempfile.mkdtemp()
     with cd(name):
         assert_equal(os.getcwd(), os.path.realpath(name))
-        with cd('/'):
-            assert_equal(os.getcwd(), '/')
+        with cd(root):
+            assert_equal(os.getcwd(), root)
             os.rmdir(name)
-        assert_equal(os.getcwd(), '/')
+        assert_equal(os.getcwd(), root)
 
 def test_named_tempfile1():
     name = None
