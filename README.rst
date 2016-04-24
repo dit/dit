@@ -1,6 +1,6 @@
 ``dit`` is a Python package for information theory.
 
-|build| |coverage| |docs| |health|
+|build| |coverage| |docs| |health| |gitter|
 
 Documentation:
    http://docs.dit.io
@@ -188,3 +188,7 @@ Enjoy!
 .. |health| image:: https://landscape.io/github/dit/dit/master/landscape.svg?style=flat
    :target: https://landscape.io/github/dit/dit/master
    :alt: Code Health
+
+.. |gitter| image:: https://badges.gitter.im/Join%20Chat.svg
+   :target: https://gitter.im/dit/dit?utm_source=badge&utm_medium=badge
+   :alt: Join the Chat
