@@ -81,7 +81,7 @@ class BaseProfile(object):
             The distribution to compute the profile for.
         """
         super(BaseProfile, self).__init__()
-        self.dist = dist
+        self.dist = dist.copy(base='linear')
         self._compute()
 
     @abstractmethod
