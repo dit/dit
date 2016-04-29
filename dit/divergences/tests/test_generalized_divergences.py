@@ -174,11 +174,8 @@ def test_f_divergence(places=1):
         test_functions.append((f_alpha(alpha), partial(alpha_divergence, alpha=alpha)))
         test_functions.append((f_tsallis(alpha), partial(tsallis_divergence, alpha=alpha)))
     dists = get_dists_3()
-    for dist1 in dists:
-        for dist2 in dists:
-            if dist1 == dist2:
-                continue
-            for f, div_func in test_functions:
-                div1 = f_divergence(dist1, dist2, f)
-                div2 = div_func(dist1, dist2)
-                assert_almost_equal(div1, div2, places=1)
+    for dist1, dist2 in combinations(dists, 2):
+        for f, div_func in test_functions:
+            div1 = f_divergence(dist1, dist2, f)
+            div2 = div_func(dist1, dist2)
+            assert_almost_equal(div1, div2, places=1)
