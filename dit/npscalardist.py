@@ -507,6 +507,10 @@ class ScalarDistribution(BaseDistribution):
         msg : str
             The error message to raise if the objects are not comparible.
         """
+        if self.is_joint():
+            msg = "This operation is not supported for joint distribibutions."
+            raise NotImplementedError(msg)
+
         if isinstance(other, ScalarDistribution):
             from .distconst import _combine_scalar_dists
             return _combine_scalar_dists(self, other, op)

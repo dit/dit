@@ -331,7 +331,7 @@ class BaseDistribution(object):
         if ditParams['repr.print']:
             return self.to_string()
         else:
-            return super(self, BaseDistribution).__repr__()
+            return super(BaseDistribution, self).__repr__()
 
     def __reversed__(self):
         """
