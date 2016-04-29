@@ -39,7 +39,7 @@ from .exceptions import (
 
 from .math import get_ops, LinearOperations, close
 from .params import ditParams
-from .helpers import reorder
+from .helpers import flatten, reorder
 from .samplespace import BaseSampleSpace, ScalarSampleSpace
 
 import numpy as np
@@ -1292,7 +1292,7 @@ class ScalarDistribution(BaseDistribution):
 
             dist = defaultdict(float)
             for (o1, p1), (o2, p2) in product(self.zipped(), d2.zipped()):
-                dist[(o1, o2)] += self.ops.mult(p1, p2)
+                dist[tuple(flatten((o1, o2)))] += self.ops.mult(p1, p2)
 
             return Distribution(*zip(*dist.items()), base=self.get_base())
         else:
