@@ -174,40 +174,19 @@ def marginal_constraints(dist, m, with_normalization=True):
         The RHS of the linear equality constraints.
 
     """
-    assert dist.is_dense()
-    assert dist.get_base() == 'linear'
+    n_variables = dist.outcome_length()
 
-    pmf = dist.pmf
-
-    d = get_abstract_dist(dist)
-
-    if m > d.n_variables:
+    if m > n_variables:
         msg = "Cannot constrain {0}-way marginals"
         msg += " with only {1} random variables."
-        msg = msg.format(m, d.n_variables)
+        msg = msg.format(m, n_variables)
         raise ValueError(msg)
 
-    A = []
-    b = []
+    rvs = list(itertools.combinations(range(n_variables), m))
+    rv_mode = 'indices'
 
-    # Begin with the normalization constraint.
-    if with_normalization:
-        A.append(np.ones(d.n_elements))
-        b.append(1)
-
-    # Now add all the marginal constraints.
-    if m > 0:
-        cache = {}
-        for rvs in itertools.combinations(range(d.n_variables), m):
-            for idx in d.parameter_array(rvs, cache=cache):
-                bvec = np.zeros(d.n_elements)
-                bvec[idx] = 1
-                A.append(bvec)
-                b.append(pmf[idx].sum())
-
-    A = np.asarray(A, dtype=float)
-    b = np.asarray(b, dtype=float)
-
+    A, b = marginal_constraints_generic(dist, rvs, rv_mode,
+                                        with_normalization=with_normalization)
     return A, b
 
 
