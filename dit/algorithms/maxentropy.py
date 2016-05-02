@@ -31,6 +31,7 @@ import dit
 
 from dit.abstractdist import AbstractDenseDistribution, get_abstract_dist
 
+from ..helpers import parse_rvs
 from .optutil import as_full_rank, CVXOPT_Template, prepare_dist, Bunch
 
 __all__ = [
@@ -80,6 +81,66 @@ def isolate_zeros(dist, k):
 
     return variables
 
+def marginal_constraints_generic(dist, rvs, rv_mode=None,
+                                 with_normalization=True):
+    """
+    Returns `A` and `b` in `A x = b`, for a system of marginal constraints.
+
+    In general, the resulting matrix `A` will not have full rank.
+
+    Parameters
+    ----------
+    dist : distribution
+        The distribution used to calculate the marginal constraints.
+
+    rvs : sequence
+        A sequence whose elements are also sequences.  Each inner sequence
+        specifies a marginal distribution as a set of random variable from
+        `dist`. The inner sequences need not be pairwise mutually exclusive
+        with one another. A random variable can only appear once within
+        each inner sequence, but it can occur in multiple inner sequences.
+
+    rv_mode : str, None
+        Specifies how to interpret the elements of `rvs`. Valid options
+        are: {'indices', 'names'}. If equal to 'indices', then the elements
+        of `rvs` are interpreted as random variable indices. If equal to
+        'names', the the elements are interpreted as random variable names.
+        If `None`, then the value of `dist._rv_mode` is consulted.
+
+    """
+    assert dist.is_dense()
+    assert dist.get_base() == 'linear'
+
+    parse = lambda rv: parse_rvs(dist, rv, rv_mode=rv_mode,
+                                 unique=True, sort=True)[1]
+    indexes = [parse(rv) for rv in rvs]
+
+    pmf = dist.pmf
+
+    d = get_abstract_dist(dist)
+
+    A = []
+    b = []
+
+    # Begin with the normalization constraint.
+    if with_normalization:
+        A.append(np.ones(d.n_elements))
+        b.append(1)
+
+    # Now add all the marginal constraints.
+    cache = {}
+    for rvec in indexes:
+        for idx in d.parameter_array(rvec, cache=cache):
+            bvec = np.zeros(d.n_elements)
+            bvec[idx] = 1
+            A.append(bvec)
+            b.append(pmf[idx].sum())
+
+    A = np.asarray(A, dtype=float)
+    b = np.asarray(b, dtype=float)
+
+    return A, b
+
 
 def marginal_constraints(dist, m, with_normalization=True):
     """
@@ -113,40 +174,19 @@ def marginal_constraints(dist, m, with_normalization=True):
         The RHS of the linear equality constraints.
 
     """
-    assert dist.is_dense()
-    assert dist.get_base() == 'linear'
+    n_variables = dist.outcome_length()
 
-    pmf = dist.pmf
-
-    d = get_abstract_dist(dist)
-
-    if m > d.n_variables:
+    if m > n_variables:
         msg = "Cannot constrain {0}-way marginals"
         msg += " with only {1} random variables."
-        msg = msg.format(m, d.n_variables)
+        msg = msg.format(m, n_variables)
         raise ValueError(msg)
 
-    A = []
-    b = []
+    rvs = list(itertools.combinations(range(n_variables), m))
+    rv_mode = 'indices'
 
-    # Begin with the normalization constraint.
-    if with_normalization:
-        A.append(np.ones(d.n_elements))
-        b.append(1)
-
-    # Now add all the marginal constraints.
-    if m > 0:
-        cache = {}
-        for rvs in itertools.combinations(range(d.n_variables), m):
-            for idx in d.parameter_array(rvs, cache=cache):
-                bvec = np.zeros(d.n_elements)
-                bvec[idx] = 1
-                A.append(bvec)
-                b.append(pmf[idx].sum())
-
-    A = np.asarray(A, dtype=float)
-    b = np.asarray(b, dtype=float)
-
+    A, b = marginal_constraints_generic(dist, rvs, rv_mode,
+                                        with_normalization=with_normalization)
     return A, b
 
 
