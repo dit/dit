@@ -43,6 +43,44 @@ __all__ = [
 ]
 
 
+def isolate_zeros_generic(dist, rvs):
+    """
+    Determines if there are any elements of the optimization vector that must
+    be zero.
+
+    If p(marginal) = 0, then every component of the joint that contributes to
+    that marginal probability must be exactly zero for all feasible solutions.
+
+    """
+    assert dist.is_dense()
+    assert dist.get_base() == 'linear'
+
+    d = get_abstract_dist(dist)
+    n_variables = d.n_variables
+    n_elements = d.n_elements
+
+    zero_elements = np.zeros(n_elements, dtype=int)
+    cache = {}
+    pmf = dist.pmf
+
+    for subrvs in rvs:
+        marray = d.parameter_array(subrvs, cache=cache)
+        for idx in marray:
+            # Convert the sparse nonzero elements to a dense boolean array
+            bvec = np.zeros(n_elements, dtype=int)
+            bvec[idx] = 1
+            p = pmf[idx].sum()
+            if np.isclose(p, 0):
+                zero_elements += bvec
+
+    zero = np.nonzero(zero_elements)[0]
+    zeroset = set(zero)
+    nonzero = [i for i in range(n_elements) if i not in zeroset]
+    variables = Bunch(nonzero=nonzero, zero=zero)
+
+    return variables
+
+
 def isolate_zeros(dist, k):
     """
     Determines if there are any elements of the optimization vector that must
