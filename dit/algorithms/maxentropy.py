@@ -33,6 +33,7 @@ from dit.abstractdist import AbstractDenseDistribution, get_abstract_dist
 
 from ..helpers import parse_rvs
 from .optutil import as_full_rank, CVXOPT_Template, prepare_dist, Bunch
+from ..utils import flatten
 
 __all__ = [
     'MarginalMaximumEntropy',
@@ -54,6 +55,9 @@ def isolate_zeros_generic(dist, rvs):
     """
     assert dist.is_dense()
     assert dist.get_base() == 'linear'
+
+    rvs_, indexes = parse_rvs(dist, set(flatten(rvs)), unique=True, sort=True)
+    rvs = [[indexes[rvs_.index(rv)] for rv in subrv] for subrv in rvs]
 
     d = get_abstract_dist(dist)
     n_variables = d.n_variables

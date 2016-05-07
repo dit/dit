@@ -166,7 +166,7 @@ def flatten(l):
         The non-iterable items in `l`.
     """
     for el in l:
-        if isinstance(el, Iterable) and not isinstance(el, six.string_types):
+        if isinstance(el, Iterable) and not (isinstance(el, six.string_types) and len(el) == 1):
             for sub in flatten(el):
                 yield sub
         else:

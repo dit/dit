@@ -165,6 +165,8 @@ def marginal_maxent_generic(dist, rvs, **kwargs):
     verbose = kwargs.get('verbose', False)
     logger = basic_logger('dit.maxentropy', verbose)
 
+    rv_mode = kwargs.pop('rv_mode', None)
+
     A, b = marginal_constraints_generic(dist, rvs)
 
     # Reduce the size of A so that only nonzero elements are searched.
@@ -220,13 +222,13 @@ def marginal_maxent_generic(dist, rvs, **kwargs):
 def marginal_maxent(dist, k, **kwargs):
     n_variables = dist.outcome_length()
 
-    if m > n_variables:
+    if k > n_variables:
         msg = "Cannot constrain {0}-way marginals"
         msg += " with only {1} random variables."
         msg = msg.format(m, n_variables)
         raise ValueError(msg)
 
-    rvs = list(itertools.combinations(range(n_variables), m))
+    rvs = list(itertools.combinations(range(n_variables), k))
     kwargs['rv_mode'] = 'indices'
 
     return marginal_maxent_generic(dist, rvs, **kwargs)
@@ -235,7 +237,7 @@ def marginal_maxent(dist, k, **kwargs):
 def maxent_dist(dist, rvs, maxiters=1000, tol=1e-3, verbose=False):
     """
     """
-    dist = prepare_dist(dist)
+    dist = prepare_dist(dist.copy())
     outcomes = list(dist._sample_space)
 
     kwargs = {'maxiters': maxiters, 'tol': tol, 'verbose': verbose}
