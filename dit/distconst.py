@@ -39,6 +39,7 @@ __all__ = [
     'RVFunctions',
     'product_distribution',
     'uniform',
+    'uniform_like',
     'all_dist_structures',
     'random_dist_structure',
 ]
@@ -475,6 +476,20 @@ def uniform_distribution(outcome_length, alphabet_size, base=None):
         d.set_base(base)
 
     return d
+
+def uniform_like(dist):
+    """
+    Returns a uniform distribution with the same outcome length, alphabet size, and base as `dist`.
+
+    Parameters
+    ----------
+    dist : Distribution
+        The distribution to mimic.
+    """
+    outcome_length = dist.outcome_length()
+    alphabet_size = dist.alphabet
+    base = dist.get_base()
+    return uniform_distribution(outcome_length, alphabet_size, base)
 
 def uniform(outcomes, base=None):
     """
