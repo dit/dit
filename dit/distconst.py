@@ -1000,7 +1000,7 @@ def random_dist_structure(outcome_length, alphabet_size):
         A uniform distribution over a random subset of joint events.
     """
     bound = 2**(alphabet_size**outcome_length)
-    return _int_to_dist(randint(1, bound), outcome_length, alphabet_size)
+    return _int_to_dist(randint(1, bound-1), outcome_length, alphabet_size)
 
 def _combine_scalar_dists(d1, d2, op):
     """
