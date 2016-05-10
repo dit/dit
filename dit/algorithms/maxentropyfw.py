@@ -23,6 +23,7 @@ from .maxentropy import (
 )
 
 __all__ = [
+    'maxent_dist',
     'marginal_maxent_dists',
 ]
 
