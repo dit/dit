@@ -1,6 +1,6 @@
 """
-The entropy triangle, from [Valverde-Albacete, Francisco José, and Carmen
-Peláez-Moreno. "The Multivariate Entropy Triangle and Applications." Hybrid
+The entropy triangle, from [Valverde-Albacete, Francisco Jose, and Carmen
+Pelaez-Moreno. "The Multivariate Entropy Triangle and Applications." Hybrid
 Artificial Intelligent Systems. Springer International Publishing, 2016.
 647-658].
 """
