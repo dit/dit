@@ -232,3 +232,10 @@ We can also plot all four on the same entropy triangle:
 
    @savefig entropy_triangle_all_examples.png width=500 align=center
    In [27]: EntropyTriangle([ex1, ex2, ex3, ex4]).draw();
+
+.. ipython::
+
+   In [28]: dists = [ dit.random_distribution(3, 2, alpha=(0.5,)*8) for _ in range(250) ]
+
+   @savefig entropy_triangle_example.png width=500 align=center
+   In [29]: EntropyTriangle(dists).draw();
