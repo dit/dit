@@ -4,9 +4,9 @@
    contain the root `toctree` directive.
 .. py:module:: dit
 
-************************************
+***************************************
 :mod:`dit`: discrete information theory
-************************************
+***************************************
 
 :mod:`dit` is a Python package for discrete information theory.
 
