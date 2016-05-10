@@ -81,6 +81,8 @@ The I-diagrams for these four examples can be computed thusly:
    | I[0:1:2] | -1.000 |
    +----------+--------+
 
+.. py:class:: dit.profiles.ComplexityProfile
+
 Complexity Profile
 ==================
 
@@ -114,6 +116,8 @@ Finally, example 4 (where each variable is the ``exclusive or`` of the other two
    @savefig complexity_profile_example_4.png width=500 align=center
    In [14]: ComplexityProfile(ex4).draw();
 
+.. py:class:: dit.profiles.MUIProfile
+
 Marginal Utility of Information
 ===============================
 
@@ -146,6 +150,8 @@ Lastly, the ``xor`` example:
 
    @savefig mui_profile_example_4.png width=500 align=center
    In [18]: MUIProfile(ex4).draw();
+
+.. py:class:: dit.profiles.SchneidmanProfile
 
 Schneidman Profile
 ==================
@@ -182,3 +188,47 @@ And for the ``xor``, all bits appear independent until fixing the three-way marg
 
    @savefig schneidman_profile_example_4.png width=500 align=center
    In [22]: SchneidmanProfile(ex4).draw();
+
+.. py:class:: dit.profiles.EntropyTriangle
+
+Entropy Triangle
+================
+
+The entropy triangle :cite:`valverde2016multivariate` is a method of visualizing how the information in the distribution is distributed among deviation from uniformity, independence, and dependence. The deviation from independence is measured by considering the difference in entropy between a independent variables with uniform distributions, and independent variables with the same marginal distributions as the distribution in question. Independence is measured via the :doc:`measures/multivariate/residual_entropy`, and dependence is measured by the sum of the :doc:`measures/multivariate/total_correlation` and :doc:`measures/multivariate/binding_information`.
+
+All four examples lay along the left axis because their distributions are uniform over the events that have non-zero probability.
+
+In the first example, the distribution is all independence because the three variables are, in fact, independent:
+
+.. ipython::
+
+   @savefig entropy_triangle_example_1.png width=500 align=center
+   In [23]: EntropyTriangle(ex1).draw();
+
+In the second example, the distribution is all dependence, because the three variables are perfectly entwined:
+
+.. ipython::
+
+   @savefig entropy_triangle_example_2.png width=500 align=center
+   In [24]: EntropyTriangle(ex2).draw();
+
+Here, there is a mix of independence and dependence:
+
+.. ipython::
+
+   @savefig entropy_triangle_example_3.png width=500 align=center
+   In [25]: EntropyTriangle(ex3).draw();
+
+And finally, in the case of ``xor``, the variables are completely dependent again:
+
+.. ipython::
+
+   @savefig entropy_triangle_example_4.png width=500 align=center
+   In [26]: EntropyTriangle(ex4).draw();
+
+We can also plot all four on the same entropy triangle:
+
+.. ipython::
+
+   @savefig entropy_triangle_all_examples.png width=500 align=center
+   In [27]: EntropyTriangle([ex1, ex2, ex3, ex4]).draw();

@@ -340,7 +340,7 @@ def get_abstract_dist(dist):
     else:
         class D(object):
             n_variables = dist.outcome_length()
-            n_elements = np.prod(map(len, dist.alphabet))
+            n_elements = np.prod(list(map(len, dist.alphabet)))
             def parameter_array(self, indexes, cache=None):
                 return brute_marginal_array(dist, indexes, rv_mode='indexes')
         d = D()

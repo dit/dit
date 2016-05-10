@@ -149,7 +149,7 @@ class MUIProfile(BaseProfile):
 
     def draw(self, ax=None): # pragma: no cover
         ax = super(MUIProfile, self).draw(ax=ax)
-        pnts = np.arange(int(self.profile.keys()[-1] + self.widths[-1]) + 1)
+        pnts = np.arange(int(max(self.profile.keys()) + self.widths[-1]) + 1)
         ax.set_xticks(pnts)
         ax.set_xticklabels(pnts)
         return ax
