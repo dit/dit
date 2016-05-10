@@ -321,7 +321,7 @@ def brute_marginal_array(d, rvs, rv_mode=None):
     # Apply nonzero, use [1] to get only the columns
     nz = np.nonzero(arr)[1]
     n_rows = len(marginal._sample_space)
-    arr = nz.reshape((n_rows, len(nz) / n_rows))
+    arr = nz.reshape((n_rows, len(nz) // n_rows))
 
     return arr
 
