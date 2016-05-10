@@ -13,6 +13,7 @@ dependencies:
   - pip:
     - ipython[nbconvert] == 4.0.1
     - iterutils >= 0.1.6
+    - python-ternary
     - releases
     - sarge
     - sphinxcontrib-bibtex
