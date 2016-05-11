@@ -9,7 +9,7 @@ from ..shannon import conditional_entropy as H
 
 def gk_common_information(dist, rvs=None, crvs=None, rv_mode=None):
     """
-    Returns the Gacs-Korner common information K[X1:X2...] over the random
+    Calculates the Gacs-Korner common information K[X1:X2...] over the random
     variables in `rvs`.
 
     Parameters

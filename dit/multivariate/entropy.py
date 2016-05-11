@@ -9,7 +9,7 @@ from ..utils import flatten
 
 def entropy(dist, rvs=None, crvs=None, rv_mode=None):
     """
-    Compute the conditional joint entropy.
+    Calculates the conditional joint entropy.
 
     Parameters
     ----------

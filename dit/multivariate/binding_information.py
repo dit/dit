@@ -12,6 +12,9 @@ __all__ = ('binding_information',
 
 def binding_information(dist, rvs=None, crvs=None, rv_mode=None):
     """
+    Calculates the binding information, also known as the dual total
+    correlation.
+
     Parameters
     ----------
     dist : Distribution
