@@ -1,6 +1,7 @@
 """
 """
 
+from ..helpers import normalize_rvs
 from ..utils import partitions
 from .entropy import entropy
 
@@ -30,15 +31,15 @@ def dilworth(dist, rvs=None, crvs=None, rv_mode=None):
 
     Returns
     -------
-    T : float
-        The total correlation.
+    J : float
+        The ...
 
     Examples
     --------
     >>> d = dit.example_dists.Xor()
-    >>> dit.multivariate.total_correlation(d)
+    >>> dit.multivariate.dilworth(d)
     1.0
-    >>> dit.multivariate.total_correlation(d, rvs=[[0], [1]])
+    >>> dit.multivariate.dilworth(d, rvs=[[0], [1]])
     0.0
 
     Raises
@@ -49,8 +50,11 @@ def dilworth(dist, rvs=None, crvs=None, rv_mode=None):
     """
     rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
 
-    one = sum([H(dist, rv, crvs, rv_mode=rv_mode) for rv in rvs])
-    two = H(dist, set().union(*rvs), crvs, rv_mode=rv_mode)
-    T = one - two
+    def I_P(part):
+        a = sum(entropy(dist, rvs=p, crvs=crvs) for p in part)
+        b = entropy(dist, crvs=crvs)
+        return a - b
 
-    return T
+    J = min( I_P(p) for p in partitions(map(tuple, rvs)) if len(p) > 1 )
+
+    return J
