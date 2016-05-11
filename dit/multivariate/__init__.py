@@ -3,7 +3,8 @@ Multivariate measures of information. Some are direct extensions of Shannon's
 measures and others are more distantly related.
 """
 
-from .binding_information import binding_information, dual_total_correlation, residual_entropy
+from .binding_information import binding_information, dual_total_correlation, residual_entropy, variation_of_information
+from .caekl_mutual_information import caekl_mutual_information
 from .coinformation import coinformation
 from .entropy import entropy
 from .gk_common_information import gk_common_information

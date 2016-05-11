@@ -1,18 +1,21 @@
 """
+The CAEKL mutual information, as define [Chan, Chung, et al. "Multivariate Mutual Information Inspired by Secret-Key Agreement." Proceedings of the IEEE 103.10 (2015): 1883-1913].
 """
+
+from __future__ import division
 
 from ..helpers import normalize_rvs
 from ..utils import partitions
 from .entropy import entropy
 
-def dilworth(dist, rvs=None, crvs=None, rv_mode=None):
+def caekl_mutual_information(dist, rvs=None, crvs=None, rv_mode=None):
     """
-    Calculates the ...
+    Calculates the Chan-AlBashabsheh-Ebrahimi-Kaced-Liu mutual information.
 
     Parameters
     ----------
     dist : Distribution
-        The distribution from which the total correlation is calculated.
+        The distribution from which the CAEKL mutual information is calculated.
     rvs : list, None
         A list of lists. Each inner list specifies the indexes of the random
         variables used to calculate the total correlation. If None, then the
@@ -32,14 +35,14 @@ def dilworth(dist, rvs=None, crvs=None, rv_mode=None):
     Returns
     -------
     J : float
-        The ...
+        The CAEKL mutual information.
 
     Examples
     --------
     >>> d = dit.example_dists.Xor()
-    >>> dit.multivariate.dilworth(d)
-    1.0
-    >>> dit.multivariate.dilworth(d, rvs=[[0], [1]])
+    >>> dit.multivariate.caekl_mutual_information(d)
+    0.5
+    >>> dit.multivariate.caekl_mutual_information(d, rvs=[[0], [1]])
     0.0
 
     Raises
@@ -50,10 +53,11 @@ def dilworth(dist, rvs=None, crvs=None, rv_mode=None):
     """
     rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
 
+    H = entropy(dist, rvs, crvs)
+
     def I_P(part):
         a = sum(entropy(dist, rvs=p, crvs=crvs) for p in part)
-        b = entropy(dist, crvs=crvs)
-        return a - b
+        return (a - H)/(len(part) - 1)
 
     J = min( I_P(p) for p in partitions(map(tuple, rvs)) if len(p) > 1 )
 

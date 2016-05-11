@@ -11,13 +11,14 @@ from dit.divergences import (cross_entropy as xH,
                              jensen_shannon_divergence as JSD,
                             )
 
-from dit.other import (extropy as J,
+from dit.other import (extropy as X,
                        perplexity as P,
                        cumulative_residual_entropy as CRE,
                        generalized_cumulative_residual_entropy as GCRE,
                       )
 
 from dit.multivariate import (binding_information as B,
+                              caekl_common_information as J,
                               coinformation as I,
                               entropy as H,
                               gk_common_information as K,
@@ -46,6 +47,7 @@ _shannon = [
 
 # measures representable on i-diagrams
 _shannon_ext = [
+    'J',    # the CAEKL common information
     'K',    # the Gacs-Korner common information [meet entropy]
     'II',   # the interaction information
     'M',    # the joint minimal sufficient statistic entropy
@@ -61,7 +63,7 @@ _divergences = [
 # other measures
 _others = [
     'P',    # the perplexity
-    'J',    # the extropy
+    'X',    # the extropy
     'CRE',  # the cumulative residual entropy
     'GCRE', # the generalized cumulative residual entropy
 ]

@@ -100,3 +100,5 @@ def residual_entropy(dist, rvs=None, crvs=None, rv_mode=None):
 
 
 dual_total_correlation = binding_information
+
+variation_of_information = residual_entropy
