@@ -53,10 +53,10 @@ def caekl_mutual_information(dist, rvs=None, crvs=None, rv_mode=None):
     """
     rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
 
-    H = entropy(dist, rvs, crvs)
+    H = entropy(dist, rvs, crvs, rv_mode)
 
     def I_P(part):
-        a = sum(entropy(dist, rvs=p, crvs=crvs) for p in part)
+        a = sum(entropy(dist, rvs=p, crvs=crvs, rv_mode=rv_mode) for p in part)
         return (a - H)/(len(part) - 1)
 
     J = min( I_P(p) for p in partitions(map(tuple, rvs)) if len(p) > 1 )
