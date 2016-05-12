@@ -18,7 +18,7 @@ from dit.other import (extropy as X,
                       )
 
 from dit.multivariate import (binding_information as B,
-                              caekl_common_information as J,
+                              caekl_mutual_information as J,
                               coinformation as I,
                               entropy as H,
                               gk_common_information as K,
