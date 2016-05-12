@@ -140,23 +140,23 @@ class BaseInformationPartition(object):
         if not rvs:
             rvs = tuple(range(self.dist.outcome_length()))
 
-        lattice = poset_lattice(rvs)
-        rlattice = lattice.reverse()
+        self._lattice = poset_lattice(rvs)
+        rlattice = self._lattice.reverse()
         Hs = {}
         Is = {}
         atoms = {}
         new_atoms = {}
 
         # Entropies
-        for node in lattice:
+        for node in self._lattice:
             Hs[node] = self._measure(self.dist, node) # pylint: disable=no-member
 
         # Subset-sum type thing, basically co-information calculations.
-        for node in lattice:
-            Is[node] = sum((-1)**(len(rv)+1)*Hs[rv] for rv in children(lattice, node))
+        for node in self._lattice:
+            Is[node] = sum((-1)**(len(rv)+1)*Hs[rv] for rv in children(self._lattice, node))
 
         # Mobius inversion of the above, resulting in the Shannon atoms.
-        for node in topological_sort(lattice)[:-1]:
+        for node in topological_sort(self._lattice)[:-1]:
             kids = islice(children(rlattice, node), 1, None)
             atoms[node] = Is[node] - sum(atoms[child] for child in kids)
 
@@ -312,48 +312,13 @@ class DependencyPartition(object):
             rvs = tuple(range(self.dist.outcome_length()))
 
         self._lattice = constraint_lattice(rvs)
-        # rlattice = lattice.reverse()
-        # Hs = {}
-        # Is = {}
         atoms = {}
-        # new_atoms = {}
 
         # Entropies
         for node in self._lattice:
             atoms[node] = H(maxent_dist(self.dist, node, tol=self._tol))
 
-        # # Subset-sum type thing, basically co-information calculations.
-        # for node in lattice:
-        #     Is[node] = sum((-1)**(len(rv)+1)*Hs[rv] for rv in children(lattice, node))
-        #
-        # # Mobius inversion of the above, resulting in the Shannon atoms.
-        # for node in topological_sort(lattice)[:-1]:
-        #     kids = islice(children(rlattice, node), 1, None)
-        #     atoms[node] = Is[node] - sum(atoms[child] for child in kids)
-        #
-        # # get the atom indices in proper format
-        # for atom, value in atoms.items():
-        #     a_rvs = tuple((_,) for _ in atom)
-        #     a_crvs = tuple(sorted(set(rvs) - set(atom)))
-        #     new_atoms[(a_rvs, a_crvs)] = value
-        #
         self.atoms = atoms
-
-    # def __getitem__(self, item):
-    #     """
-    #     Return the value of any information measure.
-    #
-    #     Parameters
-    #     ----------
-    #     item : tuple
-    #         A pair (rvs, crvs).
-    #     """
-    #     def is_part(atom, rvs, crvs):
-    #         lhs = all(any(((_,) in atom[0]) for _ in rv) for rv in rvs)
-    #         rhs = set(crvs).issubset(atom[1])
-    #         return lhs and rhs
-    #
-    #     return sum(value for atom, value in self.atoms.items() if is_part(atom, *item))
 
 
     def __str__(self):
@@ -379,18 +344,19 @@ class DependencyPartition(object):
             table.add_row([self._stringify(dependency), value])
         return table.get_string()
 
-    # def get_atoms(self, string=True):
-    #     """
-    #     Return all the atoms for the distribution.
-    #
-    #     Parameters
-    #     ----------
-    #     string : bool
-    #         If True, return atoms as strings. Otherwise, as a pair of tuples.
-    #     """
-    #     if string:
-    #         f = self._stringify
-    #     else:
-    #         f = lambda a, b: (a, b)
-    #
-    #     return set([f(rvs, crvs) for rvs, crvs in self.atoms.keys()])
+    def get_dependencies(self, string=True):
+        """
+        Return all the dependencies within the distribution.
+
+        Parameters
+        ----------
+        string : bool
+            If True, return dependencies as strings. Otherwise, as a pair of
+            tuples.
+        """
+        if string:
+            f = self._stringify
+        else:
+            f = lambda a, b: (a, b)
+
+        return set(map(f, self.atoms.keys()))
