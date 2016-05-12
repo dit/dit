@@ -20,6 +20,7 @@ from ..math import close
 
 __all__ = ['ShannonPartition',
            'ExtropyPartition',
+           'DependencyPartition',
           ]
 
 
@@ -74,7 +75,6 @@ def constraint_lattice(elements):
 
     for a, b in order:
         if not any(((a, c) in order) and ((c, b) in order) for c in pps):
-
             lattice.add_edge(normalize(b), normalize(a))
 
     return lattice
@@ -293,7 +293,7 @@ class DependencyPartition(object):
         ----------
         dependency : tuple of tuples
         """
-        s = ':'.join(''.join(map(str, d)) for d in dependency if len(d) > 1)
+        s = ':'.join(''.join(map(str, d)) for d in dependency)
         return s
 
     def _partition(self):
