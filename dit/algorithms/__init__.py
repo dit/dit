@@ -4,7 +4,6 @@ distributions.
 """
 
 from .channelcapacity import channel_capacity
-from .information_partitions import ShannonPartition
 from .lattice import insert_join, insert_meet
 from .maxentropy import *
 from .maxentropyfw import *

@@ -5,6 +5,8 @@ distribution.
 
 from __future__ import absolute_import
 
+from abc import ABCMeta, abstractmethod
+
 from itertools import islice
 from iterutils import powerset
 
@@ -12,10 +14,13 @@ from prettytable import PrettyTable
 
 from networkx import DiGraph, dfs_preorder_nodes as children, topological_sort
 
-from ..shannon import entropy as H
+import dit
+from ..shannon import entropy
+from ..other import extropy
 from ..math import close
 
 __all__ = ['ShannonPartition',
+           'ExtropyPartition',
           ]
 
 
@@ -36,10 +41,11 @@ def poset_lattice(elements):
     return lattice
 
 
-class ShannonPartition(object):
+class BaseInformationPartition(object):
     """
-    Construct an I-Diagram from a given joint distribution.
+    Construct an I-Diagram-like partition from a given joint distribution.
     """
+    __metaclass__ = ABCMeta
 
     def __init__(self, dist):
         """
@@ -55,7 +61,14 @@ class ShannonPartition(object):
         self._partition()
 
     @staticmethod
-    def _stringify(rvs, crvs):
+    @abstractmethod
+    def _symbol(rvs, crvs):
+        """
+        This method should return the information symbol for an atom.
+        """
+        pass
+
+    def _stringify(self, rvs, crvs):
         """
         Construct a string representation of a measure, e.g. I[X:Y|Z]
 
@@ -70,7 +83,7 @@ class ShannonPartition(object):
         crvs = [str(_) for _ in crvs]
         a = ':'.join(rvs)
         b = ','.join(crvs)
-        symbol = 'H' if len(rvs) == 1 else 'I'
+        symbol = self._symbol(rvs, crvs)
         sep = '|' if len(crvs) > 0 else ''
         s = "{0}[{1}{2}{3}]".format(symbol, a, sep, b)
         return s
@@ -97,7 +110,7 @@ class ShannonPartition(object):
 
         # Entropies
         for node in lattice:
-            Hs[node] = H(self.dist, node)
+            Hs[node] = self._measure(self.dist, node)
 
         # Subset-sum type thing, basically co-information calculations.
         for node in lattice:
@@ -132,6 +145,11 @@ class ShannonPartition(object):
 
         return sum(value for atom, value in self.atoms.items() if is_part(atom, *item))
 
+    def __repr__(self):
+        """
+        Represent using the str().
+        """
+        return str(self)
 
     def __str__(self):
         """
@@ -143,10 +161,10 @@ class ShannonPartition(object):
         """
         Use PrettyTable to create a nice table.
         """
-        table = PrettyTable(['measure', 'bits'])
+        table = PrettyTable(['measure', self.unit])
         ### TODO: add some logic for the format string, so things look nice
         # with arbitrary values
-        table.float_format['bits'] = ' 5.{0}'.format(digits)
+        table.float_format[self.unit] = ' 5.{0}'.format(digits)
         key_function = lambda row: (len(row[0][0]), row[0][0], row[0][1])
         items = self.atoms.items()
         for (rvs, crvs), value in sorted(items, key=key_function):
@@ -171,3 +189,37 @@ class ShannonPartition(object):
             f = lambda a, b: (a, b)
 
         return set([f(rvs, crvs) for rvs, crvs in self.atoms.keys()])
+
+
+class ShannonPartition(BaseInformationPartition):
+    """
+    Construct an I-Diagram from a given joint distribution.
+    """
+
+    _measure = staticmethod(entropy)
+    unit = 'bits'
+
+    @staticmethod
+    def _symbol(rvs, crvs):
+        """
+        Returns H for a conditional entropy, and I for all other atoms.
+        """
+        return 'H' if len(rvs) == 1 else 'I'
+
+
+class ExtropyPartition(BaseInformationPartition):
+    """
+    Construct an X-Diagram from a given joint distribution. One important
+    distinction regarding X-Diagrams vs I-Diagrams is that the atoms of an
+    X-Diagram are strictly positive.
+    """
+
+    _measure = staticmethod(extropy)
+    unit = 'exits'
+
+    @staticmethod
+    def _symbol(rvs, crvs):
+        """
+        Returns X for all atoms.
+        """
+        return 'X'
