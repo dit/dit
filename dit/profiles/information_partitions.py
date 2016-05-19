@@ -7,7 +7,7 @@ from __future__ import absolute_import
 
 from abc import ABCMeta, abstractmethod
 
-from itertools import islice
+from itertools import combinations, islice, permutations
 from iterutils import powerset
 
 from prettytable import PrettyTable
@@ -36,6 +36,39 @@ def poset_lattice(elements):
         for b in powerset(elements):
             if child(set(a), set(b)):
                 lattice.add_edge(b, a)
+
+    return lattice
+
+def constraint_lattice(elements):
+    """
+    Return a lattice of constrained marginals, with k=1 at the bottom and
+    k=len(elements) at the top.
+    """
+    def not_comparable(a, b):
+        return a - b and b - a
+
+    def is_antichain(s):
+        ns = all(not_comparable(s1, s2) for s1, s2 in combinations(s, 2))
+        return ns
+
+    def is_cover(s, sss):
+        cover = set().union(*sss)
+        return s == cover
+
+    def less_than(sss1, sss2):
+        return all(any(ss1 <= ss2 for ss2 in sss2) for ss1 in sss1)
+
+    ps = (frozenset(ss) for ss in powerset(elements) if len(ss) > 0)
+
+    pps = [c for c in powerset(ps) if is_antichain(c) and is_cover(elements, c)]
+
+    order = [(a, b) for a, b in permutations(pps, 2) if less_than(a, b)]
+
+    lattice = DiGraph()
+
+    for a, b in order:
+        if not any(((a, c) in order) and ((c, b) in order) for c in pps):
+            lattice.add_edge(tuple(map(tuple, b)), tuple(map(tuple, a)))
 
     return lattice
 
