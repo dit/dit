@@ -264,7 +264,7 @@ class ExtropyPartition(BaseInformationPartition):
         return 'X'
 
 
-class DependencyPartition(object):
+class DependencyDecomposition(object):
     """
     Construct a decomposition of all the dependencies in a given joint
     distribution.
