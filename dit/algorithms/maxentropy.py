@@ -31,7 +31,7 @@ import dit
 
 from dit.abstractdist import AbstractDenseDistribution, get_abstract_dist
 
-from ..helpers import parse_rvs
+from ..helpers import RV_MODES, parse_rvs
 from .optutil import as_full_rank, CVXOPT_Template, prepare_dist, Bunch
 from ..utils import flatten
 
@@ -224,8 +224,13 @@ def marginal_constraints(dist, m, with_normalization=True):
         msg = msg.format(m, n_variables)
         raise ValueError(msg)
 
-    rvs = list(itertools.combinations(range(n_variables), m))
-    rv_mode = 'indices'
+    rv_mode = dist._rv_mode
+
+    if rv_mode in [RV_MODES.NAMES, 'names']:
+        vars = dist.get_rv_names()
+        rvs = list(itertools.combinations(vars, m))
+    else:
+        rvs = list(itertools.combinations(range(n_variables), m))
 
     A, b = marginal_constraints_generic(dist, rvs, rv_mode,
                                         with_normalization=with_normalization)

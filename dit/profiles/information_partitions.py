@@ -20,7 +20,7 @@ from ..math import close
 
 __all__ = ['ShannonPartition',
            'ExtropyPartition',
-           'DependencyPartition',
+           'DependencyDecomposition',
           ]
 
 
@@ -270,7 +270,7 @@ class DependencyDecomposition(object):
     distribution.
     """
 
-    def __init__(self, dist, measure=H, tol=1e-4):
+    def __init__(self, dist, measure=entropy, tol=1e-4):
         """
         Construct a Krippendorff-type partition of the information contained in
         `dist`.

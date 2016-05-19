@@ -13,6 +13,7 @@ import logging
 import numpy as np
 
 import dit
+from dit.helpers import RV_MODES
 from dit.utils import basic_logger
 
 from .optutil import (
@@ -168,7 +169,7 @@ def marginal_maxent_generic(dist, rvs, **kwargs):
 
     rv_mode = kwargs.pop('rv_mode', None)
 
-    A, b = marginal_constraints_generic(dist, rvs)
+    A, b = marginal_constraints_generic(dist, rvs, rv_mode)
 
     # Reduce the size of A so that only nonzero elements are searched.
     # Also make it full rank.
@@ -229,8 +230,18 @@ def marginal_maxent(dist, k, **kwargs):
         msg = msg.format(m, n_variables)
         raise ValueError(msg)
 
-    rvs = list(itertools.combinations(range(n_variables), k))
-    kwargs['rv_mode'] = 'indices'
+    rv_mode = kwargs.pop('rv_mode', None)
+
+    if rv_mode is None:
+        rv_mode = dist._rv_mode
+
+    if rv_mode in [RV_MODES.NAMES, 'names']:
+        vars = dist.get_rv_names()
+        rvs = list(itertools.combinations(vars, k))
+    else:
+        rvs = list(itertools.combinations(range(n_variables), k))
+
+    kwargs['rv_mode'] = rv_mode
 
     return marginal_maxent_generic(dist, rvs, **kwargs)
 
