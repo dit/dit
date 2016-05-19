@@ -23,10 +23,8 @@ The I-diagrams for these four examples can be computed thusly:
 
 .. ipython::
 
-   In [6]: from dit.algorithms import ShannonPartition
-
    @doctest
-   In [7]: print(ShannonPartition(ex1))
+   In [6]: ShannonPartition(ex1)
    +----------+--------+
    | measure  |  bits  |
    +----------+--------+
@@ -40,7 +38,7 @@ The I-diagrams for these four examples can be computed thusly:
    +----------+--------+
 
    @doctest
-   In [8]: print(ShannonPartition(ex2))
+   In [7]: ShannonPartition(ex2)
    +----------+--------+
    | measure  |  bits  |
    +----------+--------+
@@ -54,7 +52,7 @@ The I-diagrams for these four examples can be computed thusly:
    +----------+--------+
 
    @doctest
-   In [9]: print(ShannonPartition(ex3))
+   In [8]: ShannonPartition(ex3)
    +----------+--------+
    | measure  |  bits  |
    +----------+--------+
@@ -68,7 +66,7 @@ The I-diagrams for these four examples can be computed thusly:
    +----------+--------+
 
    @doctest
-   In [10]: print(ShannonPartition(ex4))
+   In [9]: ShannonPartition(ex4)
    +----------+--------+
    | measure  |  bits  |
    +----------+--------+
@@ -93,28 +91,28 @@ Consider example 1, which contains three independent bits. Each of these bits ar
 .. ipython::
 
    @savefig complexity_profile_example_1.png width=500 align=center
-   In [11]: ComplexityProfile(ex1).draw();
+   In [10]: ComplexityProfile(ex1).draw();
 
 Whereas in example 2, all the information is in the center, and so each scale of the complexity profile picks up that one bit:
 
 .. ipython::
 
    @savefig complexity_profile_example_2.png width=500 align=center
-   In [12]: ComplexityProfile(ex2).draw();
+   In [11]: ComplexityProfile(ex2).draw();
 
 Both bits in example 3 are at a scale of at least 1, but only the shared bit persists to scale 2:
 
 .. ipython::
 
    @savefig complexity_profile_example_3.png width=500 align=center
-   In [13]: ComplexityProfile(ex3).draw();
+   In [12]: ComplexityProfile(ex3).draw();
 
 Finally, example 4 (where each variable is the ``exclusive or`` of the other two):
 
 .. ipython::
 
    @savefig complexity_profile_example_4.png width=500 align=center
-   In [14]: ComplexityProfile(ex4).draw();
+   In [13]: ComplexityProfile(ex4).draw();
 
 .. py:class:: dit.profiles.MUIProfile
 
@@ -128,28 +126,28 @@ For the first example, each bit is independent and so basically must be extracte
 .. ipython::
 
    @savefig mui_profile_example_1.png width=500 align=center
-   In [15]: MUIProfile(ex1).draw();
+   In [14]: MUIProfile(ex1).draw();
 
 In the second example, there is only one bit total to be extracted, but it is shared by each pairwise mutual information. Therefore, for each increase in :math:`y` we get a threefold increase in the amount extracted:
 
 .. ipython::
 
    @savefig mui_profile_example_2.png width=500 align=center
-   In [16]: MUIProfile(ex2).draw();
+   In [15]: MUIProfile(ex2).draw();
 
 For the third example, for the first one bit of :math:`y` we can pull from the shared bit, but after that one must pull from the independent bit, so we see a step in the MUI profile:
 
 .. ipython::
 
    @savefig mui_profile_example_3.png width=500 align=center
-   In [17]: MUIProfile(ex3).draw();
+   In [16]: MUIProfile(ex3).draw();
 
 Lastly, the ``xor`` example:
 
 .. ipython::
 
    @savefig mui_profile_example_4.png width=500 align=center
-   In [18]: MUIProfile(ex4).draw();
+   In [17]: MUIProfile(ex4).draw();
 
 .. py:class:: dit.profiles.SchneidmanProfile
 
@@ -163,10 +161,10 @@ In the first example, all the random variables are independent already, so fixin
 .. ipython::
 
    @savefig schneidman_profile_example_1.png width=500 align=center
-   In [19]: SchneidmanProfile(ex1).draw();
+   In [18]: SchneidmanProfile(ex1).draw();
 
    @suppress
-   In [20]: plt.ylim((0, 1))
+   In [19]: plt.ylim((0, 1))
 
 In the second example, by learning the pairwise marginals, we reduce the entropy of the distribution by two bits (from three independent bits, to one giant bit):
 
@@ -240,7 +238,7 @@ We can also plot all four on the same entropy triangle:
    @savefig entropy_triangle_example.png width=500 align=center
    In [29]: EntropyTriangle(dists).draw();
 
-We can plot these same distributions on a slightly different entropy triangle as well, one comparing the :doc:`measures/multivariate/residual_entropy`, :doc:`measures/multivariate/total_correlation`, and :doc:`measures/multivariate/binding_information`:
+We can plot these same distributions on a slightly different entropy triangle as well, one comparing the :doc:`measures/multivariate/residual_entropy`, :doc:`measures/multivariate/total_correlation`, and :doc:`measures/multivariate/dual_total_correlation`:
 
 .. ipython::
 
