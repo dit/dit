@@ -13,10 +13,10 @@ from iterutils import powerset
 import numpy as np
 from scipy.optimize import linprog
 
-from dit.algorithms import ShannonPartition
-from dit.math import close
-from dit.multivariate import entropy as H
-from dit.utils import flatten
+from .information_partitions import ShannonPartition
+from ..math import close
+from ..multivariate import entropy as H
+from ..utils import flatten
 
 __all__ = ['MUIProfile']
 

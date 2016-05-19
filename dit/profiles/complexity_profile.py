@@ -7,7 +7,7 @@ from collections import defaultdict
 
 import numpy as np
 
-from ..algorithms import ShannonPartition
+from .information_partitions import ShannonPartition
 from .base_profile import BaseProfile, profile_docstring
 
 class ComplexityProfile(BaseProfile):

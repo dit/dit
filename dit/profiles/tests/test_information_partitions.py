@@ -8,7 +8,7 @@ from iterutils import powerset
 
 from dit.multivariate import coinformation as I
 from dit.utils import partitions
-from dit.algorithms.information_partitions import ShannonPartition
+from dit.profiles.information_partitions import *
 from dit.example_dists import n_mod_m
 
 def all_info_measures(vars):
@@ -67,3 +67,23 @@ def test_sp4():
 | I[0:1:2] | -1.000 |
 +----------+--------+"""
     assert_equal(str(ip), string)
+
+def test_ep1():
+    """
+    Test against known values.
+    """
+    d = n_mod_m(3, 2)
+    ep = ExtropyPartition(d)
+    string = """\
++----------+--------+
+| measure  | exits  |
++----------+--------+
+| X[0|1,2] |  0.000 |
+| X[1|0,2] |  0.000 |
+| X[2|0,1] |  0.000 |
+| X[0:1|2] |  0.245 |
+| X[0:2|1] |  0.245 |
+| X[1:2|0] |  0.245 |
+| X[0:1:2] |  0.510 |
++----------+--------+"""
+    assert_equal(str(ep), string)
