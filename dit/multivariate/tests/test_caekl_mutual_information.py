@@ -21,7 +21,7 @@ def test_caekl_1():
     """
     for d in all_dist_structures(2, 3):
         yield assert_almost_equal, I(d), J(d)
-    for d in [random_distribution(2, 3, alpha=(0.5,)*9) for _ in range(100)]:
+    for d in [random_distribution(2, 3, alpha=(0.5,)*9) for _ in range(10)]:
         yield assert_almost_equal, I(d), J(d)
 
 def test_caekl_2():
@@ -32,7 +32,7 @@ def test_caekl_2():
     rvs = [[0], [1]]
     for d in all_dist_structures(3, 2):
         yield assert_almost_equal, I(d, rvs), J(d, rvs)
-    for d in [random_distribution(3, 2, alpha=(0.5,)*8) for _ in range(100)]:
+    for d in [random_distribution(3, 2, alpha=(0.5,)*8) for _ in range(10)]:
         yield assert_almost_equal, I(d, rvs), J(d, rvs)
 
 def test_caekl_3():
@@ -47,5 +47,5 @@ def test_caekl_4():
     Test that CAEKL is always less than or equal to the normalized total
     correlation.
     """
-    for d in [random_distribution(4, 3, alpha=(0.5,)*3**4) for _ in range(100)]:
+    for d in [random_distribution(4, 3, alpha=(0.5,)*3**4) for _ in range(10)]:
         yield assert_less_equal, J(d), T(d)/3 + 1e-7
