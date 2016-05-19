@@ -45,6 +45,7 @@ class BaseInformationPartition(object):
     """
     Construct an I-Diagram-like partition from a given joint distribution.
     """
+    __metaclass__ = ABCMeta
 
     def __init__(self, dist):
         """
