@@ -72,7 +72,7 @@ class BaseEntropyTriangle(object):
         """
         pass
 
-    def draw(self, ax=None, setup=True, marker='o', color='k'):
+    def draw(self, ax=None, setup=True, marker='o', color='k'): # pragma: no cover
         """
         Plot the entropy triangle.
 
