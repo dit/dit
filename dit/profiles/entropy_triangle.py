@@ -91,7 +91,7 @@ class BaseEntropyTriangle(object):
 
         if ax is None:
             fig, ax = ternary.figure()
-            fig.set_size_inches(8, 8)
+            fig.set_size_inches(10, 8)
         else:
             ax = ternary.TernaryAxesSubplot(ax=ax)
 

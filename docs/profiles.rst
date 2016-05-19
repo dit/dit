@@ -239,3 +239,10 @@ We can also plot all four on the same entropy triangle:
 
    @savefig entropy_triangle_example.png width=500 align=center
    In [29]: EntropyTriangle(dists).draw();
+
+We can plot these same distributions on a slightly different entropy triangle as well, one comparing the :doc:`measures/multivariate/residual_entropy`, :doc:`measures/multivariate/total_correlation`, and :doc:`measures/multivariate/binding_information`:
+
+.. ipython::
+
+   @savefig entropy_triangle2_example.png width=500 align=center
+   In [30]: EntropyTriangle2(dists).draw();
