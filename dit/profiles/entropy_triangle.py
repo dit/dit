@@ -4,14 +4,20 @@ Pelaez-Moreno. "The Multivariate Entropy Triangle and Applications." Hybrid
 Artificial Intelligent Systems. Springer International Publishing, 2016.
 647-658].
 """
+from abc import ABCMeta, abstractmethod
 
 from ..distribution import BaseDistribution
 from ..distconst import product_distribution, uniform_like
-from ..multivariate import entropy, residual_entropy
+from ..multivariate import (entropy, residual_entropy, dual_total_correlation,
+                            total_correlation)
 
-class EntropyTriangle(object):
+__all__ = ['EntropyTriangle',
+           'EntropyTriangle2',
+]
+
+class BaseEntropyTriangle(object):
     """
-    BaseProfile
+    BaseEntropyTriangle
 
     Static Attributes
     -----------------
@@ -32,6 +38,7 @@ class EntropyTriangle(object):
     draw
         Plot the entropy triangle.
     """
+    __metaclass__ = ABCMeta
 
     left_label = "$\operatorname{R}[\mathrm{dist}]$"
     right_label = "$\operatorname{T}[\mathrm{dist}] + \operatorname{B}[\mathrm{dist}]$"
@@ -53,24 +60,17 @@ class EntropyTriangle(object):
         self.points = [self._compute_point(dist) for dist in self.dists]
 
     @staticmethod
+    @abstractmethod
     def _compute_point(dist):
         """
-        Compute the deviation from uniformity, dependence, and independence of a
-        distribution.
+        Compute the three normalized axis.
 
         Parameters
         ----------
         dist : Distribution
             The distribution to compute values for.
         """
-        H_U = entropy(uniform_like(dist))
-        H_P = entropy(product_distribution(dist))
-
-        Delta = H_U - H_P
-        VI = residual_entropy(dist)
-        M = H_P - VI
-
-        return (Delta/H_U, M/H_U, VI/H_U)
+        pass
 
     def draw(self, ax=None, setup=True, marker='o', color='k'):
         """
@@ -109,5 +109,70 @@ class EntropyTriangle(object):
             ax.clear_matplotlib_ticks()
 
         ax.scatter(self.points, marker=marker, color=color)
+        ax._redraw_labels()
 
         return ax
+
+
+class EntropyTriangle(BaseEntropyTriangle):
+    """
+    Construct the Multivariate Entropy Triangle, as defined in
+    [Valverde-Albacete, Francisco Jose, and Carmen Pelaez-Moreno. "The
+    Multivariate Entropy Triangle and Applications." Hybrid Artificial
+    Intelligent Systems. Springer International Publishing, 2016. 647-658]
+    """
+
+    left_label = "$\operatorname{R}[\mathrm{dist}]$"
+    right_label = "$\operatorname{T}[\mathrm{dist}] + \operatorname{B}[\mathrm{dist}]$"
+    bottom_label = "$\Delta \operatorname{H}_{\Pi_\overline{X}}$"
+
+    @staticmethod
+    def _compute_point(dist):
+        """
+        Compute the deviation from uniformity, dependence, and independence of a
+        distribution.
+
+        Parameters
+        ----------
+        dist : Distribution
+            The distribution to compute values for.
+        """
+        H_U = entropy(uniform_like(dist))
+        H_P = entropy(product_distribution(dist))
+
+        Delta = H_U - H_P
+        VI = residual_entropy(dist)
+        M = H_P - VI
+
+        return (Delta/H_U, M/H_U, VI/H_U)
+
+
+class EntropyTriangle2(BaseEntropyTriangle):
+    """
+    Construct a variation on the Entropy Triangle, comparing the amount of
+    independence in the distribution (residual entropy) to two types of
+    dependence (total correlation and dual total correlation).
+    """
+
+    left_label = "$\operatorname{B}[\mathrm{dist}]$"
+    right_label = "$\operatorname{T}[\mathrm{dist}]$"
+    bottom_label = "$\operatorname{R}[\mathrm{dist}]$"
+
+    @staticmethod
+    def _compute_point(dist):
+        """
+        Compute the residual entropy, total correlation, and dual total
+        correlation for the distribution, and normalize them.
+
+        Parameters
+        ----------
+        dist : Distribution
+            The distribution to compute values for.
+        """
+
+        R = residual_entropy(dist)
+        B = dual_total_correlation(dist)
+        T = total_correlation(dist)
+        total = R + B + T
+
+        return (R/total, T/total, B/total)
