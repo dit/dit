@@ -5,34 +5,45 @@
 Multivariate
 ************
 
-Multivariate measures of information generally attempt to capture some global
-property of a joint distribution. For example, they might attempt to quantify
-how much information is shared among the random variables, or quantify how
-"non-indpendent" in the joint distribution is.
+Multivariate measures of information generally attempt to capture some global property of a joint distribution. For example, they might attempt to quantify how much information is shared among the random variables, or quantify how "non-indpendent" in the joint distribution is.
 
-Shannon Measures
-================
-The first batch are all linear combinations of atoms from an I-diagram, and are
-therefore computable using only the entropy of subsets of the distribution.
+Total Information
+=================
+These quantities, currently just the Shannon entropy, measure the total amount of information contained in a set of joint variables.
 
 .. toctree::
    :maxdepth: 1
 
    entropy
+
+Mutual Informations
+===================
+These measuares all reduce to the standard Shannon mutual information for bivariate distributions.
+
+.. toctree::
+   :maxdepth: 1
+
    coinformation
    interaction_information
+   caekl_mutual_information
    total_correlation
-   binding_information
-   residual_entropy
-   tse_complexity
+   dual_total_correlation
 
-Non-Shannon Measures
-====================
-The next set of measures are based on the definition of an auxiliary random
-variable, generally one which in some way captures the information common to the
-random variables.
+Common Informations
+===================
+These measures all somehow measure shared information, but do not equal the mutual information in the bivaraite case.
 
 .. toctree::
    :maxdepth: 1
 
    gk_common_information
+   tse_complexity
+
+Others
+======
+These measures quantify other aspects of a joint distribution.
+
+.. toctree::
+   :maxdepth: 1
+
+   residual_entropy

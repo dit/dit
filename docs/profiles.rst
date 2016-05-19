@@ -194,7 +194,7 @@ And for the ``xor``, all bits appear independent until fixing the three-way marg
 Entropy Triangle
 ================
 
-The entropy triangle :cite:`valverde2016multivariate` is a method of visualizing how the information in the distribution is distributed among deviation from uniformity, independence, and dependence. The deviation from independence is measured by considering the difference in entropy between a independent variables with uniform distributions, and independent variables with the same marginal distributions as the distribution in question. Independence is measured via the :doc:`measures/multivariate/residual_entropy`, and dependence is measured by the sum of the :doc:`measures/multivariate/total_correlation` and :doc:`measures/multivariate/binding_information`.
+The entropy triangle :cite:`valverde2016multivariate` is a method of visualizing how the information in the distribution is distributed among deviation from uniformity, independence, and dependence. The deviation from independence is measured by considering the difference in entropy between a independent variables with uniform distributions, and independent variables with the same marginal distributions as the distribution in question. Independence is measured via the :doc:`measures/multivariate/residual_entropy`, and dependence is measured by the sum of the :doc:`measures/multivariate/total_correlation` and :doc:`measures/multivariate/dual_total_correlation`.
 
 All four examples lay along the left axis because their distributions are uniform over the events that have non-zero probability.
 

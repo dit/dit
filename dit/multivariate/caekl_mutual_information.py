@@ -1,19 +1,21 @@
 """
-The total correlation, aka the multi-information or the integration.
+The CAEKL mutual information, as define [Chan, Chung, et al. "Multivariate Mutual Information Inspired by Secret-Key Agreement." Proceedings of the IEEE 103.10 (2015): 1883-1913].
 """
 
-from ..helpers import normalize_rvs
-from ..shannon import conditional_entropy as H
+from __future__ import division
 
-def total_correlation(dist, rvs=None, crvs=None, rv_mode=None):
+from ..helpers import normalize_rvs
+from ..utils import partitions
+from .entropy import entropy
+
+def caekl_mutual_information(dist, rvs=None, crvs=None, rv_mode=None):
     """
-    Computes the total correlation, also known as either the multi-information
-    or the integration.
+    Calculates the Chan-AlBashabsheh-Ebrahimi-Kaced-Liu mutual information.
 
     Parameters
     ----------
     dist : Distribution
-        The distribution from which the total correlation is calculated.
+        The distribution from which the CAEKL mutual information is calculated.
     rvs : list, None
         A list of lists. Each inner list specifies the indexes of the random
         variables used to calculate the total correlation. If None, then the
@@ -32,15 +34,15 @@ def total_correlation(dist, rvs=None, crvs=None, rv_mode=None):
 
     Returns
     -------
-    T : float
-        The total correlation.
+    J : float
+        The CAEKL mutual information.
 
     Examples
     --------
     >>> d = dit.example_dists.Xor()
-    >>> dit.multivariate.total_correlation(d)
-    1.0
-    >>> dit.multivariate.total_correlation(d, rvs=[[0], [1]])
+    >>> dit.multivariate.caekl_mutual_information(d)
+    0.5
+    >>> dit.multivariate.caekl_mutual_information(d, rvs=[[0], [1]])
     0.0
 
     Raises
@@ -51,8 +53,12 @@ def total_correlation(dist, rvs=None, crvs=None, rv_mode=None):
     """
     rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
 
-    one = sum([H(dist, rv, crvs, rv_mode=rv_mode) for rv in rvs])
-    two = H(dist, set().union(*rvs), crvs, rv_mode=rv_mode)
-    T = one - two
+    H = entropy(dist, rvs, crvs, rv_mode)
 
-    return T
+    def I_P(part):
+        a = sum(entropy(dist, rvs=p, crvs=crvs, rv_mode=rv_mode) for p in part)
+        return (a - H)/(len(part) - 1)
+
+    J = min( I_P(p) for p in partitions(map(tuple, rvs)) if len(p) > 1 )
+
+    return J

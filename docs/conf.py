@@ -215,6 +215,7 @@ macros = r'''
 \newcommand{\I}    {\op{I}}
 \newcommand{\T}    {\op{T}}
 \newcommand{\B}    {\op{B}}
+\newcommand{\J}    {\op{J}}
 \newcommand{\R}    {\op{R}}
 \newcommand{\II}   {\op{II}}
 \newcommand{\TSE}  {\op{TSE}}
@@ -222,7 +223,7 @@ macros = r'''
 \newcommand{\K}    {\op{K}}
 
 \renewcommand{\P}  {\op{P}}
-\newcommand{\J}    {\op{J}}
+\newcommand{\X}    {\op{X}}
 \newcommand{\CRE}  {\op{\mathcal{E}}}
 \newcommand{\GCRE} {\op{\mathcal{E^\prime}}}
 \newcommand{\RE}   {\op{H_{\alpha}}}

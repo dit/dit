@@ -5,11 +5,7 @@
 Basic Shannon measures
 **********************
 
-The information on this page is drawn from the fantastic text book **Elements of
-Information Theory** by Cover and Thomas :cite:`Cover2006`. Other good choices
-are **Information Theory, Inference and Learning Algorithms** by MacKay
-:cite:`MacKay2003` and **Information Theory and Network Coding** by Yeung
-:cite:`Yeung2008`.
+The information on this page is drawn from the fantastic text book **Elements of Information Theory** by Cover and Thomas :cite:`Cover2006`. Other good choices are **Information Theory, Inference and Learning Algorithms** by MacKay :cite:`MacKay2003` and **Information Theory and Network Coding** by Yeung :cite:`Yeung2008`.
 
 
 Entropy
@@ -21,9 +17,7 @@ The entropy measures how much information is in a random variable :math:`X`.
 
    \H[X] = -\sum_{x \in \mathcal{X}} p(x) \log_2 p(x)
 
-What do we mean by "how much information"? Basically, we mean the average number
-of yes-no questions one would have to ask to determine an outcome from the
-distribution. In the simplest case, consider a sure thing:
+What do we mean by "how much information"? Basically, we mean the average number of yes-no questions one would have to ask to determine an outcome from the distribution. In the simplest case, consider a sure thing:
 
 .. ipython::
 
@@ -33,8 +27,7 @@ distribution. In the simplest case, consider a sure thing:
    In [2]: dit.shannon.entropy(d)
    Out[2]: 0.0
 
-So since we know that the outcome from our distribution will always be `H`, we
-have to ask zero questions to figure that out. If however we have a fair coin:
+So since we know that the outcome from our distribution will always be `H`, we have to ask zero questions to figure that out. If however we have a fair coin:
 
 .. ipython::
 
@@ -44,9 +37,7 @@ have to ask zero questions to figure that out. If however we have a fair coin:
    In [4]: dit.shannon.entropy(d)
    Out[4]: 1.0
 
-The entropy tells us that we must ask one question to determine whether an `H`
-or `T` was the outcome of the coin flip. Now what if there are three outcomes?
-Let's consider the following situation:
+The entropy tells us that we must ask one question to determine whether an `H` or `T` was the outcome of the coin flip. Now what if there are three outcomes? Let's consider the following situation:
 
 .. ipython::
 
@@ -56,12 +47,7 @@ Let's consider the following situation:
    In [6]: dit.shannon.entropy(d)
    Out[6]: 1.5
 
-Here we find that the entropy is 1.5 bits. How do we ask one and a half
-questions on average? Well, if our first question is "was it `A`?" and it is
-true, then we are done, and that occurs half the time. The other half of the
-time we need to ask a follow up question: "was it `B`?". So half the time we
-need to ask one question, and the other half of the time we need to ask two
-questions. In other words, we need to ask 1.5 questions on average.
+Here we find that the entropy is 1.5 bits. How do we ask one and a half questions on average? Well, if our first question is "was it `A`?" and it is true, then we are done, and that occurs half the time. The other half of the time we need to ask a follow up question: "was it `B`?". So half the time we need to ask one question, and the other half of the time we need to ask two questions. In other words, we need to ask 1.5 questions on average.
 
 
 Joint Entropy
@@ -73,8 +59,7 @@ The entropy of multiple variables is computed in a similar manner:
 
    \H[X_{0:n}] = -\sum_{x_{0:n} \in X_{0:n}} p(x_{0:n}) \log_2 p(x_{0:n})
 
-Its intuition is also the same: the average number of binary questions required
-to identify a joint event from the distribution.
+Its intuition is also the same: the average number of binary questions required to identify a joint event from the distribution.
 
 
 API
@@ -86,8 +71,7 @@ API
 Conditional Entropy
 ===================
 
-The conditional entropy is the amount of information in variable :math:`X`
-beyond that which is in variable :math:`Y`:
+The conditional entropy is the amount of information in variable :math:`X` beyond that which is in variable :math:`Y`:
 
 .. math::
 
@@ -103,9 +87,7 @@ As a simple example, consider two identical variables:
    In [8]: dit.shannon.conditional_entropy(d, [0], [1])
    Out[8]: 0.0
 
-We see that knowing the second variable tells us everything about the first,
-leaving zero entropy. On the other end of the spectrum, two independent
-variables:
+We see that knowing the second variable tells us everything about the first, leaving zero entropy. On the other end of the spectrum, two independent variables:
 
 .. ipython::
 
@@ -115,8 +97,7 @@ variables:
    In [10]: dit.shannon.conditional_entropy(d, [0], [1])
    Out[10]: 1.0
 
-Here, the second variable tells us nothing about the first so we are left with
-the one bit of information a coin flip has.
+Here, the second variable tells us nothing about the first so we are left with the one bit of information a coin flip has.
 
 
 API
@@ -129,8 +110,7 @@ API
 Mutual Information
 ==================
 
-The mutual information is the amount of information shared by :math:`X` and
-:math:`Y`:
+The mutual information is the amount of information shared by :math:`X` and :math:`Y`:
 
 .. math::
 
@@ -144,10 +124,7 @@ The mutual information is symmetric:
 
    \I[X:Y] = \I[Y:X]
 
-Meaning that the information that :math:`X` carries about :math:`Y` is equal to
-the information that :math:`Y` carries about :math:`X`. The entropy of :math:`X`
-can be decomposed into the information it shares with :math:`Y` and the
-information it doesn't:
+Meaning that the information that :math:`X` carries about :math:`Y` is equal to the information that :math:`Y` carries about :math:`X`. The entropy of :math:`X` can be decomposed into the information it shares with :math:`Y` and the information it doesn't:
 
 .. math::
 
@@ -155,19 +132,19 @@ information it doesn't:
 
 .. seealso::
 
-   The mutual information generalized to the multivariate case in three
-   different ways:
+   The mutual information generalized to the multivariate case in three different ways:
 
    :doc:`multivariate/coinformation`
       Generalized as the information which *all* variables contribute to.
 
    :doc:`multivariate/total_correlation`
-      Generalized as the sum of the information in the individual variables
-      minus the information in the whole.
+      Generalized as the sum of the information in the individual variables minus the information in the whole.
 
-   :doc:`multivariate/binding_information`
-      Generalized as the joint entropy minus the entropy of each variable
-      conditioned on the others.
+   :doc:`multivariate/dual_total_correlation`
+      Generalized as the joint entropy minus the entropy of each variable conditioned on the others.
+
+   :doc:`multivariate/caekl_mutual_information`
+      Generalized as the smallest quantity that can be subtracted from the joint, and from each part of a partition of all the variables, such that the joint entropy minus this quantity is equal to the sum of each partition entropy minus this quantity.
 
 
 API
