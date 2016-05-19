@@ -270,7 +270,7 @@ class DependencyDecomposition(object):
     distribution.
     """
 
-    def __init__(self, dist, tol=1e-4):
+    def __init__(self, dist, measure=H, tol=1e-4):
         """
         Construct a Krippendorff-type partition of the information contained in
         `dist`.
@@ -282,6 +282,7 @@ class DependencyDecomposition(object):
         """
         self.dist = dist
         self._tol = tol
+        self.measure = measure
         self._partition()
 
     @staticmethod
@@ -316,7 +317,7 @@ class DependencyDecomposition(object):
 
         # Entropies
         for node in self._lattice:
-            atoms[node] = H(maxent_dist(self.dist, node, tol=self._tol))
+            atoms[node] = self.measure(maxent_dist(self.dist, node, tol=self._tol))
 
         self.atoms = atoms
 
