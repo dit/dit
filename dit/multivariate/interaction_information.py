@@ -5,6 +5,7 @@ The interaction information is a form of multivariate information.
 from ..helpers import normalize_rvs
 
 from .coinformation import coinformation
+from ..math import close
 
 def interaction_information(dist, rvs=None, crvs=None, rv_mode=None):
     """
@@ -43,5 +44,8 @@ def interaction_information(dist, rvs=None, crvs=None, rv_mode=None):
     rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
 
     II = (-1)**len(rvs) * coinformation(dist, rvs, crvs, rv_mode)
+
+    if close(II, 0):
+        II = 0
 
     return II
