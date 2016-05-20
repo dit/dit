@@ -46,6 +46,6 @@ def interaction_information(dist, rvs=None, crvs=None, rv_mode=None):
     II = (-1)**len(rvs) * coinformation(dist, rvs, crvs, rv_mode)
 
     if close(II, 0):
-        II = 0
+        II = 0.0
 
     return II
