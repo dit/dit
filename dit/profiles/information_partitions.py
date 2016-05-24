@@ -14,9 +14,9 @@ from prettytable import PrettyTable
 
 from networkx import DiGraph, dfs_preorder_nodes as children, topological_sort
 
-from ..shannon import entropy
-from ..other import extropy
 from ..math import close
+from ..other import extropy
+from ..shannon import entropy
 
 __all__ = ['ShannonPartition',
            'ExtropyPartition',
@@ -299,14 +299,9 @@ class DependencyDecomposition(object):
 
     def _partition(self):
         """
-        Return all the atoms of the I-diagram for `dist`.
-
-        Parameters
-        ----------
-        dist : distribution
-            The distribution to compute the I-diagram of.
+        Computes all the dependencies of `dist`.
         """
-        from .maxentropyfw import maxent_dist
+        from ..algorithms.maxentropyfw import maxent_dist
 
         rvs = self.dist.get_rv_names()
         if not rvs:
@@ -352,12 +347,12 @@ class DependencyDecomposition(object):
         Parameters
         ----------
         string : bool
-            If True, return dependencies as strings. Otherwise, as a pair of
+            If True, return dependencies as strings. Otherwise, as a tuple of
             tuples.
         """
         if string:
             f = self._stringify
         else:
-            f = lambda a, b: (a, b)
+            f = lambda d: d
 
         return set(map(f, self.atoms.keys()))
