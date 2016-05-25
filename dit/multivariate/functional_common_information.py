@@ -66,16 +66,9 @@ def functional_markov_chain(dist, rvs=None, crvs=None, rv_mode=None):
     outcomes = dist.outcomes
     f = [len(dist.rvs)]
     parts = partitions(outcomes)
-    dists = [ (add_partition(dist, part), part) for part in parts ]
-
+    dists = [ add_partition(dist, part) for part in parts ]
     B = lambda d: dual_total_correlation(d, rvs, crvs+f, rv_mode)
-
-    dists = [ (d, p) for d, p in dists if close(B(d), 0) ]
-    return dists
-    dists = [(entropy(d, rvs=f, rv_mode=rv_mode), d) for d in dists ]
-    return dists
-    dists = [(h, d) for h, d in dists if h == min(h for h, d in dists)]
-    return dists
+    dists = [ d for d in dists if close(B(d), 0) ]
     return min(dists, key=lambda d: entropy(d, rvs=f, rv_mode=rv_mode))
 
 def functional_common_information(dist, rvs=None, crvs=None, rv_mode=None):
