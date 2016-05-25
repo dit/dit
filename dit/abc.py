@@ -21,6 +21,7 @@ from dit.multivariate import (binding_information as B,
                               caekl_mutual_information as J,
                               coinformation as I,
                               entropy as H,
+                              functional_common_information as F,
                               gk_common_information as K,
                               interaction_information as II,
                               joint_mss_entropy as M,
@@ -50,6 +51,7 @@ _shannon_ext = [
     'J',    # the CAEKL common information
     'K',    # the Gacs-Korner common information [meet entropy]
     'II',   # the interaction information
+    'F',    # the functional common information
     'M',    # the joint minimal sufficient statistic entropy
 ]
 
