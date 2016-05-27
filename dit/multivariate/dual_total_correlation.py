@@ -1,5 +1,5 @@
 """
-The binding information and residual entropy.
+The dual total correlation and variation of information.
 """
 
 from ..shannon import conditional_entropy as H
@@ -7,21 +7,23 @@ from ..helpers import normalize_rvs
 
 __all__ = ('binding_information',
            'dual_total_correlation',
+           'independent_information',
            'residual_entropy',
+           'variation_of_information',
           )
 
-def binding_information(dist, rvs=None, crvs=None, rv_mode=None):
+def dual_total_correlation(dist, rvs=None, crvs=None, rv_mode=None):
     """
-    Calculates the binding information, also known as the dual total
-    correlation.
+    Calculates the dual total correlation, also known as the binding
+    information.
 
     Parameters
     ----------
     dist : Distribution
-        The distribution from which the binding information is calculated.
+        The distribution from which the dual total correlation is calculated.
     rvs : list, None
         The indexes of the random variable used to calculate the binding
-        information. If None, then the binding information is calculated
+        information. If None, then the dual total correlation is calculated
         over all random variables.
     crvs : list, None
         The indexes of the random variables to condition on. If None, then no
@@ -37,7 +39,7 @@ def binding_information(dist, rvs=None, crvs=None, rv_mode=None):
     Returns
     -------
     B : float
-        The binding information.
+        The dual total correlation.
 
     Raises
     ------
@@ -59,6 +61,8 @@ def binding_information(dist, rvs=None, crvs=None, rv_mode=None):
 
 def residual_entropy(dist, rvs=None, crvs=None, rv_mode=None):
     """
+    Compute the residual entropy.
+
     Parameters
     ----------
     dist : Distribution
@@ -99,6 +103,6 @@ def residual_entropy(dist, rvs=None, crvs=None, rv_mode=None):
     return R
 
 
-dual_total_correlation = binding_information
+binding_information = dual_total_correlation
 
-variation_of_information = residual_entropy
+independent_information = variation_of_information = residual_entropy

@@ -32,16 +32,25 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   var TEX = MathJax.InputJax.TeX;
 
   TEX.Macro("op", "\\operatorname{#1}", 1);
+
   TEX.Macro("H", "\\op{H}");
+
+  // mutual informations
   TEX.Macro("I", "\\op{I}");
   TEX.Macro("T", "\\op{T}");
   TEX.Macro("B", "\\op{B}");
   TEX.Macro("J", "\\op{J}");
+
   TEX.Macro("R", "\\op{R}");
   TEX.Macro("II", "\\op{II}");
   TEX.Macro("TSE", "\\op{TSE}");
 
+  // common information
   TEX.Macro("K", "\\op{K}");
+  TEX.Macro("C", "\\op{C}");
+  TEX.Macro("G", "\\op{G}");
+  TEX.Macro("F", "\\op{F}");
+  TEX.Macro("M", "\\op{M}");
 
   TEX.Macro("P", "\\op{P}");
   TEX.Macro("X", "\\op{X}");

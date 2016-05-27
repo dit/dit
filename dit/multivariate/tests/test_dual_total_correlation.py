@@ -1,5 +1,5 @@
 """
-Tests for dit.multivariate.binding_information.
+Tests for dit.multivariate.dual_total_correlation.
 """
 
 from __future__ import division
@@ -7,8 +7,8 @@ from __future__ import division
 from nose.tools import assert_almost_equal, assert_raises
 
 from dit import Distribution as D, ScalarDistribution as SD
-from dit.multivariate import (binding_information as B,
-                            residual_entropy as R)
+from dit.multivariate import (dual_total_correlation as B,
+                              residual_entropy as R)
 from dit.shannon import (entropy as H,
                          mutual_information as I)
 from dit.exceptions import ditException

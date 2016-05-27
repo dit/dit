@@ -1,13 +1,16 @@
 """
-Compute the entropy of the joint minimal sufficient statistic.
+Compute the minimal sufficient statistic common information.
 """
 
 from ..algorithms.minimal_sufficient_statistic import insert_joint_mss
+from ..helpers import normalize_rvs
 from .entropy import entropy
 
-def joint_mss_entropy(dist, rvs=None, crvs=None, rv_mode=None):
+def mss_common_information(dist, rvs=None, crvs=None, rv_mode=None):
     """
-    Compute the entropy of the join of the minimal sufficent statistic of each variable about the others.
+    Compute the minimal sufficient statistic common information, which is the
+    entropy of the join of the minimal sufficent statistic of each variable
+    about the others.
 
     Parameters
     ----------
@@ -26,6 +29,7 @@ def joint_mss_entropy(dist, rvs=None, crvs=None, rv_mode=None):
         defaults to 'indices'.
 
     """
+    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
     d = insert_joint_mss(dist, -1, rvs, rv_mode)
 
     M = entropy(d, [d.outcome_length() - 1], crvs, rv_mode)

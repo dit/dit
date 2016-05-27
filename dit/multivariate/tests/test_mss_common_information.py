@@ -7,7 +7,7 @@ from __future__ import division
 from nose.tools import assert_almost_equal
 
 from dit import Distribution
-from dit.multivariate import joint_mss_entropy as M
+from dit.multivariate import mss_common_information as M
 
 def test_M1():
     """ Test M """

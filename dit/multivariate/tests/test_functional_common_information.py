@@ -4,12 +4,13 @@ Tests for dit.multivariate.functional_common_information.
 
 from __future__ import division
 
+from nose.plugins.attrib import attr
 from nose.tools import assert_almost_equal, assert_less_equal
 
 from dit import Distribution, random_distribution
 from dit.multivariate import (functional_common_information as F,
                               dual_total_correlation as B,
-                              joint_mss_entropy as M
+                              mss_common_information as M
                              )
 
 def test_fci1():
@@ -31,11 +32,25 @@ def test_fci2():
     assert_almost_equal(F(d, [[0], [1]]), 0.0)
     assert_almost_equal(F(d, [[0], [1]], [2]), 1.0)
 
+@attr('slow')
 def test_fci3():
     """
     Test that B <= F <= M.
     """
-    dists = [ random_distribution(2, 2) for _ in range(10) ]
+    dists = [ random_distribution(2, 3) for _ in range(3) ]
+    for d in dists:
+        b = B(d)
+        f = F(d)
+        m = M(d)
+        yield assert_less_equal, b, f
+        yield assert_less_equal, f, m
+
+@attr('slow')
+def test_fci4():
+    """
+    Test that B <= F <= M.
+    """
+    dists = [ random_distribution(3, 2) for _ in range(3) ]
     for d in dists:
         b = B(d)
         f = F(d)

@@ -24,7 +24,7 @@ from dit.multivariate import (binding_information as B,
                               functional_common_information as F,
                               gk_common_information as K,
                               interaction_information as II,
-                              joint_mss_entropy as M,
+                              mss_common_information as M,
                               residual_entropy as R,
                               total_correlation as T,
                               tse_complexity as TSE,
@@ -41,7 +41,7 @@ _shannon = [
     'H',    # the joint conditional entropy
     'I',    # the multivariate conditional mututal information
     'T',    # the conditional total correlation [multi-information/integration]
-    'B',    # the conditional binding information [dual total correlation]
+    'B',    # the conditional dual total correlation [binding information]
     'R',    # the conditional residual entropy [erasure entropy]
     'TSE',  # the TSE complexity
 ]

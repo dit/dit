@@ -1,11 +1,11 @@
 .. dual_total_correlation.rst
-.. py:module:: dit.multivariate.binding_information
+.. py:module:: dit.multivariate.dual_total_correlation
 
 **********************
 Dual Total Correaltion
 **********************
 
-The dual total correlation :cite:, or binding information :cite:`Abdallah2012`, is yet another generalization of the mutual information. It is the amount of information that is shared among the variables. It is defined as:
+The dual total correlation :cite:`Han1975linear`, or binding information :cite:`Abdallah2012`, is yet another generalization of the mutual information. It is the amount of information that is shared among the variables. It is defined as:
 
 .. math::
 
