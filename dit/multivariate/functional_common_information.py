@@ -36,7 +36,7 @@ def add_partition(dist, part):
     dist = insert_rvf(dist, lambda j: invert_part[j])
     return dist
 
-def functional_markov_chain_naive(dist, rvs=None, crvs=None, rv_mode=None):
+def functional_markov_chain_naive(dist, rvs=None, crvs=None, rv_mode=None): # pragma: no cover
     """
     Add the smallest function of `dist` which renders `rvs` independent.
 
