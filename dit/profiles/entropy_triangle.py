@@ -51,7 +51,8 @@ class BaseEntropyTriangle(object):
         Parameters
         ----------
         dists : [Distribution] or Distribution
-            The list of distributions to plot on the entropy triangle. If a single distribution is provided, it alone will be computed.
+            The list of distributions to plot on the entropy triangle. If a
+            single distribution is provided, it alone will be computed.
         """
         if isinstance(dists, BaseDistribution):
             self.dists = [dists]
@@ -79,9 +80,11 @@ class BaseEntropyTriangle(object):
         Parameters
         ----------
         ax : Axis or None
-            The matplotlib axis to plot on. If none is provided, one will be constructed.
+            The matplotlib axis to plot on. If none is provided, one will be
+            constructed.
         setup : bool
-            If true, labels, tick marks, gridlines, and a boundary will be added to the plot. Defaults to True.
+            If true, labels, tick marks, gridlines, and a boundary will be added
+            to the plot. Defaults to True.
         marker : str
             The matplotlib marker shape to use.
         color : str
