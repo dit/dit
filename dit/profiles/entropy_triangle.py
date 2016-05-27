@@ -40,9 +40,9 @@ class BaseEntropyTriangle(object):
     """
     __metaclass__ = ABCMeta
 
-    left_label = "$\operatorname{R}[\mathrm{dist}]$"
-    right_label = "$\operatorname{T}[\mathrm{dist}] + \operatorname{B}[\mathrm{dist}]$"
-    bottom_label = "$\Delta \operatorname{H}_{\Pi_\overline{X}}$"
+    left_label = r"$\operatorname{R}[\mathrm{dist}]$"
+    right_label = r"$\operatorname{T}[\mathrm{dist}] + \operatorname{B}[\mathrm{dist}]$"
+    bottom_label = r"$\Delta \operatorname{H}_{\Pi_\overline{X}}$"
 
     def __init__(self, dists):
         """
@@ -122,9 +122,9 @@ class EntropyTriangle(BaseEntropyTriangle):
     Intelligent Systems. Springer International Publishing, 2016. 647-658]
     """
 
-    left_label = "$\operatorname{R}[\mathrm{dist}]$"
-    right_label = "$\operatorname{T}[\mathrm{dist}] + \operatorname{B}[\mathrm{dist}]$"
-    bottom_label = "$\Delta \operatorname{H}_{\Pi_\overline{X}}$"
+    left_label = r"$\operatorname{R}[\mathrm{dist}]$"
+    right_label = r"$\operatorname{T}[\mathrm{dist}] + \operatorname{B}[\mathrm{dist}]$"
+    bottom_label = r"$\Delta \operatorname{H}_{\Pi_\overline{X}}$"
 
     @staticmethod
     def _compute_point(dist):
@@ -154,9 +154,9 @@ class EntropyTriangle2(BaseEntropyTriangle):
     dependence (total correlation and dual total correlation).
     """
 
-    left_label = "$\operatorname{B}[\mathrm{dist}]$"
-    right_label = "$\operatorname{T}[\mathrm{dist}]$"
-    bottom_label = "$\operatorname{R}[\mathrm{dist}]$"
+    left_label = r"$\operatorname{B}[\mathrm{dist}]$"
+    right_label = r"$\operatorname{T}[\mathrm{dist}]$"
+    bottom_label = r"$\operatorname{R}[\mathrm{dist}]$"
 
     @staticmethod
     def _compute_point(dist):
