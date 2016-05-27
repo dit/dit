@@ -245,6 +245,11 @@ macros = r'''
 \newcommand{\imore}{\succeq}
 \newcommand{\ieq}  {\cong}
 \newcommand{\mss}  {\searrow}
+
+\DeclareMathOperator*{\meetop}{\scalerel*{\meet}{\textstyle\sum}}
+\DeclareMathOperator*{\joinop}{\scalerel*{\join}{\textstyle\sum}}
+
+\newcommand{\ind}{\mathrel{\text{\scalebox{1.07}{$\perp\mkern-10mu\perp$}}}}
 '''
 
 latex_elements = {
