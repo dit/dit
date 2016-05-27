@@ -61,7 +61,7 @@ class BaseEntropyTriangle(object):
 
     @staticmethod
     @abstractmethod
-    def _compute_point(dist):
+    def _compute_point(dist): # pragma: no cover
         """
         Compute the three normalized axis.
 

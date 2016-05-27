@@ -131,7 +131,7 @@ def functional_markov_chain(dist, rvs=None, crvs=None, rv_mode=None):
 
     checked = set()
 
-    while queue:
+    while queue: # pragma: no branch
         part = queue.popleft()
 
         checked.add(part)
