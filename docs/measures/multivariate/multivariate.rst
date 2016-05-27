@@ -47,7 +47,7 @@ The common information measures (togehter with the :doc:`dual_total_correlation`
 
 .. math::
 
-   \K[X_{0:n}] \B[X_{0:n}] \leq \F[X_{0:n}] \leq \M[X_{0:n}]
+   \K[X_{0:n}] \leq \B[X_{0:n}] \leq \F[X_{0:n}] \leq \M[X_{0:n}]
 
 Others
 ======
