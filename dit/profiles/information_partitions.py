@@ -62,7 +62,7 @@ class BaseInformationPartition(object):
 
     @staticmethod
     @abstractmethod
-    def _symbol(rvs, crvs):
+    def _symbol(rvs, crvs): # pragma: no cover
         """
         This method should return the information symbol for an atom.
         """

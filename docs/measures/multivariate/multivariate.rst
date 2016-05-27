@@ -37,7 +37,17 @@ These measures all somehow measure shared information, but do not equal the mutu
    :maxdepth: 1
 
    gk_common_information
-   tse_complexity
+   functional_common_information
+   mss_common_information
+
+Ordering
+--------
+
+The common information measures (togehter with the :doc:`dual_total_correlation`) form an ordering:
+
+.. math::
+
+   \K[X_{0:n}] \leq \B[X_{0:n}] \leq \F[X_{0:n}] \leq \M[X_{0:n}]
 
 Others
 ======
@@ -47,3 +57,4 @@ These measures quantify other aspects of a joint distribution.
    :maxdepth: 1
 
    residual_entropy
+   tse_complexity

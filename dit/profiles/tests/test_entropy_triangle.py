@@ -4,7 +4,7 @@ Tests for dit.profiles.entropy_triangle. Known examples taken from http://arxiv.
 
 from __future__ import division
 
-from nose.tools import assert_tuple_equal
+from nose.tools import assert_in, assert_tuple_equal
 
 from dit import Distribution
 from dit.profiles import EntropyTriangle, EntropyTriangle2
@@ -27,6 +27,19 @@ def test_et_1():
     for d, val in zip(examples, vals):
         yield assert_tuple_equal, EntropyTriangle(d).points[0], val
 
+def test_et_2():
+    """
+    Test EntropyTriangle against known values.
+    """
+    vals = [(0, 0, 1),
+            (0, 1, 0),
+            (0, 2/3, 1/3),
+            (0, 1, 0),
+           ]
+    et = EntropyTriangle(examples)
+    for val in vals:
+        yield assert_in, val, et.points
+
 
 def test_et2_1():
     """
@@ -39,3 +52,16 @@ def test_et2_1():
            ]
     for d, val in zip(examples, vals):
         yield assert_tuple_equal, EntropyTriangle2(d).points[0], val
+
+def test_et_2():
+    """
+    Test EntropyTriangle against known values.
+    """
+    vals = [(1, 0, 0),
+            (0, 2/3, 1/3),
+            (1/3, 1/3, 1/3),
+            (0, 1/3, 2/3),
+           ]
+    et = EntropyTriangle2(examples)
+    for val in vals:
+        yield assert_in, val, et.points

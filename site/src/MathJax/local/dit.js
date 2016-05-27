@@ -32,16 +32,25 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   var TEX = MathJax.InputJax.TeX;
 
   TEX.Macro("op", "\\operatorname{#1}", 1);
+
   TEX.Macro("H", "\\op{H}");
+
+  // mutual informations
   TEX.Macro("I", "\\op{I}");
   TEX.Macro("T", "\\op{T}");
   TEX.Macro("B", "\\op{B}");
   TEX.Macro("J", "\\op{J}");
+
   TEX.Macro("R", "\\op{R}");
   TEX.Macro("II", "\\op{II}");
   TEX.Macro("TSE", "\\op{TSE}");
 
+  // common information
   TEX.Macro("K", "\\op{K}");
+  TEX.Macro("C", "\\op{C}");
+  TEX.Macro("G", "\\op{G}");
+  TEX.Macro("F", "\\op{F}");
+  TEX.Macro("M", "\\op{M}");
 
   TEX.Macro("P", "\\op{P}");
   TEX.Macro("X", "\\op{X}");
@@ -61,6 +70,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   TEX.Macro("imore", "\\succeq");
   TEX.Macro("ieq", "\\cong");
   TEX.Macro("mss", "\\searrow");
+
+  TEX.Macro("meetop", "\\DeclareMathOperator*{\\meetop}{\\scalerel*{\\meet}{\\textstyle\\sum}}")
+  TEX.Macro("joinop", "\\DeclareMathOperator*{\\joinop}{\]scalerel*{\]join}{\]textstyle\]sum}}")
+
+  TEX.Macro("ind", "\\mathrel{\\text{\\scalebox{1.07}{$\\perp\\mkern-10mu\\perp$}}}")
+
 
   // don't use stix, it's pretty ugly
   MathJax.Hub.Config({

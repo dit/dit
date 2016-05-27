@@ -212,15 +212,21 @@ macros = r'''
 \newcommand{\op}[1]{\ensuremath{\operatorname{#1}}}
 
 \renewcommand{\H}  {\op{H}}   % No more Erd\H{o}s
+
 \newcommand{\I}    {\op{I}}
 \newcommand{\T}    {\op{T}}
 \newcommand{\B}    {\op{B}}
 \newcommand{\J}    {\op{J}}
+
 \newcommand{\R}    {\op{R}}
 \newcommand{\II}   {\op{II}}
 \newcommand{\TSE}  {\op{TSE}}
 
 \newcommand{\K}    {\op{K}}
+\newcommand{\C}    {\op{C}}
+\newcommand{\G}    {\op{G}}
+\newcommand{\F}    {\op{F}}
+\newcommand{\M}    {\op{M}}
 
 \renewcommand{\P}  {\op{P}}
 \newcommand{\X}    {\op{X}}
@@ -239,6 +245,11 @@ macros = r'''
 \newcommand{\imore}{\succeq}
 \newcommand{\ieq}  {\cong}
 \newcommand{\mss}  {\searrow}
+
+\DeclareMathOperator*{\meetop}{\scalerel*{\meet}{\textstyle\sum}}
+\DeclareMathOperator*{\joinop}{\scalerel*{\join}{\textstyle\sum}}
+
+\newcommand{\ind}{\mathrel{\text{\scalebox{1.07}{$\perp\mkern-10mu\perp$}}}}
 '''
 
 latex_elements = {
