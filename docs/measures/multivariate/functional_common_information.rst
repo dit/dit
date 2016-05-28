@@ -9,7 +9,7 @@ The functional common information captures the minimum amount of information nec
 
 .. math::
 
-   \F[X_{0:n}] = \min_{\substack{\ind X_{0:n} \mid W \\ W = f(X_{0:n})}} \H[W]
+   \F[X_{0:n} \mid Y_{0:m}] = \min_{\substack{\ind X_{0:n} \mid Y_{0:m}, W \\ W = f(X_{0:n}, Y_{0:m})}} \H[W]
 
 Relationship To Other Measures of Common Information
 ====================================================
