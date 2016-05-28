@@ -9,7 +9,9 @@ python:
   - "3.3"
   - "3.4"
   - "3.5"
+  - "nightly"
   - "pypy"
+  - "pypy3"
 
 os:
   - linux
@@ -18,13 +20,15 @@ matrix:
   fast_finish: true
 
   include:
-    - python: "3.5"
+    - language: generic
       os: osx
       env: OPTIONAL_DEPS=true
 
   allow_failures:
     # pypy Wheels are not yet available.
     - python: "pypy"
+    - python: "pypy3"
+    - python: "nightly"
 
 env:
   matrix:
