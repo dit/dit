@@ -39,7 +39,11 @@ before_install:
   ### Prepare the system to install prerequisites or dependencies
   - uname -a
   - printenv
-  - sudo apt-get update -qq
+  - if [[ "TRAVIS_OS_NAME" == "linux" ]]; then
+      sudo apt-get update -qq;
+    elif [[ "TRAVIS_OS_NAME" == "osx" ]]; then
+      brew update;
+    fi
 
   # We do this conditionally because it saves us some downloading if the
   # version is the same.
