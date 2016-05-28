@@ -11,7 +11,6 @@ from itertools import product
 from iterutils import powerset
 
 import numpy as np
-from scipy.optimize import linprog
 
 from .information_partitions import ShannonPartition
 from ..math import close
@@ -114,6 +113,8 @@ def max_util_of_info(c, A, b, bounds, y):
     y : float
         The total mutual information captured.
     """
+    from scipy.optimize import linprog
+
     b[-1] = y
     solution = linprog(c, A, b, bounds=bounds)
     maximum_utility_of_information = -solution.fun
