@@ -4,6 +4,7 @@ Tests for dit.profiles.MUIProfile. Known examples taken from http://arxiv.org/ab
 
 from __future__ import division
 
+from nose.plugins.attrib import attr
 from nose.tools import assert_dict_equal
 from numpy.testing import assert_array_almost_equal
 
@@ -16,7 +17,7 @@ ex3 = Distribution(['000', '001', '110', '111'], [1/4]*4)
 ex4 = Distribution(['000', '011', '101', '110'], [1/4]*4)
 examples = [ex1, ex2, ex3, ex4]
 
-
+@attr("scipy")
 def test_mui_profile():
     """
     Test against known examples.

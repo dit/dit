@@ -9,19 +9,37 @@ python:
   - "3.3"
   - "3.4"
   - "3.5"
-  - "pypy"
+  - "nightly"
+
+os:
+  - linux
 
 matrix:
   fast_finish: true
 
   include:
-    - python: "3.4"
-      env: FROM_SOURCE=true
+    - os: osx
+      language: generic
+      python: "2.7"
+      env: OPTIONAL_DEPS=true TRAVIS_PYTHON_VERSION="2.7"
+    - os: osx
+      language: generic
+      python: "3.5"
+      env: OPTIONAL_DEPS=true TRAVIS_PYTHON_VERSION="3.5"
+    - os: osx
+      language: generic
+      python: "pypy"
+      env: OPTIONAL_DEPS=false TRAVIS_PYTHON_VERSION="pypy"
+    - os: osx
+      language: generic
+      python: "pypy3"
+      env: OPTIONAL_DEPS=false TRAVIS_PYTHON_VERSION="pypy3"
 
   allow_failures:
-    # 3.4 and pypy Wheels are not yet available.
+    # pypy Wheels are not yet available.
     - python: "pypy"
-    - env: FROM_SOURCE=true
+    - python: "pypy3"
+    - python: "nightly"
 
 env:
   matrix:
@@ -32,52 +50,112 @@ before_install:
   ### Prepare the system to install prerequisites or dependencies
   - uname -a
   - printenv
-  - sudo apt-get update -qq
+  - echo $TRAVIS_OS_NAME
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      sudo apt-get update -qq;
+    elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      brew update;
+      if [[ "$TRAVIS_PYTHON_VERSION" =~ pypy.* ]]; then
+        brew install $TRAVIS_PYTHON_VERSION;
+      fi;
+    fi
 
   # We do this conditionally because it saves us some downloading if the
   # version is the same.
-  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
-    else
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      echo "On linux";
+      if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+        echo "Python 2";
+        wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
+      elif [[ "$TRAVIS_PYTHON_VERSION" =~ 3\..* ]]; then
+        echo "python 3";
+        wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+      fi
+    elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      echo "On OSX";
+      if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+        echo "Python 2";
+        wget https://repo.continuum.io/miniconda/Miniconda2-latest-MacOSX-x86_64.sh -O miniconda.sh;
+      elif [[ "$TRAVIS_PYTHON_VERSION" =~ 3\..* ]]; then
+        echo "Python 3";
+        wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
+      fi
     fi
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
-  - hash -r
-  - conda config --set always_yes yes --set changeps1 no
-  - conda update -q conda
-  # Useful for debugging any issues with conda
-  - conda info -a
+  - if [[ "$TRAVIS_PYTHON_VERSION" =~ (2|3)\..* ]]; then
+      bash miniconda.sh -b -p $HOME/miniconda;
+      export PATH="$HOME/miniconda/bin:$PATH";
+      hash -r;
+      conda config --set always_yes yes --set changeps1 no;
+      conda update -q conda;
+      conda info -a;
+    fi
 
 install:
   ### Install any prerequisites or dependencies necessary to run the build.
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pip numpy
-  - if [ "${OPTIONAL_DEPS}" == "true" ]; then conda install -n test-environment Cython; fi
-
-  # Skipping pydot (not 3.x compatible)
-  # Skipping gdal (errors during pip installs)
-
-  - source activate test-environment
+  - if [[ "$TRAVIS_PYTHON_VERSION" =~ (2|3)\..* ]]; then
+      conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pip numpy;
+      if [ "${OPTIONAL_DEPS}" == "true" ]; then
+        conda install -n test-environment Cython;
+      fi;
+      source activate test-environment;
+    else
+      if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+        sudo apt-get build-dep python-numpy python-scipy python-cvxopt;
+      fi;
+      if [[ "$TRAVIS_PYTHON_VERSION" =~ pypy.* ]]; then
+        sudo $TRAVIS_PYTHON_VERSION -m pip install git+https://bitbucket.org/pypy/numpy.git;
+      else
+        pip install --upgrade pip numpy;
+      fi;
+      if [ "${OPTIONAL_DEPS}" == "true" ]; then
+        pip install --upgrade Cython;
+      fi;
+    fi;
 
 before_script:
   ### Use this to prepare your build for testing
-  - conda install -n test-environment nose
-  - pip install --upgrade coverage coveralls
-  - conda install scipy cvxopt
+  - if [[ "$TRAVIS_PYTHON_VERSION" =~ (2|3)\..* ]]; then
+      conda install -n test-environment nose;
+      conda install scipy cvxopt;
+    elif [[ "$TRAVIS_PYTHON_VERSION" == "nightly" ]]; then
+      pip install nose scipy cvxopt;
+    elif [[ "$TRAVIS_PYTHON_VERSION" =~ pypy.* ]]; then
+      sudo $TRAVIS_PYTHON_VERSION -m pip install nose;
+    fi;
+  - if ! [[ "$TRAVIS_PYTHON_VERSION" =~ pypy.* ]]; then
+      pip install --upgrade coverage coveralls;
+    else
+      sudo $TRAVIS_PYTHON_VERSION -m pip install --upgrade coverage coveralls;
+    fi
 
 script:
   - printenv PWD
-  - pip install .
-  - pip install -r requirements_optional.txt
+  - if ! [[ "$TRAVIS_PYTHON_VERSION" =~ pypy.* ]]; then
+      pip install .;
+    else
+      sudo $TRAVIS_PYTHON_VERSION -m pip install .;
+    fi
+  - if ! [[ "$TRAVIS_PYTHON_VERSION" =~ pypy.* ]]; then
+      pip install -r requirements_optional.txt;
+    fi
 
-  - export DIT_INSTALL=`pip show dit | grep Location | awk '{print $2"/dit"}'`
+  - if ! [[ "$TRAVIS_PYTHON_VERSION" =~ pypy.* ]]; then
+      export DIT_INSTALL=`pip show dit | grep Location | awk '{print $2"/dit"}'`;
+    else
+      export DIT_INSTALL=`pypy -m pip show dit | grep Location | awk '{print $2"/dit"}'`;
+    fi
   - echo "DIT_INSTALL=$DIT_INSTALL"
 
   # nose 1.3.0 does not tell coverage to only cover the requested
   # package (except during the report).  So to restrict coverage, we must
   # inform coverage through the .coveragerc file.
-  - cp .coveragerc $DIT_INSTALL
-  - cp setup.cfg $DIT_INSTALL
+  - if ! [[ "$TRAVIS_PYTHON_VERSION" =~ pypy.* ]]; then
+      cp .coveragerc $DIT_INSTALL;
+      cp setup.cfg $DIT_INSTALL;
+    else
+      sudo cp .coveragerc $DIT_INSTALL;
+      sudo cp setup.cfg $DIT_INSTALL;
+    fi
 
   # Move to new directory so that dit is not imported from repository.
   # Why? Because we want the tests to make sure that dit was installed
@@ -89,7 +167,11 @@ script:
   - printenv PWD
 
   # Run nosetests.
-  - nosetests --verbosity=2 --with-coverage --cover-package=dit
+  - if [[ "$TRAVIS_PYTHON_VERSION" =~ pypy.* ]]; then
+      sudo $TRAVIS_PYTHON_VERSION -m nose --verbosity=2 -a '!scipy' -a '!cvxopt' --with-coverage --cover-package=dit;
+    else
+      nosetests --verbosity=2 --with-coverage --cover-package=dit;
+    fi
 
 after_success:
   # We must run coveralls from the git repo. But we ran tests from the
