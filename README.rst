@@ -178,7 +178,7 @@ Enjoy!
    :alt: Continuous Integration Status
 
 .. |build_windows| image:: https://ci.appveyor.com/api/projects/status/idb5hc5gm59whf8m?svg=true
-   :target: https://ci.appveyor.com/project/Autoplectic/dit
+   :target: https://ci.appveyor.com/project/dit/dit
    :alt: Continuous Integration Status (windows)
 
 
