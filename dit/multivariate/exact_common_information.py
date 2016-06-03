@@ -16,6 +16,14 @@ class ExactCommonInformation(MarkovVarOptimizer):
 
     def compute_bound(self):
         """
+        Compute the upper bound on the cardinality of the auxiliary random
+        variable. The bound is the minimum of one from the Caratheodory-Fenchel
+        theorem, and the other from a pidgenhole argument.
+
+        Returns
+        -------
+        bound : int
+            The bound.
         """
         sizes = [ sum(s) for s in self._rv_sizes ]
         # from the Caratheodory-Fenchel theorem
@@ -29,14 +37,51 @@ class ExactCommonInformation(MarkovVarOptimizer):
 
     def objective(self, x):
         """
+        The entropy of the auxiliary random variable.
+
         Parameters
         ----------
+        x : ndarray
+            An optimization vector.
+
+        Returns
+        -------
+        h : float
+            The entropy of the auxiliar random variable.
         """
         return self.entropy(x)
 
 
 def exact_common_information(dist, rvs=None, crvs=None, rv_mode=None):
     """
+    Computes the exact common information, min H[V] where V renders all `rvs`
+    independent.
+
+    Parameters
+    ----------
+    dist : Distribution
+        The distribution for which the exact common information will be
+        computed.
+    rvs : list, None
+        A list of lists. Each inner list specifies the indexes of the random
+        variables used to calculate the total correlation. If None, then the
+        total correlation is calculated over all random variables, which is
+        equivalent to passing `rvs=dist.rvs`.
+    crvs : list, None
+        A single list of indexes specifying the random variables to condition
+        on. If None, then no variables are conditioned on.
+    rv_mode : str, None
+        Specifies how to interpret `rvs` and `crvs`. Valid options are:
+        {'indices', 'names'}. If equal to 'indices', then the elements of
+        `crvs` and `rvs` are interpreted as random variable indices. If equal
+        to 'names', the the elements are interpreted as random variable names.
+        If `None`, then the value of `dist._rv_mode` is consulted, which
+        defaults to 'indices'.
+
+    Returns
+    -------
+    G : float
+        The exact common information.
     """
     eci = ExactCommonInformation(dist, rvs, crvs, rv_mode)
     eci.optimize()
