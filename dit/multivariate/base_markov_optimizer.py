@@ -44,10 +44,10 @@ class MarkovVarOptimizer(object):
                        [self._crv_size + rv for rv in self._rv_sizes[1:]]
         self._splits = np.cumsum([ np.prod(s) for s in self._shapes ])[:-1]
 
-        dist.make_dense()
-        self._pmf = dist.marginal(self._rvs[0], rv_mode=self._rv_mode).pmf
+        self._dist.make_dense()
+        self._pmf = self._dist.marginal(self._rvs[0], rv_mode=self._rv_mode).pmf
         self._pmf = self._pmf.reshape([sizes[i] for i in self._rvs[0]])
-        self._true_joint = dist.pmf.reshape(sizes)
+        self._true_joint = self._dist.pmf.reshape(sizes)
 
         idxs = [ list(range(len(shape))) for shape in self._shapes ]
         self._idxs = [ idxs[0][self._rv_lens[0]:] ] + \
