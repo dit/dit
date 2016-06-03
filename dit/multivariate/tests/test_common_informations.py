@@ -3,7 +3,7 @@ Tests for the various common informations.
 """
 
 from nose.plugins.attrib import attr
-from nose.tools import assert_less_than
+from nose.tools import assert_less_equal
 
 from dit import random_distribution
 from dit.multivariate import (gk_common_information as K,
@@ -15,6 +15,7 @@ from dit.multivariate import (gk_common_information as K,
                              )
 
 
+@attr('scipy')
 @attr('slow')
 def test_cis1():
     """
@@ -27,12 +28,13 @@ def test_cis1():
         g = G(d)
         f = F(d)
         m = M(d)
-        yield assert_less_than, k, b + 1e-6
-        yield assert_less_than, b, c + 1e-6
-        yield assert_less_than, c, g + 1e-6
-        yield assert_less_than, g, f + 1e-6
-        yield assert_less_than, f, m + 1e-6
+        yield assert_less_equal, k, b + 1e-6
+        yield assert_less_equal, b, c + 1e-6
+        yield assert_less_equal, c, g + 1e-6
+        yield assert_less_equal, g, f + 1e-6
+        yield assert_less_equal, f, m + 1e-6
 
+@attr('scipy')
 @attr('slow')
 def test_cis2():
     """
@@ -45,8 +47,8 @@ def test_cis2():
         g = G(d)
         f = F(d)
         m = M(d)
-        yield assert_less_than, k, b + 1e-6
-        yield assert_less_than, b, c + 1e-6
-        yield assert_less_than, c, g + 1e-6
-        yield assert_less_than, g, f + 1e-6
-        yield assert_less_than, f, m + 1e-6
+        yield assert_less_equal, k, b + 1e-6
+        yield assert_less_equal, b, c + 1e-6
+        yield assert_less_equal, c, g + 1e-6
+        yield assert_less_equal, g, f + 1e-6
+        yield assert_less_equal, f, m + 1e-6
