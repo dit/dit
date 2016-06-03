@@ -7,12 +7,14 @@ from abc import ABCMeta, abstractmethod
 
 import numpy as np
 
-from dit.helpers import flatten, normalize_rvs
+from ..helpers import flatten, normalize_rvs
+from ..math import close
 
 
 class MarkovVarOptimizer(object):
     """
-    Abstract base class for constructing auxiliary variables which render a set of variables conditionally independent.
+    Abstract base class for constructing auxiliary variables which render a set
+    of variables conditionally independent.
     """
     __metaclass__ = ABCMeta
 
@@ -24,7 +26,9 @@ class MarkovVarOptimizer(object):
             The distribution to compute the auxiliary Markov variable, W, for.
         """
         self._rvs, self._crvs, self._rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
-        self._others = list(set(flatten(dist.rvs)) - set(flatten(self._rvs)) - set(flatten(self._crvs)))
+        self._others = list(set(flatten(dist.rvs)) - \
+                            set(flatten(self._rvs)) - \
+                            set(flatten(self._crvs)))
         self._dist = dist.copy()
         sizes = list(map(len, self._dist.alphabet))
 
@@ -36,15 +40,18 @@ class MarkovVarOptimizer(object):
         self._crv_size = [ self._bound ] + [ sizes[i] for i in self._crvs ]
         self._crv_len = len(self._crv_size)
 
-        self._shapes = [self._rv_sizes[0] + self._crv_size] + [self._crv_size + rv for rv in self._rv_sizes[1:]]
+        self._shapes = [self._rv_sizes[0] + self._crv_size] + \
+                       [self._crv_size + rv for rv in self._rv_sizes[1:]]
         self._splits = np.cumsum([ np.prod(s) for s in self._shapes ])[:-1]
 
         dist.make_dense()
-        self._pmf = dist.marginal(self._rvs[0], rv_mode=self._rv_mode).pmf.reshape([sizes[i] for i in self._rvs[0]])
+        self._pmf = dist.marginal(self._rvs[0], rv_mode=self._rv_mode).pmf
+        self._pmf = self._pmf.reshape([sizes[i] for i in self._rvs[0]])
         self._true_joint = dist.pmf.reshape(sizes)
 
         idxs = [ list(range(len(shape))) for shape in self._shapes ]
-        self._idxs = [ idxs[0][self._rv_lens[0]:] ] + [ idx[self._crv_len:] for idx in idxs[1:]]
+        self._idxs = [ idxs[0][self._rv_lens[0]:] ] + \
+                     [ idx[self._crv_len:] for idx in idxs[1:]]
 
         if len(self._others) == 0:
             self._others_cdist = None
@@ -54,7 +61,6 @@ class MarkovVarOptimizer(object):
         else:
             self._others_cdist = self._true_joint / np.sum(self._true_joint, axis=tuple(self._others), keepdims=True)
             self._others_cdist[np.isnan(self._others_cdist)] = 1
-
 
         self.constraints = [{'type': 'eq',
                              'fun': self.constraint_match_joint,
@@ -76,14 +82,16 @@ class MarkovVarOptimizer(object):
         Parameters
         ----------
         x : ndarray of shape (n,)
-            A vector of conditional probabilities. See `construct_random_initial` for its structure.
+            A vector of conditional probabilities. See
+            `construct_random_initial` for its structure.
         """
         pass
 
     @staticmethod
     def row_normalize(mat, axis=1):
         """
-        Row-normalize `mat`, so that it is a valid conditional probability distribution.
+        Row-normalize `mat`, so that it is a valid conditional probability
+        distribution.
 
         Parameters
         ----------
@@ -118,6 +126,9 @@ class MarkovVarOptimizer(object):
 
     def construct_cdists(self, x, normalize=False):
         """
+        Given an optimization vector, construct the conditional distributions it
+        represents.
+
         Parameters
         ----------
         """
@@ -125,7 +136,7 @@ class MarkovVarOptimizer(object):
             x = x.copy()
 
         cdists = np.split(x, self._splits)
-        cdists = [ cdist.reshape(shape) for cdist, shape in zip(cdists, self._shapes) ]
+        cdists = [ cd.reshape(s) for cd, s in zip(cdists, self._shapes) ]
         cdists = [ np.squeeze(cdist) for cdist in cdists ]
 
         if normalize:
@@ -136,6 +147,9 @@ class MarkovVarOptimizer(object):
 
     def construct_joint(self, x):
         """
+        Given an optimization vector, construct the joint distribution it
+        represents.
+
         Parameters
         ----------
         """
@@ -156,11 +170,12 @@ class MarkovVarOptimizer(object):
                    [colon]*(len(cdist.shape)-self._crv_len)
             joint = joint[slc1] * cdist[slc2]
 
-        # reorder and make gaps
+        # reorder and make gaps for `others`
         joint = np.moveaxis(joint, self._rv_lens[0], -1)
         slc = [Ellipsis] + [np.newaxis]*len(self._others) + [colon]
         joint = joint[slc]
-        finish = self._rvs[0] + self._crvs + list(flatten(self._rvs[1:])) + sorted(self._others)
+        finish = self._rvs[0] + self._crvs + list(flatten(self._rvs[1:])) + \
+                 sorted(self._others)
         start = list(range(len(finish)))
         joint = np.moveaxis(joint, start, finish)
 
@@ -172,6 +187,9 @@ class MarkovVarOptimizer(object):
 
     def constraint_match_joint(self, x):
         """
+        Ensure that the joint distribution represented by the optimization
+        vector matches that of the distribution.
+
         Parameters
         ----------
         """
@@ -184,6 +202,8 @@ class MarkovVarOptimizer(object):
 
     def construct_markov_var(self, x):
         """
+        Construct the auxiliary Markov variable.
+
         Parameters
         ----------
         """
@@ -193,6 +213,10 @@ class MarkovVarOptimizer(object):
 
     def entropy(self, x):
         """
+        Compute the entropy of the auxiliary Markov variable.
+
+        Parameters
+        ----------
         """
         markov_var = self.construct_markov_var(x)
         ent = -np.nansum(markov_var * np.log2(markov_var))
@@ -200,7 +224,7 @@ class MarkovVarOptimizer(object):
 
     def mutual_information(self, x):
         """
-        Computes the mutual information between the original variables and the auxilary one.
+        Computes the mutual information between the original variables and the auxilary Markov variable.
 
         Parameters
         ----------
@@ -219,8 +243,13 @@ class MarkovVarOptimizer(object):
 
     def optimize(self, x0=None, nhops=5, jacobian=False, polish=True):
         """
+        Perform the optimization.
+
         Parameters
         ----------
+
+        Notes
+        -----
         """
         from scipy.optimize import basinhopping
 
@@ -251,7 +280,8 @@ class MarkovVarOptimizer(object):
             import numdifftools as ndt
 
             minimizer_kwargs['jac'] = ndt.Jacobian(self.objective)
-            minimizer_kwargs['constraints'][0]['jac'] = ndt.Jacobian(self.constraint_match_joint)
+            for const in minimizer_kwargs['constraints']:
+                const['jac'] = ndt.Jacobian(const['fun'])
 
         res = basinhopping(func=self.objective,
                            x0=x,
@@ -280,7 +310,7 @@ class MarkovVarOptimizer(object):
         x0[x0 < cutoff] = 0
 
         minimizer_kwargs = {'method': 'SLSQP',
-                            'bounds': [(0, 0) if x == 0 else (0, 1) for x in x0],
+                            'bounds': [(0, 0) if close(x, 0) else (0, 1) for x in x0],
                             'constraints': self.constraints,
                             'tol': None,
                             'callback': None,
@@ -295,7 +325,8 @@ class MarkovVarOptimizer(object):
             import numdifftools as ndt
 
             minimizer_kwargs['jac'] = ndt.Jacobian(self.objective)
-            minimizer_kwargs['constraints'][0]['jac'] = ndt.Jacobian(self.constraint_match_joint)
+            for const in minimizer_kwargs['constraints']:
+                const['jac'] = ndt.Jacobian(const['fun'])
 
         res = minimize(fun=self.objective,
                        x0=x0,
@@ -325,7 +356,7 @@ class MarkovVarOptimizer(object):
         joint /= joint.sum()
 
         # this code sucks
-        # it makes w's support go from, e.g. (0, 3, 6, 7) to (0, 1, 2, 3)
+        # it makes w's alphabet go from, e.g. (0, 3, 6, 7) to (0, 1, 2, 3)
         outcomes, pmf = zip(*[ (o, p) for o, p in np.ndenumerate(joint) if p > 0 ])
         outcomes = list(outcomes)
         symbol_map = {}
@@ -374,8 +405,8 @@ class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):
                             'tol': None,
                             'callback': None,
                             'options': {'maxiter': 1000,
-                                        'ftol': 1e-06, # default: 1e-06,
-                                        'eps': 1.4901161193847656e-08, #defeault: 1.4901161193847656e-08,
+                                        'ftol': 1e-06,
+                                        'eps': 1.4901161193847656e-08,
                                        },
                            }
 
@@ -402,6 +433,14 @@ class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):
 
     def optimize(self, x0=None, nhops=5, jacobian=False, polish=True, minimize=False, njumps=15):
         """
+        Parameters
+        ----------
+        x0 :
+        nhops : int
+        jacobian : bool
+        polish : bool
+        minimize : bool
+        njumps : int
         """
         super(MinimizingMarkovVarOptimizer, self).optimize(x0=x0, nhops=nhops, jacobian=jacobian, polish=False)
         if minimize:
