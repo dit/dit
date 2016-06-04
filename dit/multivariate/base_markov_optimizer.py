@@ -1,5 +1,5 @@
 """
-Abstract base classes 
+Abstract base classes
 """
 
 from __future__ import division
@@ -8,6 +8,7 @@ from abc import ABCMeta, abstractmethod
 
 import numpy as np
 
+from .. import Distribution
 from ..helpers import flatten, normalize_rvs
 from ..math import close
 
@@ -96,7 +97,7 @@ class MarkovVarOptimizer(object):
                            ]
 
     @abstractmethod
-    def compute_bound(self):
+    def compute_bound(self): # pragma: no cover
         """
         Return a bound on the cardinality of the auxiliary variable.
 
@@ -108,7 +109,7 @@ class MarkovVarOptimizer(object):
         pass
 
     @abstractmethod
-    def objective(self, x):
+    def objective(self, x): # pragma: no cover
         """
         Compute the optimization objective function.
 
@@ -142,6 +143,32 @@ class MarkovVarOptimizer(object):
             pass
         mat /= np.sum(mat, axis=axis, keepdims=True)
 
+    @staticmethod
+    def _success(res):
+        """
+        Determine whether an optimization result was successful or not, working
+        around differences in scipy < 0.17.0 and scipy >= 0.17.0.
+
+        Parameters
+        ----------
+        res : OptimizeResult
+            The result to parse
+
+        Returns
+        -------
+        success : bool
+            Whether the optimization was successful or not.
+        msg : str
+            The result's message.
+        """
+        try:
+            success = res.lowest_optimization_result.success
+            msg = res.lowest_optimization_result.message
+        except AttributeError:
+            success = 'success' in res.message[0]
+            msg = res.message[0]
+        return success, msg
+
     def construct_random_initial(self):
         """
         Construct a random optimization vector.
@@ -174,14 +201,14 @@ class MarkovVarOptimizer(object):
         normalize : bool
             Whether to normalize the conditional distributions or not.
         """
-        if normalize:
+        if normalize: # pragma: no cover
             x = x.copy()
 
         cdists = np.split(x, self._splits)
         cdists = [ cd.reshape(s) for cd, s in zip(cdists, self._shapes) ]
         cdists = [ np.squeeze(cdist) for cdist in cdists ]
 
-        if normalize:
+        if normalize: # pragma: no cover
             for cdist, axes in zip(cdists, self._idxs):
                 self.row_normalize(cdist, axes)
 
@@ -284,11 +311,11 @@ class MarkovVarOptimizer(object):
         joint = self.construct_joint(x)
 
         # p(rvs)
-        others = tuple(self._crvs + self._others + [-1])
-        markov_var = joint.sum(axis=others, keepdims=True)
+        others = joint.sum(axis=-1, keepdims=True)
 
         # p(w)
-        others = joint.sum(axis=tuple(range(len(joint.shape)-1)), keepdims=True)
+        axes = tuple(range(len(joint.shape)-1))
+        markov_var = joint.sum(axis=axes, keepdims=True)
 
         mut_info = np.nansum(joint * np.log2(joint / (markov_var * others)))
 
@@ -342,7 +369,8 @@ class MarkovVarOptimizer(object):
                            }
 
         # this makes things slower!
-        if jacobian:
+        # TODO: use ndt.nd_algopy, which may be significantly faster.
+        if jacobian: # pragma: no cover
             import numdifftools as ndt
 
             minimizer_kwargs['jac'] = ndt.Jacobian(self.objective)
@@ -358,8 +386,9 @@ class MarkovVarOptimizer(object):
 
         self._res = res
 
-        if not res.lowest_optimization_result.success:
-            raise Exception(res.lowest_optimization_result.message)
+        success, msg = self._success(res)
+        if not success:
+            raise Exception(msg)
 
         if polish:
             self._polish(jacobian=jacobian)
@@ -396,7 +425,7 @@ class MarkovVarOptimizer(object):
                   }
 
         # this makes things slower!
-        if jacobian:
+        if jacobian: # pragma: no cover
             import numdifftools as ndt
 
             kwargs['jac'] = ndt.Jacobian(self.objective)
@@ -450,7 +479,7 @@ class MarkovVarOptimizer(object):
             outcome[idx] = symbol_map[sym]
             outcomes[i] = tuple(outcome)
 
-        d = D(outcomes, pmf)
+        d = Distribution(outcomes, pmf)
         return d
 
 
@@ -504,7 +533,7 @@ class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):
                            }
 
         # this makes things slower!
-        if jacobian:
+        if jacobian: # pragma: no cover
             import numdifftools as ndt
 
             minimizer_kwargs['jac'] = ndt.Jacobian(self.entropy)
@@ -518,11 +547,8 @@ class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):
                            accept_test=accept_test,
                           )
 
-        if res.lowest_optimization_result.success:
+        if self._success(res)[0]:
             self._res = res
-        else:
-            pass
-            # raise Exception(res.lowest_optimization_result.message)
 
     def optimize(self, x0=None, nhops=5, jacobian=False, polish=True, minimize=False, njumps=15):
         """
