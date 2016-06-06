@@ -128,7 +128,7 @@ This quantity can be computed easily using dit:
 :math:`n`-Variables
 ===================
 
-With an arbitrary number of variables, the Gács-Körner common information is defined similarly:
+With an arbitrary number of variables, the Gács-Körner common information :cite:`tyagi2011function` is defined similarly:
 
 .. math::
 

@@ -5,8 +5,7 @@
 Tsallis Entropy
 ***************
 
-The Tsallis entropy is a generalization of the Shannon (or Boltzmann-Gibbs)
-entropy to the case where entropy is nonextensive. It is given by:
+The Tsallis entropy is a generalization of the Shannon (or Boltzmann-Gibbs) entropy to the case where entropy is nonextensive. It is given by:
 
 .. math::
 
@@ -28,9 +27,7 @@ entropy to the case where entropy is nonextensive. It is given by:
 Non-additivity
 ==============
 
-One interesting property of the Tsallis entropy is the relationship between the
-joint Tsallis entropy of two indpendent systems, and the Tsallis entropy of
-those subsystems:
+One interesting property of the Tsallis entropy is the relationship between the joint Tsallis entropy of two indpendent systems, and the Tsallis entropy of those subsystems:
 
 .. math::
 

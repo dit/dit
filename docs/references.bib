@@ -10,18 +10,21 @@
     title = {{Elements of Information Theory}},
     year = {2006}
 }
+
 @book{MacKay2003,
     title={Information theory, inference and learning algorithms},
     author={MacKay, David JC},
     year={2003},
     publisher={Cambridge university press}
 }
+
 @book{Yeung2008,
     title={Information theory and network coding},
     author={Yeung, Raymond W},
     year={2008},
     publisher={Springer}
 }
+
 @book{Calude2002,
     author = {Calude, Cristian},
     title = {Information and Randomness: An Algorithmic Perspective},
@@ -35,50 +38,57 @@
 
 %%% multivariate information measures
 
-@article{Abdallah2012,
-    author = {Abdallah, Samer A and Plumbley, Mark D},
-    doi = {10.1016/j.physleta.2011.10.066},
-    issn = {03759601},
-    journal = {Physics Letters A},
-    month = jan,
-    number = {4},
-    pages = {275--281},
-    publisher = {Elsevier B.V.},
-    title = {{A measure of statistical complexity based on predictive information with application to finite spin systems}},
-    volume = {376},
-    year = {2012}
+%% mutual informations
+
+% co-information
+@inproceedings{Bell2003,
+  author = "A. J. Bell",
+  title = "The Co-information Lattice",
+  booktitle = "Proc. Fifth Intl. Workshop on Independent Component Analysis and Blind Signal Separation",
+  editor = "S.  Amari, A. Cichocki, S. Makino and N. Murata",
+  publisher = "Springer",
+  address = "New York",
+  volume = "ICA 2003",
+  optnumber = "",
+  pages = "921--926",
+  year = "2003"
 }
-@book{Bell2003,
-    address = {New York},
-    author = {Bell, Anthony J},
-    booktitle = {Proceedings of the Fifth International Workshop on Independent Component Analysis and Blind Signal Separation},
-    edition = {ICA 2003},
-    editor = {{S. Amari, A. Cichocki , S. Makino}, N. Murata},
-    publisher = {Springer},
-    title = {{The Co-Information Lattice}},
-    year = {2003}
+
+% interaction information
+@article{mcgill1954multivariate,
+  title={Multivariate information transmission},
+  author={McGill, W. J.},
+  journal={Psychometrika},
+  volume={19},
+  number={2},
+  pages={97--116},
+  year={1954},
+  publisher={Springer}
 }
-@article{Gacs1973,
-    title={Common information is far less than mutual information},
-    author={G{\'a}cs, Peter and K{\"o}rner, J{\'a}nos},
-    journal={Problems of Control and Information Theory},
-    volume={2},
-    number={2},
-    pages={149--162},
-    year={1973}
+
+% total correlation
+@article{watanabe1960information,
+  title={Information theoretical analysis of multivariate correlation},
+  author={Watanabe, S.},
+  journal={IBM Journal of research and development},
+  volume={4},
+  number={1},
+  pages={66--82},
+  year={1960},
+  publisher={IBM}
 }
-@article{Han1980,
-    author = {Han, T. S.},
-    doi = {10.1016/S0019-9958(80)90478-7},
-    issn = {00199958},
-    journal = {Information and Control},
-    month = jul,
-    number = {1},
-    pages = {26--45},
-    title = {{Multiple mutual informations and multiple interactions in frequency data}},
-    volume = {46},
-    year = {1980}
+
+% dual total correlation
+@article{te1980multiple,
+  title={Multiple mutual informations and multiple interactions in frequency data},
+  author={Te Sun, H.},
+  journal={Information and Control},
+  volume={46},
+  pages={26--45},
+  year={1980},
+  publisher={Elsevier}
 }
+
 @article{Han1975linear,
   title={Linear dependence structure of the entropy space},
   author={Han, T. S.},
@@ -87,6 +97,27 @@
   pages={337--368},
   year={1975},
   publisher={Elsevier}
+}
+
+@article{Abdallah2012,
+  title={A measure of statistical complexity based on predictive information with application to finite spin systems},
+  author={Abdallah, S. A. and Plumbley, M. D.},
+  journal={Physics Letters A},
+  volume={376},
+  number={4},
+  pages={275--281},
+  year={2012},
+  publisher={Elsevier}
+}
+
+% erasure entropy
+@inproceedings{verdu2006erasure,
+  title={Erasure entropy},
+  author={Verd{\'u}, S. and Weissman, T.},
+  booktitle={Information Theory, 2006 IEEE International Symposium on},
+  pages={98--102},
+  year={2006},
+  organization={IEEE}
 }
 
 @article{Verdu2008,
@@ -99,19 +130,8 @@
   year={2008},
   publisher={IEEE}
 }
-@article{Watanabe1960,
-    author = {Watanabe, Satosi},
-    doi = {10.1147/rd.41.0066},
-    issn = {0018-8646},
-    journal = {IBM Journal of Research and Development},
-    month = jan,
-    number = {1},
-    pages = {66--82},
-    title = {{Information Theoretical Analysis of Multivariate Correlation}},
-    volume = {4},
-    year = {1960}
-}
 
+% CAEKL mutual information
 @article{chan2015multivariate,
   title={Multivariate Mutual Information Inspired by Secret-Key Agreement},
   author={Chan, Chung and Al-Bashabsheh, Ali and Ebrahimi, Javad B and Kaced, Tarik and Liu, Tie},
@@ -123,6 +143,67 @@
   publisher={IEEE}
 }
 
+%% common informations
+
+% Gács-Körner common information
+@article{Gacs1973,
+    title={Common information is far less than mutual information},
+    author={G{\'a}cs, Peter and K{\"o}rner, J{\'a}nos},
+    journal={Problems of Control and Information Theory},
+    volume={2},
+    number={2},
+    pages={149--162},
+    year={1973}
+}
+
+% multivariate Gács-Körner common information
+@article{tyagi2011function,
+  title={When is a function securely computable?},
+  author={Tyagi, H. and Narayan, P. and Gupta, P.},
+  journal={Information Theory, IEEE Transactions on},
+  volume={57},
+  number={10},
+  pages={6337--6350},
+  year={2011},
+  publisher={IEEE}
+}
+
+% wyner common information
+@article{wyner1975common,
+  title={The common information of two dependent random variables},
+  author={Wyner, A. D.},
+  journal={Information Theory, IEEE Transactions on},
+  volume={21},
+  number={2},
+  pages={163--179},
+  year={1975},
+  publisher={IEEE}
+}
+
+% multivariate wyner common information
+@inproceedings{liu2010common,
+  title={The common information of N dependent random variables},
+  author={Liu, Wei and Xu, Ge and Chen, Biao},
+  booktitle={Communication, Control, and Computing (Allerton), 2010 48th Annual Allerton Conference on},
+  pages={836--843},
+  year={2010},
+  organization={IEEE}
+}
+
+% exact common information
+@inproceedings{kumar2014exact,
+  title={Exact common information},
+  author={Kumar, G. R. and Li, C. T. and El Gamal, A.},
+  booktitle={Information Theory (ISIT), 2014 IEEE International Symposium on},
+  pages={161--165},
+  year={2014},
+  organization={IEEE}
+}
+
+% functional common information
+
+% MSS common information
+
 %%% others
 
 @article{Griffith2013,
@@ -131,12 +212,14 @@
     journal={arXiv preprint arXiv:1310.1538},
     year={2013}
 }
+
 @article{Lad2011,
     title={Extropy: a complementary dual of entropy},
     author={Lad, Frank and Sanfilippo, Giuseppe and Agr{\`o}, Gianna},
     journal={arXiv preprint arXiv:1109.6440},
     year={2011}
 }
+
 @article{Tononi1994,
     title={A measure for brain complexity: relating functional segregation and integration in the nervous system},
     author={Tononi, Giulio and Sporns, Olaf and Edelman, Gerald M},
@@ -147,6 +230,7 @@
     year={1994},
     publisher={National Acad Sciences}
 }
+
 @article{Rao2004,
     title={Cumulative residual entropy: a new measure of information},
     author={Rao, Murali and Chen, Yunmei and Vemuri, Baba C and Wang, Fei},

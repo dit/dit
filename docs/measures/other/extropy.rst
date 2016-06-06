@@ -5,8 +5,7 @@
 Extropy
 *******
 
-The extropy :cite:`Lad2011` is a dual to the :doc:`../multivariate/entropy`. It
-is defined by:
+The extropy :cite:`Lad2011` is a dual to the :doc:`../multivariate/entropy`. It is defined by:
 
 .. math::
 
