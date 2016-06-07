@@ -20,7 +20,7 @@ Kumar **et. al.** :cite:`kumar2014exact` have shown that the exact common inform
 
    In [1]: from dit.multivariate import exact_common_information as G
 
-   In [2]: d = dit.Distribution(['00', '01', '10'], [1/3]*3)
+   In [2]: d = dit.Distribution([(0,0), (0,1), (1,0)], [1/3]*3)
 
    In [3]: d2 = d @ d
 
