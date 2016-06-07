@@ -17,6 +17,7 @@ Subadditivity of Independent Variables
 Kumar **et. al.** :cite:`kumar2014exact` have shown that the exact common information of a pair of independent pairs of variables can be less than the sum of their individual exact common informations. Here we verify this claim:
 
 .. ipython::
+   :okexcept:
 
    In [1]: from dit.multivariate import exact_common_information as G
 
@@ -48,7 +49,7 @@ Kumar **et. al.** :cite:`kumar2014exact` have shown that the exact common inform
    Out[5]: 1.8365916681089791
 
    @doctest float
-   In [6]: G(d2, [[0, 2], [1, 3]])
+   In [6]: G(d2, rvs=[[0, 2], [1, 3]])
    Out[6]: 1.7527152736283176
 
 API
