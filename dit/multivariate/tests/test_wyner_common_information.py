@@ -70,5 +70,9 @@ def test_wci4():
     """
     Test the binary symmetric erasure channel.
     """
+    x0 = None
     for p in [i/10 for i in range(1, 10)]:
-        yield assert_almost_equal, C(sbec(p)), C_sbec(p), 4
+        wci = WynerCommonInformation(sbec(p))
+        wci.optimize(x0=x0, nhops=10)
+        x0 = wci._res.x
+        yield assert_almost_equal, wci.objective(wci._res.x), C_sbec(p), 4

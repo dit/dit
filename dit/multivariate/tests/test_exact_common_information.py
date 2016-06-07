@@ -37,4 +37,7 @@ def test_eci2():
     Test the binary symmetric erasure channel.
     """
     for p in [i/10 for i in range(1, 10)]:
-        yield assert_almost_equal, G(sbec(p)), G_sbec(p), 4
+        eci = ExactCommonInformation(sbec(p))
+        eci.optimize(x0=x0, nhops=10)
+            x0 = eci._res.x
+        yield assert_almost_equal, eci.objective(eci._res.x), G_sbec(p), 4
