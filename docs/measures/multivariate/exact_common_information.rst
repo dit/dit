@@ -24,13 +24,32 @@ Kumar **et. al.** :cite:`kumar2014exact` have shown that the exact common inform
 
    In [3]: d2 = d @ d
 
-   @doctest float
-   In [4]: 2*G(d)
-   Out[4]: 1.8365916681089791
+   In [4]: print(d2)
+   Class:          Distribution
+   Alphabet:       (0, 1) for all rvs
+   Base:           linear
+   Outcome Class:  tuple
+   Outcome Length: 4
+   RV Names:       None
+
+   x              p(x)
+   (0, 0, 0, 0)   1/9
+   (0, 0, 0, 1)   1/9
+   (0, 0, 1, 0)   1/9
+   (0, 1, 0, 0)   1/9
+   (0, 1, 0, 1)   1/9
+   (0, 1, 1, 0)   1/9
+   (1, 0, 0, 0)   1/9
+   (1, 0, 0, 1)   1/9
+   (1, 0, 1, 0)   1/9
 
    @doctest float
-   In [5]: G(d2, [[0, 2], [1, 3]])
-   Out[5]: 1.7527152736283176
+   In [5]: 2*G(d)
+   Out[5]: 1.8365916681089791
+
+   @doctest float
+   In [6]: G(d2, [[0, 2], [1, 3]])
+   Out[6]: 1.7527152736283176
 
 API
 ===
