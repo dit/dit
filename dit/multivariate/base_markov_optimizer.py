@@ -321,7 +321,7 @@ class MarkovVarOptimizer(object):
 
         return mut_info
 
-    def optimize(self, x0=None, nhops=5, jacobian=False, polish=True):
+    def optimize(self, x0=None, nhops=5, jacobian=False, polish=1e-6):
         """
         Perform the optimization.
 
@@ -336,10 +336,11 @@ class MarkovVarOptimizer(object):
             Whether to use an Jacobians computed with numdifftools or not.
             Defaults to False. The use of numdifftools can greatly slow down the
             speed of the algorithms.
-        polish : bool
-            Whether to polish the result or not. If True, this will perform a
+        polish : False, float
+            Whether to polish the result or not. If a float, this will perform a
             second optimization seeded with the result of the first, but with
-            smaller tolerances.
+            smaller tolerances and probabilities below polish set to 0. If
+            False, don't polish.
 
         Notes
         -----
@@ -391,7 +392,7 @@ class MarkovVarOptimizer(object):
             raise Exception(msg)
 
         if polish:
-            self._polish(jacobian=jacobian)
+            self._polish(cutoff=polish, jacobian=jacobian)
 
     def _polish(self, cutoff=1e-6, jacobian=False):
         """
@@ -551,7 +552,7 @@ class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):
         if self._success(res)[0]:
             self._res = res
 
-    def optimize(self, x0=None, nhops=5, jacobian=False, polish=True, minimize=False, njumps=15):
+    def optimize(self, x0=None, nhops=5, jacobian=False, polish=1e-6, minimize=False, njumps=15):
         """
         Parameters
         ----------
@@ -565,10 +566,11 @@ class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):
             Whether to use an Jacobians computed with numdifftools or not.
             Defaults to False. The use of numdifftools can greatly slow down the
             speed of the algorithms.
-        polish : bool
-            Whether to polish the result or not. If True, this will perform a
+        polish : False, float
+            Whether to polish the result or not. If a float, this will perform a
             second optimization seeded with the result of the first, but with
-            smaller tolerances.
+            smaller tolerances and probabilities below polish set to 0. If
+            False, don't polish.
         minimize : bool
             Whether to minimize the auxiliary variable or not.
         njumps : int
@@ -580,4 +582,4 @@ class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):
             # minimize the entropy of W
             self.minimize_aux_var(jacobian=jacobian, njumps=njumps)
         if polish:
-            self._polish(jacobian=jacobian)
+            self._polish(cutoff=polish, jacobian=jacobian)
