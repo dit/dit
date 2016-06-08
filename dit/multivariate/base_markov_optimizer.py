@@ -139,7 +139,7 @@ class MarkovVarOptimizer(object):
                 axis = axis[0]
             else:
                 axis = tuple(axis)
-        except:
+        except TypeError:
             pass
         mat /= np.sum(mat, axis=axis, keepdims=True)
 
@@ -421,8 +421,8 @@ class MarkovVarOptimizer(object):
                   'options': {'maxiter': 1000,
                               'ftol': 15e-11,
                               'eps': 1.4901161193847656e-12,
-                              },
-                  }
+                             },
+                 }
 
         # this makes things slower!
         if jacobian: # pragma: no cover
@@ -488,6 +488,7 @@ class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):
     Abstract base class for an optimizer which additionally minimizes the size
     of the auxiliary variable.
     """
+    __metaclass__ = ABCMeta
 
     def minimize_aux_var(self, njumps=25, jacobian=False):
         """

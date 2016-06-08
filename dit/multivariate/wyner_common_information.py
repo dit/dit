@@ -11,7 +11,8 @@ __all__ = ['wyner_common_information']
 
 class WynerCommonInformation(MinimizingMarkovVarOptimizer):
     """
-    Compute the Wyner common information, min I[X:V], taken over all V which render the X_i conditionally independent.
+    Compute the Wyner common information, min I[X:V], taken over all V which
+    render the X_i conditionally independent.
     """
 
     def compute_bound(self):
