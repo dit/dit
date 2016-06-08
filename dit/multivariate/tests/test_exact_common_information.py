@@ -37,6 +37,7 @@ def test_eci2():
     """
     Test the binary symmetric erasure channel.
     """
+    x0 = None
     for p in [i/10 for i in range(1, 10)]:
         eci = ExactCommonInformation(sbec(p))
         eci.optimize(x0=x0, nhops=10)
