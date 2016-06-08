@@ -30,7 +30,7 @@ We can verify this:
 
    In [1]: from dit.multivariate import wyner_common_information as C
 
-   In [2]: ps = np.linspace(1e-6, 1-1e-6, 21)
+   In [2]: ps = np.linspace(1e-6, 1-1e-6, 11)
 
    In [3]: sbec = lambda p: dit.Distribution(['00', '0e', '1e', '11'], [(1-p)/2, p/2, p/2, (1-p)/2])
 
