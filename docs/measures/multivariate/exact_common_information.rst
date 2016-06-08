@@ -48,7 +48,7 @@ Kumar **et. al.** :cite:`kumar2014exact` have shown that the exact common inform
    Out[5]: 1.8365916681089791
 
    @doctest float
-   In [6]: G(d2, [[0, 2], [1, 3]])
+   In [6]: G(d2, [[0, 2], [1, 3]], nhops=10)
    Out[6]: 1.7527152736283176
 
 API
