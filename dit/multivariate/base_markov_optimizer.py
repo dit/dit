@@ -139,7 +139,7 @@ class MarkovVarOptimizer(object):
                 axis = axis[0]
             else:
                 axis = tuple(axis)
-        except TypeError:
+        except TypeError: # pragma: no cover
             pass
         mat /= np.sum(mat, axis=axis, keepdims=True)
 
@@ -301,7 +301,8 @@ class MarkovVarOptimizer(object):
 
     def mutual_information(self, x):
         """
-        Computes the mutual information between the original variables and the auxilary Markov variable.
+        Computes the mutual information between the original variables and the
+        auxilary Markov variable.
 
         Parameters
         ----------
@@ -388,7 +389,7 @@ class MarkovVarOptimizer(object):
         self._res = res
 
         success, msg = self._success(res)
-        if not success:
+        if not success: # pragma: no cover
             raise Exception(msg)
 
         if polish:
