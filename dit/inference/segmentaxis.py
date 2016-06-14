@@ -17,7 +17,7 @@ def segment_axis(a, length, overlap=0, axis=None, end='cut', endvalue=0):
         The number of array elements by which the frames should overlap
     axis : int, optional
         The axis to operate on; if None, act on the flattened array
-    end : {'cut', 'wrap', 'end'}, optional
+    end : {'cut', 'wrap', 'pad'}, optional
         What to do with the last frame, if the array is not evenly
         divisible into pieces.
 
