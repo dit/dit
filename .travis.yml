@@ -123,9 +123,9 @@ before_script:
       sudo $TRAVIS_PYTHON_VERSION -m pip install nose;
     fi;
   - if ! [[ "$TRAVIS_PYTHON_VERSION" =~ pypy.* ]]; then
-      pip install --upgrade coverage coveralls;
+      pip install --upgrade coverage coveralls codecov;
     else
-      sudo $TRAVIS_PYTHON_VERSION -m pip install --upgrade coverage coveralls;
+      sudo $TRAVIS_PYTHON_VERSION -m pip install --upgrade coverage coveralls codecov;
     fi
 
 script:
@@ -181,6 +181,7 @@ after_success:
   - cd $TRAVIS_BUILD_DIR
   - python fixcoverage.py ".*/dit/" "$TRAVIS_BUILD_DIR/dit/"
   - coveralls
+  - codecov
 
 notifications:
   email: false
