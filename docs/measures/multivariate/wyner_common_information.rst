@@ -27,10 +27,11 @@ Ther Wyner common information of the binary symmetric erausre channel is known t
 We can verify this:
 
 .. ipython::
+   :verbatim:
 
    In [1]: from dit.multivariate import wyner_common_information as C
 
-   In [2]: ps = np.linspace(1e-6, 1-1e-6, 11)
+   In [2]: ps = np.linspace(1e-6, 1-1e-6, 51)
 
    In [3]: sbec = lambda p: dit.Distribution(['00', '0e', '1e', '11'], [(1-p)/2, p/2, p/2, (1-p)/2])
 
@@ -46,8 +47,12 @@ We can verify this:
 
    In [9]: plt.ylabel(r'Wyner common information $C[X:Y]$');
 
-   @savefig sbec.png width=500 align=center
    In [10]: plt.show()
+
+.. image:: ../../images/wyner_sbec.png
+   :alt: The Wyner common information of the binary symmetric erasure channel.
+   :width: 500px
+   :align: center
 
 API
 ===
