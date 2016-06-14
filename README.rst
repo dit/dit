@@ -1,6 +1,6 @@
 ``dit`` is a Python package for information theory.
 
-|build| |build_windows| |coverage| |docs| |health| |gitter|
+|build| |build_windows| |coverage| |docs| |health| |deps| |gitter|
 
 Documentation:
    http://docs.dit.io
@@ -193,6 +193,10 @@ Enjoy!
 .. |health| image:: https://landscape.io/github/dit/dit/master/landscape.svg?style=flat
    :target: https://landscape.io/github/dit/dit/master
    :alt: Code Health
+
+.. |deps| image:: https://requires.io/github/dit/dit/requirements.svg?branch=master
+     :target: https://requires.io/github/dit/dit/requirements/?branch=master
+     :alt: Requirements Status
 
 .. |gitter| image:: https://badges.gitter.im/Join%20Chat.svg
    :target: https://gitter.im/dit/dit?utm_source=badge&utm_medium=badge
