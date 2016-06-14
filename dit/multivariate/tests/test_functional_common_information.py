@@ -33,7 +33,9 @@ def test_fci2():
     assert_almost_equal(F(d, [[0], [1]], [2]), 1.0)
 
 def test_fci3():
-    """ Test against known values """
+    """
+    Test against known values
+    """
     outcomes = ['000',
                 'a00',
                 '00c',
@@ -53,29 +55,3 @@ def test_fci3():
     pmf = [1/16]*16
     d = Distribution(outcomes, pmf)
     assert_almost_equal(F(d), 2.0)
-
-@attr('slow')
-def test_fci4():
-    """
-    Test that B <= F <= M.
-    """
-    dists = [ random_distribution(2, 3) for _ in range(3) ]
-    for d in dists:
-        b = B(d)
-        f = F(d)
-        m = M(d)
-        yield assert_less_equal, b, f
-        yield assert_less_equal, f, m
-
-@attr('slow')
-def test_fci5():
-    """
-    Test that B <= F <= M.
-    """
-    dists = [ random_distribution(3, 2) for _ in range(3) ]
-    for d in dists:
-        b = B(d)
-        f = F(d)
-        m = M(d)
-        yield assert_less_equal, b, f
-        yield assert_less_equal, f, m

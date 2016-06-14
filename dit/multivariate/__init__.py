@@ -10,9 +10,11 @@ from .dual_total_correlation import (binding_information,
                                      independent_information, residual_entropy,
                                      variation_of_information)
 from .entropy import entropy
+from .exact_common_information import exact_common_information
 from .functional_common_information import functional_common_information
 from .gk_common_information import gk_common_information
 from .interaction_information import interaction_information
 from .mss_common_information import mss_common_information
 from .total_correlation import total_correlation
 from .tse_complexity import tse_complexity
+from .wyner_common_information import wyner_common_information

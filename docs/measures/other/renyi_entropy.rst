@@ -5,8 +5,7 @@
 Rényi Entropy
 *************
 
-The Rényi entropy is a spectrum of generalizations to the Shannon
-:doc:`../multivariate/entropy`:
+The Rényi entropy is a spectrum of generalizations to the Shannon :doc:`../multivariate/entropy`:
 
 .. math::
 
@@ -28,15 +27,13 @@ The Rényi entropy is a spectrum of generalizations to the Shannon
 Special Cases
 =============
 
-For several values of :math:`\alpha`, the Rényi entropy takes on particular
-values.
+For several values of :math:`\alpha`, the Rényi entropy takes on particular values.
 
 
 :math:`\alpha = 0`
 ------------------
 
-When :math:`\alpha = 0` the Rényi entropy becomes what is known as the Hartley
-entropy:
+When :math:`\alpha = 0` the Rényi entropy becomes what is known as the Hartley entropy:
 
 .. math::
 
@@ -68,15 +65,13 @@ When :math:`\alpha = 1` the Rényi entropy becomes the standard Shannon entropy:
 :math:`\alpha = 2`
 ------------------
 
-When :math:`\alpha = 2`, the Rényi entropy becomes what is known as the
-collision entropy:
+When :math:`\alpha = 2`, the Rényi entropy becomes what is known as the collision entropy:
 
 .. math::
 
     \H_{2}[X] = - \log_2 p(X = Y)
 
-where :math:`Y` is an IID copy of X. This is basically the surprisal of "rolling
-doubles"
+where :math:`Y` is an IID copy of X. This is basically the surprisal of "rolling doubles"
 
 .. ipython::
 
@@ -88,8 +83,7 @@ doubles"
 :math:`\alpha = \infty`
 -----------------------
 
-Finally, when :math:`\alpha = \infty` the Rényi entropy picks out the
-probability of the most-probable event:
+Finally, when :math:`\alpha = \infty` the Rényi entropy picks out the probability of the most-probable event:
 
 .. math::
 
@@ -105,8 +99,7 @@ probability of the most-probable event:
 General Properies
 =================
 
-In general, the Rényi entropy is a monotonically decreasing function in
-:math:`\alpha`:
+In general, the Rényi entropy is a monotonically decreasing function in :math:`\alpha`:
 
 .. math::
 

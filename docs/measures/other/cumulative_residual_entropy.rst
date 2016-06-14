@@ -5,19 +5,11 @@
 Cumulative Residual Entropy
 ***************************
 
-The cumulative residual entropy :cite:`Rao2004` is an alternative to the
-differential Shannon entropy. The differential entropy has many issues,
-including that it can be negative even for simple distributions such as the
-uniform distribution; and that if one takes discrete estimates that limit to the
-continuous distribution, the discrete entropy does not limit to the differential
-(continuous) entropy. It also attempts to provide meaningful differences between
-numerically different random variables, such as a die labeled [1, 2, 3, 4, 5, 6]
-and one lebeled [1, 2, 3, 4, 5, 100].
+The cumulative residual entropy :cite:`Rao2004` is an alternative to the differential Shannon entropy. The differential entropy has many issues, including that it can be negative even for simple distributions such as the uniform distribution; and that if one takes discrete estimates that limit to the continuous distribution, the discrete entropy does not limit to the differential (continuous) entropy. It also attempts to provide meaningful differences between numerically different random variables, such as a die labeled [1, 2, 3, 4, 5, 6] and one lebeled [1, 2, 3, 4, 5, 100].
 
 .. note::
 
-   The Cumulative Residual Entropy is unrelated to
-   :doc:`../multivariate/residual_entropy`.
+   The Cumulative Residual Entropy is unrelated to :doc:`../multivariate/residual_entropy`.
 
 .. math::
 
@@ -42,8 +34,7 @@ and one lebeled [1, 2, 3, 4, 5, 100].
 Generalized Cumulative Residual Entropy
 =======================================
 
-The genearlized form of the cumulative residual entropy integrates over the
-intire set of reals rather than just the positive ones:
+The genearlized form of the cumulative residual entropy integrates over the intire set of reals rather than just the positive ones:
 
 .. math::
 
@@ -71,12 +62,7 @@ intire set of reals rather than just the positive ones:
 Conditional Cumulative Residual Entropy
 =======================================
 
-The conditional cumulative residual entropy :math:`\CRE[X|Y]` is a distribution
-with the same probability mass function as :math:`Y`, and the outcome associated
-with :math:`p(y)` is equal to the cumulative residual entropy over probabilities
-conditioned on :math:`Y = y`. In this sense the conditional cumulative residual
-entropy is more akin to a distribution over :math:`\H[X|Y=y]` than the single
-scalar quantity :math:`\H[X|Y]`.
+The conditional cumulative residual entropy :math:`\CRE[X|Y]` is a distribution with the same probability mass function as :math:`Y`, and the outcome associated with :math:`p(y)` is equal to the cumulative residual entropy over probabilities conditioned on :math:`Y = y`. In this sense the conditional cumulative residual entropy is more akin to a distribution over :math:`\H[X|Y=y]` than the single scalar quantity :math:`\H[X|Y]`.
 
 .. math::
 
@@ -86,9 +72,7 @@ scalar quantity :math:`\H[X|Y]`.
 Conditional Generalized Cumulative Residual Entropy
 ---------------------------------------------------
 
-Conceptually the conditional generalized cumulative residual entropy is the same
-as the non-generalized form, but integrated over the entire real line rather
-than just the positive:
+Conceptually the conditional generalized cumulative residual entropy is the same as the non-generalized form, but integrated over the entire real line rather than just the positive:
 
 .. math::
 

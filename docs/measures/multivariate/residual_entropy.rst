@@ -1,5 +1,5 @@
 .. residual_entropy.rst
-.. py:currentmodule:: dit.multivariate.binding_information
+.. py:currentmodule:: dit.multivariate.dual_total_correlation
 
 ****************
 Residual Entropy

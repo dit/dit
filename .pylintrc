@@ -39,11 +39,12 @@ extension-pkg-whitelist=numpy
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use"--disable=all --enable=classes
 # --disable=W"
-disable=W0142,C0103
+disable=W0142,C0103,C0326
 # W0142: * and ** magics -- there's nothing wrong with them.
 # C0103: invalid names -- we really should fix what qualifies as a valid name
 #        rather than disable this all together.
-
+# C0326: bad-whitespace -- Chris and I both like some spacing on the outside of
+#        list comprehensions.
 
 [REPORTS]
 
@@ -135,7 +136,7 @@ docstring-min-length=-1
 [FORMAT]
 
 # Maximum number of characters on a single line.
-max-line-length=80
+max-line-length=100
 
 # Regexp for a line that is allowed to be longer than the limit.
 ignore-long-lines=^\s*(#\s*)?<?https?://\S+>?$

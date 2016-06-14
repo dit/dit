@@ -1,6 +1,6 @@
 contextlib2
 iterutils >= 0.1.6
 networkx
-numpy >= 1.6
+numpy >= 1.11
 prettytable
 six >= 1.4.0

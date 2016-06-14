@@ -17,10 +17,11 @@ from dit.other import (extropy as X,
                        generalized_cumulative_residual_entropy as GCRE,
                       )
 
-from dit.multivariate import (binding_information as B,
-                              caekl_mutual_information as J,
+from dit.multivariate import (caekl_mutual_information as J,
                               coinformation as I,
+                              dual_total_correlation as B,
                               entropy as H,
+                              exact_common_information as G,
                               functional_common_information as F,
                               gk_common_information as K,
                               interaction_information as II,
@@ -28,6 +29,7 @@ from dit.multivariate import (binding_information as B,
                               residual_entropy as R,
                               total_correlation as T,
                               tse_complexity as TSE,
+                              wyner_common_information as C,
                              )
 
 # distribution types
@@ -37,20 +39,25 @@ _dists = [
 ]
 
 # measures directly computed from i-diagrams
-_shannon = [
+_entropies = [
     'H',    # the joint conditional entropy
+    'R',    # the conditional residual entropy [erasure entropy]
+]
+
+# mutual informations
+_mutual_informations = [
     'I',    # the multivariate conditional mututal information
     'T',    # the conditional total correlation [multi-information/integration]
     'B',    # the conditional dual total correlation [binding information]
-    'R',    # the conditional residual entropy [erasure entropy]
-    'TSE',  # the TSE complexity
+    'J',    # the CAEKL common information
+    'II',   # the interaction information
 ]
 
-# measures representable on i-diagrams
-_shannon_ext = [
-    'J',    # the CAEKL common information
+# common informations
+_common_informations = [
     'K',    # the Gacs-Korner common information [meet entropy]
-    'II',   # the interaction information
+    'C',    # the wyner common information
+    'G',    # the exact common information
     'F',    # the functional common information
     'M',    # the joint minimal sufficient statistic entropy
 ]
@@ -66,8 +73,9 @@ _divergences = [
 _others = [
     'P',    # the perplexity
     'X',    # the extropy
+    'TSE',  # the TSE complexity
     'CRE',  # the cumulative residual entropy
     'GCRE', # the generalized cumulative residual entropy
 ]
 
-__all__ = _dists + _shannon + _shannon_ext + _divergences + _others
+__all__ = _dists + _entropies + _mutual_informations + _common_informations + _divergences + _others
