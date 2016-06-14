@@ -168,9 +168,17 @@ script:
 
   # Run nosetests.
   - if [[ "$TRAVIS_PYTHON_VERSION" =~ pypy.* ]]; then
-      sudo $TRAVIS_PYTHON_VERSION -m nose --verbosity=2 -a '!scipy' -a '!cvxopt' --with-coverage --cover-package=dit;
+      if [ "${OPTIONAL_DEPS}" == "true" ]; then
+        sudo $TRAVIS_PYTHON_VERSION -m nose --verbosity=2 -a '!scipy' -a '!cvxopt' --with-coverage --cover-package=dit;
+      else
+        sudo $TRAVIS_PYTHON_VERSION -m nose --verbosity=2 -a '!scipy' -a '!cvxopt' -a '!cython' --with-coverage --cover-package=dit;
+      fi
     else
-      nosetests --verbosity=2 --with-coverage --cover-package=dit;
+      if [ "${OPTIONAL_DEPS}" == "true" ]; then
+        nosetests --verbosity=2 --with-coverage --cover-package=dit;
+      else
+        nosetests --verbosity=2 -a '!cython' --with-coverage --cover-package=dit;
+      fi
     fi
 
 after_success:
