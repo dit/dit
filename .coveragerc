@@ -1,6 +1,6 @@
 # .coveragerc to control coverage.py
 [run]
-branch = False
+branch = True
 source = dit
 omit = *test_*.py, dit/abc.py, dit/utils/exitstack.py, dit/utils/bindargs.py
 
