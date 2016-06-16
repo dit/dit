@@ -473,7 +473,7 @@ class ScalarDistribution(BaseDistribution):
             The new distribution.
 
         """
-        from .npdist import Distribution
+        from .npdist import Distribution # pylint: disable=cyclic-import
         if isinstance(dist, Distribution):
             from .convert import DtoSD
             d = DtoSD(dist, extract)
@@ -512,10 +512,12 @@ class ScalarDistribution(BaseDistribution):
             raise NotImplementedError(msg)
 
         if isinstance(other, ScalarDistribution):
+            # pylint: disable=cyclic-import
             from .distconst import _combine_scalar_dists
             return _combine_scalar_dists(self, other, op)
 
         elif isinstance(other, numbers.Number):
+            # pylint: disable=cyclic-import
             from .distconst import modify_outcomes
             d = modify_outcomes(self, lambda x: op(x, other))
             return d
@@ -1286,7 +1288,7 @@ class ScalarDistribution(BaseDistribution):
         (6, 6)   1/36
         """
         if isinstance(other, ScalarDistribution):
-            from .npdist import Distribution
+            from .npdist import Distribution # pylint: disable=cyclic-import
             # Copy to make sure we don't lose precision when converting.
             d2 = other.copy(base=self.get_base())
 

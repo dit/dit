@@ -94,6 +94,7 @@ def expanded_samplespace(d, alphabets=None, union=True):
         # order of the original sample space.
         alphabets = list(map(sorted, d.alphabet))
     elif joint and len(alphabets) != d.outcome_length():
+        L = len(alphabets)
         raise Exception("You need to provide {0} alphabets".format(L))
 
     if joint and union:

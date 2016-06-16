@@ -412,7 +412,7 @@ class MarginalMaximumEntropy(MaximumEntropy):
 
         # Make self.n reflect only the size of the nonzero elements. This
         # automatically adjusts the size of G for the inequality constraint.
-        self.n = len(self.variables.nonzero)
+        self.n = len(self.variables.nonzero) # pylint: disable=no-member
 
     def build_linear_equality_constraints(self):
         from cvxopt import matrix
@@ -424,7 +424,7 @@ class MarginalMaximumEntropy(MaximumEntropy):
         # the constraint equations are unchanged. E.g. the normalization is
         # still that the nonzero values should add to 1.
 
-        Asmall = A[:, self.variables.nonzero]
+        Asmall = A[:, self.variables.nonzero] # pylint: disable=no-member
         Asmall, b, rank = as_full_rank(Asmall, b)
         if rank > Asmall.shape[1]:
             raise ValueError('More independent constraints than free parameters.')
@@ -572,7 +572,7 @@ def marginal_maxent_dists(dist, k_max=None, jitter=True, show_progress=True):
         pmf_opt = opt.optimize(show_progress=show_progress)
         pmf_opt = pmf_opt.reshape(pmf_opt.shape[0])
         pmf = np.zeros(len(dist.pmf))
-        pmf[opt.variables.nonzero] = pmf_opt
+        pmf[opt.variables.nonzero] = pmf_opt # pylint: disable=no-member
         d = dit.Distribution(outcomes, pmf)
         dists.append(d)
 

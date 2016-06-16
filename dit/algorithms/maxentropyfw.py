@@ -45,19 +45,19 @@ def initial_point(dist, k, A=None, b=None, isolated=None, **kwargs):
 
         # Reduce the size of A so that only nonzero elements are searched.
         # Also make it full rank.
-        Asmall = A[:, variables.nonzero]
+        Asmall = A[:, variables.nonzero] # pylint: disable=no-member
         Asmall, b, rank = as_full_rank(Asmall, b)
         Asmall = matrix(Asmall)
         b = matrix(b)
     else:
         # Assume they are already CVXOPT matrices
-        if A.size[1] == len(variables.nonzero):
+        if A.size[1] == len(variables.nonzero): # pylint: disable=no-member
             Asmall = A
         else:
             msg = 'A must be the reduced equality constraint matrix.'
             raise Exception(msg)
 
-    n = len(variables.nonzero)
+    n = len(variables.nonzero) # pylint: disable=no-member
     x = variable(n)
     t = variable()
 
@@ -151,7 +151,7 @@ def marginal_maxent(dist, k, **kwargs):
     # Reduce the size of A so that only nonzero elements are searched.
     # Also make it full rank.
     variables = isolate_zeros(dist, k)
-    Asmall = A[:, variables.nonzero]
+    Asmall = A[:, variables.nonzero] # pylint: disable=no-member
     Asmall, b, rank = as_full_rank(Asmall, b)
     Asmall = matrix(Asmall)
     b = matrix(b)
@@ -173,7 +173,7 @@ def marginal_maxent(dist, k, **kwargs):
 
     # For the gradient, we are going to keep the elements we know to be zero
     # at zero. Generally, the gradient is: log2(x_i) + 1 / ln(b)
-    nonzero = variables.nonzero
+    nonzero = variables.nonzero # pylint: disable=no-member
     ln2 = np.log(2)
     def gradient(x):
         # This operates only on nonzero elements.

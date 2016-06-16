@@ -407,8 +407,8 @@ class MaximumConditionalEntropy(CVXOPT_Template):
 
             # Update the effective number of parameters
             # This will carryover and fix the inequality constraints.
-            self.n = len(self.vartypes.free)
-            fnz = self.vartypes.fixed_nonzeros
+            self.n = len(self.vartypes.free) # pylint: disable=no-member
+            fnz = self.vartypes.fixed_nonzeros # pylint: disable=no-member
             self.normalization = 1 - self.pmf_copy[fnz].sum()
         else:
             warn = "This might not work if there are too many "
@@ -437,8 +437,8 @@ class MaximumConditionalEntropy(CVXOPT_Template):
         self.M = M = block_diag(*blocks)
 
         # Construct submatrices used for free and fixed nonzero parameters.
-        M_col_free = M[:, self.vartypes.free]
-        fnz = self.vartypes.fixed_nonzeros
+        M_col_free = M[:, self.vartypes.free] # pylint: disable=no-member
+        fnz = self.vartypes.fixed_nonzeros # pylint: disable=no-member
         M_col_fnz = M[:, fnz]
         x_fnz = self.pmf[fnz]
         self.y_partial_fnz = y_partial_fnz = np.dot(M_col_fnz, x_fnz)
@@ -458,9 +458,9 @@ class MaximumConditionalEntropy(CVXOPT_Template):
             y_partial_free = np.dot(M_col_free, x_free)
             # y_partial_zero == 0, so no need to calculate or add it.
             y = y_partial_free + y_partial_fnz
-            nonzeros = self.vartypes.nonzeros
+            nonzeros = self.vartypes.nonzeros # pylint: disable=no-member
             y_nonzero = y[nonzeros]
-            self.pmf_copy[self.vartypes.free] = x_free
+            self.pmf_copy[self.vartypes.free] = x_free # pylint: disable=no-member
             x_nonzero = self.pmf_copy[nonzeros]
             terms = x_nonzero * np.log2(x_nonzero / y_nonzero)
             return np.nansum(terms)
@@ -477,9 +477,9 @@ class MaximumConditionalEntropy(CVXOPT_Template):
 
         # Reduce the size of the constraint matrix
         if self.extra_constraints:
-            Asmall = A[:, self.vartypes.free]
+            Asmall = A[:, self.vartypes.free] # pylint: disable=no-member
             # The shape of b is unchanged, but fixed nonzero values modify it.
-            fnz = self.vartypes.fixed_nonzeros
+            fnz = self.vartypes.fixed_nonzeros # pylint: disable=no-member
             b = b - np.dot(A[:, fnz], self.pmf[fnz])
         else:
             Asmall = A
@@ -521,17 +521,17 @@ class MaximumConditionalEntropy(CVXOPT_Template):
             # Convert back to a NumPy 1D array
             x_free = np.asarray(x_free).transpose()[0]
 
-            nonzeros = self.vartypes.nonzeros
-            free = self.vartypes.free
+            nonzeros = self.vartypes.nonzeros # pylint: disable=no-member
+            free = self.vartypes.free # pylint: disable=no-member
 
             # First, we need to obtain y_nonzero.
-            M_col_free = self.M[:, self.vartypes.free]
+            M_col_free = self.M[:, self.vartypes.free] # pylint: disable=no-member
             y_partial_free = np.dot(M_col_free, x_free)
             y = y_partial_free + self.y_partial_fnz
             y_nonzero = y[nonzeros]
 
             # We also need x_nonzero
-            self.pmf_copy[self.vartypes.free] = x_free
+            self.pmf_copy[self.vartypes.free] = x_free # pylint: disable=no-member
             x_nonzero = self.pmf_copy[nonzeros]
 
             # The last term:
@@ -571,7 +571,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
         b = self.b
 
         # Assume they are already CVXOPT matrices
-        if self.vartypes and A.size[1] != len(self.vartypes.free):
+        if self.vartypes and A.size[1] != len(self.vartypes.free): # pylint: disable=no-member
             msg = 'A must be the reduced equality constraint matrix.'
             raise Exception(msg)
 
@@ -581,7 +581,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
         else:
             show_progress = False
 
-        n = len(self.vartypes.free)
+        n = len(self.vartypes.free) # pylint: disable=no-member
         x = variable(n)
         t = variable()
 
@@ -633,11 +633,11 @@ class MaximumConditionalEntropy(CVXOPT_Template):
 
         if self.A is None:
             # No free constraints.
-            assert (len(self.vartypes.fixed) == len(self.pmf))
+            assert (len(self.vartypes.fixed) == len(self.pmf)) # pylint: disable=no-member
             self.logger.info("No free parameters. Optimization unnecessary.")
-            self.pmf_copy[self.vartypes.fixed] = self.vartypes.fixed_values
+            self.pmf_copy[self.vartypes.fixed] = self.vartypes.fixed_values # pylint: disable=no-member
             xfinal = self.pmf_copy.copy()
-            xfinal_free = xfinal[self.vartypes.free]
+            xfinal_free = xfinal[self.vartypes.free] # pylint: disable=no-member
             opt = self.func(matrix(xfinal_free))
             return xfinal, opt
 
@@ -667,7 +667,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
         self.xfinal = x
 
         # Rebuild the full distribution as a NumPy array
-        self.pmf_copy[self.vartypes.free] = x
+        self.pmf_copy[self.vartypes.free] = x # pylint: disable=no-member
         xfinal_full = self.pmf_copy.copy()
 
         return xfinal_full, obj

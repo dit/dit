@@ -14,7 +14,6 @@ from prettytable import PrettyTable
 
 from networkx import DiGraph, dfs_preorder_nodes as children, topological_sort
 
-import dit
 from ..shannon import entropy
 from ..other import extropy
 from ..math import close
