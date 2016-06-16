@@ -367,7 +367,7 @@ class BaseDistribution(object):
         """
         from .validate import validate_outcomes
         # Provide the actual sample space, not an iterator over it.
-        v = validate_outcomes(self.outcomes, self._sample_space)
+        v = validate_outcomes(self.outcomes, self._sample_space) # pylint: disable=no-member
         return v
 
     def _validate_normalization(self):
@@ -636,7 +636,7 @@ class BaseDistribution(object):
                    "Alphabet: ",
                    "Base: "]
         vals = [self.__class__.__name__,
-                self.alphabet,
+                self.alphabet, # pylint: disable=no-member
                 base]
 
         L = max(map(len, headers))

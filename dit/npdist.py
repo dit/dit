@@ -421,7 +421,7 @@ class Distribution(ScalarDistribution):
         # And BaseDistribution is the parent of ScalarDistribution.
         # We do this because we want to init the prng AND ignore everything
         # that ScalarDistribution does.
-        super(ScalarDistribution, self).__init__(prng)
+        super(ScalarDistribution, self).__init__(prng) # pylint: disable=bad-super-call
 
         # Set *instance* attributes
         self._meta['is_joint'] = True

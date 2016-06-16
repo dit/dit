@@ -66,10 +66,10 @@ def entropy(dist, rvs=None, rv_mode=None):
     if dist.is_joint():
         if rvs is None:
             # Set to entropy of entire distribution
-            rvs = range(dist.outcome_length())
+            rvs = range(dist.outcome_length()) # pylint: disable=no-member
             rv_mode = RV_MODES.INDICES
 
-        d = dist.marginal(rvs, rv_mode=rv_mode)
+        d = dist.marginal(rvs, rv_mode=rv_mode) # pylint: disable=no-member
     else:
         d = dist
 

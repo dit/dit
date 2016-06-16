@@ -109,7 +109,7 @@ class BaseInformationPartition(object):
 
         # Entropies
         for node in lattice:
-            Hs[node] = self._measure(self.dist, node)
+            Hs[node] = self._measure(self.dist, node) # pylint: disable=no-member
 
         # Subset-sum type thing, basically co-information calculations.
         for node in lattice:
@@ -160,10 +160,10 @@ class BaseInformationPartition(object):
         """
         Use PrettyTable to create a nice table.
         """
-        table = PrettyTable(['measure', self.unit])
+        table = PrettyTable(['measure', self.unit]) # pylint: disable=no-member
         ### TODO: add some logic for the format string, so things look nice
-        # with arbitrary values
-        table.float_format[self.unit] = ' 5.{0}'.format(digits)
+        #         with arbitrary values
+        table.float_format[self.unit] = ' 5.{0}'.format(digits) # pylint: disable=no-member
         key_function = lambda row: (len(row[0][0]), row[0][0], row[0][1])
         items = self.atoms.items()
         for (rvs, crvs), value in sorted(items, key=key_function):
