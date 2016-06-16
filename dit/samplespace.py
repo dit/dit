@@ -35,13 +35,6 @@ the whole sample space during marginalization. So this particular use case will
 experience the penalty discussed above.
 
 """
-from .helpers import (
-    parse_rvs, get_outcome_ctor, construct_alphabets, get_product_func,
-    RV_MODES,
-)
-from .utils import OrderedDict
-from .exceptions import InvalidOutcome
-
 try:
     from collections.abc import Set
 except ImportError:
@@ -50,7 +43,18 @@ except ImportError:
 
 import itertools
 
+from operator import mul
+
+from six.moves import reduce # pylint: disable=redefined-builtin
+
 import numpy as np
+
+from .helpers import (
+    parse_rvs, get_outcome_ctor, construct_alphabets, get_product_func,
+    RV_MODES,
+)
+from .utils import OrderedDict
+from .exceptions import InvalidOutcome
 
 class BaseSampleSpace(Set):
     """
@@ -308,8 +312,6 @@ class CartesianProduct(SampleSpace):
         self._length = np.prod(self.alphabet_sizes, dtype=int)
         if self._length < 0:
             # numerical overflow in np.prod, use pure python:
-            from operator import mul
-            from six.moves import reduce
             self._length = reduce(mul, self.alphabet_sizes)
         self._outcome_length = len(self.alphabet_sizes)
         self._outcome_class = outcome_class
