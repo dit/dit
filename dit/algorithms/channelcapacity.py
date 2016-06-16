@@ -9,7 +9,6 @@ import dit
 from ..exceptions import ditException
 from ..cdisthelpers import (
     cdist_array,
-    mask_is_complementary,
 )
 
 __all__ = [

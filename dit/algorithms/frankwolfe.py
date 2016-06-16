@@ -68,7 +68,6 @@ def frank_wolfe(objective, gradient, A, b, initial_x,
 
     # Function level import to keep cvxopt dependency optional.
     # All variables should be cvxopt variables, not NumPy arrays
-    from cvxopt import matrix
     from cvxopt.modeling import variable
 
     # Set up a custom logger.

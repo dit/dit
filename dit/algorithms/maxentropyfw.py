@@ -8,13 +8,11 @@ This uses the Frank-Wolfe algorithm:
 """
 from __future__ import print_function
 
-import itertools
 import logging
 
 import numpy as np
 
 import dit
-from dit.abstractdist import get_abstract_dist
 from dit.utils import basic_logger
 
 from .optutil import (
