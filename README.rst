@@ -1,6 +1,6 @@
 ``dit`` is a Python package for information theory.
 
-|build| |build_windows| |coverage| |docs| |health| |deps| |gitter|
+|build| |build_windows| |codecov| |health| |docs| |deps| |gitter|
 
 Documentation:
    http://docs.dit.io
@@ -181,6 +181,9 @@ Enjoy!
    :target: https://ci.appveyor.com/project/dit/dit
    :alt: Continuous Integration Status (windows)
 
+.. |codecov| image:: https://codecov.io/gh/dit/dit/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/dit/dit
+  :alt: Test Coverage Status
 
 .. |coverage| image:: https://coveralls.io/repos/dit/dit/badge.svg?branch=master
    :target: https://coveralls.io/r/dit/dit?branch=master
