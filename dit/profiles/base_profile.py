@@ -110,7 +110,7 @@ class BaseProfile(object):
         if ax is None:
             ax = plt.figure().gca()
 
-         # pylint: disable=no-member
+        # pylint: disable=no-member
         left, height = zip(*self.profile.items())
         ax.bar(left, height, width=self.widths)
 
