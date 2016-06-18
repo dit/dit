@@ -47,7 +47,7 @@ class WynerCommonInformation(MinimizingMarkovVarOptimizer):
         return self.mutual_information(x)
 
 
-def wyner_common_information(dist, rvs=None, crvs=None, rv_mode=None, nhops=5):
+def wyner_common_information(dist, rvs=None, crvs=None, rv_mode=None, nhops=5, polish=1e-6):
     """
     Compute the Wyner common information: the smallest I[X:V] such that V
     renders all X_i independent.
@@ -74,6 +74,11 @@ def wyner_common_information(dist, rvs=None, crvs=None, rv_mode=None, nhops=5):
         defaults to 'indices'.
     nhops : int > 0
         Number of basin hoppings to perform during the optimization.
+    polish : False, float
+        Whether to polish the result or not. If a float, this will perform a
+        second optimization seeded with the result of the first, but with
+        smaller tolerances and probabilities below polish set to 0. If
+        False, don't polish.
 
     Returns
     -------
@@ -81,5 +86,5 @@ def wyner_common_information(dist, rvs=None, crvs=None, rv_mode=None, nhops=5):
         The Wyner common information.
     """
     wci = WynerCommonInformation(dist, rvs, crvs, rv_mode)
-    wci.optimize(nhops=nhops)
+    wci.optimize(nhops=nhops, polish=polish)
     return wci.objective(wci._res.x)

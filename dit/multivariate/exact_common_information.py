@@ -54,7 +54,7 @@ class ExactCommonInformation(MarkovVarOptimizer):
         return self.entropy(x)
 
 
-def exact_common_information(dist, rvs=None, crvs=None, rv_mode=None, nhops=5):
+def exact_common_information(dist, rvs=None, crvs=None, rv_mode=None, nhops=5, polish=1e-6):
     """
     Computes the exact common information, min H[V] where V renders all `rvs`
     independent.
@@ -81,6 +81,11 @@ def exact_common_information(dist, rvs=None, crvs=None, rv_mode=None, nhops=5):
         defaults to 'indices'.
     nhops : int > 0
         Number of basin hoppings to perform during the optimization.
+    polish : False, float
+        Whether to polish the result or not. If a float, this will perform a
+        second optimization seeded with the result of the first, but with
+        smaller tolerances and probabilities below polish set to 0. If
+        False, don't polish.
 
     Returns
     -------
@@ -88,5 +93,5 @@ def exact_common_information(dist, rvs=None, crvs=None, rv_mode=None, nhops=5):
         The exact common information.
     """
     eci = ExactCommonInformation(dist, rvs, crvs, rv_mode)
-    eci.optimize(nhops=nhops)
+    eci.optimize(nhops=nhops, polish=polish)
     return eci.objective(eci._res.x)
