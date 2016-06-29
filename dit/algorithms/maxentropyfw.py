@@ -8,6 +8,8 @@ This uses the Frank-Wolfe algorithm:
 """
 from __future__ import print_function
 
+from itertools import combinations
+
 import logging
 
 import numpy as np
@@ -114,7 +116,7 @@ def initial_point(dist, k, A=None, b=None, isolated=None, **kwargs):
         msg = msg.format(m, n_variables)
         raise ValueError(msg)
 
-    rvs = list(itertools.combinations(range(n_variables), m))
+    rvs = list(combinations(range(n_variables), m))
     kwargs['rv_mode'] = 'indices'
 
     return initial_point_generic(dist, rvs, A, b, isolated, **kwargs)
