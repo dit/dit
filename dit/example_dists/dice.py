@@ -56,3 +56,22 @@ def summed_dice(a=1, b=1):
     b = int(b)
     d = dit.insert_rvf(d, lambda x: (x[0] + b * x[1],))
     return d
+
+def Wolfs_dice():
+    """
+    An emperical distribution resulting from rolling two dice---one white and
+    one red---20,000 times. For an analysis by Jaynes, see
+    http://bayes.wustl.edu/etj/articles/entropy.concentration.pdf
+    """
+    outcomes = list(itertools.product(range(1, 7), repeat=2))
+    pmf = [547, 587, 500, 462, 621, 690,
+           609, 655, 497, 535, 651, 684,
+           514, 540, 468, 438, 587, 629,
+           462, 507, 414, 413, 509, 611,
+           551, 562, 499, 506, 658, 672,
+           563, 598, 519, 487, 609, 646,
+          ]
+    pmf = [ p/20000 for p in pmf]
+    d = dit.Distribution(outcomes, pmf)
+    d.set_rv_names(('R', 'W'))
+    return d
