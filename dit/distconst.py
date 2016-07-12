@@ -578,15 +578,18 @@ def insert_rvf(d, func, index=-1):
     else:
         funcs = func
 
-    #print d.outcomes
     partial_outcomes = [map(func, d.outcomes) for func in funcs]
-    #partial_outcomes = list(map(list,partial_outcomes))
-    #print partial_outcomes
+
     # Now "flatten" the new contributions.
     partial_outcomes = [d._outcome_ctor([o for o_list in outcome for o in o_list])
                         for outcome in zip(*partial_outcomes)]
-    #print partial_outcomes
-    outcomes = [old + new for old, new in zip(d.outcomes, partial_outcomes)]
+
+    new_outcomes = zip(d.outcomes, partial_outcomes)
+    if index == -1:
+        outcomes = [old + new for old, new in new_outcomes]
+    else:
+        outcomes = [old[:index] + new + old[index:] for old, new in new_outcomes]
+
     d2 = Distribution(outcomes, d.pmf.copy(), base=d.get_base())
     return d2
 
