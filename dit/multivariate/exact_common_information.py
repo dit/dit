@@ -94,4 +94,4 @@ def exact_common_information(dist, rvs=None, crvs=None, rv_mode=None, nhops=5, p
     """
     eci = ExactCommonInformation(dist, rvs, crvs, rv_mode)
     eci.optimize(nhops=nhops, polish=polish)
-    return eci.objective(eci._res.x)
+    return eci.objective(eci._optima)

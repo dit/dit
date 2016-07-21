@@ -41,5 +41,5 @@ def test_eci2():
     for p in [i/10 for i in range(1, 10)]:
         eci = ExactCommonInformation(sbec(p))
         eci.optimize(x0=x0, nhops=10)
-        x0 = eci._res.x
-        yield assert_almost_equal, eci.objective(eci._res.x), G_sbec(p), 4
+        x0 = eci._optima
+        yield assert_almost_equal, eci.objective(eci._optima), G_sbec(p), 4

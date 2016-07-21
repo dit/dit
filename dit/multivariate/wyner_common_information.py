@@ -87,4 +87,4 @@ def wyner_common_information(dist, rvs=None, crvs=None, rv_mode=None, nhops=5, p
     """
     wci = WynerCommonInformation(dist, rvs, crvs, rv_mode)
     wci.optimize(nhops=nhops, polish=polish)
-    return wci.objective(wci._res.x)
+    return wci.objective(wci._optima)

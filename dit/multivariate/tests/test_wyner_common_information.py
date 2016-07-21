@@ -48,7 +48,7 @@ def test_wci2():
     d_opts = [d_opt1, d_opt2, d_opt3, d_opt4]
     equal = lambda d1, d2: d1.is_approx_equal(d2, rtol=1e-4, atol=1e-4)
     assert_true(any(equal(d, d_opt) for d_opt in d_opts))
-    assert_almost_equal(wci.objective(wci._res.x), 2/3, places=5)
+    assert_almost_equal(wci.objective(wci._optima), 2/3, places=5)
 
 @attr('scipy')
 @attr('slow')
@@ -74,5 +74,5 @@ def test_wci4():
     for p in [i/10 for i in range(1, 10)]:
         wci = WynerCommonInformation(sbec(p))
         wci.optimize(x0=x0, nhops=10)
-        x0 = wci._res.x
-        yield assert_almost_equal, wci.objective(wci._res.x), C_sbec(p), 4
+        x0 = wci._optima
+        yield assert_almost_equal, wci.objective(wci._optima), C_sbec(p), 4

@@ -6,12 +6,65 @@ from __future__ import division
 
 from abc import ABCMeta, abstractmethod
 
+from string import digits, ascii_letters
+
 import numpy as np
 
 from .. import Distribution
 from ..helpers import flatten, normalize_rvs
 from ..math import close
 
+
+class BasinHoppingInnerCallBack(object):
+    """
+    """
+
+    def __init__(self):
+        """
+        """
+        self.positions = []
+        self.jumps = []
+
+    def __call__(self, x):
+        """
+        """
+        self.positions.append(x.copy())
+
+class BasinHoppingCallBack(object):
+    """
+    scipy's basinhopping return status often will return an optimization vector which does not
+    satisfy the constraints if it has a lower objective value and ran in to some sort of error
+    status rather than detecting that it is in a local minima. This object tracks the minima found
+    for each basin hop, potentially keeping track of a global optima which would be discarded.
+    """
+
+    def __init__(self, optimizer, icb):
+        """
+        Parameters
+        ----------
+        optimizer : MarkovVarOptimizer
+            The optimizer to track the optimization of.
+        """
+        self.optimizer = optimizer
+        self.icb = icb
+        self.candidates = []
+
+    def __call__(self, x, f, accept):
+        """
+        Parameters
+        ----------
+        x : ndarray
+        f : float
+        accept : bool
+        """
+        x = x.copy()
+
+        constraints = [ c['fun'](x) for c in self.optimizer.constraints ]
+        if max(constraints) < 1e-7:
+            self.candidates.append((f, x))
+
+        if self.icb:
+            self.icb.jumps.append(len(self.icb.positions))
 
 class MarkovVarOptimizer(object):
     """
@@ -322,7 +375,7 @@ class MarkovVarOptimizer(object):
 
         return mut_info
 
-    def optimize(self, x0=None, nhops=5, jacobian=False, polish=1e-6):
+    def optimize(self, x0=None, nhops=5, jacobian=False, polish=1e-6, callback=False):
         """
         Perform the optimization.
 
@@ -359,11 +412,18 @@ class MarkovVarOptimizer(object):
             tmin = bool(np.all(x >= 0))
             return tmin and tmax
 
+        if callback:
+            icb = BasinHoppingInnerCallBack()
+        else:
+            icb = None
+
+        self._callback = BasinHoppingCallBack(self, icb)
+
         minimizer_kwargs = {'method': 'SLSQP',
                             'bounds': [(0, 1)]*x.size,
                             'constraints': self.constraints,
                             'tol': None,
-                            'callback': None,
+                            'callback': icb,
                             'options': {'maxiter': 1000,
                                         'ftol': 5e-07,
                                         'eps': 1.4901161193847656e-09,
@@ -383,14 +443,18 @@ class MarkovVarOptimizer(object):
                            x0=x,
                            minimizer_kwargs=minimizer_kwargs,
                            niter=nhops,
+                           callback=self._callback,
                            accept_test=accept_test,
                           )
 
-        self._res = res
-
         success, msg = self._success(res)
-        if not success: # pragma: no cover
-            raise Exception(msg)
+        if success:
+            self._optima = res.x
+        else: # pragma: no cover
+            if self._callback.candidates:
+                self._optima = min(self._callback.candidates)[1]
+            # else:
+            #     raise Exception(msg)
 
         if polish:
             self._polish(cutoff=polish, jacobian=jacobian)
@@ -411,7 +475,7 @@ class MarkovVarOptimizer(object):
         """
         from scipy.optimize import minimize
 
-        x0 = self._res.x
+        x0 = self._optima
         count = (x0 < cutoff).sum()
         x0[x0 < cutoff] = 0
 
@@ -439,7 +503,7 @@ class MarkovVarOptimizer(object):
                        **kwargs
                       )
 
-        self._res = res
+        self._optima = res.x
 
         if count < (res.x < cutoff).sum():
             self._polish(cutoff=cutoff, jacobian=jacobian)
@@ -456,7 +520,7 @@ class MarkovVarOptimizer(object):
         cutoff : float
             Consider probabilities less than this as zero, and renormalize.
         """
-        joint = self.construct_joint(self._res.x)
+        joint = self.construct_joint(self._optima)
 
         # move w to specified index
         if idx == -1:
@@ -508,7 +572,7 @@ class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):
         """
         from scipy.optimize import basinhopping
 
-        true_objective = self._res.fun
+        true_objective = self.objective(self._optima)
 
         def constraint_match_objective(x):
             obj = abs(self.objective(x) - true_objective)**1.5
@@ -525,7 +589,7 @@ class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):
             return tmin and tmax
 
         minimizer_kwargs = {'method': 'SLSQP',
-                            'bounds': [(0, 1)]*self._res.x.size,
+                            'bounds': [(0, 1)]*self._optima.size,
                             'constraints': self.constraints + [constraint],
                             'tol': None,
                             'callback': None,
@@ -543,17 +607,23 @@ class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):
             for const in minimizer_kwargs['constraints']:
                 const['jac'] = ndt.Jacobian(const['fun'])
 
+        callback = BasinHoppingCallBack(self, None)
+
         res = basinhopping(func=self.entropy,
-                           x0=self._res.x,
+                           x0=self._optima,
                            minimizer_kwargs=minimizer_kwargs,
                            niter=njumps,
+                           callback=callback,
                            accept_test=accept_test,
                           )
 
         if self._success(res)[0]:
-            self._res = res
+            self._optima = res.x
+        else:
+            if callback.candidates:
+                self._optima = min(callback.candidates)[1]
 
-    def optimize(self, x0=None, nhops=5, jacobian=False, polish=1e-6, minimize=False, njumps=15):
+    def optimize(self, x0=None, nhops=5, jacobian=False, polish=1e-6, callback=False, minimize=False, njumps=15):
         """
         Parameters
         ----------
@@ -578,7 +648,7 @@ class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):
             The number of basin hops to make during the optimization.
         """
         # call the normal optimizer
-        super(MinimizingMarkovVarOptimizer, self).optimize(x0=x0, nhops=nhops, jacobian=jacobian, polish=False)
+        super(MinimizingMarkovVarOptimizer, self).optimize(x0=x0, nhops=nhops, jacobian=jacobian, polish=False, callback=callback)
         if minimize:
             # minimize the entropy of W
             self.minimize_aux_var(jacobian=jacobian, njumps=njumps)
