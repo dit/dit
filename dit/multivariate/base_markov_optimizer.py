@@ -38,7 +38,7 @@ class BasinHoppingCallBack(object):
     for each basin hop, potentially keeping track of a global optima which would be discarded.
     """
 
-    def __init__(self, optimizer, icb):
+    def __init__(self, optimizer, icb=None):
         """
         Parameters
         ----------
@@ -607,7 +607,7 @@ class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):
             for const in minimizer_kwargs['constraints']:
                 const['jac'] = ndt.Jacobian(const['fun'])
 
-        callback = BasinHoppingCallBack(self, None)
+        callback = BasinHoppingCallBack(self)
 
         res = basinhopping(func=self.entropy,
                            x0=self._optima,
