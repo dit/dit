@@ -45,7 +45,7 @@ class BasinHoppingCallBack(object):
         optimizer : MarkovVarOptimizer
             The optimizer to track the optimization of.
         """
-        self.constraints = constraints
+        self.constraints = [ c['fun'] for c in constraints ]
         self.icb = icb
         self.candidates = []
 
@@ -59,7 +59,7 @@ class BasinHoppingCallBack(object):
         """
         x = x.copy()
 
-        constraints = [ c['fun'](x) for c in self.constraints ]
+        constraints = [ float(c(x)) for c in self.constraints ]
         if max(constraints) < 1e-7:
             self.candidates.append((f, x))
 
