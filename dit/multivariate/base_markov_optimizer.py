@@ -38,14 +38,14 @@ class BasinHoppingCallBack(object):
     for each basin hop, potentially keeping track of a global optima which would be discarded.
     """
 
-    def __init__(self, optimizer, icb=None):
+    def __init__(self, constraints, icb=None):
         """
         Parameters
         ----------
         optimizer : MarkovVarOptimizer
             The optimizer to track the optimization of.
         """
-        self.optimizer = optimizer
+        self.constraints = constraints
         self.icb = icb
         self.candidates = []
 
@@ -59,7 +59,7 @@ class BasinHoppingCallBack(object):
         """
         x = x.copy()
 
-        constraints = [ c['fun'](x) for c in self.optimizer.constraints ]
+        constraints = [ c['fun'](x) for c in self.constraints ]
         if max(constraints) < 1e-7:
             self.candidates.append((f, x))
 
@@ -417,8 +417,6 @@ class MarkovVarOptimizer(object):
         else:
             icb = None
 
-        self._callback = BasinHoppingCallBack(self, icb)
-
         minimizer_kwargs = {'method': 'SLSQP',
                             'bounds': [(0, 1)]*x.size,
                             'constraints': self.constraints,
@@ -438,6 +436,8 @@ class MarkovVarOptimizer(object):
             minimizer_kwargs['jac'] = ndt.Jacobian(self.objective)
             for const in minimizer_kwargs['constraints']:
                 const['jac'] = ndt.Jacobian(const['fun'])
+
+        self._callback = BasinHoppingCallBack(minimizer_kwargs['constraints'], icb)
 
         res = basinhopping(func=self.objective,
                            x0=x,
@@ -607,7 +607,7 @@ class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):
             for const in minimizer_kwargs['constraints']:
                 const['jac'] = ndt.Jacobian(const['fun'])
 
-        callback = BasinHoppingCallBack(self)
+        callback = BasinHoppingCallBack(minimizer_kwargs['constraints'])
 
         res = basinhopping(func=self.entropy,
                            x0=self._optima,
