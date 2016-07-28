@@ -21,9 +21,10 @@ def channel_capacity(cdists, marginal=None, rtol=None, atol=None):
 
     Parameters
     ----------
-    cdists : list
+    cdists : list, ndarray
         A list of conditional distributions. For each ``x=outcomes[i]``, the
-        corresponding element ``cdists[i]`` should represent P(Y | X=x).
+        corresponding element ``cdists[i]`` should represent P(Y | X=x); or
+        the conditional distribution as an array.
     marginal : distribution | None
         The marginal distribution P(X) that goes with P(Y|X). This is optional,
         but if provided, then it is used to construct a Distribution object
@@ -79,9 +80,13 @@ def channel_capacity(cdists, marginal=None, rtol=None, atol=None):
             cc = calc_cc(p, q, r)
             yield cc, r
 
-    # Build the array for P(Y|X)
-    # We need Y dense so that we search the appropriate space.
-    carr = cdist_array(cdists, base='linear', mode='dense')
+    try:
+        cdists.shape
+        carr = cdists
+    except AttributeError:
+        # Build the array for P(Y|X)
+        # We need Y dense so that we search the appropriate space.
+        carr = cdist_array(cdists, base='linear', mode='dense')
 
     if marginal and len(marginal) != carr.shape[0]:
         msg = 'len(mdist) != len(cdists)'
