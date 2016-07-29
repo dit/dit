@@ -13,58 +13,10 @@ import numpy as np
 from .. import Distribution
 from ..helpers import flatten, normalize_rvs
 from ..math import close
-
-
-class BasinHoppingInnerCallBack(object):
-    """
-    """
-
-    def __init__(self):
-        """
-        """
-        self.positions = []
-        self.jumps = []
-
-    def __call__(self, x):
-        """
-        """
-        self.positions.append(x.copy())
-
-class BasinHoppingCallBack(object):
-    """
-    scipy's basinhopping return status often will return an optimization vector which does not
-    satisfy the constraints if it has a lower objective value and ran in to some sort of error
-    status rather than detecting that it is in a local minima. This object tracks the minima found
-    for each basin hop, potentially keeping track of a global optima which would be discarded.
-    """
-
-    def __init__(self, constraints, icb=None):
-        """
-        Parameters
-        ----------
-        optimizer : MarkovVarOptimizer
-            The optimizer to track the optimization of.
-        """
-        self.constraints = [ c['fun'] for c in constraints ]
-        self.icb = icb
-        self.candidates = []
-
-    def __call__(self, x, f, accept):
-        """
-        Parameters
-        ----------
-        x : ndarray
-        f : float
-        accept : bool
-        """
-        x = x.copy()
-
-        constraints = [ float(c(x)) for c in self.constraints ]
-        if max(constraints) < 1e-7:
-            self.candidates.append((f, x))
-
-        if self.icb:
-            self.icb.jumps.append(len(self.icb.positions))
+from ..utils.optimization import (BasinHoppingCallBack,
+                                  BasinHoppingInnerCallBack,
+                                  accept_test,
+                                  basinhop_status)
 
 class MarkovVarOptimizer(object):
     """
@@ -195,32 +147,6 @@ class MarkovVarOptimizer(object):
         except TypeError: # pragma: no cover
             pass
         mat /= np.sum(mat, axis=axis, keepdims=True)
-
-    @staticmethod
-    def _success(res):
-        """
-        Determine whether an optimization result was successful or not, working
-        around differences in scipy < 0.17.0 and scipy >= 0.17.0.
-
-        Parameters
-        ----------
-        res : OptimizeResult
-            The result to parse
-
-        Returns
-        -------
-        success : bool
-            Whether the optimization was successful or not.
-        msg : str
-            The result's message.
-        """
-        try:
-            success = res.lowest_optimization_result.success
-            msg = res.lowest_optimization_result.message
-        except AttributeError:
-            success = 'success' in res.message[0]
-            msg = res.message[0]
-        return success, msg
 
     def construct_random_initial(self):
         """
@@ -406,12 +332,6 @@ class MarkovVarOptimizer(object):
         else:
             x = self.construct_random_initial()
 
-        def accept_test(**kwargs):
-            x = kwargs['x_new']
-            tmax = bool(np.all(x <= 1))
-            tmin = bool(np.all(x >= 0))
-            return tmin and tmax
-
         if callback:
             icb = BasinHoppingInnerCallBack()
         else:
@@ -447,7 +367,7 @@ class MarkovVarOptimizer(object):
                            accept_test=accept_test,
                           )
 
-        success, msg = self._success(res)
+        success, msg = basinhop_status(res)
         if success:
             self._optima = res.x
         else: # pragma: no cover
@@ -582,12 +502,6 @@ class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):
                       'fun': constraint_match_objective,
                      }
 
-        def accept_test(**kwargs):
-            x = kwargs['x_new']
-            tmax = bool(np.all(x <= 1))
-            tmin = bool(np.all(x >= 0))
-            return tmin and tmax
-
         minimizer_kwargs = {'method': 'SLSQP',
                             'bounds': [(0, 1)]*self._optima.size,
                             'constraints': self.constraints + [constraint],
@@ -617,7 +531,7 @@ class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):
                            accept_test=accept_test,
                           )
 
-        if self._success(res)[0]:
+        if basinhop_status(res)[0]:
             self._optima = res.x
         else:
             if callback.candidates:
