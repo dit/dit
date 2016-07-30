@@ -105,6 +105,7 @@ class BasinHoppingCallBack(object):
             The minimum basin.
         """
         possible = [(x, f) for x, f, cs in self.candidates if max(cs) < cutoff]
+        possible = [(x, f) for x, f in possible if accept_test(x_new=x)]
         return min(possible, key=itemgetter(1))[0] if possible else None
 
 
