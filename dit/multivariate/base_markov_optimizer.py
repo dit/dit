@@ -371,8 +371,9 @@ class MarkovVarOptimizer(object):
         if success:
             self._optima = res.x
         else: # pragma: no cover
-            if self._callback.candidates:
-                self._optima = min(self._callback.candidates)[1]
+            minimum = self._callback.minimum()
+            if minimum is not None:
+                self._optima = minimum
             # else:
             #     raise Exception(msg)
 
