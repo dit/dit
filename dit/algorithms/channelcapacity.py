@@ -7,9 +7,8 @@ import numpy as np
 import dit
 
 from ..exceptions import ditException
-from ..cdisthelpers import (
-    cdist_array,
-)
+from ..cdisthelpers import cdist_array
+
 
 __all__ = [
     'channel_capacity',

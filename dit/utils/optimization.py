@@ -126,7 +126,7 @@ class Uniquifier(object):
         self.mapping = {}
         self.inverse = {}
 
-    def __call__(self, item):
+    def __call__(self, item, string=False):
         """
         """
         if item not in self.mapping:
@@ -134,13 +134,10 @@ class Uniquifier(object):
             self.mapping[item] = n
             self.inverse[n] = item
 
-        return self.mapping[item]
-
-    @staticmethod
-    def letter(self, item):
-        """
-        """
-        return self._chars[item]
+        if string:
+            return self.chars[self.mapping[item]]
+        else:
+            return self.mapping[item]
 
 
 def accept_test(**kwargs):
