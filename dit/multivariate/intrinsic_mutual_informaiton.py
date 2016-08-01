@@ -5,18 +5,15 @@ from __future__ import division
 
 from abc import ABCMeta, abstractmethod
 
-from operator import itemgetter
-
 import numpy as np
 
-from dit import Distribution, ditParams, insert_rvf, modify_outcomes
-from dit.algorithms import channel_capacity
-from dit.exceptions import ditException
-from dit.helpers import flatten, normalize_rvs
-from dit.multivariate import caekl_mutual_information
-from dit.shannon import entropy_pmf as h
-from dit.utils import partitions
-from dit.utils.optimization import BasinHoppingCallBack, Uniquifier, accept_test
+from .. import Distribution, ditParams, insert_rvf, modify_outcomes
+from ..algorithms import channel_capacity
+from ..exceptions import ditException
+from ..helpers import flatten, normalize_rvs
+from ..shannon import entropy_pmf as h
+from ..utils import partitions
+from ..utils.optimization import BasinHoppingCallBack, Uniquifier, accept_test
 
 class BaseIntrinsicMutualInformation(object):
     """
@@ -105,10 +102,6 @@ class BaseIntrinsicMutualInformation(object):
         -------
         cc : float
             The channel capacity.
-
-        Todo
-        ----
-        write this to not use dit.
         """
         cc = channel_capacity(x.reshape(2*(self._crv_size,)).copy())[0]
         return cc
@@ -117,10 +110,15 @@ class BaseIntrinsicMutualInformation(object):
     def objective(self, x): # pragma: no cover
         """
         The multivariate mutual information to minimize.
+
+        Parameters
+        ----------
+        x : ndarray
+            An optimization vector.
         """
         pass
 
-    def optimize(self, x0=None, nhops=None, callback=False):
+    def optimize(self, x0=None, nhops=None):
         """
         Perform the optimization.
 
@@ -132,13 +130,6 @@ class BaseIntrinsicMutualInformation(object):
             The number of basin hops to perform while optimizing. If None,
             hop a number of times equal to the dimension of the conditioning
             variable(s).
-        callback : bool
-            If true, collect each basin in a callback.
-
-        Returns
-        -------
-        callback : BasinHoppingCallBack
-            If `callback` is True, then the callback is returned.
         """
         from scipy.optimize import basinhopping
 
@@ -154,33 +145,34 @@ class BaseIntrinsicMutualInformation(object):
                             'bounds': [(0, 1)]*x.size,
                            }
 
-        if callback:
-            cb = BasinHoppingCallBack([])
-        else:
-            cb = None
-
         res = basinhopping(func=self.objective,
                            x0=x,
                            minimizer_kwargs=minimizer_kwargs,
                            niter=nhops,
                            accept_test=accept_test,
-                           callback=cb,
                           )
 
         self._optima = res.x
 
-        return cb
-
-    def _post_process(self, nhops=10, style='entropy', minmax='min', callback=False):
+    def _post_process(self, nhops=10, style='entropy', minmax='min'):
         """
         Find a solution to the minimization with a secondary property.
 
         Paramters
         ---------
         nhops : int
+            The number of basin hops to perform.
         style : 'entropy', 'channel'
+            The measure to perform the secondary optimization on. If 'entropy',
+            the entropy of z_bar is optimized. If 'channel', the channel capacity
+            of p(z_bar|z) is optimized.
         minmax : 'min', 'max'
-        callback : bool
+            Whether to minimize or maximize the objective.
+
+        Notes
+        -----
+        This seems to not work well. Presumably the channel space, once
+        restricted to matching the correct objective, is very fragmented.
         """
         from scipy.optimize import basinhopping
 
@@ -230,9 +222,6 @@ class BaseIntrinsicMutualInformation(object):
         if minimum is not None:
             self._optima = minimum
 
-        if callback:
-            return cb
-
     def construct_distribution(self, x=None, cutoff=1e-5):
         """
         Construct the distribution.
@@ -277,13 +266,14 @@ class BaseIntrinsicMutualInformation(object):
         return d
 
 
-class IntrinisicTotalCorrelation(BaseIntrinsicMutualInformation):
+class IntrinsicTotalCorrelation(BaseIntrinsicMutualInformation):
     """
+    Compute the intrinsic total correlation.
     """
 
     def objective(self, x):
         """
-        The total correlation, also known as the binding information.
+        The total correlation.
 
         Parameters
         ----------
@@ -311,8 +301,9 @@ class IntrinisicTotalCorrelation(BaseIntrinsicMutualInformation):
         return tc
 
 
-class IntrinisicDualTotalCorrelation(BaseIntrinsicMutualInformation):
+class IntrinsicDualTotalCorrelation(BaseIntrinsicMutualInformation):
     """
+    Compute the intrinsic dual total correlation.
     """
 
     def objective(self, x):
@@ -345,12 +336,15 @@ class IntrinisicDualTotalCorrelation(BaseIntrinsicMutualInformation):
         return dtc
 
 
-class IntrinisicCAEKLMutualInformation(BaseIntrinsicMutualInformation):
+class IntrinsicCAEKLMutualInformation(BaseIntrinsicMutualInformation):
     """
+    Compute the intrinsic CAEKL mutual information.
     """
 
     def objective(self, x):
         """
+        The CAEKL mutual information.
+
         Parameters
         ----------
         x : ndarray
@@ -360,30 +354,26 @@ class IntrinisicCAEKLMutualInformation(BaseIntrinsicMutualInformation):
         -------
         caekl : float
             The CAEKL mutual information.
-
-        Todo
-        ----
-        rewrite to not use dit.
         """
-        rvs = self._rvs
+        rvs = frozenset(map(frozenset, self._rvs))
         crv = [self._crv+1]
         joint = self.construct_joint(x)
         joint = joint.sum(axis=self._others, keepdims=True)
         crv = joint.sum(axis=tuple(flatten(rvs)))
 
-        H = h(joint.ravel())
+        H_crv = h(crv.ravel())
+        H = h(joint.ravel()) - H_crv
 
         def I_P(part):
-            margs = [ joint.sum() ]
+            margs = [ joint.sum(axis=tuple(flatten(rvs - p))) for p in part ]
+            a = sum(h(marg.ravel()) - H_crv for marg in margs)
+            return (a - H)/(len(part) - 1)
 
-        parts = [p for p in partitions(map(tuple, rvs)) if len(p) > 1]
-        for p in parts:
-            print(p)
+        parts = [p for p in partitions(map(frozenset, rvs)) if len(p) > 1]
 
-        margs = [ joint.sum(axis=tuple(flatten(rvs[:i]+rvs[i+1:]))) for i, _ in enumerate(rvs) ]
+        caekl = min(I_P(p) for p in parts)
 
-
-        #return caekl
+        return caekl
 
 
 def intrinsic_mutual_information(func):
@@ -396,13 +386,40 @@ def intrinsic_mutual_information(func):
     func : function
         A function which computes the information shared by a set of variables.
         It must accept the arguments `rvs' and `crvs'.
+
+    Returns
+    -------
+    IMI : BaseIntrinsicMutualInformation
+        An intrinsic mutual information optimizer using `func` as the measure of
+        multivariate mutual information.
+
+    Notes
+    -----
+    Due to the casting to a Distribution for processing, optimizers constructed
+    using this function will be significantly slower than if the objective were
+    written directly using the joint probability ndarray.
     """
+    name = func.__name__
+
     class IntrinsicMutualInformation(BaseIntrinsicMutualInformation):
         """
-        """
+        Compute the intrinsic {name}.
+        """.format(name=name)
+
         def objective(self, x):
             """
-            """
+            Compute the {name}.
+
+            Parameters
+            ----------
+            x : ndarray
+                An optimization vector.
+
+            Returns
+            -------
+            mi : float
+                The {name}.
+            """.format(name=name)
             d = self.construct_distribution(x)
             mi = func(d, rvs=self._rvs, crvs=[self._crv])
             return mi
