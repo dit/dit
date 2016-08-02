@@ -9,7 +9,7 @@ The intrinsic mutual information was defined in :cite:`maurer1997intrinsic` as:
 
 .. math::
 
-   \I[X:Y\downarrow Z] = \min_{p(\bar{z}|z)} \I[X:Y|\bar{Z}]
+   \I\left[X:Y\downarrow Z\right] = \min_{p(\overline{z}|z)} \I\left[X:Y|\overline{Z}\right]
 
 The intrinsic mutual information was defined as an upper bound on the rate of secret key agreement.
 
@@ -20,7 +20,7 @@ Compared to the transfer entropy, it is also a plausibly superior measure of inf
 
 .. math::
 
-   T^\prime_{X \rightarrow Y} = \I[X_0^t : Y_t \downarrow Y_0^t]
+   T^\prime_{X \rightarrow Y} = \I\left[X_0^t : Y_t \downarrow Y_0^t\right]
 
 Generalizations
 ===============
@@ -30,16 +30,19 @@ The intrinsic mutual information generalizes in the obvious ways, replacing the 
 Intrinsic Total Correlation
 ---------------------------
 
+The intrinsic form of the :doc:`total_correlation`:
+
 .. math::
 
-   \T[X_{0:n} \downarrow Z] = \min_{p(\bar{z}|z)} \T[X_{0:n} | \bar{Z}]
+   \T\left[X_{0:n} \downarrow Z\right] = \min_{p(\overline{z}|z)} \T\left[X_{0:n} | \overline{Z}\right]
 
 The following example is given in :cite:`maurer1997intrinsic`:
 
 .. ipython::
+
    In [1]: from dit.multivariate import intrinsic_total_correlation, total_correlation
 
-   In [2]: d = Distribution(['000', '011', '101', '110', '222', '333'], [1/8]*4 + [1/4]*2)
+   In [2]: d = dit.Distribution(['000', '011', '101', '110', '222', '333'], [1/8]*4 + [1/4]*2)
 
    @doctest float
    In [3]: total_correlation(d, [[0], [1]], [2])
@@ -54,16 +57,20 @@ We see that although the `xor` part of the distribution contributes 0.5 bits of 
 Intrinsic Dual Total Correlation
 --------------------------------
 
+The intrinsic form of the :doc:`dual_total_correlation`:
+
 .. math::
 
-   \B[X_{0:n} \downarrow Z] = \min_{p(\bar{z}|z)} \B[X_{0:n} | \bar{Z}]
+   \B\left[X_{0:n} \downarrow Z\right] = \min_{p(\overline{z}|z)} \B\left[X_{0:n} | \overline{Z}\right]
 
 Intrinsic CAEKL Mutual Information
 ----------------------------------
 
+The intrinsic form of the :doc:`caekl_mutual_information`:
+
 .. math::
 
-   \J[X_{0:n} \downarrow Z] = \min_{p(\bar{z}|z)} \J[X_{0:n} | \bar{Z}]
+   \J\left[X_{0:n} \downarrow Z\right] = \min_{p(\overline{z}|z)} \J\left[X_{0:n} | \overline{Z}\right]
 
 Intrinsic Co-Information
 ------------------------
