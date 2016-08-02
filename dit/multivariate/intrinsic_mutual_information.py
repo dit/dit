@@ -119,7 +119,7 @@ class BaseIntrinsicMutualInformation(object):
 
         return joint
 
-    def channel_capacity(self, x):
+    def channel_capacity(self, x): # pragma: no cover
         """
         Compute the channel capacity of the mapping z -> z_bar.
 

@@ -3,9 +3,10 @@ Tests for dit.multivariate.intrinsic_mutual_information
 """
 from __future__ import division
 
-from nose.tools import assert_almost_equal
+from nose.tools import assert_almost_equal, raises
 
 from dit import Distribution
+from dit.exceptions import ditException
 from dit.multivariate import total_correlation
 from dit.multivariate.intrinsic_mutual_information import (intrinsic_total_correlation,
                                                            intrinsic_dual_total_correlation,
@@ -144,6 +145,13 @@ def test_constructor():
     Test the generic constructor.
     """
     test = intrinsic_mutual_information(total_correlation).functional()
-    itc = intrinsic_total_correlation(dist3, [[0], [1], [2]], [3])
-    itc2 = test(dist3, [[0], [1], [2]], [3])
+    itc = intrinsic_total_correlation(dist1, [[0], [1]], [2])
+    itc2 = test(dist1, [[0], [1]], [2])
     assert_almost_equal(itc, itc2, places=4)
+
+@raises(ditException)
+def test_imi_fail():
+    """
+    Test that things fail when not provided with a conditional variable.
+    """
+    intrinsic_total_correlation(dist1, [[0], [1], [2]])
