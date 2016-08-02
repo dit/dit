@@ -8,7 +8,7 @@ from abc import ABCMeta, abstractmethod
 
 import numpy as np
 
-from .. import Distribution, ditParams, insert_rvf, modify_outcomes
+from .. import Distribution, insert_rvf, modify_outcomes
 from ..algorithms import channel_capacity
 from ..exceptions import ditException
 from ..helpers import flatten, normalize_rvs, parse_rvs
@@ -61,7 +61,7 @@ class BaseIntrinsicMutualInformation(object):
         rvs, crvs, self._rv_mode = normalize_rvs(self._dist, rvs, crvs, rv_mode)
         self._rvs = [ parse_rvs(self._dist, rv, rv_mode)[1] for rv in rvs ]
         self._crvs = parse_rvs(self._dist, crvs, rv_mode)[1]
-        self._dist = modify_outcomes(self._dist, lambda x: tuple(x))
+        self._dist = modify_outcomes(self._dist, tuple)
         if not self._crvs:
             msg = "Intrinsic mutual informations require a conditional variable."
             raise ditException(msg)
