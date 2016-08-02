@@ -279,6 +279,7 @@ class BaseIntrinsicMutualInformation(object):
             alphabets += [self._unq.chars]
             string = True
         except:
+            alphabets += [list(range(self._crv_size))]
             string = False
 
         joint = self.construct_joint(x)

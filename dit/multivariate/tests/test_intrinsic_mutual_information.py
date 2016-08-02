@@ -5,15 +5,18 @@ from __future__ import division
 
 from nose.tools import assert_almost_equal, raises
 
+import numpy as np
+
 from dit import Distribution
 from dit.exceptions import ditException
 from dit.multivariate import total_correlation
 from dit.multivariate.intrinsic_mutual_information import (intrinsic_total_correlation,
                                                            intrinsic_dual_total_correlation,
                                                            intrinsic_caekl_mutual_information,
-                                                           intrinsic_mutual_information)
+                                                           intrinsic_mutual_information,
+                                                           IntrinsicTotalCorrelation)
 
-dist1 = Distribution(['000', '011', '101', '110', '222', '333'], [1/8]*4+[1/4]*2)
+dist1 = Distribution([(0,0,0), (0,1,1), (1,0,1), (1,1,0), (2,2,2), (3,3,3)], [1/8]*4+[1/4]*2)
 dist2 = Distribution(['000', '011', '101', '110', '222', '333'], [1/8]*4+[1/4]*2)
 dist2.set_rv_names('XYZ')
 dist3 = Distribution(['00000', '00101', '11001', '11100', '22220', '33330'], [1/8]*4+[1/4]*2)
@@ -59,6 +62,17 @@ def test_itc4():
     """
     itc = intrinsic_total_correlation(dist4, ['V', 'W', 'XY'], 'Z')
     assert_almost_equal(itc, 3.3306155324443121)
+
+def test_itc5():
+    """
+    Test with initial condition.
+    """
+    itc = IntrinsicTotalCorrelation(dist1, [[0], [1]], [2])
+    itc.optimize(x0=np.eye(4).ravel(), nhops=5)
+    d = itc.construct_distribution()
+    print(d)
+    val = total_correlation(d, [[0], [1]], [3])
+    assert_almost_equal(val, 0)
 
 def test_idtc1():
     """

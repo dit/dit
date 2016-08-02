@@ -5,7 +5,7 @@
 Total Correlation
 *****************
 
-The total correlation :cite:`watanabe1960information`, denoted :math:`\T`, also known as the multi-information or integration, is one generalization of the mutual information. It is defined as the amount of information each individual variable carries above and beyond the joint entropy, e.g. the difference between the whole and the sum of its parts:
+The total correlation :cite:`watanabe1960information`, denoted :math:`\T`, also known as the multi-information or integration, is one generalization of the :ref:`mutual_information`. It is defined as the amount of information each individual variable carries above and beyond the joint entropy, e.g. the difference between the whole and the sum of its parts:
 
 .. math::
 

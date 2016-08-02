@@ -5,7 +5,7 @@
 Dual Total Correaltion
 **********************
 
-The dual total correlation :cite:`Han1975linear`, or binding information :cite:`Abdallah2012`, is yet another generalization of the mutual information. It is the amount of information that is shared among the variables. It is defined as:
+The dual total correlation :cite:`Han1975linear`, or binding information :cite:`Abdallah2012`, is yet another generalization of the :ref:`mutual_information`. It is the amount of information that is shared among the variables. It is defined as:
 
 .. math::
 

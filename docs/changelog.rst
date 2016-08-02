@@ -4,6 +4,7 @@ Changelog
 
 * :release:`1.0.0 <future>`
 
+* :feature:`15` Add the intrinsic mutual information.
 * :feature:`11` Add the exact common information.
 * :feature:`9` Add the Wyner common information.
 * :feature:`111` Add the functional common information.

@@ -5,7 +5,7 @@
 Interaction Information
 ***********************
 
-The interaction information is equal in magnitude to the co-information, but has the opposite sign when taken over an odd number of variables:
+The interaction information is equal in magnitude to the :doc:`coinformation`, but has the opposite sign when taken over an odd number of variables:
 
 .. math::
 
