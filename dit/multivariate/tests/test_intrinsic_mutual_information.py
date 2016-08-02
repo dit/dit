@@ -159,8 +159,8 @@ def test_constructor():
     Test the generic constructor.
     """
     test = intrinsic_mutual_information(total_correlation).functional()
-    itc = intrinsic_total_correlation(dist1, [[0], [1]], [2])
-    itc2 = test(dist1, [[0], [1]], [2])
+    itc = intrinsic_total_correlation(dist1, [[0], [1]], [2], nhops=16)
+    itc2 = test(dist1, [[0], [1]], [2], nhops=16)
     assert_almost_equal(itc, itc2, places=4)
 
 @raises(ditException)
