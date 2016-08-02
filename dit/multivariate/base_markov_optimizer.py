@@ -25,6 +25,9 @@ class MarkovVarOptimizer(object):
     """
     __metaclass__ = ABCMeta
 
+    name = ""
+    description = ""
+
     def __init__(self, dist, rvs=None, crvs=None, rv_mode=None):
         """
         Initialize the optimizer.
@@ -35,9 +38,9 @@ class MarkovVarOptimizer(object):
             The distribution to compute the auxiliary Markov variable, W, for.
         rvs : list, None
             A list of lists. Each inner list specifies the indexes of the random
-            variables used to calculate the total correlation. If None, then the
-            total correlation is calculated over all random variables, which is
-            equivalent to passing `rvs=dist.rvs`.
+            variables to render conditionally independent. If None, then all
+            random variables are used, which is equivalent to passing
+            `rvs=dist.rvs`.
         crvs : list, None
             A single list of indexes specifying the random variables to
             condition on. If None, then no variables are conditioned on.
@@ -468,6 +471,57 @@ class MarkovVarOptimizer(object):
 
         d = Distribution(outcomes, pmf)
         return d
+
+    @classmethod
+    def functional(cls):
+        """
+        Construct a functional form of the optimizer.
+        """
+
+        def common_info(dist, rvs=None, crvs=None, rv_mode=None, nhops=5, polish=1e-6):
+            ci = cls(dist, rvs, crvs, rv_mode)
+            ci.optimize(nhops=nhops, polish=polish)
+            return ci.objective(ci._optima)
+
+        common_info.__doc__ = \
+        """
+        Computes the {name} common information, {description}.
+
+        Parameters
+        ----------
+        dist : Distribution
+            The distribution for which the {name} common information will be
+            computed.
+        rvs : list, None
+            A list of lists. Each inner list specifies the indexes of the random
+            variables used to calculate the {name} common information. If None,
+            then it calculated over all random variables, which is equivalent to
+            passing `rvs=dist.rvs`.
+        crvs : list, None
+            A single list of indexes specifying the random variables to condition
+            on. If None, then no variables are conditioned on.
+        rv_mode : str, None
+            Specifies how to interpret `rvs` and `crvs`. Valid options are:
+            {{'indices', 'names'}}. If equal to 'indices', then the elements of
+            `crvs` and `rvs` are interpreted as random variable indices. If equal
+            to 'names', the the elements are interpreted as random variable names.
+            If `None`, then the value of `dist._rv_mode` is consulted, which
+            defaults to 'indices'.
+        nhops : int > 0
+            Number of basin hoppings to perform during the optimization.
+        polish : False, float
+            Whether to polish the result or not. If a float, this will perform a
+            second optimization seeded with the result of the first, but with
+            smaller tolerances and probabilities below polish set to 0. If
+            False, don't polish.
+
+        Returns
+        -------
+        ci : float
+            The {name} common information.
+        """.format(name=cls.name, description=cls.description)
+
+        return common_info
 
 
 class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):

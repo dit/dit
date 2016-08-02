@@ -15,6 +15,8 @@ class ExactCommonInformation(MarkovVarOptimizer):
     Compute the Exact common information, min H[V], taken over all V which
     render the X_i conditionally independent.
     """
+    name = 'exact'
+    description = 'min H[V] where V renders all `rvs` independent'
 
     def compute_bound(self):
         """
@@ -54,44 +56,4 @@ class ExactCommonInformation(MarkovVarOptimizer):
         return self.entropy(x)
 
 
-def exact_common_information(dist, rvs=None, crvs=None, rv_mode=None, nhops=5, polish=1e-6):
-    """
-    Computes the exact common information, min H[V] where V renders all `rvs`
-    independent.
-
-    Parameters
-    ----------
-    dist : Distribution
-        The distribution for which the exact common information will be
-        computed.
-    rvs : list, None
-        A list of lists. Each inner list specifies the indexes of the random
-        variables used to calculate the total correlation. If None, then the
-        total correlation is calculated over all random variables, which is
-        equivalent to passing `rvs=dist.rvs`.
-    crvs : list, None
-        A single list of indexes specifying the random variables to condition
-        on. If None, then no variables are conditioned on.
-    rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If equal
-        to 'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted, which
-        defaults to 'indices'.
-    nhops : int > 0
-        Number of basin hoppings to perform during the optimization.
-    polish : False, float
-        Whether to polish the result or not. If a float, this will perform a
-        second optimization seeded with the result of the first, but with
-        smaller tolerances and probabilities below polish set to 0. If
-        False, don't polish.
-
-    Returns
-    -------
-    G : float
-        The exact common information.
-    """
-    eci = ExactCommonInformation(dist, rvs, crvs, rv_mode)
-    eci.optimize(nhops=nhops, polish=polish)
-    return eci.objective(eci._optima)
+exact_common_information = ExactCommonInformation.functional()

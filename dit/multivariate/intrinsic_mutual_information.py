@@ -1,4 +1,5 @@
 """
+Intrinsic Mutual Informations
 """
 
 from __future__ import division
@@ -10,30 +11,57 @@ import numpy as np
 from .. import Distribution, ditParams, insert_rvf, modify_outcomes
 from ..algorithms import channel_capacity
 from ..exceptions import ditException
-from ..helpers import flatten, normalize_rvs
+from ..helpers import flatten, normalize_rvs, parse_rvs
 from ..shannon import entropy_pmf as h
 from ..utils import partitions
 from ..utils.optimization import BasinHoppingCallBack, Uniquifier, accept_test
 
+__all__ = [
+    'intrinsic_total_correlation',
+    'intrinsic_dual_total_correlation',
+    'intrinsic_caekl_mutual_information',
+]
+
 class BaseIntrinsicMutualInformation(object):
     """
+    Compute a generalized intrinsic mutual information:
 
+        IMI[X:Y|Z] = min_{p(z_bar|z)} I[X:Y|Z]
     """
     __metaclass__ = ABCMeta
 
+    name = ""
+
     def __init__(self, dist, rvs=None, crvs=None, rv_mode=None):
         """
+        Initialize the optimizer.
+
         Parameters
         ----------
         dist : Distribution
-        rvs : list of lists
+            The distribution to compute the intrinsic mutual information of.
+        rvs : list, None
+            A list of lists. Each inner list specifies the indexes of the random
+            variables used to calculate the intrinsic mutual information. If None,
+            then it is calculated over all random variables, which is equivalent
+            to passing `rvs=dist.rvs`.
         crvs : list
-        rv_mode : str or None
+            A single list of indexes specifying the random variables to
+            condition on.
+        rv_mode : str, None
+            Specifies how to interpret `rvs` and `crvs`. Valid options are:
+            {'indices', 'names'}. If equal to 'indices', then the elements of
+            `crvs` and `rvs` are interpreted as random variable indices. If
+            equal to 'names', the the elements are interpreted as random
+            variable names. If `None`, then the value of `dist._rv_mode` is
+            consulted, which defaults to 'indices'.
         """
         self._dist = dist.copy()
         self._alphabet = self._dist.alphabet
+        rvs, crvs, self._rv_mode = normalize_rvs(self._dist, rvs, crvs, rv_mode)
+        self._rvs = [ parse_rvs(self._dist, rv, rv_mode)[1] for rv in rvs ]
+        self._crvs = parse_rvs(self._dist, crvs, rv_mode)[1]
         self._dist = modify_outcomes(self._dist, lambda x: tuple(x))
-        self._rvs, self._crvs, self._rv_mode = normalize_rvs(self._dist, rvs, crvs, rv_mode)
         if not self._crvs:
             msg = "Intrinsic mutual informations require a conditional variable."
             raise ditException(msg)
@@ -47,6 +75,8 @@ class BaseIntrinsicMutualInformation(object):
 
         self._crv = self._dist.outcome_length() - 1
         self._crv_size = sizes[-1]
+
+        self._default_hops = self._crv_size * len(self._crvs)
 
         all_vars = set(range(len(sizes)))
         keepers = set(flatten(self._rvs)) | {self._crv+1}
@@ -139,7 +169,7 @@ class BaseIntrinsicMutualInformation(object):
             x = self.construct_random_initial()
 
         if nhops is None:
-            nhops = self._crv_size
+            nhops = self._default_hops
 
         minimizer_kwargs = {'method': 'L-BFGS-B',
                             'bounds': [(0, 1)]*x.size,
@@ -154,7 +184,7 @@ class BaseIntrinsicMutualInformation(object):
 
         self._optima = res.x
 
-    def _post_process(self, nhops=10, style='entropy', minmax='min'):
+    def _post_process(self, nhops=10, style='entropy', minmax='min'): # pragma: no cover
         """
         Find a solution to the minimization with a secondary property.
 
@@ -265,11 +295,49 @@ class BaseIntrinsicMutualInformation(object):
         d = Distribution(outcomes, pmf)
         return d
 
+    @classmethod
+    def functional(cls):
+        """
+        Construct a functional form of the optimizer.
+        """
+        def intrinsic(dist, rvs=None, crvs=None, rv_mode=None, nhops=None):
+            opt = cls(dist, rvs, crvs, rv_mode)
+            opt.optimize(nhops=nhops)
+            return opt.objective(opt._optima)
+
+        intrinsic.__doc__ = \
+        """
+        Compute the intrinsic {name}.
+
+        Parameters
+        ----------
+        dist : Distribution
+            The distribution to compute the intrinsic {name} of.
+        rvs : list, None
+            A list of lists. Each inner list specifies the indexes of the random
+            variables used to calculate the intrinsic {name}. If None,
+            then it is calculated over all random variables, which is equivalent
+            to passing `rvs=dist.rvs`.
+        crvs : list
+            A single list of indexes specifying the random variables to
+            condition on.
+        rv_mode : str, None
+            Specifies how to interpret `rvs` and `crvs`. Valid options are:
+            {{'indices', 'names'}}. If equal to 'indices', then the elements of
+            `crvs` and `rvs` are interpreted as random variable indices. If
+            equal to 'names', the the elements are interpreted as random
+            variable names. If `None`, then the value of `dist._rv_mode` is
+            consulted, which defaults to 'indices'.
+        """.format(name=cls.name)
+
+        return intrinsic
+
 
 class IntrinsicTotalCorrelation(BaseIntrinsicMutualInformation):
     """
     Compute the intrinsic total correlation.
     """
+    name = 'total correlation'
 
     def objective(self, x):
         """
@@ -301,10 +369,14 @@ class IntrinsicTotalCorrelation(BaseIntrinsicMutualInformation):
         return tc
 
 
+intrinsic_total_correlation = IntrinsicTotalCorrelation.functional()
+
+
 class IntrinsicDualTotalCorrelation(BaseIntrinsicMutualInformation):
     """
     Compute the intrinsic dual total correlation.
     """
+    name = 'dual total correlation'
 
     def objective(self, x):
         """
@@ -336,10 +408,14 @@ class IntrinsicDualTotalCorrelation(BaseIntrinsicMutualInformation):
         return dtc
 
 
+intrinsic_dual_total_correlation = IntrinsicDualTotalCorrelation.functional()
+
+
 class IntrinsicCAEKLMutualInformation(BaseIntrinsicMutualInformation):
     """
     Compute the intrinsic CAEKL mutual information.
     """
+    name = 'CAEKL mutual information'
 
     def objective(self, x):
         """
@@ -376,6 +452,9 @@ class IntrinsicCAEKLMutualInformation(BaseIntrinsicMutualInformation):
         return caekl
 
 
+intrinsic_caekl_mutual_information = IntrinsicCAEKLMutualInformation.functional()
+
+
 def intrinsic_mutual_information(func):
     """
     Given a measure of shared information, construct an optimizer which computes
@@ -399,29 +478,32 @@ def intrinsic_mutual_information(func):
     using this function will be significantly slower than if the objective were
     written directly using the joint probability ndarray.
     """
-    name = func.__name__
-
     class IntrinsicMutualInformation(BaseIntrinsicMutualInformation):
-        """
-        Compute the intrinsic {name}.
-        """.format(name=name)
+        name = func.__name__
 
         def objective(self, x):
-            """
-            Compute the {name}.
-
-            Parameters
-            ----------
-            x : ndarray
-                An optimization vector.
-
-            Returns
-            -------
-            mi : float
-                The {name}.
-            """.format(name=name)
             d = self.construct_distribution(x)
             mi = func(d, rvs=self._rvs, crvs=[self._crv])
             return mi
+
+    IntrinsicMutualInformation.__doc__ = \
+    """
+    Compute the intrinsic {name}.
+    """.format(name=func.__name__)
+
+    IntrinsicMutualInformation.objective.__func__.__doc__ = \
+    """
+    Compute the {name}.
+
+    Parameters
+    ----------
+    x : ndarray
+        An optimization vector.
+
+    Returns
+    -------
+    mi : float
+        The {name}.
+    """.format(name=func.__name__)
 
     return IntrinsicMutualInformation
