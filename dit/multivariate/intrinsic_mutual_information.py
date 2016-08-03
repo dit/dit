@@ -492,7 +492,7 @@ def intrinsic_mutual_information(func):
     Compute the intrinsic {name}.
     """.format(name=func.__name__)
 
-    IntrinsicMutualInformation.objective.__func__.__doc__ = \
+    docstring = \
     """
     Compute the {name}.
 
@@ -506,5 +506,11 @@ def intrinsic_mutual_information(func):
     mi : float
         The {name}.
     """.format(name=func.__name__)
+    try:
+        # python 2
+        IntrinsicTotalCorrelation.objective.__func__.__doc__ = docstring
+    except AttributeError:
+        # python 3
+        IntrinsicMutualInformation.objective.__doc__ = docstring
 
     return IntrinsicMutualInformation
