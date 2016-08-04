@@ -22,6 +22,9 @@ dist2.set_rv_names('XYZ')
 dist3 = Distribution(['00000', '00101', '11001', '11100', '22220', '33330'], [1/8]*4+[1/4]*2)
 dist4 = Distribution(['00000', '00101', '11001', '11100', '22220', '33330'], [1/8]*4+[1/4]*2)
 dist4.set_rv_names('VWXYZ')
+dist5 = Distribution(['0000', '0011', '0101', '0110', '1001', '1010', '1100', '1111'], [1/8]*8)
+dist6 = Distribution(['0000', '0011', '0101', '0110', '1001', '1010', '1100', '1111'], [1/8]*8)
+dist6.set_rv_names('WXYZ')
 
 def test_itc1():
     """
@@ -53,15 +56,15 @@ def test_itc3():
     """
     Test multivariate
     """
-    itc = intrinsic_total_correlation(dist3, [[0], [1], [2,3]], [4])
-    assert_almost_equal(itc, 3.3306155324443121)
+    itc = intrinsic_total_correlation(dist5, [[0], [1], [2]], [3])
+    assert_almost_equal(itc, 0)
 
 def test_itc4():
     """
     Test multivariate, with rv names
     """
-    itc = intrinsic_total_correlation(dist4, ['V', 'W', 'XY'], 'Z')
-    assert_almost_equal(itc, 3.3306155324443121)
+    itc = intrinsic_total_correlation(dist6, ['W', 'X', 'Y'], 'Z')
+    assert_almost_equal(itc, 0)
 
 def test_itc5():
     """
@@ -104,15 +107,15 @@ def test_idtc3():
     """
     Test multivariate
     """
-    idtc = intrinsic_dual_total_correlation(dist3, [[0], [1], [2,3]], [4])
-    assert_almost_equal(idtc, 1.6887218755408671)
+    idtc = intrinsic_dual_total_correlation(dist5, [[0], [1], [2]], [3])
+    assert_almost_equal(idtc, 0)
 
 def test_idtc4():
     """
     Test multivariate, with rv names
     """
-    idtc = intrinsic_dual_total_correlation(dist4, ['V', 'W', 'XY'], 'Z')
-    assert_almost_equal(idtc, 1.6887218755408671)
+    idtc = intrinsic_dual_total_correlation(dist6, ['W', 'X', 'Y'], 'Z')
+    assert_almost_equal(idtc, 0)
 
 def test_icmi1():
     """
@@ -144,14 +147,14 @@ def test_icmi3():
     """
     Test multivariate
     """
-    icmi = intrinsic_caekl_mutual_information(dist3, [[0], [1], [2]], [3,4])
+    icmi = intrinsic_caekl_mutual_information(dist5, [[0], [1], [2]], [3])
     assert_almost_equal(icmi, 0)
 
 def test_icmi4():
     """
     Test multivariate, with rv names
     """
-    icmi = intrinsic_caekl_mutual_information(dist4, ['V', 'W', 'X'], 'YZ', nhops=128)
+    icmi = intrinsic_caekl_mutual_information(dist6, ['W', 'X', 'Y'], 'Z')
     assert_almost_equal(icmi, 0)
 
 def test_constructor():
