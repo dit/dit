@@ -28,12 +28,7 @@ def mask_is_complementary(mask1, mask2):
 
     """
     mask1_comp = tuple(not b for b in mask1)
-    if mask1_comp == mask2:
-        complementary = True
-    else:
-        complementary = False
-
-    return complementary
+    return mask1_comp == mask2
 
 def outcome_iter(outcome_X, outcome_Y, mask_Y):
     it_X = iter(outcome_X)

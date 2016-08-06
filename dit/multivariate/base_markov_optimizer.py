@@ -13,58 +13,10 @@ import numpy as np
 from .. import Distribution
 from ..helpers import flatten, normalize_rvs
 from ..math import close
-
-
-class BasinHoppingInnerCallBack(object):
-    """
-    """
-
-    def __init__(self):
-        """
-        """
-        self.positions = []
-        self.jumps = []
-
-    def __call__(self, x):
-        """
-        """
-        self.positions.append(x.copy())
-
-class BasinHoppingCallBack(object):
-    """
-    scipy's basinhopping return status often will return an optimization vector which does not
-    satisfy the constraints if it has a lower objective value and ran in to some sort of error
-    status rather than detecting that it is in a local minima. This object tracks the minima found
-    for each basin hop, potentially keeping track of a global optima which would be discarded.
-    """
-
-    def __init__(self, constraints, icb=None):
-        """
-        Parameters
-        ----------
-        optimizer : MarkovVarOptimizer
-            The optimizer to track the optimization of.
-        """
-        self.constraints = [ c['fun'] for c in constraints ]
-        self.icb = icb
-        self.candidates = []
-
-    def __call__(self, x, f, accept):
-        """
-        Parameters
-        ----------
-        x : ndarray
-        f : float
-        accept : bool
-        """
-        x = x.copy()
-
-        constraints = [ float(c(x)) for c in self.constraints ]
-        if max(constraints) < 1e-7:
-            self.candidates.append((f, x))
-
-        if self.icb:
-            self.icb.jumps.append(len(self.icb.positions))
+from ..utils.optimization import (BasinHoppingCallBack,
+                                  BasinHoppingInnerCallBack,
+                                  accept_test,
+                                  basinhop_status)
 
 class MarkovVarOptimizer(object):
     """
@@ -72,6 +24,9 @@ class MarkovVarOptimizer(object):
     of variables conditionally independent.
     """
     __metaclass__ = ABCMeta
+
+    name = ""
+    description = ""
 
     def __init__(self, dist, rvs=None, crvs=None, rv_mode=None):
         """
@@ -83,9 +38,9 @@ class MarkovVarOptimizer(object):
             The distribution to compute the auxiliary Markov variable, W, for.
         rvs : list, None
             A list of lists. Each inner list specifies the indexes of the random
-            variables used to calculate the total correlation. If None, then the
-            total correlation is calculated over all random variables, which is
-            equivalent to passing `rvs=dist.rvs`.
+            variables to render conditionally independent. If None, then all
+            random variables are used, which is equivalent to passing
+            `rvs=dist.rvs`.
         crvs : list, None
             A single list of indexes specifying the random variables to
             condition on. If None, then no variables are conditioned on.
@@ -195,32 +150,6 @@ class MarkovVarOptimizer(object):
         except TypeError: # pragma: no cover
             pass
         mat /= np.sum(mat, axis=axis, keepdims=True)
-
-    @staticmethod
-    def _success(res):
-        """
-        Determine whether an optimization result was successful or not, working
-        around differences in scipy < 0.17.0 and scipy >= 0.17.0.
-
-        Parameters
-        ----------
-        res : OptimizeResult
-            The result to parse
-
-        Returns
-        -------
-        success : bool
-            Whether the optimization was successful or not.
-        msg : str
-            The result's message.
-        """
-        try:
-            success = res.lowest_optimization_result.success
-            msg = res.lowest_optimization_result.message
-        except AttributeError:
-            success = 'success' in res.message[0]
-            msg = res.message[0]
-        return success, msg
 
     def construct_random_initial(self):
         """
@@ -406,12 +335,6 @@ class MarkovVarOptimizer(object):
         else:
             x = self.construct_random_initial()
 
-        def accept_test(**kwargs):
-            x = kwargs['x_new']
-            tmax = bool(np.all(x <= 1))
-            tmin = bool(np.all(x >= 0))
-            return tmin and tmax
-
         if callback:
             icb = BasinHoppingInnerCallBack()
         else:
@@ -447,12 +370,13 @@ class MarkovVarOptimizer(object):
                            accept_test=accept_test,
                           )
 
-        success, msg = self._success(res)
+        success, msg = basinhop_status(res)
         if success:
             self._optima = res.x
         else: # pragma: no cover
-            if self._callback.candidates:
-                self._optima = min(self._callback.candidates)[1]
+            minimum = self._callback.minimum()
+            if minimum is not None:
+                self._optima = minimum
             # else:
             #     raise Exception(msg)
 
@@ -548,6 +472,57 @@ class MarkovVarOptimizer(object):
         d = Distribution(outcomes, pmf)
         return d
 
+    @classmethod
+    def functional(cls):
+        """
+        Construct a functional form of the optimizer.
+        """
+
+        def common_info(dist, rvs=None, crvs=None, rv_mode=None, nhops=5, polish=1e-6):
+            ci = cls(dist, rvs, crvs, rv_mode)
+            ci.optimize(nhops=nhops, polish=polish)
+            return ci.objective(ci._optima)
+
+        common_info.__doc__ = \
+        """
+        Computes the {name} common information, {description}.
+
+        Parameters
+        ----------
+        dist : Distribution
+            The distribution for which the {name} common information will be
+            computed.
+        rvs : list, None
+            A list of lists. Each inner list specifies the indexes of the random
+            variables used to calculate the {name} common information. If None,
+            then it calculated over all random variables, which is equivalent to
+            passing `rvs=dist.rvs`.
+        crvs : list, None
+            A single list of indexes specifying the random variables to condition
+            on. If None, then no variables are conditioned on.
+        rv_mode : str, None
+            Specifies how to interpret `rvs` and `crvs`. Valid options are:
+            {{'indices', 'names'}}. If equal to 'indices', then the elements of
+            `crvs` and `rvs` are interpreted as random variable indices. If equal
+            to 'names', the the elements are interpreted as random variable names.
+            If `None`, then the value of `dist._rv_mode` is consulted, which
+            defaults to 'indices'.
+        nhops : int > 0
+            Number of basin hoppings to perform during the optimization.
+        polish : False, float
+            Whether to polish the result or not. If a float, this will perform a
+            second optimization seeded with the result of the first, but with
+            smaller tolerances and probabilities below polish set to 0. If
+            False, don't polish.
+
+        Returns
+        -------
+        ci : float
+            The {name} common information.
+        """.format(name=cls.name, description=cls.description)
+
+        return common_info
+
 
 class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):
     """
@@ -582,12 +557,6 @@ class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):
                       'fun': constraint_match_objective,
                      }
 
-        def accept_test(**kwargs):
-            x = kwargs['x_new']
-            tmax = bool(np.all(x <= 1))
-            tmin = bool(np.all(x >= 0))
-            return tmin and tmax
-
         minimizer_kwargs = {'method': 'SLSQP',
                             'bounds': [(0, 1)]*self._optima.size,
                             'constraints': self.constraints + [constraint],
@@ -617,7 +586,7 @@ class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):
                            accept_test=accept_test,
                           )
 
-        if self._success(res)[0]:
+        if basinhop_status(res)[0]:
             self._optima = res.x
         else:
             if callback.candidates:

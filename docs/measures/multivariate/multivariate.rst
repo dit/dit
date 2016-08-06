@@ -18,7 +18,7 @@ These quantities, currently just the Shannon entropy, measure the total amount o
 
 Mutual Informations
 ===================
-These measuares all reduce to the standard Shannon mutual information for bivariate distributions.
+These measuares all reduce to the standard Shannon :ref:`mutual_information` for bivariate distributions.
 
 .. toctree::
    :maxdepth: 1
@@ -64,3 +64,4 @@ These measures quantify other aspects of a joint distribution.
 
    residual_entropy
    tse_complexity
+   intrinsic_mutual_information
