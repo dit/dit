@@ -239,9 +239,9 @@ def marginal_maxent(dist, k, **kwargs):
 
     if rv_mode in [RV_MODES.NAMES, 'names']:
         vars = dist.get_rv_names()
-        rvs = list(itertools.combinations(vars, k))
+        rvs = list(combinations(vars, k))
     else:
-        rvs = list(itertools.combinations(range(n_variables), k))
+        rvs = list(combinations(range(n_variables), k))
 
     kwargs['rv_mode'] = rv_mode
 
