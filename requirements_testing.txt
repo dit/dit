@@ -1,0 +1,6 @@
+coverage
+coveralls
+codecov
+git+https://github.com/pytest-dev/pytest/#egg=pytest
+pytest-cov
+pytest-rerunfailures

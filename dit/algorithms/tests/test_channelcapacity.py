@@ -1,6 +1,7 @@
 from __future__ import division
 
-from nose.tools import *
+import pytest
+
 import numpy as np
 
 import dit
@@ -29,14 +30,14 @@ def test_channel_capacity_no_rvnames():
     cc, pXopt = dit.algorithms.channel_capacity(pYgX, pX)
 
     # Verify channel capacity.
-    np.testing.assert_allclose(cc, 1 - epsilon)
+    assert np.allclose(cc, 1 - epsilon)
 
     # Verify maximizing distribution.
-    assert_true(pX.is_approx_equal(pXopt))
+    assert pX.is_approx_equal(pXopt)
 
     # Verify joint distribution at channel capacity.
     pXYopt = dit.joint_from_factors(pXopt, pYgX)
-    assert_true(pXY.is_approx_equal(pXYopt))
+    assert pXY.is_approx_equal(pXYopt)
 
 def test_channel_capacity_rvnames():
     epsilon = .01
@@ -46,14 +47,14 @@ def test_channel_capacity_rvnames():
     cc, pXopt = dit.algorithms.channel_capacity(pYgX, pX)
 
     # Verify channel capacity.
-    np.testing.assert_allclose(cc, 1 - epsilon)
+    assert np.allclose(cc, 1 - epsilon)
 
     # Verify maximizing distribution.
-    assert_true(pX.is_approx_equal(pXopt))
+    assert pX.is_approx_equal(pXopt)
 
     # Verify joint distribution at channel capacity.
     pXYopt = dit.joint_from_factors(pXopt, pYgX)
-    assert_true(pXY.is_approx_equal(pXYopt))
+    assert pXY.is_approx_equal(pXYopt)
 
 def test_channel_capacity_array():
     epsilon = .3
@@ -62,10 +63,10 @@ def test_channel_capacity_array():
     cc, pXopt_pmf = dit.algorithms.channel_capacity(pYgX)
 
     # Verify channel capacity.
-    np.testing.assert_allclose(cc, 1 - epsilon)
+    assert np.allclose(cc, 1 - epsilon)
 
     # Verify maximizing distribution.
-    np.testing.assert_allclose(pX.pmf, pXopt_pmf)
+    assert np.allclose(pX.pmf, pXopt_pmf)
 
 def test_bad_marginal():
     epsilon = .01
@@ -75,5 +76,5 @@ def test_bad_marginal():
     pX['0'] = 0
     # Now make its length disagree with the number of cdists.
     pX.make_sparse()
-    assert_raises(dit.exceptions.ditException,
-                  dit.algorithms.channel_capacity, pYgX, pX)
+    with pytest.raises(dit.exceptions.ditException):
+        dit.algorithms.channel_capacity(pYgX, pX)

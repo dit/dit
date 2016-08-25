@@ -4,7 +4,7 @@ Tests for dit.multivariate.joint_mss.
 
 from __future__ import division
 
-from nose.tools import assert_almost_equal
+import pytest
 
 from dit import Distribution
 from dit.multivariate import mss_common_information as M
@@ -29,7 +29,7 @@ def test_M1():
                 'b1c',]
     pmf = [1/16]*16
     d = Distribution(outcomes, pmf)
-    assert_almost_equal(M(d), 2.0)
+    assert M(d) == pytest.approx(2.0)
 
 def test_M2():
     """ Test M with rv names """
@@ -52,4 +52,4 @@ def test_M2():
     pmf = [1/16]*16
     d = Distribution(outcomes, pmf)
     d.set_rv_names('XYZ')
-    assert_almost_equal(M(d), 2.0)
+    assert M(d) == pytest.approx(2.0)

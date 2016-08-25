@@ -115,18 +115,14 @@ install:
 before_script:
   ### Use this to prepare your build for testing
   - if [[ "$TRAVIS_PYTHON_VERSION" =~ (2|3)\..* ]]; then
-      conda install -n test-environment nose;
       conda install scipy cvxopt;
+      pip install --upgrade -r requirements_testing.txt;
     elif [[ "$TRAVIS_PYTHON_VERSION" == "nightly" ]]; then
-      pip install nose scipy cvxopt;
+      pip install scipy cvxopt;
+      pip install --upgrade -r requirements_testing.txt;
     elif [[ "$TRAVIS_PYTHON_VERSION" =~ pypy.* ]]; then
-      sudo $TRAVIS_PYTHON_VERSION -m pip install nose;
+      sudo $TRAVIS_PYTHON_VERSION -m pip install -r requirements_testing.txt;
     fi;
-  - if ! [[ "$TRAVIS_PYTHON_VERSION" =~ pypy.* ]]; then
-      pip install --upgrade coverage coveralls codecov;
-    else
-      sudo $TRAVIS_PYTHON_VERSION -m pip install --upgrade coverage coveralls codecov;
-    fi
 
 script:
   - printenv PWD
@@ -150,10 +146,10 @@ script:
   # package (except during the report).  So to restrict coverage, we must
   # inform coverage through the .coveragerc file.
   - if ! [[ "$TRAVIS_PYTHON_VERSION" =~ pypy.* ]]; then
-      cp .coveragerc $DIT_INSTALL;
+      cp .coveragerc pytest.ini $DIT_INSTALL;
       cp setup.cfg $DIT_INSTALL;
     else
-      sudo cp .coveragerc $DIT_INSTALL;
+      sudo cp .coveragerc pytest.ini $DIT_INSTALL;
       sudo cp setup.cfg $DIT_INSTALL;
     fi
 
@@ -166,18 +162,18 @@ script:
   - cd $DIT_INSTALL
   - printenv PWD
 
-  # Run nosetests.
+  # Run pytest.
   - if [[ "$TRAVIS_PYTHON_VERSION" =~ pypy.* ]]; then
       if [ "${OPTIONAL_DEPS}" == "true" ]; then
-        sudo $TRAVIS_PYTHON_VERSION -m nose --verbosity=2 -a '!scipy' -a '!cvxopt' --with-coverage --cover-package=dit;
+        sudo $TRAVIS_PYTHON_VERSION -m pytest;
       else
-        sudo $TRAVIS_PYTHON_VERSION -m nose --verbosity=2 -a '!scipy' -a '!cvxopt' -a '!cython' --with-coverage --cover-package=dit;
+        sudo $TRAVIS_PYTHON_VERSION -m pytest -m "not cython";
       fi
     else
       if [ "${OPTIONAL_DEPS}" == "true" ]; then
-        nosetests --verbosity=2 --with-coverage --cover-package=dit;
+        pytest;
       else
-        nosetests --verbosity=2 -a '!cython' --with-coverage --cover-package=dit;
+        pytest -m "not cython";
       fi
     fi
 

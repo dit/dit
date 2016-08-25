@@ -40,13 +40,16 @@ build_script:
   - SET PATH=C:\Py;C:\Py\Scripts;C:\Py\Library\bin;%PATH%
   - conda config --set always_yes yes
   - conda update conda
-  - conda install nose scipy
+  - conda install scipy
   - ps: if ($env:CYTHON -eq '1') { conda install cython }
   - pip install .
-  - pip install nose-cov
+  - pip install --upgrade -r requirements_testing.txt
 
 test_script:
   # Change to a non-source folder to make sure we run the tests on the
   # installed library.
-  - "pushd %TEMP%"
-  - nosetests --verbosity=2 -a '!cvxopt' -a '!cython' --ignore-files="(?:^\.|^_,|^setup\.py|^.*3\.py$)" --with-coverage --cover-package=dit dit
+  # - "pushd %TEMP%"
+  - ps: if ($env:CYTHON -eq '1')
+          { pytest }
+        else
+          { pytest -m "not cython" }

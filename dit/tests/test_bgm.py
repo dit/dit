@@ -1,4 +1,5 @@
-from nose.tools import *
+
+import pytest
 
 import numpy as np
 import dit
@@ -16,16 +17,17 @@ def test_distribution_from_bayesnet_nonames():
     x.node[1]['dist'] = cdist.marginal([1])
     d2 = dit.distribution_from_bayesnet(x)
     d3 = dit.distribution_from_bayesnet(x, [0, 1, 2])
-    assert_true( d.is_approx_equal(d2) )
-    assert_true( d.is_approx_equal(d3) )
+    assert d.is_approx_equal(d2)
+    assert d.is_approx_equal(d3)
 
     # Use a dictionary too
     x.node[2]['dist'] = dict(zip(cdist.outcomes, dists))
     d4 = dit.distribution_from_bayesnet(x)
-    assert_true( d.is_approx_equal(d4) )
+    assert d.is_approx_equal(d4)
 
     del x.node[1]['dist']
-    assert_raises(ValueError, dit.distribution_from_bayesnet, x)
+    with pytest.raises(ValueError):
+        dit.distribution_from_bayesnet(x)
 
 def test_distribution_from_bayesnet_names():
     # Smoke test with rv names.
@@ -39,17 +41,17 @@ def test_distribution_from_bayesnet_names():
     x.node['A']['dist'] = cdist.marginal(['A'])
     x.node['B']['dist'] = cdist.marginal(['B'])
     d2 = dit.distribution_from_bayesnet(x)
-    assert_true( d.is_approx_equal(d2) )
+    assert d.is_approx_equal(d2)
 
     # Specify names
     d3 = dit.distribution_from_bayesnet(x, ['A', 'B', 'C'])
-    assert_true( d.is_approx_equal(d2) )
+    assert d.is_approx_equal(d2)
 
     # Test with a non-Cartesian product distribution
     dd = x.node['B']['dist']
     dd._sample_space = dit.SampleSpace(list(dd.sample_space()))
     d3 = dit.distribution_from_bayesnet(x)
-    assert_true( d.is_approx_equal(d3) )
+    assert d.is_approx_equal(d3)
 
 def test_distribution_from_bayesnet_func():
     # Smoke test with distributions as functions.
@@ -78,18 +80,19 @@ def test_distribution_from_bayesnet_func():
     x.node['A']['dist'] = uniform
     x.node['B']['dist'] = uniform
     # Samplespace is required when functions are callable.
-    assert_raises(ValueError, dit.distribution_from_bayesnet, x)
+    with pytest.raises(ValueError):
+        dit.distribution_from_bayesnet(x)
 
     d2 = dit.distribution_from_bayesnet(x, sample_space=sample_space)
-    assert_true( d.is_approx_equal(d2) )
+    assert d.is_approx_equal(d2)
 
     ss = ['000', '001', '010', '011', '100', '101', '110', '111']
     d3 = dit.distribution_from_bayesnet(x, sample_space=ss)
     # Can't test using is_approx_equal, since one has SampleSpace and the
     # other has CartesianProduct as sample spaces. So is_approx_equal would
     # always be False.
-    assert_true( np.allclose(d.pmf, d3.pmf) )
-    assert_equal( list(d.sample_space()), list(d3.sample_space()) )
+    assert np.allclose(d.pmf, d3.pmf)
+    assert list(d.sample_space()) == list(d3.sample_space())
 
 
 
@@ -114,7 +117,8 @@ def test_distribution_from_bayesnet_error():
     x.node['A']['dist'] = unif
     x.node['B']['dist'] = uniform
 
-    assert_raises(Exception, dit.distribution_from_bayesnet, x, sample_space=sample_space)
+    with pytest.raises(Exception):
+        dit.distribution_from_bayesnet(x, sample_space=sample_space)
 
 def test_bad_names1():
     x = nx.DiGraph()
@@ -125,10 +129,14 @@ def test_bad_names1():
     x.node[2]['dist'] = (cdist.outcomes, dists)
     x.node[0]['dist'] = cdist.marginal([0])
     x.node[1]['dist'] = cdist.marginal([1])
-    assert_raises(ValueError, dit.distribution_from_bayesnet, x, [0, 1])
-    assert_raises(ValueError, dit.distribution_from_bayesnet, x, [0, 1, 1])
-    assert_raises(ValueError, dit.distribution_from_bayesnet, x, [0, 1, 2, 3])
-    assert_raises(ValueError, dit.distribution_from_bayesnet, x, [0, 1, 2, 2])
+    with pytest.raises(ValueError):
+        dit.distribution_from_bayesnet(x, [0, 1])
+    with pytest.raises(ValueError):
+        dit.distribution_from_bayesnet(x, [0, 1, 1])
+    with pytest.raises(ValueError):
+        dit.distribution_from_bayesnet(x, [0, 1, 2, 3])
+    with pytest.raises(ValueError):
+        dit.distribution_from_bayesnet(x, [0, 1, 2, 2])
 
 def test_bad_names2():
     """
@@ -148,8 +156,10 @@ def test_bad_names2():
     x.node[2]['dist'] = cdist.marginal([0])
     x.node[0]['dist'] = cdist.marginal([0])
     x.node[1]['dist'] = cdist.marginal([1])
-    assert_raises(Exception, dit.distribution_from_bayesnet, x)
+    with pytest.raises(Exception):
+        dit.distribution_from_bayesnet(x)
 
     # If they don't have the same length, it's invalid too.
     x.node[2]['dist'] = (cdist.outcomes, dists[:0])
-    assert_raises(Exception, dit.distribution_from_bayesnet, x)
+    with pytest.raises(Exception):
+        dit.distribution_from_bayesnet(x)

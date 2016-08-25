@@ -1,6 +1,5 @@
 from __future__ import division
 
-from nose.tools import *
 import numpy as np
 
 import dit
@@ -33,6 +32,5 @@ def test_marginal_constraints():
 
     b_ = np.array([1] + [0.25] * 12)
 
-    assert_true(np.allclose(A, A_))
-    assert_true(np.allclose(b, b_))
-
+    assert np.allclose(A, A_)
+    assert np.allclose(b, b_)

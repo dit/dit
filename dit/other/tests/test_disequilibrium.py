@@ -6,7 +6,7 @@ from __future__ import division
 
 from itertools import combinations
 
-from nose.tools import assert_almost_equal, assert_true, assert_greater
+import pytest
 
 from dit import Distribution, ScalarDistribution
 from dit.example_dists import uniform
@@ -22,52 +22,52 @@ def test_disequilibrium1():
     """
     dis1 = disequilibrium(d1)
     dis2 = disequilibrium(d2)
-    assert_almost_equal(dis1, 0.43418979240387018)
-    assert_almost_equal(dis2, 0.43418979240387018)
-    assert_almost_equal(dis1, dis2)
+    assert dis1 == pytest.approx(0.43418979240387018)
+    assert dis2 == pytest.approx(0.43418979240387018)
+    assert dis1 == pytest.approx(dis2)
 
 def test_disequilibrium2():
     """
     Test that while the XOR distribution has non-zero disequilibrium, all its
     marginals have zero disequilibrium (are uniform).
     """
-    assert_true(disequilibrium(d2) > 0)
+    assert disequilibrium(d2) > 0
     for rvs in combinations(flatten(d2.rvs), 2):
-        assert_almost_equal(disequilibrium(d2, rvs), 0)
+        assert disequilibrium(d2, rvs) == pytest.approx(0)
 
-def test_disequilibrium3():
+@pytest.mark.parametrize('n', range(2, 11))
+def test_disequilibrium3(n):
     """
     Test that uniform ScalarDistributions have zero disequilibrium.
     """
-    for n in range(2, 11):
-        d = uniform(n)
-        yield assert_almost_equal, disequilibrium(d), 0
+    d = uniform(n)
+    assert disequilibrium(d) == pytest.approx(0)
 
-def test_disequilibrium4():
+@pytest.mark.parametrize('n', range(2, 11))
+def test_disequilibrium4(n):
     """
     Test that uniform Distributions have zero disequilibrium.
     """
-    for n in range(2, 11):
-        d = Distribution.from_distribution(uniform(n))
-        yield assert_almost_equal, disequilibrium(d), 0
+    d = Distribution.from_distribution(uniform(n))
+    assert disequilibrium(d) == pytest.approx(0)
 
-def test_disequilibrium5():
+@pytest.mark.parametrize('n', range(2, 11))
+def test_disequilibrium5(n):
     """
     Test that peaked ScalarDistributions have non-zero disequilibrium.
     """
-    for n in range(2, 11):
-        d = ScalarDistribution([1] + [0]*(n-1))
-        yield assert_greater, disequilibrium(d), 0
+    d = ScalarDistribution([1] + [0]*(n-1))
+    assert disequilibrium(d) >= 0
 
-def test_disequilibrium6():
+@pytest.mark.parametrize('n', range(2, 11))
+def test_disequilibrium6(n):
     """
     Test that peaked Distributions have non-zero disequilibrium.
     """
-    for n in range(2, 11):
-        d = ScalarDistribution([1] + [0]*(n-1))
-        d.make_dense()
-        d = Distribution.from_distribution(d)
-        yield assert_greater, disequilibrium(d), 0
+    d = ScalarDistribution([1] + [0]*(n-1))
+    d.make_dense()
+    d = Distribution.from_distribution(d)
+    assert disequilibrium(d) >= 0
 
 def test_LMPR_complexity1():
     """
@@ -75,40 +75,40 @@ def test_LMPR_complexity1():
     """
     c1 = LMPR_complexity(d1)
     c2 = LMPR_complexity(d2)
-    assert_almost_equal(c1, 0.28945986160258008)
-    assert_almost_equal(c2, 0.28945986160258008)
-    assert_almost_equal(c1, c2)
+    assert c1 == pytest.approx(0.28945986160258008)
+    assert c2 == pytest.approx(0.28945986160258008)
+    assert c1 == pytest.approx(c2)
 
-def test_LMPR_complexity2():
+@pytest.mark.parametrize('n', range(2, 11))
+def test_LMPR_complexity2(n):
     """
     Test that uniform ScalarDistirbutions have zero complexity.
     """
-    for n in range(2, 11):
-        d = uniform(n)
-        yield assert_almost_equal, LMPR_complexity(d), 0
+    d = uniform(n)
+    assert LMPR_complexity(d) == pytest.approx(0)
 
-def test_LMPR_complexity3():
+@pytest.mark.parametrize('n', range(2, 11))
+def test_LMPR_complexity3(n):
     """
     Test that uniform Distirbutions have zero complexity.
     """
-    for n in range(2, 11):
-        d = Distribution.from_distribution(uniform(n))
-        yield assert_almost_equal, LMPR_complexity(d), 0
+    d = Distribution.from_distribution(uniform(n))
+    assert LMPR_complexity(d) == pytest.approx(0)
 
-def test_LMPR_complexity4():
+@pytest.mark.parametrize('n', range(2, 11))
+def test_LMPR_complexity4(n):
     """
     Test that peaked ScalarDistributions have zero complexity.
     """
-    for n in range(2, 11):
-        d = ScalarDistribution([1] + [0]*(n-1))
-        yield assert_almost_equal, LMPR_complexity(d), 0
+    d = ScalarDistribution([1] + [0]*(n-1))
+    assert LMPR_complexity(d) == pytest.approx(0)
 
-def test_LMPR_complexity4():
+@pytest.mark.parametrize('n', range(2, 11))
+def test_LMPR_complexity4(n):
     """
     Test that peaked Distributions have zero complexity.
     """
-    for n in range(2, 11):
-        d = ScalarDistribution([1] + [0]*(n-1))
-        d.make_dense()
-        d = Distribution.from_distribution(d)
-        yield assert_almost_equal, LMPR_complexity(d), 0
+    d = ScalarDistribution([1] + [0]*(n-1))
+    d.make_dense()
+    d = Distribution.from_distribution(d)
+    assert LMPR_complexity(d) == pytest.approx(0)
