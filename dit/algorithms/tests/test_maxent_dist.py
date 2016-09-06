@@ -11,6 +11,8 @@ from dit.distconst import uniform
 from dit.algorithms import maxent_dist
 
 
+pytest.importorskip('cvxopt')
+
 @pytest.mark.parametrize('vars', [
     [[0], [1], [2]],
     [[0, 1], [2]],
