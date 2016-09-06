@@ -4,14 +4,13 @@ Tests for dit.distconst.
 
 from __future__ import division
 
-from nose.tools import assert_equal, assert_false, assert_raises, assert_true
+import pytest
 
 import itertools
 
 from six.moves import range
 
 import numpy as np
-import numpy.testing as npt
 
 from dit.exceptions import ditException, InvalidOutcome
 import dit
@@ -20,8 +19,10 @@ def test_mixture_distribution_weights():
     d = dit.Distribution(['A', 'B'], [0.5, 0.5])
     d2 = dit.Distribution(['A', 'B'], [1, 0])
 
-    assert_raises(ditException, dit.mixture_distribution, [d, d2], [1])
-    assert_raises(ditException, dit.mixture_distribution2, [d, d2], [1])
+    with pytest.raises(ditException):
+        dit.mixture_distribution([d, d2], [1])
+    with pytest.raises(ditException):
+        dit.mixture_distribution2([d, d2], [1])
 
 def test_mixture_distribution():
     d = dit.Distribution(['A', 'B'], [0.5, 0.5])
@@ -29,7 +30,7 @@ def test_mixture_distribution():
     pmf = np.array([0.75, 0.25])
 
     d3 = dit.mixture_distribution([d, d2], [0.5, 0.5])
-    npt.assert_allclose(pmf, d3.pmf)
+    assert np.allclose(pmf, d3.pmf)
 
 def test_mixture_distribution_log():
     d = dit.Distribution(['A', 'B'], [0.5, 0.5])
@@ -40,7 +41,7 @@ def test_mixture_distribution_log():
     pmf = np.log2(np.array([0.75, 0.25]))
 
     d3 = dit.mixture_distribution([d, d2], weights)
-    npt.assert_allclose(pmf, d3.pmf)
+    assert np.allclose(pmf, d3.pmf)
 
 def test_mixture_distribution2():
     # Test when pmfs are different lengths.
@@ -48,7 +49,8 @@ def test_mixture_distribution2():
     d2 = dit.Distribution(['A', 'B'], [1, 0], sort=True, trim=True)
 
     # Fails when it checks that all pmfs have the same length.
-    assert_raises(ValueError, dit.mixture_distribution2, [d, d2], [0.5, 0.5])
+    with pytest.raises(ValueError):
+        dit.mixture_distribution2([d, d2], [0.5, 0.5])
 
 def test_mixture_distribution3():
     # Sample spaces are compatible.
@@ -58,9 +60,9 @@ def test_mixture_distribution3():
     pmf = np.array([0.25, 0.75])
 
     d3 = dit.mixture_distribution([d, d2], [0.5, 0.5])
-    assert_true(np.allclose(pmf, d3.pmf))
+    assert np.allclose(pmf, d3.pmf)
     d3 = dit.mixture_distribution2([d, d2], [0.5, 0.5])
-    assert_false(np.allclose(pmf, d3.pmf))
+    assert not np.allclose(pmf, d3.pmf)
 
 def test_mixture_distribution4():
     # Sample spaces are compatible.
@@ -71,8 +73,9 @@ def test_mixture_distribution4():
     pmf = np.array([0.25, 0.75])
 
     d3 = dit.mixture_distribution([d, d2], [0.5, 0.5])
-    assert_true(np.allclose(pmf, d3.pmf))
-    assert_raises(ValueError, dit.mixture_distribution2, [d, d2], [0.5, 0.5])
+    assert np.allclose(pmf, d3.pmf)
+    with pytest.raises(ValueError):
+        dit.mixture_distribution2([d, d2], [0.5, 0.5])
 
 def test_mixture_distribution5():
     # Incompatible sample spaces.
@@ -80,7 +83,7 @@ def test_mixture_distribution5():
     d2 = dit.Distribution(['B', 'C'], [0.5, 0.5])
     d3 = dit.mixture_distribution([d1, d2], [0.5, 0.5], merge=True)
     pmf = np.array([0.25, 0.5, 0.25])
-    assert_true(np.allclose(pmf, d3.pmf))
+    assert np.allclose(pmf, d3.pmf)
 
 def test_random_scalar_distribution():
     # Test with no alpha and only an integer
@@ -88,22 +91,23 @@ def test_random_scalar_distribution():
     for prng in [None, dit.math.prng]:
         dit.math.prng.seed(1)
         d = dit.random_scalar_distribution(3, prng=prng)
-        assert_equal(d.outcomes, (0, 1, 2))
-        np.testing.assert_allclose(d.pmf, pmf)
+        assert d.outcomes == (0, 1, 2)
+        assert np.allclose(d.pmf, pmf)
 
     # Test with outcomes specified
     dit.math.prng.seed(1)
     d = dit.random_scalar_distribution([0, 1, 2])
-    assert_equal(d.outcomes, (0, 1, 2))
-    np.testing.assert_allclose(d.pmf, pmf)
+    assert d.outcomes == (0, 1, 2)
+    assert np.allclose(d.pmf, pmf)
 
     # Test with concentration parameters
     pmf = np.array([0.34228708, 0.52696865, 0.13074428])
     dit.math.prng.seed(1)
     d = dit.random_scalar_distribution(3, alpha=[1, 2, 1])
-    assert_equal(d.outcomes, (0, 1, 2))
-    np.testing.assert_allclose(d.pmf, pmf)
-    assert_raises(ditException, dit.random_scalar_distribution, 3, alpha=[1])
+    assert d.outcomes == (0, 1, 2)
+    assert np.allclose(d.pmf, pmf)
+    with pytest.raises(ditException):
+        dit.random_scalar_distribution(3, alpha=[1])
 
 def test_random_distribution():
     # Test with no alpha
@@ -112,46 +116,49 @@ def test_random_distribution():
     for prng in [None, dit.math.prng]:
         dit.math.prng.seed(1)
         d = dit.random_distribution(2, 2, prng=prng)
-        assert_equal(d.outcomes, outcomes)
-        np.testing.assert_allclose(d.pmf, pmf)
+        assert d.outcomes == outcomes
+        assert np.allclose(d.pmf, pmf)
 
     # Test with a single alphabet specified
     dit.math.prng.seed(1)
     d = dit.random_distribution(2, [[0, 1]])
-    assert_equal(d.outcomes, outcomes)
-    np.testing.assert_allclose(d.pmf, pmf)
+    assert d.outcomes == outcomes
+    assert np.allclose(d.pmf, pmf)
 
     # Test with two alphabets specified
     dit.math.prng.seed(1)
     d = dit.random_distribution(2, [[0, 1], [0, 1]])
-    assert_equal(d.outcomes, outcomes)
-    np.testing.assert_allclose(d.pmf, pmf)
+    assert d.outcomes == outcomes
+    assert np.allclose(d.pmf, pmf)
 
     # Test with invalid number of alphabets
-    assert_raises(TypeError, dit.random_distribution, 3, [3, 2])
-    assert_raises(TypeError, dit.random_distribution, 3, [3, 2, 3])
+    with pytest.raises(TypeError):
+        dit.random_distribution(3, [3, 2])
+    with pytest.raises(TypeError):
+        dit.random_distribution(3, [3, 2, 3])
 
     # Test with concentration parameters
     pmf = np.array([0.15092872, 0.23236257, 0.05765063, 0.55905808])
     dit.math.prng.seed(1)
     d = dit.random_distribution(2, 2, alpha=[1, 2, 1, 3])
-    assert_equal(d.outcomes, outcomes)
-    np.testing.assert_allclose(d.pmf, pmf)
-    assert_raises(ditException, dit.random_distribution, 2, 2, alpha=[1])
+    assert d.outcomes == outcomes
+    assert np.allclose(d.pmf, pmf)
+    with pytest.raises(ditException):
+        dit.random_distribution(2, 2, alpha=[1])
 
 def test_simplex_grid1():
     # Test with tuple
     dists = np.asarray(list(dit.simplex_grid(2, 2**2, using=tuple)))
     dists_ = np.asarray([(0.0, 1.0), (0.25, 0.75), (0.5, 0.5),
                          (0.75, 0.25), (1.0, 0.0)])
-    np.testing.assert_allclose(dists, dists_)
+    assert np.allclose(dists, dists_)
 
 def test_simplex_grid2():
     # Test with ScalarDistribution
     dists = np.asarray([d.pmf for d in dit.simplex_grid(2, 2**2)])
     dists_ = np.asarray([(0.0, 1.0), (0.25, 0.75), (0.5, 0.5),
                          (0.75, 0.25), (1.0, 0.0)])
-    np.testing.assert_allclose(dists, dists_)
+    assert np.allclose(dists, dists_)
 
 def test_simplex_grid3():
     # Test with Distribution
@@ -159,20 +166,21 @@ def test_simplex_grid3():
     dists = np.asarray([x.pmf for x in dit.simplex_grid(2, 2**2, using=d)])
     dists_ = np.asarray([(0.0, 1.0), (0.25, 0.75), (0.5, 0.5),
                          (0.75, 0.25), (1.0, 0.0)])
-    np.testing.assert_allclose(dists, dists_)
+    assert np.allclose(dists, dists_)
 
 def test_simplex_grid4():
     # Test with Distribution but with wrong length specified.
     d = dit.random_distribution(2, 2)
     g = dit.simplex_grid(5, 2**2, using=d)
-    np.testing.assert_raises(Exception, next, g)
+    with pytest.raises(Exception):
+        next(g)
 
 def test_simplex_grid5():
     # Test with ScalarDistribution with inplace=True
     # All final dists should be the same.
     dists = np.asarray([d.pmf for d in dit.simplex_grid(2, 2**2, inplace=True)])
     dists_ = np.asarray([(1.0, 0.0)]*5)
-    np.testing.assert_allclose(dists, dists_)
+    assert np.allclose(dists, dists_)
 
 def test_simplex_grid6():
     # Test using NumPy arrays and a base of 3.
@@ -189,15 +197,17 @@ def test_simplex_grid6():
         [ 1.        ,  0.        ,  0.        ]
     ])
     d = np.array(list(dit.simplex_grid(3, 3, using=np.array)))
-    np.testing.assert_allclose(d, d_)
+    assert np.allclose(d, d_)
 
 def test_simplex_grid_bad_n():
     x = dit.simplex_grid(0, 3)
-    assert_raises(ditException, list, x)
+    with pytest.raises(ditException):
+        list(x)
 
 def test_simplex_grid_bad_subdivisions():
     x = dit.simplex_grid(3, 0)
-    assert_raises(ditException, list, x)
+    with pytest.raises(ditException):
+        list(x)
 
 # These can be simple smoke test, since the random* tests hit all the branches.
 
@@ -206,20 +216,20 @@ def test_uniform_scalar_distribution():
     outcomes = (0, 1, 2)
     dit.math.prng.seed(1)
     d = dit.uniform_scalar_distribution(len(outcomes))
-    assert_equal(d.outcomes, outcomes)
-    np.testing.assert_allclose(d.pmf, pmf)
+    assert d.outcomes == outcomes
+    assert np.allclose(d.pmf, pmf)
 
     dit.math.prng.seed(1)
     d = dit.uniform_scalar_distribution(outcomes)
-    assert_equal(d.outcomes, outcomes)
-    np.testing.assert_allclose(d.pmf, pmf)
+    assert d.outcomes == outcomes
+    assert np.allclose(d.pmf, pmf)
 
 def test_uniform_distribution():
     pmf = np.array([1/4] * 4)
     dit.math.prng.seed(1)
     d = dit.uniform_distribution(2, 2)
-    assert_equal(d.outcomes, ((0, 0), (0, 1), (1, 0), (1, 1)))
-    np.testing.assert_allclose(d.pmf, pmf)
+    assert d.outcomes == ((0, 0), (0, 1), (1, 0), (1, 1))
+    assert np.allclose(d.pmf, pmf)
 
 def test_rvfunctions1():
     # Smoke test with strings
@@ -227,7 +237,7 @@ def test_rvfunctions1():
     bf = dit.RVFunctions(d)
     d = dit.insert_rvf(d, bf.xor([0,1]))
     d = dit.insert_rvf(d, bf.xor([1,2]))
-    assert_equal(d.outcomes, ('0000', '0110', '1011', '1101'))
+    assert d.outcomes == ('0000', '0110', '1011', '1101')
 
 def test_rvfunctions2():
     # Smoke test with int tuples
@@ -235,7 +245,7 @@ def test_rvfunctions2():
     bf = dit.RVFunctions(d)
     d = dit.insert_rvf(d, bf.xor([0,1]))
     d = dit.insert_rvf(d, bf.xor([1,2]))
-    assert_equal(d.outcomes, ((0,0,0,0), (0,1,1,0), (1,0,1,1), (1,1,0,1)))
+    assert d.outcomes == ((0,0,0,0), (0,1,1,0), (1,0,1,1), (1,1,0,1))
 
 def test_rvfunctions3():
     # Smoke test strings with from_hexes
@@ -245,7 +255,7 @@ def test_rvfunctions3():
     bf = dit.RVFunctions(d)
     d = dit.insert_rvf(d, bf.from_hexes('27'))
     outcomes = ('0000', '0010', '0101', '0110', '1000', '1010', '1100', '1111')
-    assert_equal(d.outcomes, outcomes)
+    assert d.outcomes == outcomes
 
 def test_rvfunctions4():
     # Smoke test int tuples from_hexes
@@ -257,11 +267,12 @@ def test_rvfunctions4():
     d = dit.insert_rvf(d, bf.from_hexes('27'))
     outcomes = ('0000', '0010', '0101', '0110', '1000', '1010', '1100', '1111')
     outcomes = tuple(tuple(map(int, o)) for o in outcomes)
-    assert_equal(d.outcomes, outcomes)
+    assert d.outcomes == outcomes
 
 def test_rvfunctions_scalardist():
     d = dit.ScalarDistribution(range(5), [1/5] * 5)
-    assert_raises(ditException, dit.RVFunctions, d)
+    with pytest.raises(ditException):
+        dit.RVFunctions(d)
 
 def test_rvfunctions_ints():
     d = dit.uniform_distribution(2, 2)
@@ -270,7 +281,7 @@ def test_rvfunctions_ints():
     mapping = rvf.from_partition(partition)
     d2 = dit.insert_rvf(d, mapping)
     outcomes = ((0,0,0), (0,1,1), (1,0,2), (1,1,3))
-    assert_equal(d2.outcomes, outcomes)
+    assert d2.outcomes == outcomes
 
 def test_rvfunctions_toolarge():
     letters = 'abcd'
@@ -279,7 +290,8 @@ def test_rvfunctions_toolarge():
     d = dit.Distribution(outcomes, [1/64]*64, validate=False)
     rvf = dit.RVFunctions(d)
     partition = [(d.outcomes[i],) for i in range(len(d))]
-    assert_raises(NotImplementedError, rvf.from_partition, partition)
+    with pytest.raises(NotImplementedError):
+        rvf.from_partition(partition)
 
 def test_insert_rvf1():
     # Test multiple insertion.
@@ -296,7 +308,7 @@ def test_insert_rvf1():
         (1, 0, 1, 1, 1, 1),
         (1, 1, 0, 0, 0, 0)
     )
-    assert_equal(d2.outcomes, outcomes)
+    assert d2.outcomes == outcomes
 
 def test_insert_rvf2():
     # Test multiple insertion.
@@ -309,7 +321,7 @@ def test_insert_rvf2():
     # We are also inserting two times simultaneously.
     d2 = dit.insert_rvf(d, [xor, xor])
     outcomes = ('000000', '011111', '101111', '110000')
-    assert_equal(d2.outcomes, outcomes)
+    assert d2.outcomes == outcomes
 
 def test_RVFunctions_from_mapping1():
     d = dit.Distribution(['00', '01', '10', '11'], [1/4]*4)
@@ -317,7 +329,7 @@ def test_RVFunctions_from_mapping1():
     mapping = {'00': '0', '01': '1', '10': '1', '11': '0'}
     d = dit.insert_rvf(d, bf.from_mapping(mapping))
     outcomes = ('000', '011', '101', '110')
-    assert_equal(d.outcomes, outcomes)
+    assert d.outcomes == outcomes
 
 def test_RVFunctions_from_mapping2():
     d = dit.Distribution([(0,0), (0,1), (1,0), (1,1)], [1/4]*4)
@@ -325,7 +337,7 @@ def test_RVFunctions_from_mapping2():
     mapping = {(0,0): 0, (0,1): 1, (1,0): 1, (1,1): 0}
     d = dit.insert_rvf(d, bf.from_mapping(mapping, force=True))
     outcomes = ((0, 0, 0), (0, 1, 1), (1, 0, 1), (1, 1, 0))
-    assert_equal(d.outcomes, outcomes)
+    assert d.outcomes == outcomes
 
 def test_RVFunctions_from_partition():
     d = dit.Distribution(['00', '01', '10', '11'], [1/4]*4)
@@ -333,7 +345,7 @@ def test_RVFunctions_from_partition():
     partition = (('00','11'), ('01', '10'))
     d = dit.insert_rvf(d, bf.from_partition(partition))
     outcomes = ('000', '011', '101', '110')
-    assert_equal(d.outcomes, outcomes)
+    assert d.outcomes == outcomes
 
 def test_product():
     """
@@ -344,7 +356,7 @@ def test_product():
     d_iid = dit.product_distribution(d)
     d_truth = dit.uniform_distribution(3, ['01'])
     d_truth = dit.modify_outcomes(d_truth, lambda x: ''.join(x))
-    assert_true(d_truth.is_approx_equal(d_iid))
+    assert d_truth.is_approx_equal(d_iid)
 
 def test_product_nonjoint():
     """
@@ -352,7 +364,8 @@ def test_product_nonjoint():
 
     """
     d = dit.ScalarDistribution([.5, .5])
-    assert_raises(Exception, dit.product_distribution, d)
+    with pytest.raises(Exception):
+        dit.product_distribution(d)
 
 def test_product_with_rvs1():
     """
@@ -363,7 +376,7 @@ def test_product_with_rvs1():
     d_iid = dit.product_distribution(d, [[0,1], [2]])
     d_truth = dit.uniform_distribution(3, ['01'])
     d_truth = dit.modify_outcomes(d_truth, lambda x: ''.join(x))
-    assert_true(d_truth.is_approx_equal(d_iid))
+    assert d_truth.is_approx_equal(d_iid)
 
 def test_product_with_rvs2():
     """
@@ -374,7 +387,7 @@ def test_product_with_rvs2():
     d_iid = dit.product_distribution(d, [[0,1]])
     d_truth = dit.uniform_distribution(2, ['01'])
     d_truth = dit.modify_outcomes(d_truth, lambda x: ''.join(x))
-    assert_true(d_truth.is_approx_equal(d_iid))
+    assert d_truth.is_approx_equal(d_iid)
 
 def test_product_with_badrvs():
     """
@@ -382,31 +395,31 @@ def test_product_with_badrvs():
 
     """
     d = dit.example_dists.Xor()
-    assert_raises(Exception, dit.product_distribution, d, [[0,1], [0]])
+    with pytest.raises(Exception):
+        dit.product_distribution(d, [[0,1], [0]])
 
-def test_all_dist_structures():
+@pytest.mark.parametrize(('n', 'k'), [(2, 2), (2, 3), (3, 2)])
+def test_all_dist_structures(n, k):
     """
     Test all_dist_structures().
 
     """
-    for n, k in [(2, 2), (2, 3), (3, 2)]:
-        num_dists = len(list(dit.all_dist_structures(n, k)))
-        yield assert_equal, num_dists, 2**(k**n)-1
+    num_dists = len(list(dit.all_dist_structures(n, k)))
+    assert num_dists == 2**(k**n)-1
 
-def test_random_dist_structure():
+@pytest.mark.parametrize('d', [ dit.random_dist_structure(3, 3) for _ in range(10) ])
+def test_random_dist_structure(d):
     """
     Test random_dist_structure()
 
     """
     words = {''.join(word) for word in itertools.product('012', repeat=3)}
-    for i in range(10):
-        d = dit.random_dist_structure(3, 3)
-        diff = set(d.outcomes) - words
-        yield assert_equal, diff, set()
-        yield assert_true, 0 < len(d.outcomes) <= 3**3
+    diff = set(d.outcomes) - words
+    assert diff == set()
+    assert 0 < len(d.outcomes) <= 3**3
 
 def test_coarsegrain():
     d = dit.example_dists.Xor()
     d2 = dit.modify_outcomes(d, lambda x: '1' if '1' in x else '0')
-    assert_equal(d2.outcomes, ('0', '1'))
-    np.testing.assert_allclose(d2.pmf, [.25, .75])
+    assert d2.outcomes == ('0', '1')
+    assert np.allclose(d2.pmf, [.25, .75])

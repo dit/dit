@@ -4,56 +4,66 @@ Tests for dit.math.misc.
 
 from __future__ import division
 
-from nose.tools import assert_equal, assert_false, assert_raises, assert_true
+import pytest
 
 from dit.math.misc import combinations, is_integer, is_number, factorial
 
-def test_number1():
-    for i in range(-10, 10):
-        assert_true(is_number(i))
 
-def test_number2():
-    for i in range(-10, 10):
-        assert_true(is_number(i/10))
+@pytest.mark.parametrize('n', range(-10, 10))
+def test_number1(n):
+        assert is_number(n)
 
-def test_number3():
-    for i in ['a', int, []]:
-        assert_false(is_number(i))
+@pytest.mark.parametrize('n', range(-10, 10))
+def test_number2(n):
+    assert is_number(n/10)
 
-def test_integer1():
-    for i in range(-10, 10):
-        assert_true(is_integer(i))
+@pytest.mark.parametrize('n', ['a', int, []])
+def test_number3(n):
+    assert not is_number(n)
 
-def test_integer2():
-    for i in range(-10, 10):
-        assert_false(is_integer(i/10))
+@pytest.mark.parametrize('n', range(-10, 10))
+def test_integer1(n):
+    assert is_integer(n)
 
-def test_integer3():
-    for i in ['a', int, []]:
-        assert_false(is_integer(i))
+@pytest.mark.parametrize('n', range(-10, 10))
+def test_integer2(n):
+    assert not is_integer(n/10)
 
-def test_factorial1():
-    vals = [0, 1, 2, 3, 4, 5]
-    facs = [1, 1, 2, 6, 24, 120]
-    for v, f in zip(vals, facs):
-        assert_equal(factorial(v), f)
+@pytest.mark.parametrize('n', ['a', int, []])
+def test_integer3(n):
+    assert not is_integer(n)
 
-def test_factorial2():
-    vals = [-1, 0.5, 1+2j]
-    for v in vals:
-        assert_raises(ValueError, factorial, v)
+@pytest.mark.parametrize(('n', 'expected'), [
+    (0, 1),
+    (1, 1),
+    (2, 2),
+    (3, 6),
+    (4, 24),
+    (5, 120),
+])
+def test_factorial1(n, expected):
+    assert factorial(n) == expected
 
-def test_factorial3():
-    vals = ['a', int, []]
-    for v in vals:
-        assert_raises(TypeError, factorial, v)
+@pytest.mark.parametrize('n', [-1, 0.5, 1+2j])
+def test_factorial2(n):
+    with pytest.raises(ValueError):
+        factorial(n)
 
-def test_combinations1():
+@pytest.mark.parametrize('n', ['a', int, []])
+def test_factorial3(n):
+    with pytest.raises(TypeError):
+        factorial(n)
+
+@pytest.mark.parametrize(('k', 'c'), [
+    (0, 1),
+    (1, 3),
+    (2, 3),
+    (3, 1),
+])
+def test_combinations1(k, c):
     n = 3
-    ks = [0, 1, 2, 3]
-    cs = [1, 3, 3, 1]
-    for k, c in zip(ks, cs):
-        assert_equal(combinations(n, k), c)
+    assert combinations(n, k) == c
 
 def test_combinations2():
-    assert_raises(ValueError, combinations, 5, 7)
+    with pytest.raises(ValueError):
+        combinations(5, 7)

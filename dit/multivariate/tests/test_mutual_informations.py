@@ -2,7 +2,7 @@
 Tests for the various mutual informations.
 """
 
-from nose.tools import assert_almost_equal
+import pytest
 
 from dit import random_distribution
 from dit.multivariate import (coinformation as I,
@@ -12,17 +12,17 @@ from dit.multivariate import (coinformation as I,
                               interaction_information as II,
                              )
 
-def test_mis1():
+@pytest.mark.parametrize('d', [random_distribution(2, 4) for _ in range(10)])
+def test_mis1(d):
     """
     Test that all the mutual informations match for bivariate distributions.
     """
-    for d in [random_distribution(2, 4) for _ in range(10)]:
-        i = I(d)
-        t = T(d)
-        b = B(d)
-        j = J(d)
-        ii = II(d)
-        yield assert_almost_equal, i, t
-        yield assert_almost_equal, t, b
-        yield assert_almost_equal, b, j
-        yield assert_almost_equal, j, ii
+    i = I(d)
+    t = T(d)
+    b = B(d)
+    j = J(d)
+    ii = II(d)
+    assert i == pytest.approx(t)
+    assert t == pytest.approx(b)
+    assert b == pytest.approx(j)
+    assert j == pytest.approx(ii)

@@ -1,8 +1,7 @@
 """
 Tests for dit.example_dists.circuits.
 """
-
-from nose.tools import assert_almost_equal
+import pytest
 
 from dit.example_dists import (Unq, Rdn, Xor, RdnXor, ImperfectRdn, Subtle, And,
                                Or)
@@ -19,10 +18,10 @@ def test_unq():
     i2 = mutual_information(d, [1], [2])
     i12 = mutual_information(d, [0, 1], [2])
     r = mutual_information(d, [2], [3])
-    assert_almost_equal(i1, 1)
-    assert_almost_equal(i2, 1)
-    assert_almost_equal(i12, 2)
-    assert_almost_equal(r, 0)
+    assert i1 == pytest.approx(1)
+    assert i2 == pytest.approx(1)
+    assert i12 == pytest.approx(2)
+    assert r == pytest.approx(0)
 
 def test_rdn():
     """ Test the Rdn distribution """
@@ -33,10 +32,10 @@ def test_rdn():
     i2 = mutual_information(d, [1], [2])
     i12 = mutual_information(d, [0, 1], [2])
     r = mutual_information(d, [2], [3])
-    assert_almost_equal(i1, 1)
-    assert_almost_equal(i2, 1)
-    assert_almost_equal(i12, 1)
-    assert_almost_equal(r, 1)
+    assert i1 == pytest.approx(1)
+    assert i2 == pytest.approx(1)
+    assert i12 == pytest.approx(1)
+    assert r == pytest.approx(1)
 
 def test_xor():
     """ Test the Xor distribution """
@@ -47,10 +46,10 @@ def test_xor():
     i2 = mutual_information(d, [1], [2])
     i12 = mutual_information(d, [0, 1], [2])
     r = mutual_information(d, [2], [3])
-    assert_almost_equal(i1, 0)
-    assert_almost_equal(i2, 0)
-    assert_almost_equal(i12, 1)
-    assert_almost_equal(r, 0)
+    assert i1 == pytest.approx(0)
+    assert i2 == pytest.approx(0)
+    assert i12 == pytest.approx(1)
+    assert r == pytest.approx(0)
 
 def test_and():
     """ Test the And distribution """
@@ -61,10 +60,10 @@ def test_and():
     i2 = mutual_information(d, [1], [2])
     i12 = mutual_information(d, [0, 1], [2])
     r = mutual_information(d, [2], [3])
-    assert_almost_equal(i1, 0.31127812445913294)
-    assert_almost_equal(i2, 0.31127812445913294)
-    assert_almost_equal(i12, 0.81127812445913294)
-    assert_almost_equal(r, 0)
+    assert i1 == pytest.approx(0.31127812445913294)
+    assert i2 == pytest.approx(0.31127812445913294)
+    assert i12 == pytest.approx(0.81127812445913294)
+    assert r == pytest.approx(0)
 
 def test_or():
     """ Test the Or distribution """
@@ -75,10 +74,10 @@ def test_or():
     i2 = mutual_information(d, [1], [2])
     i12 = mutual_information(d, [0, 1], [2])
     r = mutual_information(d, [2], [3])
-    assert_almost_equal(i1, 0.31127812445913294)
-    assert_almost_equal(i2, 0.31127812445913294)
-    assert_almost_equal(i12, 0.81127812445913294)
-    assert_almost_equal(r, 0)
+    assert i1 == pytest.approx(0.31127812445913294)
+    assert i2 == pytest.approx(0.31127812445913294)
+    assert i12 == pytest.approx(0.81127812445913294)
+    assert r == pytest.approx(0)
 
 def test_rdnxor():
     """ Test the RdnXor distribution """
@@ -89,10 +88,10 @@ def test_rdnxor():
     i2 = mutual_information(d, [1], [2])
     i12 = mutual_information(d, [0, 1], [2])
     r = mutual_information(d, [2], [3])
-    assert_almost_equal(i1, 1)
-    assert_almost_equal(i2, 1)
-    assert_almost_equal(i12, 2)
-    assert_almost_equal(r, 1)
+    assert i1 == pytest.approx(1)
+    assert i2 == pytest.approx(1)
+    assert i12 == pytest.approx(2)
+    assert r == pytest.approx(1)
 
 def test_imperfectrdn():
     """ Test the ImperfectRdn distribution """
@@ -103,10 +102,10 @@ def test_imperfectrdn():
     i2 = mutual_information(d, [1], [2])
     i12 = mutual_information(d, [0, 1], [2])
     r = mutual_information(d, [2], [3])
-    assert_almost_equal(i1, 1)
-    assert_almost_equal(i2, 0.98959007894024409)
-    assert_almost_equal(i12, 1)
-    assert_almost_equal(r, 0)
+    assert i1 == pytest.approx(1)
+    assert i2 == pytest.approx(0.98959007894024409)
+    assert i12 == pytest.approx(1)
+    assert r == pytest.approx(0)
 
 def test_subtle():
     """ Test the Subtle distribution """
@@ -117,7 +116,7 @@ def test_subtle():
     i2 = mutual_information(d, [1], [2])
     i12 = mutual_information(d, [0, 1], [2])
     r = mutual_information(d, [2], [3])
-    assert_almost_equal(i1, 0.91829583405448956)
-    assert_almost_equal(i2, 0.91829583405448956)
-    assert_almost_equal(i12, 1.5849625007211561)
-    assert_almost_equal(r, 0)
+    assert i1 == pytest.approx(0.91829583405448956)
+    assert i2 == pytest.approx(0.91829583405448956)
+    assert i12 == pytest.approx(1.5849625007211561)
+    assert r == pytest.approx(0)

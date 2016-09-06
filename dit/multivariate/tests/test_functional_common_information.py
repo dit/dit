@@ -4,8 +4,7 @@ Tests for dit.multivariate.functional_common_information.
 
 from __future__ import division
 
-from nose.plugins.attrib import attr
-from nose.tools import assert_almost_equal, assert_less_equal
+import pytest
 
 from dit import Distribution, random_distribution
 from dit.multivariate import (functional_common_information as F,
@@ -18,9 +17,9 @@ def test_fci1():
     Test known values.
     """
     d = Distribution(['000', '011', '101', '110'], [1/4]*4)
-    assert_almost_equal(F(d), 2.0)
-    assert_almost_equal(F(d, [[0], [1]]), 0.0)
-    assert_almost_equal(F(d, [[0], [1]], [2]), 1.0)
+    assert F(d) == pytest.approx(2.0)
+    assert F(d, [[0], [1]]) == pytest.approx(0.0)
+    assert F(d, [[0], [1]], [2]) == pytest.approx(1.0)
 
 def test_fci2():
     """
@@ -28,9 +27,9 @@ def test_fci2():
     """
     d = Distribution(['000', '011', '101', '110'], [1/4]*4)
     d.set_rv_names('XYZ')
-    assert_almost_equal(F(d), 2.0)
-    assert_almost_equal(F(d, [[0], [1]]), 0.0)
-    assert_almost_equal(F(d, [[0], [1]], [2]), 1.0)
+    assert F(d) == pytest.approx(2.0)
+    assert F(d, [[0], [1]]) == pytest.approx(0.0)
+    assert F(d, [[0], [1]], [2]) == pytest.approx(1.0)
 
 def test_fci3():
     """
@@ -54,4 +53,4 @@ def test_fci3():
                 'b1c',]
     pmf = [1/16]*16
     d = Distribution(outcomes, pmf)
-    assert_almost_equal(F(d), 2.0)
+    assert F(d) == pytest.approx(2.0)

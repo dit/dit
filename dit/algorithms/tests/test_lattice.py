@@ -6,10 +6,9 @@ from __future__ import division
 
 from iterutils import powerset
 
-from nose.tools import assert_equal, assert_raises
+import pytest
 
 import numpy as np
-import numpy.testing as npt
 
 from dit import Distribution, ScalarDistribution
 from dit.algorithms.lattice import (dist_from_induced_sigalg, insert_join,
@@ -25,7 +24,7 @@ def test_sigalg_sort():
         frozenset([1, 2])
     ])
     sigalg_ = [(), (1,), (2,), (1, 2)]
-    assert_equal(sigalg_, sigma_algebra_sort(sigalg))
+    assert sigalg_ == sigma_algebra_sort(sigalg)
 
 def test_join_sigalg():
     """ Test join_sigalg """
@@ -34,7 +33,7 @@ def test_join_sigalg():
     d = Distribution(outcomes, pmf)
     sigalg = frozenset([frozenset(_) for _ in powerset(outcomes)])
     joined = join_sigalg(d, [[0], [1]])
-    assert_equal(sigalg, joined)
+    assert sigalg == joined
 
 def test_meet_sigalg():
     """ Test meet_sigalg """
@@ -43,7 +42,7 @@ def test_meet_sigalg():
     d = Distribution(outcomes, pmf)
     sigalg = frozenset([frozenset([]), frozenset(outcomes)])
     meeted = meet_sigalg(d, [[0], [1]])
-    assert_equal(sigalg, meeted)
+    assert sigalg == meeted
 
 def test_dist_from_induced():
     """ Test dist_from_induced_sigalg """
@@ -53,17 +52,17 @@ def test_dist_from_induced():
 
     sigalg = frozenset(map(frozenset, d.event_space()))
     d2 = dist_from_induced_sigalg(d, sigalg)
-    npt.assert_allclose(pmf, d2.pmf)
+    assert np.allclose(pmf, d2.pmf)
 
     sigalg = [(), ((0,),), ((1,), (2,)), ((0,), (1,), (2,))]
     sigalg = frozenset(map(frozenset, sigalg))
     d2 = dist_from_induced_sigalg(d, sigalg, int_outcomes=True)
     pmf = np.array([1/3, 2/3])
-    npt.assert_allclose(pmf, d2.pmf)
+    assert np.allclose(pmf, d2.pmf)
 
     d2 = dist_from_induced_sigalg(d, sigalg, int_outcomes=False)
     outcomes = (((0,),), ((1,), (2,)))
-    assert_equal(outcomes, d2.outcomes)
+    assert outcomes == d2.outcomes
 
 def test_join():
     """ Test join """
@@ -71,8 +70,8 @@ def test_join():
     pmf = [1/4]*4
     d = Distribution(outcomes, pmf)
     d2 = join(d, [[0], [1]])
-    assert_equal(d2.outcomes, (0, 1, 2, 3))
-    npt.assert_allclose(d2.pmf, d.pmf)
+    assert d2.outcomes == (0, 1, 2, 3)
+    assert np.allclose(d2.pmf, d.pmf)
 
 def test_meet():
     """ Test meet """
@@ -80,17 +79,18 @@ def test_meet():
     pmf = [1/4]*4
     d = Distribution(outcomes, pmf)
     d2 = meet(d, [[0], [1]])
-    assert_equal(d2.outcomes, (0,))
-    npt.assert_allclose(d2.pmf, [1])
+    assert d2.outcomes == (0,)
+    assert np.allclose(d2.pmf, [1])
 
 def test_insert_join():
     """ Test insert_join """
     outcomes = ['00', '01', '10', '11']
     pmf = [1/4]*4
     d = Distribution(outcomes, pmf)
-    assert_raises(IndexError, insert_join, d, 5, [[0], [1]])
+    with pytest.raises(IndexError):
+        insert_join(d, 5, [[0], [1]])
 
     for idx in range(d.outcome_length()):
         d2 = insert_join(d, idx, [[0], [1]])
         m = d2.marginal([idx])
-        npt.assert_allclose(d2.pmf, m.pmf)
+        assert np.allclose(d2.pmf, m.pmf)
