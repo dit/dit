@@ -188,5 +188,10 @@ def functional_common_information(dist, rvs=None, crvs=None, rv_mode=None):
     F : float
         The functional common information.
     """
+    dtc = dual_total_correlation(dist, rvs, crvs, rv_mode)
+    ent = entropy(dist, rvs, crvs, rv_mode)
+    if close(dtc, ent):
+        return dtc
+
     d = functional_markov_chain(dist, rvs, crvs, rv_mode)
     return entropy(d, [dist.outcome_length()])

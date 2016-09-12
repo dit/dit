@@ -4,7 +4,9 @@ Compute the minimal sufficient statistic common information.
 
 from ..algorithms.minimal_sufficient_statistic import insert_joint_mss
 from ..helpers import normalize_rvs
+from .dual_total_correlation import dual_total_correlation
 from .entropy import entropy
+from ..math import close
 
 def mss_common_information(dist, rvs=None, crvs=None, rv_mode=None):
     """
@@ -30,6 +32,12 @@ def mss_common_information(dist, rvs=None, crvs=None, rv_mode=None):
 
     """
     rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
+
+    dtc = dual_total_correlation(dist, rvs, crvs, rv_mode)
+    ent = entropy(dist, rvs, crvs, rv_mode)
+    if close(dtc, ent):
+        return dtc
+
     d = insert_joint_mss(dist, -1, rvs, rv_mode)
 
     M = entropy(d, [d.outcome_length() - 1], crvs, rv_mode)
