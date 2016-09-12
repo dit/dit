@@ -28,8 +28,8 @@ def test_fci2():
     d = Distribution(['000', '011', '101', '110'], [1/4]*4)
     d.set_rv_names('XYZ')
     assert F(d) == pytest.approx(2.0)
-    assert F(d, [[0], [1]]) == pytest.approx(0.0)
-    assert F(d, [[0], [1]], [2]) == pytest.approx(1.0)
+    assert F(d, ['X', 'Y']) == pytest.approx(0.0)
+    assert F(d, ['X', 'Y'], 'Z') == pytest.approx(1.0)
 
 def test_fci3():
     """
