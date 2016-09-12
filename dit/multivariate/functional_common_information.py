@@ -188,6 +188,8 @@ def functional_common_information(dist, rvs=None, crvs=None, rv_mode=None):
     F : float
         The functional common information.
     """
+    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
+    
     dtc = dual_total_correlation(dist, rvs, crvs, rv_mode)
     ent = entropy(dist, rvs, crvs, rv_mode)
     if close(dtc, ent):
