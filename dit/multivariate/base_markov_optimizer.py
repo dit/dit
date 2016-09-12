@@ -13,6 +13,7 @@ import numpy as np
 from .. import Distribution
 from ..helpers import flatten, normalize_rvs
 from ..math import close
+from . import dual_total_correlation, entropy
 from ..utils.optimization import (BasinHoppingCallBack,
                                   BasinHoppingInnerCallBack,
                                   accept_test,
@@ -479,6 +480,14 @@ class MarkovVarOptimizer(object):
         """
 
         def common_info(dist, rvs=None, crvs=None, rv_mode=None, nhops=5, polish=1e-6):
+            dtc = dual_total_correlation(dist, rvs, crvs, rv_mode)
+            ent = entropy(dist, rvs, crvs, rv_mode)
+            if close(dtc, ent):
+                # Common informations are bound between the dual total correlation and the joint
+                # entropy. Therefore, if the two are equal, the common information is equal to them
+                # as well.
+                return dtc
+
             ci = cls(dist, rvs, crvs, rv_mode)
             ci.optimize(nhops=nhops, polish=polish)
             return ci.objective(ci._optima)
