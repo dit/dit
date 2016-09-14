@@ -5,8 +5,8 @@ The functional common information.
 from collections import deque
 from itertools import combinations
 
-from ..distconst import insert_rvf, modify_outcomes
-from ..helpers import flatten, normalize_rvs
+from ..distconst import RVFunctions, insert_rvf, modify_outcomes
+from ..helpers import flatten, parse_rvs, normalize_rvs
 from ..math import close
 from ..utils import partitions
 
@@ -14,27 +14,6 @@ from .entropy import entropy
 from .dual_total_correlation import dual_total_correlation
 
 __all__ = ['functional_common_information']
-
-def add_partition(dist, part):
-    """
-    Add a function of the joint distribution.
-
-    Parameters
-    ----------
-    dist : Distribution
-        The distribution to add a function to.
-    part : list of lists
-        A partition of the outcomes. Each outcome will be mapped to the id of
-        its partition element.
-
-    Returns
-    -------
-    dist : Distribution
-        The original `dist` with the function defined by `part` added.
-    """
-    invert_part = {e: (i,) for i, es in enumerate(part) for e in es}
-    dist = insert_rvf(dist, lambda j: invert_part[j])
-    return dist
 
 def functional_markov_chain_naive(dist, rvs=None, crvs=None, rv_mode=None): # pragma: no cover
     """
@@ -67,9 +46,10 @@ def functional_markov_chain_naive(dist, rvs=None, crvs=None, rv_mode=None): # pr
     """
     rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
     outcomes = dist.outcomes
+    bf = RVFunctions(dist)
     f = [len(dist.rvs)]
     parts = partitions(outcomes)
-    dists = [ add_partition(dist, part) for part in parts ]
+    dists = [ insert_rvf(dist, bf.from_partition(part)) for part in parts ]
     B = lambda d: dual_total_correlation(d, rvs, crvs+f, rv_mode)
     dists = [ d for d in dists if close(B(d), 0) ]
     return min(dists, key=lambda d: entropy(d, rvs=f, rv_mode=rv_mode))
@@ -111,18 +91,25 @@ def functional_markov_chain(dist, rvs=None, crvs=None, rv_mode=None):
     to whether a method to directly construct this variable exists (as it does
     with the GK common variable, minimal sufficient statistic, etc).
     """
+    optimal_b = dual_total_correlation(dist, rvs, crvs, rv_mode)
+
+    rv_names = dist.get_rv_names()
+    dist = modify_outcomes(dist, lambda x: tuple(x))
+    dist.set_rv_names(rv_names)
+
     rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
 
-    dist = modify_outcomes(dist, lambda x: tuple(x))
+    rvs = [ parse_rvs(dist, rv, rv_mode)[1] for rv in rvs ]
+    crvs = parse_rvs(dist, crvs, rv_mode)[1]
 
     part = frozenset([ frozenset([o]) for o in dist.outcomes ]) # make copy
 
-    W = [dist.outcome_length()]
+    bf = RVFunctions(dist)
+
+    W = (dist.outcome_length(),)
 
     H = lambda d: entropy(d, W, rv_mode=rv_mode)
     B = lambda d: dual_total_correlation(d, rvs, crvs+W, rv_mode)
-
-    optimal_b = dual_total_correlation(dist, rvs, crvs, rv_mode)
 
     initial = add_partition(dist, part)
     optimal = (H(initial), initial)
@@ -136,7 +123,7 @@ def functional_markov_chain(dist, rvs=None, crvs=None, rv_mode=None):
 
         checked.add(part)
 
-        d = add_partition(dist, part)
+        d = insert_rvf(dist, bf.from_partition(part))
 
         if close(B(d), 0):
 
@@ -189,7 +176,7 @@ def functional_common_information(dist, rvs=None, crvs=None, rv_mode=None):
         The functional common information.
     """
     rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
-    
+
     dtc = dual_total_correlation(dist, rvs, crvs, rv_mode)
     ent = entropy(dist, rvs, crvs, rv_mode)
     if close(dtc, ent):
