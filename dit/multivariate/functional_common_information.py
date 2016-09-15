@@ -111,7 +111,7 @@ def functional_markov_chain(dist, rvs=None, crvs=None, rv_mode=None):
     H = lambda d: entropy(d, W, rv_mode=rv_mode)
     B = lambda d: dual_total_correlation(d, rvs, crvs+W, rv_mode)
 
-    initial = add_partition(dist, part)
+    initial = insert_rvf(dist, bf.from_partition(part))
     optimal = (H(initial), initial)
 
     queue = deque([part])
