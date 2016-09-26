@@ -63,6 +63,7 @@ class MarkovVarOptimizer(object):
         # compute the sizes of the RVs
         self._rv_sizes = [ [ sizes[i] for i in rv ] for rv in self._rvs ]
         self._rv_lens = list(map(len, self._rv_sizes))
+        self._sizes = [0] + np.cumsum(self._rv_lens).tolist()
 
         # compute the bound on the auxiliary variable
         self._bound = self.compute_bound()
@@ -220,7 +221,7 @@ class MarkovVarOptimizer(object):
             slc1 = [Ellipsis] + [np.newaxis]*(len(cdist.shape)-self._crv_len)
             slc2 = [np.newaxis]*self._rv_lens[0] + \
                    [colon]*self._crv_len + \
-                   [np.newaxis]*([0] + np.cumsum(self._rv_lens).tolist())[i] + \
+                   [np.newaxis]*self._sizes[i] + \
                    [colon]*(len(cdist.shape)-self._crv_len)
             joint = joint[slc1] * cdist[slc2]
 
