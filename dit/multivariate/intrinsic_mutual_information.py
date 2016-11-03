@@ -112,9 +112,11 @@ class BaseIntrinsicMutualInformation(object):
             in and the optimization vector.
         """
         n = self._crv_size
-        channel = x.copy().reshape((n, n))
+        channel = x.reshape((n, n))
         channel /= channel.sum(axis=1, keepdims=True)
-        channel[np.isnan(channel)] = 0
+        mask = np.ones_like(channel)
+        mask /= mask.sum(axis=1, keepdims=True)
+        channel[np.isnan(channel)] = mask[np.isnan(channel)]
         slc = (len(self._pmf.shape) - 1)*[np.newaxis] + 2*[slice(None, None)]
         joint = self._pmf[..., np.newaxis] * channel[slc]
 
