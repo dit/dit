@@ -66,6 +66,7 @@ class BaseIntrinsicMutualInformation(object):
             msg = "Intrinsic mutual informations require a conditional variable."
             raise ditException(msg)
 
+        # compress all conditional random variables down to a single var
         self._unq = Uniquifier()
         self._dist = insert_rvf(self._dist, lambda x: (self._unq(tuple(x[i] for i in self._crvs)),))
 
@@ -111,8 +112,8 @@ class BaseIntrinsicMutualInformation(object):
             in and the optimization vector.
         """
         n = self._crv_size
-        channel = x.reshape((n, n))
-        channel = channel / channel.sum(axis=1, keepdims=True)
+        channel = x.copy().reshape((n, n))
+        channel /= channel.sum(axis=1, keepdims=True)
         channel[np.isnan(channel)] = 0
         slc = (len(self._pmf.shape) - 1)*[np.newaxis] + 2*[slice(None, None)]
         joint = self._pmf[..., np.newaxis] * channel[slc]
