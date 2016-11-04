@@ -21,10 +21,10 @@ There are several ways to decompose the information contained in a joint distrib
 
 .. py:module:: dit.profiles.information_partitions
 
-:class:`ShannonPartition` and :class:`ExtropyPartition`
-=======================================================
+Shannon Partition and Extropy Partition
+=======================================
 
-The I-diagrams for these four examples can be computed thusly:
+The I-diagrams, or :class:`ShannonPartition`, for these four examples can be computed thusly:
 
 .. ipython::
    :doctest:
@@ -81,7 +81,7 @@ The I-diagrams for these four examples can be computed thusly:
    | I[0:1:2] |  0.510 |
    +----------+--------+
 
-And their X-diagrams can be computed like so:
+And their X-diagrams, or :class:`ExtropyDiagram`, can be computed like so:
 
 .. ipython::
    :doctest:
@@ -140,10 +140,10 @@ And their X-diagrams can be computed like so:
 
 .. py:module:: dit.profiles.complexity_profile
 
-:class:`ComplexityProfile`
-==========================
+Complexity Profile
+==================
 
-The complexity profile is simply the amount of information at scale :math:`\geq k` of each "layer" of the I-diagram :cite:`Baryam2004`.
+The complexity profile, implimented by :class:`ComplexityProfile` is simply the amount of information at scale :math:`\geq k` of each "layer" of the I-diagram :cite:`Baryam2004`.
 
 Consider example 1, which contains three independent bits. Each of these bits are in the outermost "layer" of the i-diagram, and so the information in the complexity profile is all at layer 1:
 
@@ -175,10 +175,10 @@ Finally, example 4 (where each variable is the ``exclusive or`` of the other two
 
 .. py:module:: dit.profiles.marginal_utility_of_information
 
-:class:`MUIProfile`
-===================
+Marginal Utility of Information
+===============================
 
-The marginal utility of information (MUI) :cite:`Allen2014` takes a different approach. It asks, given an amount of information :math:`\I[d : \{X\}] = y`, what is the maximum amount of information one can extract using an auxilliary variable :math:`d` as measured by the sum of the pairwise mutual informations, :math:`\sum \I[d : X_i]`. The MUI is then the rate of this maximum as a function of :math:`y`.
+The marginal utility of information (MUI) :cite:`Allen2014`, implimented by :class:`MUIProfile` takes a different approach. It asks, given an amount of information :math:`\I[d : \{X\}] = y`, what is the maximum amount of information one can extract using an auxilliary variable :math:`d` as measured by the sum of the pairwise mutual informations, :math:`\sum \I[d : X_i]`. The MUI is then the rate of this maximum as a function of :math:`y`.
 
 For the first example, each bit is independent and so basically must be extracted independently. Thus, as one increases :math:`y` the maximum amount extracted grows equally:
 
@@ -210,10 +210,10 @@ Lastly, the ``xor`` example:
 
 .. py:module:: dit.profiles.schneidman
 
-:class:`SchneidmanProfile`
-==========================
+Schneidman Profile
+==================
 
-Also known as the *connected information* or *network informations*, the Schneidman profile exposes how much information is learned about the distribution when considering :math:`k`-way dependencies :cite:`Amari2001,Schneidman2003`. In all the following examples, each individual marginal is already uniformly distributed, and so the connected information at scale 1 is 0.
+Also known as the *connected information* or *network informations*, the Schneidman profile (:class:`SchneidmanProfile`) exposes how much information is learned about the distribution when considering :math:`k`-way dependencies :cite:`Amari2001,Schneidman2003`. In all the following examples, each individual marginal is already uniformly distributed, and so the connected information at scale 1 is 0.
 
 In the first example, all the random variables are independent already, so fixing marginals above :math:`k=1` does not result in any change to the inferred distribution:
 
@@ -248,10 +248,10 @@ And for the ``xor``, all bits appear independent until fixing the three-way marg
 
 .. py:module:: dit.profiles.entropy_triangle
 
-:class:`EntropyTriangle` and :class:`EntropyTriangle2`
-======================================================
+Entropy Triangle and Entropy Triangle2
+======================================
 
-The entropy triangle :cite:`valverde2016multivariate` is a method of visualizing how the information in the distribution is distributed among deviation from uniformity, independence, and dependence. The deviation from independence is measured by considering the difference in entropy between a independent variables with uniform distributions, and independent variables with the same marginal distributions as the distribution in question. Independence is measured via the :doc:`measures/multivariate/residual_entropy`, and dependence is measured by the sum of the :doc:`measures/multivariate/total_correlation` and :doc:`measures/multivariate/dual_total_correlation`.
+The entropy triangle, :class:`EntropyTriangle`, :cite:`valverde2016multivariate` is a method of visualizing how the information in the distribution is distributed among deviation from uniformity, independence, and dependence. The deviation from independence is measured by considering the difference in entropy between a independent variables with uniform distributions, and independent variables with the same marginal distributions as the distribution in question. Independence is measured via the :doc:`measures/multivariate/residual_entropy`, and dependence is measured by the sum of the :doc:`measures/multivariate/total_correlation` and :doc:`measures/multivariate/dual_total_correlation`.
 
 All four examples lay along the left axis because their distributions are uniform over the events that have non-zero probability.
 
@@ -297,9 +297,88 @@ We can also plot all four on the same entropy triangle:
    @savefig entropy_triangle_example.png width=500 align=center
    In [32]: EntropyTriangle(dists).draw();
 
-We can plot these same distributions on a slightly different entropy triangle as well, one comparing the :doc:`measures/multivariate/residual_entropy`, :doc:`measures/multivariate/total_correlation`, and :doc:`measures/multivariate/dual_total_correlation`:
+We can plot these same distributions on a slightly different entropy triangle as well, :class:`EntropyTriangle2`, one comparing the :doc:`measures/multivariate/residual_entropy`, :doc:`measures/multivariate/total_correlation`, and :doc:`measures/multivariate/dual_total_correlation`:
 
 .. ipython::
 
    @savefig entropy_triangle2_example.png width=500 align=center
    In [33]: EntropyTriangle2(dists).draw();
+
+Dependency Decomposition
+========================
+
+Using :class:`DependencyDecomposition`, one can discover how an arbitrary information measure varies as marginals of the distribution are fixed:
+
+.. ipython::
+   :doctest:
+
+   In [34]: DependencyDecomposition(ex1)
+   +------------+--------+
+   | dependency |  bits  |
+   +------------+--------+
+   |    012     |  3.000 |
+   |  01:02:12  |  3.000 |
+   |   02:12    |  3.000 |
+   |   01:12    |  3.000 |
+   |   01:02    |  3.000 |
+   |    12:0    |  3.000 |
+   |    02:1    |  3.000 |
+   |    01:2    |  3.000 |
+   |   0:1:2    |  3.000 |
+   +------------+--------+
+
+.. ipython::
+   :doctest:
+
+   In [35]: DependencyDecomposition(ex2)
+   +------------+--------+
+   | dependency |  bits  |
+   +------------+--------+
+   |    012     |  1.000 |
+   |  01:02:12  |  1.000 |
+   |   02:12    |  1.000 |
+   |   01:12    |  1.000 |
+   |   01:02    |  1.000 |
+   |    12:0    |  2.000 |
+   |    02:1    |  2.000 |
+   |    01:2    |  2.000 |
+   |   0:1:2    |  3.000 |
+   +------------+--------+
+
+
+.. ipython::
+   :doctest:
+
+   In [36]: DependencyDecomposition(ex3)
+   +------------+--------+
+   | dependency |  bits  |
+   +------------+--------+
+   |    012     |  2.000 |
+   |  01:02:12  |  2.000 |
+   |   02:12    |  3.000 |
+   |   01:12    |  2.000 |
+   |   01:02    |  2.000 |
+   |    12:0    |  3.000 |
+   |    02:1    |  3.000 |
+   |    01:2    |  2.000 |
+   |   0:1:2    |  3.000 |
+   +------------+--------+
+
+
+.. ipython::
+   :doctest:
+
+   In [37]: DependencyDecomposition(ex4)
+   +------------+--------+
+   | dependency |  bits  |
+   +------------+--------+
+   |    012     |  2.000 |
+   |  01:02:12  |  3.000 |
+   |   02:12    |  3.000 |
+   |   01:12    |  3.000 |
+   |   01:02    |  3.000 |
+   |    12:0    |  3.000 |
+   |    02:1    |  3.000 |
+   |    01:2    |  3.000 |
+   |   0:1:2    |  3.000 |
+   +------------+--------+

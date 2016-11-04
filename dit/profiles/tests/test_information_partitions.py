@@ -6,7 +6,7 @@ import pytest
 from itertools import islice
 from iterutils import powerset
 
-from dit.multivariate import coinformation as I
+from dit.multivariate import coinformation as I, dual_total_correlation as B
 from dit.utils import partitions
 from dit.profiles.information_partitions import *
 from dit.example_dists import n_mod_m
@@ -86,4 +86,26 @@ def test_ep1():
 | X[1:2|0] |  0.245 |
 | X[0:1:2] |  0.510 |
 +----------+--------+"""
+    assert str(ep) == string
+
+def test_dd1():
+    """
+    Test against known values.
+    """
+    d = n_mod_m(3, 2)
+    ep = DependencyDecomposition(d, measure=B)
+    string = """\
++------------+--------+
+| dependency |  bits  |
++------------+--------+
+|    012     |  2.000 |
+|  01:02:12  |  0.000 |
+|   02:12    |  0.000 |
+|   01:12    |  0.000 |
+|   01:02    |  0.000 |
+|    12:0    |  0.000 |
+|    02:1    |  0.000 |
+|    01:2    |  0.000 |
+|   0:1:2    |  0.000 |
++------------+--------+"""
     assert str(ep) == string

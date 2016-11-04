@@ -83,6 +83,8 @@ class BaseIntrinsicMutualInformation(object):
         keepers = set(flatten(self._rvs)) | {self._crv+1}
         self._others = tuple(all_vars - keepers)
 
+        self._mask = np.ones((self._crv_size, self._crv_size)) / self._crv_size
+
     def construct_random_initial(self):
         """
         Construct a random optimization vector.
@@ -114,9 +116,7 @@ class BaseIntrinsicMutualInformation(object):
         n = self._crv_size
         channel = x.reshape((n, n))
         channel /= channel.sum(axis=1, keepdims=True)
-        mask = np.ones_like(channel)
-        mask /= mask.sum(axis=1, keepdims=True)
-        channel[np.isnan(channel)] = mask[np.isnan(channel)]
+        channel[np.isnan(channel)] = self._mask[np.isnan(channel)]
         slc = (len(self._pmf.shape) - 1)*[np.newaxis] + 2*[slice(None, None)]
         joint = self._pmf[..., np.newaxis] * channel[slc]
 

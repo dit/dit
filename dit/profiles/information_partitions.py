@@ -316,6 +316,11 @@ class DependencyDecomposition(object):
 
         self.atoms = atoms
 
+    def __repr__(self):
+        """
+        Represent using the str().
+        """
+        return str(self)
 
     def __str__(self):
         """
