@@ -129,11 +129,13 @@ class MaxEntOptimizer(object):
             The maximum entropy distribution.
         """
         if x is None:
-            x = self._optima
+            x = self._optima.copy()
 
+        x[x < cutoff] = 0
+        x /= x.sum()
+        
         new_dist = self.dist.copy()
         new_dist.pmf = x
-        new_dist.pmf[new_dist.pmf < cutoff] = 0
         new_dist.make_sparse()
 
         new_dist.set_rv_names(self.dist.get_rv_names())
