@@ -114,7 +114,7 @@ class MaxEntOptimizer(object):
 
         self._optima = res.x
 
-    def construct_dist(self, x=None):
+    def construct_dist(self, x=None, cutoff=1e-6):
         """
         Construct the maximum entropy distribution.
 
@@ -133,6 +133,7 @@ class MaxEntOptimizer(object):
 
         new_dist = self.dist.copy()
         new_dist.pmf = x
+        new_dist.pmf[new_dist.pmf < cutoff] = 0
         new_dist.make_sparse()
 
         new_dist.set_rv_names(self.dist.get_rv_names())
