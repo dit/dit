@@ -14,6 +14,7 @@ from prettytable import PrettyTable
 
 from networkx import DiGraph, dfs_preorder_nodes as children, topological_sort
 
+from ..algorithms import maxent_dist
 from ..math import close
 from ..other import extropy
 from ..shannon import entropy
@@ -270,7 +271,7 @@ class DependencyDecomposition(object):
     distribution.
     """
 
-    def __init__(self, dist, measure=entropy, tol=1e-4):
+    def __init__(self, dist, measure=entropy):
         """
         Construct a Krippendorff-type partition of the information contained in
         `dist`.
@@ -281,7 +282,6 @@ class DependencyDecomposition(object):
             The distribution to partition.
         """
         self.dist = dist
-        self._tol = tol
         self.measure = measure
         self._partition()
 
@@ -301,8 +301,6 @@ class DependencyDecomposition(object):
         """
         Computes all the dependencies of `dist`.
         """
-        from ..algorithms.maxentropyfw import maxent_dist
-
         rvs = self.dist.get_rv_names()
         if not rvs:
             rvs = tuple(range(self.dist.outcome_length()))
@@ -312,7 +310,7 @@ class DependencyDecomposition(object):
 
         # Entropies
         for node in self._lattice:
-            atoms[node] = self.measure(maxent_dist(self.dist, node, tol=self._tol))
+            atoms[node] = self.measure(maxent_dist(self.dist, node))
 
         self.atoms = atoms
 

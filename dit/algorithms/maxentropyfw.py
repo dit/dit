@@ -26,8 +26,7 @@ from .maxentropy import (
 )
 
 __all__ = [
-    'maxent_dist',
-    'marginal_maxent_dists',
+    # 'marginal_maxent_dists',
 ]
 
 
@@ -246,36 +245,6 @@ def marginal_maxent(dist, k, **kwargs):
     kwargs['rv_mode'] = rv_mode
 
     return marginal_maxent_generic(dist, rvs, **kwargs)
-
-
-def maxent_dist(dist, rvs, maxiters=1000, tol=1e-3, verbose=False):
-    """
-    Return the maximum entropy distribution consistant with the marginals from
-    `dist` specified in `rvs`.
-
-    Parameters
-    ----------
-    dist : Distribution
-        The distributions whose marginals should be matched.
-    rvs : list of lists
-        The marginals from `dist` to constrain.
-    maxiters : int
-        The maximum number of iterations for the optimizer to use. Defaults to
-        1000.
-    tol : float
-        The tolerance for the optimizer. Defaults to 1e-3.
-    verbose : bool
-        Verbosity of the optimizer. Defaults to False.
-    """
-    dist = prepare_dist(dist.copy())
-    outcomes = list(dist._sample_space)
-
-    kwargs = {'maxiters': maxiters, 'tol': tol, 'verbose': verbose}
-    pmf_opt, opt = marginal_maxent_generic(dist, rvs, **kwargs)
-    d = dit.Distribution(outcomes, pmf_opt)
-    d.make_sparse()
-    return d
-
 
 def marginal_maxent_dists(dist, k_max=None, maxiters=1000, tol=1e-3, verbose=False):
     """
