@@ -307,7 +307,7 @@ We can plot these same distributions on a slightly different entropy triangle as
 Dependency Decomposition
 ========================
 
-Using :class:`DependencyDecomposition`, one can discover how an arbitrary information measure varies as marginals of the distribution are fixed:
+Using :class:`DependencyDecomposition`, one can discover how an arbitrary information measure varies as marginals of the distribution are fixed. In our first example, each variable is independent of the others, and so constraining marginals makes no difference:
 
 .. ipython::
    :doctest:
@@ -327,6 +327,8 @@ Using :class:`DependencyDecomposition`, one can discover how an arbitrary inform
    |   0:1:2    |  3.000 |
    +------------+--------+
 
+In the second example, we see that fixing any one of the pairwise marginals reduces the entropy by one bit, and by fixing a second we reduce the entropy down to one bit:
+
 .. ipython::
    :doctest:
 
@@ -345,6 +347,7 @@ Using :class:`DependencyDecomposition`, one can discover how an arbitrary inform
    |   0:1:2    |  3.000 |
    +------------+--------+
 
+In the third example, only constraining the 01 marginal reduces the entropy, and it reduces it by one bit:
 
 .. ipython::
    :doctest:
@@ -364,6 +367,7 @@ Using :class:`DependencyDecomposition`, one can discover how an arbitrary inform
    |   0:1:2    |  3.000 |
    +------------+--------+
 
+And finally in the case of the exclusive or, only constraining the 012 marginal reduces the entropy.
 
 .. ipython::
    :doctest:
