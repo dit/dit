@@ -47,5 +47,5 @@ def test_measures(measure, dy_val, tri_val):
     """
     Test that the distributions have the correct properties.
     """
-    assert measure(dyadic) == dy_val
-    assert measure(triadic) == tri_val
+    assert measure(dyadic) == pytest.approx(dy_val)
+    assert measure(triadic) == pytest.approx(tri_val)
