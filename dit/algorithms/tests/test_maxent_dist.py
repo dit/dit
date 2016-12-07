@@ -29,7 +29,7 @@ def test_maxent_1(vars):
     """
     d1 = uniform(['000', '011', '101', '110'])
     d2 = uniform(['000', '001', '010', '011', '100', '101', '110', '111'])
-    d1_maxent = maxent_dist(d1, vars, tol=1e-6)
+    d1_maxent = maxent_dist(d1, vars)
     assert d2.is_approx_equal(d1_maxent, rtol=1e-3, atol=1e-3)
 
 
@@ -39,5 +39,5 @@ def test_maxent_2():
     """
     d1 = uniform(['00', '10', '21', '31'])
     d2 = uniform(['00', '01', '10', '11', '20', '21', '30', '31'])
-    d1_maxent = maxent_dist(d1, [[0], [1]], tol=1e-6)
+    d1_maxent = maxent_dist(d1, [[0], [1]])
     assert d2.is_approx_equal(d1_maxent, rtol=1e-3, atol=1e-3)
