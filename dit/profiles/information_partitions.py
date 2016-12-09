@@ -7,19 +7,21 @@ from __future__ import absolute_import
 
 from abc import ABCMeta, abstractmethod
 
-from itertools import islice
+from itertools import combinations, islice, permutations
 from iterutils import powerset
 
 from prettytable import PrettyTable
 
 from networkx import DiGraph, dfs_preorder_nodes as children, topological_sort
 
-from ..shannon import entropy
-from ..other import extropy
+from ..algorithms import maxent_dist
 from ..math import close
+from ..other import extropy
+from ..shannon import entropy
 
 __all__ = ['ShannonPartition',
            'ExtropyPartition',
+           'DependencyDecomposition',
           ]
 
 
@@ -36,6 +38,45 @@ def poset_lattice(elements):
         for b in powerset(elements):
             if child(set(a), set(b)):
                 lattice.add_edge(b, a)
+
+    return lattice
+
+def constraint_lattice(elements):
+    """
+    Return a lattice of constrained marginals, with k=1 at the bottom and
+    k=len(elements) at the top.
+    """
+    def not_comparable(a, b):
+        return a - b and b - a
+
+    def is_antichain(s):
+        ns = all(not_comparable(s1, s2) for s1, s2 in combinations(s, 2))
+        return ns
+
+    def is_cover(s, sss):
+        cover = set().union(*sss)
+        return s == cover
+
+    def less_than(sss1, sss2):
+        return all(any(ss1 <= ss2 for ss2 in sss2) for ss1 in sss1)
+
+    def normalize(sss):
+        return tuple(sorted(tuple( tuple(sorted(ss)) for ss in sss ),
+                            key=lambda s: (-len(s), s)))
+
+    elements = set(elements)
+
+    ps = (frozenset(ss) for ss in powerset(elements) if len(ss) > 0)
+
+    pps = [c for c in powerset(ps) if is_antichain(c) and is_cover(elements, c)]
+
+    order = [(a, b) for a, b in permutations(pps, 2) if less_than(a, b)]
+
+    lattice = DiGraph()
+
+    for a, b in order:
+        if not any(((a, c) in order) and ((c, b) in order) for c in pps):
+            lattice.add_edge(normalize(b), normalize(a))
 
     return lattice
 
@@ -100,23 +141,23 @@ class BaseInformationPartition(object):
         if not rvs:
             rvs = tuple(range(self.dist.outcome_length()))
 
-        lattice = poset_lattice(rvs)
-        rlattice = lattice.reverse()
+        self._lattice = poset_lattice(rvs)
+        rlattice = self._lattice.reverse()
         Hs = {}
         Is = {}
         atoms = {}
         new_atoms = {}
 
         # Entropies
-        for node in lattice:
+        for node in self._lattice:
             Hs[node] = self._measure(self.dist, node) # pylint: disable=no-member
 
         # Subset-sum type thing, basically co-information calculations.
-        for node in lattice:
-            Is[node] = sum((-1)**(len(rv)+1)*Hs[rv] for rv in children(lattice, node))
+        for node in self._lattice:
+            Is[node] = sum((-1)**(len(rv)+1)*Hs[rv] for rv in children(self._lattice, node))
 
         # Mobius inversion of the above, resulting in the Shannon atoms.
-        for node in topological_sort(lattice)[:-1]:
+        for node in topological_sort(self._lattice)[:-1]:
             kids = islice(children(rlattice, node), 1, None)
             atoms[node] = Is[node] - sum(atoms[child] for child in kids)
 
@@ -222,3 +263,99 @@ class ExtropyPartition(BaseInformationPartition):
         Returns X for all atoms.
         """
         return 'X'
+
+
+class DependencyDecomposition(object):
+    """
+    Construct a decomposition of all the dependencies in a given joint
+    distribution.
+    """
+
+    def __init__(self, dist, measure=entropy):
+        """
+        Construct a Krippendorff-type partition of the information contained in
+        `dist`.
+
+        Parameters
+        ----------
+        dist : distribution
+            The distribution to partition.
+        """
+        self.dist = dist
+        self.measure = measure
+        self._partition()
+
+    @staticmethod
+    def _stringify(dependency):
+        """
+        Construct a string representation of a dependency, e.g. ABC:AD:BD
+
+        Parameters
+        ----------
+        dependency : tuple of tuples
+        """
+        s = ':'.join(''.join(map(str, d)) for d in dependency)
+        return s
+
+    def _partition(self):
+        """
+        Computes all the dependencies of `dist`.
+        """
+        rvs = self.dist.get_rv_names()
+        if not rvs:
+            rvs = tuple(range(self.dist.outcome_length()))
+
+        self._lattice = constraint_lattice(rvs)
+        atoms = {}
+
+        # Entropies
+        for node in self._lattice:
+            atoms[node] = self.measure(maxent_dist(self.dist, node))
+
+        self.atoms = atoms
+
+    def __repr__(self):
+        """
+        Represent using the str().
+        """
+        return str(self)
+
+    def __str__(self):
+        """
+        Use PrettyTable to create a nice table.
+        """
+        return self.to_string()
+
+    def to_string(self, digits=3):
+        """
+        Use PrettyTable to create a nice table.
+        """
+        table = PrettyTable(['dependency', 'bits'])
+        ### TODO: add some logic for the format string, so things look nice
+        # with arbitrary values
+        table.float_format['bits'] = ' 5.{0}'.format(digits)
+        key_function = lambda row: ([len(d) for d in row[0]], row[0])
+        items = self.atoms.items()
+        for dependency, value in reversed(sorted(items, key=key_function)):
+            # gets rid of pesky -0.0 display values
+            if close(value, 0.0):
+                value = 0.0
+            table.add_row([self._stringify(dependency), value])
+        return table.get_string()
+
+    def get_dependencies(self, string=True):
+        """
+        Return all the dependencies within the distribution.
+
+        Parameters
+        ----------
+        string : bool
+            If True, return dependencies as strings. Otherwise, as a tuple of
+            tuples.
+        """
+        if string:
+            f = self._stringify
+        else:
+            f = lambda d: d
+
+        return set(map(f, self.atoms.keys()))

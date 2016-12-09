@@ -31,8 +31,9 @@ import dit
 
 from dit.abstractdist import AbstractDenseDistribution, get_abstract_dist
 
-from ..helpers import parse_rvs
+from ..helpers import RV_MODES, parse_rvs
 from .optutil import as_full_rank, CVXOPT_Template, prepare_dist, Bunch
+from ..utils import flatten
 
 __all__ = [
     'MarginalMaximumEntropy',
@@ -41,6 +42,47 @@ __all__ = [
     #'marginal_maxent_dists',
     'moment_maxent_dists',
 ]
+
+
+def isolate_zeros_generic(dist, rvs):
+    """
+    Determines if there are any elements of the optimization vector that must
+    be zero.
+
+    If p(marginal) = 0, then every component of the joint that contributes to
+    that marginal probability must be exactly zero for all feasible solutions.
+
+    """
+    assert dist.is_dense()
+    assert dist.get_base() == 'linear'
+
+    rvs_, indexes = parse_rvs(dist, set(flatten(rvs)), unique=True, sort=True)
+    rvs = [[indexes[rvs_.index(rv)] for rv in subrv] for subrv in rvs]
+
+    d = get_abstract_dist(dist)
+    n_variables = d.n_variables
+    n_elements = d.n_elements
+
+    zero_elements = np.zeros(n_elements, dtype=int)
+    cache = {}
+    pmf = dist.pmf
+
+    for subrvs in rvs:
+        marray = d.parameter_array(subrvs, cache=cache)
+        for idx in marray:
+            # Convert the sparse nonzero elements to a dense boolean array
+            bvec = np.zeros(n_elements, dtype=int)
+            bvec[idx] = 1
+            p = pmf[idx].sum()
+            if np.isclose(p, 0):
+                zero_elements += bvec
+
+    zero = np.nonzero(zero_elements)[0]
+    zeroset = set(zero)
+    nonzero = [i for i in range(n_elements) if i not in zeroset]
+    variables = Bunch(nonzero=nonzero, zero=zero)
+
+    return variables
 
 
 def isolate_zeros(dist, k):
@@ -182,8 +224,13 @@ def marginal_constraints(dist, m, with_normalization=True):
         msg = msg.format(m, n_variables)
         raise ValueError(msg)
 
-    rvs = list(itertools.combinations(range(n_variables), m))
-    rv_mode = 'indices'
+    rv_mode = dist._rv_mode
+
+    if rv_mode in [RV_MODES.NAMES, 'names']:
+        vars = dist.get_rv_names()
+        rvs = list(itertools.combinations(vars, m))
+    else:
+        rvs = list(itertools.combinations(range(n_variables), m))
 
     A, b = marginal_constraints_generic(dist, rvs, rv_mode,
                                         with_normalization=with_normalization)

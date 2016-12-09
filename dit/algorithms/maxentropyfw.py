@@ -8,24 +8,29 @@ This uses the Frank-Wolfe algorithm:
 """
 from __future__ import print_function
 
+from itertools import combinations
+
 import logging
 
 import numpy as np
 
 import dit
+from dit.helpers import RV_MODES
 from dit.utils import basic_logger
 
 from .optutil import (
     as_full_rank, prepare_dist, op_runner, frank_wolfe
 )
-from .maxentropy import marginal_constraints, isolate_zeros
+from .maxentropy import (
+    marginal_constraints, isolate_zeros, marginal_constraints_generic, isolate_zeros_generic
+)
 
 __all__ = [
-    'marginal_maxent_dists',
+    # 'marginal_maxent_dists',
 ]
 
 
-def initial_point(dist, k, A=None, b=None, isolated=None, **kwargs):
+def initial_point_generic(dist, rvs, A=None, b=None, isolated=None, **kwargs):
     """
     Find an initial point in the interior of the feasible set.
 
@@ -34,12 +39,12 @@ def initial_point(dist, k, A=None, b=None, isolated=None, **kwargs):
     from cvxopt.modeling import variable
 
     if isolated is None:
-        variables = isolate_zeros(dist, k)
+        variables = isolate_zeros_generic(dist, rvs)
     else:
         variables = isolated
 
     if A is None or b is None:
-        A, b = marginal_constraints(dist, k)
+        A, b = marginal_constraints_generic(dist, rvs)
 
         # Reduce the size of A so that only nonzero elements are searched.
         # Also make it full rank.
@@ -96,6 +101,25 @@ def initial_point(dist, k, A=None, b=None, isolated=None, **kwargs):
 
     return xopt, opt
 
+
+def initial_point(dist, k, A=None, b=None, isolated=None, **kwargs):
+    """
+    Find an initial point in the interior of the feasible set.
+
+    """
+    n_variables = dist.outcome_length()
+
+    if m > n_variables:
+        msg = "Cannot constrain {0}-way marginals"
+        msg += " with only {1} random variables."
+        msg = msg.format(m, n_variables)
+        raise ValueError(msg)
+
+    rvs = list(combinations(range(n_variables), m))
+    kwargs['rv_mode'] = 'indices'
+
+    return initial_point_generic(dist, rvs, A, b, isolated, **kwargs)
+
 def check_feasibility(dist, k, **kwargs):
     """
     Checks feasibility by solving the minimum residual problem:
@@ -138,17 +162,19 @@ def negentropy(p):
     # This works fine even if p is a n-by-1 cvxopt.matrix.
     return np.nansum(p * np.log2(p))
 
-def marginal_maxent(dist, k, **kwargs):
+def marginal_maxent_generic(dist, rvs, **kwargs):
     from cvxopt import matrix
 
     verbose = kwargs.get('verbose', False)
     logger = basic_logger('dit.maxentropy', verbose)
 
-    A, b = marginal_constraints(dist, k)
+    rv_mode = kwargs.pop('rv_mode', None)
+
+    A, b = marginal_constraints_generic(dist, rvs, rv_mode)
 
     # Reduce the size of A so that only nonzero elements are searched.
     # Also make it full rank.
-    variables = isolate_zeros(dist, k)
+    variables = isolate_zeros_generic(dist, rvs)
     Asmall = A[:, variables.nonzero] # pylint: disable=no-member
     Asmall, b, rank = as_full_rank(Asmall, b)
     Asmall = matrix(Asmall)
@@ -161,9 +187,9 @@ def marginal_maxent(dist, k, **kwargs):
         show_progress = False
 
     logger.info("Finding initial distribution.")
-    initial_x, _ = initial_point(dist, k, A=Asmall, b=b,
-                                 isolated=variables,
-                                 show_progress=show_progress)
+    initial_x, _ = initial_point_generic(dist, rvs, A=Asmall, b=b,
+                                         isolated=variables,
+                                         show_progress=show_progress)
     initial_x = matrix(initial_x)
     objective = negentropy
 
@@ -195,6 +221,30 @@ def marginal_maxent(dist, k, **kwargs):
     xfinal[nonzero] = x
 
     return xfinal, obj#, Asmall, b, variables
+
+def marginal_maxent(dist, k, **kwargs):
+    n_variables = dist.outcome_length()
+
+    if k > n_variables:
+        msg = "Cannot constrain {0}-way marginals"
+        msg += " with only {1} random variables."
+        msg = msg.format(m, n_variables)
+        raise ValueError(msg)
+
+    rv_mode = kwargs.pop('rv_mode', None)
+
+    if rv_mode is None:
+        rv_mode = dist._rv_mode
+
+    if rv_mode in [RV_MODES.NAMES, 'names']:
+        vars = dist.get_rv_names()
+        rvs = list(combinations(vars, k))
+    else:
+        rvs = list(combinations(range(n_variables), k))
+
+    kwargs['rv_mode'] = rv_mode
+
+    return marginal_maxent_generic(dist, rvs, **kwargs)
 
 def marginal_maxent_dists(dist, k_max=None, maxiters=1000, tol=1e-3, verbose=False):
     """
