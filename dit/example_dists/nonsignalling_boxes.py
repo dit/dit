@@ -3,6 +3,8 @@
 
 from dit import Distribution
 
+from itertools import product
+
 __all__ = ['pr_box']
 
 def pr_box(eta=1, name=False):
@@ -29,7 +31,7 @@ def pr_box(eta=1, name=False):
     """
     outcomes = list(product([0, 1], repeat=4))
     pmf = [ ((1+eta)/16 if (x*y == a^b) else (1-eta)/16) for x, y, a, b in outcomes ]
-    pr = D(outcomes, pmf)
+    pr = Distribution(outcomes, pmf)
 
     if name:
         pr.set_rv_names("XYAB")
