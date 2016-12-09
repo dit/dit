@@ -13,10 +13,11 @@ from math import ceil, floor
 import numpy as np
 
 from dit import Distribution as D
-from dit.example_dists import binomial
 from dit.algorithms import mean, median, mode, standard_deviation, \
-                           standard_moment
+                           standard_moment, maximum_correlation
 from dit.algorithms.stats import _numerical_test
+from dit.example_dists import binomial, dyadic, triadic
+from dit.exceptions import ditException
 
 def test__numerical_test1():
     """ test _numerical_test on a good distribution """
@@ -82,3 +83,18 @@ def test_standard_moment1(n, p):
     d = binomial(n, p)
     for i, m in {1: 0, 2: 1, 3: (1-2*p)/np.sqrt(n*p*(1-p))}.items():
         assert standard_moment(d, i) == pytest.approx(m)
+
+@pytest.mark.parametrize(('rvs', 'crvs'), [
+    (['X', 'Y'], []),
+    (['X', 'Y'], 'Z'),
+])
+@pytest.mark.parametrize('dist', [dyadic, triadic])
+def test_maximum_correlation(dist, rvs, crvs):
+    """ Test against known values """
+    assert maximum_correlation(dist, rvs, crvs) == pytest.approx(1.0)
+
+@pytest.mark.parametrize('rvs', [['X', 'Y', 'Z'], ['X']])
+def test_maximum_correlation_failure(rvs):
+    """ Test that maximum_correlation fails with len(rvs) != 2 """
+    with pytest.raises(ditException):
+        maximum_correlation(dyadic, rvs)
