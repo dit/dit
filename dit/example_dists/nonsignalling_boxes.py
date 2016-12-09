@@ -1,5 +1,8 @@
 """
+Canonical non-signalling boxes.
 """
+
+from __future__ import division
 
 from dit import Distribution
 
