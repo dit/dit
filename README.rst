@@ -1,6 +1,6 @@
 ``dit`` is a Python package for information theory.
 
-|build| |build_windows| |codecov| |health| |docs| |deps| |gitter|
+|build| |build_windows| |codecov| |health| |docs| |deps| |gitter| |saythanks|
 
 Documentation:
    http://docs.dit.io
@@ -9,7 +9,7 @@ Downloads:
    Coming soon.
 
 Dependencies:
-   * Python 2.7, 3.2, 3.3, 3.4, or 3.5
+   * Python 2.7, 3.3, 3.4, 3.5, or 3.6
    * numpy
    * iterutils
    * six
@@ -185,7 +185,7 @@ Enjoy!
   :target: https://codecov.io/gh/dit/dit
   :alt: Test Coverage Status
 
-.. |coverage| image:: https://coveralls.io/repos/dit/dit/badge.svg?branch=master
+.. |coveralls| image:: https://coveralls.io/repos/dit/dit/badge.svg?branch=master
    :target: https://coveralls.io/r/dit/dit?branch=master
    :alt: Test Coverage Status
 
@@ -198,9 +198,13 @@ Enjoy!
    :alt: Code Health
 
 .. |deps| image:: https://requires.io/github/dit/dit/requirements.svg?branch=master
-     :target: https://requires.io/github/dit/dit/requirements/?branch=master
-     :alt: Requirements Status
+   :target: https://requires.io/github/dit/dit/requirements/?branch=master
+   :alt: Requirements Status
 
 .. |gitter| image:: https://badges.gitter.im/Join%20Chat.svg
    :target: https://gitter.im/dit/dit?utm_source=badge&utm_medium=badge
    :alt: Join the Chat
+
+.. |saythanks| image:: https://img.shields.io/badge/SayThanks.io-%E2%98%BC-1EAEDB.svg
+   :target: https://saythanks.io/to/Autoplectic
+   :alt: Say Thanks!
