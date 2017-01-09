@@ -43,7 +43,7 @@ build_script:
   - conda install scipy
   - ps: if ($env:CYTHON -eq '1') { conda install cython }
   - pip install .
-  - pip install -r requirements_testing.txt
+  - pip install -r --upgrade --ignore-installed requirements_testing.txt
 
 test_script:
   # Change to a non-source folder to make sure we run the tests on the
