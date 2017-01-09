@@ -146,7 +146,7 @@ class MUIProfile(BaseProfile):
         mui = np.round(np.diff(maxui)/np.diff(pnts), 7)
         vals = np.array(np.unique(mui, return_index=True))
         self.profile = dict((pnts[int(row[1])], row[0]) for row in vals.T)
-        self.widths = np.diff(list(self.profile.keys()) + [ent])
+        self.widths = np.diff(list(sorted(self.profile.keys())) + [ent])
 
     def draw(self, ax=None): # pragma: no cover
         ax = super(MUIProfile, self).draw(ax=ax)
