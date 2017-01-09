@@ -106,10 +106,10 @@ install:
       if [[ "$TRAVIS_PYTHON_VERSION" =~ pypy.* ]]; then
         sudo $TRAVIS_PYTHON_VERSION -m pip install git+https://bitbucket.org/pypy/numpy.git;
       else
-        pip install --upgrade --ignore-installed pip numpy;
+        pip install --ignore-installed --upgrade pip numpy;
       fi;
       if [ "${OPTIONAL_DEPS}" == "true" ]; then
-        pip install --upgrade --ignore-installed Cython;
+        pip install --upgrade Cython;
       fi;
     fi;
 
@@ -117,12 +117,12 @@ before_script:
   ### Use this to prepare your build for testing
   - if [[ "$TRAVIS_PYTHON_VERSION" =~ (2|3)\..* ]]; then
       conda install scipy cvxopt;
-      pip install --upgrade -r --ignore-installed requirements_testing.txt;
+      pip install --upgrade --ignore-installed -r requirements_testing.txt;
     elif [[ "$TRAVIS_PYTHON_VERSION" == "nightly" ]]; then
       pip install scipy cvxopt;
-      pip install --upgrade -r --ignore-installed requirements_testing.txt;
+      pip install --upgrade --ignore-installed -r requirements_testing.txt;
     elif [[ "$TRAVIS_PYTHON_VERSION" =~ pypy.* ]]; then
-      sudo $TRAVIS_PYTHON_VERSION -m pip install -r --ignore-installed requirements_testing.txt;
+      sudo $TRAVIS_PYTHON_VERSION -m pip install --ignore-installed -r requirements_testing.txt;
     fi;
 
 script:
