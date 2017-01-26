@@ -614,7 +614,7 @@ class Distribution(ScalarDistribution):
         prng : RandomState
             A pseudo-random number generator with a `rand` method which can
             generate random numbers. For now, this is assumed to be something
-            with an API compatibile to NumPy's RandomState class. If `None`,
+            with an API compatible to NumPy's RandomState class. If `None`,
             then we initialize to dit.math.prng. Importantly, we do not
             copy the prng of the existing distribution. For that, see copy().
 
@@ -649,6 +649,34 @@ class Distribution(ScalarDistribution):
             d.prng = prng
 
         return d
+
+    @classmethod
+    def from_ndarray(cls, ndarray, base=None, prng=None):
+        """
+        Construct a Distribution from a pmf stored as an ndarray.
+
+        Parameters
+        ----------
+        ndarray : np.ndarray
+            pmf in the form of an ndarray, where each axis is a variable and
+            the index along that axis is the variable's value.
+        base : 'linear', 'e', or float
+            Optionally, specify the base of the new distribution. If `None`,
+            then the new distribution will be assumed to have a linear
+            distribution.
+        prng : RandomState
+            A pseudo-random number generator with a `rand` method which can
+            generate random numbers. For now, this is assumed to be something
+            with an API compatible to NumPy's RandomState class. If `None`,
+            then we initialize to dit.math.prng.
+
+        Returns
+        -------
+        d : Distribution
+            The distribution resulting from interpreting `ndarray` as a pmf.
+
+        """
+        return cls(*zip(*np.ndenumerate(ndarray)), base=base, prng=prng)
 
     def __setitem__(self, outcome, value):
         """
