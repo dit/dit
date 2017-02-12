@@ -83,6 +83,12 @@ def test_init9():
     d3.set_base(10)
     assert d2.is_approx_equal(d3)
 
+def test_init10():
+    d1 = Distribution([(0, 0), (0, 1), (1, 0)], [0.5, 0.25, 0.25])
+    pmf = [[0.5, 0.25], [0.25, 0]]
+    d2 = Distribution.from_ndarray(pmf)
+    assert d1.is_approx_equal(d2)
+
 def test_atoms():
     pmf = [.125, .125, .125, .125, .25, 0, .25]
     outcomes = ['000', '011', '101', '110', '222', '321', '333']

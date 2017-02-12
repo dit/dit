@@ -56,6 +56,28 @@ outcomes to probabilities:
    101   0.25
    110   0.25
 
+Yet a third method is via an ndarray:
+
+.. ipython::
+
+    In [9]: pmf = [[0.5, 0.25], [0.25, 0]]
+
+    In [10]: d = Distribution.from_ndarray(pmf)
+
+    @doctest
+    In [11]: print(d)
+    Class:          Distribution
+    Alphabet:       (0, 1) for all rvs
+    Base:           linear
+    Outcome Class:  tuple
+    Outcome Length: 2
+    RV Names:       None
+
+    x       p(x)
+    (0, 0)  0.5
+    (0, 1)  0.25
+    (1, 0)  0.25
+
 .. automethod:: Distribution.__init__
 
 To verify that these two distributions are the same, we can use the
@@ -64,7 +86,7 @@ To verify that these two distributions are the same, we can use the
 .. ipython::
 
    @doctest
-   In [9]: xor.is_approx_equal(xor2)
-   Out[9]: True
+   In [12]: xor.is_approx_equal(xor2)
+   Out[12]: True
 
 .. automethod:: Distribution.is_approx_equal

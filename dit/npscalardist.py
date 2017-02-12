@@ -492,6 +492,31 @@ class ScalarDistribution(BaseDistribution):
 
         return d
 
+    @classmethod
+    def from_rv_discrete(cls, ssrv, prng=None):
+        """
+        Create a ScalarDistribution from a scipy.states.rv_discrete instance.
+
+        Parameters
+        ----------
+        ssrv : scipy.stats.rv_discrete
+            The random variable to convert to a dit.ScalarDistribution.
+        prng : RandomState
+            A pseudo-random number generator with a `rand` method which can
+            generate random numbers. For now, this is assumed to be something
+            with an API compatibile to NumPy's RandomState class. If `None`,
+            then we initialize to dit.math.prng.
+
+        Returns
+        -------
+        d : ScalarDistribution
+            A ScalarDistribution representation of `ssrv`.
+        """
+        outcomes = ssrv.xk
+        pmf = ssrv.pk
+        prng = prng if (prng is not None) else ssrv.random_state
+        return cls(outcomes, pmf, prng=prng)
+
     def __meta_magic(self, other, op, msg):
         """
         Private method to implement generic comparisons or operations
@@ -1769,6 +1794,19 @@ class ScalarDistribution(BaseDistribution):
         self._meta['is_sparse'] = True
         n = L - len(self)
         return n
+
+    def to_rv_discrete(self):
+        """
+        Convert this distribution to an instance of scipy.stats.rv_discrete
+
+        Returns
+        -------
+        ssrv : scipy.stats.rv_discrete
+            A copy of this distribution as a rv_discrete.
+        """
+        from scipy.stats import rv_discrete
+        d = rv_discrete(values=(self.outcomes, self.pmf), seed=self.prng)
+        return d
 
     def validate(self, **kwargs):
         """
