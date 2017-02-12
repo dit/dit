@@ -7,6 +7,8 @@ from __future__ import absolute_import
 
 from abc import ABCMeta, abstractmethod
 
+from collections import defaultdict
+
 from itertools import combinations, islice, permutations
 from iterutils import powerset
 
@@ -271,7 +273,7 @@ class DependencyDecomposition(object):
     distribution.
     """
 
-    def __init__(self, dist, measure=entropy):
+    def __init__(self, dist, measures={'H': entropy}):
         """
         Construct a Krippendorff-type partition of the information contained in
         `dist`.
@@ -282,7 +284,7 @@ class DependencyDecomposition(object):
             The distribution to partition.
         """
         self.dist = dist
-        self.measure = measure
+        self.measures = measures
         self._partition()
 
     @staticmethod
@@ -306,11 +308,18 @@ class DependencyDecomposition(object):
             rvs = tuple(range(self.dist.outcome_length()))
 
         self._lattice = constraint_lattice(rvs)
-        atoms = {}
+        dists = {}
 
         # Entropies
         for node in self._lattice:
-            atoms[node] = self.measure(maxent_dist(self.dist, node))
+            dists[node] = maxent_dist(self.dist, node)
+
+        self.dists = dists
+
+        atoms = defaultdict(dict)
+        for name, measure in self.measures.items():
+            for node in self._lattice:
+                atoms[node][name] = measure(dists[node])
 
         self.atoms = atoms
 
@@ -330,17 +339,20 @@ class DependencyDecomposition(object):
         """
         Use PrettyTable to create a nice table.
         """
-        table = PrettyTable(['dependency', 'bits'])
+        measures = self.measures.keys()
+        table = PrettyTable(['dependency'] + measures)
         ### TODO: add some logic for the format string, so things look nice
         # with arbitrary values
-        table.float_format['bits'] = ' 5.{0}'.format(digits)
-        key_function = lambda row: ([len(d) for d in row[0]], row[0])
-        items = self.atoms.items()
-        for dependency, value in reversed(sorted(items, key=key_function)):
+        for m in measures:
+            table.float_format[m] = ' 5.{0}'.format(digits)
+        items = sorted(self.atoms.items(), key=lambda row: row[0])
+        items = sorted(items, key=lambda row: [len(d) for d in row[0]], reverse=True)
+        for dependency, values in items:
             # gets rid of pesky -0.0 display values
-            if close(value, 0.0):
-                value = 0.0
-            table.add_row([self._stringify(dependency), value])
+            for m, value in values.items():
+                if close(value, 0.0):
+                    values[m] = 0.0
+            table.add_row([self._stringify(dependency)] + [values[m] for m in measures])
         return table.get_string()
 
     def get_dependencies(self, string=True):

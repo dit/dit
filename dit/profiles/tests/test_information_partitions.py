@@ -93,19 +93,19 @@ def test_dd1():
     Test against known values.
     """
     d = n_mod_m(3, 2)
-    ep = DependencyDecomposition(d, measure=B)
+    ep = DependencyDecomposition(d, measure={'B': B})
     string = """\
 +------------+--------+
-| dependency |  bits  |
+| dependency |   B    |
 +------------+--------+
 |    012     |  2.000 |
 |  01:02:12  |  0.000 |
-|   02:12    |  0.000 |
-|   01:12    |  0.000 |
 |   01:02    |  0.000 |
-|    12:0    |  0.000 |
-|    02:1    |  0.000 |
+|   01:12    |  0.000 |
+|   02:12    |  0.000 |
 |    01:2    |  0.000 |
+|    02:1    |  0.000 |
+|    12:0    |  0.000 |
 |   0:1:2    |  0.000 |
 +------------+--------+"""
     assert str(ep) == string
