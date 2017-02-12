@@ -93,7 +93,7 @@ def test_dd1():
     Test against known values.
     """
     d = n_mod_m(3, 2)
-    ep = DependencyDecomposition(d, measure={'B': B})
+    ep = DependencyDecomposition(d, measures={'B': B})
     string = """\
 +------------+--------+
 | dependency |   B    |
