@@ -339,7 +339,7 @@ class DependencyDecomposition(object):
         """
         Use PrettyTable to create a nice table.
         """
-        measures = self.measures.keys()
+        measures = list(self.measures.keys())
         table = PrettyTable(['dependency'] + measures)
         ### TODO: add some logic for the format string, so things look nice
         # with arbitrary values
