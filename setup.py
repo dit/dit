@@ -8,22 +8,14 @@ Installation script for dit.
 from __future__ import print_function
 
 import ast
-import os
 import re
 import sys
 import warnings
 
-try:
-    from setuptools import setup
-    has_setuptools = True
-except ImportError:
-    from distutils.core import setup
-    has_setuptools = False
+from setuptools import setup
 
-import distutils
 from distutils.core import Extension
 from distutils.command import install_data
-from distutils.command.build_ext import build_ext
 
 _version_re = re.compile(r'__version__\s+=\s+(.*)')
 
@@ -131,8 +123,6 @@ def main():
 
         cmdclass['build_ext'] = Cython.Distutils.build_ext
 
-        cython_modules = []
-
         close = Extension(
             "dit.math._close",
             ["dit/math/_close.pyx"]
@@ -211,10 +201,6 @@ def main():
         'long_description':     open('README.rst').read(),
         'license':              "BSD",
     }
-
-    # Automatic dependency resolution is supported only by setuptools.
-    if not has_setuptools:
-        del kwds['install_requires']
 
     setup(**kwds)
 
