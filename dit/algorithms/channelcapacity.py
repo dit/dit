@@ -104,3 +104,35 @@ def channel_capacity(cdists, marginal=None, rtol=None, atol=None):
         marginal_opt = pmf
 
     return cc, marginal_opt
+
+
+def channel_capacity_joint(dist, input, output, rv_mode=None, marginal=False):
+    """
+    Compute the channel capacity from ``rvs1`` to ``rvs2``.
+
+    Parameters
+    ----------
+    dist : Distribution
+        The distribution to find a channel capacity within.
+    input : iterable
+        The random variables that are the input of the channel.
+    output : iterable
+        The random variables that are the output of the channel.
+    rv_mode : str, None
+        Specifies how to interpret `rvs` and `crvs`. Valid options are:
+        {'indices', 'names'}. If equal to 'indices', then the elements of
+        `crvs` and `rvs` are interpreted as random variable indices. If equal
+        to 'names', the the elements are interpreted as random variable names.
+        If `None`, then the value of `dist._rv_mode` is consulted, which
+        defaults to 'indices'.
+
+    Returns
+    -------
+
+    """
+    _, cdists = dist.condition_on(crvs=input, rvs=output, rv_mode=rv_mode)
+    cc, marg_opt = channel_capacity(cdists)
+    if marginal:
+        return cc, marg_opt
+    else:
+        return cc

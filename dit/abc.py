@@ -6,6 +6,8 @@ from dit import (Distribution as D,
                  ScalarDistribution as SD,
                 )
 
+from dit.algorithms import channel_capacity_joint as CC
+
 from dit.divergences import (cross_entropy as xH,
                              kullback_leibler_divergence as DKL,
                              jensen_shannon_divergence as JSD,
@@ -71,6 +73,7 @@ _divergences = [
 
 # other measures
 _others = [
+    'CC',   # the channel capacity
     'P',    # the perplexity
     'X',    # the extropy
     'TSE',  # the TSE complexity

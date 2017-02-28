@@ -3,7 +3,7 @@ Various algorithms related to manipulating or measuring properties of
 distributions.
 """
 
-from .channelcapacity import channel_capacity
+from .channelcapacity import channel_capacity, channel_capacity_joint
 from .lattice import insert_join, insert_meet
 from .maxentropy import *
 from .maxentropyfw import *
