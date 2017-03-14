@@ -431,7 +431,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
         # Build the matrix which calculates the marginal of the inputs.
         from scipy.linalg import block_diag
         Bsize = len(self.dist.alphabet[-1])
-        Osize = np.prod(map(len, self.dist.alphabet[:-1]))
+        Osize = np.prod([len(a) for a in self.dist.alphabet[:-1]])
         block = np.ones((Bsize, Bsize))
         blocks = [block] * Osize
         self.M = M = block_diag(*blocks)
