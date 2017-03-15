@@ -1,27 +1,34 @@
 """
 """
+from __future__ import division
+
+from abc import ABCMeta, abstractmethod
 
 from itertools import combinations
+from iterutils import powerset
 
 import numpy as np
 
-from scipy.optimize import minimize
+from scipy.optimize import basinhopping, minimize
 
 from .. import Distribution, product_distribution
 from ..helpers import RV_MODES
 from .maxentropy import marginal_constraints_generic
 from .optutil import prepare_dist
+from ..utils.optimization import BasinHoppingCallBack, accept_test, basinhop_status
 
 __all__ = [
+    'MaxCoInfoOptimizer',
     'MaxEntOptimizer',
     'maxent_dist',
     'marginal_maxent_dists',
 ]
 
-class MaxEntOptimizer(object):
+class BaseOptimizer(object):
     """
-    Calculate maximum entropy distributions consistant with the given marginal constraints.
+    Calculate an optimized distribution consistant with the given marginal constraints.
     """
+    __metaclass__ = ABCMeta
 
     def __init__(self, dist, rvs, rv_mode=None):
         """
@@ -30,8 +37,8 @@ class MaxEntOptimizer(object):
         Parameters
         ----------
         dist : Distribution
-            The distribution from which the corresponding maximum entropy
-            distribution will be calculated.
+            The distribution from which the corresponding optimal distribution
+            will be calculated.
         rvs : list, None
             The list of sets of variables whose marginals will be constrained to
             match the given distribution.
@@ -45,6 +52,8 @@ class MaxEntOptimizer(object):
         """
         self.dist = prepare_dist(dist)
         self._A, self._b = marginal_constraints_generic(self.dist, rvs, rv_mode)
+        self._shape = list(map(len, self.dist.alphabet))
+        self._subvars = list(powerset(range(len(self._shape))))[:-1]
 
     def constraint_match_marginals(self, x):
         """
@@ -63,7 +72,24 @@ class MaxEntOptimizer(object):
         """
         return sum((np.dot(self._A, x) - self._b)**2)
 
+    @abstractmethod
     def objective(self, x):
+        """
+        The objective of optimization vector `x`.
+
+        Parameters
+        ----------
+        x : ndarray
+            An optimization vector.
+
+        Returns
+        -------
+        O : float
+            The objective to be minimized.
+        """
+        pass
+
+    def entropy(self, x):
         """
         The entropy of optimization vector `x`.
 
@@ -75,11 +101,30 @@ class MaxEntOptimizer(object):
         Returns
         -------
         H : float
-            The (neg)entropy of `x`.
+            The entropy of `x`.
         """
-        return np.nansum(x * np.log2(x))
+        return -np.nansum(x * np.log2(x))
 
-    def optimize(self):
+    def co_information(self, x):
+        """
+        The co-information of optimization vector `x`.
+
+        Parameters
+        ----------
+        x : ndarray
+            An optimization vector.
+
+        Returns
+        -------
+        I : float
+            The co-information of `x`.
+        """
+        n = len(self._shape)
+        pmf = x.reshape(self._shape)
+        spmf = [ pmf.sum(axis=subset, keepdims=True)**((-1)**(n - len(subset))) for subset in self._subvars ]
+        return np.nansum(pmf * np.log2(np.prod(spmf)))
+
+    def optimize_convex(self):
         """
         Perform the optimization.
 
@@ -97,7 +142,7 @@ class MaxEntOptimizer(object):
                       ]
 
         kwargs = {'method': 'SLSQP',
-                  'bounds': [(0, 1)]*len(x0),
+                  'bounds': [(0, 1)]*x0.size,
                   'constraints': constraints,
                   'tol': None,
                   'callback': None,
@@ -113,6 +158,55 @@ class MaxEntOptimizer(object):
                       )
 
         self._optima = res.x
+
+    def optimize_nonconvex(self, nhops=10):
+        """
+        Perform the optimization. This is a non-convex optimization, and utilizes
+        basin hopping.
+
+        Notes
+        -----
+        This is a convex optimization, and so we use scipy's minimize optimizer
+        frontend and the SLSQP algorithm because it is one of the few generic
+        optimizers which can work with both bounds and constraints.
+        """
+        x0 = np.ones_like(self.dist.pmf)/len(self.dist.pmf)
+
+        constraints = [{'type': 'eq',
+                        'fun': self.constraint_match_marginals,
+                       },
+                      ]
+
+        kwargs = {'method': 'SLSQP',
+                  'bounds': [(0, 1)]*x0.size,
+                  'constraints': constraints,
+                  'tol': None,
+                  'callback': None,
+                  'options': {'maxiter': 1000,
+                              'ftol': 15e-11,
+                              'eps': 1.4901161193847656e-12,
+                             },
+                 }
+
+        self._callback = BasinHoppingCallBack(kwargs['constraints'], None)
+
+        res = basinhopping(func=self.objective,
+                           x0=x0,
+                           minimizer_kwargs=kwargs,
+                           niter=nhops,
+                           callback=self._callback,
+                           accept_test=accept_test,
+                          )
+
+
+        success, msg = basinhop_status(res)
+        if success:
+            self._optima = res.x
+        else: # pragma: no cover
+            minimum = self._callback.minimum()
+            if minimum is not None:
+                self._optima = minimum
+
 
     def construct_dist(self, x=None, cutoff=1e-6):
         """
@@ -133,7 +227,7 @@ class MaxEntOptimizer(object):
 
         x[x < cutoff] = 0
         x /= x.sum()
-        
+
         new_dist = self.dist.copy()
         new_dist.pmf = x
         new_dist.make_sparse()
@@ -143,6 +237,52 @@ class MaxEntOptimizer(object):
         return new_dist
 
 
+class MaxEntOptimizer(BaseOptimizer):
+    """
+    """
+
+    def objective(self, x):
+        """
+        """
+        return -self.entropy(x)
+
+    optimize = BaseOptimizer.optimize_convex
+
+
+class MinEntOptimizer(BaseOptimizer):
+    """
+    """
+
+    def objective(self, x):
+        """
+        """
+        return self.entropy(x)
+
+    optimize = BaseOptimizer.optimize_nonconvex
+
+
+class MaxCoInfoOptimizer(BaseOptimizer):
+    """
+    """
+
+    def objective(self, x):
+        """
+        """
+        return -self.co_information(x)
+
+    optimize = BaseOptimizer.optimize_nonconvex
+
+
+class MinCoInfoOptimizer(BaseOptimizer):
+    """
+    """
+
+    def objective(self, x):
+        """
+        """
+        return self.co_information(x)
+
+    optimize = BaseOptimizer.optimize_nonconvex
 
 
 def maxent_dist(dist, rvs, rv_mode=None):
