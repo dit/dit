@@ -689,7 +689,7 @@ def calculate_synergy(pmf_opt, ui):
     d_opt.pmf[:] = pmf_opt
     # Original sources
     original_sources = ui._params.sources
-    sources = range(len(original_sources))
+    sources = list(range(len(original_sources)))
     target = [len(sources)]
     mi = dit.multivariate.coinformation(d, [sources, target])
     mi_opt = dit.multivariate.coinformation(d_opt, [sources, target])
@@ -957,11 +957,11 @@ def unique_informations(d, sources, target, k=2, rv_mode=None,
     n = d_opt.outcome_length()
     uis = []
     for rv in range(n-1):
-        others = range(rv) + range(rv+1, n-1)
+        others = list(range(rv)) + list(range(rv+1, n-1))
         ui = dit.multivariate.coinformation(d_opt, [[rv], [n-1]], others)
         uis.append(ui)
-    mi_opt = dit.multivariate.coinformation(d_opt, [[n-1], range(n-1)])
-    mi_orig = dit.multivariate.coinformation(d_orig, [[n-1], range(n-1)])
+    mi_opt = dit.multivariate.coinformation(d_opt, [[n-1], list(range(n-1))])
+    mi_orig = dit.multivariate.coinformation(d_orig, [[n-1], list(range(n-1))])
     rdn = dit.multivariate.coinformation(d_opt, [[i] for i in range(n)])
     syn = mi_orig - mi_opt
     return np.array(uis), rdn, syn, mi_orig, mi_opt
