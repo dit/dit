@@ -4,6 +4,8 @@ from __future__ import division
 
 from abc import ABCMeta, abstractmethod
 
+from collections import namedtuple
+
 from itertools import combinations
 from iterutils import powerset
 
@@ -12,9 +14,14 @@ import numpy as np
 from scipy.optimize import basinhopping, minimize
 
 from .. import Distribution, product_distribution
+from ..exceptions import ditException
 from ..helpers import RV_MODES
+from ..math import close
 from .maxentropy import marginal_constraints_generic
+from ..multivariate import coinformation as I
 from .optutil import prepare_dist
+from .pid_broja import (extra_constraints as broja_extra_constraints,
+                        prepare_dist as broja_prepare_dist)
 from ..utils.optimization import BasinHoppingCallBack, accept_test, basinhop_status
 
 __all__ = [
@@ -22,6 +29,7 @@ __all__ = [
     'MaxEntOptimizer',
     'maxent_dist',
     'marginal_maxent_dists',
+    'pid_broja',
 ]
 
 class BaseOptimizer(object):
@@ -124,7 +132,7 @@ class BaseOptimizer(object):
         spmf = [ pmf.sum(axis=subset, keepdims=True)**((-1)**(n - len(subset))) for subset in self._subvars ]
         return np.nansum(pmf * np.log2(np.prod(spmf)))
 
-    def optimize_convex(self):
+    def optimize_convex(self, x0=None):
         """
         Perform the optimization.
 
@@ -134,7 +142,8 @@ class BaseOptimizer(object):
         frontend and the SLSQP algorithm because it is one of the few generic
         optimizers which can work with both bounds and constraints.
         """
-        x0 = np.ones_like(self.dist.pmf)/len(self.dist.pmf)
+        if x0 is None:
+            x0 = np.ones_like(self.dist.pmf)/len(self.dist.pmf)
 
         constraints = [{'type': 'eq',
                         'fun': self.constraint_match_marginals,
@@ -159,7 +168,7 @@ class BaseOptimizer(object):
 
         self._optima = res.x
 
-    def optimize_nonconvex(self, nhops=10):
+    def optimize_nonconvex(self, x0=None, nhops=10):
         """
         Perform the optimization. This is a non-convex optimization, and utilizes
         basin hopping.
@@ -170,7 +179,8 @@ class BaseOptimizer(object):
         frontend and the SLSQP algorithm because it is one of the few generic
         optimizers which can work with both bounds and constraints.
         """
-        x0 = np.ones_like(self.dist.pmf)/len(self.dist.pmf)
+        if x0 is None:
+            x0 = np.ones_like(self.dist.pmf)/len(self.dist.pmf)
 
         constraints = [{'type': 'eq',
                         'fun': self.constraint_match_marginals,
@@ -206,6 +216,8 @@ class BaseOptimizer(object):
             minimum = self._callback.minimum()
             if minimum is not None:
                 self._optima = minimum
+            else:
+                raise ditException("Optima not found")
 
 
     def construct_dist(self, x=None, cutoff=1e-6):
@@ -285,6 +297,81 @@ class MinCoInfoOptimizer(BaseOptimizer):
     optimize = BaseOptimizer.optimize_nonconvex
 
 
+class BROJAOptimizer(MaxCoInfoOptimizer):
+    """
+    """
+
+    def __init__(self, dist, sources, target, rv_mode=None):
+        """
+        Initialize the optimizer. It is assumed tha
+
+        Parameters
+        ----------
+        dist : Distribution
+            The distribution from which the corresponding optimal distribution
+            will be calculated.
+        sources : list, len = 2
+            List of two source sets of variables.
+        target : list
+            The target variables.
+        rv_mode : str, None
+            Specifies how to interpret `rvs` and `crvs`. Valid options are:
+            {'indices', 'names'}. If equal to 'indices', then the elements of
+            `crvs` and `rvs` are interpreted as random variable indices. If
+            equal to 'names', the the elements are interpreted as random
+            variable names. If `None`, then the value of `dist._rv_mode` is
+            consulted, which defaults to 'indices'.
+        """
+        dist = broja_prepare_dist(dist, sources, target, rv_mode)
+        super(BROJAOptimizer, self).__init__(dist, [[0, 2], [1, 2]])
+        self._pmf = self.dist.pmf
+        self._opt_indices = broja_extra_constraints(self.dist, 2).free
+
+
+    def _expand_pmf(self, x):
+        """
+        """
+        pmf = self._pmf
+        pmf[self._opt_indices] = x
+        return pmf
+
+    def constraint_match_marginals(self, x):
+        """
+        Ensure that the joint distribution represented by the optimization
+        vector matches that of the distribution.
+
+        Parameters
+        ----------
+        x : ndarray
+            An optimization vector.
+
+        Returns
+        -------
+        d : float
+            The deviation from the constraint.
+        """
+        return sum((np.dot(self._A, self._expand_pmf(x)) - self._b)**2)
+
+    def objective(self, x):
+        """
+        """
+        return super(BROJAOptimizer, self).objective(self._expand_pmf(x))
+
+    def optimize(self, x0=None):
+        """
+        """
+        if x0 is None:
+            x0 = np.ones_like(self._opt_indices)/len(self._opt_indices)
+        super(BROJAOptimizer, self).optimize_convex(x0=x0)
+
+    def construct_dist(self, x=None, cutoff=1e-6):
+        """
+        """
+        if x is None:
+            x = self._optima.copy()
+        return super(BROJAOptimizer, self).construct_dist(self._expand_pmf(x), cutoff)
+
+
 def maxent_dist(dist, rvs, rv_mode=None):
     """
     Return the maximum entropy distribution consistant with the marginals from
@@ -307,7 +394,6 @@ def maxent_dist(dist, rvs, rv_mode=None):
     meo = MaxEntOptimizer(dist, rvs, rv_mode)
     meo.optimize()
     return meo.construct_dist()
-
 
 
 def marginal_maxent_dists(dist, k_max=None, verbose=False):
@@ -366,3 +452,22 @@ def marginal_maxent_dists(dist, k_max=None, verbose=False):
         dists.append(dist)
 
     return dists
+
+
+PID = namedtuple('PID', ['R', 'U0', 'U1', 'S'])
+
+
+def pid_broja(dist, sources, target, rv_mode=None):
+    """
+    """
+    broja = BROJAOptimizer(dist, sources, target, rv_mode=None)
+    broja.optimize()
+    opt_dist = broja.construct_dist()
+    r = -broja.objective(broja._optima)
+    u0 = I(opt_dist, [[0], [2]], [1])
+    u1 = I(opt_dist, [[1], [2]], [0])
+    r = 0 if close(r, 0) else r
+    u0 = 0 if close(u0, 0) else u0
+    u1 = 0 if close(u1, 0) else u1
+    s = I(dist, [[0, 1], [2]]) - r - u0 - u1
+    return PID(R=r, U0=u0, U1=u1, S=s)
