@@ -59,9 +59,28 @@ class BaseOptimizer(object):
             consulted, which defaults to 'indices'.
         """
         self.dist = prepare_dist(dist)
+        self._pmf = self.dist.pmf.copy()
         self._A, self._b = marginal_constraints_generic(self.dist, rvs, rv_mode)
         self._shape = list(map(len, self.dist.alphabet))
         self._subvars = list(powerset(range(len(self._shape))))[:-1]
+        self._free = list(range(len(self._pmf)))
+
+    def _expand(self, x):
+        """
+        Expand the `x` argument to the full pmf.
+
+        Parameters
+        ----------
+        x : np.array
+            optimization vector
+
+        Returns
+        -------
+        pmf : np.array
+            full pmf
+        """
+        self._pmf[self._free] = x
+        return self._pmf
 
     def constraint_match_marginals(self, x):
         """
@@ -78,7 +97,8 @@ class BaseOptimizer(object):
         d : float
             The deviation from the constraint.
         """
-        return sum((np.dot(self._A, x) - self._b)**2)
+        pmf = self._expand(x)
+        return sum((np.dot(self._A, pmf) - self._b)**2)
 
     @abstractmethod
     def objective(self, x):
@@ -111,7 +131,8 @@ class BaseOptimizer(object):
         H : float
             The entropy of `x`.
         """
-        return -np.nansum(x * np.log2(x))
+        pmf = self._expand(x)
+        return -np.nansum(pmf * np.log2(pmf))
 
     def co_information(self, x):
         """
@@ -128,11 +149,11 @@ class BaseOptimizer(object):
             The co-information of `x`.
         """
         n = len(self._shape)
-        pmf = x.reshape(self._shape)
+        pmf = self._expand(x).reshape(self._shape)
         spmf = [ pmf.sum(axis=subset, keepdims=True)**((-1)**(n - len(subset))) for subset in self._subvars ]
         return np.nansum(pmf * np.log2(np.prod(spmf)))
 
-    def optimize_convex(self, x0=None):
+    def optimize_convex(self, x0=None, bounds=None):
         """
         Perform the optimization.
 
@@ -143,7 +164,10 @@ class BaseOptimizer(object):
         optimizers which can work with both bounds and constraints.
         """
         if x0 is None:
-            x0 = np.ones_like(self.dist.pmf)/len(self.dist.pmf)
+            x0 = np.ones_like(self._free)/len(self._free)
+
+        if bounds is None:
+            bounds = [(0, 1)]*x0.size
 
         constraints = [{'type': 'eq',
                         'fun': self.constraint_match_marginals,
@@ -151,7 +175,7 @@ class BaseOptimizer(object):
                       ]
 
         kwargs = {'method': 'SLSQP',
-                  'bounds': [(0, 1)]*x0.size,
+                  'bounds': bounds,
                   'constraints': constraints,
                   'tol': None,
                   'callback': None,
@@ -166,9 +190,13 @@ class BaseOptimizer(object):
                        **kwargs
                       )
 
+        if not res.success:
+            msg = "Optimization failed: {}".format(res.message)
+            raise ditException(msg)
+
         self._optima = res.x
 
-    def optimize_nonconvex(self, x0=None, nhops=10):
+    def optimize_nonconvex(self, x0=None, bounds=None, nhops=10):
         """
         Perform the optimization. This is a non-convex optimization, and utilizes
         basin hopping.
@@ -180,7 +208,10 @@ class BaseOptimizer(object):
         optimizers which can work with both bounds and constraints.
         """
         if x0 is None:
-            x0 = np.ones_like(self.dist.pmf)/len(self.dist.pmf)
+            x0 = np.ones_like(self._free)/len(self._free)
+
+        if bounds is None:
+            bounds = [(0, 1)]*x0.size
 
         constraints = [{'type': 'eq',
                         'fun': self.constraint_match_marginals,
@@ -188,7 +219,7 @@ class BaseOptimizer(object):
                       ]
 
         kwargs = {'method': 'SLSQP',
-                  'bounds': [(0, 1)]*x0.size,
+                  'bounds': bounds,
                   'constraints': constraints,
                   'tol': None,
                   'callback': None,
@@ -237,11 +268,13 @@ class BaseOptimizer(object):
         if x is None:
             x = self._optima.copy()
 
-        x[x < cutoff] = 0
-        x /= x.sum()
+        pmf = self._expand(x)
+
+        pmf[pmf < cutoff] = 0
+        pmf /= pmf.sum()
 
         new_dist = self.dist.copy()
-        new_dist.pmf = x
+        new_dist.pmf = pmf
         new_dist.make_sparse()
 
         new_dist.set_rv_names(self.dist.get_rv_names())
@@ -324,52 +357,16 @@ class BROJAOptimizer(MaxCoInfoOptimizer):
         """
         dist = broja_prepare_dist(dist, sources, target, rv_mode)
         super(BROJAOptimizer, self).__init__(dist, [[0, 2], [1, 2]])
-        self._pmf = self.dist.pmf
-        self._opt_indices = broja_extra_constraints(self.dist, 2).free
 
-
-    def _expand_pmf(self, x):
-        """
-        """
-        pmf = self._pmf
-        pmf[self._opt_indices] = x
-        return pmf
-
-    def constraint_match_marginals(self, x):
-        """
-        Ensure that the joint distribution represented by the optimization
-        vector matches that of the distribution.
-
-        Parameters
-        ----------
-        x : ndarray
-            An optimization vector.
-
-        Returns
-        -------
-        d : float
-            The deviation from the constraint.
-        """
-        return sum((np.dot(self._A, self._expand_pmf(x)) - self._b)**2)
-
-    def objective(self, x):
-        """
-        """
-        return super(BROJAOptimizer, self).objective(self._expand_pmf(x))
+        self._free = broja_extra_constraints(self.dist, 2).free
 
     def optimize(self, x0=None):
         """
         """
-        if x0 is None:
-            x0 = np.ones_like(self._opt_indices)/len(self._opt_indices)
-        super(BROJAOptimizer, self).optimize_convex(x0=x0)
-
-    def construct_dist(self, x=None, cutoff=1e-6):
-        """
-        """
-        if x is None:
-            x = self._optima.copy()
-        return super(BROJAOptimizer, self).construct_dist(self._expand_pmf(x), cutoff)
+        if len(self._free) == 0:
+            self._optima = self.dist.pmf
+        else:
+            super(BROJAOptimizer, self).optimize_convex(x0=x0)
 
 
 def maxent_dist(dist, rvs, rv_mode=None):
@@ -460,14 +457,14 @@ PID = namedtuple('PID', ['R', 'U0', 'U1', 'S'])
 def pid_broja(dist, sources, target, rv_mode=None):
     """
     """
-    broja = BROJAOptimizer(dist, sources, target, rv_mode=None)
+    broja = BROJAOptimizer(dist, sources, target, rv_mode)
     broja.optimize()
     opt_dist = broja.construct_dist()
     r = -broja.objective(broja._optima)
     u0 = I(opt_dist, [[0], [2]], [1])
     u1 = I(opt_dist, [[1], [2]], [0])
-    r = 0 if close(r, 0) else r
-    u0 = 0 if close(u0, 0) else u0
-    u1 = 0 if close(u1, 0) else u1
+    r = 0.0 if close(r, 0) else r
+    u0 = 0.0 if close(u0, 0) else u0
+    u1 = 0.0 if close(u1, 0) else u1
     s = I(dist, [[0, 1], [2]]) - r - u0 - u1
     return PID(R=r, U0=u0, U1=u1, S=s)
