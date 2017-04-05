@@ -180,8 +180,8 @@ class BaseOptimizer(object):
                   'tol': None,
                   'callback': None,
                   'options': {'maxiter': 1000,
-                              'ftol': 15e-11,
-                              'eps': 1.4901161193847656e-12,
+                              'ftol': 1e-7,
+                              'eps': 1.4901161193847656e-08,
                              },
                  }
 
@@ -224,8 +224,8 @@ class BaseOptimizer(object):
                   'tol': None,
                   'callback': None,
                   'options': {'maxiter': 1000,
-                              'ftol': 15e-11,
-                              'eps': 1.4901161193847656e-12,
+                              'ftol': 1e-7,
+                              'eps': 1.4901161193847656e-08,
                              },
                  }
 
@@ -364,7 +364,7 @@ class BROJAOptimizer(MaxCoInfoOptimizer):
         """
         """
         if len(self._free) == 0:
-            self._optima = self.dist.pmf
+            self._optima = self._pmf
         else:
             super(BROJAOptimizer, self).optimize_convex(x0=x0)
 
