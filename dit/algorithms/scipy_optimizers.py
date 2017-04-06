@@ -63,7 +63,7 @@ class BaseOptimizer(object):
         self._A, self._b = marginal_constraints_generic(self.dist, rvs, rv_mode)
         self._shape = list(map(len, self.dist.alphabet))
         self._subvars = list(powerset(range(len(self._shape))))[:-1]
-        self._free = list(range(len(self._pmf)))
+        self._free = [ i for i, n in enumerate(self._A[self._b==0, :].sum(axis=0)) if n == 0]
 
     def _expand(self, x):
         """
