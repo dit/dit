@@ -358,7 +358,8 @@ class BROJAOptimizer(MaxCoInfoOptimizer):
         dist = broja_prepare_dist(dist, sources, target, rv_mode)
         super(BROJAOptimizer, self).__init__(dist, [[0, 2], [1, 2]])
 
-        self._free = broja_extra_constraints(self.dist, 2).free
+        extra_free = broja_extra_constraints(self.dist, 2).free
+        self._free = list(sorted(set(self._free) & set(extra_free)))
 
     def optimize(self, x0=None):
         """
