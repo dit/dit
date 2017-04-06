@@ -2,7 +2,7 @@
 """
 from __future__ import division
 
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod, abstractproperty
 
 from collections import namedtuple
 
@@ -25,16 +25,39 @@ from .pid_broja import (extra_constraints as broja_extra_constraints,
 from ..utils.optimization import BasinHoppingCallBack, accept_test, basinhop_status
 
 __all__ = [
-    'MaxCoInfoOptimizer',
-    'MaxEntOptimizer',
     'maxent_dist',
     'marginal_maxent_dists',
     'pid_broja',
 ]
 
+def infer_free_values(A, b):
+    """
+    Infer the indices of fixed values in an optimization vector.
+
+    Parameters
+    ----------
+    A : np.ndarray
+        The constraint matrix.
+    b : np.ndarray
+        The constraint values.
+
+    Returns
+    -------
+    fixed : list
+        The list of fixed indices.
+    """
+    free = [i for i, n in enumerate(A[b==0, :].sum(axis=0)) if n == 0]
+    while True:
+        fixed = A[:, free].sum(axis=1) == 1
+        new_fixed = [[i for i, n in enumerate(row) if n and (i in free)][0] for i, row in enumerate(A) if fixed[i]]
+        free = list(sorted(set(free) - set(new_fixed)))
+        if not new_fixed:
+            break
+    return free
+
 class BaseOptimizer(object):
     """
-    Calculate an optimized distribution consistant with the given marginal constraints.
+    Calculate an optimized distribution consistent with the given marginal constraints.
     """
     __metaclass__ = ABCMeta
 
@@ -63,7 +86,7 @@ class BaseOptimizer(object):
         self._A, self._b = marginal_constraints_generic(self.dist, rvs, rv_mode)
         self._shape = list(map(len, self.dist.alphabet))
         self._subvars = list(powerset(range(len(self._shape))))[:-1]
-        self._free = [ i for i, n in enumerate(self._A[self._b==0, :].sum(axis=0)) if n == 0]
+        self._free = infer_free_values(self._A, self._b)
 
     def _expand(self, x):
         """
@@ -71,7 +94,7 @@ class BaseOptimizer(object):
 
         Parameters
         ----------
-        x : np.array
+        x : np.ndarray
             optimization vector
 
         Returns
@@ -153,16 +176,27 @@ class BaseOptimizer(object):
         spmf = [ pmf.sum(axis=subset, keepdims=True)**((-1)**(n - len(subset))) for subset in self._subvars ]
         return np.nansum(pmf * np.log2(np.prod(spmf)))
 
-    def optimize_convex(self, x0=None, bounds=None):
+    def optimize(self, x0=None, bounds=None, nhops=10):
         """
-        Perform the optimization.
+        Perform the optimization. Dispatches to the appropriate backend.
 
-        Notes
-        -----
-        This is a convex optimization, and so we use scipy's minimize optimizer
-        frontend and the SLSQP algorithm because it is one of the few generic
-        optimizers which can work with both bounds and constraints.
+        Parameters
+        ----------
+        x0 : np.ndarray, None
+            An initial optimization vector. If None, a uniform vector is used.
+        bounds : [tuple], None
+            A list of (lower, upper) bounds on each element of the optimization vector.
+            If None, (0,1) is assumed.
+
+        Raises
+        ------
+        ditException
+            Raised if the optimization failed for any reason.
         """
+        if len(self._free) == 0:
+            self._optima = self._pmf
+            return
+
         if x0 is None:
             x0 = np.ones_like(self._free)/len(self._free)
 
@@ -185,6 +219,48 @@ class BaseOptimizer(object):
                              },
                  }
 
+        self._optimization_backend(x0, kwargs, nhops)
+
+    @abstractmethod
+    def _optimization_backend(self, x0, kwargs, nhops):
+        """
+        Abstract method for performing an optimization.
+
+        Parameters
+        ----------
+        x0 : np.ndarray
+            An initial optimization vector.
+        kwargs : dict
+            A dictionary of keyword arguments to pass to the optimizer.
+        nhops : int
+            If applicable, the number of iterations to make.
+        """
+        pass
+
+    def _optimize_convex(self, x0, kwargs, nhops):
+        """
+        Perform the optimization.
+
+        Parameters
+        ----------
+        x0 : np.ndarray
+            An initial optimization vector.
+        kwargs : dict
+            A dictionary of keyword arguments to pass to the optimizer.
+        nhops : int
+            If applicable, the number of iterations to make.
+
+        Raises
+        ------
+        ditException
+            Raised if the optimization failed for any reason.
+
+        Notes
+        -----
+        This is a convex optimization, and so we use scipy's minimize optimizer
+        frontend and the SLSQP algorithm because it is one of the few generic
+        optimizers which can work with both bounds and constraints.
+        """
         res = minimize(fun=self.objective,
                        x0=x0,
                        **kwargs
@@ -196,39 +272,31 @@ class BaseOptimizer(object):
 
         self._optima = res.x
 
-    def optimize_nonconvex(self, x0=None, bounds=None, nhops=10):
+    def _optimize_nonconvex(self, x0, kwargs, nhops):
         """
         Perform the optimization. This is a non-convex optimization, and utilizes
         basin hopping.
 
+        Parameters
+        ----------
+        x0 : np.ndarray
+            An initial optimization vector.
+        kwargs : dict
+            A dictionary of keyword arguments to pass to the optimizer.
+        nhops : int
+            If applicable, the number of iterations to make.
+
+        Raises
+        ------
+        ditException
+            Raised if the optimization failed for any reason.
+
         Notes
         -----
-        This is a convex optimization, and so we use scipy's minimize optimizer
-        frontend and the SLSQP algorithm because it is one of the few generic
+        This is a nonconvex optimization, and so we use scipy's basinhopping meta-optimizer
+        frontend and the SLSQP algorithm backend because it is one of the few generic
         optimizers which can work with both bounds and constraints.
         """
-        if x0 is None:
-            x0 = np.ones_like(self._free)/len(self._free)
-
-        if bounds is None:
-            bounds = [(0, 1)]*x0.size
-
-        constraints = [{'type': 'eq',
-                        'fun': self.constraint_match_marginals,
-                       },
-                      ]
-
-        kwargs = {'method': 'SLSQP',
-                  'bounds': bounds,
-                  'constraints': constraints,
-                  'tol': None,
-                  'callback': None,
-                  'options': {'maxiter': 1000,
-                              'ftol': 1e-7,
-                              'eps': 1.4901161193847656e-08,
-                             },
-                 }
-
         self._callback = BasinHoppingCallBack(kwargs['constraints'], None)
 
         res = basinhopping(func=self.objective,
@@ -238,7 +306,6 @@ class BaseOptimizer(object):
                            callback=self._callback,
                            accept_test=accept_test,
                           )
-
 
         success, msg = basinhop_status(res)
         if success:
@@ -253,17 +320,20 @@ class BaseOptimizer(object):
 
     def construct_dist(self, x=None, cutoff=1e-6):
         """
-        Construct the maximum entropy distribution.
+        Construct the optimal distribution.
 
         Parameters
         ----------
-        x : ndarray
+        x : np.ndarray
             An optimization vector.
+        cutoff : float
+            A probability cutoff. Any joint event with probability below
+            this will be set to zero.
 
         Returns
         -------
         d : distribution
-            The maximum entropy distribution.
+            The optimized distribution.
         """
         if x is None:
             x = self._optima.copy()
@@ -284,54 +354,84 @@ class BaseOptimizer(object):
 
 class MaxEntOptimizer(BaseOptimizer):
     """
+    Compute maximum entropy distributions.
     """
 
     def objective(self, x):
         """
+        Compute the negative entropy.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            An optimization vector.
         """
         return -self.entropy(x)
 
-    optimize = BaseOptimizer.optimize_convex
+    _optimization_backend = BaseOptimizer._optimize_convex
 
 
 class MinEntOptimizer(BaseOptimizer):
     """
+    Compute minimum entropy distributions.
     """
 
     def objective(self, x):
         """
+        Compute the entropy.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            An optimization vector.
         """
         return self.entropy(x)
 
-    optimize = BaseOptimizer.optimize_nonconvex
+    _optimization_backend = BaseOptimizer._optimize_nonconvex
 
 
 class MaxCoInfoOptimizer(BaseOptimizer):
     """
+    Compute maximum co-information distributions.
     """
 
     def objective(self, x):
         """
+        Compute the negative co-information.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            An optimization vector.
         """
         return -self.co_information(x)
 
-    optimize = BaseOptimizer.optimize_nonconvex
+    _optimization_backend = BaseOptimizer._optimize_nonconvex
 
 
 class MinCoInfoOptimizer(BaseOptimizer):
     """
+    Compute minimum co-information distributions.
     """
 
     def objective(self, x):
         """
+        Compute the co-information.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            An optimization vector.
         """
         return self.co_information(x)
 
-    optimize = BaseOptimizer.optimize_nonconvex
+    _optimization_backend = BaseOptimizer._optimize_nonconvex
 
 
 class BROJAOptimizer(MaxCoInfoOptimizer):
     """
+    An optimizer for constructing the maximum co-information distribution
+    consistent with (source, target) marginals of the given distribution.
     """
 
     def __init__(self, dist, sources, target, rv_mode=None):
@@ -361,18 +461,10 @@ class BROJAOptimizer(MaxCoInfoOptimizer):
         extra_free = broja_extra_constraints(self.dist, 2).free
         self._free = list(sorted(set(self._free) & set(extra_free)))
 
-    def optimize(self, x0=None):
-        """
-        """
-        if len(self._free) == 0:
-            self._optima = self._pmf
-        else:
-            super(BROJAOptimizer, self).optimize_convex(x0=x0)
-
 
 def maxent_dist(dist, rvs, rv_mode=None):
     """
-    Return the maximum entropy distribution consistant with the marginals from
+    Return the maximum entropy distribution consistent with the marginals from
     `dist` specified in `rvs`.
 
     Parameters
@@ -404,8 +496,14 @@ def marginal_maxent_dists(dist, k_max=None, verbose=False):
         The distribution used to constrain the maxent distributions.
     k_max : int
         The maximum order to calculate.
+    verbose : bool
+        If True, print more information.
 
-
+    Returns
+    -------
+    dists : list
+        A list of distributions, where the `i`th element is the maxent
+        distribution with the i-size marginals fixed.
     """
     dist = prepare_dist(dist)
 
@@ -457,6 +555,28 @@ PID = namedtuple('PID', ['R', 'U0', 'U1', 'S'])
 
 def pid_broja(dist, sources, target, rv_mode=None):
     """
+    Compute the BROJA partial information decomposition.
+
+    Parameters
+    ----------
+    dist : Distribution
+        The distribution to compute the partial information decomposition of.
+    sources : iterable
+        The source variables of the distribution.
+    target : iterable
+        The target variable of the distribution.
+    rv_mode : str, None
+        Specifies how to interpret `sources` and `target`. Valid options are:
+        {'indices', 'names'}. If equal to 'indices', then the elements of
+        `crvs` and `rvs` are interpreted as random variable indices. If
+        equal to 'names', the the elements are interpreted as random
+        variable names. If `None`, then the value of `dist._rv_mode` is
+        consulted, which defaults to 'indices'.
+
+    Returns
+    -------
+    pid : PID namedtuple
+        The partial information decomposition.
     """
     broja = BROJAOptimizer(dist, sources, target, rv_mode)
     broja.optimize()
