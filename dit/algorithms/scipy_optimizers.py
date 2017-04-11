@@ -2,7 +2,7 @@
 """
 from __future__ import division
 
-from abc import ABCMeta, abstractmethod, abstractproperty
+from abc import ABCMeta, abstractmethod
 
 from collections import namedtuple
 
@@ -54,6 +54,7 @@ def infer_free_values(A, b):
         if not new_fixed:
             break
     return free
+
 
 class BaseOptimizer(object):
     """
@@ -237,7 +238,47 @@ class BaseOptimizer(object):
         """
         pass
 
-    def _optimize_convex(self, x0, kwargs, nhops):
+
+    def construct_dist(self, x=None, cutoff=1e-6):
+        """
+        Construct the optimal distribution.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            An optimization vector.
+        cutoff : float
+            A probability cutoff. Any joint event with probability below
+            this will be set to zero.
+
+        Returns
+        -------
+        d : distribution
+            The optimized distribution.
+        """
+        if x is None:
+            x = self._optima.copy()
+
+        pmf = self._expand(x)
+
+        pmf[pmf < cutoff] = 0
+        pmf /= pmf.sum()
+
+        new_dist = self.dist.copy()
+        new_dist.pmf = pmf
+        new_dist.make_sparse()
+
+        new_dist.set_rv_names(self.dist.get_rv_names())
+
+        return new_dist
+
+
+class BaseConvexOptimizer(BaseOptimizer):
+    """
+    Base class to optimize distributions according to convex objectives.
+    """
+
+    def _optimization_backend(self, x0, kwargs, nhops):
         """
         Perform the optimization.
 
@@ -272,7 +313,13 @@ class BaseOptimizer(object):
 
         self._optima = res.x
 
-    def _optimize_nonconvex(self, x0, kwargs, nhops):
+
+class BaseNonConvexOptimizer(BaseOptimizer):
+    """
+    Base class to optimize distributions according to non-convex objectives.
+    """
+
+    def _optimization_backend(self, x0, kwargs, nhops):
         """
         Perform the optimization. This is a non-convex optimization, and utilizes
         basin hopping.
@@ -318,41 +365,7 @@ class BaseOptimizer(object):
                 raise ditException("Optima not found")
 
 
-    def construct_dist(self, x=None, cutoff=1e-6):
-        """
-        Construct the optimal distribution.
-
-        Parameters
-        ----------
-        x : np.ndarray
-            An optimization vector.
-        cutoff : float
-            A probability cutoff. Any joint event with probability below
-            this will be set to zero.
-
-        Returns
-        -------
-        d : distribution
-            The optimized distribution.
-        """
-        if x is None:
-            x = self._optima.copy()
-
-        pmf = self._expand(x)
-
-        pmf[pmf < cutoff] = 0
-        pmf /= pmf.sum()
-
-        new_dist = self.dist.copy()
-        new_dist.pmf = pmf
-        new_dist.make_sparse()
-
-        new_dist.set_rv_names(self.dist.get_rv_names())
-
-        return new_dist
-
-
-class MaxEntOptimizer(BaseOptimizer):
+class MaxEntOptimizer(BaseConvexOptimizer):
     """
     Compute maximum entropy distributions.
     """
@@ -368,10 +381,8 @@ class MaxEntOptimizer(BaseOptimizer):
         """
         return -self.entropy(x)
 
-    _optimization_backend = BaseOptimizer._optimize_convex
 
-
-class MinEntOptimizer(BaseOptimizer):
+class MinEntOptimizer(BaseNonConvexOptimizer):
     """
     Compute minimum entropy distributions.
     """
@@ -387,10 +398,8 @@ class MinEntOptimizer(BaseOptimizer):
         """
         return self.entropy(x)
 
-    _optimization_backend = BaseOptimizer._optimize_nonconvex
 
-
-class MaxCoInfoOptimizer(BaseOptimizer):
+class MaxCoInfoOptimizer(BaseNonConvexOptimizer):
     """
     Compute maximum co-information distributions.
     """
@@ -406,10 +415,8 @@ class MaxCoInfoOptimizer(BaseOptimizer):
         """
         return -self.co_information(x)
 
-    _optimization_backend = BaseOptimizer._optimize_nonconvex
 
-
-class MinCoInfoOptimizer(BaseOptimizer):
+class MinCoInfoOptimizer(BaseNonConvexOptimizer):
     """
     Compute minimum co-information distributions.
     """
@@ -424,8 +431,6 @@ class MinCoInfoOptimizer(BaseOptimizer):
             An optimization vector.
         """
         return self.co_information(x)
-
-    _optimization_backend = BaseOptimizer._optimize_nonconvex
 
 
 class BROJAOptimizer(MaxCoInfoOptimizer):
@@ -480,6 +485,11 @@ def maxent_dist(dist, rvs, rv_mode=None):
         equal to 'names', the the elements are interpreted as random
         variable names. If `None`, then the value of `dist._rv_mode` is
         consulted, which defaults to 'indices'.
+
+    Returns
+    -------
+    me : Distribution
+        The maximum entropy distribution.
     """
     meo = MaxEntOptimizer(dist, rvs, rv_mode)
     meo.optimize()
