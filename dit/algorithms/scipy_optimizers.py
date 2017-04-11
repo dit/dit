@@ -1,4 +1,5 @@
 """
+A variety of distribution optimizers using scipy.optimize's methods.
 """
 from __future__ import division
 
@@ -46,8 +47,10 @@ def infer_free_values(A, b):
     fixed : list
         The list of fixed indices.
     """
+    # find locations of b==0, since pmf values are non-negative, this means they are identically zero.
     free = [i for i, n in enumerate(A[b==0, :].sum(axis=0)) if n == 0]
     while True:
+        # now find rows of A with only a single free value in them. those values must also be fixed.
         fixed = A[:, free].sum(axis=1) == 1
         new_fixed = [[i for i, n in enumerate(row) if n and (i in free)][0] for i, row in enumerate(A) if fixed[i]]
         free = list(sorted(set(free) - set(new_fixed)))
@@ -124,7 +127,7 @@ class BaseOptimizer(object):
         pmf = self._expand(x)
         return sum((np.dot(self._A, pmf) - self._b)**2)
 
-    @abstractmethod
+    @abstractmethod # pragma: no cover
     def objective(self, x):
         """
         The objective of optimization vector `x`.
@@ -222,7 +225,7 @@ class BaseOptimizer(object):
 
         self._optimization_backend(x0, kwargs, nhops)
 
-    @abstractmethod
+    @abstractmethod # pragma: no cover
     def _optimization_backend(self, x0, kwargs, nhops):
         """
         Abstract method for performing an optimization.
@@ -307,7 +310,7 @@ class BaseConvexOptimizer(BaseOptimizer):
                        **kwargs
                       )
 
-        if not res.success:
+        if not res.success: # pragma: no cover
             msg = "Optimization failed: {}".format(res.message)
             raise ditException(msg)
 
@@ -496,7 +499,7 @@ def maxent_dist(dist, rvs, rv_mode=None):
     return meo.construct_dist()
 
 
-def marginal_maxent_dists(dist, k_max=None, verbose=False):
+def marginal_maxent_dists(dist, k_max=None):
     """
     Return the marginal-constrained maximum entropy distributions.
 
@@ -518,7 +521,6 @@ def marginal_maxent_dists(dist, k_max=None, verbose=False):
     dist = prepare_dist(dist)
 
     n_variables = dist.outcome_length()
-    symbols = dist.alphabet[0]
 
     if k_max is None:
         k_max = n_variables
@@ -536,9 +538,6 @@ def marginal_maxent_dists(dist, k_max=None, verbose=False):
 
     dists = [k0, k1]
     for k in range(k_max + 1):
-        if verbose:
-            print("Constraining maxent dist to match {0}-way marginals.".format(k))
-
         if k in [0, 1, n_variables]:
             continue
 
@@ -594,8 +593,8 @@ def pid_broja(dist, sources, target, rv_mode=None):
     r = -broja.objective(broja._optima)
     u0 = I(opt_dist, [[0], [2]], [1])
     u1 = I(opt_dist, [[1], [2]], [0])
-    r = 0.0 if close(r, 0) else r
-    u0 = 0.0 if close(u0, 0) else u0
-    u1 = 0.0 if close(u1, 0) else u1
+    # r = 0.0 if close(r, 0, rtol=1e-6, atol=1e-6) else r
+    # u0 = 0.0 if close(u0, 0, rtol=1e-6, atol=1e-6) else u0
+    # u1 = 0.0 if close(u1, 0, rtol=1e-6, atol=1e-6) else u1
     s = I(dist, [[0, 1], [2]]) - r - u0 - u1
     return PID(R=r, U0=u0, U1=u1, S=s)

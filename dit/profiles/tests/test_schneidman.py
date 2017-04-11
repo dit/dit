@@ -15,10 +15,8 @@ ex1 = Distribution(['000', '001', '010', '011', '100', '101', '110', '111'], [1/
 ex2 = Distribution(['000', '111'], [1/2]*2)
 ex3 = Distribution(['000', '001', '110', '111'], [1/4]*4)
 ex4 = Distribution(['000', '011', '101', '110'], [1/4]*4)
-examples = [ex1, ex2, ex3, ex4]
+ex4.set_rv_names('XYZ')
 
-
-pytest.importorskip('cvxopt')
 
 @pytest.mark.parametrize(('ex', 'prof'), [
     (ex1, (0.0, 0.0, 0.0)),

@@ -8,9 +8,11 @@ import pytest
 
 from itertools import product
 
-from dit.multivariate import entropy as H
+from dit.algorithms import maxent_dist, pid_broja
+from dit.algorithms.scipy_optimizers import MinEntOptimizer, MinCoInfoOptimizer
 from dit.distconst import uniform
-from dit.algorithms import maxent_dist
+from dit.example_dists import Rdn, Unq, Xor
+from dit.multivariate import entropy as H, coinformation as I
 
 
 @pytest.mark.parametrize('vars', [
@@ -52,3 +54,35 @@ def test_maxent_3():
     RdnUnqXor = uniform(events)
     d = maxent_dist(RdnUnqXor, [[0,1],[0,2],[1,2]])
     assert H(d) == pytest.approx(6)
+
+def test_minent_1():
+    """
+    Test minent
+    """
+    d = uniform(['000', '001', '010', '011', '100', '101', '110', '111'])
+    meo = MinEntOptimizer(d, [[0], [1], [2]])
+    meo.optimize()
+    dp = meo.construct_dist()
+    assert H(dp) == pytest.approx(1)
+
+def test_mincoinfo_1():
+    """
+    Test mincoinfo
+    """
+    d = uniform(['000', '111'])
+    mcio = MinCoInfoOptimizer(d, [[0], [1], [2]])
+    mcio.optimize()
+    dp = mcio.construct_dist()
+    assert I(dp) == pytest.approx(-1)
+
+@pytest.mark.parametrize(('dist', 'vals'), [
+    (Rdn(), (1, 0, 0, 0)),
+    (Unq(), (0, 1, 1, 0)),
+    (Xor(), (0, 0, 0, 1)),
+])
+def test_broja_1(dist, vals):
+    """
+    Test broja.
+    """
+    pid = pid_broja(dist, [[0], [1]], [2])
+    assert pid == pytest.approx(vals, abs=1e-4)
