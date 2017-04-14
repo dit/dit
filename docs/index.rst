@@ -31,6 +31,7 @@ Contents:
    notation
    distributions/distributions
    operations
+   optimization
    measures/measures
    profiles
    zreferences
