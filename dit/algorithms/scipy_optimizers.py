@@ -436,10 +436,16 @@ class MinCoInfoOptimizer(BaseNonConvexOptimizer):
         return self.co_information(x)
 
 
-class BROJAOptimizer(MaxCoInfoOptimizer):
+class BROJAOptimizer(BaseConvexOptimizer, MaxCoInfoOptimizer):
     """
     An optimizer for constructing the maximum co-information distribution
     consistent with (source, target) marginals of the given distribution.
+    
+    Notes
+    -----
+    Though maximizing co-information is generically a non-convex optimization,
+    with the specific constraints involved in this calculation the problem is
+    convex.
     """
 
     def __init__(self, dist, sources, target, rv_mode=None):
