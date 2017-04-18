@@ -370,7 +370,7 @@ class Distribution(ScalarDistribution):
             is important. If `None`, then the outcomes are used to determine
             a Cartesian product sample space instead.
 
-        base : float, None
+        base : float, str, None
             If `pmf` specifies log probabilities, then `base` should specify
             the base of the logarithm.  If 'linear', then `pmf` is assumed to
             represent linear probabilities.  If `None`, then the value for

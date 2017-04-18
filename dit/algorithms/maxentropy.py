@@ -24,6 +24,7 @@ handle any Cartesian product sample space, rather than just homogeneous ones.
 from __future__ import division, print_function
 
 import itertools
+from iterutils import powerset
 
 import numpy as np
 
@@ -155,6 +156,9 @@ def marginal_constraints_generic(dist, rvs, rv_mode=None,
 
     parse = lambda rv: parse_rvs(dist, rv, rv_mode=rv_mode,
                                  unique=True, sort=True)[1]
+
+    # potential inclusion: include implied constraints
+    # rvs = set().union(*[set(r for r in powerset(rv) if r) for rv in rvs])
     indexes = [parse(rv) for rv in rvs]
 
     pmf = dist.pmf
