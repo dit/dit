@@ -6,8 +6,6 @@ from __future__ import division
 
 from abc import ABCMeta, abstractmethod
 
-from string import digits, ascii_letters
-
 import numpy as np
 
 from .. import Distribution
