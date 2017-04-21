@@ -306,7 +306,7 @@ def brute_marginal_array(d, rvs, rv_mode=None):
     marginal = d.marginal(indexes, rv_mode=RV_MODES.INDICES)
 
     shape = (len(marginal._sample_space), len(d._sample_space))
-    arr = np.zeros(shape, dtype=int)
+    arr = np.zeros(shape, dtype=bool)
 
     mindex = marginal._sample_space.index
     for i, joint_outcome in enumerate(d._sample_space):
