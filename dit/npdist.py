@@ -1169,12 +1169,7 @@ class Distribution(ScalarDistribution):
             return True
 
         a1 = self.alphabet[0]
-        h = False
-        for a2 in self.alphabet[1:]:
-            if a1 != a2:
-                break
-        else:
-            h = True
+        h = all(a2 == a1 for a2 in self.alphabet[1:])
 
         return h
 
