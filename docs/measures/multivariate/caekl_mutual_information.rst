@@ -7,7 +7,7 @@ CAEKL Mutual Information
 
 The Chan-AlBashabsheh-Ebrahimi-Kaced-Liu mutual information :cite:`chan2015multivariate` is one possible generalization of the :ref:`mutual_information`.
 
-:math:`\J[X_{0:n}` is the smallest :math:`\gamma` such that:
+:math:`\J[X_{0:n}]` is the smallest :math:`\gamma` such that:
 
 .. math::
 
@@ -29,9 +29,9 @@ A more concrete way of defining the CAEKL mutual information is:
 
 .. math::
 
-   \J[X_{0:n}] = \min_{\mathcal{P} \in \Pi} \I_\mathcal{P}[X_{0:n}]
+   \J[X_{0:n}] = \min_{\mathcal{P} \in \Pi} ~ \I_\mathcal{P}[X_{0:n}]
 
-where
+where :math:`\I_\mathcal{P}` is the :ref:`total_correlation` of the partition:
 
 .. math::
 
