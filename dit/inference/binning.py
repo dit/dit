@@ -2,6 +2,8 @@
 Various methods for binning real-valued data.
 """
 
+import numpy as np
+
 __all__ = ['binned']
 
 def binned(ts, bins=2, style='maxent'):
