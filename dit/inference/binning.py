@@ -2,6 +2,8 @@
 Various methods for binning real-valued data.
 """
 
+from iterutils import pairwise
+
 import numpy as np
 
 __all__ = ['binned']
@@ -74,6 +76,6 @@ def maxent_binning(ts, bins):
     symb = ts.copy()
     percentiles = np.percentile(symb, [100*i/bins for i in xrange(bins+1)])
     percentiles[-1] += 1e-12
-    for i, (a, b) in enumerate(pairwise_iter(percentiles)):
+    for i, (a, b) in enumerate(pairwise(percentiles)):
         symb[(a <= ts) & (ts < b)] = i
     return symb
