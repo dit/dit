@@ -10,9 +10,10 @@ from .prune_expand import pruned_samplespace
 from ..helpers import flatten, parse_rvs, normalize_rvs
 from ..math import sigma_algebra
 
-__all__ = ['mss_sigalg',
+__all__ = ['info_trim',
            'insert_mss',
            'mss',
+           'mss_sigalg',
           ]
 
 def partial_match(first, second, places):
@@ -229,4 +230,38 @@ def insert_joint_mss(dist, idx, rvs=None, rv_mode=None):
     d = insert_join(d, idx, [[i] for i in range(l1, l2)])
     delta = 0 if idx == -1 else 1
     d = d.marginalize([i + delta for i in range(l1, l2)])
+    return pruned_samplespace(d)
+
+def info_trim(dist, rvs=None, rv_mode=None):
+    """
+    Returns a new distribution with the minimal sufficient statistics
+    of each random variable in `rvs` about all the other variables.
+
+    Parameters
+    ----------
+    dist : Distribution
+        The distribution contiaining the random variables from which the joint
+        minimal sufficent statistic will be computed.
+    rvs : list
+        A list of random variables to be compressed into minimal sufficient
+        statistics.
+    rv_mode : str, None
+        Specifies how to interpret the elements of `rvs`. Valid options are:
+        {'indices', 'names'}. If equal to 'indices', then the elements of
+        `rvs` are interpreted as random variable indices. If equal to 'names',
+        the the elements are interpreted as random variable names. If `None`,
+        then the value of `dist._rv_mode` is consulted.
+
+    """
+    rvs, _, rv_mode = normalize_rvs(dist, rvs, None, rv_mode)
+
+    d = dist.copy()
+
+    rvs2 = set( tuple(rv) for rv in rvs )
+
+    for rv in rvs:
+        about = list(flatten(rvs2-{tuple(rv)}))
+        d = insert_mss(d, -1, rvs=tuple(rv), about=about, rv_mode=rv_mode)
+
+    d = d.marginalize(list(flatten(rvs)))
     return pruned_samplespace(d)

@@ -5,7 +5,7 @@ Tests for dit.algorithms.minimal_sufficient_statistic.
 from __future__ import division
 
 from dit import Distribution, ScalarDistribution, pruned_samplespace
-from dit.algorithms import insert_mss, mss, mss_sigalg
+from dit.algorithms import insert_mss, mss, info_trim
 
 def get_gm():
     """
@@ -36,3 +36,21 @@ def test_insert_mss():
     d = d.marginal([4, 5])
     dist = pruned_samplespace(Distribution(['01', '10', '11'], [1/3, 1/3, 1/3]))
     assert d.is_approx_equal(dist)
+
+def test_info_trim1():
+    """
+
+    """
+    d1 = Distribution(['00', '01', '10', '11', '22', '33'], [1/8]*4+[1/4]*2)
+    d2 = Distribution(['00', '11', '22'], [1/4, 1/4, 1/2])
+    d3 = info_trim(d1)
+    assert d3.is_approx_equal(d2)
+
+def test_info_trim2():
+    """
+
+    """
+    d1 = Distribution(['000', '001', '110', '111', '222', '333'], [1/8]*4+[1/4]*2)
+    d2 = Distribution(['000', '111', '222', '332'], [1/4]*4)
+    d3 = info_trim(d1)
+    assert d3.is_approx_equal(d2)
