@@ -336,12 +336,26 @@ class CartesianProduct(SampleSpace):
         return all([x in self._alphabet_sets[i] for i, x in iterator])
 
     def __eq__(self, other):
-        if not isinstance(other, self.__class__):
+        """
+        
+        Parameters
+        ----------
+        other
+
+        Returns
+        -------
+
+        """
+        if isinstance(other, self.__class__):
+            return self._alphabet_sets == other._alphabet_sets
+
+        try:
+            # convert other sample space to a cartesian product
+            return self == self.__class__(list(zip(*other)))
+        except:
             # raising NotImplemented will default to iterating through
             # the entire sample space. Let's just make this false.
             return False
-
-        return self._alphabet_sets == other._alphabet_sets
 
     def __le__(self, other):
         if not isinstance(other, self.__class__):
