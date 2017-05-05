@@ -9,7 +9,7 @@ from .lattice import dist_from_induced_sigalg, insert_join, insert_rv
 from .prune_expand import pruned_samplespace
 from ..helpers import flatten, parse_rvs, normalize_rvs
 from ..math import sigma_algebra
-from ..samplespace import SampleSpace
+from ..samplespace import CartesianProduct
 
 __all__ = ['info_trim',
            'insert_mss',
@@ -231,7 +231,12 @@ def insert_joint_mss(dist, idx, rvs=None, rv_mode=None):
     d = insert_join(d, idx, [[i] for i in range(l1, l2)])
     delta = 0 if idx == -1 else 1
     d = d.marginalize([i + delta for i in range(l1, l2)])
-    return pruned_samplespace(d)
+    d = pruned_samplespace(d)
+
+    if isinstance(dist._sample_space, CartesianProduct):
+        d._sample_space = CartesianProduct(d.alphabet)
+
+    return d
 
 def info_trim(dist, rvs=None, rv_mode=None):
     """
@@ -264,6 +269,9 @@ def info_trim(dist, rvs=None, rv_mode=None):
         about = list(flatten(rvs2-{tuple(rv)}))
         d = insert_mss(d, -1, rvs=tuple(rv), about=about, rv_mode=rv_mode)
 
-    d = d.marginalize(list(flatten(rvs)))
+    d = pruned_samplespace(d.marginalize(list(flatten(rvs))))
 
-    return pruned_samplespace(d)
+    if isinstance(dist._sample_space, CartesianProduct):
+        d._sample_space = CartesianProduct(d.alphabet)
+
+    return d
