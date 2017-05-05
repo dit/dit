@@ -9,6 +9,7 @@ from .lattice import dist_from_induced_sigalg, insert_join, insert_rv
 from .prune_expand import pruned_samplespace
 from ..helpers import flatten, parse_rvs, normalize_rvs
 from ..math import sigma_algebra
+from ..samplespace import SampleSpace
 
 __all__ = ['info_trim',
            'insert_mss',
@@ -143,7 +144,7 @@ def insert_mss(dist, idx, rvs, about=None, rv_mode=None):
     """
     mss_sa = mss_sigalg(dist, rvs, about, rv_mode)
     new_dist = insert_rv(dist, idx, mss_sa)
-    return pruned_samplespace(new_dist)
+    return new_dist
 
 def mss(dist, rvs, about=None, rv_mode=None, int_outcomes=True):
     """
@@ -264,4 +265,8 @@ def info_trim(dist, rvs=None, rv_mode=None):
         d = insert_mss(d, -1, rvs=tuple(rv), about=about, rv_mode=rv_mode)
 
     d = d.marginalize(list(flatten(rvs)))
-    return pruned_samplespace(d)
+
+    if type(d._sample_space) is SampleSpace:
+        d = pruned_samplespace(d)
+
+    return d
