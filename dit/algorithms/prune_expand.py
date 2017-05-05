@@ -33,6 +33,9 @@ def pruned_samplespace(d, sample_space=None):
         The distribution with a pruned sample space.
 
     """
+    if isinstance(d._sample_space, CartesianProduct):
+        return d
+
     if sample_space is None:
         sample_space = []
 

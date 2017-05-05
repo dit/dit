@@ -144,7 +144,7 @@ def insert_mss(dist, idx, rvs, about=None, rv_mode=None):
     """
     mss_sa = mss_sigalg(dist, rvs, about, rv_mode)
     new_dist = insert_rv(dist, idx, mss_sa)
-    return new_dist
+    return pruned_samplespace(new_dist)
 
 def mss(dist, rvs, about=None, rv_mode=None, int_outcomes=True):
     """
@@ -266,7 +266,4 @@ def info_trim(dist, rvs=None, rv_mode=None):
 
     d = d.marginalize(list(flatten(rvs)))
 
-    if type(d._sample_space) is SampleSpace:
-        d = pruned_samplespace(d)
-
-    return d
+    return pruned_samplespace(d)
