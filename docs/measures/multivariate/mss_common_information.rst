@@ -11,6 +11,8 @@ The Minimal Sufficient Statistic Common Information is the entropy of the join o
 
    \M[X_{0:n}] = \H\left[ \joinop_i X_i \mss X_\overline{\{i\}} \right]
 
+The distribution that the MSS common information is the entroy of is also known "information trim" of the original distribution, and is accessable via :py:func:`dit.algorithms.minimal_sufficient_statistic.info_trim`.
+
 API
 ===
 

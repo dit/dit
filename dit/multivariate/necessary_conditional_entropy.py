@@ -5,6 +5,7 @@
 from .entropy import entropy
 from ..algorithms import insert_mss
 from ..helpers import normalize_rvs
+from ..utils import flatten
 
 def necessary_conditional_entropy(dist, rvs=None, crvs=None, rv_mode=None):
     """
@@ -47,6 +48,6 @@ def necessary_conditional_entropy(dist, rvs=None, crvs=None, rv_mode=None):
     """
     rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
     rvs = list(flatten(rvs))
-    d = insert_mss(dist, -1, rvs, crvs, rv_mode)
+    d = insert_mss(dist, -1, rvs, about=crvs, rv_mode=rv_mode)
     H = entropy(d, [dist.outcome_length()], crvs, rv_mode)
     return H
