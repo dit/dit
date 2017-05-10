@@ -212,3 +212,7 @@ Enjoy!
 .. |saythanks| image:: https://img.shields.io/badge/SayThanks.io-%E2%98%BC-1EAEDB.svg
    :target: https://saythanks.io/to/Autoplectic
    :alt: Say Thanks!
+
+.. |depsy| image:: http://depsy.org/api/package/pypi/dit/badge.svg
+   :target: http://depsy.org/package/python/dit
+   :alt: Research software impact
