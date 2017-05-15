@@ -17,12 +17,12 @@ from scipy.optimize import basinhopping, minimize
 from .. import Distribution, product_distribution
 from ..exceptions import ditException
 from ..helpers import RV_MODES
-from ..math import close
 from .maxentropy import marginal_constraints_generic
 from ..multivariate import coinformation as I
 from .optutil import prepare_dist
 from .pid_broja import (extra_constraints as broja_extra_constraints,
                         prepare_dist as broja_prepare_dist)
+from ..utils import flatten
 from ..utils.optimization import BasinHoppingCallBack, accept_test, basinhop_status
 
 __all__ = [
@@ -470,6 +470,7 @@ class BROJAOptimizer(BaseConvexOptimizer, MaxCoInfoOptimizer):
             consulted, which defaults to 'indices'.
         """
         dist = broja_prepare_dist(dist, sources, target, rv_mode)
+        print(dist)
         super(BROJAOptimizer, self).__init__(dist, [[0, 2], [1, 2]])
 
         extra_free = broja_extra_constraints(self.dist, 2).free
@@ -568,7 +569,7 @@ def marginal_maxent_dists(dist, k_max=None):
 PID = namedtuple('PID', ['R', 'U0', 'U1', 'S'])
 
 
-def pid_broja(dist, sources, target, rv_mode=None):
+def pid_broja(dist, sources, target, rv_mode=None, return_opt=False):
     """
     Compute the BROJA partial information decomposition.
 
@@ -587,20 +588,36 @@ def pid_broja(dist, sources, target, rv_mode=None):
         equal to 'names', the the elements are interpreted as random
         variable names. If `None`, then the value of `dist._rv_mode` is
         consulted, which defaults to 'indices'.
+    return_opt : bool
+        If True, return the distribution resulting from the optimization.
+        Defaults to False.
 
     Returns
     -------
     pid : PID namedtuple
         The partial information decomposition.
+    opt_dist : Distribution
+        The distribution resulting from the optimizaiton. Note that var [0]
+        is sources[0], [1] is sources[1] and [2] is target.
     """
     broja = BROJAOptimizer(dist, sources, target, rv_mode)
     broja.optimize()
     opt_dist = broja.construct_dist()
+    print(dist)
+    print(opt_dist)
     r = -broja.objective(broja._optima)
+    # in opt_dist, source[0] is [0], sources[1] is [1], and target is [2]
+    #   see broja_prepare_dist() for details
     u0 = I(opt_dist, [[0], [2]], [1])
     u1 = I(opt_dist, [[1], [2]], [0])
     # r = 0.0 if close(r, 0, rtol=1e-6, atol=1e-6) else r
     # u0 = 0.0 if close(u0, 0, rtol=1e-6, atol=1e-6) else u0
     # u1 = 0.0 if close(u1, 0, rtol=1e-6, atol=1e-6) else u1
-    s = I(dist, [[0, 1], [2]]) - r - u0 - u1
-    return PID(R=r, U0=u0, U1=u1, S=s)
+    s = I(dist, [list(flatten(sources)), target]) - r - u0 - u1
+
+    pid = PID(R=r, U0=u0, U1=u1, S=s)
+
+    if return_opt:
+        return pid, opt_dist
+    else:
+        return pid
