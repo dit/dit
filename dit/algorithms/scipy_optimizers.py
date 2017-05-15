@@ -14,14 +14,15 @@ import numpy as np
 
 from scipy.optimize import basinhopping, minimize
 
-from .. import Distribution, product_distribution
-from ..exceptions import ditException
-from ..helpers import RV_MODES
 from .maxentropy import marginal_constraints_generic
-from ..multivariate import coinformation as I
 from .optutil import prepare_dist
 from .pid_broja import (extra_constraints as broja_extra_constraints,
                         prepare_dist as broja_prepare_dist)
+from .. import Distribution, product_distribution
+from ..exceptions import ditException
+from ..helpers import RV_MODES
+from ..math import close
+from ..multivariate import coinformation as I
 from ..utils import flatten
 from ..utils.optimization import BasinHoppingCallBack, accept_test, basinhop_status
 
@@ -91,6 +92,11 @@ class BaseOptimizer(object):
         self._shape = list(map(len, self.dist.alphabet))
         self._subvars = list(powerset(range(len(self._shape))))[:-1]
         self._free = infer_free_values(self._A, self._b)
+        self.constraints = [{'type': 'eq',
+                             'fun': self.constraint_match_marginals,
+                            },
+                           ]
+
 
     def _expand(self, x):
         """
@@ -180,7 +186,7 @@ class BaseOptimizer(object):
         spmf = [ pmf.sum(axis=subset, keepdims=True)**((-1)**(n - len(subset))) for subset in self._subvars ]
         return np.nansum(pmf * np.log2(np.prod(spmf)))
 
-    def optimize(self, x0=None, bounds=None, nhops=10):
+    def optimize(self, x0=None, bounds=None, nhops=10, polish=1e-10):
         """
         Perform the optimization. Dispatches to the appropriate backend.
 
@@ -191,6 +197,9 @@ class BaseOptimizer(object):
         bounds : [tuple], None
             A list of (lower, upper) bounds on each element of the optimization vector.
             If None, (0,1) is assumed.
+        polish : float, False
+            Attempt to improve the solution. Set probabilities lower than this to zero,
+            reducing the total optimization dimension.
 
         Raises
         ------
@@ -207,14 +216,9 @@ class BaseOptimizer(object):
         if bounds is None:
             bounds = [(0, 1)]*x0.size
 
-        constraints = [{'type': 'eq',
-                        'fun': self.constraint_match_marginals,
-                       },
-                      ]
-
         kwargs = {'method': 'SLSQP',
                   'bounds': bounds,
-                  'constraints': constraints,
+                  'constraints': self.constraints,
                   'tol': None,
                   'callback': None,
                   'options': {'maxiter': 1000,
@@ -224,6 +228,44 @@ class BaseOptimizer(object):
                  }
 
         self._optimization_backend(x0, kwargs, nhops)
+
+        if polish:
+            self._polish(cutoff=polish)
+
+    def _polish(self, cutoff):
+        """
+        Improve the solution found by the optimizer.
+
+        Parameters
+        ----------
+        cutoff : float
+            Set probabilities lower than this to zero, reducing the total
+            optimization dimension.
+        """
+        x0 = self._optima
+        count = (x0 < cutoff).sum()
+        x0[x0 < cutoff] = 0
+
+        kwargs = {'method': 'SLSQP',
+                  'bounds': [(0, 0) if close(x, 0) else (0, 1) for x in x0],
+                  'constraints': self.constraints,
+                  'tol': None,
+                  'callback': None,
+                  'options': {'maxiter': 1000,
+                              'ftol': 15e-12,
+                              'eps': 1.4901161193847656e-14,
+                             },
+                 }
+
+        res = minimize(fun=self.objective,
+                       x0=x0,
+                       **kwargs
+                      )
+
+        self._optima = res.x
+
+        if count < (res.x < cutoff).sum():
+            self._polish(cutoff=cutoff)
 
     @abstractmethod # pragma: no cover
     def _optimization_backend(self, x0, kwargs, nhops):
@@ -470,7 +512,6 @@ class BROJAOptimizer(BaseConvexOptimizer, MaxCoInfoOptimizer):
             consulted, which defaults to 'indices'.
         """
         dist = broja_prepare_dist(dist, sources, target, rv_mode)
-        print(dist)
         super(BROJAOptimizer, self).__init__(dist, [[0, 2], [1, 2]])
 
         extra_free = broja_extra_constraints(self.dist, 2).free
@@ -603,8 +644,6 @@ def pid_broja(dist, sources, target, rv_mode=None, return_opt=False):
     broja = BROJAOptimizer(dist, sources, target, rv_mode)
     broja.optimize()
     opt_dist = broja.construct_dist()
-    print(dist)
-    print(opt_dist)
     r = -broja.objective(broja._optima)
     # in opt_dist, source[0] is [0], sources[1] is [1], and target is [2]
     #   see broja_prepare_dist() for details
