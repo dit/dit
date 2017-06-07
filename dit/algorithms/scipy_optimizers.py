@@ -305,9 +305,6 @@ class BaseOptimizer(object):
         if x is None:
             x = self._optima.copy()
 
-        print(self._free)
-        print(x)
-
         pmf = self._expand(x)
 
         pmf[pmf < cutoff] = 0
