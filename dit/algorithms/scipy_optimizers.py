@@ -112,7 +112,8 @@ class BaseOptimizer(object):
         pmf : np.array
             full pmf
         """
-        self._pmf[self._free] = x
+        if self._free:
+            self._pmf[self._free] = x
         return self._pmf
 
     def constraint_match_marginals(self, x):
@@ -303,6 +304,9 @@ class BaseOptimizer(object):
         """
         if x is None:
             x = self._optima.copy()
+
+        print(self._free)
+        print(x)
 
         pmf = self._expand(x)
 
