@@ -1,3 +1,6 @@
+.. image:: https://badge.waffle.io/dit/dit.png?label=ready&title=Ready 
+ :target: https://waffle.io/dit/dit?utm_source=badge
+ :alt: 'Stories in Ready'
 ``dit`` is a Python package for information theory.
 
 |build| |build_windows| |codecov| |health| |docs| |deps| |zenodo| |gitter| |saythanks|
