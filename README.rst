@@ -216,3 +216,7 @@ Enjoy!
 .. |depsy| image:: http://depsy.org/api/package/pypi/dit/badge.svg
    :target: http://depsy.org/package/python/dit
    :alt: Research software impact
+
+.. |waffle| image:: https://badge.waffle.io/dit/dit.png?label=ready&title=Ready 
+   :target: https://waffle.io/dit/dit?utm_source=badge
+   :alt: Stories in Ready
