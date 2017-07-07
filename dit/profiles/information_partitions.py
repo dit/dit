@@ -273,7 +273,7 @@ class DependencyDecomposition(object):
     distribution.
     """
 
-    def __init__(self, dist, measures={'H': entropy}):
+    def __init__(self, dist, rvs=None, measures={'H': entropy}):
         """
         Construct a Krippendorff-type partition of the information contained in
         `dist`.
@@ -284,6 +284,7 @@ class DependencyDecomposition(object):
             The distribution to partition.
         """
         self.dist = dist
+        self.rvs = sum(dist.rvs, []) if rvs is None else rvs
         self.measures = measures
         self._partition()
 
@@ -303,9 +304,11 @@ class DependencyDecomposition(object):
         """
         Computes all the dependencies of `dist`.
         """
-        rvs = self.dist.get_rv_names()
-        if not rvs:
-            rvs = tuple(range(self.dist.outcome_length()))
+        names = self.dist.get_rv_names()
+        if names:
+            rvs = [names[i] for i in self.rvs]
+        else:
+            rvs = self.rvs
 
         self._lattice = constraint_lattice(rvs)
         dists = {}
