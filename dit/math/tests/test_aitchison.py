@@ -258,7 +258,7 @@ def test_equiv_inner2():
 
     z1 = inner(x, y)
     z2 = 1/D * np.dot(np.dot(clrx, M), clry[:, np.newaxis])
-    assert z1 == pytest.approx(z2)
+    assert z1 == pytest.approx(z2[0])
 
 def test_equiv_norm():
     x = np.array([1, 2, 3, 4])
