@@ -31,6 +31,7 @@ Contents:
    notation
    distributions/distributions
    operations
+   hypothesis
    optimization
    measures/measures
    profiles
