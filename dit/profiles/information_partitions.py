@@ -12,7 +12,7 @@ from collections import defaultdict
 from itertools import combinations, islice, permutations
 from iterutils import powerset
 
-from prettytable import PrettyTable
+import prettytable
 
 from networkx import DiGraph, dfs_preorder_nodes as children, topological_sort
 
@@ -36,10 +36,9 @@ def poset_lattice(elements):
 
     lattice = DiGraph()
 
-    for a in powerset(elements):
-        for b in powerset(elements):
-            if child(set(a), set(b)):
-                lattice.add_edge(b, a)
+    for a, b in combinations(powerset(elements), 2):
+        if child(set(a), set(b)):
+            lattice.add_edge(b, a)
 
     return lattice
 
@@ -203,7 +202,11 @@ class BaseInformationPartition(object):
         """
         Use PrettyTable to create a nice table.
         """
-        table = PrettyTable(['measure', self.unit]) # pylint: disable=no-member
+        table = prettytable.PrettyTable(['measure', self.unit]) # pylint: disable=no-member
+        try:
+            table.set_style(prettytable.BOX_CHARS)
+        except AttributeError:
+            pass
         ### TODO: add some logic for the format string, so things look nice
         #         with arbitrary values
         table.float_format[self.unit] = ' 5.{0}'.format(digits) # pylint: disable=no-member
@@ -343,11 +346,15 @@ class DependencyDecomposition(object):
         Use PrettyTable to create a nice table.
         """
         measures = list(self.measures.keys())
-        table = PrettyTable(['dependency'] + measures)
+        table = prettytable.PrettyTable(['dependency'] + measures)
+        try:
+            table.set_style(prettytable.BOX_CHARS)
+        except:
+            pass
         ### TODO: add some logic for the format string, so things look nice
         # with arbitrary values
         for m in measures:
-            table.float_format[m] = ' 5.{0}'.format(digits)
+            table.float_format[m] = ' {}.{}'.format(digits+2, digits)
         items = sorted(self.atoms.items(), key=lambda row: row[0])
         items = sorted(items, key=lambda row: [len(d) for d in row[0]], reverse=True)
         for dependency, values in items:

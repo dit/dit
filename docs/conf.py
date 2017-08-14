@@ -56,7 +56,7 @@ ipython_execlines = ['from __future__ import division, print_function',
 ipython_savefig_dir = 'images/'
 
 # Use our local configuration for mathjax:
-mathjax_path = "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML,http://dit.io/MathJax/local/dit.js"
+mathjax_path = "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML,https://raw.githubusercontent.com/dit/dit/master/site/src/MathJax/local/dit.js"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -72,7 +72,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'dit'
-copyright = u'2013-2016, dit contributors'
+copyright = u'2013-2017, dit contributors'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

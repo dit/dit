@@ -1,0 +1,44 @@
+"""
+A variety of distributions exemplifying aspects of the partial information decomposition.
+"""
+
+from . import bivariate
+from . import trivariate
+
+__all__ = ['bivariates', 'trivariates']
+
+
+bivariates = {'uniform': bivariate.uni,
+              'null': bivariate.null,
+              'redundant': bivariate.rdn,
+              'simple': bivariate.simple,
+              'unique 1': bivariate.unq1,
+              'cat': bivariate.cat,
+              'synergy': bivariate.syn,
+              'diff': bivariate.diff,
+              'and': bivariate.and_,
+              'jeff': bivariate.jeff_2,
+              'reduced or': bivariate.reduced_or,
+              'sum': bivariate.sum_,
+              'wb 1': bivariate.wb_1,
+              'wb 2': bivariate.wb_2,
+              'wb 3': bivariate.wb_3,
+              'imperfect rdn': bivariate.imperfect_rdn,
+              'rdn xor': bivariate.rdn_xor,
+              'prob 1': bivariate.prob_1,
+              'prob 2': bivariate.prob_2,
+              }
+
+trivariates = {'uniform': trivariate.uni,
+               'null': trivariate.null,
+               'redundant': trivariate.rdn,
+               'synergy': trivariate.syn,
+               'cat': trivariate.cat,
+               'sum': trivariate.sum_,
+               'xor cat': trivariate.xor_cat,
+               'shared xor': trivariate.shared_xor,
+               'xor shared': trivariate.xor_shared,
+               'giant xor': trivariate.giant_xor,
+               'jeff': trivariate.jeff_3,
+               'anddup': trivariate.anddup,
+               }

@@ -23,7 +23,7 @@ from ..exceptions import ditException
 from ..helpers import RV_MODES
 from ..math import close
 from ..multivariate import coinformation as I
-from ..utils import flatten
+from ..utils import deprecated, flatten
 from ..utils.optimization import BasinHoppingCallBack, accept_test, basinhop_status
 
 __all__ = [
@@ -479,11 +479,12 @@ class MinCoInfoOptimizer(BaseNonConvexOptimizer):
         return self.co_information(x)
 
 
+@deprecated("Please see dit.pid.ibroja.BROJAOptimizer")
 class BROJAOptimizer(BaseConvexOptimizer, MaxCoInfoOptimizer):
     """
     An optimizer for constructing the maximum co-information distribution
     consistent with (source, target) marginals of the given distribution.
-    
+
     Notes
     -----
     Though maximizing co-information is generically a non-convex optimization,
@@ -493,7 +494,7 @@ class BROJAOptimizer(BaseConvexOptimizer, MaxCoInfoOptimizer):
 
     def __init__(self, dist, sources, target, rv_mode=None):
         """
-        Initialize the optimizer. It is assumed tha
+        Initialize the optimizer.
 
         Parameters
         ----------
@@ -610,7 +611,7 @@ def marginal_maxent_dists(dist, k_max=None):
 
 PID = namedtuple('PID', ['R', 'U0', 'U1', 'S'])
 
-
+@deprecated("Please see dit.pid.PID_BROJA.")
 def pid_broja(dist, sources, target, rv_mode=None, return_opt=False):
     """
     Compute the BROJA partial information decomposition.

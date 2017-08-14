@@ -8,6 +8,8 @@
 from __future__ import absolute_import
 
 from collections import Iterable
+import functools
+import inspect
 from itertools import tee
 import os
 import sys
@@ -21,7 +23,7 @@ __all__ = (
     'Property',
     'abstract_method',
     'default_opener',
-    'deprecate',
+    'deprecated',
     'flatten',
     'get_fobj',
     'is_string_like',
@@ -100,57 +102,83 @@ def default_opener(filename):
     cmd = cmds[sys.platform] + [filename]
     subprocess.call(cmd)
 
-class deprecate(object):
-    """Decorator for deprecating functions.
-
-    Note: You must decorate with an instance like so:
-
-        @deprecate(msg)
-        def func_to_be_decorated:
-            pass
-
+def deprecated(reason):
     """
-    def __init__(self, msg=''):
-        """Initializes the decorator.
+    This is a decorator which can be used to mark functions
+    as deprecated. It will result in a warning being emitted
+    when the function is used.
 
-        Parameters
-        ----------
-        msg : str
-            A string that is added to the deprecation warning.
+    Parameters
+    ----------
+    reason :
+        The reason for deprecation.
+    """
 
-        """
-        self.msg = msg
+    string_types = (type(b''), type(u''))
+    if isinstance(reason, string_types):
 
-    def __call__(self, f):
-        """Return the modified function/method."""
+        # The @deprecated is used with a 'reason'.
+        #
+        # .. code-block:: python
+        #
+        #    @deprecated("please, use another function")
+        #    def old_function(x, y):
+        #      pass
 
-        if hasattr(f, 'thefunc'):
-            # handle numpy.vectorize() output
-            name = None
-            docname = 'Vectorized ' + f.thefunc.__name__
+        def decorator(func1):
+
+            if inspect.isclass(func1):
+                fmt1 = "Call to deprecated class {name} ({reason})."
+            else:
+                fmt1 = "Call to deprecated function {name} ({reason})."
+
+            @functools.wraps(func1)
+            def new_func1(*args, **kwargs):
+                warnings.simplefilter('always', DeprecationWarning)
+                warnings.warn(
+                    fmt1.format(name=func1.__name__, reason=reason),
+                    category=DeprecationWarning,
+                    stacklevel=2
+                )
+                warnings.simplefilter('default', DeprecationWarning)
+                return func1(*args, **kwargs)
+
+            return new_func1
+
+        return decorator
+
+    elif inspect.isclass(reason) or inspect.isfunction(reason):
+
+        # The @deprecated is used without any 'reason'.
+        #
+        # .. code-block:: python
+        #
+        #    @deprecated
+        #    def old_function(x, y):
+        #      pass
+
+        func2 = reason
+
+        if inspect.isclass(func2):
+            fmt2 = "Call to deprecated class {name}."
         else:
-            name = f.__name__
-            docname = name
+            fmt2 = "Call to deprecated function {name}."
 
-        def new_f(*args, **kwargs):
-            msg = "%s() is deprecated. %s"
-            warnings.warn(msg % (docname, self.msg),
-                          category=DeprecationWarning,
-                          stacklevel=2)
-            return f(*args, **kwargs)
+        @functools.wraps(func2)
+        def new_func2(*args, **kwargs):
+            warnings.simplefilter('always', DeprecationWarning)
+            warnings.warn(
+                fmt2.format(name=func2.__name__),
+                category=DeprecationWarning,
+                stacklevel=2
+            )
+            warnings.simplefilter('default', DeprecationWarning)
+            return func2(*args, **kwargs)
 
-        if name is not None:
-            new_f.__name__ = name
+        return new_func2
 
-        msg = "\n\n    %s() is deprecated.\n    %s" % (docname, self.msg)
-        if f.__doc__ is None:
-            new_f.__doc__ = msg
-        else:
-            new_f.__doc__ = f.__doc__ + msg
-
-        new_f.__dict__.update(f.__dict__)
-
-        return new_f
+    else:
+        raise TypeError(repr(type(reason)))
 
 def flatten(l):
     """Flatten an irregular list of lists.

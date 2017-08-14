@@ -35,6 +35,7 @@ Contents:
    optimization
    measures/measures
    profiles
+   measures/pid
    zreferences
    changelog
 
