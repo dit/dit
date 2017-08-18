@@ -3,13 +3,14 @@ Classes implementing the partial information decomposition.
 """
 
 from itertools import product
+from iterutils import powerset
 
 import networkx as nx
 import numpy as np
 
 import prettytable
 
-from .lattice import ascendants, descendants, pid_lattice, sort_key
+from .lattice import ascendants, descendants, least_upper_bound, pid_lattice, sort_key
 from .. import ditParams
 from ..multivariate import coinformation
 from ..utils import flatten
@@ -393,23 +394,42 @@ class BaseIncompletePID(BasePID):
             Updated partial information values.
         """
         missing_vars = [node for node in self._lattice if node not in pis]
-        row = lambda node: [1 if (c in descendants(self._lattice, node, self=True)) else 0 for c in missing_vars]
-        A = np.array([row(node) for node in missing_vars if node in reds] + [[1] * len(missing_vars)])
-        b = np.array([reds[node] for node in missing_vars if node in reds] + [self._total - sum(pis.values())])
-        try:
-            new_pis = np.linalg.solve(A.T, b)
-            if np.all(new_pis > -1e-6):
-                for node, pi in zip(missing_vars, new_pis):
-                    pis[node] = pi
+        if not missing_vars:
+            return reds, pis
 
-                for node in self._lattice:
-                    if node not in reds:
-                        try:
-                            reds[node] = sum(pis[n] for n in descendants(self._lattice, node, self=True))
-                        except KeyError:
-                            pass
-        except:
-            pass
+        def predicate(node, nodes):
+            a = node in reds
+            b = all((n in pis or n in nodes) for n in descendants(self._lattice, node, self=True))
+            return a and b
+
+        for vars in reversed(list(powerset(missing_vars))[1:]):
+
+            lub = least_upper_bound(self._lattice, vars, predicate)
+
+            if lub is None:
+                continue
+
+            row = lambda node: [1 if (c in descendants(self._lattice, node, self=True)) else 0 for c in vars]
+
+            A = np.array([row(node) for node in vars if node in reds] + [[1] * len(vars)])
+            b = np.array([reds[node] for node in vars if node in reds] + [reds[lub] - sum(pis[node] for node in descendants(self._lattice, lub, True) if node in pis)])
+            try:
+                new_pis = np.linalg.solve(A.T, b)
+                if np.all(new_pis > -1e-6):
+                    for node, pi in zip(vars, new_pis):
+                        pis[node] = pi
+
+                    for node in self._lattice:
+                        if node not in reds:
+                            try:
+                                reds[node] = sum(pis[n] for n in descendants(self._lattice, node, self=True))
+                            except KeyError:
+                                pass
+
+                    break
+
+            except:
+                pass
 
         return reds, pis
 

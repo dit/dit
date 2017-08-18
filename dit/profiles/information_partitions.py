@@ -317,8 +317,13 @@ class DependencyDecomposition(object):
         dists = {}
 
         # Entropies
-        for node in self._lattice:
-            dists[node] = maxent_dist(self.dist, node)
+        for node in topological_sort(self._lattice):
+            try:
+                parent = self._lattice.reverse()[node][0]
+                x0 = dists[parent].pmf
+            except KeyError:
+                x0 = None
+            dists[node] = maxent_dist(self.dist, node, x0=x0, sparse=False)
 
         self.dists = dists
 

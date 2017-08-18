@@ -3,7 +3,7 @@ The I_proj measure as proposed by Harder et al.
 """
 
 import numpy as np
-from scipy.optimize import minimize
+from scipy.optimize import basinhopping, minimize
 
 from .pid import BaseBivariatePID
 
@@ -32,6 +32,7 @@ class MinDKLOptimizer(object):
         self._dist = dist
         self._p = dist.pmf
         self._domain = np.stack(domain)
+        self._domain_inv = np.linalg.pinv(self._domain)
 
     def _q(self, x):
         """
@@ -67,44 +68,7 @@ class MinDKLOptimizer(object):
         """
         q = self._q(x)
         dkl = relative_entropy(self._p, q)
-        return 1e4 * dkl
-
-    def _jacobian(self, x):
-        """
-        The Jacobian of D(p||q) with respect to q.
-
-        Parameters
-        ----------
-        x : np.ndarray
-            The optimization vector.
-
-        Returns
-        -------
-        jac : np.ndarray
-            The Jacobian of the Kullback-Leibler divergence.
-        """
-        q = self._q(x)
-        jac = self._p / q
-        jac[np.isnan(jac)] = 0
-        jac = np.dot(jac, np.linalg.pinv(self._domain))
-        return jac
-
-    @staticmethod
-    def constraint_normalized(x):
-        """
-        Constrain the optimization vector to be normalized.
-
-        Parameters
-        ----------
-        x : np.ndarray
-            The optimization vector
-
-        Returns
-        -------
-        norm : float
-            How "un-normalized" the vector is.
-        """
-        return (x.sum() - 1) ** 2
+        return dkl
 
     def optimize(self):
         """
@@ -114,28 +78,21 @@ class MinDKLOptimizer(object):
         -----
         The optimization is convex, so we use sp.optimize.minimize.
         """
-        x0 = np.dot(self._p, np.linalg.pinv(self._domain))
+        x0 = np.dot(self._p, self._domain_inv)
 
         bounds = [(0, 1)] * x0.size
 
-        constraints = [{'type': 'eq',
-                        'fun': self.constraint_normalized,
-                        },
-                       ]
-
         res = minimize(fun=self.objective,
-                       jac=self._jacobian,
                        x0=x0,
-                       method='SLSQP',
+                       method='L-BFGS-B',
                        bounds=bounds,
-                       constraints=constraints,
                        options={'maxiter': 1000,
                                 'ftol': 1e-7,
                                 'eps': 1.4901161193847656e-08,
                                 },
                        )
 
-        if not res.success:
+        if not res.success: # pragma: no cover
             msg = "Optimization failed: {}".format(res.message)
             raise ditException(msg)
 
@@ -245,7 +202,6 @@ def i_proj(d, inputs, output):
     """
     if len(inputs) != 2:
         msg = "This method needs exact two inputs, {} given.".format(len(inputs))
-        print(inputs)
         raise ditException(msg)
 
     pi_0 = projected_information(d, inputs[0], inputs[1], output)

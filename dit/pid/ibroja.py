@@ -6,11 +6,11 @@ import numpy as np
 
 from .pid import BaseUniquePID
 
-from ..algorithms.scipy_optimizers import BaseNonConvexOptimizer
+from ..algorithms.scipy_optimizers import BaseConvexOptimizer
 from ..multivariate import coinformation
 
 
-class BROJAOptimizer(BaseNonConvexOptimizer):
+class BROJAOptimizer(BaseConvexOptimizer):
     """
     Optimizer for computing the max mutual information between
     inputs and outputs. In the bivariate case, this corresponds to
@@ -39,8 +39,8 @@ class BROJAOptimizer(BaseNonConvexOptimizer):
         constraints = [i + dist.rvs[-1] for i in dist.rvs[:-1]]
         super(BROJAOptimizer, self).__init__(dist, constraints)
 
-    # objective 1: maximize B2
-    def objective_1(self, x):
+
+    def objective(self, x):
         """
         Minimize the portion of I(inputs:output) that is not I(input:output|others).
 
@@ -54,104 +54,25 @@ class BROJAOptimizer(BaseNonConvexOptimizer):
         b : float
             The objective.
         """
-        inputs = tuple(range(len(self._shape) - 1))
         pmf = self._expand(x).reshape(self._shape)
-        h = -np.nansum(pmf * np.log2(pmf))
+        h_total = -np.nansum(pmf * np.log2(pmf))
 
+        inputs = tuple(range(len(self._shape) - 1))
         p_output = pmf.sum(axis=inputs)
-        marg_h = -np.nansum(p_output * np.log2(p_output))
+        h_output = -np.nansum(p_output * np.log2(p_output))
 
         input_pmf = pmf.sum(axis=-1)
-        input_h = -np.nansum(input_pmf * np.log2(input_pmf))
+        h_input = -np.nansum(input_pmf * np.log2(input_pmf))
 
-        cond_h = h - input_h
+        mi = h_input + h_output - h_total
 
-        mi = marg_h - cond_h
+        return mi
 
-        cmis = []
-        for input_ in inputs:
-            p = pmf.sum(axis=input_)
-            h = -np.nansum(p * np.log2(p))
-            ip = p.sum(axis=-1)
-            ih = -np.nansum(ip * np.log2(ip))
-            cmi = (h - ih) - cond_h
-            cmis.append(cmi)
-
-        obj = -(mi - sum(cmis))
-
-        return obj
-
-    # objective 2: minimize sum of CMIs
-    def objective_2(self, x):
-        """
-        Minimize the portion of I(inputs:output) that is not I(input:output|others).
-
-        Parameters
-        ----------
-        x : np.ndarray
-            Optimization vector.
-
-        Returns
-        -------
-        b : float
-            The objective.
-        """
-        inputs = tuple(range(len(self._shape) - 1))
-        pmf = self._expand(x).reshape(self._shape)
-        h = -np.nansum(pmf * np.log2(pmf))
-
-        input_pmf = pmf.sum(axis=-1)
-        input_h = -np.nansum(input_pmf * np.log2(input_pmf))
-
-        cond_h = h - input_h
-
-        cmis = []
-        for input_ in inputs:
-            p = pmf.sum(axis=input_)
-            h = -np.nansum(p * np.log2(p))
-            ip = p.sum(axis=-1)
-            ih = -np.nansum(ip * np.log2(ip))
-            cmi = (h - ih) - cond_h
-            cmis.append(cmi)
-
-        obj = sum(cmis)
-
-        return obj
-
-    def objective_bad(self, x):
-        """
-        Compute the mutual information between inputs and output.
-
-        Paramters
-        ---------
-        x : np.ndarray
-            Optimization vector.
-
-        Returns
-        -------
-        i : float
-            The mutual information between inputs and output.
-        """
-        inputs = tuple(range(len(self._shape) - 1))
-        pmf = self._expand(x).reshape(self._shape)
-        h = -np.nansum(pmf * np.log2(pmf))
-
-        p_output = pmf.sum(axis=inputs)
-        marg_h = -np.nansum(p_output * np.log2(p_output))
-
-        input_pmf = pmf.sum(axis=-1)
-        input_h = -np.nansum(input_pmf * np.log2(input_pmf))
-
-        cond_h = h - input_h
-
-        return marg_h - cond_h
-
-    objective = objective_2
 
 def i_broja(d, inputs, output):
     """
-    This computes unique information as I(input : output | other_inputs) in a distribution
-    which matches input-output marginals, but otherwise maximizes I(inputs : output).
+    This computes unique information as min{I(input : output | other_inputs)} over the space of distributions
+    which matches input-output marginals.
 
     Parameters
     ----------
@@ -167,15 +88,14 @@ def i_broja(d, inputs, output):
     ibroja : dict
         The value of I_broja for each individual input.
     """
-    broja = BROJAOptimizer(d.copy(), inputs, output)
-    broja.optimize(nhops=15)
-    d_opt = broja.construct_dist()
     uniques = {}
-    for input_ in inputs:
-        invar = [broja._var_map[input_]]
-        outvar = [broja._var_map[output]]
-        others = [i for i, var in enumerate(inputs) if var != input_]
-        uniques[input_] = coinformation(d_opt, [invar, outvar], others)
+    for input_ in inputs: # fix this to do simpler, and independent optimizations
+        others = sum([i for i in inputs if i != input_], ())
+        dm = d.coalesce([input_, others, output])
+        broja = BROJAOptimizer(dm, ((0,), (1,)), (2,))
+        broja.optimize()
+        d_opt = broja.construct_dist()
+        uniques[input_] = coinformation(d_opt, [[0], [2]], [1])
     return uniques
 
 

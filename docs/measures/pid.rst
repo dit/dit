@@ -358,3 +358,18 @@ Taking a pointwise point of view, Ince has proposed a measure of redundancy base
     \I_\cap[\{X_i\} : Y] = \sum p(x_0, \ldots, x_n, y) \I[x_0 : \ldots : x_n : y] \textrm{if} \op{sign}(\I[x_i : y]) = \op{sign}(\I[x_0 : \ldots : x_n : y])
 
 While this measure behaves intuitively in many examples, it also assigns negative values to some partial information atoms in some instances.
+
+This decomposition also displays an interesting phenomena, that of *subadditive redundancy*. The **gband** distribution is an independent mix of a giant bit (redundancy of 1 bit) and the **and** distribution (redundancy of 0.1038 bits), and yet **gband** has 0.8113 bits of redundancy:
+
+.. ipython::
+
+    In [21]: PID_CCS(bivariates['gband'])
+    Out[21]:
+    ╔════════╤════════╤════════╗
+    ║ I_ccs  │  I_∩   │   π    ║
+    ╟────────┼────────┼────────╢
+    ║ {0:1}  │ 1.8113 │ 0.0000 ║
+    ║  {0}   │ 1.3113 │ 0.5000 ║
+    ║  {1}   │ 1.3113 │ 0.5000 ║
+    ║ {0}{1} │ 0.8113 │ 0.8113 ║
+    ╚════════╧════════╧════════╝

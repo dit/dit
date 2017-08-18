@@ -228,6 +228,11 @@ class BaseOptimizer(object):
                              },
                  }
 
+        try:
+            kwargs['jac'] = self._jacobian
+        except AttributeError:
+            pass
+
         self._optimization_backend(x0, kwargs, nhops)
 
         if polish:
@@ -285,7 +290,7 @@ class BaseOptimizer(object):
         pass
 
 
-    def construct_dist(self, x=None, cutoff=1e-6):
+    def construct_dist(self, x=None, cutoff=1e-6, sparse=True):
         """
         Construct the optimal distribution.
 
@@ -312,7 +317,8 @@ class BaseOptimizer(object):
 
         new_dist = self.dist.copy()
         new_dist.pmf = pmf
-        new_dist.make_sparse()
+        if sparse:
+            new_dist.make_sparse()
 
         new_dist.set_rv_names(self.dist.get_rv_names())
 
@@ -520,7 +526,7 @@ class BROJAOptimizer(BaseConvexOptimizer, MaxCoInfoOptimizer):
         self._free = list(sorted(set(self._free) & set(extra_free)))
 
 
-def maxent_dist(dist, rvs, rv_mode=None):
+def maxent_dist(dist, rvs, rv_mode=None, x0=None, sparse=True):
     """
     Return the maximum entropy distribution consistent with the marginals from
     `dist` specified in `rvs`.
@@ -538,6 +544,10 @@ def maxent_dist(dist, rvs, rv_mode=None):
         equal to 'names', the the elements are interpreted as random
         variable names. If `None`, then the value of `dist._rv_mode` is
         consulted, which defaults to 'indices'.
+    x0 : np.ndarray
+        Initial condition for the optimizer.
+    dense : bool
+        Whether the returned distribution should be dense or sparse.
 
     Returns
     -------
@@ -545,8 +555,9 @@ def maxent_dist(dist, rvs, rv_mode=None):
         The maximum entropy distribution.
     """
     meo = MaxEntOptimizer(dist, rvs, rv_mode)
-    meo.optimize()
-    return meo.construct_dist()
+    meo.optimize(x0=x0)
+    dist = meo.construct_dist(sparse=sparse)
+    return dist
 
 
 def marginal_maxent_dists(dist, k_max=None):

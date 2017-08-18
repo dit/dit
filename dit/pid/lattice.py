@@ -172,3 +172,31 @@ def descendants(lattice, node, self=False):
     if not self:
         nodes.remove(node)
     return nodes
+
+def least_upper_bound(lattice, nodes, predicate=None):
+    """
+    Find the least upper bound of `nodes` satisfying `predicate`.
+
+    Parameters
+    ----------
+    lattice : nx.DiGraph
+        The lattice to work with.
+    nodes : iterable
+        The nodes to find the least upper bound of.
+    predicate : func(node, nodes) -> bool, None
+        A criteria
+
+    Returns
+    -------
+    lub : node, None
+        The least upper bound of `nodes` satisfying `predicate`. None if one doesn't exist.
+    """
+    parents = ascendants(lattice, nodes[0], self=True)
+    snodes = set(nodes)
+    for node in sorted(parents, key=sort_key(lattice)):
+        if snodes <= set(descendants(lattice, node, self=True)):
+            if predicate is not None:
+                if predicate(node, nodes):
+                    return node
+            else:
+                return node

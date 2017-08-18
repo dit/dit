@@ -56,7 +56,7 @@ class BaseIntrinsicMutualInformation(object):
             variable names. If `None`, then the value of `dist._rv_mode` is
             consulted, which defaults to 'indices'.
         """
-        self._dist = dist.copy()
+        self._dist = dist.copy(base='linear')
         self._alphabet = self._dist.alphabet
         rvs, crvs, self._rv_mode = normalize_rvs(self._dist, rvs, crvs, rv_mode)
         self._rvs = [ parse_rvs(self._dist, rv, rv_mode)[1] for rv in rvs ]
