@@ -16,6 +16,7 @@ import prettytable
 
 from networkx import DiGraph, dfs_preorder_nodes as children, topological_sort
 
+from .. import ditParams
 from ..algorithms import maxent_dist
 from ..math import close
 from ..other import extropy
@@ -203,10 +204,11 @@ class BaseInformationPartition(object):
         Use PrettyTable to create a nice table.
         """
         table = prettytable.PrettyTable(['measure', self.unit]) # pylint: disable=no-member
-        try:
-            table.set_style(prettytable.BOX_CHARS)
-        except AttributeError:
-            pass
+        if ditParams['text.font'] == 'linechar': # pragma: no cover
+            try:
+                table.set_style(prettytable.BOX_CHARS)
+            except AttributeError:
+                pass
         ### TODO: add some logic for the format string, so things look nice
         #         with arbitrary values
         table.float_format[self.unit] = ' 5.{0}'.format(digits) # pylint: disable=no-member
@@ -352,10 +354,11 @@ class DependencyDecomposition(object):
         """
         measures = list(self.measures.keys())
         table = prettytable.PrettyTable(['dependency'] + measures)
-        try:
-            table.set_style(prettytable.BOX_CHARS)
-        except:
-            pass
+        if ditParams['text.font'] == 'linechar': # pragma: no cover
+            try:
+                table.set_style(prettytable.BOX_CHARS)
+            except AttributeError:
+                pass
         ### TODO: add some logic for the format string, so things look nice
         # with arbitrary values
         for m in measures:

@@ -85,8 +85,8 @@ def test_standard_moment1(n, p):
         assert standard_moment(d, i) == pytest.approx(m)
 
 @pytest.mark.parametrize(('rvs', 'crvs'), [
-    (['X', 'Y'], []),
-    (['X', 'Y'], 'Z'),
+    ([[0], [1]], []),
+    ([[0], [1]], [2]),
 ])
 @pytest.mark.parametrize('dist', [dyadic, triadic])
 def test_maximum_correlation(dist, rvs, crvs):

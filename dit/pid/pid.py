@@ -76,7 +76,7 @@ class BasePID(object):
         """
         return self.get_partial(key)
 
-    def __repr__(self):
+    def __repr__(self): # pragma: no cover
         """
         Returns a representation of the PID.
 
@@ -132,7 +132,7 @@ class BasePID(object):
         pis : dict
             Updated partial information values.
         """
-        if reds is None:
+        if reds is None: # pragma: no cover
             reds = {}
         if pis is None:
             pis = {}
@@ -193,15 +193,19 @@ class BasePID(object):
             The table of values.
         """
         import sys
-        if sys.version_info < (3, 0, 0):
+
+        if sys.version_info < (3, 0, 0): # pragma: no cover
             red_string = "I_r"
         else:
             red_string = 'I_∩'
+
         table = prettytable.PrettyTable([self.name, red_string, 'π'], title=getattr(self._dist, 'name', ''))
-        try:
-            table.set_style(prettytable.BOX_CHARS)
-        except:
-            pass
+
+        if ditParams['text.font'] == 'linechar': # pragma: no cover
+            try:
+                table.set_style(prettytable.BOX_CHARS)
+            except AttributeError:
+                pass
 
         table.float_format[red_string] = '{}.{}'.format(digits + 2, digits)
         table.float_format['π'] = '{}.{}'.format(digits + 2, digits)
@@ -229,7 +233,7 @@ class BasePID(object):
         name : str
             The name of the decomposition.
         """
-        try:
+        try: # pragma: no cover
             from colorama import Fore, Back, Style
             inconsistent_style = lambda x: Fore.RED + x + Style.RESET_ALL
             negative_style = lambda x: Fore.GREEN + x + Style.RESET_ALL
@@ -549,7 +553,7 @@ class BaseIncompletePID(BasePID):
         reds = nx.get_node_attributes(self._lattice, 'red')
         pis = nx.get_node_attributes(self._lattice, 'pi')
 
-        if self.SELF_REDUNDANCY:
+        if self.SELF_REDUNDANCY: # pragma: no cover
             for node in self._lattice:
                 if len(node) == 1:
                     red = reds[node]

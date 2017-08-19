@@ -112,7 +112,7 @@ class MinDKLOptimizer(object):
         dist : Distribution
             The distribution of `q`.
         """
-        if q is None:
+        if q is None: # pragma: no cover
             q = self._q(self._optima)
 
         dist = Distribution(self._dist.outcomes, q)
@@ -200,7 +200,7 @@ def i_proj(d, inputs, output):
     iproj : float
         The value of I_proj.
     """
-    if len(inputs) != 2:
+    if len(inputs) != 2: # pragma: no cover
         msg = "This method needs exact two inputs, {} given.".format(len(inputs))
         raise ditException(msg)
 

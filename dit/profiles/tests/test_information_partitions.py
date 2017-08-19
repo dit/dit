@@ -39,14 +39,14 @@ def test_sp3():
     """ Test get_atoms() """
     d = n_mod_m(3, 2)
     ip = ShannonPartition(d)
-    atoms1 = set(['H[0|1,2]',
-                  'H[1|0,2]',
-                  'H[2|0,1]',
-                  'I[0:1:2]',
-                  'I[0:1|2]',
-                  'I[0:2|1]',
-                  'I[1:2|0]'
-                 ])
+    atoms1 = {'H[0|1,2]',
+              'H[1|0,2]',
+              'H[2|0,1]',
+              'I[0:1:2]',
+              'I[0:1|2]',
+              'I[0:2|1]',
+              'I[1:2|0]'
+              }
     atoms2 = ip.get_atoms()
     assert (atoms1 - atoms2) | (atoms2 - atoms1) == set()
 

@@ -281,7 +281,7 @@ In a very intuitive effort, Bertschinger et al (henceforth BROJA) :cite:`bertsch
 
     \Delta = \{ Q : \forall i : p(x_i, y) = q(x_i, y) \}
 
-    \I_\delta[\{X_i\} : Y] = \I_{\Delta}[X_i : Y | \{X_0, \ldots\} - \{X_i\}]
+    \I_\partial[\{X_i\} : Y] = \min_{Q \in \Delta} \I_{Q}[X_i : Y | \{X_0, \ldots\} - \{X_i\}]
 
 .. note::
 
