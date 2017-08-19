@@ -197,9 +197,9 @@ class BasePID(object):
         if sys.version_info < (3, 0, 0): # pragma: no cover
             red_string = "I_r"
         else:
-            red_string = 'I_∩'
+            red_string = u'I_∩'
 
-        table = prettytable.PrettyTable([self.name, red_string, 'π'], title=getattr(self._dist, 'name', ''))
+        table = prettytable.PrettyTable([self.name, red_string, u'π'], title=getattr(self._dist, 'name', ''))
 
         if ditParams['text.font'] == 'linechar': # pragma: no cover
             try:
