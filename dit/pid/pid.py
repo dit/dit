@@ -193,8 +193,9 @@ class BasePID(object):
             The table of values.
         """
         red_string = "I_r"
+        pi_string = "pi"
 
-        table = prettytable.PrettyTable([self.name, red_string, 'π'], title=getattr(self._dist, 'name', ''))
+        table = prettytable.PrettyTable([self.name, red_string, pi_string], title=getattr(self._dist, 'name', ''))
 
         if ditParams['text.font'] == 'linechar': # pragma: no cover
             try:
@@ -203,7 +204,7 @@ class BasePID(object):
                 pass
 
         table.float_format[red_string] = '{}.{}'.format(digits + 2, digits)
-        table.float_format['π'] = '{}.{}'.format(digits + 2, digits)
+        table.float_format[pi_string] = '{}.{}'.format(digits + 2, digits)
 
         for node in sorted(self._lattice, key=sort_key(self._lattice)):
             node_label = ''.join('{{{}}}'.format(':'.join(map(str, n))) for n in node)
