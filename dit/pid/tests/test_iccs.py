@@ -80,7 +80,6 @@ def test_pid_ccs3():
         else:
             assert pid[atom] == pytest.approx(0.0)
 
-@pytest.mark.skipif(sys.version_info < (3, 3), reason="This form requires py3")
 def test_pid_ccs4():
     d = bivariates['gband']
     pid = PID_CCS(d)
