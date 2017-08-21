@@ -146,7 +146,7 @@ def min_dkl(dist, domain):
 
 def projected_information(dist, X, Y, Z):
     """
-    I_Z^π(X \searrow Y)
+    I_Z^pi(X \searrow Y)
 
     Paramters
     ---------
