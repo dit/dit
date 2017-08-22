@@ -209,35 +209,46 @@ htmlhelp_basename = 'ditdoc'
 # -- Options for LaTeX output --------------------------------------------------
 
 macros = r'''
-\newcommand{\op}[1]{\ensuremath{\operatorname{#1}}}
+\newcommand{\op}[2{\ensuremath{\operatorname{#1}\left[#2\right]}}
 
-\renewcommand{\H}  {\op{H}}   % No more Erd\H{o}s
+\renewcommand{\H}[1]  {\op{H}{#1}}   % No more Erd\H{o}s
 
-\newcommand{\I}    {\op{I}}
-\newcommand{\T}    {\op{T}}
-\newcommand{\B}    {\op{B}}
-\newcommand{\J}    {\op{J}}
+\newcommand{\I}[1]    {\op{I}{#1}}
+\newcommand{\T}[1]    {\op{T}{#1}}
+\newcommand{\B}[1]    {\op{B}{#1}}
+\newcommand{\J}[1]    {\op{J}{#1}}
 
-\newcommand{\R}    {\op{R}}
-\newcommand{\II}   {\op{II}}
-\newcommand{\TSE}  {\op{TSE}}
+\newcommand{\R}[1]    {\op{R}{#1}}
+\newcommand{\II}[1]   {\op{II}{#1}}
+\newcommand{\TSE}[1]  {\op{TSE}{#1}}
 
-\newcommand{\K}    {\op{K}}
-\newcommand{\C}    {\op{C}}
-\newcommand{\G}    {\op{G}}
-\newcommand{\F}    {\op{F}}
-\newcommand{\M}    {\op{M}}
+\newcommand{\K}[1]    {\op{K}{#1}}
+\newcommand{\C}[1]    {\op{C}{#1}}
+\newcommand{\G}[1]    {\op{G}{#1}}
+\newcommand{\F}[1]    {\op{F}{#1}}
+\newcommand{\M}[1]    {\op{M}{#1}}
 
-\renewcommand{\P}  {\op{P}}
-\newcommand{\X}    {\op{X}}
-\newcommand{\CRE}  {\op{\mathcal{E}}}
-\newcommand{\GCRE} {\op{\mathcal{E^\prime}}}
-\newcommand{\RE}   {\op{H_{\alpha}}}
-\newcommand{\TE}   {\op{S_q}}
+\renewcommand{\P}[1]  {\op{P}{#1}}
+\newcommand{\X}[1]    {\op{X}{#1}}
+\newcommand{\CRE}[1]  {\op{\mathcal{E}}{#1}}
+\newcommand{\GCRE}[1] {\op{\mathcal{E^\prime}}{#1}}
+\newcommand{\RE}[2]   {\op{H_{#1}}{#2}}
+\newcommand{\TE}[2]   {\op{S_{#1}}{#2}}
 
-\newcommand{\xH}   {\op{xH}}
-\newcommand{\DKL}  {\op{D_{KL}}}
-\newcommand{\JSD}  {\op{D_{JS}}}
+\newcommand{\xH}[1]   {\op{xH}{#1}}
+\newcommand{\DKL}[1]  {\op{D_{KL}}{#1}}
+\newcommand{\JSD}[1]  {\op{D_{JS}}{#1}}
+
+\newcommand{\Icap}[1] {\op{I_{\cap}}{#1}}
+\newcommand{\Imin}[1] {\op{I_{min}}{#1}}
+\newcommand{\Immi}[1] {\op{I_{MMI}}{#1}}
+\newcommand{\Iwedge}[1] {\op{I_{\wedge}}{#1}}
+\newcommand{\Iproj}[1] {\op{I_{proj}}{#1}}
+\newcommand{\Ibroja}[1] {\op{I_{BROJA}}{#1}}
+\newcommand{\Iccs}[1] {\op{I_{ccs}}{#1}}
+\newcommand{\Ida}[1] {\op{I_{\downarrow}}{#1}}
+\newcommand{\Idda}[1] {\op{I_{\Downarrow}}{#1}}
+\newcommand{\Idep}[1] {\op{I_{dep}}{#1}}
 
 \newcommand{\meet} {\curlywedge}
 \newcommand{\join} {\curlyvee}
