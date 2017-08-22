@@ -328,12 +328,8 @@ In the BROJA paper :cite:`bertschinger2014quantifying` the only example given wh
 
    In [19]: from dit.utils.testing import distributions
 
-   In [20]: def broja_not_proj(d):
-   ...:         return PID_BROJA(d) != PID_Proj(d)
-   ...:
-
-   In [21]: find(distributions(3, 2, True), broja_not_proj)
-   Out[21]:
+   In [20]: find(distributions(3, 2, True), lambda d: PID_Proj(d) != PID_BROJA(d))
+   Out[20]:
    Class:          Distribution
    Alphabet:       (0, 1) for all rvs
    Base:           linear
