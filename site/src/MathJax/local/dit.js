@@ -87,4 +87,4 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 
 });
 
-MathJax.Ajax.loadComplete("http://dit.io/MathJax/local/dit.js");
+MathJax.Ajax.loadComplete("https://raw.githubusercontent.com/dit/dit/master/site/src/MathJax/local/dit.js");

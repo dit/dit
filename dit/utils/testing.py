@@ -2,6 +2,8 @@
 Utilities related to testing.
 """
 
+from __future__ import division
+
 from hypothesis import assume
 from hypothesis.strategies import composite, floats, integers, lists, tuples
 

@@ -75,6 +75,7 @@ def test_mincoinfo_1():
     dp = mcio.construct_dist()
     assert I(dp) == pytest.approx(-1)
 
+@pytest.mark.skip(reason="This method if deprecated.")
 @pytest.mark.parametrize(('dist', 'vals'), [
     (Rdn(), (1, 0, 0, 0)),
     (Unq(), (0, 1, 1, 0)),

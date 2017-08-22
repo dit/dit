@@ -12,10 +12,11 @@ from collections import defaultdict
 from itertools import combinations, islice, permutations
 from iterutils import powerset
 
-from prettytable import PrettyTable
+import prettytable
 
 from networkx import DiGraph, dfs_preorder_nodes as children, topological_sort
 
+from .. import ditParams
 from ..algorithms import maxent_dist
 from ..math import close
 from ..other import extropy
@@ -36,10 +37,9 @@ def poset_lattice(elements):
 
     lattice = DiGraph()
 
-    for a in powerset(elements):
-        for b in powerset(elements):
-            if child(set(a), set(b)):
-                lattice.add_edge(b, a)
+    for a, b in combinations(powerset(elements), 2):
+        if child(set(a), set(b)):
+            lattice.add_edge(b, a)
 
     return lattice
 
@@ -203,7 +203,12 @@ class BaseInformationPartition(object):
         """
         Use PrettyTable to create a nice table.
         """
-        table = PrettyTable(['measure', self.unit]) # pylint: disable=no-member
+        table = prettytable.PrettyTable(['measure', self.unit]) # pylint: disable=no-member
+        if ditParams['text.font'] == 'linechar': # pragma: no cover
+            try:
+                table.set_style(prettytable.BOX_CHARS)
+            except AttributeError:
+                pass
         ### TODO: add some logic for the format string, so things look nice
         #         with arbitrary values
         table.float_format[self.unit] = ' 5.{0}'.format(digits) # pylint: disable=no-member
@@ -314,8 +319,13 @@ class DependencyDecomposition(object):
         dists = {}
 
         # Entropies
-        for node in self._lattice:
-            dists[node] = maxent_dist(self.dist, node)
+        for node in topological_sort(self._lattice):
+            try:
+                parent = self._lattice.reverse()[node][0]
+                x0 = dists[parent].pmf
+            except KeyError:
+                x0 = None
+            dists[node] = maxent_dist(self.dist, node, x0=x0, sparse=False)
 
         self.dists = dists
 
@@ -343,11 +353,16 @@ class DependencyDecomposition(object):
         Use PrettyTable to create a nice table.
         """
         measures = list(self.measures.keys())
-        table = PrettyTable(['dependency'] + measures)
+        table = prettytable.PrettyTable(['dependency'] + measures)
+        if ditParams['text.font'] == 'linechar': # pragma: no cover
+            try:
+                table.set_style(prettytable.BOX_CHARS)
+            except AttributeError:
+                pass
         ### TODO: add some logic for the format string, so things look nice
         # with arbitrary values
         for m in measures:
-            table.float_format[m] = ' 5.{0}'.format(digits)
+            table.float_format[m] = ' {}.{}'.format(digits+2, digits)
         items = sorted(self.atoms.items(), key=lambda row: row[0])
         items = sorted(items, key=lambda row: [len(d) for d in row[0]], reverse=True)
         for dependency, values in items:
