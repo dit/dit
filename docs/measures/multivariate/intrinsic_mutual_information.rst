@@ -9,7 +9,7 @@ The intrinsic mutual information was defined in :cite:`maurer1997intrinsic` as:
 
 .. math::
 
-   \I\left[X:Y\downarrow Z\right] = \min_{p(\overline{z}|z)} \I\left[X:Y|\overline{Z}\right]
+   \I{X : Y \downarrow Z} = \min_{p(\overline{z} | z)} \I{X : Y | \overline{Z}}
 
 The intrinsic mutual information was defined as an upper bound on the rate of secret key agreement.
 
@@ -20,7 +20,7 @@ Compared to the transfer entropy, it is also a plausibly superior measure of inf
 
 .. math::
 
-   T^\prime_{X \rightarrow Y} = \I\left[X_0^t : Y_t \downarrow Y_0^t\right]
+   T^\prime_{X \rightarrow Y} = \I{X_0^t : Y_t \downarrow Y_0^t}
 
 Generalizations
 ===============
@@ -34,7 +34,7 @@ The intrinsic form of the :doc:`total_correlation`:
 
 .. math::
 
-   \T\left[X_{0:n} \downarrow Z\right] = \min_{p(\overline{z}|z)} \T\left[X_{0:n} | \overline{Z}\right]
+   \T{X_{0:n} \downarrow Z} = \min_{p(\overline{z} | z)} \T{X_{0:n} | \overline{Z}}
 
 The following example is given in :cite:`maurer1997intrinsic`:
 
@@ -61,7 +61,7 @@ The intrinsic form of the :doc:`dual_total_correlation`:
 
 .. math::
 
-   \B\left[X_{0:n} \downarrow Z\right] = \min_{p(\overline{z}|z)} \B\left[X_{0:n} | \overline{Z}\right]
+   \B{X_{0:n} \downarrow Z} = \min_{p(\overline{z} | z)} \B{X_{0:n} | \overline{Z}}
 
 Intrinsic CAEKL Mutual Information
 ----------------------------------
@@ -70,7 +70,7 @@ The intrinsic form of the :doc:`caekl_mutual_information`:
 
 .. math::
 
-   \J\left[X_{0:n} \downarrow Z\right] = \min_{p(\overline{z}|z)} \J\left[X_{0:n} | \overline{Z}\right]
+   \J{X_{0:n} \downarrow Z} = \min_{p(\overline{z} | z)} \J{X_{0:n} | \overline{Z}}
 
 Intrinsic Co-Information
 ------------------------

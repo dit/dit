@@ -9,7 +9,7 @@ The Tononi-Sporns-Edelmans (TSE) complexity :cite:`Tononi1994` is a complexity m
 
 .. math::
 
-   \TSE[X|Z] = \sum_{k=1}^{|X|} \left( {N \choose k}^{-1} \sum_{\substack{y \subseteq X \\ |y|=k}} \left( \H[y|Z] \right) - \frac{k}{|X|}\H[X|Z] \right)
+   \TSE{X | Z} = \sum_{k=1}^{|X|} \left( {N \choose k}^{-1} \sum_{\substack{y \subseteq X \\ |y| = k}} \left( \H{y | Z} \right) - \frac{k}{|X|}\H{X | Z} \right)
 
 Two distributions which might be considered tightly coupled are the "giant bit" and the "parity" distributions:
 

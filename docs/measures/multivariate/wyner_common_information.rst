@@ -9,19 +9,19 @@ The Wyner common information :cite:`wyner1975common,liu2010common` measures the 
 
 .. math::
 
-   \C[X_{0:n}|Y_{0:m}] = \min_{\ind X_{0:n} \mid Y_{0:m}, V} \I[X_{0:n} : V | Y_{0:m}]
+   \C{X_{0:n} | Y_{0:m}} = \min_{\ind X_{0:n} \mid Y_{0:m}, V} \I{X_{0:n} : V | Y_{0:m}}
 
 Binary Symmetric Erasure Channel
 ================================
 
-Ther Wyner common information of the binary symmetric erausre channel is known to be:
+The Wyner common information of the binary symmetric erasure channel is known to be:
 
 .. math::
 
-   \C[X:Y] =
+   \C{X : Y} =
    \begin{cases}
-      1     &p < \frac{1}{2} \\
-      \H(p) &p \ge \frac{1}{2}
+      1     & p < \frac{1}{2}   \\
+      \H{p} & p \ge \frac{1}{2}
    \end{cases}.
 
 We can verify this:

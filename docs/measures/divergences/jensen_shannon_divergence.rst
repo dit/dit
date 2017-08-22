@@ -9,13 +9,13 @@ The Jensen-Shannon divergence is a principled divergence measure which is always
 
 .. math::
 
-   \JSD[X || Y] = \H\left[\frac{X + Y}{2}\right] - \frac{\H[X] + \H[Y]}{2}
+   \JSD{X || Y} = \H{\frac{X + Y}{2}} - \frac{\H{X} + \H{Y}}{2}
 
 That is, it is the entropy of the mixture minus the mixture of the entropy. This can be generalized to an arbitrary number of random variables with arbitrary weights:
 
 .. math::
 
-   \JSD[X_{0:n}] = \H\left[ \sum w_i X_i \right] - \sum \left( w_i \H[X_i] \right)
+   \JSD{X_{0:n}} = \H{\sum w_i X_i} - \sum \left( w_i \H{X_i} \right)
 
 .. ipython::
 

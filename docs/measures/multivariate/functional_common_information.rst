@@ -9,7 +9,7 @@ The functional common information captures the minimum amount of information nec
 
 .. math::
 
-   \F[X_{0:n} \mid Y_{0:m}] = \min_{\substack{\ind X_{0:n} \mid Y_{0:m}, W \\ W = f(X_{0:n}, Y_{0:m})}} \H[W]
+   \F{X_{0:n} \mid Y_{0:m}} = \min_{\substack{\ind X_{0:n} \mid Y_{0:m}, W \\ W = f(X_{0:n}, Y_{0:m})}} \H{W}
 
 Relationship To Other Measures of Common Information
 ====================================================
@@ -18,7 +18,7 @@ Since this is an additional constraint on the Exact common information, it is ge
 
 .. math::
 
-   \G[X_{0:n}] \leq \F[X_{0:n}] \leq \M[X_{0:n}]
+   \G{X_{0:n}} \leq \F{X_{0:n}} \leq \M{X_{0:n}}
 
 API
 ===

@@ -91,18 +91,18 @@ The Gács-Körner common information satisfies an important inequality:
 
 .. math::
 
-   0 \leq \K[X_0:X_1] \leq \I[X_0:X_1]
+   0 \leq \K{X_0 : X_1} \leq \I{X_0 : X_1}
 
 One usage of the common information is as a measure of *redundancy* :cite:`griffith2014intersection`. Consider a function that takes two inputs, :math:`X_0` and :math:`X_1`, and produces a single output :math:`Y`. The output can be influenced redundantly by both inputs, uniquely from either one, or together they can synergistically influence the output. Determining how to compute the amount of redundancy is an open problem, but one proposal is:
 
 .. math::
 
-   \I[X_0 \meet X_1 : Y]
+   \I{X_0 \meet X_1 : Y}
 
 Which can be visualized as this:
 
 .. image:: ../../images/idiagrams/red_xy.png
-   :alt: The zero-error redundancy :math:`\I[X\meetY:Z]`
+   :alt: The zero-error redundancy :math:`\I{X \meet Y : Z}`
    :width: 357px
    :align: center
 
@@ -132,20 +132,20 @@ With an arbitrary number of variables, the Gács-Körner common information :cit
 
 .. math::
 
-   \K[X_0 : \ldots : X_n] &= \max_{\substack{V = f_0(X_0) \\ \vdots \\ V = f_n(X_n)}} \H[V] \\
-                          &= \H[X_0 \meet \ldots \meet X_n]
+   \K{X_0 : \ldots : X_n} &= \max_{\substack{V = f_0(X_0) \\ \vdots \\ V = f_n(X_n)}} \H{V} \\
+                          &= \H{X_0 \meet \ldots \meet X_n}
 
 The common information is a monotonically decreasing function in the number of variables:
 
 .. math::
 
-   \K[X_0 : \ldots : X_{n-1}] \ge \K[X_0 : \ldots : X_n]
+   \K{X_0 : \ldots : X_{n-1}} \ge \K{X_0 : \ldots : X_n}
 
 The multivariate common information follows a similar inequality as the two variable version:
 
 .. math::
 
-   0 \leq \K[X_0 : \dots : X_n] \leq \min_{i, j \in \{0..n\}} \I[X_i : X_j]
+   0 \leq \K{X_0 : \dots : X_n} \leq \min_{i, j \in \left{0..n\right}} \I{X_i : X_j}
 
 Visualization
 -------------
@@ -153,7 +153,7 @@ Visualization
 Here, as above, the Gács-Körner common information among three variables is the largest "circle" this time fiting in the vaguely triangular :doc:`coinformation` region.
 
 .. image:: ../../images/idiagrams/k_xyz.png
-   :alt: The Gács-Körner common information :math:`\K[X:Y:Z]`
+   :alt: The Gács-Körner common information :math:`\K{X : Y : Z}`
    :width: 357px
    :align: center
 

@@ -2,14 +2,14 @@
 .. py:module:: dit.multivariate.dual_total_correlation
 
 **********************
-Dual Total Correaltion
+Dual Total Correlation
 **********************
 
 The dual total correlation :cite:`Han1975linear`, or binding information :cite:`Abdallah2012`, is yet another generalization of the :ref:`mutual_information`. It is the amount of information that is shared among the variables. It is defined as:
 
 .. math::
 
-   \B[X_{0:n}] &= \H[X_{0:n}] - \sum \H[X_i | X_{\{0..n\}/i}] \\
+   \B{X_{0:n}} &= \H{X_{0:n}} - \sum \H{X_i | X_{\{0..n\}/i}} \\
                &= - \sum_{x_{0:n} \in X_{0:n}} p(x_{0:n}) \log_2 \frac{p(x_{0:n})}{\prod p(x_i|x_{\{0:n\}/i})}
 
 In a sense the binding information captures the same information that the :doc:`total_correlation` does, in that both measures are zero or non-zero together. However, the two measures take on very different quantitative values for different distributions. By way of example, the type of distribution that maximizes the total correlation is a "giant bit":
@@ -52,8 +52,8 @@ The dual total correlation obeys particular bounds related to both the :doc:`ent
 
 .. math::
 
-   0 \leq & \B[X_{0:n}] \leq \H[X_{0:n}] \\
-   \frac{\T[X_{0:n}]}{n-1} \leq & \B[X_{0:n}] \leq (n-1)\T[X_{0:n}]
+   0 \leq & \B{X_{0:n}} \leq \H{X_{0:n}} \\
+   \frac{\T{X_{0:n}}}{n-1} \leq & \B{X_{0:n}} \leq (n-1)\T{X_{0:n}}
 
 
 Visualization
@@ -62,7 +62,7 @@ Visualization
 The binding information, as seen below, consists equally of the information shared among the variables.
 
 .. image:: ../../images/idiagrams/b_xyz.png
-   :alt: The dual total correlation :math:`\B[X:Y:Z]`
+   :alt: The dual total correlation :math:`\B{X : Y : Z}`
    :width: 357px
    :align: center
 

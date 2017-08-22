@@ -9,13 +9,13 @@ Lamberti, Martin, Plastino, and Rosso have proposed a complexity measure :cite:`
 
 .. math::
 
-   \H[X]/\log_2{|X|}
+   \H{X}/\log_2{|X|}
 
 and the disequilibrium as a (normalized) :doc:`../divergences/jensen_shannon_divergence`:
 
 .. math::
 
-   \JSD[X || P_e] / Q_0
+   \JSD{X || P_e} / Q_0
 
 where :math:`P_e` is a uniform distribution over the same outcome space as :math:`X`, and :math:`Q_0` is the maximum possible value of the Jensen-Shannon divergence of a distribution with :math:`P_e`.
 

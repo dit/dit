@@ -5,11 +5,11 @@
 Total Correlation
 *****************
 
-The total correlation :cite:`watanabe1960information`, denoted :math:`\T`, also known as the multi-information or integration, is one generalization of the :ref:`mutual_information`. It is defined as the amount of information each individual variable carries above and beyond the joint entropy, e.g. the difference between the whole and the sum of its parts:
+The total correlation :cite:`watanabe1960information`, denoted :math:`\T{}`, also known as the multi-information or integration, is one generalization of the :ref:`mutual_information`. It is defined as the amount of information each individual variable carries above and beyond the joint entropy, e.g. the difference between the whole and the sum of its parts:
 
 .. math::
 
-   \T[X_{0:n}] &= \sum \H[X_i] - \H[X_{0:n}] \\
+   \T{X_{0:n}} &= \sum \H{X_i} - \H{X_{0:n}} \\
                &= \sum_{x_{0:n} \in X_{0:n}} p(x_{0:n}) \log_2 \frac{p(x_{0:n})}{\prod p(x_i)}
 
 Two nice features of the total correlation are that it is non-negative and that it is zero if and only if the random variables :math:`X_{0:n}` are all independent. Some baseline behavior is good to note also. First its behavior when applied to "giant bit" distributions:
@@ -44,7 +44,7 @@ The total correlation follows a nice decomposition rule. Given two sets of (not 
 
 .. math::
 
-   \T[A \cup B] = \T[A] + \T[B] + \I[A : B]
+   \T{A \cup B} = \T{A} + \T{B} + \I{A : B}
 
 .. ipython::
 
@@ -63,7 +63,7 @@ Visualization
 The total correlation consists of all information that is shared among the variables, and weights each piece according to how many variables it is shared among.
 
 .. image:: ../../images/idiagrams/t_xyz.png
-   :alt: The total correlation :math:`\T[X:Y:Z]`
+   :alt: The total correlation :math:`\T{X : Y : Z}`
    :width: 357px
    :align: center
 

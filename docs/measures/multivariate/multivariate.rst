@@ -49,12 +49,12 @@ The common information measures (together with the :doc:`dual_total_correlation`
 
 .. math::
 
-   \K[X_{0:n}] \leq \J[X_{0:n}]
-               \leq \B[X_{0:n}]
-               \leq \C[X_{0:n}]
-               \leq \G[X_{0:n}]
-               \leq \F[X_{0:n}]
-               \leq \M[X_{0:n}]
+   \K{X_{0:n}} \leq \J{X_{0:n}}
+               \leq \B{X_{0:n}}
+               \leq \C{X_{0:n}}
+               \leq \G{X_{0:n}}
+               \leq \F{X_{0:n}}
+               \leq \M{X_{0:n}}
 
 Others
 ======

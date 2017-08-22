@@ -10,7 +10,7 @@ given by:
 
 .. math::
 
-   \xH[p || q] = -\sum_{x \in \mathcal{X}} p(x) \log_2 q(x)
+   \xH{p || q} = -\sum_{x \in \mathcal{X}} p(x) \log_2 q(x)
 
 This quantifies the average cost of representing a distribution defined by the
 probabilities :math:`p(x)` using the probabilities :math:`q(x)`. For example,
@@ -55,10 +55,10 @@ considering the following identity:
 
 .. math::
 
-   \xH[p || q] = \H[p] + \DKL[p || q]
+   \xH{p || q} = \H{p} + \DKL{p || q}
 
 So in representing :math:`p` using :math:`q`, we of course must at least use
-:math:`\H[p]` bits -- the minimum required to represent :math:`p` -- plus the
+:math:`\H{p}` bits -- the minimum required to represent :math:`p` -- plus the
 Kullback-Leibler divergence of :math:`q` from :math:`p`.
 
 

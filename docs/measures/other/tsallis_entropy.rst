@@ -9,7 +9,7 @@ The Tsallis entropy is a generalization of the Shannon (or Boltzmann-Gibbs) entr
 
 .. math::
 
-    \TE[X] = \frac{1}{q - 1} \left( 1 - \sum_{x \in \mathcal{X}} p(x)^q \right)
+    \TE{q}{X} = \frac{1}{q - 1} \left( 1 - \sum_{x \in \mathcal{X}} p(x)^q \right)
 
 .. ipython::
 
@@ -31,7 +31,7 @@ One interesting property of the Tsallis entropy is the relationship between the 
 
 .. math::
 
-    \TE[X, Y] = \TE[X] + \TE[Y] + (1-q)\TE[X]\TE[Y]
+    \TE{q}{X, Y} = \TE{q}{X} + \TE{q}{Y} + (1-q)\TE{q}{X}\TE{q}{Y}
 
 
 API

@@ -9,7 +9,7 @@ The Rényi entropy is a spectrum of generalizations to the Shannon :doc:`../mult
 
 .. math::
 
-   \RE[X] = \frac{1}{1-\alpha} \log_2 \left( \sum_{x \in \mathcal{X}} p(x)^\alpha \right)
+   \RE{\alpha}{X} = \frac{1}{1-\alpha} \log_2 \left( \sum_{x \in \mathcal{X}} p(x)^\alpha \right)
 
 .. ipython::
 
@@ -37,7 +37,7 @@ When :math:`\alpha = 0` the Rényi entropy becomes what is known as the Hartley 
 
 .. math::
 
-    \H_{0}[X] = \log_2 |X|
+    \RE{0}{X} = \log_2 |X|
 
 .. ipython::
 
@@ -53,7 +53,7 @@ When :math:`\alpha = 1` the Rényi entropy becomes the standard Shannon entropy:
 
 .. math::
 
-    \H_{1}[X] = \H[X]
+    \RE{1}{X} = \H{X}
 
 .. ipython::
 
@@ -69,7 +69,7 @@ When :math:`\alpha = 2`, the Rényi entropy becomes what is known as the collisi
 
 .. math::
 
-    \H_{2}[X] = - \log_2 p(X = Y)
+    \RE{2}{X} = - \log_2 p(X = Y)
 
 where :math:`Y` is an IID copy of X. This is basically the surprisal of "rolling doubles"
 
@@ -87,7 +87,7 @@ Finally, when :math:`\alpha = \infty` the Rényi entropy picks out the probabili
 
 .. math::
 
-    \H_{\infty}[X] = - \log_2 \max_{x \in \mathcal{X}} p(x)
+    \RE{\infty}{X} = - \log_2 \max_{x \in \mathcal{X}} p(x)
 
 .. ipython::
 
@@ -103,13 +103,13 @@ In general, the Rényi entropy is a monotonically decreasing function in :math:`
 
 .. math::
 
-    \H_{\alpha}[X] \ge \H_{\beta}[X], \quad \beta > \alpha
+    \RE{\alpha}{X} \ge \RE{\beta}{X}, \quad \beta > \alpha
 
 Further, the following inequality holds in the other direction:
 
 .. math::
 
-    \H_{2}[X] \le 2 \H_{\infty}[X]
+    \RE{2}{X} \le 2 \cdot \RE{\infty}{X}
 
 
 API

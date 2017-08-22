@@ -15,7 +15,7 @@ The entropy measures how much information is in a random variable :math:`X`.
 
 .. math::
 
-   \H[X] = -\sum_{x \in \mathcal{X}} p(x) \log_2 p(x)
+   \H{X} = -\sum_{x \in \mathcal{X}} p(x) \log_2 p(x)
 
 What do we mean by "how much information"? Basically, we mean the average number of yes-no questions one would have to ask to determine an outcome from the distribution. In the simplest case, consider a sure thing:
 
@@ -57,7 +57,7 @@ The entropy of multiple variables is computed in a similar manner:
 
 .. math::
 
-   \H[X_{0:n}] = -\sum_{x_{0:n} \in X_{0:n}} p(x_{0:n}) \log_2 p(x_{0:n})
+   \H{X_{0:n}} = -\sum_{x_{0:n} \in X_{0:n}} p(x_{0:n}) \log_2 p(x_{0:n})
 
 Its intuition is also the same: the average number of binary questions required to identify a joint event from the distribution.
 
@@ -75,7 +75,7 @@ The conditional entropy is the amount of information in variable :math:`X` beyon
 
 .. math::
 
-   \H[X|Y] = -\sum_{x \in X, y \in Y} p(x, y) \log_2 p(x|y)
+   \H{X | Y} = -\sum_{x \in X, y \in Y} p(x, y) \log_2 p(x|y)
 
 As a simple example, consider two identical variables:
 
@@ -114,21 +114,21 @@ The mutual information is the amount of information shared by :math:`X` and :mat
 
 .. math::
 
-   \I[X:Y] &= \H[X,Y] - \H[X|Y] - \H[Y|X] \\
-           &= \H[X] + \H[Y] - \H[X,Y] \\
-           &= \sum_{x \in X, y \in Y} p(x, y) \log_2 \frac{p(x, y)}{p(x)p(y)}
+   \I{X : Y} &= \H{X, Y} - \H{X | Y} - \H{Y | X} \\
+             &= \H{X} + \H{Y} - \H{X, Y} \\
+             &= \sum_{x \in X, y \in Y} p(x, y) \log_2 \frac{p(x, y)}{p(x)p(y)}
 
 The mutual information is symmetric:
 
 .. math::
 
-   \I[X:Y] = \I[Y:X]
+   \I{X : Y} = \I{Y : X}
 
 Meaning that the information that :math:`X` carries about :math:`Y` is equal to the information that :math:`Y` carries about :math:`X`. The entropy of :math:`X` can be decomposed into the information it shares with :math:`Y` and the information it doesn't:
 
 .. math::
 
-   \H[X] = \I[X:Y] + \H[X|Y]
+   \H{X} = \I{X : Y} + \H{X | Y}
 
 .. seealso::
 
@@ -164,49 +164,49 @@ information in and shared between random variables. These diagrams are called
 *information diagrams* or i-diagrams for short.
 
 This first image pictographically shades the area of the i-diagram which
-contains the information corresponding to :math:`\H[X_0]`.
+contains the information corresponding to :math:`\H{X_0}`.
 
 .. image:: ../images/idiagrams/h_x.png
-   :alt: The entropy :math:`\H[X_0]`
+   :alt: The entropy :math:`\H{X_0}`
    :width: 342px
    :align: center
 
-Similarly, this one shades the information corresponding to :math:`\H[X_1]`.
+Similarly, this one shades the information corresponding to :math:`\H{X_1}`.
 
 .. image:: ../images/idiagrams/h_y.png
-   :alt: The entropy :math:`\H[X_1]`
+   :alt: The entropy :math:`\H{X_1}`
    :width: 342px
    :align: center
 
-This image shades the information corresponding to :math:`\H[X_0, X_1]`. Notice
+This image shades the information corresponding to :math:`\H{X_0, X_1}`. Notice
 that it is the union of the prior two, and not their sum (e.g. that overlap
 region is not double-counted).
 
 .. image:: ../images/idiagrams/h_xy.png
-   :alt: The joint entropy :math:`\H[X_0,X_1]`
+   :alt: The joint entropy :math:`\H{X_0, X_1}`
    :width: 342px
    :align: center
 
 Next, the conditional entropy of :math:`X_0` conditioned on :math:`X_1`,
-:math:`\H[X_0|X_1]`, is displayed. It consists of the area contained in the
+:math:`\H{X_0 | X_1}`, is displayed. It consists of the area contained in the
 :math:`X_0` circle but not contained in :math:`X_1` circle.
 
 .. image:: ../images/idiagrams/h_xgy.png
-   :alt: The conditional entropy :math:`\H[X_0|X_1]`
+   :alt: The conditional entropy :math:`\H{X_0 | X_1}`
    :width: 342px
    :align: center
 
-In the same vein, here the conditional entropy :math:`\H[X_1|X_0]` is shaded.
+In the same vein, here the conditional entropy :math:`\H{X_1 | X_0}` is shaded.
 
 .. image:: ../images/idiagrams/h_ygx.png
-   :alt: The conditional entropy :math:`\H[X_1|X_0]`
+   :alt: The conditional entropy :math:`\H{X_1 | X_0}`
    :width: 342px
    :align: center
 
 Finally, the mutual information between :math:`X_0` and :math:`X_1`,
-:math:`I[X_0:X_1]` is drawn. It is the region where the two circles overlap.
+:math:`I{X_0 : X_1}` is drawn. It is the region where the two circles overlap.
 
 .. image:: ../images/idiagrams/i_xy.png
-   :alt: The mutual information :math:`\I[X_0:X_1]`
+   :alt: The mutual information :math:`\I{X_0 : X_1}`
    :width: 342px
    :align: center

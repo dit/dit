@@ -9,13 +9,13 @@ The extropy :cite:`Lad2011` is a dual to the :doc:`../multivariate/entropy`. It 
 
 .. math::
 
-   \X[X] = -\sum_{x \in X} (1-p(x)) \log_2 (1-p(x))
+   \X{X} = -\sum_{x \in X} (1-p(x)) \log_2 (1-p(x))
 
 The entropy and the extropy satisify the following relationship:
 
 .. math::
 
-   \H[X] + \X[X] = \sum_{x \in \mathcal{X}} \H[p(x), 1-p(x)] = \sum_{x \in \mathcal{X}} \X[p(x), 1-p(x)]
+   \H{X} + \X{X} = \sum_{x \in \mathcal{X}} \H{p(x), 1-p(x)} = \sum_{x \in \mathcal{X}} \X{p(x), 1-p(x)}
 
 Unfortunately, the extropy does not yet have any intuitive interpretation.
 

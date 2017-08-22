@@ -9,7 +9,7 @@ The exact common information :cite:`kumar2014exact` is the entropy of the smalle
 
 .. math::
 
-   \G[X_{0:n}|Y_{0:m}] = \min_{\ind X_{0:n} \mid Y_{0:m}, V} \H[V | Y_{0:m}]
+   \G{X_{0:n} | Y_{0:m}} = \min_{\ind X_{0:n} \mid Y_{0:m}, V} \H{V | Y_{0:m}}
 
 Subadditivity of Independent Variables
 ======================================

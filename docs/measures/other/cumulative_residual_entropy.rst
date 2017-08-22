@@ -13,7 +13,7 @@ The cumulative residual entropy :cite:`Rao2004` is an alternative to the differe
 
 .. math::
 
-   \CRE[X] = -\int_{0}^{\infty} p(|X| > x) \log_{2} p(|X| > x) dx
+   \CRE{X} = -\int_{0}^{\infty} p(|X| > x) \log_{2} p(|X| > x) dx
 
 .. ipython::
 
@@ -38,7 +38,7 @@ The genearlized form of the cumulative residual entropy integrates over the inti
 
 .. math::
 
-   \GCRE[X] = -\int_{-\infty}^{\infty} p(X > x) \log_{2} p(X > x) dx
+   \GCRE{X} = -\int_{-\infty}^{\infty} p(X > x) \log_{2} p(X > x) dx
 
 .. ipython::
 
@@ -66,7 +66,7 @@ The conditional cumulative residual entropy :math:`\CRE[X|Y]` is a distribution 
 
 .. math::
 
-   \CRE[X|Y] = - \int_{0}^{\infty} p(|X| > x | Y) \log_{2} p(|X| > x | Y) dx
+   \CRE{X | Y} = - \int_{0}^{\infty} p(|X| > x | Y) \log_{2} p(|X| > x | Y) dx
 
 
 Conditional Generalized Cumulative Residual Entropy
@@ -76,7 +76,7 @@ Conceptually the conditional generalized cumulative residual entropy is the same
 
 .. math::
 
-   \GCRE[X|Y] = - \int_{-\infty}^{\infty} p(X > x | Y) \log_{2} p(X > x | Y) dx
+   \GCRE{X | Y} = - \int_{-\infty}^{\infty} p(X > x | Y) \log_{2} p(X > x | Y) dx
 
 
 API

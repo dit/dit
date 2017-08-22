@@ -178,7 +178,7 @@ Finally, example 4 (where each variable is the ``exclusive or`` of the other two
 Marginal Utility of Information
 ===============================
 
-The marginal utility of information (MUI) :cite:`Allen2014`, implimented by :class:`MUIProfile` takes a different approach. It asks, given an amount of information :math:`\I[d : \{X\}] = y`, what is the maximum amount of information one can extract using an auxilliary variable :math:`d` as measured by the sum of the pairwise mutual informations, :math:`\sum \I[d : X_i]`. The MUI is then the rate of this maximum as a function of :math:`y`.
+The marginal utility of information (MUI) :cite:`Allen2014`, implimented by :class:`MUIProfile` takes a different approach. It asks, given an amount of information :math:`\I{d : \left{X\right}} = y`, what is the maximum amount of information one can extract using an auxilliary variable :math:`d` as measured by the sum of the pairwise mutual informations, :math:`\sum \I{d : X_i}`. The MUI is then the rate of this maximum as a function of :math:`y`.
 
 For the first example, each bit is independent and so basically must be extracted independently. Thus, as one increases :math:`y` the maximum amount extracted grows equally:
 
