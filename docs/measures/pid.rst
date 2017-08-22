@@ -77,7 +77,7 @@ This, as well as other issues, lead Williams & Beer :cite:`williams2010nonnegati
 Framework
 =========
 
-The goal of the partial information is to assign to each some non-negative portion of :math:`\I{\{X_i\} : Y}` to each antichain over the inputs. An antichain over the inputs is a set of sets, where each of those sets is not a subset of any of the others. For example, :math:`\left{ \left{X_0, X_1\right}, \left{X_1, X_2\right} \right}` is an antichain, but :math:`\left{ \left{X_0, X_1\right}, \left{X_0 X_1, X_2\right} \right}` is not.
+The goal of the partial information is to assign to each some non-negative portion of :math:`\I{\{X_i\} : Y}` to each antichain over the inputs. An antichain over the inputs is a set of sets, where each of those sets is not a subset of any of the others. For example, :math:`\left\{ \left\{X_0, X_1\right\}, \left\{X_1, X_2\right\} \right\}` is an antichain, but :math:`\left\{ \left\{X_0, X_1\right\}, \left\{X_0 X_1, X_2\right\} \right\}` is not.
 
 The antichains for a lattice based on this partial order:
 
@@ -90,19 +90,19 @@ From here, we wish to find a redundancy measure, :math:`\Icap{}` which would ass
 Bivariate Lattice
 -----------------
 
-Let us consider the special case of two inputs. The lattice consists of four elements: :math:`\left{\left{X_0\right}, \left{X_1\right}\right}`, :math:`\left{\left{X_0\right}\right}`, :math:`\left{\left{X_1\right}\right}`, and :math:`\left{\left{X_0, X_1\right}\right}`. We can interpret these elements as the *redundancy* provided by both inputs, the information *uniquely* provided by :math:`X_0`, the information *uniquely* provided by :math:`X_1`, and the information *synergistically* provided only by both inputs together. Together these for elements decompose the input-output mutual information:
+Let us consider the special case of two inputs. The lattice consists of four elements: :math:`\left\{\left\{X_0\right\}, \left\{X_1\right\}\right\}`, :math:`\left\{\left\{X_0\right\}\right\}`, :math:`\left\{\left\{X_1\right\}\right\}`, and :math:`\left\{\left\{X_0, X_1\right\}\right\}`. We can interpret these elements as the *redundancy* provided by both inputs, the information *uniquely* provided by :math:`X_0`, the information *uniquely* provided by :math:`X_1`, and the information *synergistically* provided only by both inputs together. Together these for elements decompose the input-output mutual information:
 
 .. math::
 
-   \I{X_0, X_1 : Y} = \Icap{\left{X_0\right}, \left{X_1\right} : Y} + \Icap{\left{X_0\right} : Y} + \Icap{\left{X_1\right} : Y} + \Icap{\left{X_0, X_1\right} : Y}
+   \I{X_0, X_1 : Y} = \Icap{\left\{X_0\right\}, \left\{X_1\right\} : Y} + \Icap{\left\{X_0\right\} : Y} + \Icap{\left\{X_1\right\} : Y} + \Icap{\left\{X_0, X_1\right\} : Y}
 
 Furthermore, due to the self-redundancy axiom (described ahead), the single-input mutual informations decomposed in the following way:
 
 .. math::
 
-   \I{X_0 : Y} = \Icap{\left{X_0\right}, \left{X_1\right} : Y} + \Icap{\left{X_0\right} : Y}
+   \I{X_0 : Y} = \Icap{\left\{X_0\right\}, \left\{X_1\right\} : Y} + \Icap{\left\{X_0\right\} : Y}
 
-   \I{X_1 : Y} = \Icap{\left{X_0\right}, \left{X_1\right} : Y} + \Icap{\left{X_1\right} : Y}
+   \I{X_1 : Y} = \Icap{\left\{X_0\right\}, \left\{X_1\right\} : Y} + \Icap{\left\{X_1\right\} : Y}
 
 Colloquially, from input :math:`X_0` one can learn what is redundantly provided by either input, plus what is uniquely provided by :math:`X_0`, but not what is uniquely provided by :math:`X_1` or what can only be learned synergistically from both inputs.
 
@@ -114,7 +114,7 @@ The following three axioms were provided by Williams & Beer.
 Symmetry
 ^^^^^^^^
 
-The redundancy :math:`\Icap{\left{X_i\right} : Y}` is invariant under reorderings of :math:`X_i`.
+The redundancy :math:`\Icap{\left\{X_i\right\} : Y}` is invariant under reorderings of :math:`X_i`.
 
 Self-Redundancy
 ^^^^^^^^^^^^^^^
@@ -154,7 +154,7 @@ This axiom states that redundancy can not increase when replacing the output by 
 
 .. math::
 
-   \Icap{\left{X_i\right} : Y} \ge Icap{\left{X_i\right} : f(Y)}
+   \Icap{\left\{X_i\right\} : Y} \ge Icap{\left\{X_i\right\} : f(Y)}
 
 It first appeared in :cite:`bertschinger2013shared` and was expanded upon in :cite:`rauh2017extractable`.
 
@@ -203,7 +203,7 @@ One potential measure of redundancy is the *minimum mutual information* :cite:`b
 
 .. math::
 
-   \Immi{\left{X_i\right} : Y} = \min_{i} \I{X_i : Y}
+   \Immi{\left\{X_i\right\} : Y} = \min_{i} \I{X_i : Y}
 
 This measure, though crude, is known to be correct for multivariate gaussian variables :cite:`olbrich2015information`.
 
@@ -215,7 +215,7 @@ Drawing inspiration from information-theoretic cryptography, this PID quantifies
 
 .. math::
 
-   \Ida{\{X_i\} : Y} = \I{X_i : Y \downarrow \left{X_0, X_1, \ldots\right} - \left{X_i\right}}
+   \Ida{\{X_i\} : Y} = \I{X_i : Y \downarrow \left\{X_0, X_1, \ldots\right\} - \left\{X_i\right\}}
 
 While this seems intuitively plausible, it turns out that this leads to an inconsistent decomposition :cite:`bertschinger2013shared`; namely, in the bivariate case, if one were to compute redundancy using either unique information subtracted from that inputs mutual information with the output the value should be the same. There are examples where this is not the case:
 
@@ -233,7 +233,7 @@ While this seems intuitively plausible, it turns out that this leads to an incon
    ║ {0}{1} │ 0.1226 │ 0.1226 ║
    ╚════════╧════════╧════════╝
 
-Interestingly, compared to other measures the intrinsic mutual information seems to *overestimate* unique information. Since :math:`I{X_0 : Y \downarrow X_1} \leq \min\left{ \I{X_0 : Y | X_1}, \I{X_0 : Y} \right} = \min\left{ U_0 + S, U_0 + R\right}`, where :math:`R` is redundancy, :math:`U_0` is unique information from input :math:`X_0`, and :math:`S` is synergy, this implies that the optimization performed in computing the intrinsic mutual information is unable to completely remove either redundancy, synergy, or both.
+Interestingly, compared to other measures the intrinsic mutual information seems to *overestimate* unique information. Since :math:`I{X_0 : Y \downarrow X_1} \leq \min\left\{ \I{X_0 : Y | X_1}, \I{X_0 : Y} \right\} = \min\left\{ U_0 + S, U_0 + R\right\}`, where :math:`R` is redundancy, :math:`U_0` is unique information from input :math:`X_0`, and :math:`S` is synergy, this implies that the optimization performed in computing the intrinsic mutual information is unable to completely remove either redundancy, synergy, or both.
 
 .. py:module:: dit.pid.iwedge
 :math:`\Iwedge{}`
@@ -255,7 +255,7 @@ Utilizing information geometry, Harder et al :cite:`harder2013bivariate` have de
 
 .. math::
 
-   \Iproj{\left{X_0\right}\left{X_1\right} : Y{ = \min \{ I^\pi_Y[X_0 \mss X_1], I^\pi_Y[X_1 \mss X_0] \}
+   \Iproj{\left\{X_0\right\}\left\{X_1\right\} : Y{ = \min \{ I^\pi_Y[X_0 \mss X_1], I^\pi_Y[X_1 \mss X_0] \}
 
 where
 
@@ -273,7 +273,7 @@ where
 
 .. math::
 
-   C_{cl}(\langle X_1 \rangle_Y) = C_{cl}(\left{p(Y | x_1) : x_1 \in X_1 \right})
+   C_{cl}(\langle X_1 \rangle_Y) = C_{cl}(\left\{p(Y | x_1) : x_1 \in X_1 \right\})
 
 where :math:`C_{cl}(\bullet)` denotes closure. Intuitively, this measures seeks to quantify redundancy as the minimum of how much :math:`p(Y | X_0)` can be expressed when :math:`X_0` is projected on to :math:`X_1`, and vice versa.
 
@@ -287,7 +287,7 @@ In a very intuitive effort, Bertschinger et al (henceforth BROJA) :cite:`bertsch
 
    \Delta = \{ Q : \forall i : p(x_i, y) = q(x_i, y) \}
 
-   \Ibroja{\left{X_i\right} : Y} = \min_{Q \in \Delta} \I{X_i : Y | \left{X_0, \ldots\right} - \left{X_i\right}}
+   \Ibroja{\left\{X_i\right\} : Y} = \min_{Q \in \Delta} \I{X_i : Y | \left\{X_0, \ldots\right\} - \left\{X_i\right\}}
 
 .. note::
 
@@ -353,7 +353,7 @@ Taking a pointwise point of view, Ince has proposed a measure of redundancy base
 
 .. math::
 
-   \Iccs{\left{X_i\right} : Y} = \sum p(x_0, \ldots, x_n, y) \I{x_0 : \ldots : x_n : y}~~\textrm{if}~~\operatorname{sign}(\I{x_i : y}) = \operatorname{sign}(\I{x_0 : \ldots : x_n : y})
+   \Iccs{\left\{X_i\right\} : Y} = \sum p(x_0, \ldots, x_n, y) \I{x_0 : \ldots : x_n : y}~~\textrm{if}~~\operatorname{sign}(\I{x_i : y}) = \operatorname{sign}(\I{x_0 : \ldots : x_n : y})
 
 While this measure behaves intuitively in many examples, it also assigns negative values to some partial information atoms in some instances.
 

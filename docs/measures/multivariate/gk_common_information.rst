@@ -145,7 +145,7 @@ The multivariate common information follows a similar inequality as the two vari
 
 .. math::
 
-   0 \leq \K{X_0 : \dots : X_n} \leq \min_{i, j \in \left{0..n\right}} \I{X_i : X_j}
+   0 \leq \K{X_0 : \dots : X_n} \leq \min_{i, j \in \left\{0..n\right\}} \I{X_i : X_j}
 
 Visualization
 -------------

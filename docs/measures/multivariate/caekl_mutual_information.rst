@@ -13,7 +13,7 @@ The Chan-AlBashabsheh-Ebrahimi-Kaced-Liu mutual information :cite:`chan2015multi
 
    \H{X_{0:n}} - \gamma = \sum_{C \in \mathcal{P}} \left[ \H{X_C} - \gamma \right]
 
-for some non-trivial partition :math:`\mathcal{P}` of :math:`\left{0:n\right}`. For example, the CAEKL mutual information for the ``xor`` distribution is :math:`\frac{1}{2}`, because the joint entropy is 2 bits, each of the three marginals is 1 bit, and :math:`2 - \frac{1}{2} = 3 (1 - \frac{1}{2})`.
+for some non-trivial partition :math:`\mathcal{P}` of :math:`\left\{0:n\right\}`. For example, the CAEKL mutual information for the ``xor`` distribution is :math:`\frac{1}{2}`, because the joint entropy is 2 bits, each of the three marginals is 1 bit, and :math:`2 - \frac{1}{2} = 3 (1 - \frac{1}{2})`.
 
 .. ipython::
 
@@ -37,7 +37,7 @@ where :math:`\operatorname{I}_\mathcal{P}` is the :ref:`total_correlation` of th
 
    \operatorname{I}_\mathcal{P}\left[X_{0:n}\right] = \sum_{C \in \mathcal{P}} \H{X_C} - \H{X_{0:n}}
 
-and :math:`\Pi` is the set of all non-trivial partitions of :math:`\left{0:n\right}`.
+and :math:`\Pi` is the set of all non-trivial partitions of :math:`\left\{0:n\right\}`.
 
 .. todo::
 

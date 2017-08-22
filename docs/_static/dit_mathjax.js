@@ -32,7 +32,7 @@ MathJax.Hub.Config({
     "HTML-CSS": { availableFonts: ["TeX"] },
     TeX: {
         Macros: {
-            op: ["\\ensuremath{\\operatorname{#1}\\left[#2\\right]}", 2],
+            op: ["\\operatorname{#1}\\left[#2\\right]", 2],
             H: ["\\op{H}{#1}", 1],
             I: ["\\op{I}{#1}", 1],
             T: ["\\op{T}{#1}", 1],
