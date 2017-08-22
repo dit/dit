@@ -203,7 +203,7 @@ One potential measure of redundancy is the *minimum mutual information* :cite:`b
 
 .. math::
 
-    \I_\cap[\{X_i\} : Y] = \min_{i} \I{X_i : Y}
+    \I_{MMI}[\{X_i\} : Y] = \min_{i} \I[X_i : Y]
 
 This measure, though crude, is known to be correct for multivariate gaussian variables :cite:`olbrich2015information`.
 
@@ -215,7 +215,7 @@ Drawing inspiration from information-theoretic cryptography, this PID quantifies
 
 .. math::
 
-    \I_{\pi}[\{X_i\} : Y] = \I{X_i : Y \downarrow \{X_0, X_1, \ldots\} - \{X_i\}}
+    \I_{\pi}[\{X_i\} : Y] = \I[X_i : Y \downarrow \{X_0, X_1, \ldots\} - \{X_i\}]
 
 While this seems intuitively plausible, it turns out that this leads to an inconsistent decomposition :cite:`bertschinger2013shared`; namely, in the bivariate case, if one were to compute redundancy using either unique information subtracted from that inputs mutual information with the output the value should be the same. There are examples where this is not the case:
 
@@ -233,7 +233,7 @@ While this seems intuitively plausible, it turns out that this leads to an incon
     ║ {0}{1} │ 0.1226 │ 0.1226 ║
     ╚════════╧════════╧════════╝
 
-Interestingly, compared to other measures the intrinsic mutual information seems to *overestimate* unique information. Since :math:`I{X_0 : Y \downarrow X_1} \leq \min\{ \I{X_0 : Y | X_1}, \I{X_0 : Y} \} = \min\{ U_0 + S, U_0 + R\}`, where :math:`R` is redundancy, :math:`U_0` is unique information from input :math:`X_0`, and :math:`S` is synergy, this implies that the optimization performed in computing the intrinsic mutual information is unable to completely remove either redundancy, synergy, or both.
+Interestingly, compared to other measures the intrinsic mutual information seems to *overestimate* unique information. Since :math:`I[X_0 : Y \downarrow X_1] \leq \min\{ \I[X_0 : Y | X_1], \I[X_0 : Y] \} = \min\{ U_0 + S, U_0 + R\}`, where :math:`R` is redundancy, :math:`U_0` is unique information from input :math:`X_0`, and :math:`S` is synergy, this implies that the optimization performed in computing the intrinsic mutual information is unable to completely remove either redundancy, synergy, or both.
 
 .. py:module:: dit.pid.iwedge
 :math:`\I_{\wedge}`
@@ -243,7 +243,7 @@ Redundancy seems to intuitively be related to common information :ref:`Common In
 
 .. math::
 
-    \I_\cap[\{X_i\} : Y] = \I[ X_0 \meet X_1 \meet \ldots \meet X_n : Y]
+    \I_\wedge[\{X_i\} : Y] = \I[ X_0 \meet X_1 \meet \ldots \meet X_n : Y]
 
 That is, redundancy is the information the :ref:`Gács-Körner Common Information` of the inputs shares with the output. This measure is known to produce negative partial information values in some instances.
 
@@ -255,7 +255,7 @@ Utilizing information geometry, Harder et al :cite:`harder2013bivariate` have de
 
 .. math::
 
-    \I_{proj} = \min \{ I^\pi_Y[X_0 \mss X_1], I^\pi_Y[X_1 \mss X_0] \}
+    \I_{proj}[\{X_0\}\{X_1\} : Y] = \min \{ I^\pi_Y[X_0 \mss X_1], I^\pi_Y[X_1 \mss X_0] \}
 
 where
 
@@ -351,7 +351,7 @@ Taking a pointwise point of view, Ince has proposed a measure of redundancy base
 
 .. math::
 
-    \I_\cap[\{X_i\} : Y] = \sum p(x_0, \ldots, x_n, y) \I[x_0 : \ldots : x_n : y] \textrm{if} \op{sign}(\I[x_i : y]) = \op{sign}(\I[x_0 : \ldots : x_n : y])
+    \I_{ccs}[\{X_i\} : Y] = \sum p(x_0, \ldots, x_n, y) \I[x_0 : \ldots : x_n : y] \textrm{if} \op{sign}(\I[x_i : y]) = \op{sign}(\I[x_0 : \ldots : x_n : y])
 
 While this measure behaves intuitively in many examples, it also assigns negative values to some partial information atoms in some instances.
 
