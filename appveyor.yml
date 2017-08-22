@@ -42,6 +42,7 @@ build_script:
   - conda update conda
   - conda install scipy
   - ps: if ($env:CYTHON -eq '1') { conda install cython }
+  - ps: if ($env:CYTHON -eq '1') { python setup.py build }
   - pip install .
   - pip install --upgrade --ignore-installed -r requirements_testing.txt
 
