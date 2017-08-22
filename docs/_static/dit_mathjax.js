@@ -28,63 +28,44 @@
  */
 
 
-MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
-  var TEX = MathJax.InputJax.TeX;
-
-  TEX.Macro("op", "\\operatorname{#1}", 1);
-
-  TEX.Macro("H", "\\op{H}");
-
-  // mutual informations
-  TEX.Macro("I", "\\op{I}");
-  TEX.Macro("T", "\\op{T}");
-  TEX.Macro("B", "\\op{B}");
-  TEX.Macro("J", "\\op{J}");
-
-  TEX.Macro("R", "\\op{R}");
-  TEX.Macro("II", "\\op{II}");
-  TEX.Macro("TSE", "\\op{TSE}");
-
-  // common information
-  TEX.Macro("K", "\\op{K}");
-  TEX.Macro("C", "\\op{C}");
-  TEX.Macro("G", "\\op{G}");
-  TEX.Macro("F", "\\op{F}");
-  TEX.Macro("M", "\\op{M}");
-
-  TEX.Macro("P", "\\op{P}");
-  TEX.Macro("X", "\\op{X}");
-  TEX.Macro("CRE", "\\op{\mathcal{E}}");
-  TEX.Macro("GCRE", "\\op{\mathcal{E^\prime}}");
-  TEX.Macro("RE", "\\op{H_{\alpha}}");
-  TEX.Macro("TE", "\\ope{S_q}");
-
-  TEX.Macro("xH", "\\op{xH}");
-  TEX.Macro("DKL", "\\op{D_{KL}}");
-  TEX.Macro("JSD", "\\op{D_{JS}}");
-
-  // some binary operators
-  TEX.Macro("meet", "\\curlywedge");
-  TEX.Macro("join", "\\curlyvee");
-  TEX.Macro("iless", "\\preceq");
-  TEX.Macro("imore", "\\succeq");
-  TEX.Macro("ieq", "\\cong");
-  TEX.Macro("mss", "\\searrow");
-
-  TEX.Macro("meetop", "\\DeclareMathOperator*{\\meetop}{\\scalerel*{\\meet}{\\textstyle\\sum}}")
-  TEX.Macro("joinop", "\\DeclareMathOperator*{\\joinop}{\]scalerel*{\]join}{\]textstyle\]sum}}")
-
-  TEX.Macro("ind", "\\mathrel{\\text{\\scalebox{1.07}{$\\perp\\mkern-10mu\\perp$}}}")
-
-
-  // don't use stix, it's pretty ugly
-  MathJax.Hub.Config({
-    "HTML-CSS": { availableFonts: ["TeX"] }
-  });
-  // place macros here.  E.g.:
-  //   TEX.Macro("R","{\\bf R}");
-  //   TEX.Macro("op","\\mathop{\\rm #1}",1); // a macro with 1 parameter
-
+MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] },
+    TeX: {
+        Macros: {
+            op: ["\\operatorname{#1}", 1],
+            H: "\\op{H}",
+            I: "\\op{I}",
+            T: "\\op{T}",
+            B: "\\op{B}",
+            J: "\\op{J}",
+            R: "\\op{R}",
+            II: "\\op{II}",
+            TSE: "\\op{TSE}",
+            K: "\\op{K}",
+            C: "\\op{C}",
+            G: "\\op{G}",
+            F: "\\op{F}",
+            M: "\\op{M}",
+            P: "\\op{P}",
+            X: "\\op{X}",
+            CRE: "\\op{\mathcal{E}}",
+            GCRE: "\\op{\mathcal{E^\prime}}",
+            RE: "\\opREI}",
+            TE: "\\op{TE}",
+            xH: "\\op{xH}",
+            DKL: "\\op{D_{KL}}",
+            JSD: "\\op{D_{JS}}",
+            meet: "\\curlywedge",
+            join: "\\curlyvee",
+            iless: "\\preceq",
+            imore: "\\succeq",
+            ieq: "\\cong",
+            mss: "\\searrow",
+            meetop: "\\DeclareMathOperator*{\\meetop}{\\scalerel*{\\meet}{\\textstyle\\sum}}",
+            joinop: "\\DeclareMathOperator*{\\joinop}{\]scalerel*{\]join}{\]textstyle\]sum}}",
+            ind: "\\mathrel{\\text{\\scalebox{1.07}{$\\perp\\mkern-10mu\\perp$}}}"
+        }
+    }
 });
 
-MathJax.Ajax.loadComplete("dit.js");
+MathJax.Ajax.loadComplete("https://raw.githubusercontent.com/dit/dit/master/docs/_static/dit_mathjax.js");
