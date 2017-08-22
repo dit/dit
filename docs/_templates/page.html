@@ -8,45 +8,45 @@
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
     <script type="text/javascript" src="{{ pathto('_static/copybutton.js', 1) }}"></script>
     <script type="text/x-mathjax-config">
-        MathJax.Hub.Config({
-            "HTML-CSS": { availableFonts: ["TeX"] },
-            TeX: {
-                Macros: {
-                    op: ["\\operatorname{#1}", 1],
-                    H: "\\op{H}",
-                    I: "\\op{I}",
-                    T: "\\op{T}",
-                    B: "\\op{B}",
-                    J: "\\op{J}",
-                    R: "\\op{R}",
-                    II: "\\op{II}",
-                    TSE: "\\op{TSE}",
-                    K: "\\op{K}",
-                    C: "\\op{C}",
-                    G: "\\op{G}",
-                    F: "\\op{F}",
-                    M: "\\op{M}",
-                    P: "\\op{P}",
-                    X: "\\op{X}",
-                    CRE: "\\op{\\mathcal{E}}",
-                    GCRE: "\\op{\\mathcal{E^\\prime}}",
-                    RE: "\\opREI}",
-                    TE: "\\op{TE}",
-                    xH: "\\op{xH}",
-                    DKL: "\\op{D_{KL}}",
-                    JSD: "\\op{D_{JS}}",
+        MathJax.Hub.Config({{
+            "HTML-CSS": {{ availableFonts: ["TeX"] }},
+            TeX: {{
+                Macros: {{
+                    op: ["\\operatorname{{#1}}", 1],
+                    H: "\\op{{H}}",
+                    I: "\\op{{I}}",
+                    T: "\\op{{T}}",
+                    B: "\\op{{B}}",
+                    J: "\\op{{J}}",
+                    R: "\\op{{R}}",
+                    II: "\\op{{II}}",
+                    TSE: "\\op{{TSE}}",
+                    K: "\\op{{K}}",
+                    C: "\\op{{C}}",
+                    G: "\\op{{G}}",
+                    F: "\\op{{F}}",
+                    M: "\\op{{M}}",
+                    P: "\\op{{P}}",
+                    X: "\\op{{X}}",
+                    CRE: "\\op{{\\mathcal{{E}}}}",
+                    GCRE: "\\op{{\\mathcal{{E^\\prime}}}}",
+                    RE: "\\op{{RE}}",
+                    TE: "\\op{{TE}}",
+                    xH: "\\op{{xH}}",
+                    DKL: "\\op{{D_{{KL}}}}",
+                    JSD: "\\op{{D_{{JS}}}}",
                     meet: "\\curlywedge",
                     join: "\\curlyvee",
                     iless: "\\preceq",
                     imore: "\\succeq",
                     ieq: "\\cong",
                     mss: "\\searrow",
-                    meetop: "\\DeclareMathOperator*{\\meetop}{\\scalerel*{\\meet}{\\textstyle\\sum}}",
-                    joinop: "\\DeclareMathOperator*{\\joinop}{\\scalerel*{\\join}{\\textstyle\\sum}}",
-                    ind: "\\mathrel{\\text{\\scalebox{1.07}{$\\perp\\mkern-10mu\\perp$}}}"
-                }
-            }
-        });
+                    meetop: "\\DeclareMathOperator*{{\\meetop}}{{\\scalerel*{{\\meet}}{{\\textstyle\\sum}}}}",
+                    joinop: "\\DeclareMathOperator*{{\\joinop}}{{\\scalerel*{{\\join}}{{\\textstyle\\sum}}}}",
+                    ind: "\\mathrel{{\\text{{\\scalebox{{1.07}}{{$\\perp\\mkern-10mu\\perp$}}}}}}"
+                }}
+            }}
+        }});
     </script>
 {{ super() }}
 {% endblock %}
