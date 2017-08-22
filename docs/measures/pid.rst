@@ -185,7 +185,7 @@ However, this measure has been criticized for acting in an unintuitive manner :c
 
     In [13]: PID_WB(d)
     ╔════════╤════════╤════════╗
-    ║ I_min  │  I_∩   │   π    ║
+    ║ I_min  │  I_r   │   pi   ║
     ╟────────┼────────┼────────╢
     ║ {0:1}  │ 2.0000 │ 1.0000 ║
     ║  {0}   │ 1.0000 │ 0.0000 ║
@@ -225,7 +225,7 @@ While this seems intuitively plausible, it turns out that this leads to an incon
 
     In [15]: PID_downarrow(d)
     ╔════════╤════════╤════════╗
-    ║  I_da  │  I_∩   │   π    ║
+    ║  I_da  │  I_r   │   pi   ║
     ╟────────┼────────┼────────╢
     ║ {0:1}  │ 1.0000 │ 0.1887 ║
     ║  {0}   │ 0.3113 │ 0.1887 ║
@@ -307,7 +307,7 @@ The BROJA measure has recently been criticized for behaving in an unintuitive ma
 
     In [17]: print(PID_BROJA(bivariates['reduced or']))
     ╔═════════╤════════╤════════╗
-    ║ I_broja │  I_∩   │   π    ║
+    ║ I_broja │  I_r   │   pi   ║
     ╟─────────┼────────┼────────╢
     ║  {0:1}  │ 1.0000 │ 0.6887 ║
     ║   {0}   │ 0.3113 │ 0.0000 ║
@@ -366,7 +366,7 @@ This decomposition also displays an interesting phenomena, that of *subadditive 
     In [21]: PID_CCS(bivariates['gband'])
     Out[21]:
     ╔════════╤════════╤════════╗
-    ║ I_ccs  │  I_∩   │   π    ║
+    ║ I_ccs  │  I_r   │   pi   ║
     ╟────────┼────────┼────────╢
     ║ {0:1}  │ 1.8113 │ 0.0000 ║
     ║  {0}   │ 1.3113 │ 0.5000 ║
