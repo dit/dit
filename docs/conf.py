@@ -56,7 +56,7 @@ ipython_execlines = ['from __future__ import division, print_function',
 ipython_savefig_dir = 'images/'
 
 # Use our local configuration for mathjax:
-mathjax_path = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML,https://raw.githubusercontent.com/dit/dit/master/docs/_static/dit_mathjax.js"
+mathjax_path = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML,http://dit.readthedocs.io/en/latest/_static/dit_mathjax.js"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
