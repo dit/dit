@@ -168,10 +168,10 @@ We now turn our attention a variety of methods proposed to flesh out this partia
    In [11]: from dit.pid import *
 
 .. py:module:: dit.pid.imin
-:math:`\Imin{}`
----------------
+:math:`\Imin{\bullet}`
+----------------------
 
-:math:`\Imin{}`:cite:`williams2010nonnegative` was Williams & Beer's initial proposal for a redundancy measure. It is given by:
+:math:`\Imin{\bullet}`:cite:`williams2010nonnegative` was Williams & Beer's initial proposal for a redundancy measure. It is given by:
 
 .. math::
 
@@ -196,8 +196,8 @@ However, this measure has been criticized for acting in an unintuitive manner :c
 We have constructed a distribution whose inputs are independent random bits, and whose output is the concatenation of those inputs. Intuitively, the output should then be informed by one bit of unique information from :math:`X_0` and one bit of unique information from :math:`X_1`. However, :math:`\Imin{}` assesses that there is one bit of redundant information, and one bit of synergistic information. This is because :math:`\Imin{}` quantifies redundancy as the least amount of information one can learn about an output given any single input. Here, however, the one bit we learn from :math:`X_0` is, in a sense, orthogonal from the one bit we learn from :math:`X_1`. This observation has lead to much of the follow-on work.
 
 .. py:module:: dit.pid.immi
-:math:`\Immi{}`
----------------
+:math:`\Immi{\bullet}`
+----------------------
 
 One potential measure of redundancy is the *minimum mutual information* :cite:`bertschinger2013shared`:
 
@@ -208,8 +208,8 @@ One potential measure of redundancy is the *minimum mutual information* :cite:`b
 This measure, though crude, is known to be correct for multivariate gaussian variables :cite:`olbrich2015information`.
 
 .. py:module:: dit.pid.idownarrow
-:math:`\Ida{}`
---------------
+:math:`\Ida{\bullet}`
+---------------------
 
 Drawing inspiration from information-theoretic cryptography, this PID quantifies unique information using the :ref:`Intrinsic Mutual Information`:
 
@@ -236,10 +236,10 @@ While this seems intuitively plausible, it turns out that this leads to an incon
 Interestingly, compared to other measures the intrinsic mutual information seems to *overestimate* unique information. Since :math:`I{X_0 : Y \downarrow X_1} \leq \min\left\{ \I{X_0 : Y | X_1}, \I{X_0 : Y} \right\} = \min\left\{ U_0 + S, U_0 + R\right\}`, where :math:`R` is redundancy, :math:`U_0` is unique information from input :math:`X_0`, and :math:`S` is synergy, this implies that the optimization performed in computing the intrinsic mutual information is unable to completely remove either redundancy, synergy, or both.
 
 .. py:module:: dit.pid.iwedge
-:math:`\Iwedge{}`
------------------
+:math:`\Iwedge{\bullet}`
+------------------------
 
-Redundancy seems to intuitively be related to common information :ref:`Common Informations`. This intuition lead to the development of :math:`\I_{\wedge}` :cite:`griffith2014intersection`:
+Redundancy seems to intuitively be related to common information :ref:`Common Informations`. This intuition lead to the development of :math:`\Iwedge{\bullet}` :cite:`griffith2014intersection`:
 
 .. math::
 
@@ -248,14 +248,14 @@ Redundancy seems to intuitively be related to common information :ref:`Common In
 That is, redundancy is the information the :ref:`Gács-Körner Common Information` of the inputs shares with the output. This measure is known to produce negative partial information values in some instances.
 
 .. py:module:: dit.pid.iproj
-:math:`\Iproj{}`
-----------------
+:math:`\Iproj{\bullet}`
+-----------------------
 
-Utilizing information geometry, Harder et al :cite:`harder2013bivariate` have developed a strictly bivariate measure of redundancy, :math:`\Iproj{}`:
+Utilizing information geometry, Harder et al :cite:`harder2013bivariate` have developed a strictly bivariate measure of redundancy, :math:`\Iproj{\bullet}`:
 
 .. math::
 
-   \Iproj{\left\{X_0\right\}\left\{X_1\right\} : Y{ = \min \{ I^\pi_Y[X_0 \mss X_1], I^\pi_Y[X_1 \mss X_0] \}
+   \Iproj{\left\{X_0\right\}\left\{X_1\right\} : Y} = \min \{ I^\pi_Y[X_0 \mss X_1], I^\pi_Y[X_1 \mss X_0] \}
 
 where
 
@@ -263,23 +263,17 @@ where
 
    I^\pi_Y[X_0 \mss X_1] = \sum_{x_0, y} p(x_0, y) \log \frac{p_{(x_0 \mss X_1)}(y)}{p(y)}
 
-.. math::
-
    p_{(x_0 \mss X_1)}(Y) = \pi_{C_{cl}(\langle X_1 \rangle_Y)}(p(Y | x_0)
 
-.. math::
-
    \pi_B(p) = \arg \min_{r \in B} \DKL{p || r}
-
-.. math::
 
    C_{cl}(\langle X_1 \rangle_Y) = C_{cl}(\left\{p(Y | x_1) : x_1 \in X_1 \right\})
 
 where :math:`C_{cl}(\bullet)` denotes closure. Intuitively, this measures seeks to quantify redundancy as the minimum of how much :math:`p(Y | X_0)` can be expressed when :math:`X_0` is projected on to :math:`X_1`, and vice versa.
 
 .. py:module:: dit.pid.ibroja
-:math:`\Ibroja{}`
-------------------
+:math:`\Ibroja{\bullet}`
+------------------------
 
 In a very intuitive effort, Bertschinger et al (henceforth BROJA) :cite:`bertschinger2014quantifying,griffith2014quantifying` defined unique information as the minimum conditional mutual informations obtainable while holding the input-output marginals fixed:
 
@@ -323,8 +317,8 @@ The BROJA measure has recently been criticized for behaving in an unintuitive ma
 
 We see that in this instance BROJA assigns no partial information to either unique information. However, it is not difficult to argue that in the case that either input is a 1, that input then has unique information regarding the output.
 
-:math:`\Iproj{}` and :math:`\Ibroja{}` are Distinct
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+:math:`\Iproj{\bullet}` and :math:`\Ibroja{\bullet}` are Distinct
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In the BROJA paper :cite:`bertschinger2014quantifying` the only example given where their decomposition differs from that of Harder et al. is the :py:func:`dit.example_dists.summed_dice`. We can find a simpler example where they differ using hypothesis:
 
@@ -346,8 +340,8 @@ In the BROJA paper :cite:`bertschinger2014quantifying` the only example given wh
    (1, 0, 0)   0.25
 
 .. py:module:: dit.pid.iccs
-:math:`\Iccs{}`
----------------
+:math:`\Iccs{\bullet}`
+----------------------
 
 Taking a pointwise point of view, Ince has proposed a measure of redundancy based on the :ref:`coinformation` :cite:`ince2017measuring`:
 
