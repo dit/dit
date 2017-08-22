@@ -369,3 +369,11 @@ This decomposition also displays an interesting phenomena, that of *subadditive 
    ║  {1}   │ 1.3113 │ 0.5000 ║
    ║ {0}{1} │ 0.8113 │ 0.8113 ║
    ╚════════╧════════╧════════╝
+
+.. py:module:: dit.pid.idep
+:math:`\I_{dep}`
+----------------
+
+Variants
+^^^^^^^^
+>>>>>>> add idep

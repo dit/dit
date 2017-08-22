@@ -348,6 +348,19 @@ class DependencyDecomposition(object):
         """
         return self.to_string()
 
+    def __getitem__(self, item):
+        """
+
+        Parameters
+        ----------
+        item
+
+        Returns
+        -------
+
+        """
+        return self.atoms[item]
+
     def to_string(self, digits=3):
         """
         Use PrettyTable to create a nice table.
