@@ -48,8 +48,8 @@ MathJax.Hub.Config({
             M: "\\op{M}",
             P: "\\op{P}",
             X: "\\op{X}",
-            CRE: "\\op{\mathcal{E}}",
-            GCRE: "\\op{\mathcal{E^\prime}}",
+            CRE: "\\op{\\mathcal{E}}",
+            GCRE: "\\op{\\mathcal{E^\\prime}}",
             RE: "\\opREI}",
             TE: "\\op{TE}",
             xH: "\\op{xH}",
@@ -62,7 +62,7 @@ MathJax.Hub.Config({
             ieq: "\\cong",
             mss: "\\searrow",
             meetop: "\\DeclareMathOperator*{\\meetop}{\\scalerel*{\\meet}{\\textstyle\\sum}}",
-            joinop: "\\DeclareMathOperator*{\\joinop}{\]scalerel*{\]join}{\]textstyle\]sum}}",
+            joinop: "\\DeclareMathOperator*{\\joinop}{\\scalerel*{\\join}{\\textstyle\\sum}}",
             ind: "\\mathrel{\\text{\\scalebox{1.07}{$\\perp\\mkern-10mu\\perp$}}}"
         }
     }
