@@ -93,7 +93,7 @@ The Gács-Körner common information satisfies an important inequality:
 
    0 \leq \K[X_0:X_1] \leq \I[X_0:X_1]
 
-One usage of the common information is as a measure of *redundancy* :cite:`Griffith2013`. Consider a function that takes two inputs, :math:`X_0` and :math:`X_1`, and produces a single output :math:`Y`. The output can be influenced redundantly by both inputs, uniquely from either one, or together they can synergistically influence the output. Determining how to compute the amount of redundancy is an open problem, but one proposal is:
+One usage of the common information is as a measure of *redundancy* :cite:`griffith2014intersection`. Consider a function that takes two inputs, :math:`X_0` and :math:`X_1`, and produces a single output :math:`Y`. The output can be influenced redundantly by both inputs, uniquely from either one, or together they can synergistically influence the output. Determining how to compute the amount of redundancy is an open problem, but one proposal is:
 
 .. math::
 
