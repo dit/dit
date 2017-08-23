@@ -324,8 +324,12 @@ In the BROJA paper :cite:`bertschinger2014quantifying` the only example given wh
 
 .. ipython::
 
-   In [20]: find(distributions(3, 2, True), lambda d: PID_Proj(d) != PID_BROJA(d))
-   Out[20]:
+   In [17]: from hypothesis import find
+
+   In [18]: from dit.utils.testing import distributions
+
+   In [19]: find(distributions(3, 2, True), lambda d: PID_Proj(d) != PID_BROJA(d))
+   Out[19]:
    Class:          Distribution
    Alphabet:       (0, 1) for all rvs
    Base:           linear
@@ -355,8 +359,8 @@ This decomposition also displays an interesting phenomena, that of *subadditive 
 
 .. ipython::
 
-   In [21]: PID_CCS(bivariates['gband'])
-   Out[21]:
+   In [20]: PID_CCS(bivariates['gband'])
+   Out[20]:
    ╔════════╤════════╤════════╗
    ║ I_ccs  │  I_r   │   pi   ║
    ╟────────┼────────┼────────╢
