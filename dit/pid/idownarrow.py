@@ -6,6 +6,8 @@ and input and the output, given the other inputs. It turns out that these unique
 are inconsistent, in that they produce differing redundancy values.
 """
 
+from __future__ import division
+
 from .pid import BaseUniquePID
 
 from ..multivariate import intrinsic_total_correlation

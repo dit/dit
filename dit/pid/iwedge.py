@@ -2,6 +2,8 @@
 The I_wedge measure, as proposed by Griffith et al.
 """
 
+from __future__ import division
+
 from .pid import BasePID
 
 from .. import Distribution

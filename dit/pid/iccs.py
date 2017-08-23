@@ -2,6 +2,8 @@
 The I_ccs measure, as proposed by Ince.
 """
 
+from __future__ import division
+
 from iterutils import powerset
 
 import numpy as np

@@ -2,8 +2,10 @@
 The I_proj measure as proposed by Harder et al.
 """
 
+from __future__ import division
+
 import numpy as np
-from scipy.optimize import basinhopping, minimize
+from scipy.optimize import minimize
 
 from .pid import BaseBivariatePID
 

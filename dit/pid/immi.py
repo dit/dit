@@ -2,6 +2,8 @@
 The I_mmi measure, briefly looked at by the BROJA team.
 """
 
+from __future__ import division
+
 from .pid import BasePID
 
 from ..multivariate import coinformation

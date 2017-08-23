@@ -2,6 +2,8 @@
 The I_BROJA unique measure, as proposed by the BROJA team.
 """
 
+from __future__ import division
+
 import numpy as np
 
 from .pid import BaseUniquePID
