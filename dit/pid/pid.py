@@ -2,6 +2,8 @@
 Classes implementing the partial information decomposition.
 """
 
+from __future__ import division
+
 from itertools import product
 from iterutils import powerset
 
@@ -59,6 +61,21 @@ class BasePID(object):
             If `self` and `other` are the same partial information decomposition.
         """
         return all(np.isclose(self[node], other[node], atol=1e-5, rtol=1e-5) for node in self._lattice)
+
+    def __ne__(self, other):
+        """
+        Test if this and `other` are not equal.
+
+        Parameters
+        ----------
+        other : BasePID
+
+        Returns
+        -------
+        eq : bool
+            If `self` and `other` are different partial information decomposition.
+        """
+        return not (self == other)
 
     def __getitem__(self, key):
         """
