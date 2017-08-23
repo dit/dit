@@ -85,7 +85,7 @@ The antichains for a lattice based on this partial order:
 
    \alpha \leq \beta \iff \forall \mathbf{b} \in \beta, \exists \mathbf{a} \in \alpha, \mathbf{a} \subseteq \mathbf{b}
 
-From here, we wish to find a redundancy measure, :math:`\Icap{}` which would assign a fraction of :math:`\I{\{X_i\} : Y}` to each antichain intuitively quantifying what portion of the information in the output could be learned by observing any of the sets of variables within the antichain. In order to be a viable measure of redundancy, there are several axioms a redundancy measure must satisfy.
+From here, we wish to find a redundancy measure, :math:`\Icap{\bullet}` which would assign a fraction of :math:`\I{\{X_i\} : Y}` to each antichain intuitively quantifying what portion of the information in the output could be learned by observing any of the sets of variables within the antichain. In order to be a viable measure of redundancy, there are several axioms a redundancy measure must satisfy.
 
 Bivariate Lattice
 -----------------
@@ -114,7 +114,7 @@ The following three axioms were provided by Williams & Beer.
 Symmetry
 ^^^^^^^^
 
-The redundancy :math:`\Icap{\left\{X_i\right\} : Y}` is invariant under reorderings of :math:`X_i`.
+The redundancy :math:`\Icap{X_{0:n} : Y}` is invariant under reorderings of :math:`X_i`.
 
 Self-Redundancy
 ^^^^^^^^^^^^^^^
@@ -154,7 +154,7 @@ This axiom states that redundancy can not increase when replacing the output by 
 
 .. math::
 
-   \Icap{\left\{X_i\right\} : Y} \ge Icap{\left\{X_i\right\} : f(Y)}
+   \Icap{X_{0:n} : Y} \ge Icap{X_{0:n} : f(Y)}
 
 It first appeared in :cite:`bertschinger2013shared` and was expanded upon in :cite:`rauh2017extractable`.
 
@@ -193,7 +193,7 @@ However, this measure has been criticized for acting in an unintuitive manner :c
    ║ {0}{1} │ 1.0000 │ 1.0000 ║
    ╚════════╧════════╧════════╝
 
-We have constructed a distribution whose inputs are independent random bits, and whose output is the concatenation of those inputs. Intuitively, the output should then be informed by one bit of unique information from :math:`X_0` and one bit of unique information from :math:`X_1`. However, :math:`\Imin{}` assesses that there is one bit of redundant information, and one bit of synergistic information. This is because :math:`\Imin{}` quantifies redundancy as the least amount of information one can learn about an output given any single input. Here, however, the one bit we learn from :math:`X_0` is, in a sense, orthogonal from the one bit we learn from :math:`X_1`. This observation has lead to much of the follow-on work.
+We have constructed a distribution whose inputs are independent random bits, and whose output is the concatenation of those inputs. Intuitively, the output should then be informed by one bit of unique information from :math:`X_0` and one bit of unique information from :math:`X_1`. However, :math:`\Imin{\bullet}` assesses that there is one bit of redundant information, and one bit of synergistic information. This is because :math:`\Imin{\bullet}` quantifies redundancy as the least amount of information one can learn about an output given any single input. Here, however, the one bit we learn from :math:`X_0` is, in a sense, orthogonal from the one bit we learn from :math:`X_1`. This observation has lead to much of the follow-on work.
 
 .. py:module:: dit.pid.immi
 :math:`\Immi{\bullet}`
@@ -203,7 +203,7 @@ One potential measure of redundancy is the *minimum mutual information* :cite:`b
 
 .. math::
 
-   \Immi{\left\{X_i\right\} : Y} = \min_{i} \I{X_i : Y}
+   \Immi{X_{0:n} : Y} = \min_{i} \I{X_i : Y}
 
 This measure, though crude, is known to be correct for multivariate gaussian variables :cite:`olbrich2015information`.
 
@@ -215,7 +215,7 @@ Drawing inspiration from information-theoretic cryptography, this PID quantifies
 
 .. math::
 
-   \Ida{\{X_i\} : Y} = \I{X_i : Y \downarrow \left\{X_0, X_1, \ldots\right\} - \left\{X_i\right\}}
+   \Ida{X_{0:n} : Y} = \I{X_i : Y \downarrow X_\overline{\{i\}}}
 
 While this seems intuitively plausible, it turns out that this leads to an inconsistent decomposition :cite:`bertschinger2013shared`; namely, in the bivariate case, if one were to compute redundancy using either unique information subtracted from that inputs mutual information with the output the value should be the same. There are examples where this is not the case:
 
@@ -233,7 +233,7 @@ While this seems intuitively plausible, it turns out that this leads to an incon
    ║ {0}{1} │ 0.1226 │ 0.1226 ║
    ╚════════╧════════╧════════╝
 
-Interestingly, compared to other measures the intrinsic mutual information seems to *overestimate* unique information. Since :math:`I{X_0 : Y \downarrow X_1} \leq \min\left\{ \I{X_0 : Y | X_1}, \I{X_0 : Y} \right\} = \min\left\{ U_0 + S, U_0 + R\right\}`, where :math:`R` is redundancy, :math:`U_0` is unique information from input :math:`X_0`, and :math:`S` is synergy, this implies that the optimization performed in computing the intrinsic mutual information is unable to completely remove either redundancy, synergy, or both.
+Interestingly, compared to other measures the intrinsic mutual information seems to *overestimate* unique information. Since :math:`\I{X_0 : Y \downarrow X_1} \leq \min\left\{ \I{X_0 : Y | X_1}, \I{X_0 : Y} \right\} = \min\left\{ U_0 + S, U_0 + R\right\}`, where :math:`R` is redundancy, :math:`U_0` is unique information from input :math:`X_0`, and :math:`S` is synergy, this implies that the optimization performed in computing the intrinsic mutual information is unable to completely remove either redundancy, synergy, or both.
 
 .. py:module:: dit.pid.iwedge
 :math:`\Iwedge{\bullet}`
@@ -243,7 +243,7 @@ Redundancy seems to intuitively be related to common information :ref:`Common In
 
 .. math::
 
-   \Iwedge{\{X_i\} : Y} = \I{ \meetop X_i : Y}
+   \Iwedge{X_{0:n} : Y} = \I{ \meet X_i : Y}
 
 That is, redundancy is the information the :ref:`Gács-Körner Common Information` of the inputs shares with the output. This measure is known to produce negative partial information values in some instances.
 
@@ -281,7 +281,7 @@ In a very intuitive effort, Bertschinger et al (henceforth BROJA) :cite:`bertsch
 
    \Delta = \{ Q : \forall i : p(x_i, y) = q(x_i, y) \}
 
-   \Ibroja{\left\{X_i\right\} : Y} = \min_{Q \in \Delta} \I{X_i : Y | \left\{X_0, \ldots\right\} - \left\{X_i\right\}}
+   \Ibroja{X_{0:n} : Y} = \min_{Q \in \Delta} \I{X_i : Y | X_\overline{\{i\}}}
 
 .. note::
 
@@ -347,7 +347,7 @@ Taking a pointwise point of view, Ince has proposed a measure of redundancy base
 
 .. math::
 
-   \Iccs{\left\{X_i\right\} : Y} = \sum p(x_0, \ldots, x_n, y) \I{x_0 : \ldots : x_n : y}~~\textrm{if}~~\operatorname{sign}(\I{x_i : y}) = \operatorname{sign}(\I{x_0 : \ldots : x_n : y})
+   \Iccs{X_{0:n} : Y} = \sum p(x_0, \ldots, x_n, y) \I{x_0 : \ldots : x_n : y}~~\textrm{if}~~\operatorname{sign}(\I{x_i : y}) = \operatorname{sign}(\I{x_0 : \ldots : x_n : y})
 
 While this measure behaves intuitively in many examples, it also assigns negative values to some partial information atoms in some instances.
 
