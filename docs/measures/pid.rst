@@ -376,4 +376,3 @@ This decomposition also displays an interesting phenomena, that of *subadditive 
 
 Variants
 ^^^^^^^^
->>>>>>> add idep
