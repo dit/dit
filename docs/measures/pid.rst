@@ -154,7 +154,7 @@ This axiom states that redundancy can not increase when replacing the output by 
 
 .. math::
 
-   \Icap{X_{0:n} : Y} \ge Icap{X_{0:n} : f(Y)}
+   \Icap{X_{0:n} : Y} \ge \Icap{X_{0:n} : f(Y)}
 
 It first appeared in :cite:`bertschinger2013shared` and was expanded upon in :cite:`rauh2017extractable`.
 

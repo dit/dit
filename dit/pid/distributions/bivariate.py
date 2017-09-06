@@ -33,10 +33,13 @@ syn = uniform(['000', '011', '101', '110'])
 # output is the logical and of the inputs
 and_ = uniform(['000', '010', '100', '111'])
 
+# f1 from 'extractable information'
+f1 = uniform(['002', '010', '102', '111'])
+
 # jeff's generalization of rdn
 jeff_2 = jeff(2)
 
-# reduced or, from ince.
+# reduced or, from lizier by way of ince.
 reduced_or = Distribution(['000', '011', '101'], [1/2, 1/4, 1/4])
 
 # output is sum of inputs
@@ -69,3 +72,11 @@ diff = uniform(['000', '001', '010', '101'])
 # gband, some measures demonstrate subadditivity of redundancy with this distribution
 gband = uniform(['000', '010', '100', '111', '222', '232', '322', '333'])
 
+# min == proj, broja == ccs, dep stands alone
+boom = uniform(['001', '002', '020', '121', '202', '212'])
+
+# contains holistic synergy
+not_two = uniform(['000', '001', '010', '100', '111'])
+
+# the prototype for redundancy in and and sum
+dup = uniform(['000', '001', '111', '112'])
