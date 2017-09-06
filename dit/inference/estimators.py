@@ -5,17 +5,49 @@ from __future__ import division
 import numpy as np
 from scipy.special import digamma
 
-from . import counts_from_data
 
-def entropy_naive(data, length=1):
+try: # cython
+    from . import counts_from_data
+    def get_counts(data, length):
+        """
+
+        Parameters
+        ----------
+        data
+        length
+
+        Returns
+        -------
+
+        """
+        pass
+except ImportError: # no cython
+    from collections import Counter
+    from ..helpers import 
+
+
+def entropy_0(data, length=1):
     """
     """
     _, counts, _, _ = counts_from_data(data, 0, length)
     probs = counts[0]/counts[0].sum()
-    h1 = np.nansum(probs * np.log2(probs))
+    h0 = np.nansum(probs * np.log2(probs))
+    return h0
+
+
+def entropy_1(data, length=1):
+    """
+    """
+    _, counts, _, _ = counts_from_data(data, 0, length)
+    total = counts.sum()
+    digamma_N = digamma(total)
+
+    h1 = np.log2(np.e)*(counts/total*(digamma_N - digamma(counts)).sum()
+
     return h1
 
-def entropy_bias_corrected(data, length=1):
+
+def entropy_2(data, length=1):
     """
     """
     _, counts, _, _ = counts_from_data(data, 0, length)
@@ -30,7 +62,8 @@ def entropy_bias_corrected(data, length=1):
 
     return h2
 
-def mutual_information_ksg():
+
+def conditional_mutual_information_ksg():
     """
     """
     pass
