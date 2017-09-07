@@ -8,14 +8,13 @@ Marginal Utility of Information, as defined here: http://arxiv.org/abs/1409.4708
 from .base_profile import BaseProfile, profile_docstring
 
 from itertools import product
-from iterutils import powerset
 
 import numpy as np
 
 from .information_partitions import ShannonPartition
 from ..math import close
 from ..multivariate import entropy as H
-from ..utils import flatten
+from ..utils import flatten, powerset
 
 __all__ = ['MUIProfile']
 

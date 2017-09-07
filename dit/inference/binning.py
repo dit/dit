@@ -2,7 +2,7 @@
 Various methods for binning real-valued data.
 """
 
-from iterutils import pairwise
+from boltons.iterutils import pairwise
 
 import numpy as np
 

@@ -8,7 +8,6 @@ from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 
 from itertools import combinations
-from iterutils import powerset
 
 from debtcollector import removals
 
@@ -25,7 +24,7 @@ from ..exceptions import ditException
 from ..helpers import RV_MODES
 from ..math import close
 from ..multivariate import coinformation as I
-from ..utils import flatten
+from ..utils import flatten, powerset
 from ..utils.optimization import BasinHoppingCallBack, accept_test, basinhop_status
 
 __all__ = [

@@ -7,7 +7,6 @@ from __future__ import division
 from sys import version_info
 
 from itertools import product
-from iterutils import powerset
 
 import networkx as nx
 import numpy as np
@@ -17,7 +16,7 @@ import prettytable
 from .lattice import ascendants, descendants, least_upper_bound, pid_lattice, sort_key
 from .. import ditParams
 from ..multivariate import coinformation
-from ..utils import flatten
+from ..utils import flatten, powerset
 
 
 class BasePID(object):

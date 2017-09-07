@@ -3,9 +3,10 @@ Lattice utilities for the partial information decomposition.
 """
 
 from itertools import combinations
-from iterutils import powerset
 
 import networkx as nx
+
+from ..utils import powerset
 
 __all__ = ['pid_lattice',
            'sort_key',

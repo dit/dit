@@ -6,12 +6,11 @@ from __future__ import division
 
 import pytest
 
-from iterutils import powerset
-
 from dit import Distribution as D
 from dit.multivariate import binding_information as B, tse_complexity as TSE
 from dit.example_dists import n_mod_m
 from dit.math.misc import combinations as nCk
+from dit.utils import powerset
 
 @pytest.mark.parametrize(('i', 'j'), list(zip(range(3, 6), range(2, 5))))
 def test_tse1(i, j):

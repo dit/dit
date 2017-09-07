@@ -24,7 +24,6 @@ handle any Cartesian product sample space, rather than just homogeneous ones.
 from __future__ import division, print_function
 
 import itertools
-from iterutils import powerset
 
 import numpy as np
 
@@ -34,7 +33,7 @@ from dit.abstractdist import AbstractDenseDistribution, get_abstract_dist
 
 from ..helpers import RV_MODES, parse_rvs
 from .optutil import as_full_rank, CVXOPT_Template, prepare_dist, Bunch
-from ..utils import flatten
+from ..utils import flatten, powerset
 
 __all__ = [
     'MarginalMaximumEntropy',

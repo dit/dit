@@ -7,7 +7,7 @@ Schneidman's ``connected information'' decomposition: [Schneidman, Elad, et al.
 (2003): 238701]
 """
 
-# from iterutils import pairwise
+# from boltons.iterutils import pairwise
 
 import numpy as np
 
