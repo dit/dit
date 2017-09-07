@@ -65,7 +65,7 @@ def entropy_1(data, length=1):
     total = counts.sum()
     digamma_N = digamma(total)
 
-    h1 = np.log2(np.e)*(counts/total*(digamma_N - digamma(counts)).sum()
+    h1 = np.log2(np.e)*(counts/total*(digamma_N - digamma(counts))).sum()
 
     return h1
 
