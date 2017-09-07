@@ -28,7 +28,7 @@ try: # cython
 
 except ImportError: # no cython
     from collections import Counter
-    # windowed?
+    from boltons.iterutils import windowed_iter
     def get_counts(data, length):
         """
 
@@ -42,7 +42,10 @@ except ImportError: # no cython
 
         Notes
         -----
+        This function uses `collections.Counter` and `boltons.iterutils.windowed_iter`.
         """
+        counts = Counter(windowed_iter(data, length))
+        counts = np.array(counts.values())
         return counts
 
 
