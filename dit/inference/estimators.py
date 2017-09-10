@@ -52,16 +52,16 @@ except ImportError: # no cython
 def entropy_0(data, length=1):
     """
     """
-    counts = get_counts(data, 0, length)
-    probs = counts[0]/counts[0].sum()
-    h0 = np.nansum(probs * np.log2(probs))
+    counts = get_counts(data, length)
+    probs = counts/counts.sum()
+    h0 = -np.nansum(probs * np.log2(probs))
     return h0
 
 
 def entropy_1(data, length=1):
     """
     """
-    counts = get_counts(data, 0, length)
+    counts = get_counts(data, length)
     total = counts.sum()
     digamma_N = digamma(total)
 
@@ -73,11 +73,11 @@ def entropy_1(data, length=1):
 def entropy_2(data, length=1):
     """
     """
-    counts = get_counts(data, 0, length)
+    counts = get_counts(data, length)
     total = counts.sum()
     digamma_N = digamma(total)
     log2 = np.log(2)
-    jss = [np.arange(1, count) for count in counts[0]]
+    jss = [np.arange(1, count) for count in counts]
 
     alt_terms = np.array([(((-1)**js)/js).sum() for js in jss])
 
