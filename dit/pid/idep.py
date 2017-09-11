@@ -56,7 +56,7 @@ def delta(dd, m, a, b):
     return dd.atoms[a][m] - dd.atoms[b][m]
 
 
-def i_dep(d, inputs, output):
+def i_dep(d, inputs, output, maxiters=1000):
     """
     This computes unique information as min(delta(I(inputs : output))) where delta
     is taken over the dependency decomposition.
@@ -80,7 +80,7 @@ def i_dep(d, inputs, output):
         others = sum([i for i in inputs if i != input_], ())
         dm = d.coalesce([input_, others, output])
 
-        dd = DependencyDecomposition(dm, measures={'I': lambda d: coinformation(d, [[0, 1], [2]])})
+        dd = DependencyDecomposition(dm, measures={'I': lambda d: coinformation(d, [[0, 1], [2]])}, maxiters=maxiters)
         edge_set = (edge for edge in edges(dd, ((0, 2),)))
         u = min(delta(dd, 'I', *edge) for edge in edge_set)
         uniques[input_] = u

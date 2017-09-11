@@ -189,7 +189,7 @@ class BaseOptimizer(object):
         spmf = [ pmf.sum(axis=subset, keepdims=True)**((-1)**(n - len(subset))) for subset in self._subvars ]
         return np.nansum(pmf * np.log2(np.prod(spmf)))
 
-    def optimize(self, x0=None, bounds=None, nhops=10, polish=1e-10):
+    def optimize(self, x0=None, bounds=None, nhops=10, polish=1e-10, maxiters=1000):
         """
         Perform the optimization. Dispatches to the appropriate backend.
 
@@ -224,7 +224,7 @@ class BaseOptimizer(object):
                   'constraints': self.constraints,
                   'tol': None,
                   'callback': None,
-                  'options': {'maxiter': 1000,
+                  'options': {'maxiter': maxiters,
                               'ftol': 1e-7,
                               'eps': 1.4901161193847656e-08,
                              },
@@ -530,7 +530,7 @@ class BROJAOptimizer(BaseConvexOptimizer, MaxCoInfoOptimizer):
         self._free = list(sorted(set(self._free) & set(extra_free)))
 
 
-def maxent_dist(dist, rvs, rv_mode=None, x0=None, sparse=True):
+def maxent_dist(dist, rvs, rv_mode=None, x0=None, sparse=True, maxiters=1000):
     """
     Return the maximum entropy distribution consistent with the marginals from
     `dist` specified in `rvs`.
@@ -559,7 +559,7 @@ def maxent_dist(dist, rvs, rv_mode=None, x0=None, sparse=True):
         The maximum entropy distribution.
     """
     meo = MaxEntOptimizer(dist, rvs, rv_mode)
-    meo.optimize(x0=x0)
+    meo.optimize(x0=x0, maxiters=maxiters)
     dist = meo.construct_dist(sparse=sparse)
     return dist
 
