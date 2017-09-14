@@ -31,6 +31,7 @@ bivariates = {'uniform': bivariate.uni,
               'gband': bivariate.gband,
               'boom': bivariate.boom,
               'not two': bivariate.not_two,
+              'pointwise unq': bivariate.pwu,
               }
 
 trivariates = {'uniform': trivariate.uni,
@@ -45,4 +46,5 @@ trivariates = {'uniform': trivariate.uni,
                'shared xor': trivariate.shared_xor,
                'xor shared': trivariate.xor_shared,
                'giant xor': trivariate.giant_xor,
+               'dbl xor': trivariate.dblxor,
                }

@@ -19,7 +19,7 @@ class BROJAOptimizer(BaseConvexOptimizer):
     maximizing the coinformation.
     """
 
-    def __init__(self, dist, inputs, output, rv_mode=None):
+    def __init__(self, dist, input, others, output, rv_mode=None):
         """
         Initialize the optimizer.
 
@@ -27,24 +27,23 @@ class BROJAOptimizer(BaseConvexOptimizer):
         ----------
         dist : Distribution
             The distribution to base the optimization on.
-        inputs : iterable of iterables
+        input : iterable
             Variables to treat as inputs.
+        others : iterable of iterables
+            The other input variables.
         output : iterable
             The output variable.
         rv_mode : bool
             Unused, provided for compatibility with parent class.
         """
-        self._inputs = inputs
-        self._output = output
-        self._var_map = {var: i for i, var in enumerate(inputs + (output,))}
-        dist = dist.coalesce(inputs + (output,))
-        constraints = [i + dist.rvs[-1] for i in dist.rvs[:-1]]
+        dist = dist.coalesce((input,) + (sum(others, ()),) + (output,))
+        constraints = [[0, 2], [1, 2]]
         super(BROJAOptimizer, self).__init__(dist, constraints)
 
 
     def objective(self, x):
         """
-        Minimize the portion of I(inputs:output) that is not I(input:output|others).
+        Minimize I(input:output|others).
 
         Parameters
         ----------
@@ -59,19 +58,28 @@ class BROJAOptimizer(BaseConvexOptimizer):
         pmf = self._expand(x).reshape(self._shape)
         h_total = -np.nansum(pmf * np.log2(pmf))
 
-        inputs = tuple(range(len(self._shape) - 1))
-        p_output = pmf.sum(axis=inputs)
+        p_output = pmf.sum(axis=(0, 1))
         h_output = -np.nansum(p_output * np.log2(p_output))
 
-        input_pmf = pmf.sum(axis=-1)
+        input_pmf = pmf.sum(axis=2)
         h_input = -np.nansum(input_pmf * np.log2(input_pmf))
 
         mi = h_input + h_output - h_total
 
-        return mi
+        reduced_pmf = pmf.sum(axis=0)
+        h_reduced = -np.nansum(reduced_pmf * np.log2(reduced_pmf))
+
+        others_pmf = pmf.sum(axis=(0, 2))
+        h_others = -np.nansum(others_pmf * np.log2(others_pmf))
+
+        omi = h_others + h_output - h_reduced
+
+        cmi = mi - omi
+
+        return cmi
 
 
-def i_broja(d, inputs, output):
+def i_broja(d, inputs, output, maxiters=1000):
     """
     This computes unique information as min{I(input : output | other_inputs)} over the space of distributions
     which matches input-output marginals.
@@ -91,11 +99,11 @@ def i_broja(d, inputs, output):
         The value of I_broja for each individual input.
     """
     uniques = {}
-    for input_ in inputs: # fix this to do simpler, and independent optimizations
+    for input_ in inputs:
         others = sum([i for i in inputs if i != input_], ())
         dm = d.coalesce([input_, others, output])
-        broja = BROJAOptimizer(dm, ((0,), (1,)), (2,))
-        broja.optimize()
+        broja = BROJAOptimizer(dm, (0,), ((1,),), (2,))
+        broja.optimize(maxiters=maxiters)
         d_opt = broja.construct_dist()
         uniques[input_] = coinformation(d_opt, [[0], [2]], [1])
     return uniques

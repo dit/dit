@@ -356,16 +356,16 @@ class BaseConvexOptimizer(BaseOptimizer):
         frontend and the SLSQP algorithm because it is one of the few generic
         optimizers which can work with both bounds and constraints.
         """
-        res = minimize(fun=self.objective,
-                       x0=x0,
-                       **kwargs
-                      )
+        self.res = minimize(fun=self.objective,
+                            x0=x0,
+                            **kwargs
+                           )
 
-        if not res.success: # pragma: no cover
-            msg = "Optimization failed: {}".format(res.message)
+        if not self.res.success: # pragma: no cover
+            msg = "Optimization failed: {}".format(self.res.message)
             raise ditException(msg)
 
-        self._optima = res.x
+        self._optima = self.res.x
 
 
 class BaseNonConvexOptimizer(BaseOptimizer):
@@ -400,17 +400,17 @@ class BaseNonConvexOptimizer(BaseOptimizer):
         """
         self._callback = BasinHoppingCallBack(kwargs['constraints'], None)
 
-        res = basinhopping(func=self.objective,
-                           x0=x0,
-                           minimizer_kwargs=kwargs,
-                           niter=nhops,
-                           callback=self._callback,
-                           accept_test=accept_test,
-                          )
+        self.res = basinhopping(func=self.objective,
+                                x0=x0,
+                                minimizer_kwargs=kwargs,
+                                niter=nhops,
+                                callback=self._callback,
+                                accept_test=accept_test,
+                               )
 
-        success, msg = basinhop_status(res)
+        success, msg = basinhop_status(self.res)
         if success:
-            self._optima = res.x
+            self._optima = self.res.x
         else: # pragma: no cover
             minimum = self._callback.minimum()
             if minimum is not None:
@@ -559,7 +559,11 @@ def maxent_dist(dist, rvs, rv_mode=None, x0=None, sparse=True, maxiters=1000):
         The maximum entropy distribution.
     """
     meo = MaxEntOptimizer(dist, rvs, rv_mode)
-    meo.optimize(x0=x0, maxiters=maxiters)
+    try:
+        meo.optimize(x0=x0, maxiters=maxiters)
+    except ditException:
+        print(meo.res)
+        meo._optima = meo.res.x
     dist = meo.construct_dist(sparse=sparse)
     return dist
 

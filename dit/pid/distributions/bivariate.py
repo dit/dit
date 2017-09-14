@@ -80,3 +80,6 @@ not_two = uniform(['000', '001', '010', '100', '111'])
 
 # the prototype for redundancy in and and sum
 dup = uniform(['000', '001', '111', '112'])
+
+# pointwise unique
+pwu = uniform(['011', '101', '022', '202'])
