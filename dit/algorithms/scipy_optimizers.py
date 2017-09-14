@@ -485,7 +485,6 @@ class MinCoInfoOptimizer(BaseNonConvexOptimizer):
         return self.co_information(x)
 
 
-@deprecated("Please see dit.pid.ibroja.BROJAOptimizer")
 class BROJAOptimizer(BaseConvexOptimizer, MaxCoInfoOptimizer):
     """
     An optimizer for constructing the maximum co-information distribution
@@ -498,6 +497,7 @@ class BROJAOptimizer(BaseConvexOptimizer, MaxCoInfoOptimizer):
     convex.
     """
 
+    @deprecated("Please see dit.pid.ibroja.BROJAOptimizer")
     def __init__(self, dist, sources, target, rv_mode=None):
         """
         Initialize the optimizer.
