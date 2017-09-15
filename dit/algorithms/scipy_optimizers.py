@@ -486,7 +486,8 @@ class MinCoInfoOptimizer(BaseNonConvexOptimizer):
         """
         return self.co_information(x)
 
-@removals.removed_class(replacement="dit.pid.ibroja.BROJAOptimizer",
+@removals.removed_class("BROJAOptimizer",
+                        replacement="dit.pid.ibroja.BROJAOptimizer",
                         message="Please use the dit.pid module instead.",
                         version='1.0.0.dev8')
 class BROJAOptimizer(BaseConvexOptimizer, MaxCoInfoOptimizer):
