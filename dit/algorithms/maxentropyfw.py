@@ -12,11 +12,13 @@ from itertools import combinations
 
 import logging
 
+from debtcollector import removals
+
 import numpy as np
 
 import dit
 from dit.helpers import RV_MODES
-from dit.utils import basic_logger, deprecated
+from dit.utils import basic_logger
 
 from .optutil import (
     as_full_rank, prepare_dist, op_runner, frank_wolfe
@@ -246,7 +248,8 @@ def marginal_maxent(dist, k, **kwargs):
 
     return marginal_maxent_generic(dist, rvs, **kwargs)
 
-@deprecated
+@removals.remove(message="Please use the version in dit.algorithms.scipy_optmizers instead.",
+                 version="1.0.0.dev8")
 def marginal_maxent_dists(dist, k_max=None, maxiters=1000, tol=1e-3, verbose=False):
     """
     Return the marginal-constrained maximum entropy distributions.

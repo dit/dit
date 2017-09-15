@@ -10,6 +10,8 @@ from collections import namedtuple
 from itertools import combinations
 from iterutils import powerset
 
+from debtcollector import removals
+
 import numpy as np
 
 from scipy.optimize import basinhopping, minimize
@@ -23,7 +25,7 @@ from ..exceptions import ditException
 from ..helpers import RV_MODES
 from ..math import close
 from ..multivariate import coinformation as I
-from ..utils import deprecated, flatten
+from ..utils import flatten
 from ..utils.optimization import BasinHoppingCallBack, accept_test, basinhop_status
 
 __all__ = [
@@ -484,7 +486,9 @@ class MinCoInfoOptimizer(BaseNonConvexOptimizer):
         """
         return self.co_information(x)
 
-
+@removals.removed_class(replacement="dit.pid.ibroja.BROJAOptimizer",
+                        message="Please use the dit.pid module instead.",
+                        version='1.0.0.dev8')
 class BROJAOptimizer(BaseConvexOptimizer, MaxCoInfoOptimizer):
     """
     An optimizer for constructing the maximum co-information distribution
@@ -497,7 +501,6 @@ class BROJAOptimizer(BaseConvexOptimizer, MaxCoInfoOptimizer):
     convex.
     """
 
-    @deprecated("Please see dit.pid.ibroja.BROJAOptimizer")
     def __init__(self, dist, sources, target, rv_mode=None):
         """
         Initialize the optimizer.
@@ -622,7 +625,7 @@ def marginal_maxent_dists(dist, k_max=None):
 
 PID = namedtuple('PID', ['R', 'U0', 'U1', 'S'])
 
-@deprecated("Please see dit.pid.PID_BROJA.")
+@removals.remove(message="Please see dit.pid.PID_BROJA.", version='1.0.0.dev8')
 def pid_broja(dist, sources, target, rv_mode=None, return_opt=False):
     """
     Compute the BROJA partial information decomposition.

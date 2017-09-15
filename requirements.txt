@@ -1,4 +1,5 @@
 contextlib2
+debtcollector
 iterutils >= 0.1.6
 networkx
 numpy >= 1.11

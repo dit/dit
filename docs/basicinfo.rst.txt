@@ -12,6 +12,7 @@ Dependencies:
    * contextlib2
    * prettytable
    * networkx
+   * debtcollector
 
 Optional Dependencies:
    * cython
