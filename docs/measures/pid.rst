@@ -374,5 +374,7 @@ This decomposition also displays an interesting phenomena, that of *subadditive 
 :math:`\I_{dep}`
 ----------------
 
+James et al have developed a method of quantifying unique information based on the :ref:`Dependency Decomposition`.
+
 Variants
 ^^^^^^^^
