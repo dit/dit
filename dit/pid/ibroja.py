@@ -8,7 +8,7 @@ import numpy as np
 
 from .pid import BaseUniquePID
 
-from ..algorithms.scipy_optimizers import BaseConvexOptimizer
+from ..algorithms.scipy_optimizers import BaseConvexOptimizer, BROJABivariateOptimizer
 from ..multivariate import coinformation
 
 
@@ -99,13 +99,21 @@ def i_broja(d, inputs, output, maxiters=1000):
         The value of I_broja for each individual input.
     """
     uniques = {}
-    for input_ in inputs:
-        others = sum([i for i in inputs if i != input_], ())
-        dm = d.coalesce([input_, others, output])
-        broja = BROJAOptimizer(dm, (0,), ((1,),), (2,))
+    if len(inputs) == 2:
+        broja = BROJABivariateOptimizer(dist, inputs, output)
         broja.optimize(maxiters=maxiters)
-        d_opt = broja.construct_dist()
-        uniques[input_] = coinformation(d_opt, [[0], [2]], [1])
+        opt_dist = broja.construct_dist()
+        uniques[inputs[0]] = coinformation(opt_dist, [[0], [2]], [1])
+        uniques[inputs[1]] = coinformation(opt_dist, [[1], [2]], [0])
+    else:
+        for input_ in inputs:
+            others = sum([i for i in inputs if i != input_], ())
+            dm = d.coalesce([input_, others, output])
+            broja = BROJAOptimizer(dm, (0,), ((1,),), (2,))
+            broja.optimize(maxiters=maxiters)
+            d_opt = broja.construct_dist()
+            uniques[input_] = coinformation(d_opt, [[0], [2]], [1])
+
     return uniques
 
 

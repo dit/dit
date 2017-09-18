@@ -486,11 +486,8 @@ class MinCoInfoOptimizer(BaseNonConvexOptimizer):
         """
         return self.co_information(x)
 
-@removals.removed_class("BROJAOptimizer",
-                        replacement="dit.pid.ibroja.BROJAOptimizer",
-                        message="Please use the dit.pid module instead.",
-                        version='1.0.0.dev8')
-class BROJAOptimizer(BaseConvexOptimizer, MaxCoInfoOptimizer):
+
+class BROJABivariateOptimizer(BaseConvexOptimizer, MaxCoInfoOptimizer):
     """
     An optimizer for constructing the maximum co-information distribution
     consistent with (source, target) marginals of the given distribution.
@@ -662,7 +659,7 @@ def pid_broja(dist, sources, target, rv_mode=None, return_opt=False):
         The distribution resulting from the optimizaiton. Note that var [0]
         is sources[0], [1] is sources[1] and [2] is target.
     """
-    broja = BROJAOptimizer(dist, sources, target, rv_mode)
+    broja = BROJABivariateOptimizer(dist, sources, target, rv_mode)
     broja.optimize()
     opt_dist = broja.construct_dist()
     r = -broja.objective(broja._optima)

@@ -76,14 +76,23 @@ def i_dep(d, inputs, output, maxiters=1000):
         The value of I_dep_a for each individual input.
     """
     uniques = {}
-    for input_ in inputs:
-        others = sum([i for i in inputs if i != input_], ())
-        dm = d.coalesce([input_, others, output])
+    if len(inputs) == 2:
+        dm = d.coalesce(inputs + (output,))
+        dd = DependencyDecomposition(dm, measures={'I': lambda d: coinformation(d, [inputs, output])}, maxiters=maxiters)
+        edge_set_0 = (edge for edge in edges(dd, ((0, 2),)))
+        edge_set_1 = (edge for edge in edges(dd, ((1, 2),)))
+        uniques[inputs[0]] = min(delta(dd, 'I', *edge) for edge in edge_set_0)
+        uniques[inputs[1]] = min(delta(dd, 'I', *edge) for edge in edge_set_1)
+    else:
+        for input_ in inputs:
+            others = sum([i for i in inputs if i != input_], ())
+            dm = d.coalesce([input_, others, output])
 
-        dd = DependencyDecomposition(dm, measures={'I': lambda d: coinformation(d, [[0, 1], [2]])}, maxiters=maxiters)
-        edge_set = (edge for edge in edges(dd, ((0, 2),)))
-        u = min(delta(dd, 'I', *edge) for edge in edge_set)
-        uniques[input_] = u
+            dd = DependencyDecomposition(dm, measures={'I': lambda d: coinformation(d, [[0, 1], [2]])}, maxiters=maxiters)
+            edge_set = (edge for edge in edges(dd, ((0, 2),)))
+            u = min(delta(dd, 'I', *edge) for edge in edge_set)
+            uniques[input_] = u
+
     return uniques
 
 
