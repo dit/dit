@@ -41,8 +41,8 @@ def test_ibroja4():
     """
     d = bivariates['pointwise unq']
     uniques = i_broja(d, ((0,), (1,)), (2,))
-    assert uniques[(0,)] == pytest.approx(0)
-    assert uniques[(1,)] == pytest.approx(0)
+    assert uniques[(0,)] == pytest.approx(0, abs=1e-4)
+    assert uniques[(1,)] == pytest.approx(0, abs=1e-4)
 
 def test_pid_broja1():
     """
