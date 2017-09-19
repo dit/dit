@@ -100,7 +100,7 @@ def i_broja(d, inputs, output, maxiters=1000):
     """
     uniques = {}
     if len(inputs) == 2:
-        broja = BROJABivariateOptimizer(dist, inputs, output)
+        broja = BROJABivariateOptimizer(d, list(inputs), output)
         broja.optimize(maxiters=maxiters)
         opt_dist = broja.construct_dist()
         uniques[inputs[0]] = coinformation(opt_dist, [[0], [2]], [1])

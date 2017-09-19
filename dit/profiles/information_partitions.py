@@ -14,7 +14,7 @@ from iterutils import powerset
 
 import prettytable
 
-from networkx import DiGraph, dfs_preorder_nodes as children, topological_sort
+import networkx as nx
 
 from .. import ditParams
 from ..algorithms import maxent_dist
@@ -35,7 +35,7 @@ def poset_lattice(elements):
     """
     child = lambda a, b: a.issubset(b) and (len(b) - len(a) == 1)
 
-    lattice = DiGraph()
+    lattice = nx.DiGraph()
 
     for a, b in combinations(powerset(elements), 2):
         if child(set(a), set(b)):
@@ -74,7 +74,7 @@ def constraint_lattice(elements):
 
     order = [(a, b) for a, b in permutations(pps, 2) if less_than(a, b)]
 
-    lattice = DiGraph()
+    lattice = nx.DiGraph()
 
     for a, b in order:
         if not any(((a, c) in order) and ((c, b) in order) for c in pps):
@@ -156,11 +156,11 @@ class BaseInformationPartition(object):
 
         # Subset-sum type thing, basically co-information calculations.
         for node in self._lattice:
-            Is[node] = sum((-1)**(len(rv)+1)*Hs[rv] for rv in children(self._lattice, node))
+            Is[node] = sum((-1)**(len(rv)+1)*Hs[rv] for rv in nx.dfs_preorder_nodes(self._lattice, node))
 
         # Mobius inversion of the above, resulting in the Shannon atoms.
-        for node in topological_sort(self._lattice)[:-1]:
-            kids = islice(children(rlattice, node), 1, None)
+        for node in nx.topological_sort(self._lattice)[:-1]:
+            kids = islice(nx.dfs_preorder_nodes(rlattice, node), 1, None)
             atoms[node] = Is[node] - sum(atoms[child] for child in kids)
 
         # get the atom indices in proper format
@@ -319,7 +319,7 @@ class DependencyDecomposition(object):
         dists = {}
 
         # Entropies
-        for node in topological_sort(self._lattice):
+        for node in nx.topological_sort(self._lattice):
             try:
                 parent = self._lattice.reverse()[node][0]
                 x0 = dists[parent].pmf
@@ -350,16 +350,58 @@ class DependencyDecomposition(object):
 
     def __getitem__(self, item):
         """
+        Return the dictionary of information values associated with a node.
 
         Parameters
         ----------
-        item
+        item : tuple
+            The node of interest.
 
         Returns
         -------
-
+        vars : dict
+            A dictionary of {measure: value} pairs.
         """
         return self.atoms[item]
+
+    def edges(self, constraint):
+        """
+        Iterate over edges which add `constraint`.
+
+        Parameters
+        ----------
+        constraint : tuple
+            The constraint of interest.
+
+        Yields
+        ------
+        edge : tuple
+            An edge that adds the constraint.
+        """
+        for u, v in self._lattice.edges():
+            if set(constraint) <= set(u) - set(v) and nx.has_path(self._lattice, u, v):
+                yield (u, v)
+
+    def delta(self, edge, measure):
+        """
+        Return the difference in `measure` along `edge`.
+
+        Parameters
+        ----------
+        edge : tuple
+            An edge in the lattice.
+
+        measure : str
+            The label for the information measure to get the difference of.
+
+        Returns
+        -------
+        delta : float
+            The difference in the measure.
+        """
+        a = self.atoms[edge[0]][measure]
+        b = self.atoms[edge[1]][measure]
+        return a - b
 
     def to_string(self, digits=3):
         """

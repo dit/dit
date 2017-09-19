@@ -487,7 +487,7 @@ class MinCoInfoOptimizer(BaseNonConvexOptimizer):
         return self.co_information(x)
 
 
-class BROJABivariateOptimizer(BaseConvexOptimizer, MaxCoInfoOptimizer):
+class BROJABivariateOptimizer(MaxCoInfoOptimizer):
     """
     An optimizer for constructing the maximum co-information distribution
     consistent with (source, target) marginals of the given distribution.
@@ -521,7 +521,7 @@ class BROJABivariateOptimizer(BaseConvexOptimizer, MaxCoInfoOptimizer):
             consulted, which defaults to 'indices'.
         """
         dist = broja_prepare_dist(dist, sources, target, rv_mode)
-        super(BROJAOptimizer, self).__init__(dist, [[0, 2], [1, 2]])
+        super(BROJABivariateOptimizer, self).__init__(dist, [[0, 2], [1, 2]])
 
         extra_free = broja_extra_constraints(self.dist, 2).free
         self._free = list(sorted(set(self._free) & set(extra_free)))
@@ -556,11 +556,7 @@ def maxent_dist(dist, rvs, rv_mode=None, x0=None, sparse=True, maxiters=1000):
         The maximum entropy distribution.
     """
     meo = MaxEntOptimizer(dist, rvs, rv_mode)
-    try:
-        meo.optimize(x0=x0, maxiters=maxiters)
-    except ditException:
-        print(meo.res)
-        meo._optima = meo.res.x
+    meo.optimize(x0=x0, maxiters=maxiters)
     dist = meo.construct_dist(sparse=sparse)
     return dist
 

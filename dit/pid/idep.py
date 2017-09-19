@@ -10,52 +10,6 @@ from ..multivariate import coinformation
 from ..profiles import DependencyDecomposition
 
 
-def edges(dd, var):
-    """
-    Find all the edges within the dependency decomposition which are the restriction of `var`.
-
-    Parameters
-    ----------
-    dd : DependencyDecomposition
-        The dependency decomposition in question.
-    var : iterable
-        The variable which is added among the edges to be found.
-
-    Returns
-    -------
-    edges : set
-        The set of edges (a, b) where a restricts `var` but b does not.
-    """
-    edge_set = set()
-    for a, b in dd._lattice.edges():
-        if set(var) <= set(a) - set(b) and nx.has_path(dd._lattice, a, b):
-            edge_set |= {(a, b)}
-    return edge_set
-
-
-def delta(dd, m, a, b):
-    """
-    Return the difference in measure `m` along the edge (`a`, `b`).
-
-    Parameters
-    ----------
-    dd : DependencyDecomposition
-        The dependency decomposition to compute the edge delta with.
-    m : str
-        The name of the measure to use.
-    a : iterable
-        The parent node.
-    b : iterable
-        The child node.
-
-    Returns
-    -------
-    diff : float
-        The difference in the measure at `a` and `b`.
-    """
-    return dd.atoms[a][m] - dd.atoms[b][m]
-
-
 def i_dep(d, inputs, output, maxiters=1000):
     """
     This computes unique information as min(delta(I(inputs : output))) where delta
@@ -73,24 +27,23 @@ def i_dep(d, inputs, output, maxiters=1000):
     Returns
     -------
     idep : dict
-        The value of I_dep_a for each individual input.
+        The value of I_dep for each individual input.
     """
     uniques = {}
+    measure = {'I': lambda d: coinformation(d, [[0, 1], [2]])}
     if len(inputs) == 2:
         dm = d.coalesce(inputs + (output,))
-        dd = DependencyDecomposition(dm, measures={'I': lambda d: coinformation(d, [inputs, output])}, maxiters=maxiters)
-        edge_set_0 = (edge for edge in edges(dd, ((0, 2),)))
-        edge_set_1 = (edge for edge in edges(dd, ((1, 2),)))
-        uniques[inputs[0]] = min(delta(dd, 'I', *edge) for edge in edge_set_0)
-        uniques[inputs[1]] = min(delta(dd, 'I', *edge) for edge in edge_set_1)
+        dd = DependencyDecomposition(dm, measures=measure, maxiters=maxiters)
+        u_0 = min(dd.delta(edge, 'I') for edge in dd.edges(((0, 2),)))
+        u_1 = min(dd.delta(edge, 'I') for edge in dd.edges(((1, 2),)))
+        uniques[inputs[0]] = u_0
+        uniques[inputs[1]] = u_1
     else:
         for input_ in inputs:
             others = sum([i for i in inputs if i != input_], ())
             dm = d.coalesce([input_, others, output])
-
-            dd = DependencyDecomposition(dm, measures={'I': lambda d: coinformation(d, [[0, 1], [2]])}, maxiters=maxiters)
-            edge_set = (edge for edge in edges(dd, ((0, 2),)))
-            u = min(delta(dd, 'I', *edge) for edge in edge_set)
+            dd = DependencyDecomposition(dm, measures=measure, maxiters=maxiters)
+            u = min(dd.delta(edge, 'I') for edge in dd.edges(((0, 2),)))
             uniques[input_] = u
 
     return uniques

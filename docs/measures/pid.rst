@@ -374,7 +374,4 @@ This decomposition also displays an interesting phenomena, that of *subadditive 
 :math:`\I_{dep}`
 ----------------
 
-James et al have developed a method of quantifying unique information based on the :ref:`Dependency Decomposition`.
-
-Variants
-^^^^^^^^
+James et al have developed a method of quantifying unique information based on the :ref:`Dependency Decomposition`. Unique information from variable :math:`X_i` is evaluated as the least change in sources-target mutual information when adding the constraint :math:`X_i Y`.

@@ -54,11 +54,11 @@ def test_pid_dep2():
     pid = PID_dep(d, [[0], [1], [2]], [3])
     for atom in pid._lattice:
         if atom == ((0,), (1,), (2,)):
-            assert pid[atom] == pytest.approx(0.081704409646414788)
+            assert pid[atom] == pytest.approx(0.081704409646414788, abs=1e-4)
         elif atom == ((0, 1), (1, 2)):
-            assert pid[atom] == pytest.approx(0.27042624480113808)
+            assert pid[atom] == pytest.approx(0.27042624480113808, abs=1e-4)
         elif atom in [((0,), (2,)), ((1,),)]:
-            assert pid[atom] == pytest.approx(0.22957374150893717)
+            assert pid[atom] == pytest.approx(0.22957374150893717, abs=1e-4)
         else:
             assert pid[atom] == pytest.approx(0.0, abs=1e-6)
 
