@@ -191,7 +191,8 @@ class BaseInformationPartition(object):
         """
         Represent using the str().
         """
-        return str(self)
+        if ditParams['repr.print']:
+            return self.string()
 
     def __str__(self):
         """
@@ -340,7 +341,8 @@ class DependencyDecomposition(object):
         """
         Represent using the str().
         """
-        return str(self)
+        if ditParams['repr.print']:
+            return self.to_string()
 
     def __str__(self):
         """
