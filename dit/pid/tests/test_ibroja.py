@@ -35,6 +35,15 @@ def test_ibroja3():
     assert uniques[(0,)] == pytest.approx(1)
     assert uniques[(1,)] == pytest.approx(1)
 
+def test_ibroja4():
+    """
+    Test ibroja on a non-unique (?) distribution.
+    """
+    d = bivariates['pointwise unq']
+    uniques = i_broja(d, ((0,), (1,)), (2,))
+    assert uniques[(0,)] == pytest.approx(0)
+    assert uniques[(1,)] == pytest.approx(0)
+
 def test_pid_broja1():
     """
     Test ibroja on a generic distribution.
