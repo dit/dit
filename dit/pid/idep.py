@@ -85,7 +85,7 @@ def i_dep_a(d, inputs, output):
     dd = DependencyDecomposition(d, list(var_to_index.values()), measures=measure)
     uniques = {}
     for input_ in inputs:
-        constraint = (var_to_index[input_], var_to_index[output]),)
+        constraint = ((var_to_index[input_], var_to_index[output]),)
         u = min(dd.delta(edge, 'I') for edge in dd.edges(constraint))
         uniques[input_] = u
     return uniques
