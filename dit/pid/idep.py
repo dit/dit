@@ -2,6 +2,8 @@
 The dependency-decomposition based unique measure partial information decomposition.
 """
 
+from __future__ import division
+
 import networkx as nx
 
 from .pid import BaseUniquePID

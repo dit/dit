@@ -46,7 +46,7 @@ def test_pid_pm2():
     """
     Test imin on another generic distribution.
     """
-    d = trivariates['unique 1']
+    d = bivariates['unique 1']
     pid = PID_PM(d, [[0], [1]], [2])
     assert pid[((0,), (1,))] == pytest.approx(1.0)
     assert pid[((0,),)] == pytest.approx(0.0)
