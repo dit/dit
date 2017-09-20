@@ -14,8 +14,8 @@ def test_ibroja1():
     """
     d = bivariates['redundant']
     uniques = i_broja(d, ((0,), (1,)), (2,))
-    assert uniques[(0,)] == pytest.approx(0)
-    assert uniques[(1,)] == pytest.approx(0)
+    assert uniques[(0,)] == pytest.approx(0, abs=1e-8)
+    assert uniques[(1,)] == pytest.approx(0, abs=1e-8)
 
 def test_ibroja2():
     """
@@ -23,8 +23,8 @@ def test_ibroja2():
     """
     d = bivariates['synergy']
     uniques = i_broja(d, ((0,), (1,)), (2,))
-    assert uniques[(0,)] == pytest.approx(0)
-    assert uniques[(1,)] == pytest.approx(0)
+    assert uniques[(0,)] == pytest.approx(0, abs=1e-8)
+    assert uniques[(1,)] == pytest.approx(0, abs=1e-8)
 
 def test_ibroja3():
     """
@@ -32,8 +32,17 @@ def test_ibroja3():
     """
     d = bivariates['cat']
     uniques = i_broja(d, ((0,), (1,)), (2,))
-    assert uniques[(0,)] == pytest.approx(1)
-    assert uniques[(1,)] == pytest.approx(1)
+    assert uniques[(0,)] == pytest.approx(1, abs=1e-8)
+    assert uniques[(1,)] == pytest.approx(1, abs=1e-8)
+
+def test_ibroja4():
+    """
+    Test ibroja on a non-unique (?) distribution.
+    """
+    d = bivariates['pointwise unq']
+    uniques = i_broja(d, ((0,), (1,)), (2,))
+    assert uniques[(0,)] == pytest.approx(0, abs=1e-4)
+    assert uniques[(1,)] == pytest.approx(0, abs=1e-4)
 
 def test_pid_broja1():
     """

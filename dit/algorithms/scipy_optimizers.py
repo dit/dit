@@ -189,7 +189,7 @@ class BaseOptimizer(object):
         spmf = [ pmf.sum(axis=subset, keepdims=True)**((-1)**(n - len(subset))) for subset in self._subvars ]
         return np.nansum(pmf * np.log2(np.prod(spmf)))
 
-    def optimize(self, x0=None, bounds=None, nhops=10, polish=1e-10):
+    def optimize(self, x0=None, bounds=None, nhops=10, polish=1e-10, maxiters=1000):
         """
         Perform the optimization. Dispatches to the appropriate backend.
 
@@ -224,7 +224,7 @@ class BaseOptimizer(object):
                   'constraints': self.constraints,
                   'tol': None,
                   'callback': None,
-                  'options': {'maxiter': 1000,
+                  'options': {'maxiter': maxiters,
                               'ftol': 1e-7,
                               'eps': 1.4901161193847656e-08,
                              },
@@ -356,16 +356,16 @@ class BaseConvexOptimizer(BaseOptimizer):
         frontend and the SLSQP algorithm because it is one of the few generic
         optimizers which can work with both bounds and constraints.
         """
-        res = minimize(fun=self.objective,
-                       x0=x0,
-                       **kwargs
-                      )
+        self.res = minimize(fun=self.objective,
+                            x0=x0,
+                            **kwargs
+                           )
 
-        if not res.success: # pragma: no cover
-            msg = "Optimization failed: {}".format(res.message)
+        if not self.res.success: # pragma: no cover
+            msg = "Optimization failed: {}".format(self.res.message)
             raise ditException(msg)
 
-        self._optima = res.x
+        self._optima = self.res.x
 
 
 class BaseNonConvexOptimizer(BaseOptimizer):
@@ -400,17 +400,17 @@ class BaseNonConvexOptimizer(BaseOptimizer):
         """
         self._callback = BasinHoppingCallBack(kwargs['constraints'], None)
 
-        res = basinhopping(func=self.objective,
-                           x0=x0,
-                           minimizer_kwargs=kwargs,
-                           niter=nhops,
-                           callback=self._callback,
-                           accept_test=accept_test,
-                          )
+        self.res = basinhopping(func=self.objective,
+                                x0=x0,
+                                minimizer_kwargs=kwargs,
+                                niter=nhops,
+                                callback=self._callback,
+                                accept_test=accept_test,
+                               )
 
-        success, msg = basinhop_status(res)
+        success, msg = basinhop_status(self.res)
         if success:
-            self._optima = res.x
+            self._optima = self.res.x
         else: # pragma: no cover
             minimum = self._callback.minimum()
             if minimum is not None:
@@ -486,11 +486,8 @@ class MinCoInfoOptimizer(BaseNonConvexOptimizer):
         """
         return self.co_information(x)
 
-@removals.removed_class("BROJAOptimizer",
-                        replacement="dit.pid.ibroja.BROJAOptimizer",
-                        message="Please use the dit.pid module instead.",
-                        version='1.0.0.dev8')
-class BROJAOptimizer(BaseConvexOptimizer, MaxCoInfoOptimizer):
+
+class BROJABivariateOptimizer(MaxCoInfoOptimizer):
     """
     An optimizer for constructing the maximum co-information distribution
     consistent with (source, target) marginals of the given distribution.
@@ -524,13 +521,13 @@ class BROJAOptimizer(BaseConvexOptimizer, MaxCoInfoOptimizer):
             consulted, which defaults to 'indices'.
         """
         dist = broja_prepare_dist(dist, sources, target, rv_mode)
-        super(BROJAOptimizer, self).__init__(dist, [[0, 2], [1, 2]])
+        super(BROJABivariateOptimizer, self).__init__(dist, [[0, 2], [1, 2]])
 
         extra_free = broja_extra_constraints(self.dist, 2).free
         self._free = list(sorted(set(self._free) & set(extra_free)))
 
 
-def maxent_dist(dist, rvs, rv_mode=None, x0=None, sparse=True):
+def maxent_dist(dist, rvs, rv_mode=None, x0=None, sparse=True, maxiters=1000):
     """
     Return the maximum entropy distribution consistent with the marginals from
     `dist` specified in `rvs`.
@@ -559,7 +556,7 @@ def maxent_dist(dist, rvs, rv_mode=None, x0=None, sparse=True):
         The maximum entropy distribution.
     """
     meo = MaxEntOptimizer(dist, rvs, rv_mode)
-    meo.optimize(x0=x0)
+    meo.optimize(x0=x0, maxiters=maxiters)
     dist = meo.construct_dist(sparse=sparse)
     return dist
 
@@ -658,7 +655,7 @@ def pid_broja(dist, sources, target, rv_mode=None, return_opt=False):
         The distribution resulting from the optimizaiton. Note that var [0]
         is sources[0], [1] is sources[1] and [2] is target.
     """
-    broja = BROJAOptimizer(dist, sources, target, rv_mode)
+    broja = BROJABivariateOptimizer(dist, sources, target, rv_mode)
     broja.optimize()
     opt_dist = broja.construct_dist()
     r = -broja.objective(broja._optima)

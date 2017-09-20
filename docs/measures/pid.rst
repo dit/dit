@@ -154,7 +154,7 @@ This axiom states that redundancy can not increase when replacing the output by 
 
 .. math::
 
-   \Icap{X_{0:n} : Y} \ge Icap{X_{0:n} : f(Y)}
+   \Icap{X_{0:n} : Y} \ge \Icap{X_{0:n} : f(Y)}
 
 It first appeared in :cite:`bertschinger2013shared` and was expanded upon in :cite:`rauh2017extractable`.
 
@@ -368,4 +368,23 @@ This decomposition also displays an interesting phenomena, that of *subadditive 
    ║  {0}   │ 1.3113 │ 0.5000 ║
    ║  {1}   │ 1.3113 │ 0.5000 ║
    ║ {0}{1} │ 0.8113 │ 0.8113 ║
+   ╚════════╧════════╧════════╝
+
+.. py:module:: dit.pid.idep
+:math:`\I_{dep}`
+----------------
+
+James et al have developed a method of quantifying unique information based on the :ref:`Dependency Decomposition`. Unique information from variable :math:`X_i` is evaluated as the least change in sources-target mutual information when adding the constraint :math:`X_i Y`.
+
+.. ipython::
+
+   In [21]: PID_dep(bivariates[''])
+   Out[21]:
+   ╔════════╤════════╤════════╗
+   ║ I_dep  │  I_r   │   pi   ║
+   ╟────────┼────────┼────────╢
+   ║ {0:1}  │ 0.5710 │ 0.5364 ║
+   ║  {0}   │ 0.0200 │ 0.0146 ║
+   ║  {1}   │ 0.0200 │ 0.0146 ║
+   ║ {0}{1} │ 0.0054 │ 0.0054 ║
    ╚════════╧════════╧════════╝
