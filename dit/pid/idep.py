@@ -81,11 +81,12 @@ def i_dep_a(d, inputs, output):
     d = d.coalesce(list(sorted(var_to_index.keys(), key=lambda k: var_to_index[k])))
     invars = [ var_to_index[var] for var in inputs ]
     outvar = [ var_to_index[(var,)] for var in output ]
-    dd = DependencyDecomposition(d, list(var_to_index.values()), measures={'I': lambda d: coinformation(d, [invars, outvar])})
+    measure = {'I': lambda d: coinformation(d, [invars, outvar])}
+    dd = DependencyDecomposition(d, list(var_to_index.values()), measures=measure)
     uniques = {}
     for input_ in inputs:
-        edge_set = (edge for edge in edges(dd, ((var_to_index[input_], var_to_index[output]),)))
-        u = min(delta(dd, 'I', *edge) for edge in edge_set)
+        constraint = (var_to_index[input_], var_to_index[output]),)
+        u = min(dd.delta(edge, 'I') for edge in dd.edges(constraint))
         uniques[input_] = u
     return uniques
 
@@ -121,14 +122,18 @@ def i_dep_b(d, inputs, output):
         The value of I_dep_b for each individual input.
     """
     var_to_index = { var: i for i, var in enumerate(inputs+(output,)) }
+    output_index = var_to_index[output]
     d = d.coalesce(list(sorted(var_to_index.keys(), key=lambda k: var_to_index[k])))
     invars = [ var_to_index[var] for var in inputs ]
     outvar = [ var_to_index[(var,)] for var in output ]
-    dd = DependencyDecomposition(d, list(var_to_index.values()), measures={'I': lambda d: coinformation(d, [invars, outvar])})
+    measure = {'I': lambda d: coinformation(d, [invars, outvar])}
+    dd = DependencyDecomposition(d, list(var_to_index.values()), measures=measure)
     uniques = {}
     for input_ in inputs:
-        edge_set = (edge for edge in edges(dd, ((var_to_index[input_], var_to_index[output]),)) if all({var_to_index[output]} < set(_) for _ in edge[0] if len(_) > 1))
-        u = min(delta(dd, 'I', *edge) for edge in edge_set)
+        constraint = ((var_to_index[input_], output_index),)
+        broja_style = lambda edge: all({output_index} < set(_) for _ in edge[0] if len(_) > 1)
+        edge_set = (edge for edge in dd.edges(constraint) if broja_style(edge))
+        u = min(dd.delta(edge, 'I') for edge in edge_set)
         uniques[input_] = u
     return uniques
 
@@ -171,11 +176,13 @@ def i_dep_c(d, inputs, output):
     d = d.coalesce(list(sorted(var_to_index.keys(), key=lambda k: var_to_index[k])))
     invars = [ var_to_index[var] for var in inputs ]
     outvar = [ var_to_index[(var,)] for var in output ]
-    dd = DependencyDecomposition(d, list(var_to_index.values()), measures={'I': lambda d: coinformation(d, [invars, outvar])})
+    measure = {'I': lambda d: coinformation(d, [invars, outvar])}
+    dd = DependencyDecomposition(d, list(var_to_index.values()), measures=measure)
     uniques = {}
     for input_ in inputs:
-        edge_set = (edge for edge in edges(dd, ((var_to_index[input_], var_to_index[output]),)) if tuple(invars) in edge[0])
-        u = min(delta(dd, 'I', *edge) for edge in edge_set)
+        constraint = ((var_to_index[input_], var_to_index[output]),)
+        edge_set = (edge for edge in dd.edges(constraint) if tuple(invars) in edge[0])
+        u = min(dd.delta(edge, 'I') for edge in edge_set)
         uniques[input_] = u
     return uniques
 
