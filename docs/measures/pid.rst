@@ -378,7 +378,7 @@ James et al have developed a method of quantifying unique information based on t
 
 .. ipython::
 
-   In [21]: PID_dep(bivariates[''])
+   In [21]: PID_dep(bivariates['not two'])
    Out[21]:
    ╔════════╤════════╤════════╗
    ║ I_dep  │  I_r   │   pi   ║
@@ -387,4 +387,29 @@ James et al have developed a method of quantifying unique information based on t
    ║  {0}   │ 0.0200 │ 0.0146 ║
    ║  {1}   │ 0.0200 │ 0.0146 ║
    ║ {0}{1} │ 0.0054 │ 0.0054 ║
+   ╚════════╧════════╧════════╝
+
+.. py:module:: dit.pid.ipm
+:math:`\Ipm{\bullet}`
+---------------------
+
+Also taking a pointwise view, Finn & Lizier's :math:`\Ipm{\bullet}` instead splits the pointwise mutual information into two components:
+
+.. math::
+
+   i(s, t) = h(s) - h(s|t)
+
+They then define two partial information lattices, one quantified locally by :math:`h(s)` and the other by :math:`h(s|t)`. By averaging these local lattices and then recombining them, we arrive at a standard Williams & Beer redundancy lattice.
+
+.. ipython::
+
+   In [21]: PID_PM(bivariates['pointwise unq'])
+   Out[21]:
+   ╔════════╤════════╤════════╗
+   ║ I_pm   │  I_r   │   pi   ║
+   ╟────────┼────────┼────────╢
+   ║ {0:1}  │ 1.0000 │ 0.0000 ║
+   ║  {0}   │ 0.5000 │ 0.5000 ║
+   ║  {1}   │ 0.5000 │ 0.5000 ║
+   ║ {0}{1} │ 0.0000 │ 0.0000 ║
    ╚════════╧════════╧════════╝

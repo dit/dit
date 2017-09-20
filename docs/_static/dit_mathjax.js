@@ -62,6 +62,7 @@ MathJax.Hub.Config({
             Iproj: ["\\op{I_{proj}}{#1}", 1],
             Ibroja: ["\\op{I_{BROJA}}{#1}", 1],
             Iccs: ["\\op{I_{ccs}}{#1}", 1],
+            Ipm: ["\\op{I_\\pm}{#1}", 1],
             Ida: ["\\op{I_{\\downarrow}}{#1}", 1],
             Idda: ["\\op{I_{\\Downarrow}}{#1}", 1],
             Idep: ["\\op{I_{dep}}{#1}", 1],
