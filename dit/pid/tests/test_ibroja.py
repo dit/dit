@@ -39,7 +39,7 @@ def test_ibroja4():
     """
     Test ibroja on a non-unique (?) distribution.
     """
-    d = bivariates['pointwise unq']
+    d = bivariates['pnt. unq']
     uniques = i_broja(d, ((0,), (1,)), (2,))
     assert uniques[(0,)] == pytest.approx(0, abs=1e-4)
     assert uniques[(1,)] == pytest.approx(0, abs=1e-4)

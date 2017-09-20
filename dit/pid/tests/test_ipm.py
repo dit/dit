@@ -35,7 +35,7 @@ def test_pid_pm1():
     """
     Test ipm on a generic distribution.
     """
-    d = bivariates['pointwise unq']
+    d = bivariates['pnt. unq']
     pid = PID_PM(d, ((0,), (1,)), (2,))
     assert pid[((0,), (1,))] == pytest.approx(1.0)
     assert pid[((0,),)] == pytest.approx(0.0)
