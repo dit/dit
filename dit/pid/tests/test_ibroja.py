@@ -14,8 +14,8 @@ def test_ibroja1():
     """
     d = bivariates['redundant']
     uniques = i_broja(d, ((0,), (1,)), (2,))
-    assert uniques[(0,)] == pytest.approx(0, abs=1e-8)
-    assert uniques[(1,)] == pytest.approx(0, abs=1e-8)
+    assert uniques[(0,)] == pytest.approx(0, abs=1e-6)
+    assert uniques[(1,)] == pytest.approx(0, abs=1e-6)
 
 def test_ibroja2():
     """
@@ -23,8 +23,8 @@ def test_ibroja2():
     """
     d = bivariates['synergy']
     uniques = i_broja(d, ((0,), (1,)), (2,))
-    assert uniques[(0,)] == pytest.approx(0, abs=1e-8)
-    assert uniques[(1,)] == pytest.approx(0, abs=1e-8)
+    assert uniques[(1,)] == pytest.approx(0, abs=1e-6)
+    assert uniques[(0,)] == pytest.approx(0, abs=1e-6)
 
 def test_ibroja3():
     """
@@ -32,8 +32,8 @@ def test_ibroja3():
     """
     d = bivariates['cat']
     uniques = i_broja(d, ((0,), (1,)), (2,))
-    assert uniques[(0,)] == pytest.approx(1, abs=1e-8)
-    assert uniques[(1,)] == pytest.approx(1, abs=1e-8)
+    assert uniques[(0,)] == pytest.approx(1, abs=1e-6)
+    assert uniques[(1,)] == pytest.approx(1, abs=1e-6)
 
 def test_ibroja4():
     """
@@ -41,8 +41,8 @@ def test_ibroja4():
     """
     d = bivariates['pnt. unq']
     uniques = i_broja(d, ((0,), (1,)), (2,))
-    assert uniques[(0,)] == pytest.approx(0, abs=1e-4)
-    assert uniques[(1,)] == pytest.approx(0, abs=1e-4)
+    assert uniques[(0,)] == pytest.approx(0, abs=1e-6)
+    assert uniques[(1,)] == pytest.approx(0, abs=1e-6)
 
 def test_pid_broja1():
     """
