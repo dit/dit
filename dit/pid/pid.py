@@ -128,8 +128,8 @@ class BasePID(object):
 
         reds, pis = self._compute_mobius_inversion(reds=reds)
 
-        nx.set_node_attributes(self._lattice, 'red', reds)
-        nx.set_node_attributes(self._lattice, 'pi', pis)
+        nx.set_node_attributes(self._lattice, name='red', values=reds)
+        nx.set_node_attributes(self._lattice, name='pi', values=pis)
 
     def _compute_mobius_inversion(self, reds=None, pis=None):
         """
@@ -154,7 +154,7 @@ class BasePID(object):
         if pis is None:
             pis = {}
 
-        for node in nx.topological_sort(self._lattice, reverse=True):
+        for node in reversed(list(nx.topological_sort(self._lattice))):
             if node not in pis:
                 try:
                     pis[node] = reds[node] - sum(pis[n] for n in descendants(self._lattice, node))
@@ -353,7 +353,7 @@ class BaseIncompletePID(BasePID):
             Updated partial information values.
         """
         # everything below a redundancy of 0 is a redundany of 0
-        nodes = nx.topological_sort(self._lattice)
+        nodes = list(nx.topological_sort(self._lattice))
         while nodes:
             node = nodes.pop(0)
             if node in reds and np.isclose(0, reds[node]):
@@ -363,7 +363,7 @@ class BaseIncompletePID(BasePID):
                         nodes.remove(n)
 
         # everything above a redundancy of I(inputs, output) is I(inputs, output)
-        nodes = nx.topological_sort(self._lattice, reverse=True)
+        nodes = list(reversed(list(nx.topological_sort(self._lattice))))
         while nodes:
             node = nodes.pop(0)
             if node in reds and np.isclose(reds[node], self._total):
@@ -550,8 +550,8 @@ class BaseIncompletePID(BasePID):
             if node not in pis:
                 pis[node] = np.nan
 
-        nx.set_node_attributes(self._lattice, 'red', reds)
-        nx.set_node_attributes(self._lattice, 'pi', pis)
+        nx.set_node_attributes(self._lattice, name='red', values=reds)
+        nx.set_node_attributes(self._lattice, name='pi', values=pis)
 
     @BasePID.consistent.getter
     def consistent(self):

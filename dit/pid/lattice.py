@@ -97,11 +97,11 @@ def pid_lattice(variables):
         elif parent(b, a):
             lattice.add_edge(a, b)
 
-    for a, b in lattice.edges():
+    for a, b in list(lattice.edges()):
         if any(n > 2 for n in map(len, nx.all_simple_paths(lattice, a, b))):
             lattice.remove_edge(a, b)
 
-    lattice.root = nx.topological_sort(lattice)[0]
+    lattice.root = next(nx.topological_sort(lattice))
 
     return lattice
 
