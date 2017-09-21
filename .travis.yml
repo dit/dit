@@ -24,7 +24,7 @@ matrix:
       env: OPTIONAL_DEPS=true TRAVIS_PYTHON_VERSION="2.7"
     - os: osx
       language: generic
-      python: "3.5"
+      python: "3.6"
       env: OPTIONAL_DEPS=true TRAVIS_PYTHON_VERSION="3.6"
     - os: osx
       language: generic
