@@ -159,7 +159,7 @@ class BaseInformationPartition(object):
             Is[node] = sum((-1)**(len(rv)+1)*Hs[rv] for rv in nx.dfs_preorder_nodes(self._lattice, node))
 
         # Mobius inversion of the above, resulting in the Shannon atoms.
-        for node in nx.topological_sort(self._lattice)[:-1]:
+        for node in list(nx.topological_sort(self._lattice))[:-1]:
             kids = islice(nx.dfs_preorder_nodes(rlattice, node), 1, None)
             atoms[node] = Is[node] - sum(atoms[child] for child in kids)
 
