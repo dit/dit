@@ -403,7 +403,7 @@ They then define two partial information lattices, one quantified locally by :ma
 
 .. ipython::
 
-   In [21]: PID_PM(bivariates['pointwise unq'])
+   In [21]: PID_PM(bivariates['pnt. unq'])
    Out[21]:
    ╔════════╤════════╤════════╗
    ║ I_pm   │  I_r   │   pi   ║
