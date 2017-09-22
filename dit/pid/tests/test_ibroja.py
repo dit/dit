@@ -14,8 +14,8 @@ def test_ibroja1():
     """
     d = bivariates['redundant']
     uniques = i_broja(d, ((0,), (1,)), (2,))
-    assert uniques[(0,)] == pytest.approx(0, abs=1e-8)
-    assert uniques[(1,)] == pytest.approx(0, abs=1e-8)
+    assert uniques[(0,)] == pytest.approx(0, abs=1e-4)
+    assert uniques[(1,)] == pytest.approx(0, abs=1e-4)
 
 def test_ibroja2():
     """
@@ -23,8 +23,8 @@ def test_ibroja2():
     """
     d = bivariates['synergy']
     uniques = i_broja(d, ((0,), (1,)), (2,))
-    assert uniques[(0,)] == pytest.approx(0, abs=1e-8)
-    assert uniques[(1,)] == pytest.approx(0, abs=1e-8)
+    assert uniques[(1,)] == pytest.approx(0, abs=1e-4)
+    assert uniques[(0,)] == pytest.approx(0, abs=1e-4)
 
 def test_ibroja3():
     """
@@ -32,14 +32,14 @@ def test_ibroja3():
     """
     d = bivariates['cat']
     uniques = i_broja(d, ((0,), (1,)), (2,))
-    assert uniques[(0,)] == pytest.approx(1, abs=1e-8)
-    assert uniques[(1,)] == pytest.approx(1, abs=1e-8)
+    assert uniques[(0,)] == pytest.approx(1, abs=1e-4)
+    assert uniques[(1,)] == pytest.approx(1, abs=1e-4)
 
 def test_ibroja4():
     """
     Test ibroja on a non-unique (?) distribution.
     """
-    d = bivariates['pointwise unq']
+    d = bivariates['pnt. unq']
     uniques = i_broja(d, ((0,), (1,)), (2,))
     assert uniques[(0,)] == pytest.approx(0, abs=1e-4)
     assert uniques[(1,)] == pytest.approx(0, abs=1e-4)
@@ -50,10 +50,10 @@ def test_pid_broja1():
     """
     d = bivariates['diff']
     pid = PID_BROJA(d, ((0,), (1,)), (2,))
-    assert pid[((0,), (1,))] == pytest.approx(0.12255624891826589)
-    assert pid[((0,),)] == pytest.approx(0.18872187554086706)
-    assert pid[((1,),)] == pytest.approx(0.18872187554086706)
-    assert pid[((0, 1),)] == pytest.approx(0.0)
+    assert pid[((0,), (1,))] == pytest.approx(0.12255624891826589, abs=1e-4)
+    assert pid[((0,),)] == pytest.approx(0.18872187554086706, abs=1e-4)
+    assert pid[((1,),)] == pytest.approx(0.18872187554086706, abs=1e-4)
+    assert pid[((0, 1),)] == pytest.approx(0.0, abs=1e-4)
 
 def test_pid_broja2():
     """
@@ -63,11 +63,11 @@ def test_pid_broja2():
     pid = PID_BROJA(d, [[0], [1], [2]], [3])
     for atom in pid._lattice:
         if atom == ((0,), (1,), (2,)):
-            assert pid[atom] == pytest.approx(0.31127812445913305)
+            assert pid[atom] == pytest.approx(0.31127812445913305, abs=1e-4)
         elif atom == ((0, 1), (1, 2)):
-            assert pid[atom] == pytest.approx(0.5)
+            assert pid[atom] == pytest.approx(0.5, abs=1e-4)
         else:
-            assert pid[atom] == pytest.approx(0.0)
+            assert pid[atom] == pytest.approx(0.0, abs=1e-4)
 
 def test_pid_broja3():
     """

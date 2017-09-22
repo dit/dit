@@ -35,7 +35,7 @@ def test_pid_gk1():
     """
     Test iwedge on a generic distribution.
     """
-    d = bivariates['imperfect rdn']
+    d = bivariates['imp. rdn']
     pid = PID_GK(d, ((0,), (1,)), (2,))
     assert pid[((0,), (1,))] == pytest.approx(0.0)
     assert pid[((0,),)] == pytest.approx(1.0)
