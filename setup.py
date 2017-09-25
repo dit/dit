@@ -163,6 +163,8 @@ def main():
         with open('requirements_lt33.txt') as reqs:
             install_requires.extend(reqs.read().splitlines())
 
+    python_requires = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, <4"
+
     packages = [
         'dit',
         'dit.algorithms',
@@ -188,6 +190,7 @@ def main():
         'version':              version,
         'url':                  "http://dit.io",
 
+        'python_requires':      python_requires,
         'packages':             packages,
         'package_data':         package_data,
         'provides':             ['dit'],
