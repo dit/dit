@@ -371,10 +371,10 @@ This decomposition also displays an interesting phenomena, that of *subadditive 
    ╚════════╧════════╧════════╝
 
 .. py:module:: dit.pid.idep
-:math:`\I_{dep}`
-----------------
+:math:`\Idep{\bullet}`
+----------------------
 
-James et al have developed a method of quantifying unique information based on the :ref:`Dependency Decomposition`. Unique information from variable :math:`X_i` is evaluated as the least change in sources-target mutual information when adding the constraint :math:`X_i Y`.
+James et al :cite:`james2017unique` have developed a method of quantifying unique information based on the :ref:`Dependency Decomposition`. Unique information from variable :math:`X_i` is evaluated as the least change in sources-target mutual information when adding the constraint :math:`X_i Y`.
 
 .. ipython::
 
@@ -393,7 +393,7 @@ James et al have developed a method of quantifying unique information based on t
 :math:`\Ipm{\bullet}`
 ---------------------
 
-Also taking a pointwise view, Finn & Lizier's :math:`\Ipm{\bullet}` instead splits the pointwise mutual information into two components:
+Also taking a pointwise view, Finn & Lizier's :math:`\Ipm{\bullet}` :cite:`finn2017` instead splits the pointwise mutual information into two components:
 
 .. math::
 

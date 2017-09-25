@@ -67,21 +67,26 @@ def i_ccs(d, inputs, output):
 
     pmis = {tuple(marg): pmi(marg[0], marg[1]) for marg in marginals[1:]}
 
+    inputs_dist = sub_dists[tuple(vars[:-1])]
+    output_dist = sub_dists[(vars[-1],)]
+    joint_pmis = {e: np.log2(d[e]/(inputs_dist[e[:-1]]*output_dist[(e[-1],)])) for e in d.outcomes}
+
+    coinfos = {e: np.log2(np.prod(
+        [sub_dists[sub_var][tuple(e[i] for i in flatten(sub_var))] ** ((-1) ** len(sub_var)) for sub_var in sub_vars]))
+               for e in d.outcomes}
+
     # fix the sign of things close to zero
     for pmi in pmis.values():
         for e, val in pmi.items():
             if np.isclose(val, 0.0):
                 pmi[e] = 0.0
-
-    coinfos = {e: np.log2(np.prod(
-        [sub_dists[sub_var][tuple(e[i] for i in flatten(sub_var))] ** ((-1) ** len(sub_var)) for sub_var in sub_vars]))
-               for e in d.outcomes}
     for e, val in coinfos.items():
         if np.isclose(val, 0.0):
             coinfos[e] = 0.0
 
     i = sum(d[e] * coinfos[e] for e in d.outcomes if
-            all(np.sign(coinfos[e]) == np.sign(pmi[tuple(e[i] for i in marg)]) for marg, pmi in pmis.items()))
+            all(np.sign(coinfos[e]) == np.sign(pmi[tuple(e[i] for i in marg)]) for marg, pmi in pmis.items()) \
+            and np.sign(coinfos[e]) == np.sign(joint_pmis[e]))
 
     return i
 
