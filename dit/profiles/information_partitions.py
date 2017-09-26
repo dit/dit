@@ -192,7 +192,7 @@ class BaseInformationPartition(object):
         Represent using the str().
         """
         if ditParams['repr.print']:
-            return self.string()
+            return self.to_string()
 
     def __str__(self):
         """
