@@ -11,3 +11,15 @@ from .iccs import PID_CCS
 from .idep import PID_dep
 from .idownarrow import PID_downarrow
 from .ipm import PID_PM
+
+__all_pids = [
+    PID_MMI,
+    PID_downarrow,
+    PID_GK,
+    PID_WB,
+    PID_CCS,
+    PID_PM,
+    PID_Proj,
+    PID_BROJA,
+    PID_dep,
+]
