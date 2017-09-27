@@ -193,6 +193,8 @@ class BaseInformationPartition(object):
         """
         if ditParams['repr.print']:
             return self.to_string()
+        else:
+            return super(BaseInformationPartition, self).__repr__()
 
     def __str__(self):
         """
@@ -343,6 +345,8 @@ class DependencyDecomposition(object):
         """
         if ditParams['repr.print']:
             return self.to_string()
+        else:
+            return super(DependencyDecomposition, self).__repr__()
 
     def __str__(self):
         """
