@@ -19,9 +19,16 @@ from distutils.command import install_data
 
 _version_re = re.compile(r'__version__\s+=\s+(.*)')
 
+NAME = "dit"
+AUTHOR = "Humans"
+EMAIL = "admin@dit.io"
+URL = "http://dit.io"
+
 with open('dit/__init__.py', 'rb') as f:
-    version = str(ast.literal_eval(_version_re.search(
+    VERSION = str(ast.literal_eval(_version_re.search(
         f.read().decode('utf-8')).group(1)))
+
+DESCRIPTION = "Python package for information theory."
 
 class my_install_data(install_data.install_data):
     # A custom install_data command, which will install it's files
@@ -165,34 +172,31 @@ def main():
 
     python_requires = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, <4"
 
-    packages = find_packages(exclude=['site', 'examples', 'docs', 'tests*']),
+    packages = find_packages(exclude=['site', 'examples', 'docs', '*tests*'])
 
     # Tests
     # This includes for bdist only. sdist uses MANIFEST.in
     package_data = dict(zip(packages, [['tests/*.py']]*len(packages)))
 
-    kwds = {
-        'name':                 "dit",
-        'version':              version,
-        'url':                  "http://dit.io",
-
-        'python_requires':      python_requires,
-        'packages':             packages,
-        'package_data':         package_data,
-        'provides':             ['dit'],
-        'install_requires':     install_requires,
-        'ext_modules':          ext_modules,
-        'cmdclass':             cmdclass,
-        'data_files':           data_files,
-        'include_package_data': True,
-
-        'author':               "Humans",
-        'author_email':         "admin@dit.io",
-        'description':          "Python package for information theory.",
-        'long_description':     open('README.rst').read(),
-        'license':              "BSD",
-
-        'classifiers':          [
+    setup(
+        name=NAME,
+        version=VERSION,
+        url=URL,
+        python_requires=python_requires,
+        packages=packages,
+        package_data=package_data,
+        provides=["dit"],
+        install_requires=install_requires,
+        ext_modules=ext_modules,
+        cmdclass=cmdclass,
+        data_files=data_files,
+        include_package_data=True,
+        author=AUTHOR,
+        author_email=EMAIL,
+        description=DESCRIPTION,
+        long_description=open("README.rst").read(),
+        license="BSD",
+        classifiers=[
             "Intended Audience :: Science/Research",
             "License :: OSI Approved :: BSD License",
             "Programming Language :: Python :: 2.7",
@@ -203,10 +207,8 @@ def main():
             "Topic :: Scientific/Engineering",
             "Topic :: Scientific/Engineering :: Mathematics",
             "Topic :: Scientific/Engineering :: Physics",
-        ]
-    }
-
-    setup(**kwds)
+        ],
+    )
 
 if __name__ == '__main__':
     if sys.argv[-1] == 'setup.py':
