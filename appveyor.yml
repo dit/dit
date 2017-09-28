@@ -40,7 +40,7 @@ build_script:
   - SET PATH=C:\Py;C:\Py\Scripts;C:\Py\Library\bin;%PATH%
   - conda config --set always_yes yes
 #  - conda update conda
-  - conda install scipy
+  - conda install cffi, scipy
   - ps: if ($env:CYTHON -eq '1') { conda install cython }
   - ps: if ($env:CYTHON -eq '1') { python setup.py build }
   - pip install .
