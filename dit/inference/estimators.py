@@ -10,14 +10,19 @@ try: # cython
     from . import counts_from_data
     def get_counts(data, length):
         """
+        Count the occurrences of all words of `length` in `data`.
 
         Parameters
         ----------
-        data
-        length
+        data : iterable
+            The sequence of samples
+        length : int
+            The length to group samples into.
 
         Returns
         -------
+        counts : np.array
+            Array with the count values.
 
         Notes
         -----
@@ -31,14 +36,19 @@ except ImportError: # no cython
     from boltons.iterutils import windowed_iter
     def get_counts(data, length):
         """
+        Count the occurrences of all words of `length` in `data`.
 
         Parameters
         ----------
-        data
-        length
+        data : iterable
+            The sequence of samples
+        length : int
+            The length to group samples into.
 
         Returns
         -------
+        counts : np.array
+            Array with the count values.
 
         Notes
         -----
@@ -51,6 +61,23 @@ except ImportError: # no cython
 
 def entropy_0(data, length=1):
     """
+    Estimate the entropy of length `length` subsequences in `data`.
+
+    Parameters
+    ----------
+    data : iterable
+        An iterable of samples.
+    length : int
+        The length to group samples into.
+
+    Returns
+    -------
+    h0 : float
+        An estimate of the entropy.
+
+    Notes
+    -----
+    This returns the naive estimate of the entropy.
     """
     counts = get_counts(data, length)
     probs = counts/counts.sum()
@@ -60,6 +87,23 @@ def entropy_0(data, length=1):
 
 def entropy_1(data, length=1):
     """
+    Estimate the entropy of length `length` subsequences in `data`.
+
+    Parameters
+    ----------
+    data : iterable
+        An iterable of samples.
+    length : int
+        The length to group samples into.
+
+    Returns
+    -------
+    h0 : float
+        An estimate of the entropy.
+
+    Notes
+    -----
+    This returns a less naive estimate of the entropy.
     """
     counts = get_counts(data, length)
     total = counts.sum()
@@ -72,6 +116,23 @@ def entropy_1(data, length=1):
 
 def entropy_2(data, length=1):
     """
+    Estimate the entropy of length `length` subsequences in `data`.
+
+    Parameters
+    ----------
+    data : iterable
+        An iterable of samples.
+    length : int
+        The length to group samples into.
+
+    Returns
+    -------
+    h0 : float
+        An estimate of the entropy.
+
+    Notes
+    -----
+    This returns a bias-corrected estimate of the entropy.
     """
     counts = get_counts(data, length)
     total = counts.sum()
@@ -84,9 +145,3 @@ def entropy_2(data, length=1):
     h2 = np.log2(np.e)*(counts/total*(digamma_N - digamma(counts) + log2 + alt_terms)).sum()
 
     return h2
-
-
-def conditional_mutual_information_ksg():
-    """
-    """
-    pass
