@@ -55,7 +55,7 @@ except ImportError: # no cython
         This function uses `collections.Counter` and `boltons.iterutils.windowed_iter`.
         """
         counts = Counter(windowed_iter(data, length))
-        counts = np.array(counts.values())
+        counts = np.array(list(counts.values()))
         return counts
 
 
