@@ -161,7 +161,9 @@ def main():
     ext_modules = cython_modules + \
                   other_modules
 
-    data_files = ()
+    data_files = [
+        "dit/inference/counts.h",
+    ]
 
     with open('requirements.txt') as reqs:
         install_requires = reqs.read().splitlines()
