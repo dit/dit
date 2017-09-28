@@ -42,3 +42,4 @@ docs/images/*.png
 .idea
 .cache
 .hypothesis
+.pypirc
