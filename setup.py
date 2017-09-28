@@ -12,7 +12,7 @@ import re
 import sys
 import warnings
 
-from setuptools import setup
+from setuptools import find_packages, setup
 
 from distutils.core import Extension
 from distutils.command import install_data
@@ -165,21 +165,7 @@ def main():
 
     python_requires = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, <4"
 
-    packages = [
-        'dit',
-        'dit.algorithms',
-        'dit.divergences',
-        'dit.example_dists',
-        'dit.inference',
-        'dit.math',
-        'dit.multivariate',
-        'dit.other',
-        'dit.pid',
-        'dit.pid.distributions',
-        'dit.profiles',
-        'dit.shannon',
-        'dit.utils',
-    ]
+    packages = find_packages(exclude=['site', 'examples', 'docs', 'tests*']),
 
     # Tests
     # This includes for bdist only. sdist uses MANIFEST.in
