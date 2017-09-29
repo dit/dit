@@ -2,7 +2,7 @@
 Various methods for binning real-valued data.
 """
 
-from iterutils import pairwise
+from boltons.iterutils import pairwise
 
 import numpy as np
 
@@ -11,21 +11,21 @@ __all__ = ['binned']
 def binned(ts, bins=2, style='maxent'):
     """
     Discretize a real-valued list.
-    
+
     Parameters
     ----------
     ts : ndarray
         The real-valued array to bin
     bins : int
         The number of bins to map the data into.
-    style : str
-        The method of discretizing the data.
+    style : str, {'maxent', 'uniform'}
+        The method of discretizing the data. Defaults to 'maxent'.
 
     Returns
     -------
     symb : ndarray
         The discretized time-series.
-    
+
     Raises
     ------
     ValueError
@@ -42,7 +42,7 @@ def binned(ts, bins=2, style='maxent'):
 def uniform_binning(ts, bins):
     """
     Discretizes the time-series in to equal-width bins.
-    
+
     Parameters
     ----------
     ts : ndarray
@@ -60,7 +60,7 @@ def uniform_binning(ts, bins):
 
 def maxent_binning(ts, bins):
     """
-    
+
     Parameters
     ----------
     ts : ndarray

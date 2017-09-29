@@ -4,15 +4,13 @@ The I_ccs measure, as proposed by Ince.
 
 from __future__ import division
 
-from iterutils import powerset
-
 import numpy as np
 
 from .pid import BasePID
 
 from .. import modify_outcomes
 from ..algorithms import maxent_dist
-from ..utils import flatten
+from ..utils import flatten, powerset
 
 
 def i_ccs(d, inputs, output):

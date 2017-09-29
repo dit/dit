@@ -5,14 +5,14 @@ Downloads:
    Coming soon.
 
 Dependencies:
-   * Python 2.7, 3.2, 3.3, 3.4, or 3.5
+   * Python 2.7, 3.2, 3.3, 3.4, 3.5, or 3.6
    * numpy
-   * iterutils
    * six
    * contextlib2
    * prettytable
    * networkx
    * debtcollector
+   * boltons
 
 Optional Dependencies:
    * cython

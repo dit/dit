@@ -4,12 +4,11 @@ Tests for dit.util.information_partitions.
 import pytest
 
 from itertools import islice
-from iterutils import powerset
 
-from dit.multivariate import coinformation as I, dual_total_correlation as B
-from dit.utils import partitions
-from dit.profiles.information_partitions import *
 from dit.example_dists import n_mod_m
+from dit.multivariate import coinformation as I, dual_total_correlation as B
+from dit.profiles.information_partitions import *
+from dit.utils import partitions, powerset
 
 def all_info_measures(vars):
     """

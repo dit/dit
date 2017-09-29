@@ -10,7 +10,6 @@ from abc import ABCMeta, abstractmethod
 from collections import defaultdict
 
 from itertools import combinations, islice, permutations
-from iterutils import powerset
 
 import prettytable
 
@@ -21,6 +20,7 @@ from ..algorithms import maxent_dist
 from ..math import close
 from ..other import extropy
 from ..shannon import entropy
+from ..utils import powerset
 
 __all__ = ['ShannonPartition',
            'ExtropyPartition',
