@@ -44,8 +44,6 @@ def get_lp_form(dist, ents):
 
     A = []
     b = []
-    c = []
-    bounds = []
 
     for pa_V, pa_W in product(pa, pa):
         if pa_V == pa_W:
@@ -127,6 +125,7 @@ class MUIProfile(BaseProfile):
 
     xlabel = "scale [bits]"
     ylabel = "marginal utility of information"
+    align = 'edge'
 
     def _compute(self):
         """
@@ -150,6 +149,7 @@ class MUIProfile(BaseProfile):
     def draw(self, ax=None): # pragma: no cover
         ax = super(MUIProfile, self).draw(ax=ax)
         pnts = np.arange(int(max(self.profile.keys()) + self.widths[-1]) + 1)
+        print(pnts)
         ax.set_xticks(pnts)
         ax.set_xticklabels(pnts)
         return ax

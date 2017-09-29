@@ -70,6 +70,7 @@ class BaseProfile(object):
 
     xlabel = 'scale'
     ylabel = 'information [bits]'
+    align = 'center'
 
     def __init__(self, dist):
         """
@@ -105,17 +106,15 @@ class BaseProfile(object):
         ax : axis
             The axis with profile.
         """
-        import matplotlib.pyplot as plt
-
         if ax is None:
+            import matplotlib.pyplot as plt
             ax = plt.figure().gca()
 
         # pylint: disable=no-member
-        left, height = zip(*self.profile.items())
-        ax.bar(left, height, width=self.widths)
+        left, height = zip(*sorted(self.profile.items()))
+        ax.bar(left, height, width=self.widths, align=self.align)
 
-        ax.set_xticks([i+0.5 for i in self.profile])
-        ax.set_xticklabels([str(i) for i in self.profile])
+        ax.set_xticks(sorted(self.profile.keys()))
 
         ax.set_xlabel(self.xlabel)
         ax.set_ylabel(self.ylabel)
