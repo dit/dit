@@ -36,6 +36,7 @@ def i_rav(d, inputs, output):
     #print(f"input_outcome[1]: {outcomes[1][:-1]}")
 
     parts = ()
+    #extended_dists = []
     for input_part in input_parts:
         #print(f"input part: {input_part}")
         part = ()
@@ -47,6 +48,7 @@ def i_rav(d, inputs, output):
             #print(f"part element: {part_element}")
             part += (part_element,)
         parts += (part,)
+        #extended_dists += [insert_rvf(d, bf.from_partition(part))]
         #print(f"parts: {parts}")
 
     bf = RVFunctions(d)
