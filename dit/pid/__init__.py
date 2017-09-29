@@ -17,9 +17,9 @@ from .iskar import (PID_uparrow,
                     PID_triple_downarrow,
                     )
 from .ipm import PID_PM
-from .iaux import PID_aux
+from .irav import PID_RAV
 from .hcs import PED_CS
-from .distributions import bivariates, trivariates
+from .distributions import bivariates, trivariatestional outputs. Capitalizing acronym to RAV.
 
 __all_pids = [
     PID_MMI,
@@ -36,5 +36,5 @@ __all_pids = [
     PID_Proj,
     PID_BROJA,
     PID_dep,
-    PID_rav
+    PID_RAV,
 ]
