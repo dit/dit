@@ -2,30 +2,29 @@ Documentation:
    http://docs.dit.io
 
 Downloads:
-   Coming soon.
+   https://pypi.org/project/dit/
 
 Dependencies:
    * Python 2.7, 3.2, 3.3, 3.4, 3.5, or 3.6
-   * numpy
-   * six
+   * boltons
    * contextlib2
+   * debtcollector
    * prettytable
    * networkx
-   * debtcollector
-   * boltons
+   * numpy
+   * scipy
+   * six
 
 Optional Dependencies:
    * cython
-   * cvxopt
    * numdifftools
-   * scipy
 
 Install:
-   Until ``dit`` is available on PyPI, the easiest way to install is:
+   The easiest way to install is:
 
    .. code-block:: bash
 
-      pip install git+https://github.com/dit/dit/#egg=dit
+      pip install dit
 
    Alternatively, you can clone this repository, move into the newly created
    ``dit`` directory, and then install the package:

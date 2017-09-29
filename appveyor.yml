@@ -51,6 +51,9 @@ test_script:
   # installed library.
   # - "pushd %TEMP%"
   - ps: if ($env:CYTHON -eq '1')
-          { pytest }
+          { pytest --cov=dit }
         else
-          { pytest -m "not cython" }
+          { pytest -m "not cython" --cov=dit }
+
+after_test:
+  - codecov

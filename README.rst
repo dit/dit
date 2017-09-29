@@ -6,7 +6,7 @@ Documentation:
    http://docs.dit.io
 
 Downloads:
-   Coming soon.
+   https://pypi.org/project/dit/
 
 Dependencies:
    * Python 2.7, 3.3, 3.4, 3.5, or 3.6
@@ -16,26 +16,26 @@ Dependencies:
    * networkx
    * numpy
    * prettytable
+   * scipy
    * six
 
 Optional Dependencies:
    * cython
    * numdifftools
-   * scipy
 
 Note:
    The cython extensions are currently not supported on windows. Please install
    using the ``--nocython`` option.
 
 Install:
-   Until ``dit`` is available on PyPI, the easiest way to install is:
+   The easiest way to install is:
 
    .. code-block:: bash
 
-      pip install git+https://github.com/dit/dit/#egg=dit
+      pip install dit
 
-   Alternatively, you can clone this repository, move into the newly created ``dit`` directory,
-   and then install the package. Be sure to include the period (.) in the install command:
+   Alternatively, you can clone this repository, move into the newly created
+   ``dit`` directory, and then install the package:
 
    .. code-block:: bash
 
@@ -178,7 +178,7 @@ Enjoy!
    :alt: Continuous Integration Status
 
 .. |build_windows| image:: https://ci.appveyor.com/api/projects/status/idb5hc5gm59whf8m?svg=true
-   :target: https://ci.appveyor.com/project/dit/dit
+   :target: https://ci.appveyor.com/project/Autoplectic/dit
    :alt: Continuous Integration Status (windows)
 
 .. |codecov| image:: https://codecov.io/gh/dit/dit/branch/master/graph/badge.svg

@@ -178,13 +178,9 @@ script:
     fi
 
 after_success:
-  # We must run coveralls from the git repo. But we ran tests from the
-  # installed directory. The .coverage file looks like it contains absolute
-  # paths, but coveralls does not seem to care.
   - cp .coverage $TRAVIS_BUILD_DIR
   - cd $TRAVIS_BUILD_DIR
   - python fixcoverage.py ".*/dit/" "$TRAVIS_BUILD_DIR/dit/"
-  - coveralls
   - codecov
 
 notifications:

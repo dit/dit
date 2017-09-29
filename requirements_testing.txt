@@ -1,5 +1,4 @@
 coverage
-coveralls
 codecov
 hypothesis
 git+https://github.com/pytest-dev/pytest/#egg=pytest

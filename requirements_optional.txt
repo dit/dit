@@ -4,4 +4,3 @@ ipython
 matplotlib
 numdifftools
 python-ternary
-scipy >= 0.15.0
