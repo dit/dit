@@ -20,6 +20,7 @@ Dependencies:
    * six
 
 Optional Dependencies:
+   * colorama
    * cython
    * numdifftools
 

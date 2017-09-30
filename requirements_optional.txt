@@ -1,3 +1,4 @@
+colorama
 Cython
 hypothesis
 ipython

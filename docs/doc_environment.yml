@@ -1,6 +1,7 @@
 name: dit_env
 
 dependencies:
+  - colorama
   - contextlib2
   - matplotlib
   - numpy >= 1.6
