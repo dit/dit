@@ -234,6 +234,7 @@ macros = r'''
 \newcommand{\GCRE}[1] {\op{\mathcal{E^\prime}}{#1}}
 \newcommand{\RE}[2]   {\op{H_{#1}}{#2}}
 \newcommand{\TE}[2]   {\op{S_{#1}}{#2}}
+\newcommand{\L}[1]    {\op{L}{#1}}
 
 \newcommand{\xH}[1]   {\op{xH}{#1}}
 \newcommand{\DKL}[1]  {\op{D_{KL}}{#1}}

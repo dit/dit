@@ -48,6 +48,7 @@ MathJax.Hub.Config({
             M: ["\\op{M}{#1}", 1],
             P: ["\\op{P}{#1}", 1],
             X: ["\\op{X}{#1}", 1],
+            L: ["\\op{L}{#1}", 1],
             CRE: ["\\op{\\mathcal{E}}{#1}", 1],
             GCRE: ["\\op{\\mathcal{E^\\prime}}{#1}", 1],
             RE: ["\\op{H_{#1}}{#2}", 2],
