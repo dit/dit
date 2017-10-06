@@ -35,6 +35,12 @@ dit/math/_*.html
 # ignore rope's project directory...
 .ropeproject
 
+# vscode
+.vscode
+
+# vim
+.swp
+
 # ignore the documentation build directory
 docs/_build/
 docs/images/idiagrams.pdf
