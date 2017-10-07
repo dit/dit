@@ -413,16 +413,16 @@ They then define two partial information lattices, one quantified locally by :ma
    ║  {1}   │ 0.5000 │ 0.5000 ║
    ║ {0}{1} │ 0.0000 │ 0.0000 ║
    ╚════════╧════════╧════════╝
-
+   
 .. py:module:: dit.pid.irav
-:math:`\I[RAV]{\bullet}`
+:math:`\Irav{\bullet}`
 ---------------------
 
-Taking a functional perspective as in \IGK, \I[RAV] defines a bivariate redundancy as the maximum coinformation between two sources :math:`X_0, X_1', a target :math:`Y`, and a deterministic function of the inputs :math:`f(X_0,X_1)`.
+Taking a functional perspective as in :math:`\Iwedge`, :math:`\Irav` defines bivariate redundancy as the maximum coinformation between the two sources :math:`X_0, X_1', a target :math:`Y`, and a deterministic function of the inputs :math:`f(X_0,X_1)`.
 
 .. math::
 
-  \I[RAV]{\{0\}\{1\}} = \max_f\left(\I{X_0\!:\!X_1\!:\!Y\!:\!f(X_0,X_1)}
+  \Irav{X_{0:2} : Y} = \max_f\left(\I{X_0\!:\!X_1\!:\!Y\!:\!f(X_0,X_1)}
 
 This measure is designed to exploit the conflation of synergy and redundancy in the three variable coinformation: :math:`\I{X_0\!:\!X_1\!:\!Y} = R - S`.
 
@@ -438,6 +438,7 @@ This measure is designed to exploit the conflation of synergy and redundancy in 
   ║  {1}   │ 0.5000 │ 0.5000 ║
   ║ {0}{1} │ 0.0000 │ 0.0000 ║
   ╚════════╧════════╧════════╝
+<<<<<<< HEAD
 
 Partial Entropy Decomposition
 =============================

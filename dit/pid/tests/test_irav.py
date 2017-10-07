@@ -31,15 +31,15 @@ def test_irav3():
     red = i_rav(d, ((0,), (1,)), (2,))
     assert red == pytest.approx(0)
 
-def test_irav3():
+def test_irav4():
     """
     Test irav on pointwise unique distribution.
     """
-    d = bivariates['pwu']
+    d = bivariates['pnt. unq']
     red = i_rav(d, ((0,), (1,)), (2,))
     assert red == pytest.approx(0)
 
-def test_irav4():
+def test_irav5():
     """
     Test irav on a bivariate distribution without concensus.
     """

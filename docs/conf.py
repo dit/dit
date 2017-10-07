@@ -253,6 +253,7 @@ macros = r'''
 \newcommand{\Idep}[1] {\op{I_{dep}}{#1}}
 \newcommand{\Hpart}[1] {\op{H_{\partial}}{#1}}
 \newcommand{\Hcs}[1] {\op{H_{cs}}{#1}}
+\newcommand{\Irav}[1] {\op{I_{RAV}}{#1}}
 
 \newcommand{\meet} {\curlywedge}
 \newcommand{\join} {\curlyvee}
