@@ -44,7 +44,6 @@ def h_cs(d, inputs, output=None):
     if n_variables>2:
         marginals = list(combinations(range(n_variables), 2))
         d = maxent_dist(d, marginals, 'indices')
-
     d = modify_outcomes(d, lambda o: tuple(o))
 
     # calculate pointwise co-information
@@ -56,16 +55,14 @@ def h_cs(d, inputs, output=None):
         for sub_var in sub_vars:
             P = sub_dists[sub_var][tuple([e[i] for i in flatten(sub_var)])]
             coinfos[e] = coinfos[e] + np.log2(P)*((-1) ** (len(sub_var)))
-            # QUESTION: why doesn't this one work? in the equation n_variables should appear?
-            # coinfos[e] = coinfos[e] + np.log2(P)*((-1) ** (n_variables-len(sub_var)))
 
     # fix the sign of things close to zero
     for e, val in coinfos.items():
         if np.isclose(val, 0.0):
             coinfos[e] = 0.0
-    # sum not np.sum?
-    hcs = sum(d[e] * coinfos[e] for e in d.outcomes if coinfos[e]>0.0)
 
+    # sum positive pointwise terms
+    hcs = sum(d[e] * coinfos[e] for e in d.outcomes if coinfos[e]>0.0)
     return hcs
 
 class PED_CS(BasePID):
@@ -77,9 +74,6 @@ class PED_CS(BasePID):
     _name = "H_cs"
     _measure = staticmethod(h_cs)
 
-    # QUESTION: make this just do all variables in a distribution or allow to specify? 
-    # would have thought it would be better to coalesce once at instantiation 
-    # rather than repeated in every measure function call?
     def __init__(self, dist, inputs=None):
         """
         Parameters
@@ -89,8 +83,6 @@ class PED_CS(BasePID):
         inputs : iter of iters, None
             The set of variables to include. If None, `dist.rvs` is used.
         """
-        # QUESTION: if selecting with inputs I would here marginalise the set diff of
-        # dist.rvs and inputs
         self._dist = dist
         
         if inputs is None:
