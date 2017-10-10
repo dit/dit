@@ -5,58 +5,7 @@ from __future__ import division
 import numpy as np
 from scipy.special import digamma
 
-
-try: # cython
-    from . import counts_from_data
-    def get_counts(data, length):
-        """
-        Count the occurrences of all words of `length` in `data`.
-
-        Parameters
-        ----------
-        data : iterable
-            The sequence of samples
-        length : int
-            The length to group samples into.
-
-        Returns
-        -------
-        counts : np.array
-            Array with the count values.
-
-        Notes
-        -----
-        This function utilizes the cython-implemented `counts_from_data`.
-        """
-        counts = counts_from_data(data, 0, length)[1][0]
-        return counts
-
-except ImportError: # no cython
-    from collections import Counter
-    from boltons.iterutils import windowed_iter
-    def get_counts(data, length):
-        """
-        Count the occurrences of all words of `length` in `data`.
-
-        Parameters
-        ----------
-        data : iterable
-            The sequence of samples
-        length : int
-            The length to group samples into.
-
-        Returns
-        -------
-        counts : np.array
-            Array with the count values.
-
-        Notes
-        -----
-        This function uses `collections.Counter` and `boltons.iterutils.windowed_iter`.
-        """
-        counts = Counter(windowed_iter(data, length))
-        counts = np.array(list(counts.values()))
-        return counts
+from .counts import get_counts
 
 
 def entropy_0(data, length=1):

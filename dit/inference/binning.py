@@ -74,7 +74,7 @@ def maxent_binning(ts, bins):
         The discretized time-series.
     """
     symb = ts.copy()
-    percentiles = np.percentile(symb, [100*i/bins for i in xrange(bins+1)])
+    percentiles = np.percentile(symb, [100*i/bins for i in range(bins+1)])
     percentiles[-1] += 1e-12
     for i, (a, b) in enumerate(pairwise(percentiles)):
         symb[(a <= ts) & (ts < b)] = i
