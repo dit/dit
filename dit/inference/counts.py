@@ -31,6 +31,8 @@ except ImportError: # no cython
     from collections import Counter
     from boltons.iterutils import windowed_iter
 
+    import numpy as np
+
     def get_counts(data, length):
         """
         Count the occurrences of all words of `length` in `data`.
@@ -98,5 +100,5 @@ except ImportError: # no cython
 
         if base is not None:
             dist.set_base(base)
-            
+
         return dist
