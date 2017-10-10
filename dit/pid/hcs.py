@@ -88,6 +88,8 @@ class PED_CS(BasePID):
         if inputs is None:
             inputs = dist.rvs
 
+        self._red_string = "H_r"
+        self._pi_string = "H_d"
         self._inputs = tuple(map(tuple, inputs))
         self._output = None
         self._lattice = pid_lattice(self._inputs)
