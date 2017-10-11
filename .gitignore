@@ -39,7 +39,8 @@ dit/math/_*.html
 .vscode
 
 # vim
-.swp
+*.swp
+*.swo
 
 # ignore the documentation build directory
 docs/_build/
