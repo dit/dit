@@ -72,7 +72,7 @@ except ImportError: # no cython
 
         """
         counts = Counter(windowed_iter(data, hLength+fLength))
-        cond_counts = defaultdict(defaultdict(int))
+        cond_counts = defaultdict(lambda: defaultdict(int))
         for word, count in counts.items():
             cond_counts[word[:hLength]][word[hLength:]] += count
 
