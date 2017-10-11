@@ -83,7 +83,7 @@ except ImportError: # no cython
 
         cCounts = np.empty((len(histories), len(alphabet)**fLength))
         for i, hist in enumerate(histories):
-            for j, future in enumerate(product(alphabet, repeat=fLenfth)):
+            for j, future in enumerate(product(alphabet, repeat=fLength)):
                 cCounts[i, j] = cond_counts[hist][future]
 
         hCounts = cCounts.sum(axis=1)
