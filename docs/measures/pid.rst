@@ -417,7 +417,7 @@ They then define two partial information lattices, one quantified locally by :ma
 Partial Entropy Decomposition
 =============================
 
-Ince :cite:`ince2017ped` proposed applying the PID framework to decompose multivariate entropy (without considering information about a separate target variable). This *partial entropy decomposition* (PED), seeks to partition a mutlivariate entropy :math:`\H{X_0,X_1,\ldots}` among the antichains of the variables. The PED perspective shows that bivariate mutual information is equal to the difference between redundant entropy and synergistic entropy.
+Ince :cite:`ince2017partial` proposed applying the PID framework to decompose multivariate entropy (without considering information about a separate target variable). This *partial entropy decomposition* (PED), seeks to partition a mutlivariate entropy :math:`\H{X_0,X_1,\ldots}` among the antichains of the variables. The PED perspective shows that bivariate mutual information is equal to the difference between redundant entropy and synergistic entropy.
 
 .. math::
 
@@ -427,13 +427,13 @@ Ince :cite:`ince2017ped` proposed applying the PID framework to decompose multiv
 :math:`\Hcs{\bullet}`
 ----------------------
 
-Taking a pointwise point of view, following :math:`\Iccs{\bullet}`, Ince has proposed a measure of redundant entropy based on the :ref:`coinformation` :cite:`ince2017ped`:
+Taking a pointwise point of view, following :math:`\Iccs{\bullet}`, Ince has proposed a measure of redundant entropy based on the :ref:`coinformation` :cite:`ince2017partial`:
 
 .. math::
 
    \Hcs{X_{0:n}} = \sum p(x_0, \ldots, x_n) \I{x_0 : \ldots : x_n}~~\textrm{if}~~(\I{x_0 : \ldots : x_n} > 0)
 
-While this measure behaves intuitively in many examples, it also assigns negative values to some partial entropy atoms in some instances. However, Ince :cite:`ince2017ped` argues that concepts such as mechanistic information redundnacy (non-zero information redundancy between independent predictors, c.f. AND) necessitate negative partial entropy terms.
+While this measure behaves intuitively in many examples, it also assigns negative values to some partial entropy atoms in some instances. However, Ince :cite:`ince2017partial` argues that concepts such as mechanistic information redundnacy (non-zero information redundancy between independent predictors, c.f. AND) necessitate negative partial entropy terms.
 
 Like :math:`\Iccs{\bullet}`,  :math:`\Hcs{\bullet}` is also subadditive.
 
