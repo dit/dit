@@ -5,8 +5,9 @@ try: # cython
 
 except ImportError: # no cython
 
-    from collections import Counter, defaultdict
     from boltons.iterutils import windowed_iter
+    from collections import Counter, defaultdict
+    from itertools import product
 
     import numpy as np
 
