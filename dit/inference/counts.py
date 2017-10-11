@@ -123,13 +123,12 @@ except ImportError: # no cython
         if base is None:
             base = ditParams['base']
 
-        counts = get_counts(d, L)
+        words, _, counts, _ = counts_from_data(d, L, 0)
 
         # We turn the counts to probabilities
-        total = sum(counts)
-        dist = {e: count/total for e, count in counts.items()}
+        pmf = counts/counts.sum()
 
-        dist = Distribution(dist, trim=trim)
+        dist = Distribution(words, pmf, trim=trim)
 
         if base is not None:
             dist.set_base(base)
