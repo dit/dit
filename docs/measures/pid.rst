@@ -403,13 +403,49 @@ They then define two partial information lattices, one quantified locally by :ma
 
 .. ipython::
 
-   In [21]: PID_PM(bivariates['pnt. unq'])
-   Out[21]:
+   In [22]: PID_PM(bivariates['pnt. unq'])
+   Out[22]:
    ╔════════╤════════╤════════╗
    ║ I_pm   │  I_r   │   pi   ║
    ╟────────┼────────┼────────╢
    ║ {0:1}  │ 1.0000 │ 0.0000 ║
    ║  {0}   │ 0.5000 │ 0.5000 ║
    ║  {1}   │ 0.5000 │ 0.5000 ║
+   ║ {0}{1} │ 0.0000 │ 0.0000 ║
+   ╚════════╧════════╧════════╝
+
+Partial Entropy Decomposition
+=============================
+
+Ince :cite:`ince2017ped` proposed applying the PID framework to decompose multivariate entropy (without considering information about a separate target variable). This *partial entropy decomposition* (PED), seeks to partition a mutlivariate entropy :math:`\H{X_0,X_1,\ldots}` among the antichains of the variables. The PED perspective shows that bivariate mutual information is equal to the difference between redundant entropy and synergistic entropy.
+
+.. math::
+
+   \I{X_0 : X_1} = \Hpart{\left\{X_0\right\}, \left\{X_1\right\}} - \Hpart{\left\{X_0,X_1\right\}}
+
+.. py:module:: dit.pid.hcs
+:math:`\Hcs{\bullet}`
+----------------------
+
+Taking a pointwise point of view, following :math:`\Iccs{\bullet}`, Ince has proposed a measure of redundant entropy based on the :ref:`coinformation` :cite:`ince2017ped`:
+
+.. math::
+
+   \Hcs{X_{0:n}} = \sum p(x_0, \ldots, x_n) \I{x_0 : \ldots : x_n}~~\textrm{if}~~(\I{x_0 : \ldots : x_n} > 0)
+
+While this measure behaves intuitively in many examples, it also assigns negative values to some partial entropy atoms in some instances. However, Ince :cite:`ince2017ped` argues that concepts such as mechanistic information redundnacy (non-zero information redundancy between independent predictors, c.f. AND) necessitate negative partial entropy terms.
+
+Like :math:`\Iccs{\bullet}`,  :math:`\Hcs{\bullet}` is also subadditive.
+
+.. ipython::
+
+   In [23]: PED_CS(dit.Distribution(['00','01','10','11'],[0.25]*4))
+   Out[23]:
+   ╔════════╤════════╤════════╗
+   ║  H_cs  │  H_r   │  H_d   ║
+   ╟────────┼────────┼────────╢
+   ║ {0:1}  │ 2.0000 │ 0.0000 ║
+   ║  {0}   │ 1.0000 │ 1.0000 ║
+   ║  {1}   │ 1.0000 │ 1.0000 ║
    ║ {0}{1} │ 0.0000 │ 0.0000 ║
    ╚════════╧════════╧════════╝
