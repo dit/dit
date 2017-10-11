@@ -93,7 +93,7 @@ except ImportError: # no cython
         counts = get_counts(d, L)
 
         # We turn the counts to probabilities
-        total = sum(counts.values())
+        total = sum(counts)
         dist = {e: count/total for e, count in counts.items()}
 
         dist = Distribution(dist, trim=trim)
