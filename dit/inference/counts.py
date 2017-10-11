@@ -77,7 +77,8 @@ except ImportError: # no cython
             cond_counts[word[:hLength]][word[hLength:]] += count
 
         histories = sorted(counts.keys())
-        alphabet = tuple(sorted(set(alphabet).union(*[set(hist) for hist in histories])))
+        alphabet = set(alphabet) if alphabet is not None else set()
+        alphabet = tuple(sorted(alphabet.union(*[set(hist) for hist in histories])))
 
         cCounts = np.empty((len(histories), len(alphabet)**fLength))
         for i, hist in enumerate(histories):
