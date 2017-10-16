@@ -24,7 +24,7 @@ class BasePID(object):
     This implements the basic Williams & Beer Partial Information Decomposition.
     """
 
-    def __init__(self, dist, inputs=None, output=None):
+    def __init__(self, dist, inputs=None, output=None, reds=None, pis=None):
         """
         Parameters
         ----------
@@ -46,7 +46,7 @@ class BasePID(object):
         self._output = tuple(output)
         self._lattice = pid_lattice(self._inputs)
         self._total = coinformation(self._dist, [list(flatten(self._inputs)), self._output])
-        self._compute()
+        self._compute(reds, pis)
 
     def __eq__(self, other):
         """
@@ -119,15 +119,20 @@ class BasePID(object):
         """
         return self.to_string()
 
-    def _compute(self):
+    def _compute(self, reds=None, pis=None):
         """
         Use the redundancy measure to populate the lattice.
         """
-        reds = {}
-        for node in self._lattice:
-            reds[node] = self._measure(self._dist, node, self._output)
+        if reds is None: # pragma: no cover
+            reds = {}
+        if pis is None: # pragma: no cover
+            pis = {}
 
-        reds, pis = self._compute_mobius_inversion(reds=reds)
+        for node in self._lattice:
+            if node not in reds:
+                reds[node] = self._measure(self._dist, node, self._output)
+
+        reds, pis = self._compute_mobius_inversion(reds=reds, pis=pis)
 
         nx.set_node_attributes(self._lattice, name='red', values=reds)
         nx.set_node_attributes(self._lattice, name='pi', values=pis)
@@ -632,7 +637,7 @@ class BaseBivariatePID(BaseIncompletePID):
         if reds is None:
             reds = {}
         for node in self._lattice:
-            if len(node) == 2:
+            if len(node) == 2 and node not in reds:
                 reds[node] = self._measure(self._dist, node, self._output)
 
         super(BaseBivariatePID, self)._compute(reds=reds, pis=pis)
