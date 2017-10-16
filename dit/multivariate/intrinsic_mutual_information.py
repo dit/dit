@@ -185,9 +185,19 @@ class BaseIntrinsicMutualInformation(object):
                            accept_test=accept_test,
                           )
 
-        self._optima = res.x
+        x_null = np.zeros((self._crv_size, self._crv_size))
+        x_null[:, 0] = 1
 
-    def _post_process(self, nhops=10, style='entropy', minmax='min'): # pragma: no cover
+        x_id = np.eye(self._crv_size)
+
+        options = [x_null, # mutual information
+                   x_id,   # conditional mutual information
+                   res.x   # found optima
+                  ]
+
+        self._optima = min(options, key=lambda opt: self.objective(opt))
+
+    def _post_process(self, nhops=10, style='entropy', minmax='min'): # pragma: no co ver
         """
         Find a solution to the minimization with a secondary property.
 
