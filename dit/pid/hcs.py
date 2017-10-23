@@ -56,11 +56,6 @@ def h_cs(d, inputs, output=None):
             P = sub_dists[sub_var][tuple([e[i] for i in flatten(sub_var)])]
             coinfos[e] = coinfos[e] + np.log2(P)*((-1) ** (len(sub_var)))
 
-    # fix the sign of things close to zero
-    for e, val in coinfos.items():
-        if np.isclose(val, 0.0):
-            coinfos[e] = 0.0
-
     # sum positive pointwise terms
     hcs = sum(d[e] * coinfos[e] for e in d.outcomes if coinfos[e]>0.0)
     return hcs
