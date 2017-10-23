@@ -41,7 +41,7 @@ def h_cs(d, inputs, output=None):
     d = d.coalesce(inputs)
     n_variables = d.outcome_length()
     # pairwise marginal maxent
-    if n_variables>2:
+    if n_variables > 2:
         marginals = list(combinations(range(n_variables), 2))
         d = maxent_dist(d, marginals, 'indices')
     d = modify_outcomes(d, lambda o: tuple(o))
@@ -49,7 +49,7 @@ def h_cs(d, inputs, output=None):
     # calculate pointwise co-information
     sub_vars = [var for var in powerset(vars) if var]
     sub_dists = {var: d.marginal(var) for var in sub_vars}
-    coinfos = {};
+    coinfos = {}
     for e in d.outcomes:
         coinfos[e] = 0.0
         for sub_var in sub_vars:
@@ -57,7 +57,7 @@ def h_cs(d, inputs, output=None):
             coinfos[e] = coinfos[e] + np.log2(P)*((-1) ** (len(sub_var)))
 
     # sum positive pointwise terms
-    hcs = sum(d[e] * coinfos[e] for e in d.outcomes if coinfos[e]>0.0)
+    hcs = sum(d[e] * coinfos[e] for e in d.outcomes if coinfos[e] > 0.0)
     return hcs
 
 class PED_CS(BasePID):
