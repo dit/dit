@@ -8,6 +8,7 @@ from dit.pid.ibroja import i_broja, PID_BROJA
 from dit.pid.iproj import PID_Proj
 from dit.pid.distributions import bivariates, trivariates
 
+@pytest.mark.flaky(reruns=5)
 def test_ibroja1():
     """
     Test ibroja on redundant distribution.
@@ -17,6 +18,7 @@ def test_ibroja1():
     assert uniques[(0,)] == pytest.approx(0, abs=1e-4)
     assert uniques[(1,)] == pytest.approx(0, abs=1e-4)
 
+@pytest.mark.flaky(reruns=5)
 def test_ibroja2():
     """
     Test ibroja on synergistic distribution.
@@ -26,6 +28,7 @@ def test_ibroja2():
     assert uniques[(1,)] == pytest.approx(0, abs=1e-4)
     assert uniques[(0,)] == pytest.approx(0, abs=1e-4)
 
+@pytest.mark.flaky(reruns=5)
 def test_ibroja3():
     """
     Test ibroja on unique distribution.
@@ -35,6 +38,7 @@ def test_ibroja3():
     assert uniques[(0,)] == pytest.approx(1, abs=1e-4)
     assert uniques[(1,)] == pytest.approx(1, abs=1e-4)
 
+@pytest.mark.flaky(reruns=5)
 def test_ibroja4():
     """
     Test ibroja on a non-unique (?) distribution.
@@ -44,6 +48,7 @@ def test_ibroja4():
     assert uniques[(0,)] == pytest.approx(0, abs=1e-4)
     assert uniques[(1,)] == pytest.approx(0, abs=1e-4)
 
+@pytest.mark.flaky(reruns=5)
 def test_pid_broja1():
     """
     Test ibroja on a generic distribution.
@@ -55,6 +60,7 @@ def test_pid_broja1():
     assert pid[((1,),)] == pytest.approx(0.18872187554086706, abs=1e-4)
     assert pid[((0, 1),)] == pytest.approx(0.0, abs=1e-4)
 
+@pytest.mark.flaky(reruns=5)
 def test_pid_broja2():
     """
     Test ibroja on another generic distribution.
@@ -69,6 +75,7 @@ def test_pid_broja2():
         else:
             assert pid[atom] == pytest.approx(0.0, abs=1e-4)
 
+@pytest.mark.flaky(reruns=5)
 def test_pid_broja3():
     """
     Test that iproj and ibroja are the same on reduced or.
@@ -78,6 +85,7 @@ def test_pid_broja3():
     pid2 = PID_Proj(d)
     assert pid1 == pid2
 
+@pytest.mark.flaky(reruns=5)
 def test_pid_broja4():
     """
     Test that xor cat is incomplete, but nonnegative and consistent.
