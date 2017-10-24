@@ -185,8 +185,30 @@ class BaseOptimizer(object):
         """
         n = len(self._shape)
         pmf = self._expand(x).reshape(self._shape)
-        spmf = [ pmf.sum(axis=subset, keepdims=True)**((-1)**(n - len(subset))) for subset in self._subvars ]
-        return np.nansum(pmf * np.log2(np.prod(spmf)))
+        spmf = [pmf.sum(axis=subset, keepdims=True)**((-1)**(n - len(subset))) for subset in self._subvars]
+        coi = np.nansum(pmf * np.log2(np.prod(spmf)))
+        return coi
+
+    def dual_total_correlation(self, x):
+        """
+        The dual total correlation of optimization vector `x`.
+
+        Parameters
+        ----------
+        x : ndarray
+            An optimization vector.
+
+        Returns
+        -------
+        B : float
+            The dual total correlation of `x`.
+        """
+        pmf = self._expand(x).reshape(self._shape)
+        entropy = -np.nansum(pmf * np.log2(pmf))
+        spmfs = [pmf.sum(axis=i) for i, _ in enumerate(self._shape)]
+        ind_entropy = sum(entropy - -np.nansum(spmf * np.log2(spmf)) for spmf in spmfs)
+        dtc = entropy - ind_entropy
+        return dtc
 
     def optimize(self, x0=None, bounds=None, nhops=10, polish=1e-10, maxiters=1000):
         """
@@ -485,6 +507,37 @@ class MinCoInfoOptimizer(BaseNonConvexOptimizer):
         """
         return self.co_information(x)
 
+class MaxDualTotalCorrelationOptimizer(BaseNonConvexOptimizer):
+    """
+    Compute maximum dual total correlation distributions.
+    """
+
+    def objective(self, x):
+        """
+        Compute the negative dual total correlation.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            An optimization vector.
+        """
+        return -self.dual_total_correlation(x)
+
+class MinDualTotalCorrelationOptimizer(BaseNonConvexOptimizer):
+    """
+    Compute minimum dual total correlation distributions.
+    """
+
+    def objective(self, x):
+        """
+        Compute the dual total correlation.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            An optimization vector.
+        """
+        return self.dual_total_correlation(x)
 
 class BROJABivariateOptimizer(MaxCoInfoOptimizer):
     """
