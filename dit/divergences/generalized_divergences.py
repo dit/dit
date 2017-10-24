@@ -85,6 +85,7 @@ def hellinger_sum(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None):
     ----------
     dist1 : Distribution
         The first distribution in the sum.
+    dist2 : Distribution
         The second distribution in the sum.
     alpha : float, 1
         Exponent used in the sum.

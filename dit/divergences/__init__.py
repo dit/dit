@@ -25,4 +25,10 @@ from .generalized_divergences import (
     hellinger_sum,
 )
 
+from .variational_distance import (
+    bhattacharyya_coefficient,
+    hellinger_distance,
+    variational_distance,
+)
+
 from . import pmf

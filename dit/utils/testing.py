@@ -10,7 +10,7 @@ from hypothesis.strategies import composite, floats, integers, lists, tuples
 from .. import Distribution
 
 @composite
-def distributions(draw, size=integers(3, 4), alphabet=integers(2, 4), uniform=False, min_events=1):
+def distributions(draw, size=(3, 4), alphabet=(2, 4), uniform=False, min_events=1):
     """
     A hypothesis strategy for generating distributions.
 
@@ -31,13 +31,16 @@ def distributions(draw, size=integers(3, 4), alphabet=integers(2, 4), uniform=Fa
         A random distribution.
     """
     try:
-        size_ = draw(size)
-    except:
-        size_ = size
+        len(size)
+    except TypeError:
+        size = (size, size)
     try:
-        alphabet_ = draw(alphabet)
-    except:
-        alphabet_ = alphabet
+        len(alphabet)
+    except TypeError:
+        alphabet = (alphabet, alphabet)
+
+    size_ = draw(integers(*size))
+    alphabet_ = draw(integers(*alphabet))
 
     events = draw(lists(tuples(*[integers(0, alphabet_ - 1)] * size_), min_size=min_events, unique=True))
 
@@ -45,7 +48,8 @@ def distributions(draw, size=integers(3, 4), alphabet=integers(2, 4), uniform=Fa
         probs = [1 / len(events)] * len(events)
     else:
         probs = draw(tuples(*[floats(0, 1)] * len(events)))
-        assume(sum(probs) > 0)
+        for prob in probs:
+            assume(prob > 0)
         total = sum(probs)
         probs = [p / total for p in probs]
 
