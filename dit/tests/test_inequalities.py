@@ -1,5 +1,5 @@
 """
-
+Test various information theory inequalities.
 """
 
 from hypothesis import given
@@ -70,7 +70,7 @@ def test_shannon_inequality(dist):
 @given(dist=distributions(size=4))
 def test_zhang_yeung_inequality(dist):
     """
-    2I(C:D) ≤ I(A:B)+I(A:C,D)+3I(C:D|A)+I(C:D|B)
+    2I(C:D) <= I(A:B)+I(A:CD)+3I(C:D|A)+I(C:D|B)
     """
     I_a_b = I(dist, [[0], [1]])
     I_c_d = I(dist, [[2], [3]])
