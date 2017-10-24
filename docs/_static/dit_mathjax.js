@@ -67,6 +67,8 @@ MathJax.Hub.Config({
             Ida: ["\\op{I_{\\downarrow}}{#1}", 1],
             Idda: ["\\op{I_{\\Downarrow}}{#1}", 1],
             Idep: ["\\op{I_{dep}}{#1}", 1],
+            Hpart: ["\\op{H_{\\partial}}{#1}", 1],
+            Hcs: ["\\op{H_{cs}}{#1}", 1],
             meet: "\\curlywedge",
             join: "\\curlyvee",
             iless: "\\preceq",

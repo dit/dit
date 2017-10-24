@@ -11,6 +11,8 @@ from .iccs import PID_CCS
 from .idep import PID_dep
 from .idownarrow import PID_downarrow
 from .ipm import PID_PM
+from .hcs import PED_CS
+from .distributions import bivariates, trivariates
 
 __all_pids = [
     PID_MMI,

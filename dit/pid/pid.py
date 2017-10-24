@@ -42,6 +42,8 @@ class BasePID(object):
         if output is None:
             output = dist.rvs[-1]
 
+        self._red_string = "I_r"
+        self._pi_string = "pi"
         self._inputs = tuple(map(tuple, inputs))
         self._output = tuple(output)
         self._lattice = pid_lattice(self._inputs)
@@ -215,8 +217,8 @@ class BasePID(object):
         table : str
             The table of values.
         """
-        red_string = "I_r"
-        pi_string = "pi"
+        red_string = self._red_string
+        pi_string = self._pi_string
 
         table = prettytable.PrettyTable([self.name, red_string, pi_string], title=getattr(self._dist, 'name', ''))
 
