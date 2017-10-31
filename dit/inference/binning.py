@@ -78,4 +78,5 @@ def maxent_binning(ts, bins):
     percentiles[-1] += 1e-12
     for i, (a, b) in enumerate(pairwise(percentiles)):
         symb[(a <= ts) & (ts < b)] = i
+    symb = symb.astype(int)
     return symb
