@@ -4,6 +4,8 @@ Tests for the various common informations.
 
 import pytest
 
+from hypothesis import given
+
 from dit.multivariate import (gk_common_information as K,
                               caekl_mutual_information as J,
                               dual_total_correlation as B,
