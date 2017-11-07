@@ -1,22 +1,28 @@
 """
-
+Tests for dit.divergences.variational_distance
 """
 
-from hypothesis import given
+import pytest
 
-from dit.utils.testing import distributions
-
-import numpy as np
-
-from dit.divergences import hellinger_distance, variational_distance
+from dit import Distribution
+from dit.divergences import variational_distance
 
 
-@given(dist1=distributions(size=1, alphabet=10), dist2=distributions(size=1, alphabet=10))
-def test_inequalities(dist1, dist2):
+def test_vd1():
     """
-    H^2(p||q) <= V(p||q) <= sqrt(2)*H(p||q)
+    Test against known value
     """
-    h = hellinger_distance(dist1, dist2)
-    v = variational_distance(dist1, dist2)
-    assert h**2 <= v + 1e-10
-    assert v <= np.sqrt(2)*h + 1e-10
+    d1 = Distribution(['0', '1'], [1/2, 1/2])
+    d2 = Distribution(['0', '1'], [1/4, 3/4])
+    v = variational_distance(d1, d2)
+    assert v == pytest.approx(0.25)
+
+
+def test_vd2():
+    """
+    Test against known value
+    """
+    d1 = Distribution(['0', '1'], [1/2, 1/2])
+    d2 = Distribution(['1', '2'], [1/4, 3/4])
+    v = variational_distance(d1, d2)
+    assert v == pytest.approx(0.75)

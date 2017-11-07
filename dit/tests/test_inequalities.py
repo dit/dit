@@ -10,12 +10,11 @@ from dit.utils.testing import distributions, markov_chains
 
 from dit import ScalarDistribution as SD
 from dit.algorithms import maximum_correlation
-from dit.distconst import product_distribution
-from dit.divergences import f_divergence, relative_entropy, variational_distance
+from dit.divergences import hellinger_distance, relative_entropy, variational_distance
 from dit.multivariate import entropy as H, total_correlation as I
 
 
-epsilon = 1e-10
+epsilon = 1e-8
 
 @given(dist=distributions())
 def test_entropy_upper_bound(dist):
@@ -139,3 +138,14 @@ def test_max_correlation_mutual_information(dist):
     rho = maximum_correlation(dist, [[0], [1]])
     i = I(dist, [[0], [1]])
     assert (p_min*rho)**2 <= (2*np.log(2))*i + epsilon
+
+
+@given(dist1=distributions(alphabets=(10,)), dist2=distributions(alphabets=(10,)))
+def test_hellinger_variational(dist1, dist2):
+    """
+    H^2(p||q) <= V(p||q) <= sqrt(2)*H(p||q)
+    """
+    h = hellinger_distance(dist1, dist2)
+    v = variational_distance(dist1, dist2)
+    assert h**2 <= v + epsilon
+    assert v <= np.sqrt(2)*h + epsilon
