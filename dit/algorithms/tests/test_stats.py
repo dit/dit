@@ -6,7 +6,7 @@ from __future__ import division
 
 import pytest
 
-from itertools import product
+from hypothesis import given
 
 from math import ceil, floor
 
@@ -18,6 +18,7 @@ from dit.algorithms import mean, median, mode, standard_deviation, \
 from dit.algorithms.stats import _numerical_test
 from dit.example_dists import binomial, dyadic, triadic
 from dit.exceptions import ditException
+from dit.utils.testing import distributions
 
 def test__numerical_test1():
     """ test _numerical_test on a good distribution """
@@ -98,3 +99,16 @@ def test_maximum_correlation_failure(rvs):
     """ Test that maximum_correlation fails with len(rvs) != 2 """
     with pytest.raises(ditException):
         maximum_correlation(dyadic, rvs)
+
+@given(dist1=distributions(alphabets=((2, 4),)*2, nondegenerate=True),
+       dist2=distributions(alphabets=((2, 4),)*2, nondegenerate=True))
+def test_maximum_correlation_tensorization(dist1, dist2):
+    """
+    Test tensorization:
+        rho(X X' : Y Y') = max(rho(X:Y), rho(X', Y'))
+    """
+    mixed = dist1.__matmul__(dist2)
+    rho_mixed = maximum_correlation(mixed, [[0, 2], [1, 3]])
+    rho_a = maximum_correlation(dist1, [[0], [1]])
+    rho_b = maximum_correlation(dist2, [[0], [1]])
+    assert rho_mixed == pytest.approx(max(rho_a, rho_b))

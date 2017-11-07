@@ -70,7 +70,7 @@ def distributions_old(draw, size=(2, 4), alphabet=(2, 4), uniform=False, min_eve
 
 
 @composite
-def distributions(draw, alphabets=(2, 2, 2)):
+def distributions(draw, alphabets=(2, 2, 2), nondegenerate=False):
     """
     Generate distributions for use with hypothesis.
 
@@ -102,6 +102,11 @@ def distributions(draw, alphabets=(2, 2, 2)):
     pmf = draw(arrays(np.float, shape=alphabets, elements=floats(0, 1)))
 
     assume(pmf.sum() > 0)
+
+    if nondegenerate:
+        axes = set(range(len(alphabets)))
+        for axis, _ in enumerate(alphabets):
+            assume(np.all(pmf.sum(axis=tuple(axes-set([axis]))) > 0))
 
     pmf /= pmf.sum()
 
