@@ -4,8 +4,8 @@ Tests for the various common informations.
 
 import pytest
 
-from dit import random_distribution
 from dit.multivariate import (gk_common_information as K,
+                              caekl_mutual_information as J,
                               dual_total_correlation as B,
                               wyner_common_information as C,
                               exact_common_information as G,
@@ -13,43 +13,29 @@ from dit.multivariate import (gk_common_information as K,
                               mss_common_information as M
                              )
 
+from dit.utils.testing import distributions
 
 pytest.importorskip('scipy')
 
-@pytest.mark.slow
-@pytest.mark.flaky(reruns=5)
-@pytest.mark.parametrize('d', [random_distribution(2, 3) for _ in range(5)])
-def test_cis1(d):
-    """
-    Test that the common informations are ordered correctly.
-    """
-    k = K(d)
-    b = B(d)
-    c = C(d)
-    g = G(d)
-    f = F(d)
-    m = M(d)
-    assert k <= b + 1e-6
-    assert b <= c + 1e-6
-    assert c <= g + 1e-6
-    assert g <= f + 1e-6
-    assert f <= m + 1e-6
+epsilon = 1e-6
 
 @pytest.mark.slow
 @pytest.mark.flaky(reruns=5)
-@pytest.mark.parametrize('d', [random_distribution(3, 2) for _ in range(5)])
-def test_cis2(d):
+@given(dist=distributions(size=(2, 3), alphabet=(2, 3)))
+def test_cis1(dist):
     """
     Test that the common informations are ordered correctly.
     """
-    k = K(d)
-    b = B(d)
-    c = C(d)
-    g = G(d)
-    f = F(d)
-    m = M(d)
-    assert k <= b + 1e-6
-    assert b <= c + 1e-6
-    assert c <= g + 1e-6
-    assert g <= f + 1e-6
-    assert f <= m + 1e-6
+    k = K(dist)
+    j = J(dist)
+    b = B(dist)
+    c = C(dist)
+    g = G(dist)
+    f = F(dist)
+    m = M(dist)
+    assert k <= j + epsilon
+    assert j <= b + epsilon
+    assert b <= c + epsilon
+    assert c <= g + epsilon
+    assert g <= f + epsilon
+    assert f <= m + epsilon

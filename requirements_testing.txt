@@ -1,6 +1,7 @@
 coverage
 codecov
 hypothesis
-git+https://github.com/pytest-dev/pytest/#egg=pytest
+hypothesis[numpy]
+pytest >= 3.2
 pytest-cov
 pytest-rerunfailures

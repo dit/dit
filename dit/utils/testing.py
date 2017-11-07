@@ -4,13 +4,22 @@ Utilities related to testing.
 
 from __future__ import division
 
+from boltons.iterutils import pairwise
+
+import numpy as np
+
 from hypothesis import assume
+from hypothesis.extra.numpy import arrays
 from hypothesis.strategies import composite, floats, integers, lists, tuples
 
 from .. import Distribution
 
+__all__ = ['distributions',
+           'markov_chains',
+          ]
+
 @composite
-def distributions(draw, size=(3, 4), alphabet=(2, 4), uniform=False, min_events=1):
+def distributions_old(draw, size=(2, 4), alphabet=(2, 4), uniform=False, min_events=1):
     """
     A hypothesis strategy for generating distributions.
 
@@ -44,6 +53,10 @@ def distributions(draw, size=(3, 4), alphabet=(2, 4), uniform=False, min_events=
 
     events = draw(lists(tuples(*[integers(0, alphabet_ - 1)] * size_), min_size=min_events, unique=True))
 
+    # make sure no marginal is a constant
+    for var in zip(*events):
+        assume(len(set(var)) > 1)
+
     if uniform:
         probs = [1 / len(events)] * len(events)
     else:
@@ -54,3 +67,98 @@ def distributions(draw, size=(3, 4), alphabet=(2, 4), uniform=False, min_events=
         probs = [p / total for p in probs]
 
     return Distribution(events, probs)
+
+
+@composite
+def distributions(draw, alphabets=(2, 2, 2)):
+    """
+    Generate distributions for use with hypothesis.
+
+    Parameters
+    ----------
+    draw : function
+        A sampling function passed in by hypothesis.
+    alphabets : int, tuple of ints, tuple of pairs of ints
+        If an int, it is the length of the chain and each variable is assumed to be binary.
+        If a tuple of ints, the ints are assumed to be the size of each variable. If a tuple
+        of pairs of ints, each pair represents the min and max alphabet size of each variable.
+
+    Returns
+    -------
+    dist : Distribution
+        A distribution with variable sizes.
+    """
+    try:
+        len(alphabets)
+        try:
+            len(alphabets[0])
+        except TypeError:
+            alphabets = tuple((alpha, alpha) for alpha in alphabets)
+    except TypeError:
+        alphabets = ((2, 2),)*alphabets
+
+    alphabets = [draw(integers(*alpha)) for alpha in alphabets]
+
+    pmf = draw(arrays(np.float, shape=alphabets, elements=floats(0, 1)))
+
+    assume(pmf.sum() > 0)
+
+    pmf /= pmf.sum()
+
+    dist = Distribution.from_ndarray(pmf)
+
+    return dist
+
+
+colon = slice(None, None, None)
+
+@composite
+def markov_chains(draw, alphabets=((2, 4), (2, 4), (2, 4))):
+    """
+    Generate Markov chains for use with hypothesis.
+
+    Parameters
+    ----------
+    draw : function
+        A sampling function passed in by hypothesis.
+    alphabets : int, tuple of ints, tuple of pairs of ints
+        If an int, it is the length of the chain and each variable is assumed to be binary.
+        If a tuple of ints, the ints are assumed to be the size of each variable. If a tuple
+        of pairs of ints, each pair represents the min and max alphabet size of each variable.
+
+    Returns
+    -------
+    dist : Distribution
+        A Markov chain with variable sizes.
+    """
+    try:
+        len(alphabets)
+        try:
+            len(alphabets[0])
+        except TypeError:
+            alphabets = tuple((alpha, alpha) for alpha in alphabets)
+    except TypeError:
+        alphabets = ((2, 2),)*alphabets
+
+    alphabets = [draw(integers(*alpha)) for alpha in alphabets]
+
+    px = draw(arrays(np.float, shape=alphabets[0], elements=floats(0, 1)))
+    cds = [draw(arrays(np.float, shape=(a, b), elements=floats(0, 1))) for a, b in pairwise(alphabets)]
+
+    # assume things
+    assume(px.sum() > 0)
+    for cd in cds:
+        for row in cd:
+            assume(row.sum() > 0)
+
+    px /= px.sum()
+
+    # construct dist
+    for cd in cds:
+        cd /= cd.sum(axis=1, keepdims=True)
+        slc = (np.newaxis,)*(len(px.shape)-1) + (colon, colon)
+        px = px[..., np.newaxis] * cd[slc]
+
+    dist = Distribution.from_ndarray(px)
+
+    return dist
