@@ -2,6 +2,8 @@
 Tests for dit.divergences.variational_distance
 """
 
+from __future__ import division
+
 import pytest
 
 from dit import Distribution

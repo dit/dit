@@ -1,9 +1,12 @@
 """
 Tests for dit.multivariate.intrinsic_mutual_information
 """
+
 from __future__ import division
 
 import pytest
+
+from hypothesis import given
 
 import numpy as np
 
@@ -15,6 +18,7 @@ from dit.multivariate.intrinsic_mutual_information import (intrinsic_total_corre
                                                            intrinsic_caekl_mutual_information,
                                                            intrinsic_mutual_information,
                                                            IntrinsicTotalCorrelation)
+from dit.utils.testing import distributions
 
 dist1 = Distribution([(0,0,0), (0,1,1), (1,0,1), (1,1,0), (2,2,2), (3,3,3)], [1/8]*4+[1/4]*2)
 dist2 = Distribution(['000', '011', '101', '110', '222', '333'], [1/8]*4+[1/4]*2)
@@ -186,3 +190,16 @@ def test_imi_fail():
     """
     with pytest.raises(ditException):
         intrinsic_total_correlation(dist1, [[0], [1], [2]])
+
+@pytest.mark.flaky(rerun=5)
+@given(dist=distributions(alphabets=((2, 4),)*3))
+def test_bounds(dist):
+    """
+    I[X:Y v Z] <= I[X:Y]
+    I[X:Y v Z] <= I[X:Y|Z]
+    """
+    imi = intrinsic_total_correlation(dist, [[0], [1]], [2])
+    mi = total_correlation(dist, [[0], [1]])
+    cmi = total_correlation(dist, [[0], [1]], [2])
+    assert imi <= mi + 1e-10
+    assert imi <= cmi + 1e-10
