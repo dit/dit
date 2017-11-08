@@ -19,7 +19,7 @@ from dit.utils.testing import distributions
 
 pytest.importorskip('scipy')
 
-epsilon = 1e-6
+epsilon = 1e-4
 
 @pytest.mark.slow
 @pytest.mark.flaky(reruns=5)

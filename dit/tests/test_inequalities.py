@@ -36,7 +36,7 @@ def test_pinskers_inequality(dist1, dist2):
     assert dkl >= vd**2 / (2 * np.log(2)) - epsilon
 
 
-@given(dist=distributions(alphabets=(10, 10)))
+@given(dist=distributions(alphabets=(10, 10), nondegenerate=True))
 def test_fanos_inequality(dist):
     """
     H(X) <= hb(P_e) + P_e log(|X| - 1)

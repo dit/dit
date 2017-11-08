@@ -14,7 +14,7 @@ def test_distributions1():
     """
     A test for the distributions strategy.
     """
-    example = find(distributions(3, 2), lambda d: coinformation(d) < -0.5)
+    example = find(distributions(alphabets=3), lambda d: coinformation(d) < -0.5)
     assert coinformation(example) <= -0.5
 
 @pytest.mark.flaky(reruns=5)
@@ -22,5 +22,13 @@ def test_distributions2():
     """
     A test for the distributions strategy.
     """
-    example = find(distributions(3, 2, uniform=True), lambda d: coinformation(d) < -0.5)
+    example = find(distributions(alphabets=(2, 2, 2)), lambda d: coinformation(d) < -0.5)
+    assert coinformation(example) <= -0.5
+
+@pytest.mark.flaky(reruns=5)
+def test_distributions3():
+    """
+    A test for the distributions strategy.
+    """
+    example = find(distributions(alphabets=((2, 3), (2, 3), (2, 3))), lambda d: coinformation(d) < -0.5)
     assert coinformation(example) <= -0.5

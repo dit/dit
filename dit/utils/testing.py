@@ -106,7 +106,7 @@ def distributions(draw, alphabets=(2, 2, 2), nondegenerate=False):
     if nondegenerate:
         axes = set(range(len(alphabets)))
         for axis, _ in enumerate(alphabets):
-            assume(np.all(pmf.sum(axis=tuple(axes-set([axis]))) > 0))
+            assume(np.sum(pmf.sum(axis=tuple(axes-set([axis]))) > 0) > 1)
 
     pmf /= pmf.sum()
 
