@@ -1,6 +1,6 @@
 coverage
 codecov
-hypothesis
+hypothesis >= 3.16.0
 hypothesis[numpy]
 pytest >= 3.2
 pytest-cov

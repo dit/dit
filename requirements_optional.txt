@@ -1,6 +1,7 @@
 colorama
 Cython
-hypothesis
+hypothesis >= 3.16.0
+hypothesis[numpy]
 ipython
 matplotlib
 numdifftools

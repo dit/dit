@@ -4,7 +4,7 @@ Tests for the various common informations.
 
 import pytest
 
-from hypothesis import given
+from hypothesis import given, settings, unlimited
 
 from dit.multivariate import (gk_common_information as K,
                               caekl_mutual_information as J,
@@ -23,6 +23,7 @@ epsilon = 1e-4
 
 @pytest.mark.slow
 @pytest.mark.flaky(reruns=5)
+@settings(timeout=unlimited)
 @given(dist=distributions(alphabets=(2,)*2))
 def test_cis1(dist):
     """
@@ -44,6 +45,7 @@ def test_cis1(dist):
 
 @pytest.mark.slow
 @pytest.mark.flaky(reruns=5)
+@settings(timeout=unlimited)
 @given(dist=distributions(alphabets=(2,)*3))
 def test_cis2(dist):
     """
