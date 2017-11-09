@@ -59,18 +59,18 @@ def test_markov_chains1(dist):
     """
     Test the markov_chains strategy.
     """
-    assert coinformation(dist, [[0], [2]], [1]) == pytest.approx(0.0)
+    assert coinformation(dist, [[0], [2]], [1]) == pytest.approx(0.0, abs=1e-7)
 
 @given(dist=markov_chains(alphabets=(2, 2, 2)))
 def test_markov_chains2(dist):
     """
     Test the markov_chains strategy.
     """
-    assert coinformation(dist, [[0], [2]], [1]) == pytest.approx(0.0)
+    assert coinformation(dist, [[0], [2]], [1]) == pytest.approx(0.0, abs=1e-7)
 
 @given(dist=markov_chains(alphabets=((2, 4), (2, 4), (2, 4))))
 def test_markov_chains3(dist):
     """
     Test the markov_chains strategy.
     """
-    assert coinformation(dist, [[0], [2]], [1]) == pytest.approx(0.0)
+    assert coinformation(dist, [[0], [2]], [1]) == pytest.approx(0.0, abs=1e-7)
