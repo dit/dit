@@ -15,11 +15,58 @@ from hypothesis.strategies import composite, floats, integers, lists, tuples
 from .. import Distribution
 
 __all__ = ['distributions',
+           'distribution_structures',
            'markov_chains',
           ]
 
 @composite
-def distributions_old(draw, size=(2, 4), alphabet=(2, 4), uniform=False, min_events=1):
+def distributions(draw, alphabets=(2, 2, 2), nondegenerate=False):
+    """
+    Generate distributions for use with hypothesis.
+
+    Parameters
+    ----------
+    draw : function
+        A sampling function passed in by hypothesis.
+    alphabets : int, tuple of ints, tuple of pairs of ints
+        If an int, it is the length of the chain and each variable is assumed to be binary.
+        If a tuple of ints, the ints are assumed to be the size of each variable. If a tuple
+        of pairs of ints, each pair represents the min and max alphabet size of each variable.
+
+    Returns
+    -------
+    dist : Distribution
+        A distribution with variable sizes.
+    """
+    try:
+        len(alphabets)
+        try:
+            len(alphabets[0])
+        except TypeError:
+            alphabets = tuple((alpha, alpha) for alpha in alphabets)
+    except TypeError:
+        alphabets = ((2, 2),)*alphabets
+
+    alphabets = [draw(integers(*alpha)) for alpha in alphabets]
+
+    pmf = draw(arrays(np.float, shape=alphabets, elements=floats(0, 1)))
+
+    assume(pmf.sum() > 0)
+
+    if nondegenerate:
+        axes = set(range(len(alphabets)))
+        for axis, _ in enumerate(alphabets):
+            assume(np.sum(pmf.sum(axis=tuple(axes-set([axis]))) > 0) > 1)
+
+    pmf /= pmf.sum()
+
+    dist = Distribution.from_ndarray(pmf)
+
+    return dist
+
+
+@composite
+def distribution_structures(draw, size=(2, 4), alphabet=(2, 4), uniform=False, min_events=1):
     """
     A hypothesis strategy for generating distributions.
 
@@ -67,52 +114,6 @@ def distributions_old(draw, size=(2, 4), alphabet=(2, 4), uniform=False, min_eve
         probs = [p / total for p in probs]
 
     return Distribution(events, probs)
-
-
-@composite
-def distributions(draw, alphabets=(2, 2, 2), nondegenerate=False):
-    """
-    Generate distributions for use with hypothesis.
-
-    Parameters
-    ----------
-    draw : function
-        A sampling function passed in by hypothesis.
-    alphabets : int, tuple of ints, tuple of pairs of ints
-        If an int, it is the length of the chain and each variable is assumed to be binary.
-        If a tuple of ints, the ints are assumed to be the size of each variable. If a tuple
-        of pairs of ints, each pair represents the min and max alphabet size of each variable.
-
-    Returns
-    -------
-    dist : Distribution
-        A distribution with variable sizes.
-    """
-    try:
-        len(alphabets)
-        try:
-            len(alphabets[0])
-        except TypeError:
-            alphabets = tuple((alpha, alpha) for alpha in alphabets)
-    except TypeError:
-        alphabets = ((2, 2),)*alphabets
-
-    alphabets = [draw(integers(*alpha)) for alpha in alphabets]
-
-    pmf = draw(arrays(np.float, shape=alphabets, elements=floats(0, 1)))
-
-    assume(pmf.sum() > 0)
-
-    if nondegenerate:
-        axes = set(range(len(alphabets)))
-        for axis, _ in enumerate(alphabets):
-            assume(np.sum(pmf.sum(axis=tuple(axes-set([axis]))) > 0) > 1)
-
-    pmf /= pmf.sum()
-
-    dist = Distribution.from_ndarray(pmf)
-
-    return dist
 
 
 colon = slice(None, None, None)
