@@ -12,13 +12,6 @@ from six.moves import zip
 
 from dit.utils import flatten
 
-try:
-    from sklearn.neighbors import KDTree
-    total_correlation_ksg = _total_correlation_ksg_sklearn
-except ImportError:
-    from scipy.spatial import cKDTree
-    total_correlation_ksg = _total_correlation_ksg_scipy
-
 
 __all__ = ['differential_entropy_knn',
            'total_correlation_ksg',
@@ -224,3 +217,11 @@ def _total_correlation_ksg_sklearn(data, rvs, crvs=None, k=4, noise=1e-10):
     tc = sum([h_rv - h_crvs for h_rv in h_rvs]) - (h_all - h_crvs)
 
     return tc / log_2
+
+
+try:
+    from sklearn.neighbors import KDTree
+    total_correlation_ksg = _total_correlation_ksg_sklearn
+except ImportError:
+    from scipy.spatial import cKDTree
+    total_correlation_ksg = _total_correlation_ksg_scipy
