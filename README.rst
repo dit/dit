@@ -23,6 +23,7 @@ Optional Dependencies:
    * colorama
    * cython
    * numdifftools
+   * scikit-learn
 
 Note:
    The cython extensions are currently not supported on windows. Please install

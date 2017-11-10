@@ -19,6 +19,7 @@ Optional Dependencies:
    * colorama
    * cython
    * numdifftools
+   * scikit-learn
 
 Install:
    The easiest way to install is:
