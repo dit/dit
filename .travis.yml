@@ -173,7 +173,7 @@ script:
       if [ "${OPTIONAL_DEPS}" == "true" ]; then
         travis_wait pytest;
       else
-        travis_wait pytest -m "not cython";
+        travis_wait pytest -m \"not cython\";
       fi
     fi
 
