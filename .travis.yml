@@ -165,15 +165,15 @@ script:
   # Run pytest.
   - if [[ "$TRAVIS_PYTHON_VERSION" =~ pypy.* ]]; then
       if [ "${OPTIONAL_DEPS}" == "true" ]; then
-        sudo $TRAVIS_PYTHON_VERSION -m pytest;
+        sudo travis_wait $TRAVIS_PYTHON_VERSION -m pytest;
       else
-        sudo $TRAVIS_PYTHON_VERSION -m pytest -m "not cython";
+        sudo travis_wait $TRAVIS_PYTHON_VERSION -m pytest -m "not cython";
       fi
     else
       if [ "${OPTIONAL_DEPS}" == "true" ]; then
-        pytest;
+        travis_wait pytest;
       else
-        pytest -m "not cython";
+        travis_wait pytest -m "not cython";
       fi
     fi
 
