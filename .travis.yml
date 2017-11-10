@@ -173,7 +173,7 @@ script:
       if [ "${OPTIONAL_DEPS}" == "true" ]; then
         pytest;
       else
-        pytest -m \"not cython\";
+        pytest -m "not cython";
       fi
     fi
 
