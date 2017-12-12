@@ -203,7 +203,7 @@ def test_bounds(dist):
     assert imi <= mi + 1e-10
     assert imi <= cmi + 1e-10
 
-@pytest.mark.parametrize(('dist', 'val'), [(intrinsic_1, 0.0), (intrinsic_2, 1.5), (intrinsic_3, 1.5)])
+@pytest.mark.parametrize(('dist', 'val'), [(intrinsic_1, 0.0), (intrinsic_2, 1.5), (intrinsic_3, 1.3932929108738521)])
 def test_1(dist, val):
     """
     Test against known values.

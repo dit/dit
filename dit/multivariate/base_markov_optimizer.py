@@ -28,7 +28,7 @@ class MarkovVarOptimizer(object):
     name = ""
     description = ""
 
-    def __init__(self, dist, rvs=None, crvs=None, rv_mode=None):
+    def __init__(self, dist, rvs=None, crvs=None, rv_mode=None, bound=None):
         """
         Initialize the optimizer.
 
@@ -65,7 +65,8 @@ class MarkovVarOptimizer(object):
         self._sizes = [0] + np.cumsum(self._rv_lens).tolist()
 
         # compute the bound on the auxiliary variable
-        self._bound = self.compute_bound()
+        theoretical_bound = self.compute_bound()
+        self._bound = min(bound, theoretical_bound) if bound is not None else theoretical_bound
 
         # compute the size of the conditional variables, including the auxiliary
         # variable.
@@ -477,7 +478,7 @@ class MarkovVarOptimizer(object):
         Construct a functional form of the optimizer.
         """
 
-        def common_info(dist, rvs=None, crvs=None, rv_mode=None, nhops=5, polish=1e-6):
+        def common_info(dist, rvs=None, crvs=None, rv_mode=None, nhops=5, polish=1e-6, bound=None):
             dtc = dual_total_correlation(dist, rvs, crvs, rv_mode)
             ent = entropy(dist, rvs, crvs, rv_mode)
             if close(dtc, ent):
@@ -486,7 +487,7 @@ class MarkovVarOptimizer(object):
                 # as well.
                 return dtc
 
-            ci = cls(dist, rvs, crvs, rv_mode)
+            ci = cls(dist, rvs, crvs, rv_mode, bound=bound)
             ci.optimize(nhops=nhops, polish=polish)
             return ci.objective(ci._optima)
 
