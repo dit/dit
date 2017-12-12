@@ -11,11 +11,12 @@ import numpy as np
 from ... import Distribution
 from ...helpers import flatten, normalize_rvs
 from ...math import close
-from .. import dual_total_correlation, entropy
 from ...utils.optimization import (BasinHoppingCallBack,
                                    BasinHoppingInnerCallBack,
                                    accept_test,
                                    colon,)
+from ..dual_total_correlation import dual_total_correlation
+from ..entropy import entropy
 
 class MarkovVarOptimizer(object):
     """

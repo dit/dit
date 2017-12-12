@@ -12,12 +12,10 @@ from dit.multivariate import (gk_common_information as K,
                               wyner_common_information as C,
                               exact_common_information as G,
                               functional_common_information as F,
-                              mss_common_information as M
-                             )
+                              mss_common_information as M,
+                              )
 
 from dit.utils.testing import distributions
-
-pytest.importorskip('scipy')
 
 epsilon = 1e-4
 
