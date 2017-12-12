@@ -7,7 +7,7 @@ from __future__ import division
 import numpy as np
 
 from ... import Distribution, insert_rvf, modify_outcomes
-from .. import total_correlation
+from ..total_correlation import total_correlation
 from ...helpers import flatten, parse_rvs
 from ...utils.optimization import Uniquifier, accept_test, colon
 
@@ -355,7 +355,7 @@ class NecessaryIntrinsicMutualInformation(object):
         return d
 
 
-def necessary_intrinsic_mutual_information(dist, rvs, crvs, rv_mode=None):
+def necessary_intrinsic_mutual_information(dist, rvs, crvs, rv_mode=None, bound_u=None, bound_v=None):
     """
     Compute a non-trivial lower bound on secret key agreement rate.
 
@@ -375,12 +375,14 @@ def necessary_intrinsic_mutual_information(dist, rvs, crvs, rv_mode=None):
     Returns
     -------
     """
-    first = NecessaryIntrinsicMutualInformation(dist, rvs[0], rvs[1], crvs, rv_mode=rv_mode)
+    first = NecessaryIntrinsicMutualInformation(dist, rvs[0], rvs[1], crvs, rv_mode=rv_mode,
+                                                bound_u=bound_u, bound_v=bound_v)
     first.optimize()
     A = -first.objective(first._optima)
 
-    second = NecessaryIntrinsicMutualInformation(dist, rvs[1], rvs[0], crvs, rv_mode=rv_mode)
+    second = NecessaryIntrinsicMutualInformation(dist, rvs[1], rvs[0], crvs, rv_mode=rv_mode,
+                                                bound_u=bound_u, bound_v=bound_v)
     second.optimize()
     B = -second.objective(second._optima)
 
-    return max(A, B)
+    return max([A, B])

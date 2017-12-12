@@ -11,6 +11,7 @@ from hypothesis import given
 import numpy as np
 
 from dit import Distribution
+from dit.example_dists.intrinsic import intrinsic_1, intrinsic_2, intrinsic_3
 from dit.exceptions import ditException
 from dit.multivariate import total_correlation
 from dit.multivariate.secret_key_agreement import intrinsic_mutual_information as IMI
@@ -201,3 +202,11 @@ def test_bounds(dist):
     cmi = total_correlation(dist, [[0], [1]], [2])
     assert imi <= mi + 1e-10
     assert imi <= cmi + 1e-10
+
+@pytest.mark.parametrize(('dist', val), [(intrinsic_1, 0.0), (intrinsic_2, 1.5), (intrinsic_3, 1.5)])
+def test_1(dist, val):
+    """
+    Test against known values.
+    """
+    imi = IMI.intrinsic_total_correlation(dist, [[0], [1]], [2])
+    assert imi == pytest.approx(val, abs=1e-5)
