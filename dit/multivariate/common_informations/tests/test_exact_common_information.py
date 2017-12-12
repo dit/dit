@@ -8,7 +8,7 @@ import pytest
 
 from dit import Distribution as D
 from dit.multivariate import exact_common_information as G
-from dit.multivariate.exact_common_information import ExactCommonInformation
+from dit.multivariate.common_informations.exact_common_information import ExactCommonInformation
 from dit.shannon import entropy
 
 outcomes = ['0000', '0001', '0110', '0111', '1010', '1011', '1100', '1101']

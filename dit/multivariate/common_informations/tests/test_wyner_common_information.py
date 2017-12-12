@@ -7,7 +7,7 @@ import pytest
 
 from dit import Distribution as D
 from dit.multivariate import wyner_common_information as C
-from dit.multivariate.wyner_common_information import WynerCommonInformation
+from dit.multivariate.common_informations.wyner_common_information import WynerCommonInformation
 from dit.shannon import entropy
 
 outcomes = ['0000', '0001', '0110', '0111', '1010', '1011', '1100', '1101']

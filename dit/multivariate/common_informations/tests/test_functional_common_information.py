@@ -6,11 +6,8 @@ from __future__ import division
 
 import pytest
 
-from dit import Distribution, random_distribution
-from dit.multivariate import (functional_common_information as F,
-                              dual_total_correlation as B,
-                              mss_common_information as M
-                             )
+from dit import Distribution
+from dit.multivariate import functional_common_information as F
 
 def test_fci1():
     """
