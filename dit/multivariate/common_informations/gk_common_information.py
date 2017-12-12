@@ -2,10 +2,10 @@
 Compute the Gacs-Korner common information
 """
 
-from ..helpers import normalize_rvs, parse_rvs
-from ..npdist import Distribution
-from ..algorithms import insert_meet
-from ..shannon import conditional_entropy as H
+from ...algorithms import insert_meet
+from ...helpers import normalize_rvs, parse_rvs
+from ...npdist import Distribution
+from ...shannon import conditional_entropy as H
 
 def gk_common_information(dist, rvs=None, crvs=None, rv_mode=None):
     """

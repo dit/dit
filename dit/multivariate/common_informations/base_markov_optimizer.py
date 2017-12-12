@@ -8,15 +8,14 @@ from abc import ABCMeta, abstractmethod
 
 import numpy as np
 
-from .. import Distribution
-from ..helpers import flatten, normalize_rvs
-from ..math import close
-from . import dual_total_correlation, entropy
-from ..utils.optimization import (BasinHoppingCallBack,
-                                  BasinHoppingInnerCallBack,
-                                  accept_test,
-                                  basinhop_status,
-                                  colon)
+from ... import Distribution
+from ...helpers import flatten, normalize_rvs
+from ...math import close
+from .. import dual_total_correlation, entropy
+from ...utils.optimization import (BasinHoppingCallBack,
+                                   BasinHoppingInnerCallBack,
+                                   accept_test,
+                                   colon,)
 
 class MarkovVarOptimizer(object):
     """

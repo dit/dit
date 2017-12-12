@@ -2,11 +2,11 @@
 Compute the minimal sufficient statistic common information.
 """
 
-from ..algorithms.minimal_sufficient_statistic import insert_joint_mss
-from ..helpers import normalize_rvs
-from .dual_total_correlation import dual_total_correlation
-from .entropy import entropy
-from ..math import close
+from ...algorithms.minimal_sufficient_statistic import insert_joint_mss
+from ...helpers import normalize_rvs
+from ...math import close
+from ..dual_total_correlation import dual_total_correlation
+from ..entropy import entropy
 
 def mss_common_information(dist, rvs=None, crvs=None, rv_mode=None):
     """

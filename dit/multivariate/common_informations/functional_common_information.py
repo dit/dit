@@ -5,13 +5,13 @@ The functional common information.
 from collections import deque
 from itertools import combinations
 
-from ..distconst import RVFunctions, insert_rvf, modify_outcomes
-from ..helpers import flatten, parse_rvs, normalize_rvs
-from ..math import close
-from ..utils import partitions
+from ...distconst import RVFunctions, insert_rvf, modify_outcomes
+from ...helpers import parse_rvs, normalize_rvs
+from ...math import close
+from ...utils import partitions
 
-from .entropy import entropy
-from .dual_total_correlation import dual_total_correlation
+from ..entropy import entropy
+from ..dual_total_correlation import dual_total_correlation
 
 __all__ = ['functional_common_information']
 
