@@ -2,7 +2,7 @@
 Test various information theory inequalities.
 """
 
-from hypothesis import given
+from hypothesis import given, settings, unlimited, HealthCheck
 
 import numpy as np
 
@@ -11,7 +11,12 @@ from dit.utils.testing import distributions, markov_chains
 from dit import ScalarDistribution as SD
 from dit.algorithms import maximum_correlation
 from dit.divergences import hellinger_distance, relative_entropy, variational_distance
-from dit.multivariate import entropy as H, total_correlation as I
+from dit.multivariate import (entropy as H,
+                              total_correlation as I,
+                              gk_common_information as K,
+                              wyner_common_information as C,
+                              exact_common_information as G,
+                             )
 
 
 epsilon = 1e-8
@@ -39,7 +44,7 @@ def test_pinskers_inequality(dist1, dist2):
 @given(dist=distributions(alphabets=(10, 10), nondegenerate=True))
 def test_fanos_inequality(dist):
     """
-    H(X) <= hb(P_e) + P_e log(|X| - 1)
+    H(X|Y) <= hb(P_e) + P_e log(|X| - 1)
     """
     dist1 = SD.from_distribution(dist.marginal([0]))
     dist2 = SD.from_distribution(dist.marginal([1]))
@@ -127,6 +132,41 @@ def test_data_processing_inequality_mc(dist):
     rho_xy = maximum_correlation(dist, [[0], [1]])
     rho_xz = maximum_correlation(dist, [[0], [2]])
     assert rho_xz <= rho_xy + epsilon
+
+
+@given(dist=markov_chains(alphabets=((2, 4),)*3))
+def test_data_processing_inequality_gk(dist):
+    """
+    given X - Y - Z:
+        K(X:Z) <= K(X:Y)
+    """
+    k_xy = K(dist, [[0], [1]])
+    k_xz = K(dist, [[0], [2]])
+    assert k_xz <= k_xy + epsilon
+
+
+@given(dist=markov_chains(alphabets=((2, 4),)*3))
+@settings(timeout=unlimited, min_satisfying_examples=3, max_examples=5, suppress_health_check=[HealthCheck.hung_test])
+def test_data_processing_inequality_wyner(dist):
+    """
+    given X - Y - Z:
+        C(X:Z) <= C(X:Y)
+    """
+    c_xy = C(dist, [[0], [1]])
+    c_xz = C(dist, [[0], [2]])
+    assert c_xz <= c_xy + 1000*epsilon
+
+
+@given(dist=markov_chains(alphabets=((2, 4),)*3))
+@settings(timeout=unlimited, min_satisfying_examples=3, max_examples=5, suppress_health_check=[HealthCheck.hung_test])
+def test_data_processing_inequality_exact(dist):
+    """
+    given X - Y - Z:
+        G(X:Z) <= G(X:Y)
+    """
+    g_xy = G(dist, [[0], [1]])
+    g_xz = G(dist, [[0], [2]])
+    assert g_xz <= g_xy + 1000*epsilon
 
 
 @given(dist=distributions(alphabets=((2, 4),)*2))

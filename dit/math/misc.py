@@ -2,7 +2,19 @@
 miscellaneous math.
 """
 
+from itertools import chain
+from operator import mul
+
 from numbers import Integral, Number
+
+from six.moves import reduce # pylint: disable=redefined-builtin
+
+__all__ = ['is_number',
+           'is_integer',
+           'factoral',
+           'combinations',
+           'prod',
+           ]
 
 def is_number(x):
     """
@@ -95,3 +107,21 @@ def combinations(n, k):
         raise ValueError("{0} is larger than {1}.".format(k, n))
     nmkf = factorial(n-k)
     return nf/(kf*nmkf)
+
+def prod(vals, start=1):
+    """
+    Compute the product of values in `vals`.
+
+    Parameters
+    ----------
+    vals : iterable
+        The values to compute the product of.
+    start : object
+        The multiplicitive identity to use.
+
+    Returns
+    -------
+    p : object
+        The product of values in `vals`.
+    """
+    return reduce(mul, chain([start], vals))

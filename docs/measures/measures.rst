@@ -27,3 +27,10 @@ There are also measures of "distance" or divergence between two (and im some cas
    :maxdepth: 2
 
    divergences/divergences
+
+Several measures of shared information are related to the ability of two (or more) agents to agree upon a secret key in the face of an eavesdropper:
+
+.. toctree::
+   :maxdepth: 2
+
+   secret_keys

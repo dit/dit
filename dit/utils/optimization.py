@@ -68,9 +68,11 @@ class BasinHoppingCallBack(object):
         optimizer : MarkovVarOptimizer
             The optimizer to track the optimization of.
         """
-        self.constraints = [ c['fun'] for c in constraints ]
+        self.eq_constraints = [ c['fun'] for c in constraints if c['type'] == 'eq']
+        self.ineq_constraints = [ c['fun'] for c in constraints if c['type'] == 'ineq']
         self.icb = icb
-        self.candidates = []
+        self.eq_candidates = []
+        self.ineq_candidates = []
 
     def __call__(self, x, f, accept):
         """
@@ -84,8 +86,10 @@ class BasinHoppingCallBack(object):
         """
         x = x.copy()
 
-        constraints = [ float(c(x)) for c in self.constraints ]
-        self.candidates.append(Candidate(x, f, constraints))
+        eq_constraints = [float(c(x)) for c in self.eq_constraints]
+        ineq_constraints = [float(c(x)) for c in self.ineq_constraints]
+        self.eq_candidates.append(Candidate(x, f, eq_constraints))
+        self.ineq_candidates.append(Candidate(x, f, ineq_constraints))
 
         if self.icb:
             self.icb.jumps.append(len(self.icb.positions))
@@ -104,7 +108,9 @@ class BasinHoppingCallBack(object):
         min : ndarray
             The minimum basin.
         """
-        possible = [(x, f) for x, f, cs in self.candidates if max(cs) < cutoff]
+        eq_possible = [(x, f) for x, f, cs in self.eq_candidates if max(cs) < cutoff]
+        ineq_possible = [(x, f) for x, f, cs in self.ineq_candidates if min(cs) > -cutoff]
+        possible = [(x, f) for x, f in eq_possible if (x, f) in ineq_possible]
         possible = [(x, f) for x, f in possible if accept_test(x_new=x)]
         return min(possible, key=itemgetter(1))[0] if possible else None
 
@@ -179,3 +185,5 @@ def basinhop_status(res):
         success = 'success' in res.message[0]
         msg = res.message[0]
     return success, msg
+
+colon = slice(None, None, None)

@@ -13,6 +13,7 @@ from hypothesis.extra.numpy import arrays
 from hypothesis.strategies import composite, floats, integers, lists, tuples
 
 from .. import Distribution
+from .optimization import colon
 
 __all__ = ['distributions',
            'distribution_structures',
@@ -114,9 +115,6 @@ def distribution_structures(draw, size=(2, 4), alphabet=(2, 4), uniform=False, m
         probs = [p / total for p in probs]
 
     return Distribution(events, probs)
-
-
-colon = slice(None, None, None)
 
 @composite
 def markov_chains(draw, alphabets=((2, 4), (2, 4), (2, 4))):

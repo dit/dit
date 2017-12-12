@@ -65,5 +65,4 @@ These measures quantify other aspects of a joint distribution.
 
    residual_entropy
    tse_complexity
-   intrinsic_mutual_information
    necessary_conditional_entropy

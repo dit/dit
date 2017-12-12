@@ -8,13 +8,13 @@ from abc import ABCMeta, abstractmethod
 
 import numpy as np
 
-from .. import Distribution, insert_rvf, modify_outcomes
-from ..algorithms import channel_capacity
-from ..exceptions import ditException
-from ..helpers import flatten, normalize_rvs, parse_rvs
-from ..shannon import entropy_pmf as h
-from ..utils import partitions
-from ..utils.optimization import BasinHoppingCallBack, Uniquifier, accept_test
+from ... import Distribution, insert_rvf, modify_outcomes
+from ...algorithms import channel_capacity
+from ...exceptions import ditException
+from ...helpers import flatten, normalize_rvs, parse_rvs
+from ...shannon import entropy_pmf as h
+from ...utils import partitions
+from ...utils.optimization import BasinHoppingCallBack, Uniquifier, accept_test, colon
 
 __all__ = [
     'intrinsic_total_correlation',
@@ -32,7 +32,7 @@ class BaseIntrinsicMutualInformation(object):
 
     name = ""
 
-    def __init__(self, dist, rvs=None, crvs=None, rv_mode=None):
+    def __init__(self, dist, rvs=None, crvs=None, rv_mode=None, bound=None):
         """
         Initialize the optimizer.
 
@@ -55,6 +55,9 @@ class BaseIntrinsicMutualInformation(object):
             equal to 'names', the the elements are interpreted as random
             variable names. If `None`, then the value of `dist._rv_mode` is
             consulted, which defaults to 'indices'.
+        bound : int, None
+            Specifies a bound on the size of the auxiliary random variable. If None,
+            then the theoretical bound is used.
         """
         self._dist = dist.copy(base='linear')
         self._alphabet = self._dist.alphabet
@@ -76,6 +79,7 @@ class BaseIntrinsicMutualInformation(object):
 
         self._crv = self._dist.outcome_length() - 1
         self._crv_size = sizes[-1]
+        self._bound = min(bound, self._crv_size) if bound is not None else self._crv_size
 
         self._default_hops = self._crv_size * len(self._crvs)
 
@@ -83,7 +87,7 @@ class BaseIntrinsicMutualInformation(object):
         keepers = set(flatten(self._rvs)) | {self._crv+1}
         self._others = tuple(all_vars - keepers)
 
-        self._mask = np.ones((self._crv_size, self._crv_size)) / self._crv_size
+        self._mask = np.ones((self._crv_size, self._bound)) / self._bound
 
     def construct_random_initial(self):
         """
@@ -94,8 +98,7 @@ class BaseIntrinsicMutualInformation(object):
         x : ndarray
             A random optimization vector.
         """
-        n = self._crv_size
-        x = np.random.random((n, n))
+        x = np.random.random((self._crv_size, self._bound))
         return x
 
     def construct_joint(self, x):
@@ -113,11 +116,10 @@ class BaseIntrinsicMutualInformation(object):
             The joint distribution resulting from the distribution passed
             in and the optimization vector.
         """
-        n = self._crv_size
-        channel = x.reshape((n, n))
+        channel = x.reshape((self._crv_size, self._bound))
         channel /= channel.sum(axis=1, keepdims=True)
         channel[np.isnan(channel)] = self._mask[np.isnan(channel)]
-        slc = (len(self._pmf.shape) - 1)*[np.newaxis] + 2*[slice(None, None)]
+        slc = (len(self._pmf.shape) - 1)*[np.newaxis] + 2*[colon]
         joint = self._pmf[..., np.newaxis] * channel[slc]
 
         return joint
@@ -136,7 +138,7 @@ class BaseIntrinsicMutualInformation(object):
         cc : float
             The channel capacity.
         """
-        cc = channel_capacity(x.reshape(2*(self._crv_size,)).copy())[0]
+        cc = channel_capacity(x.reshape((self._crv_size, self._bound)).copy())[0]
         return cc
 
     @abstractmethod
@@ -185,15 +187,17 @@ class BaseIntrinsicMutualInformation(object):
                            accept_test=accept_test,
                           )
 
-        x_null = np.zeros((self._crv_size, self._crv_size))
+        x_null = np.zeros((self._crv_size, self._bound))
         x_null[:, 0] = 1
 
         x_id = np.eye(self._crv_size)
 
         options = [x_null, # mutual information
-                   x_id,   # conditional mutual information
                    res.x   # found optima
                   ]
+        if self._crv_size == self._bound:
+            # conditional mutual information
+            options.append(x_id)
 
         self._optima = min(options, key=lambda opt: self.objective(opt))
 
@@ -236,7 +240,7 @@ class BaseIntrinsicMutualInformation(object):
             return obj
 
         def constraint_normalized(x):
-            channel = x.reshape(self._crv_size, self._crv_size)
+            channel = x.reshape(self._crv_size, self._bound)
             return (channel.sum(axis=1) - 1).sum()**2
 
         minimizer_kwargs = {'method': 'SLSQP',
@@ -292,7 +296,7 @@ class BaseIntrinsicMutualInformation(object):
             alphabets += [self._unq.chars]
             string = True
         except:
-            alphabets += [list(range(self._crv_size))]
+            alphabets += [list(range(self._bound))]
             string = False
 
         joint = self.construct_joint(x)
@@ -314,8 +318,8 @@ class BaseIntrinsicMutualInformation(object):
         """
         Construct a functional form of the optimizer.
         """
-        def intrinsic(dist, rvs=None, crvs=None, rv_mode=None, nhops=None):
-            opt = cls(dist, rvs, crvs, rv_mode)
+        def intrinsic(dist, rvs=None, crvs=None, rv_mode=None, nhops=None, bound=None):
+            opt = cls(dist, rvs, crvs, rv_mode, bound=bound)
             opt.optimize(nhops=nhops)
             return opt.objective(opt._optima)
 
@@ -342,6 +346,9 @@ class BaseIntrinsicMutualInformation(object):
             equal to 'names', the the elements are interpreted as random
             variable names. If `None`, then the value of `dist._rv_mode` is
             consulted, which defaults to 'indices'.
+        bound : int, None
+            Bound on the size of the auxiliary variable. If None, use the
+            theoretical bound.
         """.format(name=cls.name)
 
         return intrinsic
@@ -368,7 +375,6 @@ class IntrinsicTotalCorrelation(BaseIntrinsicMutualInformation):
             The total correlation.
         """
         rvs = self._rvs
-        crv = [self._crv+1]
         joint = self.construct_joint(x)
         joint = joint.sum(axis=self._others, keepdims=True)
         margs = [ joint.sum(axis=tuple(flatten(rvs[:i]+rvs[i+1:]))) for i, _ in enumerate(rvs) ]
@@ -407,7 +413,6 @@ class IntrinsicDualTotalCorrelation(BaseIntrinsicMutualInformation):
             The dual total correlation.
         """
         rvs = self._rvs
-        crv = [self._crv+1]
         joint = self.construct_joint(x)
         joint = joint.sum(axis=self._others, keepdims=True)
         margs = [ joint.sum(axis=tuple(rv)) for rv in rvs ]
@@ -446,7 +451,6 @@ class IntrinsicCAEKLMutualInformation(BaseIntrinsicMutualInformation):
             The CAEKL mutual information.
         """
         rvs = frozenset(map(frozenset, self._rvs))
-        crv = [self._crv+1]
         joint = self.construct_joint(x)
         joint = joint.sum(axis=self._others, keepdims=True)
         crv = joint.sum(axis=tuple(flatten(rvs)))
@@ -521,7 +525,7 @@ def intrinsic_mutual_information(func):
     """.format(name=func.__name__)
     try:
         # python 2
-        IntrinsicTotalCorrelation.objective.__func__.__doc__ = docstring
+        IntrinsicMutualInformation.objective.__func__.__doc__ = docstring
     except AttributeError:
         # python 3
         IntrinsicMutualInformation.objective.__doc__ = docstring

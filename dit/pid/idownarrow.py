@@ -10,7 +10,10 @@ from __future__ import division
 
 from .pid import BaseUniquePID
 
-from ..multivariate import intrinsic_total_correlation
+from ..multivariate import (intrinsic_total_correlation,
+                            reduced_intrinsic_total_correlation,
+                            minimal_intrinsic_total_correlation,
+                           )
 from ..utils import flatten
 
 
@@ -52,3 +55,73 @@ class PID_downarrow(BaseUniquePID):
     """
     _name = "I_da"
     _measure = staticmethod(i_downarrow)
+
+
+def i_double_downarrow(d, inputs, output):
+    """
+    This computes unique information as I(input : output \Downarrow other_inputs).
+
+    Parameters
+    ----------
+    d : Distribution
+        The distribution to compute i_double_downarrow for.
+    inputs : iterable of iterables
+        The input variables.
+    output : iterable
+        The output variable.
+
+    Returns
+    -------
+    idda : dict
+        The value of I_double_downarrow for each individual input.
+    """
+    uniques = {}
+    for input_ in inputs:
+        others = list(inputs)
+        others.remove(input_)
+        others = list(flatten(others))
+        uniques[input_] = reduced_intrinsic_total_correlation(d, [input_, output], others, nhops=5)
+    return uniques
+
+
+class PID_double_downarrow(BaseUniquePID):
+    """
+    The reduced intrinsic mutual information partial information decomposition.
+    """
+    _name = "I_dda"
+    _measure = staticmethod(i_double_downarrow)
+
+
+def i_triple_downarrow(d, inputs, output):
+    """
+    This computes unique information as I(input : output \downarrow\downarrow\downarrow other_inputs).
+
+    Parameters
+    ----------
+    d : Distribution
+        The distribution to compute i_triple_downarrow for.
+    inputs : iterable of iterables
+        The input variables.
+    output : iterable
+        The output variable.
+
+    Returns
+    -------
+    itda : dict
+        The value of I_triple_downarrow for each individual input.
+    """
+    uniques = {}
+    for input_ in inputs:
+        others = list(inputs)
+        others.remove(input_)
+        others = list(flatten(others))
+        uniques[input_] = minimal_intrinsic_total_correlation(d, [input_, output], others, nhops=5)
+    return uniques
+
+
+class PID_triple_downarrow(BaseUniquePID):
+    """
+    The minimal intrinsic mutual information partial information decomposition.
+    """
+    _name = "I_tda"
+    _measure = staticmethod(i_triple_downarrow)

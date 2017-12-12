@@ -15,11 +15,9 @@ from .exact_common_information import exact_common_information
 from .functional_common_information import functional_common_information
 from .gk_common_information import gk_common_information
 from .interaction_information import interaction_information
-from .intrinsic_mutual_information import (intrinsic_total_correlation,
-                                           intrinsic_dual_total_correlation,
-                                           intrinsic_caekl_mutual_information)
 from .lautum_information import lautum_information
 from .mss_common_information import mss_common_information
+from .secret_key_agreement import *
 from .total_correlation import total_correlation
 from .tse_complexity import tse_complexity
 from .wyner_common_information import wyner_common_information

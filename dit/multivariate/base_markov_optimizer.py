@@ -15,7 +15,8 @@ from . import dual_total_correlation, entropy
 from ..utils.optimization import (BasinHoppingCallBack,
                                   BasinHoppingInnerCallBack,
                                   accept_test,
-                                  basinhop_status)
+                                  basinhop_status,
+                                  colon)
 
 class MarkovVarOptimizer(object):
     """
@@ -207,8 +208,6 @@ class MarkovVarOptimizer(object):
             An optimization vector.
         """
         cdists = self.construct_cdists(x)
-
-        colon = slice(None, None)
 
         # get p(x_0, w)
         slc = [colon]*len(self._pmf.shape) + [np.newaxis]*self._crv_len
