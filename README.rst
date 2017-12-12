@@ -54,10 +54,12 @@ Code and bug tracker:
 License:
    BSD 2-Clause, see LICENSE.txt for details.
 
-Implemented Measure
--------------------
+Implemented Measures
+--------------------
 
-``dit`` implements the following information measures:
+``dit`` implements the following information measures. Most of these are implemented in multivariate & conditional
+generality, where such generalizations either exist in the literature or are relatively obvious --- for example,
+though it is not in the literature, the multivariate conditional exact common information is implemented here.
 
 - Entropies:
 
@@ -65,13 +67,14 @@ Implemented Measure
   * Renyi Entropy
   * Tsallis Entropy
   * Necessary Conditional Entropy
+  * Residual Entropy / Independent Information / Variation of Information
 
 - Mutual Informations:
 
   * Co-Information
   * Interaction Information
-  * Total Correlation
-  * Dual Total Correlation
+  * Total Correlation / Multi-Information
+  * Dual Total Correlation / Binding Information
   * CAEKL Multivariate Mutual Information
 
 - Divergences
@@ -114,6 +117,8 @@ Implemented Measure
   * Connected Informations
   * Cumulative Residual Entropy
   * Extropy
+  * Information Diagrams
+  * Information Trimming
   * Lautum Information
   * LMPR Complexity
   * Marginal Utility of Information

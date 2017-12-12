@@ -10,6 +10,7 @@ import numpy as np
 from six.moves import zip # pylint: disable=redefined-builtin,import-error
 
 import dit
+from ..exceptions import ditException
 from ..distconst import mixture_distribution
 from ..shannon import entropy as H, entropy_pmf as H_pmf
 
@@ -45,7 +46,7 @@ def jensen_shannon_divergence_pmf(pmfs, weights=None):
     else:
         if len(weights) != len(pmfs):
             msg = "number of weights != number of pmfs"
-            raise dit.exceptions.ditException(msg)
+            raise ditException(msg)
         weights = np.asarray(weights, dtype=float)
         weights /= weights.sum()
 
@@ -63,10 +64,10 @@ def jensen_shannon_divergence(dists, weights=None):
 
     Parameters
     ----------
-    dists: [Distribution]
+    dists : [Distribution]
         The distributions, P_i, to take the Jensen-Shannon Divergence of.
 
-    weights: [float], None
+    weights : [float], None
         The weights, w_i, to give the distributions. If None, the weights are
         assumed to be uniform.
 
@@ -98,3 +99,68 @@ def jensen_shannon_divergence(dists, weights=None):
     two = sum(w*H(d) for w, d in zip(weights, dists))
     jsd = one - two
     return jsd
+
+def jensen_divergence(func):
+    """
+    Construct a Jensen-Shannon-like divergence measure from `func`. In order for this
+    resulting divergence to be non-negative, `func` must be convex.
+
+    Parameters
+    ----------
+    func : function
+        A convex function.
+
+    Returns
+    -------
+    jensen_func_divergence : function
+        The divergence based on `func`
+    """
+
+    def jensen_blank_divergence(dists, weights=None, *args, **kwargs):
+        if weights is None:
+            weights = np.array([1 / len(dists)] * len(dists))
+        else:
+            if hasattr(weights, 'pmf'):
+                m = 'Likely user error. Second argument should be weights.'
+                raise ditException(m)
+
+        # validation of `weights` is done in mixture_distribution,
+        # so we don't need to worry about it for the second part.
+        mixture = mixture_distribution(dists, weights, merge=True)
+        one = func(mixture, *args, **kwargs)
+        two = sum(w * func(d, *args, **kwargs) for w, d in zip(weights, dists))
+        jbd = one - two
+        return jbd
+
+    docstring = """
+        The Jensen-{name} Divergence: {name}(sum(w_i*P_i)) - sum(w_i*{name}(P_i)).
+
+        Parameters
+        ----------
+        dists : [Distribution]
+            The distributions, P_i, to take the Jensen-{name} Divergence of.
+
+        weights : [float], None
+            The weights, w_i, to give the distributions. If None, the weights are
+            assumed to be uniform.
+        
+        *args : 
+
+        Returns
+        -------
+        j{init}d: float
+            The Jensen-{name} Divergence
+
+        Raises
+        ------
+        ditException
+            Raised if there `dists` and `weights` have unequal lengths.
+        InvalidNormalization
+            Raised if the weights do not sum to unity.
+        InvalidProbability
+            Raised if the weights are not valid probabilities.
+        """.format(name=func.__name__, init=func.__name__[0])
+
+    jensen_blank_divergence.__doc__ = docstring
+
+    return jensen_blank_divergence

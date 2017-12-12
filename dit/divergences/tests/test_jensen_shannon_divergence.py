@@ -7,8 +7,10 @@ from dit import Distribution
 from dit.exceptions import ditException
 from dit.divergences.jensen_shannon_divergence import (
     jensen_shannon_divergence as JSD,
-    jensen_shannon_divergence_pmf as JSD_pmf
+    jensen_shannon_divergence_pmf as JSD_pmf,
+    jensen_divergence,
 )
+from dit.other import renyi_entropy
 
 def test_jsd0():
     """ Test the JSD of a distribution but with weights misspecified."""
@@ -83,3 +85,12 @@ def test_jsd_pmf5():
     d2 = [0.0, 0.5, 0.5]
     with pytest.raises(ditException):
         JSD_pmf([d1, d2], [0.1, 0.6, 0.2, 0.1])
+
+def test_plugable():
+    """ Tests for the pluggable form """
+    d1 = Distribution("AB", [0.5, 0.5])
+    d2 = Distribution("BC", [0.5, 0.5])
+    f = jensen_divergence(renyi_entropy)
+    val1 = f([d1, d2], order=1)
+    val2 = JSD([d1, d2])
+    assert val1 == pytest.approx(val2)
