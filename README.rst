@@ -60,33 +60,44 @@ Implemented Measure
 ``dit`` implements the following information measures:
 
 - Entropies:
+
   * Shannon Entropy
   * Renyi Entropy
   * Tsallis Entropy
   * Necessary Conditional Entropy
+
 - Mutual Informations:
+
   * Co-Information
   * Interaction Information
   * Total Correlation
   * Dual Total Correlation
   * CAEKL Multivariate Mutual Information
+
 - Divergences
+
   * Variational Distance
   * Kullback-Leibler Divergence
   * Cross Entropy
   * Jensen-Shannon Divergence
+
 - Common Informations:
+
   * Gacs-Korner Common Information
   * Wyner Common Information
   * Exact Common Information
   * Functional Common Information
   * MSS Common Information
+
 - Secret Key Agreement bounds:
+
   * Intrinsic Mutual Information
   * Reduced Intrinsic Mutual Information
   * Minimal Intrinsic Mutual Information
   * Necessary Intrinsic Mutual Information
+
 - Partial Information Decompositions:
+
   * :math:`I_{min}`
   * :math:`I_{\wedge}`
   * :math:`I_{\downarrow}`
@@ -95,7 +106,9 @@ Implemented Measure
   * :math:`I_{ccs}`
   * :math:`I_{\pm}`
   * :math:`I_{dep}`
+
 - Other measures
+
   * Channel Capacity
   * Complexity Profile
   * Connected Informations
@@ -106,6 +119,7 @@ Implemented Measure
   * Marginal Utility of Information
   * Perplexity
   * TSE Complexity
+
 
 Quickstart
 ----------

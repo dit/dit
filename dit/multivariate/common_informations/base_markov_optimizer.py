@@ -14,7 +14,9 @@ from ...math import close
 from ...utils.optimization import (BasinHoppingCallBack,
                                    BasinHoppingInnerCallBack,
                                    accept_test,
-                                   colon,)
+                                   basinhop_status,
+                                   colon,
+                                   )
 from ..dual_total_correlation import dual_total_correlation
 from ..entropy import entropy
 
