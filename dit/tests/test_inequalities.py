@@ -146,7 +146,11 @@ def test_data_processing_inequality_gk(dist):
 
 
 @given(dist=markov_chains(alphabets=((2, 4),)*3))
-@settings(timeout=unlimited, min_satisfying_examples=3, max_examples=5, suppress_health_check=[HealthCheck.hung_test])
+@settings(deadline=None,
+          timeout=unlimited,
+          min_satisfying_examples=3,
+          max_examples=5,
+          suppress_health_check=[HealthCheck.hung_test])
 def test_data_processing_inequality_wyner(dist):
     """
     given X - Y - Z:
@@ -158,7 +162,11 @@ def test_data_processing_inequality_wyner(dist):
 
 
 @given(dist=markov_chains(alphabets=((2, 4),)*3))
-@settings(timeout=unlimited, min_satisfying_examples=3, max_examples=5, suppress_health_check=[HealthCheck.hung_test])
+@settings(deadline=None,
+          timeout=unlimited,
+          min_satisfying_examples=3,
+          max_examples=5,
+          suppress_health_check=[HealthCheck.hung_test])
 def test_data_processing_inequality_exact(dist):
     """
     given X - Y - Z:

@@ -16,7 +16,7 @@ def test_1(dist, val):
     """
     Test against known values.
     """
-    rimi = reduced_intrinsic_total_correlation(dist, [[0], [1]], [2])
+    rimi = reduced_intrinsic_total_correlation(dist, [[0], [1]], [2], bound=(4,))
     assert rimi == pytest.approx(val, abs=1e-5)
 
 @pytest.mark.skip(reason="Calculation of RIMI is prohibitively slow.")
@@ -25,7 +25,7 @@ def test_2(dist, val):
     """
     Test against known values.
     """
-    rimi = reduced_intrinsic_dual_total_correlation(dist, [[0], [1]], [2])
+    rimi = reduced_intrinsic_dual_total_correlation(dist, [[0], [1]], [2], bound=(4,))
     assert rimi == pytest.approx(val, abs=1e-5)
 
 @pytest.mark.skip(reason="Calculation of RIMI is prohibitively slow.")
@@ -34,5 +34,5 @@ def test_3(dist, val):
     """
     Test against known values.
     """
-    rimi = reduced_intrinsic_CAEKL_mutual_information(dist, [[0], [1]], [2])
+    rimi = reduced_intrinsic_CAEKL_mutual_information(dist, [[0], [1]], [2], bound=(4,))
     assert rimi == pytest.approx(val, abs=1e-5)
