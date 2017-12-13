@@ -1316,7 +1316,7 @@ class Distribution(ScalarDistribution):
             alpha = str(self.alphabet[0]) + " for all rvs"
         else:
             alpha = str(self.alphabet)
-        ​
+
         # Outcome class
         outcome_class = self._outcome_class
         if outcome_class is not None:
