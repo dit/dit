@@ -333,6 +333,17 @@ class BaseDistribution(object):
         else:
             return super(BaseDistribution, self).__repr__()
 
+    def _repr_html_(self):
+        """
+        Construct an HTML representation of this distribution.
+
+        Returns
+        -------
+        html : str
+            An HTML representation.
+        """
+        return self.to_html()
+
     def __reversed__(self):
         """
         Returns a reverse iterator over the outcomes.
@@ -595,6 +606,60 @@ class BaseDistribution(object):
 
         """
         return dict(self.zipped())
+
+    def to_html(self, digits=None, exact=None, tol=1e-9):
+        """
+        Construct an HTML representation of the distribution.
+
+        Parameters
+        ----------
+        digits : int or None
+            The probabilities will be rounded to the specified number of
+            digits, using NumPy's around function. If `None`, then no rounding
+            is performed. Note, if the number of digits is greater than the
+            precision of the floats, then the resultant number of digits will
+            match that smaller precision.
+        exact : bool
+            If `True`, then linear probabilities will be displayed, even if
+            the underlying pmf contains log probabilities.  The closest
+            rational fraction within a tolerance specified by `tol` is used
+            as the display value.
+        tol : float
+            If `exact` is `True`, then the probabilities will be displayed
+            as the closest rational fraction within `tol`.
+
+        Returns
+        -------
+        output : str
+            An HTML version of this distribution.
+        """
+        if exact is None:
+            exact = ditParams['print.exact']
+
+        x = prepare_string(self, digits, exact, tol)
+        pmf, outcomes, base, colsep, max_length, pstr = x
+
+        info = [
+            ("Class", self.__class__.__name__),
+            ("Alphabet", self.alphabet),
+            ("Base", base),
+        ]
+        infos = ''.join("<tr><th>{}:</th><td>{}</td></tr>".format(a, b) for a, b in info)
+        header = '<table border="1">{}</table>'.format(infos)
+
+        rv_names = self.get_rv_names()
+        if rv_names is None:
+            rv_names = ["x[{}]".format(i) for i in range(self.outcome_length())]
+
+        table_header = '<tr>' + ''.join("<th>{}</th>".format(a) for a in rv_names) + "<th>{}</th></tr>".format(pstr)
+        table_rows = ''.join(
+            '<tr>' + ''.join('<td>{}</td>'.format(_) for _ in o) + '<td>{}</td></tr>'.format(p) for o, p in
+            zip(outcomes, pmf))
+        table = '<table>{}{}</table>'.format(table_header, table_rows)
+
+        output = '<div><div style="float: left">{}</div><div style="float: left">{}</div></div>'.format(header, table)
+
+        return output
 
     def to_string(self, digits=None, exact=None, tol=1e-9):
         """

@@ -1292,6 +1292,59 @@ class Distribution(ScalarDistribution):
             self._rv_mode = 'names'
 
 
+    def to_html(self, digits=None, exact=None, tol=1e-9):
+        """
+        Construct an HTML representation of the distribution.
+
+        Returns
+        -------
+        output : str
+            An HTML version of this distribution.
+        """
+        from .distribution import prepare_string
+
+        if exact is None:
+            exact = ditParams['print.exact']
+
+        x = prepare_string(self, digits, exact, tol)
+        pmf, outcomes, base, colsep, max_length, pstr = x
+
+        # Alphabet
+        if len(self.alphabet) == 0:
+            alpha = "()"
+        elif self.is_homogeneous():
+            alpha = str(self.alphabet[0]) + " for all rvs"
+        else:
+            alpha = str(self.alphabet)
+        ​
+        # Outcome class
+        outcome_class = self._outcome_class
+        if outcome_class is not None:
+            outcome_class = outcome_class.__name__
+
+        info = [
+            ("Class", self.__class__.__name__),
+            ("Alphabet", alpha),
+            ("Base", base),
+            ("Outcome Class", outcome_class),
+            ("Outcome Lenght", self.outcome_length()),
+        ]
+        infos = ''.join("<tr><th>{}:</th><td>{}</td></tr>".format(a, b) for a, b in info)
+        header = '<table border="1">{}</table>'.format(infos)
+
+        rv_names = self.get_rv_names()
+        if rv_names is None:
+            rv_names = ["x[{}]".format(i) for i in range(self.outcome_length())]
+
+        table_header = '<tr>' + ''.join("<th>{}</th>".format(a) for a in rv_names) + "<th>{}</th></tr>".format(pstr)
+        table_rows = ''.join(
+            '<tr>' + ''.join('<td>{}</td>'.format(_) for _ in o) + '<td>{}</td></tr>'.format(p) for o, p in zip(outcomes, pmf))
+        table = '<table>{}{}</table>'.format(table_header, table_rows)
+
+        output = '<div><div style="float: left">{}</div><div style="float: left">{}</div></div>'.format(header, table)
+
+        return output
+
     def to_string(self, digits=None, exact=None, tol=1e-9, show_mask=False,
                         str_outcomes=False):
         """
