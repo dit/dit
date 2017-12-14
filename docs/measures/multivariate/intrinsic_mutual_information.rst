@@ -13,15 +13,6 @@ The intrinsic mutual information was defined in :cite:`maurer1997intrinsic` as:
 
 The intrinsic mutual information was defined as an upper bound on the rate of secret key agreement.
 
-Information Flow
-================
-
-Compared to the transfer entropy, it is also a plausibly superior measure of information flow:
-
-.. math::
-
-   T^\prime_{X \rightarrow Y} = \I{X_0^t : Y_t \downarrow Y_0^t}
-
 Generalizations
 ===============
 
@@ -42,7 +33,7 @@ The following example is given in :cite:`maurer1997intrinsic`:
 
    In [1]: from dit.multivariate import intrinsic_total_correlation, total_correlation
 
-   In [2]: d = dit.Distribution(['000', '011', '101', '110', '222', '333'], [1/8]*4 + [1/4]*2)
+   In [2]: d = dit.example_dists.intrinsic import intrinsic_1
 
    @doctest float
    In [3]: total_correlation(d, [[0], [1]], [2])

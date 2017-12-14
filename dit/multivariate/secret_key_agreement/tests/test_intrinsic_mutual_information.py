@@ -14,7 +14,7 @@ from dit import Distribution
 from dit.example_dists.intrinsic import intrinsic_1, intrinsic_2, intrinsic_3
 from dit.exceptions import ditException
 from dit.multivariate import total_correlation
-from dit.multivariate.secret_key_agreement import intrinsic_mutual_information as IMI
+from dit.multivariate.secret_key_agreement import intrinsic_mutual_informations as IMI
 
 
 from dit.utils.testing import distributions

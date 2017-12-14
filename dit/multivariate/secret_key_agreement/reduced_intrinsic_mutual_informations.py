@@ -7,10 +7,10 @@ from __future__ import division
 from abc import abstractmethod
 
 from .base_intrinsic_information import BaseMoreIntrinsicMutualInformation
-from .intrinsic_mutual_information import (intrinsic_total_correlation,
-                                           intrinsic_dual_total_correlation,
-                                           intrinsic_caekl_mutual_information,
-                                          )
+from .intrinsic_mutual_informations import (intrinsic_total_correlation,
+                                            intrinsic_dual_total_correlation,
+                                            intrinsic_caekl_mutual_information,
+                                            )
 from ... import Distribution
 from ...shannon import entropy_pmf as h
 
