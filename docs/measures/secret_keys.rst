@@ -41,10 +41,11 @@ Two lower bounds are known for :math:`S[X : Y || Z]`, one tighter than the other
 Necessary Intrinsic Mutual Information
 --------------------------------------
 
-A tighter bound is given by the :py:func:`necessary_intrinsic_mutual_information` :cite:``:
+A tighter bound is given by the :py:func:`necessary_intrinsic_mutual_information` :cite:`gohari2017achieving`:
 
 .. math::
 
+   \displaystyle
    \I{X : Y \uparrow \uparrow Z} = \max \begin{cases} \max_{V - U - X - YZ} \I{U : Y | V} - \I{U : Z | V} \\
                                                       \max_{V - U - Y - XZ} \I{U : X | V} - \I{U : Z | V}
                                         \end{cases}
