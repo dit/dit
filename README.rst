@@ -122,6 +122,8 @@ though it is not in the literature, the multivariate conditional exact common in
   * Lautum Information
   * LMPR Complexity
   * Marginal Utility of Information
+  * Maximum Correlation
+  * Maximum Entropy Distributions
   * Perplexity
   * TSE Complexity
 
