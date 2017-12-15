@@ -17,7 +17,7 @@ from .distributions import bivariates, trivariates
 __all_pids = [
     PID_MMI,
     PID_downarrow,
-    PID_double_downarrow,
+    # PID_double_downarrow,
     PID_triple_downarrow,
     PID_GK,
     PID_WB,

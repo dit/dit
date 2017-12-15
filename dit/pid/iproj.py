@@ -170,7 +170,7 @@ def projected_information(dist, X, Y, Z):
     for d in p_z_ys:
         d.make_dense()
     domain = [d.pmf for d in p_z_ys]
-    p_xz = dist.marginal(X + Z)
+    p_xz = dist.coalesce((X, Z)) # can't use marginal, order is important
     p_z = dist.marginal(Z)
     p_x, p_z_xs = dist.condition_on(rvs=Z, crvs=X)
 
@@ -178,7 +178,7 @@ def projected_information(dist, X, Y, Z):
     for x, p_z_x in zip(p_x.outcomes, p_z_xs):
         p_proj_z = min_dkl(p_z_x, domain)
         for z in p_z.outcomes:
-            vals.append(p_xz[x + z] * np.log2(p_proj_z[z] / p_z[z]))
+            vals.append(p_xz[(x, z)] * np.log2(p_proj_z[z] / p_z[z]))
     val = np.nansum(vals)
 
     return val
