@@ -157,6 +157,10 @@ First, we consider the distribution ``intrinsic_1``:
    222   1/4
    333   1/4
 
+With upper bounds:
+
+.. ipython::
+
    In [4]: upper_intrinsic_mutual_information(intrinsic_1, [[0], [1]], [2])
 
    Out[4]: 0.5

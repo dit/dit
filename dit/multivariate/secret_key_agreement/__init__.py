@@ -22,7 +22,7 @@ from .trivial_bounds import (lower_intrinsic_mutual_information,
                              upper_intrinsic_caekl_mutual_information,
                              )
 
-intrinsic_mutual_information = intrinsic_dual_total_correlation
+intrinsic_mutual_information = intrinsic_total_correlation
 reduced_intrinsic_mutual_information = reduced_intrinsic_total_correlation
 minimal_intrinsic_mutual_information = minimal_intrinsic_total_correlation
 upper_intrinsic_mutual_information = upper_intrinsic_total_correlation
