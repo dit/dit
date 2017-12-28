@@ -131,11 +131,11 @@ Examples
 
 Let us consider a few examples:
 
-.. .. ipython::
-..
-..    In [1]: from dit.multivariate.secret_key_agreement import *
-..
-..    In [2]: from dit.example_dists.intrinsic import intrinsic_1, intrinsic_2, intrinsic_3
+.. ipython::
+
+   In [1]: from dit.multivariate.secret_key_agreement import *
+
+   In [2]: from dit.example_dists.intrinsic import intrinsic_1, intrinsic_2, intrinsic_3
 
 
 First, we consider the distribution ``intrinsic_1``:
