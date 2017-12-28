@@ -1,5 +1,5 @@
 .. gk_common_information.rst
-.. py:module:: dit.multivariate.gk_common_information
+.. py:module:: dit.multivariate.common_informations.gk_common_information
 
 ******************************
 Gács-Körner Common Information

@@ -1,5 +1,5 @@
 .. wyner_common_information.rst
-.. py:module:: dit.multivariate.wyner_common_information
+.. py:module:: dit.multivariate.common_informations.wyner_common_information
 
 ************************
 Wyner Common Information
