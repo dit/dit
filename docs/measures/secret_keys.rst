@@ -177,23 +177,23 @@ The :py:func:`intrinsic_mutual_information`, however can detect this:
 
 Next, let's consider the distribution ``intrinsic_2``:
 
-.. .. ipython::
-..
-..    In [7]: print(intrinsic_2)
-..    Class:          Distribution
-..    Alphabet:       (('0', '1', '2', '3'), ('0', '1', '2', '3'), ('0', '1'))
-..    Base:           linear
-..    Outcome Class:  str
-..    Outcome Length: 3
-..    RV Names:       None
-..
-..    x     p(x)
-..    000   1/8
-..    011   1/8
-..    101   1/8
-..    110   1/8
-..    220   1/4
-..    331   1/4
+.. ipython::
+
+   In [7]: print(intrinsic_2)
+   Class:          Distribution
+   Alphabet:       (('0', '1', '2', '3'), ('0', '1', '2', '3'), ('0', '1'))
+   Base:           linear
+   Outcome Class:  str
+   Outcome Length: 3
+   RV Names:       None
+
+   x     p(x)
+   000   1/8
+   011   1/8
+   101   1/8
+   110   1/8
+   220   1/4
+   331   1/4
 
 In this case, :math:`Z` no longer can distinguish between the case where :math:`X` and :math:`Y` can agree on a secret bit, and when they can not, because she can not determine when they are in the :math:`01` regime or in the :math:`23` regime:
 
