@@ -1338,7 +1338,7 @@ class Distribution(ScalarDistribution):
 
         table_header = '<tr>' + ''.join("<th>{}</th>".format(a) for a in rv_names) + "<th>{}</th></tr>".format(pstr)
         table_rows = ''.join(
-            '<tr>' + ''.join('<td>{}</td>'.format(_) for _ in o) + '<td>{}</td></tr>'.format(p) for o, p in zip(outcomes, pmf))
+            '<tr>' + ''.join('<td>{}</td>'.format(str(_)) for _ in o) + '<td>{}</td></tr>'.format(p) for o, p in zip(self.outcomes, pmf))
         table = '<table>{}{}</table>'.format(table_header, table_rows)
 
         output = '<div><div style="float: left">{}</div><div style="float: left">{}</div></div>'.format(header, table)
