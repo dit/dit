@@ -142,6 +142,7 @@ First, we consider the distribution ``intrinsic_1``:
 .. ipython::
 
    In [3]: print(intrinsic_1)
+
    Class:          Distribution
    Alphabet:       ('0', '1', '2', '3') for all rvs
    Base:           linear
@@ -180,6 +181,7 @@ Next, let's consider the distribution ``intrinsic_2``:
 .. ipython::
 
    In [7]: print(intrinsic_2)
+
    Class:          Distribution
    Alphabet:       (('0', '1', '2', '3'), ('0', '1', '2', '3'), ('0', '1'))
    Base:           linear
