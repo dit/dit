@@ -137,7 +137,6 @@ Let us consider a few examples:
 
    In [2]: from dit.example_dists.intrinsic import intrinsic_1, intrinsic_2, intrinsic_3
 
-
 First, we consider the distribution ``intrinsic_1``:
 
 .. .. ipython::
@@ -160,11 +159,11 @@ First, we consider the distribution ``intrinsic_1``:
 
 With upper bounds:
 
-.. .. ipython::
-..
-..    In [4]: upper_intrinsic_mutual_information(intrinsic_1, [[0], [1]], [2])
-..
-..    Out[4]: 0.5
+.. ipython::
+
+   In [4]: upper_intrinsic_mutual_information(intrinsic_1, [[0], [1]], [2])
+
+   Out[4]: 0.5
 
 We see that the trivial upper bound is 0.5, because without conditioning on :math:`Z`, :math:`X` and :math:`Y` can agree when the observe either a :math:`2` or a :math:`3`, which results in :math:`\I{X : Y} = 0.5`. Given :math:`Z`, however, that information is no longer private. But, given :math:`Z`, a conditional dependence is induced between :math:`X` and :math:`Y`: :math:`Z` knows that if she is a :math:`0` that :math:`X` and :math:`Y` agree, and if she is a :math:`1` they disagree. This results :math:`\I{X : Y | Z} = 0.5`. In either case, however, :math:`X` and :math:`Y` can not agree upon a secret key: in the first case the eavesdropper knows their correlation, while in the second they are actually independent.
 
