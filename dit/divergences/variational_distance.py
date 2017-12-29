@@ -125,7 +125,10 @@ def hellinger_distance_pmf(p, q):
     bc : float
         The Hellinger distance.
     """
-    return np.sqrt(1 - bhattacharyya_coefficient_pmf(p, q))
+    bc = bhattacharyya_coefficient_pmf(p, q)
+    hd = np.sqrt(1 - bc)
+    hd = 1 if np.isnan(hd) else hd
+    return hd
 
 def hellinger_distance(dist1, dist2):
     """

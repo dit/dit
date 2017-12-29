@@ -19,7 +19,7 @@ from dit.multivariate import (entropy as H,
                              )
 
 
-epsilon = 1e-8
+epsilon = 1e-6
 
 @given(dist=distributions())
 def test_entropy_upper_bound(dist):
@@ -158,7 +158,7 @@ def test_data_processing_inequality_wyner(dist):
     """
     c_xy = C(dist, [[0], [1]])
     c_xz = C(dist, [[0], [2]])
-    assert c_xz <= c_xy + 1000*epsilon
+    assert c_xz <= c_xy + 10*epsilon
 
 
 @given(dist=markov_chains(alphabets=((2, 4),)*3))
@@ -174,7 +174,7 @@ def test_data_processing_inequality_exact(dist):
     """
     g_xy = G(dist, [[0], [1]])
     g_xz = G(dist, [[0], [2]])
-    assert g_xz <= g_xy + 1000*epsilon
+    assert g_xz <= g_xy + 10*epsilon
 
 
 @given(dist=distributions(alphabets=((2, 4),)*2))
