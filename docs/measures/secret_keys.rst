@@ -159,21 +159,19 @@ First, we consider the distribution ``intrinsic_1``:
 
 With upper bounds:
 
-.. .. ipython::
-..
-..    In [4]: upper_intrinsic_mutual_information(intrinsic_1, [[0], [1]], [2])
-..
-..    Out[4]: 0.5
+.. ipython::
+
+   In [4]: upper_intrinsic_mutual_information(intrinsic_1, [[0], [1]], [2])
+   Out[4]: 0.5
 
 We see that the trivial upper bound is 0.5, because without conditioning on :math:`Z`, :math:`X` and :math:`Y` can agree when the observe either a :math:`2` or a :math:`3`, which results in :math:`\I{X : Y} = 0.5`. Given :math:`Z`, however, that information is no longer private. But, given :math:`Z`, a conditional dependence is induced between :math:`X` and :math:`Y`: :math:`Z` knows that if she is a :math:`0` that :math:`X` and :math:`Y` agree, and if she is a :math:`1` they disagree. This results :math:`\I{X : Y | Z} = 0.5`. In either case, however, :math:`X` and :math:`Y` can not agree upon a secret key: in the first case the eavesdropper knows their correlation, while in the second they are actually independent.
 
 The :py:func:`intrinsic_mutual_information`, however can detect this:
 
-.. .. ipython::
-..
-..    In [5]: intrinsic_mutual_information(intrinsic_1, [[0], [1]], [2])
-..
-..    Out[5]: 0.0
+.. ipython::
+
+   In [5]: intrinsic_mutual_information(intrinsic_1, [[0], [1]], [2])
+   Out[5]: 0.0
 
 Next, let's consider the distribution ``intrinsic_2``:
 
@@ -197,16 +195,14 @@ Next, let's consider the distribution ``intrinsic_2``:
 
 In this case, :math:`Z` no longer can distinguish between the case where :math:`X` and :math:`Y` can agree on a secret bit, and when they can not, because she can not determine when they are in the :math:`01` regime or in the :math:`23` regime:
 
-.. .. ipython::
-..
-..    In [8]: intrinsic_mutual_information(intrinsic_2, [[0], [1]], [2])
-..
-..    Out[8]: 1.5
+.. ipython::
+
+   In [8]: intrinsic_mutual_information(intrinsic_2, [[0], [1]], [2])
+   Out[8]: 1.5
 
 This seems to imply that :math:`X` and :math:`Y` can adopt a scheme such as: if they observe either a :math:`0` or a :math:`1`, write down :math:`0`, and if they observe either a :math:`2` or a :math:`3`, write that down. This has a weakness, however: what if :math:`Z` were able to distinguish the two regimes? This costs her :math:`1` bit, but reduces the secrecy of :math:`X` and :math:`Y` to nil. Thus, the secret key agreement rate is actually only :math:`1` bit:
 
-.. .. ipython::
-..
-..    In [9]: minimal_intrinsic_mutual_information(intrinsic_2, [[0], [1]], [2], bounds=(3,))
-..
-..    Out[9]: 1.0
+.. ipython::
+
+   In [9]: minimal_intrinsic_mutual_information(intrinsic_2, [[0], [1]], [2], bounds=(3,))
+   Out[9]: 1.0
