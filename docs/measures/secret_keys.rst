@@ -45,10 +45,11 @@ A tighter bound is given by the :py:func:`necessary_intrinsic_mutual_information
 
 .. math::
 
-   \displaystyle
-   \I{X : Y \uparrow \uparrow Z} = \max \begin{cases} \max_{V - U - X - YZ} \I{U : Y | V} - \I{U : Z | V} \\
-                                                      \max_{V - U - Y - XZ} \I{U : X | V} - \I{U : Z | V}
-                                        \end{cases}
+   \I{X : Y \uparrow \uparrow Z} = \max
+      \begin{cases}
+         \displaystyle \max_{V - U - X - YZ} \I{U : Y | V} - \I{U : Z | V} \\
+         \displaystyle \max_{V - U - Y - XZ} \I{U : X | V} - \I{U : Z | V}
+      \end{cases}
 
 
 Upper Bounds
