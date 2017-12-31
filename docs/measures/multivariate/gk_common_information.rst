@@ -11,7 +11,7 @@ The Gács-Körner common information :cite:`Gacs1973` take a very direct approac
 The Common Information Game
 ===========================
 
-Let's play a game. We have an n-variable joint distribution, and one player for each variable. Each player is given the probability mass function of the joint distribution then isolated from each other. Each round of the game the a joint outcome is generated from the distribution and each player is told the symbol that their particular variable took. The goal of the game is for the players to simultaneously write the same symbol on a piece of paper, and for the entropy of the players' symbols to be maximized. They must do this using only their knowledge of the joint random variable and the particular outcome of their marginal variable. The matching symbols produced by the players are called the *common random variable* and the entropy of that variable is the Gács-Körner common information, :math:`\K`.
+Let's play a game. We have an n-variable joint distribution, and one player for each variable. Each player is given the probability mass function of the joint distribution then isolated from each other. Each round of the game the a joint outcome is generated from the distribution and each player is told the symbol that their particular variable took. The goal of the game is for the players to simultaneously write the same symbol on a piece of paper, and for the entropy of the players' symbols to be maximized. They must do this using only their knowledge of the joint random variable and the particular outcome of their marginal variable. The matching symbols produced by the players are called the *common random variable* and the entropy of that variable is the Gács-Körner common information, :math:`\K{}`.
 
 
 Two Variables
@@ -21,8 +21,8 @@ Consider a joint distribution over :math:`X_0` and :math:`X_1`. Given any partic
 
 .. math::
 
-   \K[X_0 : X_1] &= \max_{f(X_0) = g(X_1) = V} \H[V] \\
-                 &= \H[X_0 \meet X_1]
+   \K{X_0 : X_1} &= \max_{f(X_0) = g(X_1) = V} \H{V} \\
+                 &= \H{X_0 \meet X_1}
 
 As a canonical example, consider the following:
 
