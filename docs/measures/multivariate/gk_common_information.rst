@@ -147,6 +147,22 @@ The multivariate common information follows a similar inequality as the two vari
 
    0 \leq \K{X_0 : \dots : X_n} \leq \min_{i, j \in \left\{0..n\right\}} \I{X_i : X_j}
 
+It is interesting to note that the Gács-Körner common information can be non-zero even when the :ref:`coinformation` is negative:
+
+.. ipython::
+
+   In [16]: d = dit.example_dists.miscellaneous.gk_pos_i_neg
+
+   In [17]: from dit.multivariate import coinformation as I
+
+   @doctest float
+   In [18]: K(d)
+   Out[18]: 0.5435644431995964
+
+   @doctest float
+   In [19]: I(d)
+   Out[19]: -0.33143555680040304
+
 Visualization
 -------------
 

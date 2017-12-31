@@ -161,6 +161,7 @@ With upper bounds:
 
 .. ipython::
 
+   @doctest float
    In [4]: upper_intrinsic_mutual_information(intrinsic_1, [[0], [1]], [2])
    Out[4]: 0.5
 
@@ -170,6 +171,7 @@ The :py:func:`intrinsic_mutual_information`, however can detect this:
 
 .. ipython::
 
+   @doctest float
    In [5]: intrinsic_mutual_information(intrinsic_1, [[0], [1]], [2])
    Out[5]: 0.0
 
@@ -197,6 +199,7 @@ In this case, :math:`Z` no longer can distinguish between the case where :math:`
 
 .. ipython::
 
+   @doctest float
    In [8]: intrinsic_mutual_information(intrinsic_2, [[0], [1]], [2])
    Out[8]: 1.5
 
@@ -204,5 +207,6 @@ This seems to imply that :math:`X` and :math:`Y` can adopt a scheme such as: if 
 
 .. ipython::
 
+   @doctest float
    In [9]: minimal_intrinsic_mutual_information(intrinsic_2, [[0], [1]], [2], bounds=(3,))
    Out[9]: 1.0
