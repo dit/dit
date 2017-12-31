@@ -151,16 +151,16 @@ It is interesting to note that the Gács-Körner common information can be non-z
 
 .. ipython::
 
-   In [16]: d = dit.example_dists.miscellaneous.gk_pos_i_neg
+   In [16]: from dit.example_dists.miscellaneous import gk_pos_i_neg
 
    In [17]: from dit.multivariate import coinformation as I
 
    @doctest float
-   In [18]: K(d)
+   In [18]: K(gk_pos_i_neg)
    Out[18]: 0.5435644431995964
 
    @doctest float
-   In [19]: I(d)
+   In [19]: I(gk_pos_i_neg)
    Out[19]: -0.33143555680040304
 
 Visualization
