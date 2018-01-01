@@ -7,6 +7,7 @@ from __future__ import division
 import numpy as np
 
 from scipy.special import digamma
+from scipy.spatial import cKDTree
 
 from six.moves import zip
 
@@ -223,5 +224,4 @@ try:
     from sklearn.neighbors import KDTree
     total_correlation_ksg = _total_correlation_ksg_sklearn
 except ImportError:
-    from scipy.spatial import cKDTree
     total_correlation_ksg = _total_correlation_ksg_scipy
