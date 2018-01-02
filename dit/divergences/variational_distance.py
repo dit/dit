@@ -170,9 +170,17 @@ def chernoff_information_pmf(p, q):
     def func(alpha):
         return np.log2((p**alpha * q**(1-alpha)).sum())
 
-    res = minimize_scalar(fun=func, bounds=(0, 1))
+    res = minimize_scalar(fun=func, bounds=(0, 1), method='bounded')
 
-    return -func(res.x)
+    if not -1e-8 <= res.x <= 1 + 1e-8:
+        msg = "Appropriate optima could not be found."
+        raise ditException(msg)
+
+    ci = -func(res.x)
+    if ci < 0:
+        ci = 0
+
+    return ci
 
 def chernoff_information(dist1, dist2):
     """
