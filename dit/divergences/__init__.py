@@ -27,6 +27,7 @@ from .generalized_divergences import (
 
 from .variational_distance import (
     bhattacharyya_coefficient,
+    chernoff_information,
     hellinger_distance,
     variational_distance,
 )

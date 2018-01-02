@@ -10,7 +10,12 @@ from dit.utils.testing import distributions, markov_chains
 
 from dit import ScalarDistribution as SD
 from dit.algorithms import maximum_correlation
-from dit.divergences import hellinger_distance, relative_entropy, variational_distance
+from dit.divergences import (chernoff_information,
+                             hellinger_distance,
+                             relative_entropy,
+                             variational_distance,
+                            )
+from dit.divergences.variational_distance import _normalize_pmfs
 from dit.multivariate import (entropy as H,
                               total_correlation as I,
                               gk_common_information as K,
@@ -197,3 +202,17 @@ def test_hellinger_variational(dist1, dist2):
     v = variational_distance(dist1, dist2)
     assert h**2 <= v + epsilon
     assert v <= np.sqrt(2)*h + epsilon
+
+@given(dist1=distributions(alphabets=(10,)), dist2=distributions(alphabets=(10,)))
+def test_chernoff_inequalities(dist1, dist2):
+    """
+    1/8 sum p_i ((q_i - p_i)/max(p_i, q_i))^2 <= 1 - 2^(-C)
+                                              <= 1/8 sum p_i ((q_i - p_i)/min(p_i, q_i))^2
+    """
+    p, q = _normalize_pmfs(dist1, dist2)
+    pq = np.vstack([p, q])
+    c = chernoff_information(dist1, dist2)
+    a = (p*((q-p)/pq.max(axis=0))**2)/8
+    b = (p*((q-p)/pq.min(axis=0))**2)/8
+    assert a <= 1 - 2**(-c) + epsilon
+    assert 1 - 2**(-c) <= b + epsilon

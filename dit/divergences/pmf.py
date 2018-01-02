@@ -14,6 +14,7 @@ from ._kl_nonmerge import (
 
 from .variational_distance import (
     bhattacharyya_coefficient_pmf as bhattacharyya_coefficient,
+    chernoff_information_pmf as chernoff_information,
     hellinger_distance_pmf as hellinger_distance,
     variational_distance_pmf as variational_distance,
 )

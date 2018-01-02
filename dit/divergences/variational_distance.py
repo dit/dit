@@ -5,6 +5,7 @@ The variational distance.
 from __future__ import division
 
 import numpy as np
+from scipy.optimize import minimize_scalar
 
 def _normalize_pmfs(dist1, dist2):
     """
@@ -122,7 +123,7 @@ def hellinger_distance_pmf(p, q):
 
     Returns
     -------
-    bc : float
+    hd : float
         The Hellinger distance.
     """
     bc = bhattacharyya_coefficient_pmf(p, q)
@@ -143,9 +144,52 @@ def hellinger_distance(dist1, dist2):
 
     Returns
     -------
-    bc : float
+    hd : float
         The Hellinger distance.
     """
     p, q = _normalize_pmfs(dist1, dist2)
     hd = hellinger_distance_pmf(p, q)
     return hd
+
+def chernoff_information_pmf(p, q):
+    """
+    Compute the Chernoff information.
+
+    Parameters
+    ----------
+    p : np.ndarray
+        The first pmf.
+    q : np.ndarray
+        The second pmf.
+
+    Returns
+    -------
+    ci : float
+        The Chernoff information.
+    """
+    def func(alpha):
+        return np.log2((p**alpha * q**(1-alpha)).sum())
+
+    res = minimize_scalar(fun=func, bounds=(0, 1))
+
+    return -func(res.x)
+
+def chernoff_information(dist1, dist2):
+    """
+    Compute the Chernoff information.
+
+    Parameters
+    ----------
+    dist1 : Distribution
+        The first distribution.
+    dist2 : Distribution
+        The second distribution.
+
+    Returns
+    -------
+    ci : float
+        The Chernoff information.
+    """
+    p, q = _normalize_pmfs(dist1, dist2)
+    ci = chernoff_information_pmf(p, q)
+    return ci
