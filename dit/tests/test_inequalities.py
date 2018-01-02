@@ -212,7 +212,7 @@ def test_chernoff_inequalities(dist1, dist2):
     p, q = _normalize_pmfs(dist1, dist2)
     pq = np.vstack([p, q])
     c = chernoff_information(dist1, dist2)
-    a = (p*((q-p)/pq.max(axis=0))**2)/8
-    b = (p*((q-p)/pq.min(axis=0))**2)/8
+    a = (p*((q-p)/pq.max(axis=0))**2).sum()/8
+    b = (p*((q-p)/pq.min(axis=0))**2).sum()/8
     assert a <= 1 - 2**(-c) + epsilon
     assert 1 - 2**(-c) <= b + epsilon
