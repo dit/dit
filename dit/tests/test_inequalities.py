@@ -203,7 +203,8 @@ def test_hellinger_variational(dist1, dist2):
     assert h**2 <= v + epsilon
     assert v <= np.sqrt(2)*h + epsilon
 
-@given(dist1=distributions(alphabets=(10,)), dist2=distributions(alphabets=(10,)))
+@given(dist1=distributions(alphabets=(10,), nondegenerate=True),
+       dist2=distributions(alphabets=(10,), nondegenerate=True))
 def test_chernoff_inequalities(dist1, dist2):
     """
     1/8 sum p_i ((q_i - p_i)/max(p_i, q_i))^2 <= 1 - 2^(-C)
@@ -214,5 +215,7 @@ def test_chernoff_inequalities(dist1, dist2):
     c = chernoff_information(dist1, dist2)
     a = (p*((q-p)/pq.max(axis=0))**2).sum()/8
     b = (p*((q-p)/pq.min(axis=0))**2).sum()/8
+    print(p)
+    print(q)
     assert a <= 1 - 2**(-c) + epsilon
     assert 1 - 2**(-c) <= b + epsilon
