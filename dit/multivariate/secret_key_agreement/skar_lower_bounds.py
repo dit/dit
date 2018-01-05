@@ -1,5 +1,5 @@
 """
-
+A lower bound on the secret key agreement rate.
 """
 
 from __future__ import division
@@ -12,16 +12,16 @@ from ...helpers import flatten, parse_rvs
 from ...utils.optimization import Uniquifier, accept_test, colon
 
 __all__ = [
-    'lower_intrinsic_mutual_information',
     'necessary_intrinsic_mutual_information',
+    'secrecy_capacity',
 ]
 
 
-class NecessaryIntrinsicMutualInformation(object):
+class BaseSKARLowerBounds(object):
     """
-    Compute a lower bound on the secret key agreement rate:
+    Compute lower bounds on the secret key agreement rate of the form:
 
-        I_X[X:Y \\uparrow\\uparrow Z] = max_{V - U - X - YZ} I[U:Y|V] - I[U:Z|V]
+        max_{V - U - X - YZ} objective()
     """
 
     def __init__(self, dist, rv_x=None, rv_y=None, rv_z=None, rv_mode=None, bound_u=None, bound_v=None):
@@ -78,13 +78,13 @@ class NecessaryIntrinsicMutualInformation(object):
         self._u = {3}
         self._v = {4}
 
-        theoretical_bound_u = self._shape[-3]  # |X|
+        theoretical_bound_u = self._get_u_bound()
         if bound_u is not None:
             self._bound_u = min(bound_u, theoretical_bound_u)
         else:
             self._bound_u = theoretical_bound_u
 
-        theoretical_bound_v = self._shape[-3] ** 2  # |X|**2
+        theoretical_bound_v = self._get_v_bound()
         if bound_v is not None:
             self._bound_v = min(bound_v, theoretical_bound_v)
         else:
@@ -178,30 +178,6 @@ class NecessaryIntrinsicMutualInformation(object):
 
         return cmi
 
-    def objective(self, x):
-        """
-        The multivariate mutual information to minimize.
-
-        Parameters
-        ----------
-        x : ndarray
-            An optimization vector.
-
-        Returns
-        -------
-        obj : float
-            The value of the objective function.
-        """
-        pmf = self.construct_joint(x)
-
-        # I[U:Y|V]
-        a = self._conditional_mutual_information(pmf, self._u, self._y, self._v)
-
-        # I[U:Z|V]
-        b = self._conditional_mutual_information(pmf, self._u, self._z, self._v)
-
-        return -(a - b)
-
     def optimize(self, x0=None, nhops=None, polish=1e-6):
         """
         Perform the optimization.
@@ -294,7 +270,7 @@ class NecessaryIntrinsicMutualInformation(object):
         Returns
         -------
         d : Distribution
-            The original distribution, plus `z_bar'.
+            The original distribution, plus U and V.
         """
         if x is None:
             x = self._optima
@@ -328,15 +304,77 @@ class NecessaryIntrinsicMutualInformation(object):
         return d
 
 
-def necessary_intrinsic_mutual_information(dist, rvs, crvs, rv_mode=None, bound_u=None, bound_v=None):
+class NecessaryIntrinsicMutualInformation(BaseSKARLowerBounds):
     """
-    Compute a non-trivial lower bound on secret key agreement rate.
+    Compute the necessary intrinsic mutual information:
+        max_{V - U - X - YZ} I[U:Y|V] - I[U:Z|V]
+    """
 
-    Paramters
-    ---------
+    def _get_u_bound(self):
+        """
+        |U| <= |X|
+        """
+        return self._shape[-3]
+
+    def _get_v_bound(self):
+        """
+        |U| <= |X|^2
+        """
+        return self._shape[-3]**2
+
+    def objective(self, x):
+        """
+        The multivariate mutual information to minimize.
+
+        Parameters
+        ----------
+        x : ndarray
+            An optimization vector.
+
+        Returns
+        -------
+        obj : float
+            The value of the objective function.
+        """
+        pmf = self.construct_joint(x)
+
+        # I[U:Y|V]
+        a = self._conditional_mutual_information(pmf, self._u, self._y, self._v)
+
+        # I[U:Z|V]
+        b = self._conditional_mutual_information(pmf, self._u, self._z, self._v)
+
+        return -(a - b)
+
+
+class SecrecyCapacity(NecessaryIntrinsicMutualInformation):
+    """
+    Compute:
+        max_{U - X - YZ} I[U:Y] - I[U:Z]
+    """
+
+    def _get_v_bound(self):
+        """
+        Make V a constant
+        """
+        return 1
+
+
+def secrecy_capacity_directed(dist, X, Y, Z, rv_mode=None, bound_u=None):
+    """
+    The rate at which X and Y can agree upon a key with Z eavesdropping,
+    and no public communication.
+
+    Parameters
+    ----------
     dist : Distribution
-    rvs : iterable of iterables
-    crvs : iterable
+        The distribution of interest.
+    X : iterable
+        The indices to consider as the X variable, Alice.
+    Y : iterable
+        The indices to consider as the Y variable, Bob.
+    Z : iterable
+        The indices to consider as the Z variable, Eve.
     rv_mode : str, None
         Specifies how to interpret `rvs` and `crvs`. Valid options are:
         {'indices', 'names'}. If equal to 'indices', then the elements of
@@ -344,18 +382,124 @@ def necessary_intrinsic_mutual_information(dist, rvs, crvs, rv_mode=None, bound_
         equal to 'names', the the elements are interpreted as random
         variable names. If `None`, then the value of `dist._rv_mode` is
         consulted, which defaults to 'indices'.
+    bound_u : int, None
+        The bound to use on the size of the variable U. If none, use the theoretical bound of |X|.
 
     Returns
     -------
+    sc : float
+        The secrecy capacity.
     """
-    first = NecessaryIntrinsicMutualInformation(dist, rvs[0], rvs[1], crvs, rv_mode=rv_mode,
-                                                bound_u=bound_u, bound_v=bound_v)
-    first.optimize()
-    A = -first.objective(first._optima)
+    sc = SecrecyCapacity(dist, X, Y, Z, rv_mode=rv_mode, bound_u=bound_u)
+    sc.optimize()
+    value = -sc.objective(sc._optima)
 
-    second = NecessaryIntrinsicMutualInformation(dist, rvs[1], rvs[0], crvs, rv_mode=rv_mode,
-                                                bound_u=bound_u, bound_v=bound_v)
-    second.optimize()
-    B = -second.objective(second._optima)
+    return value
 
-    return max([A, B])
+
+def secrecy_capacity(dist, rvs=None, crvs=None, rv_mode=None, bound_u=None):
+    """
+    The rate at which X and Y can agree upon a key with Z eavesdropping,
+    and no public communication.
+
+    Parameters
+    ----------
+    dist : Distribution
+        The distribution of interest.
+    rvs : iterable of iterables, len(rvs) == 2
+        The indices of the random variables agreeing upon a secret key.
+    crvs : iterable
+        The indices of the eavesdropper.
+    rv_mode : str, None
+        Specifies how to interpret `rvs` and `crvs`. Valid options are:
+        {'indices', 'names'}. If equal to 'indices', then the elements of
+        `crvs` and `rvs` are interpreted as random variable indices. If
+        equal to 'names', the the elements are interpreted as random
+        variable names. If `None`, then the value of `dist._rv_mode` is
+        consulted, which defaults to 'indices'.
+    bound_u : int, None
+        The bound to use on the size of the variable U. If none, use the theoretical bound of |X|.
+
+    Returns
+    -------
+    sc : float
+        The secrecy capacity.
+    """
+    a = secrecy_capacity_directed(dist, rvs[0], rvs[1], crvs, rv_mode=rv_mode, bound_u=bound_u)
+    b = secrecy_capacity_directed(dist, rvs[1], rvs[0], crvs, rv_mode=rv_mode, bound_u=bound_u)
+    return max([a, b])
+
+
+def necessary_intrinsic_mutual_information_directed(dist, X, Y, Z, rv_mode=None, bound_u=None, bound_v=None):
+    """
+    Compute a non-trivial lower bound on secret key agreement rate.
+
+    Paramters
+    ---------
+    dist : Distribution
+        The distribution of interest.
+    X : iterable
+        The indices to consider as the X variable, Alice.
+    Y : iterable
+        The indices to consider as the Y variable, Bob.
+    Z : iterable
+        The indices to consider as the Z variable, Eve.
+    rv_mode : str, None
+        Specifies how to interpret `rvs` and `crvs`. Valid options are:
+        {'indices', 'names'}. If equal to 'indices', then the elements of
+        `crvs` and `rvs` are interpreted as random variable indices. If
+        equal to 'names', the the elements are interpreted as random
+        variable names. If `None`, then the value of `dist._rv_mode` is
+        consulted, which defaults to 'indices'.
+    bound_u : int, None
+        The bound to use on the size of the variable U. If none, use the theoretical bound of |X|.
+    bound_v : int, None
+        The bound to use on the size of the variable V. If none, use the theoretical bound of |X|^2.
+
+    Returns
+    -------
+    nimi : float
+        The necessary intrinsic mutual information.
+    """
+    nimi = NecessaryIntrinsicMutualInformation(dist, X, Y, Z, rv_mode=rv_mode,
+                                               bound_u=bound_u, bound_v=bound_v)
+    nimi.optimize()
+    value = -nimi.objective(nimi._optima)
+
+    return value
+
+
+def necessary_intrinsic_mutual_information(dist, rvs, crvs, rv_mode=None, bound_u=None, bound_v=None):
+    """
+    Compute a non-trivial lower bound on secret key agreement rate.
+
+    Paramters
+    ---------
+    dist : Distribution
+        The distribution of interest.
+    rvs : iterable of iterables, len(rvs) == 2
+        The indices of the random variables agreeing upon a secret key.
+    crvs : iterable
+        The indices of the eavesdropper.
+    rv_mode : str, None
+        Specifies how to interpret `rvs` and `crvs`. Valid options are:
+        {'indices', 'names'}. If equal to 'indices', then the elements of
+        `crvs` and `rvs` are interpreted as random variable indices. If
+        equal to 'names', the the elements are interpreted as random
+        variable names. If `None`, then the value of `dist._rv_mode` is
+        consulted, which defaults to 'indices'.
+    bound_u : int, None
+        The bound to use on the size of the variable U. If none, use the theoretical bound of |X|.
+    bound_v : int, None
+        The bound to use on the size of the variable V. If none, use the theoretical bound of |X|^2.
+
+    Returns
+    -------
+    nimi : float
+        The necessary intrinsic mutual information.
+    """
+    first = necessary_intrinsic_mutual_information_directed(dist, rvs[0], rvs[1], crvs, rv_mode=rv_mode, bound_u=bound_u, bound_v=bound_v)
+
+    second = necessary_intrinsic_mutual_information_directed(dist, rvs[1], rvs[0], crvs, rv_mode=rv_mode, bound_u=bound_u, bound_v=bound_v)
+
+    return max([first, second])

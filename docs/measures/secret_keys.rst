@@ -31,13 +31,28 @@ Lower Bounds
 Lower Intrinsic Mutual Information
 ----------------------------------
 
-Two lower bounds are known for :math:`S[X : Y || Z]`, one tighter than the other. The first is known in ``dit`` as the :py:func:`lower_intrinsic_mutual_information`, and is given by:
+The first lower bound on the secret key agreement rate is known in ``dit`` as the :py:func:`lower_intrinsic_mutual_information`, and is given by:
 
 .. math::
 
    \I{X : Y \uparrow Z} = \max\{ \I{X : Y} - \I{X : Z}, \I{X : Y} - \I{Y : Z}, 0 \}
 
-.. py:module:: dit.multivariate.secret_key_agreement.necessary_intrinsic_mutual_information
+.. py:module:: dit.multivariate.secret_key_agreement.skar_lower_bounds
+Secrecy Capacity
+----------------
+
+Next is the secrecy capacity:
+
+.. math::
+
+   \I{X : Y \uparrow\uparrow Z} = \max
+      \begin{cases}
+         \displaystyle \max_{U - X - YZ} \I{U : Y} - \I{U : Z} \\
+         \displaystyle \max_{U - Y - XZ} \I{U : X} - \I{U : Z}
+      \end{cases}
+
+This gives the secret key agreement rate when communication is not allowed.
+
 Necessary Intrinsic Mutual Information
 --------------------------------------
 
@@ -45,11 +60,13 @@ A tighter bound is given by the :py:func:`necessary_intrinsic_mutual_information
 
 .. math::
 
-   \I{X : Y \uparrow \uparrow Z} = \max
+   \I{X : Y \uparrow\uparrow\uparrow Z} = \max
       \begin{cases}
          \displaystyle \max_{V - U - X - YZ} \I{U : Y | V} - \I{U : Z | V} \\
          \displaystyle \max_{V - U - Y - XZ} \I{U : X | V} - \I{U : Z | V}
       \end{cases}
+
+This quantity is actually equal to the secret key agreement rate when communication is limited to being unidirectional.
 
 
 Upper Bounds
@@ -110,12 +127,13 @@ Taken together, we see the following structure:
    \begin{align}
      &\min\{ \I{X : Y}, \I{X : Y | Z} \} \\
      &\quad \geq \I{X : Y \downarrow Z} \\
-     &\quad\quad \geq \I{X : Y \downarrow \downarrow Z} \\
-     &\quad\quad\quad \geq \I{X : Y \downarrow \downarrow \downarrow Z} \\
+     &\quad\quad \geq \I{X : Y \downarrow\downarrow Z} \\
+     &\quad\quad\quad \geq \I{X : Y \downarrow\downarrow\downarrow Z} \\
      &\quad\quad\quad\quad \geq S[X : Y || Z] \\
-     &\quad\quad\quad\quad\quad \geq \I{X : Y \uparrow \uparrow Z} \\
-     &\quad\quad\quad\quad\quad\quad \geq \I{X : Y \uparrow Z} \\
-     &\quad\quad\quad\quad\quad\quad\quad \geq 0.0
+     &\quad\quad\quad\quad\quad \geq \I{X : Y \uparrow\uparrow\uparrow Z} \\
+     &\quad\quad\quad\quad\quad\quad \geq \I{X : Y \uparrow\uparrow Z} \\
+     &\quad\quad\quad\quad\quad\quad\quad \geq \I{X : Y \uparrow Z} \\
+     &\quad\quad\quad\quad\quad\quad\quad\quad \geq 0.0
    \end{align}
 
 Generalizations

@@ -11,7 +11,9 @@ from .minimal_intrinsic_mutual_informations import (minimal_intrinsic_total_corr
                                                     minimal_intrinsic_dual_total_correlation,
                                                     minimal_intrinsic_CAEKL_mutual_information,
                                                     )
-from .necessary_intrinsic_mutual_information import necessary_intrinsic_mutual_information
+from .skar_lower_bounds import (necessary_intrinsic_mutual_information,
+                                secrecy_capacity,
+                                )
 from .reduced_intrinsic_mutual_informations import (reduced_intrinsic_total_correlation,
                                                     reduced_intrinsic_dual_total_correlation,
                                                     reduced_intrinsic_CAEKL_mutual_information,

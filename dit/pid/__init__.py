@@ -9,13 +9,20 @@ from .immi import PID_MMI
 from .ibroja import PID_BROJA
 from .iccs import PID_CCS
 from .idep import PID_dep
-from .idownarrow import PID_downarrow, PID_double_downarrow, PID_triple_downarrow
+from .idownarrow import (PID_double_uparrow,
+                         PID_triple_uparrow,
+                         PID_downarrow,
+                         PID_double_downarrow,
+                         PID_triple_downarrow,
+                         )
 from .ipm import PID_PM
 from .hcs import PED_CS
 from .distributions import bivariates, trivariates
 
 __all_pids = [
     PID_MMI,
+    PID_double_uparrow,
+    PID_triple_uparrow,
     PID_downarrow,
     # PID_double_downarrow,
     PID_triple_downarrow,

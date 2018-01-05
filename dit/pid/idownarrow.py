@@ -10,11 +10,95 @@ from __future__ import division
 
 from .pid import BaseUniquePID
 
-from ..multivariate import (intrinsic_total_correlation,
-                            reduced_intrinsic_total_correlation,
-                            minimal_intrinsic_total_correlation,
+from ..multivariate import (intrinsic_mutual_information,
+                            minimal_intrinsic_mutual_information,
+                            reduced_intrinsic_mutual_information,
                            )
+from ..multivariate.secret_key_agreement.skar_lower_bounds import (
+    necessary_intrinsic_mutual_information_directed,
+    secrecy_capacity_directed,
+    )
 from ..utils import flatten
+
+
+def i_double_uparrow(d, inputs, output):
+    """
+    This computes unique information as I(input : output \downarrow other_inputs).
+
+    Parameters
+    ----------
+    d : Distribution
+        The distribution to compute i_downarrow for.
+    inputs : iterable of iterables
+        The input variables.
+    output : iterable
+        The output variable.
+
+    Returns
+    -------
+    ida : dict
+        The value of I_downarrow for each individual input.
+    """
+    uniques = {}
+    for input_ in inputs:
+        others = list(inputs)
+        others.remove(input_)
+        others = list(flatten(others))
+        uniques[input_] = secrecy_capacity_directed(d, input_, output, others)
+    return uniques
+
+
+class PID_double_uparrow(BaseUniquePID):
+    """
+    The intrinsic mutual information partial information decomposition.
+
+    Notes
+    -----
+    This decomposition is known to be invalid; that is, the redundancy values
+    computed using either unique value are not consistent.
+    """
+    _name = "I_dua"
+    _measure = staticmethod(i_double_uparrow)
+
+
+def i_triple_uparrow(d, inputs, output):
+    """
+    This computes unique information as I(input : output \downarrow other_inputs).
+
+    Parameters
+    ----------
+    d : Distribution
+        The distribution to compute i_downarrow for.
+    inputs : iterable of iterables
+        The input variables.
+    output : iterable
+        The output variable.
+
+    Returns
+    -------
+    ida : dict
+        The value of I_downarrow for each individual input.
+    """
+    uniques = {}
+    for input_ in inputs:
+        others = list(inputs)
+        others.remove(input_)
+        others = list(flatten(others))
+        uniques[input_] = necessary_intrinsic_mutual_information_directed(d, input_, output, others)
+    return uniques
+
+
+class PID_triple_uparrow(BaseUniquePID):
+    """
+    The intrinsic mutual information partial information decomposition.
+
+    Notes
+    -----
+    This decomposition is known to be invalid; that is, the redundancy values
+    computed using either unique value are not consistent.
+    """
+    _name = "I_tua"
+    _measure = staticmethod(i_triple_uparrow)
 
 
 def i_downarrow(d, inputs, output):
@@ -40,7 +124,7 @@ def i_downarrow(d, inputs, output):
         others = list(inputs)
         others.remove(input_)
         others = list(flatten(others))
-        uniques[input_] = intrinsic_total_correlation(d, [input_, output], others, nhops=25)
+        uniques[input_] = intrinsic_mutual_information(d, [input_, output], others, nhops=25)
     return uniques
 
 
@@ -80,7 +164,7 @@ def i_double_downarrow(d, inputs, output):
         others = list(inputs)
         others.remove(input_)
         others = list(flatten(others))
-        uniques[input_] = reduced_intrinsic_total_correlation(d, [input_, output], others, nhops=5)
+        uniques[input_] = reduced_intrinsic_mutual_information(d, [input_, output], others, nhops=5)
     return uniques
 
 
@@ -115,7 +199,7 @@ def i_triple_downarrow(d, inputs, output):
         others = list(inputs)
         others.remove(input_)
         others = list(flatten(others))
-        uniques[input_] = minimal_intrinsic_total_correlation(d, [input_, output], others, nhops=5)
+        uniques[input_] = minimal_intrinsic_mutual_information(d, [input_, output], others, nhops=5)
     return uniques
 
 
