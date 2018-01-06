@@ -4,7 +4,7 @@ Tests for dit.pid.idownarrow.
 
 import pytest
 
-from dit.pid.idownarrow import i_downarrow, PID_downarrow
+from dit.pid.iskar import i_downarrow, PID_downarrow
 from dit.pid.distributions import bivariates, trivariates
 
 def test_idownarrow1():
