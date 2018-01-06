@@ -70,7 +70,7 @@ def lower_intrinsic_mutual_information(dist, rvs, crvs, rv_mode=None):
         A lower-bound on the secret key agreement rate.
     """
     a = lower_intrinsic_mutual_information_directed(dist, rvs[0], rvs[1], crvs, rv_mode=None)
-    a = lower_intrinsic_mutual_information_directed(dist, rvs[1], rvs[0], crvs, rv_mode=None)
+    b = lower_intrinsic_mutual_information_directed(dist, rvs[1], rvs[0], crvs, rv_mode=None)
     return max([a, b])
 
 
