@@ -18,12 +18,15 @@ from ..multivariate.secret_key_agreement.skar_lower_bounds import (
     necessary_intrinsic_mutual_information_directed,
     secrecy_capacity_directed,
     )
+from ..multivariate.secret_key_agreement.trivial_bounds import (
+    lower_intrinsic_mutual_information_directed,
+    )
 from ..utils import flatten
 
 
-def i_double_uparrow(d, inputs, output):
+def i_uparrow(d, inputs, output):
     """
-    This computes unique information as I(input : output \downarrow other_inputs).
+    This computes unique information as I(input : output \uparrow other_inputs).
 
     Parameters
     ----------
@@ -37,7 +40,47 @@ def i_double_uparrow(d, inputs, output):
     Returns
     -------
     ida : dict
-        The value of I_downarrow for each individual input.
+        The value of I_uparrow for each individual input.
+    """
+    uniques = {}
+    for input_ in inputs:
+        others = list(inputs)
+        others.remove(input_)
+        others = list(flatten(others))
+        uniques[input_] = lower_intrinsic_mutual_information_directed(d, input_, output, others)
+    return uniques
+
+
+class PID_uparrow(BaseUniquePID):
+    """
+    The lower intrinsic mutual information partial information decomposition.
+
+    Notes
+    -----
+    This decomposition is known to be invalid; that is, the redundancy values
+    computed using either unique value are not consistent.
+    """
+    _name = "I_ua"
+    _measure = staticmethod(i_uparrow)
+
+
+def i_double_uparrow(d, inputs, output):
+    """
+    This computes unique information as I(input : output \uparrow\uparrow other_inputs).
+
+    Parameters
+    ----------
+    d : Distribution
+        The distribution to compute i_double_uparrow for.
+    inputs : iterable of iterables
+        The input variables.
+    output : iterable
+        The output variable.
+
+    Returns
+    -------
+    ida : dict
+        The value of I_double_uparrow for each individual input.
     """
     uniques = {}
     for input_ in inputs:
@@ -50,7 +93,7 @@ def i_double_uparrow(d, inputs, output):
 
 class PID_double_uparrow(BaseUniquePID):
     """
-    The intrinsic mutual information partial information decomposition.
+    The secrecy capacity partial information decomposition.
 
     Notes
     -----
@@ -63,12 +106,12 @@ class PID_double_uparrow(BaseUniquePID):
 
 def i_triple_uparrow(d, inputs, output):
     """
-    This computes unique information as I(input : output \downarrow other_inputs).
+    This computes unique information as I(input : output \uparrow\uparrow\uparrow other_inputs).
 
     Parameters
     ----------
     d : Distribution
-        The distribution to compute i_downarrow for.
+        The distribution to compute i_triple_uparrow for.
     inputs : iterable of iterables
         The input variables.
     output : iterable
@@ -77,7 +120,7 @@ def i_triple_uparrow(d, inputs, output):
     Returns
     -------
     ida : dict
-        The value of I_downarrow for each individual input.
+        The value of I_triple_uparrow for each individual input.
     """
     uniques = {}
     for input_ in inputs:
@@ -90,7 +133,7 @@ def i_triple_uparrow(d, inputs, output):
 
 class PID_triple_uparrow(BaseUniquePID):
     """
-    The intrinsic mutual information partial information decomposition.
+    The necessary intrinsic mutual information partial information decomposition.
 
     Notes
     -----

@@ -19,7 +19,7 @@ Given :math:`N` IID copies of a joint distribution governed by :math:`p(x, y, z)
    S_X = f(X^N, V) \\
    S_Y = g(Y^N, V) \\
    p(S_X \neq S_Y \neq S) \leq \epsilon \\
-   \frac{1}{N} \I{S : V Z^N} \leq \epsilon \\
+   \I{S : V Z^N} \leq \epsilon \\
    \frac{1}{N} \H{S} \geq R - \epsilon
 
 Intuitively, this means there exists some procedure such that, for every :math:`N` observations, Alice and Bob can publicly converse and then construct :math:`S` bits which agree almost surely, and are almost surely independent of everything Eve has access to. :math:`S` is then known as a *secret key*.
