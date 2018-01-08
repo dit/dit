@@ -26,7 +26,7 @@ from ..utils import flatten
 
 def i_uparrow(d, inputs, output):
     """
-    This computes unique information as I(input : output \uparrow other_inputs).
+    This computes unique information as I(input : output \\uparrow other_inputs).
 
     Parameters
     ----------
@@ -66,7 +66,7 @@ class PID_uparrow(BaseUniquePID):
 
 def i_double_uparrow(d, inputs, output):
     """
-    This computes unique information as I(input : output \uparrow\uparrow other_inputs).
+    This computes unique information as I(input : output \\uparrow\\uparrow other_inputs).
 
     Parameters
     ----------
@@ -106,7 +106,7 @@ class PID_double_uparrow(BaseUniquePID):
 
 def i_triple_uparrow(d, inputs, output):
     """
-    This computes unique information as I(input : output \uparrow\uparrow\uparrow other_inputs).
+    This computes unique information as I(input : output \\uparrow\\uparrow\\uparrow other_inputs).
 
     Parameters
     ----------
