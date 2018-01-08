@@ -7,6 +7,8 @@ from __future__ import division
 import numpy as np
 from scipy.optimize import minimize_scalar
 
+from ..exceptions import ditException
+
 def _normalize_pmfs(dist1, dist2):
     """
     Construct probability vectors with common support.
