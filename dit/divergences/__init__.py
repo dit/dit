@@ -3,17 +3,8 @@ Divergences, measuring the distance between distributions. They are not
 necessarily true metrics, but some are.
 """
 
-from .jensen_shannon_divergence import (
-    jensen_shannon_divergence,
-)
-
 from .cross_entropy import (
     cross_entropy,
-)
-
-from .kullback_leibler_divergence import (
-    kullback_leibler_divergence,
-    relative_entropy,
 )
 
 from .generalized_divergences import (
@@ -23,6 +14,23 @@ from .generalized_divergences import (
     tsallis_divergence,
     f_divergence,
     hellinger_sum,
+)
+
+from .hypercontractivity_coefficient import (
+    hypercontractivity_coefficient,
+)
+
+from .jensen_shannon_divergence import (
+    jensen_shannon_divergence,
+)
+
+from .kullback_leibler_divergence import (
+    kullback_leibler_divergence,
+    relative_entropy,
+)
+
+from .maximum_correlation import (
+    maximum_correlation,
 )
 
 from .variational_distance import (

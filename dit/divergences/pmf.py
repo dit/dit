@@ -12,6 +12,11 @@ from ._kl_nonmerge import (
     relative_entropy_pmf as relative_entropy,
 )
 
+from .maximum_correlation import (
+    maximum_correlation_pmf,
+    conditional_maximum_correlation_pmf,
+)
+
 from .variational_distance import (
     bhattacharyya_coefficient_pmf as bhattacharyya_coefficient,
     chernoff_information_pmf as chernoff_information,

@@ -4,10 +4,11 @@ A lower bound on the secret key agreement rate.
 
 from __future__ import division
 
+from string import ascii_letters, digits
+
 import numpy as np
 
 from ... import Distribution, insert_rvf, modify_outcomes
-from ..total_correlation import total_correlation
 from ...helpers import flatten, parse_rvs
 from ...utils.optimization import Uniquifier, accept_test, colon
 

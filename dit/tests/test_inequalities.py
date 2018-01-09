@@ -9,9 +9,10 @@ import numpy as np
 from dit.utils.testing import distributions, markov_chains
 
 from dit import ScalarDistribution as SD
-from dit.algorithms import maximum_correlation
 from dit.divergences import (chernoff_information,
                              hellinger_distance,
+                             hypercontractivity_coefficient,
+                             maximum_correlation,
                              relative_entropy,
                              variational_distance,
                             )
@@ -219,3 +220,14 @@ def test_chernoff_inequalities(dist1, dist2):
     print(q)
     assert a <= 1 - 2**(-c) + epsilon
     assert 1 - 2**(-c) <= b + epsilon
+
+@given(dist=markov_chains(alphabets=((2, 4),)*3))
+def test_mi_hc(dist):
+    """
+    given U - X - Y:
+        I[U:Y] <= s*(X||Y)*I[U:X]
+    """
+    a = I(dist, [[0], [2]])
+    b = hypercontractivity_coefficient(dist, [[1], [2]])
+    c = I(dist, [[0], [1]])
+    assert a <= b*c + epsilon

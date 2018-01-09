@@ -62,7 +62,7 @@ def distributions(draw, alphabets=(2, 2, 2), nondegenerate=False):
     pmf /= pmf.sum()
 
     dist = Distribution.from_ndarray(pmf)
-
+    dist.normalize()
     return dist
 
 
@@ -114,7 +114,9 @@ def distribution_structures(draw, size=(2, 4), alphabet=(2, 4), uniform=False, m
         total = sum(probs)
         probs = [p / total for p in probs]
 
-    return Distribution(events, probs)
+    dist =  Distribution(events, probs)
+    dist.normalize()
+    return dist
 
 @composite
 def markov_chains(draw, alphabets=((2, 4), (2, 4), (2, 4))):
@@ -164,5 +166,5 @@ def markov_chains(draw, alphabets=((2, 4), (2, 4), (2, 4))):
         px = px[..., np.newaxis] * cd[slc]
 
     dist = Distribution.from_ndarray(px)
-
+    dist.normalize()
     return dist
