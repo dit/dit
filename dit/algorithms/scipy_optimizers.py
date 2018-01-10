@@ -676,7 +676,7 @@ def marginal_maxent_dists(dist, k_max=None):
 PID = namedtuple('PID', ['R', 'U0', 'U1', 'S'])
 
 @removals.remove(message="Please see dit.pid.PID_BROJA.", version='1.0.0.dev8')
-def pid_broja(dist, sources, target, rv_mode=None, return_opt=False):
+def pid_broja(dist, sources, target, rv_mode=None, return_opt=False, nhops=10):
     """
     Compute the BROJA partial information decomposition.
 
@@ -708,7 +708,7 @@ def pid_broja(dist, sources, target, rv_mode=None, return_opt=False):
         is sources[0], [1] is sources[1] and [2] is target.
     """
     broja = BROJABivariateOptimizer(dist, sources, target, rv_mode)
-    broja.optimize()
+    broja.optimize(nhops=nhops)
     opt_dist = broja.construct_dist()
     r = -broja.objective(broja._optima)
     # in opt_dist, source[0] is [0], sources[1] is [1], and target is [2]
