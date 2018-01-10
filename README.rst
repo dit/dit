@@ -98,6 +98,7 @@ though it is not in the literature, the multivariate conditional exact common in
   * Reduced Intrinsic Mutual Information
   * Minimal Intrinsic Mutual Information
   * Necessary Intrinsic Mutual Information
+  * Secrecy Capacity
 
 - Partial Information Decompositions:
 
@@ -123,6 +124,7 @@ though it is not in the literature, the multivariate conditional exact common in
   * LMPR Complexity
   * Marginal Utility of Information
   * Maximum Correlation
+  * Hypercontractivity Coefficient
   * Maximum Entropy Distributions
   * Perplexity
   * TSE Complexity
