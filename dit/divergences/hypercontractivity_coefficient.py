@@ -12,7 +12,7 @@ import numpy as np
 from .. import Distribution, insert_rvf, modify_outcomes
 from ..exceptions import ditException
 from ..helpers import flatten, normalize_rvs, parse_rvs
-from ..utils.optimization import Uniquifier, accept_test, colon
+from ..utils.optimization import BasinHoppingCallBack, Uniquifier, accept_test, colon
 
 class HypercontractivityCoefficient(object):
     """
@@ -198,6 +198,8 @@ class HypercontractivityCoefficient(object):
                             'bounds': [(0, 1)] * x.size,
                             }
 
+        self._callback = BasinHoppingCallBack(minimizer_kwargs['constraints'], None)
+
         res = basinhopping(func=self.objective,
                            x0=x,
                            minimizer_kwargs=minimizer_kwargs,
@@ -205,7 +207,16 @@ class HypercontractivityCoefficient(object):
                            accept_test=accept_test,
                            )
 
-        self._optima = res.x
+        success, msg = basinhop_status(res)
+        if success:
+            self._optima = res.x
+        else: # pragma: no cover
+            minimum = self._callback.minimum()
+            if minimum is not None:
+                self._optima = minimum
+            else:
+                msg = "No minima found."
+                raise Exception(msg)
 
         if polish:
             self._polish(cutoff=polish)
