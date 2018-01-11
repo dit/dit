@@ -12,7 +12,12 @@ import numpy as np
 from .. import Distribution, insert_rvf, modify_outcomes
 from ..exceptions import ditException
 from ..helpers import flatten, normalize_rvs, parse_rvs
-from ..utils.optimization import BasinHoppingCallBack, Uniquifier, accept_test, colon
+from ..utils.optimization import (BasinHoppingCallBack,
+                                  Uniquifier,
+                                  accept_test,
+                                  basinhop_status,
+                                  colon
+                                  )
 
 class HypercontractivityCoefficient(object):
     """
@@ -198,7 +203,7 @@ class HypercontractivityCoefficient(object):
                             'bounds': [(0, 1)] * x.size,
                             }
 
-        self._callback = BasinHoppingCallBack(minimizer_kwargs['constraints'], None)
+        self._callback = BasinHoppingCallBack({}, None)
 
         res = basinhopping(func=self.objective,
                            x0=x,
