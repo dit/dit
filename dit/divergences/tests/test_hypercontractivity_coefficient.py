@@ -2,6 +2,8 @@
 Tests for dit.divergences.hypercontractivity_coefficient.
 """
 
+from __future__ import division
+
 import pytest
 
 from hypothesis import given, settings, unlimited, HealthCheck
