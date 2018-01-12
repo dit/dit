@@ -30,7 +30,6 @@ from dit.multivariate import (entropy as H,
 epsilon = 1e-6
 
 
-@pytest.mark.skip
 @given(dist=distributions())
 def test_entropy_upper_bound(dist):
     """
@@ -41,7 +40,6 @@ def test_entropy_upper_bound(dist):
     assert h <= logX + epsilon
 
 
-@pytest.mark.skip
 @given(dist1=distributions(alphabets=(10,)), dist2=distributions(alphabets=(10,)))
 def test_pinskers_inequality(dist1, dist2):
     """
@@ -52,7 +50,6 @@ def test_pinskers_inequality(dist1, dist2):
     assert dkl >= vd**2 / (2 * np.log(2)) - epsilon
 
 
-@pytest.mark.skip
 @given(dist=distributions(alphabets=(10, 10), nondegenerate=True))
 def test_fanos_inequality(dist):
     """
@@ -73,7 +70,6 @@ def test_fanos_inequality(dist):
     assert ce <= hb + P_e * np.log2(X - 1) + epsilon
 
 
-@pytest.mark.skip
 @given(dist=distributions(alphabets=(4, 4, 4, 4)))
 def test_entropy_subadditivity(dist):
     """
@@ -84,7 +80,6 @@ def test_entropy_subadditivity(dist):
     assert h <= h_sum + epsilon
 
 
-@pytest.mark.skip
 @given(dist1=distributions(alphabets=(10,)), dist2=distributions(alphabets=(10,)))
 def test_gibbs_inequality(dist1, dist2):
     """
@@ -94,7 +89,6 @@ def test_gibbs_inequality(dist1, dist2):
     assert dkl >= 0 - epsilon
 
 
-@pytest.mark.skip
 @given(dist=distributions(alphabets=((2, 4),)*2))
 def test_conditional_entropy(dist):
     """
@@ -105,7 +99,6 @@ def test_conditional_entropy(dist):
     assert ch <= h + epsilon
 
 
-@pytest.mark.skip
 @given(dist=distributions(alphabets=((2, 4),)*3))
 def test_shannon_inequality(dist):
     """
@@ -115,7 +108,6 @@ def test_shannon_inequality(dist):
     assert i >= 0 - epsilon
 
 
-@pytest.mark.skip
 @given(dist=distributions(alphabets=((2, 4),)*4))
 def test_zhang_yeung_inequality(dist):
     """
@@ -129,7 +121,6 @@ def test_zhang_yeung_inequality(dist):
     assert 2*I_c_d <= I_a_b + I_a_cd + 3*I_c_d_g_a + I_c_d_g_b + epsilon
 
 
-@pytest.mark.skip
 @given(dist=markov_chains(alphabets=((2, 4),)*3))
 def test_data_processing_inequality(dist):
     """
@@ -141,7 +132,6 @@ def test_data_processing_inequality(dist):
     assert i_xz <= i_xy + epsilon
 
 
-@pytest.mark.skip
 @given(dist=markov_chains(alphabets=((2, 4),)*3))
 def test_data_processing_inequality_mc(dist):
     """
@@ -153,7 +143,6 @@ def test_data_processing_inequality_mc(dist):
     assert rho_xz <= rho_xy + epsilon
 
 
-@pytest.mark.skip
 @given(dist=markov_chains(alphabets=((2, 4),)*3))
 def test_data_processing_inequality_gk(dist):
     """
@@ -165,7 +154,6 @@ def test_data_processing_inequality_gk(dist):
     assert k_xz <= k_xy + epsilon
 
 
-@pytest.mark.skip
 @given(dist=markov_chains(alphabets=((2, 4),)*3))
 @settings(deadline=None,
           timeout=unlimited,
@@ -182,7 +170,6 @@ def test_data_processing_inequality_wyner(dist):
     assert c_xz <= c_xy + 10*epsilon
 
 
-@pytest.mark.skip
 @given(dist=markov_chains(alphabets=((2, 4),)*3))
 @settings(deadline=None,
           timeout=unlimited,
@@ -199,7 +186,6 @@ def test_data_processing_inequality_exact(dist):
     assert g_xz <= g_xy + 10*epsilon
 
 
-@pytest.mark.skip
 @given(dist=distributions(alphabets=((2, 4),)*2))
 def test_max_correlation_mutual_information(dist):
     """
@@ -211,7 +197,6 @@ def test_max_correlation_mutual_information(dist):
     assert (p_min*rho)**2 <= (2*np.log(2))*i + epsilon
 
 
-@pytest.mark.skip
 @given(dist1=distributions(alphabets=(10,)), dist2=distributions(alphabets=(10,)))
 def test_hellinger_variational(dist1, dist2):
     """
@@ -223,7 +208,6 @@ def test_hellinger_variational(dist1, dist2):
     assert v <= np.sqrt(2)*h + epsilon
 
 
-@pytest.mark.skip
 @given(dist1=distributions(alphabets=(10,), nondegenerate=True),
        dist2=distributions(alphabets=(10,), nondegenerate=True))
 def test_chernoff_inequalities(dist1, dist2):
