@@ -99,6 +99,18 @@ class HypercontractivityCoefficient(object):
         channel_u = np.random.random([self._shape[-2], self._bound_u]).flatten()
         return channel_u
 
+    def construct_copy_initial(self):
+        """
+        Construct a random optimization vector.
+
+        Returns
+        -------
+        x : ndarray
+            An identity optimization vector.
+        """
+        channel_u = np.eye(self._shape[-2], self._bound_u).flatten()
+        return channel_u
+
     def construct_joint(self, x, full=False):
         """
         Construct the joint distribution.
@@ -196,7 +208,7 @@ class HypercontractivityCoefficient(object):
         if x0 is not None:
             x = x0
         else:
-            x = self.construct_random_initial()
+            x = self.construct_copy_initial()
 
         if nhops is None:
             nhops = self._default_hops
@@ -204,7 +216,9 @@ class HypercontractivityCoefficient(object):
         minimizer_kwargs = {'method': 'L-BFGS-B',
                             'bounds': [(0, 1)] * x.size,
                             'tol': 1e-10,
-                            'options': {'gtol': 1e-7,
+                            'options': {'maxcor': 20,
+                                        'eps': 1e-10,
+                                        'gtol': 1e-7,
                                         'ftol': 1e-10,
                                        },
                             }
