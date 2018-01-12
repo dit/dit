@@ -187,7 +187,7 @@ class HypercontractivityCoefficient(object):
         # I[U:X]
         b = self._mutual_information(pmf, self._u, self._x)
 
-        return -(a/b) if b else np.inf
+        return -(a/b) if not np.isclose(b, 0.0) else np.inf
 
     def optimize(self, x0=None, nhops=None, polish=1e-8):
         """
@@ -215,12 +215,6 @@ class HypercontractivityCoefficient(object):
 
         minimizer_kwargs = {'method': 'L-BFGS-B',
                             'bounds': [(0, 1)] * x.size,
-                            'tol': 1e-10,
-                            'options': {'maxcor': 20,
-                                        'eps': 1e-10,
-                                        'gtol': 1e-7,
-                                        'ftol': 1e-10,
-                                       },
                             }
 
         res1 = minimize(fun=self.objective,
@@ -320,7 +314,7 @@ class HypercontractivityCoefficient(object):
             string = False
 
         joint = self.construct_joint(x, full=True)
-        joint = joint.sum(axis=tuple(range(-4, -1)))
+        joint = joint.sum(axis=tuple(range(-3, -1)))
         outcomes, pmf = zip(*[(o, p) for o, p in np.ndenumerate(joint) if p > cutoff])
         outcomes = [tuple(a[i] for i, a in zip(o, alphabets)) for o in outcomes]
 

@@ -38,7 +38,8 @@ def test_hypercontractivity_coefficient_failure(rvs):
           timeout=unlimited,
           min_satisfying_examples=3,
           max_examples=5,
-          suppress_health_check=[HealthCheck.hung_test])
+          suppress_health_check=[HealthCheck.hung_test],
+          )
 def test_hypercontractivity_coefficient_tensorization(dist1, dist2):
     """
     Test tensorization:
