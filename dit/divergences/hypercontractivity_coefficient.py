@@ -211,7 +211,7 @@ class HypercontractivityCoefficient(object):
 
         res1 = minimize(fun=self.objective,
                         x0=x,
-                        **minimizer_kwargs,
+                        **minimizer_kwargs
                         )
 
         self._callback = BasinHoppingCallBack({}, None)
