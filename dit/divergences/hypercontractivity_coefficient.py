@@ -8,16 +8,20 @@ from __future__ import division
 from string import ascii_letters, digits
 
 import numpy as np
+from scipy.optimize import basinhopping, minimize
 
 from .. import Distribution, insert_rvf, modify_outcomes
 from ..exceptions import ditException
 from ..helpers import flatten, normalize_rvs, parse_rvs
+from ..multivariate.entropy import entropy
+from ..multivariate.total_correlation import total_correlation
 from ..utils.optimization import (BasinHoppingCallBack,
                                   Uniquifier,
                                   accept_test,
                                   basinhop_status,
                                   colon
                                   )
+
 
 class HypercontractivityCoefficient(object):
     """
@@ -189,8 +193,6 @@ class HypercontractivityCoefficient(object):
             If `polish` > 0, the found minima is improved by removing small
             components and optimized with lower tolerances.
         """
-        from scipy.optimize import basinhopping
-
         if x0 is not None:
             x = x0
         else:
@@ -201,25 +203,38 @@ class HypercontractivityCoefficient(object):
 
         minimizer_kwargs = {'method': 'L-BFGS-B',
                             'bounds': [(0, 1)] * x.size,
+                            'tol': 1e-10,
+                            'options': {'gtol': 1e-6,
+                                        'ftol': 1e-9,
+                                       },
                             }
+
+        res1 = minimize(fun=self.objective,
+                        x0=x,
+                        **minimizer_kwargs,
+                        )
 
         self._callback = BasinHoppingCallBack({}, None)
 
-        res = basinhopping(func=self.objective,
-                           x0=x,
-                           minimizer_kwargs=minimizer_kwargs,
-                           niter=nhops,
-                           accept_test=accept_test,
-                           )
+        res2 = basinhopping(func=self.objective,
+                            x0=res1.x if res1.success else x,
+                            minimizer_kwargs=minimizer_kwargs,
+                            niter=nhops,
+                            accept_test=accept_test,
+                            )
 
-        success, msg = basinhop_status(res)
+        success, msg = basinhop_status(res2)
         if success:
-            self._optima = res.x
+            self._optima = res2.x
         else: # pragma: no cover
             minimum = self._callback.minimum()
             if minimum is not None:
                 self._optima = minimum
+            elif res1.success:
+                self._optima = res1.x
             else:
+                print(res1)
+                print(res2)
                 msg = "No minima found."
                 raise Exception(msg)
 
@@ -236,8 +251,6 @@ class HypercontractivityCoefficient(object):
             Set probabilities lower than this to zero, reducing the total
             optimization dimension.
         """
-        from scipy.optimize import minimize
-
         x0 = self._optima
         count = (x0 < cutoff).sum()
         x0[x0 < cutoff] = 0
@@ -308,7 +321,7 @@ class HypercontractivityCoefficient(object):
         return d
 
 
-def hypercontractivity_coefficient(dist, rvs, rv_mode=None, bound_u=None):
+def hypercontractivity_coefficient(dist, rvs, rv_mode=None, bound_u=None, nhops=None):
     """
     Computes the hypercontractivity coefficient:
 
@@ -330,6 +343,8 @@ def hypercontractivity_coefficient(dist, rvs, rv_mode=None, bound_u=None):
         consulted, which defaults to 'indices'.
     bound_u : int, None
         An external bound on the size of `U`. If None, |U| <= |X|+1.
+    nhops : int, None
+        The number of basin-hopping steps to perform. If None, use the default.
 
     Returns
     -------
@@ -342,6 +357,12 @@ def hypercontractivity_coefficient(dist, rvs, rv_mode=None, bound_u=None):
         msg = 'Hypercontractivity coefficient can only be computed for 2 variables, not {}.'.format(len(rvs))
         raise ditException(msg)
 
-    hc = HypercontractivityCoefficient(dist, rvs[0], rvs[1], rv_mode=rv_mode, bound_u=bound_u)
-    hc.optimize()
-    return -hc.objective(hc._optima)
+    # test some special cases:
+    if np.isclose(total_correlation(dist, rvs), 0.0):
+        return 0.0
+    elif np.isclose(entropy(dist, rvs[1], rvs[0]), 0.0):
+        return 1.0
+    else:
+        hc = HypercontractivityCoefficient(dist, rvs[0], rvs[1], rv_mode=rv_mode, bound_u=bound_u)
+        hc.optimize(nhops=nhops)
+        return -hc.objective(hc._optima)
