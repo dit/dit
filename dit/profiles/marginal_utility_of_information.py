@@ -13,7 +13,6 @@ import numpy as np
 
 from .information_partitions import ShannonPartition
 from ..math import close
-from ..multivariate import entropy as H
 from ..utils import flatten, powerset
 
 __all__ = ['MUIProfile']

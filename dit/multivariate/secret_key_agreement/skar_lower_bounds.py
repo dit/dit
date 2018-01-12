@@ -4,6 +4,8 @@ A lower bound on the secret key agreement rate.
 
 from __future__ import division
 
+from abc import ABCMeta, abstractmethod
+
 from string import ascii_letters, digits
 
 import numpy as np
@@ -24,6 +26,7 @@ class BaseSKARLowerBounds(object):
 
         max_{V - U - X - YZ} objective()
     """
+    __metaclass__ = ABCMeta
 
     def __init__(self, dist, rv_x=None, rv_y=None, rv_z=None, rv_mode=None, bound_u=None, bound_v=None):
         """
@@ -97,6 +100,47 @@ class BaseSKARLowerBounds(object):
         self._mask_v = np.ones([self._shape[-3], 1, 1, self._bound_u, self._bound_v]) / self._bound_v
         self._size_u = self._shape[-3] * self._bound_u
         self._size_v = self._size_u * self._bound_v
+
+    @abstractmethod
+    def _get_u_bound(self):
+        """
+        Bound of |U|
+
+        Returns
+        -------
+        bound : int
+            The bound
+        """
+        pass
+
+    @abstractmethod
+    def _get_v_bound(self):
+        """
+        Bound of |V|
+
+        Returns
+        -------
+        bound : int
+            The bound
+        """
+        pass
+
+    @abstractmethod
+    def objective(self, x):
+        """
+        The objective function.
+
+        Parameters
+        ----------
+        x : ndarray
+            An optimization vector.
+
+        Returns
+        -------
+        obj : float
+            The value of the objective function.
+        """
+        pass
 
     def construct_random_initial(self):
         """

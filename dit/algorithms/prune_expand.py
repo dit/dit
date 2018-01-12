@@ -7,7 +7,7 @@ This can be important when calculating meet and join random variables. It
 is also important for the calculations of various PID quantities.
 
 """
-from six.moves import map
+from six.moves import map # pylint: disable=redefined-builtin
 
 from dit.samplespace import ScalarSampleSpace, SampleSpace, CartesianProduct
 

@@ -111,13 +111,13 @@ def initial_point(dist, k, A=None, b=None, isolated=None, **kwargs):
     """
     n_variables = dist.outcome_length()
 
-    if m > n_variables:
+    if k > n_variables:
         msg = "Cannot constrain {0}-way marginals"
         msg += " with only {1} random variables."
-        msg = msg.format(m, n_variables)
+        msg = msg.format(k, n_variables)
         raise ValueError(msg)
 
-    rvs = list(combinations(range(n_variables), m))
+    rvs = list(combinations(range(n_variables), k))
     kwargs['rv_mode'] = 'indices'
 
     return initial_point_generic(dist, rvs, A, b, isolated, **kwargs)
@@ -230,7 +230,7 @@ def marginal_maxent(dist, k, **kwargs):
     if k > n_variables:
         msg = "Cannot constrain {0}-way marginals"
         msg += " with only {1} random variables."
-        msg = msg.format(m, n_variables)
+        msg = msg.format(k, n_variables)
         raise ValueError(msg)
 
     rv_mode = kwargs.pop('rv_mode', None)
@@ -265,7 +265,6 @@ def marginal_maxent_dists(dist, k_max=None, maxiters=1000, tol=1e-3, verbose=Fal
     dist = prepare_dist(dist)
 
     n_variables = dist.outcome_length()
-    symbols = dist.alphabet[0]
 
     if k_max is None:
         k_max = n_variables

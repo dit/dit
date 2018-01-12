@@ -8,13 +8,10 @@
 from __future__ import absolute_import
 
 from collections import Iterable
-import functools
-import inspect
 from itertools import tee
 import os
 import sys
 import subprocess
-import warnings
 
 import six
 from six.moves import range, zip # pylint: disable=redefined-builtin

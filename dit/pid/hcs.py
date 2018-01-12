@@ -9,8 +9,6 @@ from __future__ import division
 import numpy as np
 from itertools import combinations
 
-import dit
-
 from .pid import BasePID
 from .lattice import pid_lattice
 
@@ -79,7 +77,7 @@ class PED_CS(BasePID):
             The set of variables to include. If None, `dist.rvs` is used.
         """
         self._dist = dist
-        
+
         if inputs is None:
             inputs = dist.rvs
 

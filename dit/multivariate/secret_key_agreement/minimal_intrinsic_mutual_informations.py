@@ -6,8 +6,6 @@ from __future__ import division
 
 from abc import abstractmethod
 
-import numpy as np
-
 from .base_intrinsic_information import BaseMoreIntrinsicMutualInformation
 from ... import Distribution
 from ...shannon import entropy_pmf as h

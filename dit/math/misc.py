@@ -11,7 +11,7 @@ from six.moves import reduce # pylint: disable=redefined-builtin
 
 __all__ = ['is_number',
            'is_integer',
-           'factoral',
+           'factorial',
            'combinations',
            'prod',
            ]

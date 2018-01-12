@@ -12,13 +12,13 @@ import numpy as np
 from six.moves import map, range, zip # pylint: disable=redefined-builtin
 
 from itertools import product
-from collections import OrderedDict, defaultdict
+from collections import defaultdict
 
 from random import randint
 
 from .distribution import BaseDistribution
 from .exceptions import ditException
-from .helpers import RV_MODES, parse_rvs
+from .helpers import parse_rvs
 from .npdist import Distribution
 from .npscalardist import ScalarDistribution
 from .utils import digits, powerset

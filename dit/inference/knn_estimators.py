@@ -9,7 +9,7 @@ import numpy as np
 from scipy.special import digamma
 from scipy.spatial import cKDTree
 
-from six.moves import zip
+from six.moves import zip # pylint: disable=redefined-builtin
 
 from dit.utils import flatten
 

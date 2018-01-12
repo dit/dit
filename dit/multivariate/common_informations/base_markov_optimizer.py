@@ -596,11 +596,16 @@ class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):
                            accept_test=accept_test,
                           )
 
-        if basinhop_status(res)[0]:
+        success, msg = basinhop_status(res)
+        if success:
             self._optima = res.x
-        else:
-            if callback.candidates:
-                self._optima = min(callback.candidates)[1]
+        else: # pragma: no cover
+            minimum = callback.minimum()
+            if minimum is not None:
+                self._optima = minimum
+            else:
+                msg = "No optima found."
+                raise Exception(msg)
 
     def optimize(self, x0=None, nhops=5, jacobian=False, polish=1e-6, callback=False, minimize=False, njumps=15):
         """

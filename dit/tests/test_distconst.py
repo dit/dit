@@ -8,7 +8,7 @@ import pytest
 
 import itertools
 
-from six.moves import range
+from six.moves import range # pylint: disable=redefined-builtin
 
 import numpy as np
 

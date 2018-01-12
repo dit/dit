@@ -94,7 +94,7 @@ def functional_markov_chain(dist, rvs=None, crvs=None, rv_mode=None):
     optimal_b = dual_total_correlation(dist, rvs, crvs, rv_mode)
 
     rv_names = dist.get_rv_names()
-    dist = modify_outcomes(dist, lambda x: tuple(x))
+    dist = modify_outcomes(dist, tuple)
     dist.set_rv_names(rv_names)
 
     rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)

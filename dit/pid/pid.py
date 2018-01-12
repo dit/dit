@@ -4,6 +4,8 @@ Classes implementing the partial information decomposition.
 
 from __future__ import division
 
+from abc import ABCMeta, abstractmethod, abstractproperty
+
 from sys import version_info
 
 from itertools import product
@@ -23,6 +25,7 @@ class BasePID(object):
     """
     This implements the basic Williams & Beer Partial Information Decomposition.
     """
+    __metaclass__ = ABCMeta
 
     def __init__(self, dist, inputs=None, output=None, reds=None, pis=None):
         """
@@ -49,6 +52,38 @@ class BasePID(object):
         self._lattice = pid_lattice(self._inputs)
         self._total = coinformation(self._dist, [list(flatten(self._inputs)), self._output])
         self._compute(reds, pis)
+
+    @abstractmethod
+    def _measure(self, node, output):
+        """
+        Compute a redundancy value for `node`.
+
+        Parameters
+        ----------
+        node : tuple(tuples)
+            The lattice node to compute the redundancy of.
+        output : iterable
+            The indices to consider the target/output of the PID.
+
+        Returns
+        -------
+        red : float
+            The redundancy value.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def _name(self):
+        """
+        The name of the PID.
+
+        Returns
+        -------
+        name : str
+            The name.
+        """
+        pass
 
     def __eq__(self, other):
         """
@@ -255,7 +290,7 @@ class BasePID(object):
             The name of the decomposition.
         """
         try: # pragma: no cover
-            from colorama import Fore, Back, Style
+            from colorama import Fore, Style
             inconsistent_style = lambda x: Fore.RED + x + Style.RESET_ALL
             negative_style = lambda x: Fore.GREEN + x + Style.RESET_ALL
             incomplete_style = lambda x: Fore.BLUE + x + Style.RESET_ALL
