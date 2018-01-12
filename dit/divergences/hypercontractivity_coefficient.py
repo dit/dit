@@ -204,8 +204,8 @@ class HypercontractivityCoefficient(object):
         minimizer_kwargs = {'method': 'L-BFGS-B',
                             'bounds': [(0, 1)] * x.size,
                             'tol': 1e-10,
-                            'options': {'gtol': 1e-6,
-                                        'ftol': 1e-9,
+                            'options': {'gtol': 1e-7,
+                                        'ftol': 1e-10,
                                        },
                             }
 

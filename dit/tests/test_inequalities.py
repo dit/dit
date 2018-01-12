@@ -249,8 +249,7 @@ def test_mi_hc(dist):
     given U - X - Y:
         I[U:Y] <= s*(X||Y)*I[U:X]
     """
-    print(dist)
     a = I(dist, [[0], [2]])
-    b = hypercontractivity_coefficient(dist, [[1], [2]], nhops=10)
+    b = hypercontractivity_coefficient(dist, [[1], [2]], nhops=25)
     c = I(dist, [[0], [1]])
     assert a <= b*c + epsilon
