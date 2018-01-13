@@ -33,7 +33,8 @@ from dit.abstractdist import AbstractDenseDistribution, get_abstract_dist
 
 from ..helpers import RV_MODES, parse_rvs
 from .optutil import as_full_rank, CVXOPT_Template, prepare_dist, Bunch
-from ..utils import flatten, powerset
+from ..utils import flatten
+# from ..utils import powerset
 
 __all__ = [
     'MarginalMaximumEntropy',

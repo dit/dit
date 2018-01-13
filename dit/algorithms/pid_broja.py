@@ -15,12 +15,11 @@ import itertools
 import numpy as np
 import dit
 
-from dit.utils import basic_logger
-from dit.abstractdist import get_abstract_dist
-from dit.algorithms.optutil import (
-    CVXOPT_Template, as_full_rank, Bunch, op_runner, frank_wolfe
-)
-from dit.exceptions import ditException
+from ..utils import basic_logger
+from ..abstractdist import get_abstract_dist
+from .frankwolfe import frank_wolfe
+from .optutil import CVXOPT_Template, as_full_rank, Bunch, op_runner
+from ..exceptions import ditException
 
 __all__ = ['unique_informations', 'k_informations', 'k_synergy']
 
