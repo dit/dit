@@ -20,9 +20,9 @@ import dit
 from dit.helpers import RV_MODES
 from dit.utils import basic_logger
 
-from .optutil import (
-    as_full_rank, prepare_dist, op_runner, frank_wolfe
-)
+from .frankwolfe import frank_wolfe
+
+from .optutil import as_full_rank, prepare_dist, op_runner
 from .maxentropy import (
     marginal_constraints, marginal_constraints_generic, isolate_zeros_generic
 )
