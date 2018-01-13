@@ -675,6 +675,7 @@ def marginal_maxent_dists(dist, k_max=None):
 
 PID = namedtuple('PID', ['R', 'U0', 'U1', 'S'])
 
+# pragma: no-cover
 @removals.remove(message="Please see dit.pid.PID_BROJA.", version='1.0.0.dev8')
 def pid_broja(dist, sources, target, rv_mode=None, return_opt=False, nhops=10):
     """

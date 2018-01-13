@@ -9,10 +9,15 @@ import pytest
 from itertools import product
 
 from dit.algorithms import maxent_dist, pid_broja
-from dit.algorithms.scipy_optimizers import MinEntOptimizer, MinCoInfoOptimizer
+from dit.algorithms.scipy_optimizers import (
+    MinEntOptimizer,
+    MinCoInfoOptimizer,
+    MaxDualTotalCorrelationOptimizer,
+    MinDualTotalCorrelationOptimizer
+)
 from dit.distconst import uniform
 from dit.example_dists import Rdn, Unq, Xor
-from dit.multivariate import entropy as H, coinformation as I
+from dit.multivariate import entropy as H, coinformation as I, dual_total_correlation as B
 
 
 @pytest.mark.parametrize('vars', [
@@ -44,6 +49,7 @@ def test_maxent_2():
     d1_maxent = maxent_dist(d1, [[0], [1]])
     assert d2.is_approx_equal(d1_maxent, rtol=1e-3, atol=1e-3)
 
+
 def test_maxent_3():
     """
     Test the RdnUnqXor distribution.
@@ -52,8 +58,9 @@ def test_maxent_3():
     inputs = product(X00, X01, X02, Y01, Y02)
     events = [(x00+x01+str(x02), x00+y01+str(y02), x00+x01+y01+str(x02^y02)) for x00, x01, x02, y01, y02 in inputs]
     RdnUnqXor = uniform(events)
-    d = maxent_dist(RdnUnqXor, [[0,1],[0,2],[1,2]])
+    d = maxent_dist(RdnUnqXor, [[0, 1], [0, 2], [1, 2]])
     assert H(d) == pytest.approx(6)
+
 
 def test_minent_1():
     """
@@ -65,6 +72,7 @@ def test_minent_1():
     dp = meo.construct_dist()
     assert H(dp) == pytest.approx(1)
 
+
 def test_mincoinfo_1():
     """
     Test mincoinfo
@@ -74,6 +82,7 @@ def test_mincoinfo_1():
     mcio.optimize()
     dp = mcio.construct_dist()
     assert I(dp) == pytest.approx(-1)
+
 
 @pytest.mark.skip(reason="This method if deprecated.")
 @pytest.mark.parametrize(('dist', 'vals'), [
@@ -87,3 +96,25 @@ def test_broja_1(dist, vals):
     """
     pid = pid_broja(dist, [[0], [1]], [2])
     assert pid == pytest.approx(vals, abs=1e-4)
+
+
+def test_dtc_1():
+    """
+    test max dtc
+    """
+    d = uniform(['000', '111'])
+    max_dtc = MaxDualTotalCorrelationOptimizer(d, [[0], [1], [2]])
+    max_dtc.optimize()
+    dp = max_dtc.construct_dist()
+    assert B(dp) == pytest.approx(2.0, abs=1e-4)
+
+
+def test_dtc_2():
+    """
+    test min dtc
+    """
+    d = uniform(['000', '111'])
+    max_dtc = MinDualTotalCorrelationOptimizer(d, [[0], [1], [2]])
+    max_dtc.optimize()
+    dp = max_dtc.construct_dist()
+    assert B(dp) == pytest.approx(0.0, abs=1e-4)
