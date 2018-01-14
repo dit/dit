@@ -10,6 +10,7 @@ from dit import Distribution
 from dit.divergences.coupling_metrics import coupling_metric
 
 
+@pytest.mark.flaky(reruns=5)
 def test_cm_1():
     """
     Test that equivalent distributions have zero metric.

@@ -32,6 +32,7 @@ def test_hypercontractivity_coefficient_failure(rvs):
         hypercontractivity_coefficient(dyadic, rvs)
 
 
+@pytest.mark.slow
 @given(dist1=distributions(alphabets=(2,)*2, nondegenerate=True),
        dist2=distributions(alphabets=(2,)*2, nondegenerate=True))
 @settings(deadline=None,

@@ -154,6 +154,7 @@ def test_data_processing_inequality_gk(dist):
     assert k_xz <= k_xy + epsilon
 
 
+@pytest.mark.slow
 @given(dist=markov_chains(alphabets=((2, 4),)*3))
 @settings(deadline=None,
           timeout=unlimited,
@@ -170,6 +171,7 @@ def test_data_processing_inequality_wyner(dist):
     assert c_xz <= c_xy + 10*epsilon
 
 
+@pytest.mark.slow
 @given(dist=markov_chains(alphabets=((2, 4),)*3))
 @settings(deadline=None,
           timeout=unlimited,
@@ -224,6 +226,7 @@ def test_chernoff_inequalities(dist1, dist2):
     assert 1 - 2**(-c) <= b + epsilon
 
 
+@pytest.mark.slow
 @given(dist=markov_chains(alphabets=((2, 3),)*3))
 @settings(deadline=None,
           timeout=unlimited,

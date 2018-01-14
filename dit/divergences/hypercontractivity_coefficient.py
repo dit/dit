@@ -241,9 +241,7 @@ class HypercontractivityCoefficient(object):
             elif res1.success:
                 self._optima = res1.x
             else:
-                print(res1)
-                print(res2)
-                msg = "No minima found."
+                msg = "No optima found."
                 raise Exception(msg)
 
         if polish:
