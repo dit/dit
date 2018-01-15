@@ -98,6 +98,7 @@ def test_broja_1(dist, vals):
     assert pid == pytest.approx(vals, abs=1e-4)
 
 
+@pytest.mark.flaky(reruns=5)
 def test_dtc_1():
     """
     test max dtc
@@ -109,6 +110,7 @@ def test_dtc_1():
     assert B(dp) == pytest.approx(2.0, abs=1e-4)
 
 
+@pytest.mark.flaky(reruns=5)
 def test_dtc_2():
     """
     test min dtc
