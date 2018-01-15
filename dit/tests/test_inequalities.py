@@ -155,7 +155,7 @@ def test_data_processing_inequality_gk(dist):
 
 
 @pytest.mark.slow
-@given(dist=markov_chains(alphabets=((2, 4),)*3))
+@given(dist=markov_chains(alphabets=(2,)*3))
 @settings(deadline=None,
           timeout=unlimited,
           min_satisfying_examples=3,
@@ -172,7 +172,7 @@ def test_data_processing_inequality_wyner(dist):
 
 
 @pytest.mark.slow
-@given(dist=markov_chains(alphabets=((2, 4),)*3))
+@given(dist=markov_chains(alphabets=(2,)*3))
 @settings(deadline=None,
           timeout=unlimited,
           min_satisfying_examples=3,
@@ -227,7 +227,7 @@ def test_chernoff_inequalities(dist1, dist2):
 
 
 @pytest.mark.slow
-@given(dist=markov_chains(alphabets=((2, 3),)*3))
+@given(dist=markov_chains(alphabets=(2,)*3))
 @settings(deadline=None,
           timeout=unlimited,
           suppress_health_check=[HealthCheck.hung_test])
