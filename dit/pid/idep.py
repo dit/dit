@@ -59,8 +59,7 @@ class PID_dep(BaseUniquePID):
     _measure = staticmethod(i_dep)
 
 
-# pragma: no cover
-def i_dep_a(d, inputs, output):
+def i_dep_a(d, inputs, output): # pragma: no cover
     """
     This computes unique information as min(delta(I(inputs : output))) where delta
     is taken over the dependency decomposition.
@@ -93,7 +92,6 @@ def i_dep_a(d, inputs, output):
     return uniques
 
 
-# pragma: no cover
 class PID_dep_a(BaseUniquePID):
     """
     The dependency partial information decomposition, as defined by James at al.
@@ -102,8 +100,7 @@ class PID_dep_a(BaseUniquePID):
     _measure = staticmethod(i_dep_a)
 
 
-# pragma: no cover
-def i_dep_b(d, inputs, output):
+def i_dep_b(d, inputs, output): # pragma: no cover
     """
     This computes unique information as min(delta(I(inputs : output))) where delta
     is taken over a restricted dependency decomposition which never constrains dependencies
@@ -140,7 +137,6 @@ def i_dep_b(d, inputs, output):
     return uniques
 
 
-# pragma: no cover
 class PID_dep_b(BaseUniquePID):
     """
     The reduced dependency partial information decomposition, as defined by James at al.
@@ -153,8 +149,7 @@ class PID_dep_b(BaseUniquePID):
     _measure = staticmethod(i_dep_b)
 
 
-# pragma: no cover
-def i_dep_c(d, inputs, output):
+def i_dep_c(d, inputs, output): # pragma: no cover
     """
     This computes unique information as min(delta(I(inputs : output))) where delta
     is taken over a restricted dependency decomposition which never constrains dependencies
@@ -189,7 +184,6 @@ def i_dep_c(d, inputs, output):
     return uniques
 
 
-# pragma: no cover
 class PID_dep_c(BaseUniquePID):
     """
     The reduced dependency partial information decomposition, as defined by James at al.
