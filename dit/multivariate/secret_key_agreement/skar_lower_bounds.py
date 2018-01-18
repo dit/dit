@@ -405,7 +405,7 @@ class SecrecyCapacity(NecessaryIntrinsicMutualInformation):
         return 1
 
 
-def secrecy_capacity_directed(dist, X, Y, Z, rv_mode=None, bound_u=None):
+def secrecy_capacity_directed(dist, X, Y, Z, rv_mode=None, nhops=None, bound_u=None):
     """
     The rate at which X and Y can agree upon a key with Z eavesdropping,
     and no public communication.
@@ -427,6 +427,8 @@ def secrecy_capacity_directed(dist, X, Y, Z, rv_mode=None, bound_u=None):
         equal to 'names', the the elements are interpreted as random
         variable names. If `None`, then the value of `dist._rv_mode` is
         consulted, which defaults to 'indices'.
+    nhops : int, None
+        The number of hops to perform during optimization.
     bound_u : int, None
         The bound to use on the size of the variable U. If none, use the theoretical bound of |X|.
 
@@ -436,13 +438,13 @@ def secrecy_capacity_directed(dist, X, Y, Z, rv_mode=None, bound_u=None):
         The secrecy capacity.
     """
     sc = SecrecyCapacity(dist, X, Y, Z, rv_mode=rv_mode, bound_u=bound_u)
-    sc.optimize()
+    sc.optimize(nhops=nhops)
     value = -sc.objective(sc._optima)
 
     return value
 
 
-def secrecy_capacity(dist, rvs=None, crvs=None, rv_mode=None, bound_u=None):
+def secrecy_capacity(dist, rvs=None, crvs=None, rv_mode=None, nhops=None, bound_u=None):
     """
     The rate at which X and Y can agree upon a key with Z eavesdropping,
     and no public communication.
@@ -462,20 +464,26 @@ def secrecy_capacity(dist, rvs=None, crvs=None, rv_mode=None, bound_u=None):
         equal to 'names', the the elements are interpreted as random
         variable names. If `None`, then the value of `dist._rv_mode` is
         consulted, which defaults to 'indices'.
+    nhops : int, None
+        The number of hops to perform during optimization.
     bound_u : int, None
-        The bound to use on the size of the variable U. If none, use the theoretical bound of |X|.
+        The bound to use on the size of the variable U. If none, use the
+        theoretical bound of |X|.
 
     Returns
     -------
     sc : float
         The secrecy capacity.
     """
-    a = secrecy_capacity_directed(dist, rvs[0], rvs[1], crvs, rv_mode=rv_mode, bound_u=bound_u)
-    b = secrecy_capacity_directed(dist, rvs[1], rvs[0], crvs, rv_mode=rv_mode, bound_u=bound_u)
+    a = secrecy_capacity_directed(dist, rvs[0], rvs[1], crvs, rv_mode=rv_mode,
+                                  nhops=nhops, bound_u=bound_u)
+    b = secrecy_capacity_directed(dist, rvs[1], rvs[0], crvs, rv_mode=rv_mode,
+                                  nhops=nhops, bound_u=bound_u)
     return max([a, b])
 
 
-def necessary_intrinsic_mutual_information_directed(dist, X, Y, Z, rv_mode=None, bound_u=None, bound_v=None):
+def necessary_intrinsic_mutual_information_directed(dist, X, Y, Z, rv_mode=None,
+                                                    nhops=None, bound_u=None, bound_v=None):
     """
     Compute a non-trivial lower bound on secret key agreement rate.
 
@@ -496,6 +504,8 @@ def necessary_intrinsic_mutual_information_directed(dist, X, Y, Z, rv_mode=None,
         equal to 'names', the the elements are interpreted as random
         variable names. If `None`, then the value of `dist._rv_mode` is
         consulted, which defaults to 'indices'.
+    nhops : int, None
+        The number of hops to perform during optimization.
     bound_u : int, None
         The bound to use on the size of the variable U. If none, use the theoretical bound of |X|.
     bound_v : int, None
@@ -508,13 +518,14 @@ def necessary_intrinsic_mutual_information_directed(dist, X, Y, Z, rv_mode=None,
     """
     nimi = NecessaryIntrinsicMutualInformation(dist, X, Y, Z, rv_mode=rv_mode,
                                                bound_u=bound_u, bound_v=bound_v)
-    nimi.optimize()
+    nimi.optimize(nhops=nhops)
     value = -nimi.objective(nimi._optima)
 
     return value
 
 
-def necessary_intrinsic_mutual_information(dist, rvs, crvs, rv_mode=None, bound_u=None, bound_v=None):
+def necessary_intrinsic_mutual_information(dist, rvs, crvs, rv_mode=None,
+                                           nhops=None, bound_u=None, bound_v=None):
     """
     Compute a non-trivial lower bound on secret key agreement rate.
 
@@ -533,6 +544,8 @@ def necessary_intrinsic_mutual_information(dist, rvs, crvs, rv_mode=None, bound_
         equal to 'names', the the elements are interpreted as random
         variable names. If `None`, then the value of `dist._rv_mode` is
         consulted, which defaults to 'indices'.
+    nhops : int, None
+        The number of hops to perform during optimization.
     bound_u : int, None
         The bound to use on the size of the variable U. If none, use the theoretical bound of |X|.
     bound_v : int, None
@@ -543,8 +556,8 @@ def necessary_intrinsic_mutual_information(dist, rvs, crvs, rv_mode=None, bound_
     nimi : float
         The necessary intrinsic mutual information.
     """
-    first = necessary_intrinsic_mutual_information_directed(dist, rvs[0], rvs[1], crvs, rv_mode=rv_mode, bound_u=bound_u, bound_v=bound_v)
+    first = necessary_intrinsic_mutual_information_directed(dist, rvs[0], rvs[1], crvs, rv_mode=rv_mode, nhops=nhops, bound_u=bound_u, bound_v=bound_v)
 
-    second = necessary_intrinsic_mutual_information_directed(dist, rvs[1], rvs[0], crvs, rv_mode=rv_mode, bound_u=bound_u, bound_v=bound_v)
+    second = necessary_intrinsic_mutual_information_directed(dist, rvs[1], rvs[0], crvs, rv_mode=rv_mode, nhops=nhops, bound_u=bound_u, bound_v=bound_v)
 
     return max([first, second])

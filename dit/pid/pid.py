@@ -27,7 +27,7 @@ class BasePID(object):
     """
     __metaclass__ = ABCMeta
 
-    def __init__(self, dist, inputs=None, output=None, reds=None, pis=None):
+    def __init__(self, dist, inputs=None, output=None, reds=None, pis=None, **kwargs):
         """
         Parameters
         ----------
@@ -49,6 +49,7 @@ class BasePID(object):
         self._pi_string = "pi"
         self._inputs = tuple(map(tuple, inputs))
         self._output = tuple(output)
+        self._kwargs = kwargs
         self._lattice = pid_lattice(self._inputs)
         self._total = coinformation(self._dist, [list(flatten(self._inputs)), self._output])
         self._compute(reds, pis)
@@ -167,7 +168,7 @@ class BasePID(object):
 
         for node in self._lattice:
             if node not in reds:
-                reds[node] = self._measure(self._dist, node, self._output)
+                reds[node] = self._measure(self._dist, node, self._output, **self._kwargs)
 
         reds, pis = self._compute_mobius_inversion(reds=reds, pis=pis)
 
@@ -652,7 +653,7 @@ class BaseUniquePID(BaseIncompletePID):
     def _compute(self, reds=None, pis=None):
         """
         """
-        uniques = self._measure(self._dist, self._inputs, self._output)
+        uniques = self._measure(self._dist, self._inputs, self._output, **self._kwargs)
         if pis is None:
             pis = {}
 
@@ -675,6 +676,6 @@ class BaseBivariatePID(BaseIncompletePID):
             reds = {}
         for node in self._lattice:
             if len(node) == 2 and node not in reds:
-                reds[node] = self._measure(self._dist, node, self._output)
+                reds[node] = self._measure(self._dist, node, self._output, **self._kwargs)
 
         super(BaseBivariatePID, self)._compute(reds=reds, pis=pis)

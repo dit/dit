@@ -64,7 +64,7 @@ class PID_uparrow(BaseUniquePID):
     _measure = staticmethod(i_uparrow)
 
 
-def i_double_uparrow(d, inputs, output):
+def i_double_uparrow(d, inputs, output, nhops=None, bound_u=None):
     """
     This computes unique information as I(input : output \\uparrow\\uparrow other_inputs).
 
@@ -87,7 +87,8 @@ def i_double_uparrow(d, inputs, output):
         others = list(inputs)
         others.remove(input_)
         others = list(flatten(others))
-        uniques[input_] = secrecy_capacity_directed(d, input_, output, others)
+        uniques[input_] = secrecy_capacity_directed(d, input_, output, others, nhops=nhops,
+                                                    bound_u=bound_u)
     return uniques
 
 
@@ -104,7 +105,7 @@ class PID_double_uparrow(BaseUniquePID):
     _measure = staticmethod(i_double_uparrow)
 
 
-def i_triple_uparrow(d, inputs, output):
+def i_triple_uparrow(d, inputs, output, nhops=5, bound_u=None, bound_v=None):
     """
     This computes unique information as I(input : output \\uparrow\\uparrow\\uparrow other_inputs).
 
@@ -127,7 +128,10 @@ def i_triple_uparrow(d, inputs, output):
         others = list(inputs)
         others.remove(input_)
         others = list(flatten(others))
-        uniques[input_] = necessary_intrinsic_mutual_information_directed(d, input_, output, others)
+        uniques[input_] = necessary_intrinsic_mutual_information_directed(d, input_, output, others,
+                                                                          nhops=nhops,
+                                                                          bound_u=bound_u,
+                                                                          bound_v=bound_v)
     return uniques
 
 
@@ -144,7 +148,7 @@ class PID_triple_uparrow(BaseUniquePID):
     _measure = staticmethod(i_triple_uparrow)
 
 
-def i_downarrow(d, inputs, output):
+def i_downarrow(d, inputs, output, nhops=25, bound=None):
     """
     This computes unique information as I(input : output \downarrow other_inputs).
 
@@ -167,7 +171,8 @@ def i_downarrow(d, inputs, output):
         others = list(inputs)
         others.remove(input_)
         others = list(flatten(others))
-        uniques[input_] = intrinsic_mutual_information(d, [input_, output], others, nhops=25)
+        uniques[input_] = intrinsic_mutual_information(d, [input_, output], others,
+                                                       nhops=nhops, bound=bound)
     return uniques
 
 
@@ -184,7 +189,7 @@ class PID_downarrow(BaseUniquePID):
     _measure = staticmethod(i_downarrow)
 
 
-def i_double_downarrow(d, inputs, output):
+def i_double_downarrow(d, inputs, output, nhops=5):
     """
     This computes unique information as I(input : output \Downarrow other_inputs).
 
@@ -207,7 +212,8 @@ def i_double_downarrow(d, inputs, output):
         others = list(inputs)
         others.remove(input_)
         others = list(flatten(others))
-        uniques[input_] = reduced_intrinsic_mutual_information(d, [input_, output], others, nhops=5)
+        uniques[input_] = reduced_intrinsic_mutual_information(d, [input_, output], others,
+                                                               nhops=nhops)
     return uniques
 
 
@@ -219,7 +225,7 @@ class PID_double_downarrow(BaseUniquePID):
     _measure = staticmethod(i_double_downarrow)
 
 
-def i_triple_downarrow(d, inputs, output):
+def i_triple_downarrow(d, inputs, output, nhops=5, bounds=None):
     """
     This computes unique information as I(input : output \downarrow\downarrow\downarrow other_inputs).
 
@@ -242,7 +248,8 @@ def i_triple_downarrow(d, inputs, output):
         others = list(inputs)
         others.remove(input_)
         others = list(flatten(others))
-        uniques[input_] = minimal_intrinsic_mutual_information(d, [input_, output], others, nhops=5)
+        uniques[input_] = minimal_intrinsic_mutual_information(d, [input_, output], others,
+                                                               nhops=nhops, bounds=bounds)
     return uniques
 
 

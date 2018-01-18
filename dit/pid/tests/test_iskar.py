@@ -4,7 +4,13 @@ Tests for dit.pid.idownarrow.
 
 import pytest
 
-from dit.pid.iskar import i_downarrow, PID_downarrow
+from dit.pid.iskar import (i_downarrow,
+                           PID_uparrow,
+                           PID_double_uparrow,
+                           PID_triple_uparrow,
+                           PID_downarrow,
+                           PID_triple_downarrow
+                           )
 from dit.pid.distributions import bivariates, trivariates
 
 def test_idownarrow1():
@@ -66,3 +72,53 @@ def test_pid_downarrow3():
     d = bivariates['prob 2']
     pid = PID_downarrow(d)
     assert not pid.consistent
+
+def test_pid_uparrow1():
+    """
+    """
+    d = bivariates['boom']
+    pid = PID_uparrow(d)
+    assert pid[((0,), (1,))] == pytest.approx(0.666666666666666667)
+    assert pid[((0,),)] == pytest.approx(0.0)
+    assert pid[((1,),)] == pytest.approx(0.0)
+    assert pid[((0, 1),)] == pytest.approx(0.45914791702724411)
+
+def test_pid_double_uparrow1():
+    """
+    """
+    d = bivariates['boom']
+    pid = PID_double_uparrow(d)
+    assert pid[((0,), (1,))] == pytest.approx(0.62581458369451781)
+    assert pid[((0,),)] == pytest.approx(0.040852082972692771)
+    assert pid[((1,),)] == pytest.approx(0.12581458369389198)
+    assert pid[((0, 1),)] == pytest.approx(0.3333333333376699)
+
+def test_pid_triple_uparrow1():
+    """
+    """
+    d = bivariates['boom']
+    pid = PID_triple_uparrow(d, bound_u=2, bound_v=2)
+    assert pid[((0,), (1,))] == pytest.approx(0.61301198620181374)
+    assert pid[((0,),)] == pytest.approx(0.053654682112724617)
+    assert pid[((1,),)] == pytest.approx(0.12581458368589959)
+    assert pid[((0, 1),)] == pytest.approx(0.33333333334723803)
+
+def test_pid_downarrow4():
+    """
+    """
+    d = bivariates['boom']
+    pid = PID_downarrow(d)
+    assert pid[((0,), (1,))] == pytest.approx(0.20751874963942218)
+    assert pid[((0,),)] == pytest.approx(0.45914791702724433)
+    assert pid[((1,),)] == pytest.approx(0.33333333333333348)
+    assert pid[((0, 1),)] == pytest.approx(0.12581458369391196)
+
+def test_pid_triple_downarrow1():
+    """
+    """
+    d = bivariates['boom']
+    pid = PID_triple_downarrow(d, bounds=(3,))
+    assert pid[((0,), (1,))] == pytest.approx(0.29288371792167206)
+    assert pid[((0,),)] == pytest.approx(0.3737829487445149)
+    assert pid[((1,),)] == pytest.approx(0.33333333333333348)
+    assert pid[((0, 1),)] == pytest.approx(0.12581458369391196)
