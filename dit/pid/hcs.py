@@ -67,7 +67,7 @@ class PED_CS(BasePID):
     _name = "H_cs"
     _measure = staticmethod(h_cs)
 
-    def __init__(self, dist, inputs=None):
+    def __init__(self, dist, inputs=None, **kwargs):
         """
         Parameters
         ----------
@@ -83,6 +83,7 @@ class PED_CS(BasePID):
 
         self._red_string = "H_r"
         self._pi_string = "H_d"
+        self._kwargs=kwargs
         self._inputs = tuple(map(tuple, inputs))
         self._output = None
         self._lattice = pid_lattice(self._inputs)
