@@ -30,7 +30,7 @@ def distributions(draw, alphabets=(2, 2, 2), nondegenerate=False):
     draw : function
         A sampling function passed in by hypothesis.
     alphabets : int, tuple of ints, tuple of pairs of ints
-        If an int, it is the length of the chain and each variable is assumed to be binary.
+        If an int, it is the length of the outcomes and each variable is assumed to be binary.
         If a tuple of ints, the ints are assumed to be the size of each variable. If a tuple
         of pairs of ints, each pair represents the min and max alphabet size of each variable.
 
