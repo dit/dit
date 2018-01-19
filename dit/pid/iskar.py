@@ -189,7 +189,7 @@ class PID_downarrow(BaseUniquePID):
     _measure = staticmethod(i_downarrow)
 
 
-def i_double_downarrow(d, inputs, output, nhops=5):
+def i_double_downarrow(d, inputs, output, nhops=5): # pragma: no cover
     """
     This computes unique information as I(input : output \Downarrow other_inputs).
 
