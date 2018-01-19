@@ -1,5 +1,7 @@
 """
+The reduced intrinsic mutual information.
 
+Note: this code is nowhere near efficient enough to actually run. Don't try it.
 """
 
 from __future__ import division
@@ -33,10 +35,10 @@ class BaseReducedIntrinsicMutualInformation(BaseMoreIntrinsicMutualInformation):
     @property
     @staticmethod
     @abstractmethod
-    def measure():
+    def measure(): # pragma: no cover
         pass
 
-    def objective(self, x):
+    def objective(self, x): # pragma: no cover
         """
         The multivariate mutual information to minimize.
 
@@ -96,7 +98,7 @@ class ReducedIntrinsicCAEKLMutualInformation(BaseReducedIntrinsicMutualInformati
 reduced_intrinsic_CAEKL_mutual_information = ReducedIntrinsicCAEKLMutualInformation.functional()
 
 
-def reduced_intrinsic_mutual_information(func):
+def reduced_intrinsic_mutual_information(func): # pragma: no cover
     """
     Given a measure of shared information, construct an optimizer which computes
     its ``reduced intrinsic'' form.
