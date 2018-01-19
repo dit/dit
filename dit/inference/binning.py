@@ -35,7 +35,7 @@ def binned(ts, bins=2, style='maxent'):
         return maxent_binning(ts, bins)
     elif style == 'uniform':
         return uniform_binning(ts, bins)
-    else:
+    else: # pragma: no cover
         msg = "The style {} is not understood.".format(style)
         raise ValueError(msg)
 

@@ -26,6 +26,9 @@ class BasePID(object):
     This implements the basic Williams & Beer Partial Information Decomposition.
     """
     __metaclass__ = ABCMeta
+    
+    _red_string = "I_r"
+    _pi_string = "pi"
 
     def __init__(self, dist, inputs=None, output=None, reds=None, pis=None, **kwargs):
         """
@@ -34,19 +37,22 @@ class BasePID(object):
         dist : Distribution
             The distribution to compute the decomposition on.
         inputs : iter of iters, None
-            The set of input variables. If None, `dist.rvs[:-1]` is used.
+            The set of input variables. If None, `dist.rvs` less indices
+            in `output` is used.
         output : iter, None
             The output variable. If None, `dist.rvs[-1]` is used.
+        reds : dict, None
+            Redundancy values pre-assessed.
+        pis : dict, None
+            Partial information values pre-assessed.
         """
         self._dist = dist
 
-        if inputs is None:
-            inputs = dist.rvs[:-1]
         if output is None:
             output = dist.rvs[-1]
+        if inputs is None:
+            inputs = [var for var in dist.rvs if var[0] not in output]
 
-        self._red_string = "I_r"
-        self._pi_string = "pi"
         self._inputs = tuple(map(tuple, inputs))
         self._output = tuple(output)
         self._kwargs = kwargs

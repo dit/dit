@@ -30,7 +30,12 @@ def dist_from_timeseries(observations, history_length=1, base='linear'):
     except AttributeError:
         pass
 
-    num_ts = len(observations[0])
+    try:
+        num_ts = len(observations[0])
+    except TypeError:
+        observations = [(_,) for _ in observations]
+        num_ts = 1
+
     d = distribution_from_data(observations, L=history_length+1, base=base)
 
     def f(o):
