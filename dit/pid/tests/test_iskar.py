@@ -117,7 +117,7 @@ def test_pid_triple_downarrow1():
     """
     """
     d = bivariates['boom']
-    pid = PID_triple_downarrow(d, bounds=(3,))
+    pid = PID_triple_downarrow(d, bounds=(3,), nhops=10)
     assert pid[((0,), (1,))] == pytest.approx(0.29288371792167206)
     assert pid[((0,),)] == pytest.approx(0.3737829487445149)
     assert pid[((1,),)] == pytest.approx(0.33333333333333348)
