@@ -12,7 +12,7 @@ from dit.multivariate import (upper_intrinsic_total_correlation,
                               )
 
 
-dist = dit.modify_outcomes(dit.example_dists.giant_bit(4, 2) @ dit.example_dists.n_mod_m(4, 2),
+dist = dit.modify_outcomes(dit.example_dists.giant_bit(4, 2).__matmul__(dit.example_dists.n_mod_m(4, 2)),
                            lambda o: tuple(a+b for a, b in zip(o[:4], o[4:])))
 
 
