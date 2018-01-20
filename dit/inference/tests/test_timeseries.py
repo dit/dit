@@ -7,6 +7,8 @@ import pytest
 
 from random import choice
 
+import numpy as np
+
 from dit import Distribution
 from dit.inference import dist_from_timeseries
 
@@ -40,6 +42,6 @@ def test_dfts():
     """
     gm = golden_mean()
     ts = [next(gm) for _ in range(1000000)]
-    d1 = dist_from_timeseries(ts, base=3)
-    d2 = Distribution([((0,), 0), ((0,), 1), ((1,), 0)], [-1, -1, -1], base=3)
+    d1 = dist_from_timeseries(ts, base=None)
+    d2 = Distribution([((0,), 0), ((0,), 1), ((1,), 0)], [np.log2(1/3)]*3, base=2)
     assert d1.is_approx_equal(d2, atol=1e-3)
