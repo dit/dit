@@ -132,7 +132,7 @@ script:
       sudo $TRAVIS_PYTHON_VERSION -m pip install .;
     fi
   - if ! [[ "$TRAVIS_PYTHON_VERSION" =~ pypy.* ]]; then
-      if ["${OPTIONAL_DEPS}" == "true"]; then
+      if [ "${OPTIONAL_DEPS}" == "true" ]; then
         pip install -r requirements_optional.txt;
       fi;
     fi;
