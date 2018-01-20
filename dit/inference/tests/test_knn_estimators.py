@@ -55,4 +55,4 @@ def test_cmi_knn(means, stds, rho):
     n = 150000
     data = np.random.multivariate_normal(means, cov, n)
     mi = total_correlation_ksg(data, [[0], [1]], [2])
-    assert mi == pytest.approx(-np.log2(1-rho**2)/2, abs=1-1)
+    assert mi == pytest.approx(-np.log2(1-rho**2)/2, abs=1e-1)
