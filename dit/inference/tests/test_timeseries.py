@@ -24,7 +24,7 @@ def golden_mean():
 
 
 @pytest.mark.flaky(reruns=5)
-def test_dfts():
+def test_dfts1():
     """
     Test inferring a distribution from a time-series.
     """
@@ -36,7 +36,7 @@ def test_dfts():
 
 
 @pytest.mark.flaky(reruns=5)
-def test_dfts():
+def test_dfts2():
     """
     Test inferring a distribution from a time-series.
     """

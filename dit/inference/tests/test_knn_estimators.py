@@ -45,7 +45,7 @@ def test_mi_knn(means, stds, rho):
 @given(means=lists(floats(min_value=-2.0, max_value=2.0), min_size=3, max_size=3),
        stds=lists(floats(min_value=0.1, max_value=2.0), min_size=3, max_size=3),
        rho=floats(min_value=-0.9, max_value=0.9))
-def test_mi_knn(means, stds, rho):
+def test_cmi_knn(means, stds, rho):
     """
     Test entropy of normal samples.
     """
