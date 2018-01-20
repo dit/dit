@@ -130,8 +130,7 @@ except ImportError: # no cython
 
         dist = Distribution(words, pmf, trim=trim)
 
-        if base is not None:
-            dist.set_base(base)
+        dist.set_base(base)
 
         return dist
 

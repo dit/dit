@@ -39,3 +39,20 @@ def test_mi_knn(means, stds, rho):
     data = np.random.multivariate_normal(means, cov, n)
     mi = total_correlation_ksg(data, [[0], [1]])
     assert mi == pytest.approx(-np.log2(1-rho**2)/2, abs=5e-2)
+
+
+@settings(deadline=None, max_examples=25)
+@given(means=lists(floats(min_value=-2.0, max_value=2.0), min_size=3, max_size=3),
+       stds=lists(floats(min_value=0.1, max_value=2.0), min_size=3, max_size=3),
+       rho=floats(min_value=-0.9, max_value=0.9))
+def test_mi_knn(means, stds, rho):
+    """
+    Test entropy of normal samples.
+    """
+    cov = np.array([[stds[0]**2, stds[0]*stds[1]*rho, 0],
+                    [stds[0]*stds[1]*rho, stds[1]**2, 0],
+                    [0, 0, stds[2]**2]])
+    n = 100000
+    data = np.random.multivariate_normal(means, cov, n)
+    mi = total_correlation_ksg(data, [[0], [1]], [2])
+    assert mi == pytest.approx(-np.log2(1-rho**2)/2, abs=5e-2)
