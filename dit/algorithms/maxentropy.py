@@ -45,6 +45,8 @@ __all__ = [
 ]
 
 
+@removals.remove(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+                 version='1.0.1')
 def isolate_zeros_generic(dist, rvs):
     """
     Determines if there are any elements of the optimization vector that must
@@ -86,6 +88,8 @@ def isolate_zeros_generic(dist, rvs):
     return variables
 
 
+@removals.remove(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+                 version='1.0.1')
 def isolate_zeros(dist, k):
     """
     Determines if there are any elements of the optimization vector that must
@@ -423,6 +427,8 @@ def negentropy(p):
     return negH
 
 
+@removals.remove(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+                 version='1.0.1')
 class MaximumEntropy(CVXOPT_Template):
     """
     Find maximum entropy distribution.
@@ -432,6 +438,8 @@ class MaximumEntropy(CVXOPT_Template):
         self.func = negentropy
 
 
+@removals.remove(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+                 version='1.0.1')
 class MarginalMaximumEntropy(MaximumEntropy):
     """
     Find maximum entropy distribution subject to k-way marginal constraints.
@@ -582,6 +590,8 @@ class MomentMaximumEntropy(MaximumEntropy):
         self.b = bb
 
 
+@removals.remove(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+                 version='1.0.1')
 def marginal_maxent_dists(dist, k_max=None, jitter=True, show_progress=True):
     """
     Return the marginal-constrained maximum entropy distributions.

@@ -73,7 +73,7 @@ def prepare_dist(dist, sources, target, rv_mode=None):
 
     return d
 
-def marginal_constraints(dist, k, normalization=True, source_marginal=False):
+def marginal_constraints(dist, k, normalization=True, source_marginal=False): # pragma: no cover
     """
     Builds the k-way marginal constraints.
 
@@ -311,6 +311,8 @@ def extra_constraints(dist, k):
 
     return variables
 
+
+@removals.remove(message="Please see dit.pid.PID_BROJA.", version='1.0.1')
 class MaximumConditionalEntropy(CVXOPT_Template):
     """
     An optimizer for the unique information.
@@ -671,6 +673,8 @@ class MaximumConditionalEntropy(CVXOPT_Template):
 
         return xfinal_full, obj
 
+
+@removals.remove(message="Please see dit.pid.PID_BROJA.", version='1.0.1')
 def pi_decomp(d, d_opt):
     u0 = dit.multivariate.coinformation(d_opt, [[2], [0]], [1])
     u1 = dit.multivariate.coinformation(d_opt, [[2], [1]], [0])
@@ -682,6 +686,8 @@ def pi_decomp(d, d_opt):
 
     return syn, u0, u1, rdn
 
+
+@removals.remove(message="Please see dit.pid.PID_BROJA.", version='1.0.1')
 def calculate_synergy(pmf_opt, ui):
     d = ui.dist
     d_opt = d.copy()
@@ -694,6 +700,8 @@ def calculate_synergy(pmf_opt, ui):
     mi_opt = dit.multivariate.coinformation(d_opt, [sources, target])
     return mi - mi_opt
 
+
+@removals.remove(message="Please see dit.pid.PID_BROJA.", version='1.0.1')
 def dice(a, b):
     # DoF: 85, 36, 15, 10, 5, 0
     d = dit.example_dists.summed_dice(a, b)
@@ -704,6 +712,8 @@ def dice(a, b):
     print(pi_decomp(x.dist, d_opt))
     return x
 
+
+@removals.remove(message="Please see dit.pid.PID_BROJA.", version='1.0.1')
 def demo():
     import matplotlib.pyplot as plt
 
@@ -735,8 +745,10 @@ def demo():
 
     plt.show()
 
+
+@removals.remove(message="Please see dit.pid.PID_BROJA.", version='1.0.1')
 def k_synergy(d, sources, target, k=2, rv_mode=None, extra_constraints=True,
-              tol=None, prng=None, verbose=None):
+              tol=None, prng=None, verbose=None): # pragma: no cover
     """
     Returns the k-synergy.
 
@@ -810,8 +822,10 @@ def k_synergy(d, sources, target, k=2, rv_mode=None, extra_constraints=True,
     H_orig = dit.multivariate.entropy(d_orig)
     return H_opt - H_orig
 
+
+@removals.remove(message="Please see dit.pid.PID_BROJA.", version='1.0.1')
 def k_informations(d, sources, target, rv_mode=None, extra_constraints=True,
-                   tol=None, prng=None, verbose=None):
+                   tol=None, prng=None, verbose=None): # pragma: no cover
     """
     Returns the amount of I[sources:target] captured by matching k-way
     marginals that include the target and the source marginal distribution.
@@ -884,9 +898,11 @@ def k_informations(d, sources, target, rv_mode=None, extra_constraints=True,
     diffs = np.diff(nonkinfos)
     return np.asarray(list(reversed(diffs)))
 
+
+@removals.remove(message="Please see dit.pid.PID_BROJA.", version='1.0.1')
 def unique_informations(d, sources, target, k=2, rv_mode=None,
                         extra_constraints=True, tol=None, prng=None,
-                        verbose=None):
+                        verbose=None): # pragma: no cover
     """
     Returns the unique information each source has about the target.
 

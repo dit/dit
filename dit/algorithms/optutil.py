@@ -8,6 +8,8 @@ import numpy as np
 import dit
 
 
+@removals.remove(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+                 version='1.0.1')
 def as_full_rank(A, b):
     """
     From a linear system Ax = b, return Bx = c such that B has full rank.
@@ -73,6 +75,8 @@ def as_full_rank(A, b):
     return B, c, rank
 
 
+@removals.remove(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+                 version='1.0.1')
 class CVXOPT_Template(object):
     """
     Template for convex minimization on probability distributions.
@@ -256,9 +260,12 @@ class CVXOPT_Template(object):
         return out
 
 
+@removals.remove(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+                 version='1.0.1')
 class Bunch:
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
+
 
 
 def prepare_dist(dist):
@@ -279,6 +286,8 @@ def prepare_dist(dist):
     return dist
 
 
+@removals.remove(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+                 version='1.0.1')
 def op_runner(objective, constraints, **kwargs):
     """
     Minimize the objective specified by the constraints.

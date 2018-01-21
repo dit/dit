@@ -15,6 +15,9 @@ exclude_lines =
     def _repr_html_
     if self\.debug
 
+    # Don't worry about deprecated code:
+    @removals.remove
+
     # Don't complain if tests don't hit defensive assertion code:
     raise AssertionError
     raise NotImplementedError
