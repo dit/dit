@@ -1292,7 +1292,7 @@ class Distribution(ScalarDistribution):
             self._rv_mode = 'names'
 
 
-    def to_html(self, digits=None, exact=None, tol=1e-9):
+    def to_html(self, digits=None, exact=None, tol=1e-9): # pragma: no cover
         """
         Construct an HTML representation of the distribution.
 
