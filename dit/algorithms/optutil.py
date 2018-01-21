@@ -4,6 +4,8 @@ Various utilities that can be helpful for optimization problems.
 """
 from __future__ import division, print_function
 
+from debtcollector import removals
+
 import numpy as np
 import dit
 

@@ -17,6 +17,8 @@ Frank-Wolfe algorithm.
 
 from __future__ import print_function
 
+from debtcollector import removals
+
 import logging
 import numpy as np
 

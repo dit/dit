@@ -23,6 +23,8 @@ handle any Cartesian product sample space, rather than just homogeneous ones.
 
 from __future__ import division, print_function
 
+from debtcollector import removals
+
 import itertools
 
 import numpy as np

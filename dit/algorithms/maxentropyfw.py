@@ -8,6 +8,8 @@ This uses the Frank-Wolfe algorithm:
 """
 from __future__ import print_function
 
+from debtcollector import removals
+
 from itertools import combinations
 
 import logging
