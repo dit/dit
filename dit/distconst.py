@@ -28,6 +28,7 @@ from .validate import validate_pmf
 __all__ = [
     'mixture_distribution',
     'mixture_distribution2',
+    'noisy',
     'modify_outcomes',
     'random_scalar_distribution',
     'random_distribution',
@@ -160,6 +161,30 @@ def mixture_distribution2(dists, weights):
         ops.add_inplace(mix.pmf, ops.mult(dist.pmf, weight))
     return mix
 
+
+def noisy(dist, noise=0.5):
+    """
+    Construct a noisy version of `dist`.
+
+    Parameters
+    ----------
+    dist : Distribution
+        The distribution to fuzz.
+    noise : float, 0 <= `noise` <= 1
+        The noise level.
+
+    Returns
+    -------
+    fu zzy: Distribution
+        The noisy distribution.
+    """
+    fuzz = uniform(list(product(*dist.alphabet)))
+    if isinstance(dist.outcomes[0], str):
+        fuzz = modify_outcomes(fuzz, lambda o: ''.join(o))
+    fuzzy = mixture_distribution([dist, fuzz], [1-noise, noise], merge=True)
+    return fuzzy
+
+
 def modify_outcomes(dist, ctor):
     """
     Returns `dist` but with modified outcomes, after passing them to `ctor`.
@@ -197,6 +222,7 @@ def modify_outcomes(dist, ctor):
     pmf = np.array(list(newdist.values()))
     d = dist.__class__(outcomes, pmf, base=dist.get_base())
     return d
+
 
 def random_scalar_distribution(n, base=None, alpha=None, prng=None):
     """
@@ -244,6 +270,7 @@ def random_scalar_distribution(n, base=None, alpha=None, prng=None):
         d.set_base(base)
 
     return d
+
 
 def random_distribution(outcome_length, alphabet_size, base=None, alpha=None, prng=None):
     """
@@ -299,6 +326,7 @@ def random_distribution(outcome_length, alphabet_size, base=None, alpha=None, pr
         d.set_base(base)
 
     return d
+
 
 def simplex_grid(length, subdivisions, using=None, inplace=False):
     """Returns a generator over distributions, determined by a grid.
@@ -377,6 +405,7 @@ def simplex_grid(length, subdivisions, using=None, inplace=False):
                 d.pmf[:] = pmf
                 yield d
 
+
 def uniform_scalar_distribution(n, base=None):
     """
     Returns a uniform scalar distribution over `n` outcomes.
@@ -408,6 +437,7 @@ def uniform_scalar_distribution(n, base=None):
         d.set_base(base)
 
     return d
+
 
 def uniform_distribution(outcome_length, alphabet_size, base=None):
     """
@@ -482,6 +512,7 @@ def uniform_distribution(outcome_length, alphabet_size, base=None):
 
     return d
 
+
 def uniform_like(dist):
     """
     Returns a uniform distribution with the same outcome length, alphabet size, and base as `dist`.
@@ -495,6 +526,7 @@ def uniform_like(dist):
     alphabet_size = dist.alphabet
     base = dist.get_base()
     return uniform_distribution(outcome_length, alphabet_size, base)
+
 
 def uniform(outcomes, base=None):
     """
@@ -530,6 +562,7 @@ def uniform(outcomes, base=None):
         d.set_base(base)
 
     return d
+
 
 def insert_rvf(d, func, index=-1):
     """
@@ -591,6 +624,7 @@ def insert_rvf(d, func, index=-1):
 
     d2 = Distribution(outcomes, d.pmf.copy(), base=d.get_base())
     return d2
+
 
 class RVFunctions(object):
     """
@@ -939,6 +973,7 @@ def product_distribution(dist, rvs=None, rv_mode=None, base=None):
 
     return d
 
+
 def all_dist_structures(outcome_length, alphabet_size):
     """
     Return an iterator of distributions over the
@@ -965,6 +1000,7 @@ def all_dist_structures(outcome_length, alphabet_size):
         outcomes = [''.join(_) for _ in t]
         yield uniform(outcomes)
 
+
 def _int_to_dist(number, outcome_length, alphabet_size):
     """
     Construct the `number`th distribution over `outcome_length` variables each
@@ -990,6 +1026,7 @@ def _int_to_dist(number, outcome_length, alphabet_size):
     outcomes = [''.join(word) for include, word in zip(events, words) if include ]
     return uniform(outcomes)
 
+
 def random_dist_structure(outcome_length, alphabet_size):
     """
     Return a uniform distribution over a random subset of the
@@ -1009,6 +1046,7 @@ def random_dist_structure(outcome_length, alphabet_size):
     """
     bound = 2**(alphabet_size**outcome_length)
     return _int_to_dist(randint(1, bound-1), outcome_length, alphabet_size)
+
 
 def _combine_scalar_dists(d1, d2, op):
     """
