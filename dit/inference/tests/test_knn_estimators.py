@@ -35,7 +35,7 @@ def test_entropy_knn2(mean, std):
     """
     n = 100000
     data = np.random.normal(mean, std, n).reshape(n, 1)
-    h = differential_entropy_knn(data, [1])
+    h = differential_entropy_knn(data, [0])
     assert h == pytest.approx(np.log2(2*np.pi*np.e*std**2)/2, abs=1e-1)
 
 
