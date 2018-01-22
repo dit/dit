@@ -6,6 +6,8 @@ from __future__ import division
 
 from abc import ABCMeta, abstractmethod
 
+from six import with_metaclass
+
 import numpy as np
 
 from ... import Distribution
@@ -20,12 +22,11 @@ from ...utils.optimization import (BasinHoppingCallBack,
 from ..dual_total_correlation import dual_total_correlation
 from ..entropy import entropy
 
-class MarkovVarOptimizer(object):
+class MarkovVarOptimizer(with_metaclass(ABCMeta, object)):
     """
     Abstract base class for constructing auxiliary variables which render a set
     of variables conditionally independent.
     """
-    __metaclass__ = ABCMeta
 
     name = ""
     description = ""
@@ -539,7 +540,6 @@ class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):
     Abstract base class for an optimizer which additionally minimizes the size
     of the auxiliary variable.
     """
-    __metaclass__ = ABCMeta
 
     def minimize_aux_var(self, njumps=25, jacobian=False):
         """

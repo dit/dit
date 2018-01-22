@@ -4,6 +4,8 @@ Base class for the calculation of reduced and minimal intrinsic informations.
 
 from __future__ import division
 
+from six import with_metaclass
+
 from abc import ABCMeta, abstractmethod
 from string import digits, ascii_letters
 
@@ -15,14 +17,13 @@ from ...helpers import flatten, normalize_rvs, parse_rvs
 from ...math import prod
 from ...utils.optimization import Uniquifier, accept_test, colon
 
-class BaseMoreIntrinsicMutualInformation(object):
+class BaseMoreIntrinsicMutualInformation(with_metaclass(ABCMeta, object)):
     """
     Compute the minimal intrinsic mutual information, a lower bound on the secret
     key agreement rate:
 
         I[X : Y \downarrow\downarrow\downarrow Z] = min_U I[X:Y|U] + I[XY:U|Z]
     """
-    __metaclass__ = ABCMeta
 
     name = ""
 

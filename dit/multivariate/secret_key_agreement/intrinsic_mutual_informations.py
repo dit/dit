@@ -6,6 +6,8 @@ from __future__ import division
 
 from abc import ABCMeta, abstractmethod
 
+from six import with_metaclass
+
 import numpy as np
 
 from ... import Distribution, insert_rvf, modify_outcomes
@@ -22,13 +24,12 @@ __all__ = [
     'intrinsic_caekl_mutual_information',
 ]
 
-class BaseIntrinsicMutualInformation(object):
+class BaseIntrinsicMutualInformation(with_metaclass(ABCMeta, object)):
     """
     Compute a generalized intrinsic mutual information:
 
         IMI[X:Y|Z] = min_{p(z_bar|z)} I[X:Y|Z]
     """
-    __metaclass__ = ABCMeta
 
     name = ""
 

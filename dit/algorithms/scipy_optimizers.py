@@ -11,6 +11,8 @@ from itertools import combinations
 
 from debtcollector import removals
 
+from six import with_metaclass
+
 import numpy as np
 
 from scipy.optimize import basinhopping, minimize
@@ -61,11 +63,10 @@ def infer_free_values(A, b):
     return free
 
 
-class BaseOptimizer(object):
+class BaseOptimizer(with_metaclass(ABCMeta, object)):
     """
     Calculate an optimized distribution consistent with the given marginal constraints.
     """
-    __metaclass__ = ABCMeta
 
     def __init__(self, dist, rvs, rv_mode=None):
         """

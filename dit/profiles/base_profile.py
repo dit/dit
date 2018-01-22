@@ -7,7 +7,10 @@ The base information profile.
 
 from abc import ABCMeta, abstractmethod
 
-from ..math import close
+from six import with_metaclass
+
+import numpy as np
+
 
 profile_docstring = """
 {name}
@@ -39,7 +42,8 @@ _compute
     Compute the profile
 """
 
-class BaseProfile(object):
+
+class BaseProfile(with_metaclass(ABCMeta, object)):
     """
     BaseProfile
 
@@ -66,7 +70,6 @@ class BaseProfile(object):
     _compute
         Compute the profile.
     """
-    __metaclass__ = ABCMeta
 
     xlabel = 'scale'
     ylabel = 'information [bits]'
@@ -120,9 +123,9 @@ class BaseProfile(object):
         ax.set_ylabel(self.ylabel)
 
         low, high = ax.get_ylim()
-        if close(low, 0, atol=1e-5):
+        if np.isclose(low, 0, atol=1e-5):
             low = -0.1
-        if close(high, 0, atol=1e-5):
+        if np.isclose(high, 0, atol=1e-5):
             high = 0.1
         ax.set_ylim((low, high))
 

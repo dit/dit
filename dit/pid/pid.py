@@ -4,7 +4,9 @@ Classes implementing the partial information decomposition.
 
 from __future__ import division
 
-from abc import ABCMeta, abstractmethod, abstractproperty
+from abc import ABCMeta, abstractmethod
+
+from six import with_metaclass
 
 from sys import version_info
 
@@ -21,12 +23,11 @@ from ..multivariate import coinformation
 from ..utils import flatten, powerset
 
 
-class BasePID(object):
+class BasePID(with_metaclass(ABCMeta, object)):
     """
     This implements the basic Williams & Beer Partial Information Decomposition.
     """
-    __metaclass__ = ABCMeta
-    
+
     _red_string = "I_r"
     _pi_string = "pi"
 

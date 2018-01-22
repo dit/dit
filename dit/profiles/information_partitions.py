@@ -7,17 +7,20 @@ from __future__ import absolute_import
 
 from abc import ABCMeta, abstractmethod
 
+from six import with_metaclass
+
 from collections import defaultdict
 
 from itertools import combinations, islice, permutations
 
 import prettytable
 
+import numpy as np
+
 import networkx as nx
 
 from .. import ditParams
 from ..algorithms import maxent_dist
-from ..math import close
 from ..other import extropy
 from ..shannon import entropy
 from ..utils import powerset
@@ -83,11 +86,10 @@ def constraint_lattice(elements):
     return lattice
 
 
-class BaseInformationPartition(object):
+class BaseInformationPartition(with_metaclass(ABCMeta, object)):
     """
     Construct an I-Diagram-like partition from a given joint distribution.
     """
-    __metaclass__ = ABCMeta
 
     def __init__(self, dist):
         """
@@ -219,7 +221,7 @@ class BaseInformationPartition(object):
         items = self.atoms.items()
         for (rvs, crvs), value in sorted(items, key=key_function):
             # gets rid of pesky -0.0 display values
-            if close(value, 0.0):
+            if np.isclose(value, 0.0):
                 value = 0.0
             table.add_row([self._stringify(rvs, crvs), value])
         return table.get_string()
@@ -429,7 +431,7 @@ class DependencyDecomposition(object):
         for dependency, values in items:
             # gets rid of pesky -0.0 display values
             for m, value in values.items():
-                if close(value, 0.0):
+                if np.isclose(value, 0.0):
                     values[m] = 0.0
             table.add_row([self._stringify(dependency)] + [values[m] for m in measures])
         return table.get_string()

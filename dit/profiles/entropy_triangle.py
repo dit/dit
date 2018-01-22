@@ -6,6 +6,8 @@ Artificial Intelligent Systems. Springer International Publishing, 2016.
 """
 from abc import ABCMeta, abstractmethod
 
+from six import with_metaclass
+
 from ..distribution import BaseDistribution
 from ..distconst import product_distribution, uniform_like
 from ..multivariate import (entropy, residual_entropy, dual_total_correlation,
@@ -15,7 +17,7 @@ __all__ = ['EntropyTriangle',
            'EntropyTriangle2',
 ]
 
-class BaseEntropyTriangle(object):
+class BaseEntropyTriangle(with_metaclass(ABCMeta, object)):
     """
     BaseEntropyTriangle
 
@@ -38,7 +40,6 @@ class BaseEntropyTriangle(object):
     draw
         Plot the entropy triangle.
     """
-    __metaclass__ = ABCMeta
 
     left_label = r"$\operatorname{R}[\mathrm{dist}]$"
     right_label = r"$\operatorname{T}[\mathrm{dist}] + \operatorname{B}[\mathrm{dist}]$"

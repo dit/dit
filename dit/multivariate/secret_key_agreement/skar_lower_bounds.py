@@ -6,6 +6,8 @@ from __future__ import division
 
 from abc import ABCMeta, abstractmethod
 
+from six import with_metaclass
+
 from string import ascii_letters, digits
 
 import numpy as np
@@ -20,13 +22,12 @@ __all__ = [
 ]
 
 
-class BaseSKARLowerBounds(object):
+class BaseSKARLowerBounds(with_metaclass(ABCMeta, object)):
     """
     Compute lower bounds on the secret key agreement rate of the form:
 
         max_{V - U - X - YZ} objective()
     """
-    __metaclass__ = ABCMeta
 
     def __init__(self, dist, rv_x=None, rv_y=None, rv_z=None, rv_mode=None, bound_u=None, bound_v=None):
         """
