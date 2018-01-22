@@ -39,7 +39,7 @@ from ..utils import flatten
 # from ..utils import powerset
 
 __all__ = [
-    'MarginalMaximumEntropy',
+    # 'MarginalMaximumEntropy',
     'MomentMaximumEntropy',
     # Use version provided by maxentropyfw.py
     #'marginal_maxent_dists',
@@ -429,8 +429,9 @@ def negentropy(p):
     return negH
 
 
-@removals.remove(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
-                 version='1.0.1')
+@removals.removed_class(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+                        replacement=dit.algorithms.scipy_optimizers.MaxEntOptimizer,
+                        version='1.0.1')
 class MaximumEntropy(CVXOPT_Template):
     """
     Find maximum entropy distribution.
@@ -440,8 +441,9 @@ class MaximumEntropy(CVXOPT_Template):
         self.func = negentropy
 
 
-@removals.remove(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
-                 version='1.0.1')
+@removals.removed_class(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+                        replacement=dit.algorithms.scipy_optimizers.MaxEntOptimizer,
+                        version='1.0.1')
 class MarginalMaximumEntropy(MaximumEntropy):
     """
     Find maximum entropy distribution subject to k-way marginal constraints.
