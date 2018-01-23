@@ -429,8 +429,9 @@ def negentropy(p):
     return negH
 
 
-@removals.removed_class(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+@removals.removed_class('MaximumEntropy',
                         replacement="dit.algorithms.scipy_optimizers.MaxEntOptimizer",
+                        message="Please see methods in dit.algorithms.scipy_optimizers.py.",
                         version='1.0.1')
 class MaximumEntropy(CVXOPT_Template):
     """
@@ -441,8 +442,9 @@ class MaximumEntropy(CVXOPT_Template):
         self.func = negentropy
 
 
-@removals.removed_class(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+@removals.removed_class('MarginalMaximumEntropy',
                         replacement="dit.algorithms.scipy_optimizers.MaxEntOptimizer",
+                        message="Please see methods in dit.algorithms.scipy_optimizers.py.",
                         version='1.0.1')
 class MarginalMaximumEntropy(MaximumEntropy):
     """

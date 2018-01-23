@@ -77,8 +77,9 @@ def as_full_rank(A, b):
     return B, c, rank
 
 
-@removals.remove(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
-                 version='1.0.1')
+@removals.removed_class('CVXOPT_Template',
+                        message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+                        version='1.0.1')
 class CVXOPT_Template(object):
     """
     Template for convex minimization on probability distributions.
