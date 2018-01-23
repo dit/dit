@@ -5,8 +5,9 @@ source = dit
 omit =
 	*test_*.py
 	dit/abc.py
-	dit/utils/exitstack.py
 	dit/utils/bindargs.py
+	dit/utils/exitstack.py
+	dit/utils/logger.py
 
 [report]
 # Regexes for lines to exclude from consideration
