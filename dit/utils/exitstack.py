@@ -6,5 +6,5 @@ import sys
 
 if sys.version_info[:2] >= (3,3):
     from contextlib import ExitStack
-else: # pragma: no cover
+else:
     from contextlib2 import ExitStack

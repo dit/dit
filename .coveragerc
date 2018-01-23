@@ -8,10 +8,6 @@ omit =
 	# this is just convenience imports
 	dit/abc.py
 	# excluded due to testing difficulty
-	dit/utils/bindargs.py
-	# excluded due to testing difficulty
-	dit/utils/exitstack.py
-	# excluded due to testing difficulty
 	dit/utils/logger.py
 
 [report]
