@@ -175,29 +175,22 @@ class BaseMoreIntrinsicMutualInformation(with_metaclass(ABCMeta, object)):
         """
         pass
 
+    @abstractmethod
     def objective(self, x):
         """
-        The multivariate mutual information to minimize.
+        The objective of the minimization.
 
         Parameters
         ----------
-        x : ndarray
-            An optimization vector.
+        x : np.ndarray
+            The optimization vector.
 
         Returns
         -------
         obj : float
-            The value of the objective function.
+            The objective to minimize
         """
-        pmf = self.construct_joint(x)
-
-        # I[X:Y|U]
-        a = self.measure(pmf, self._rvs, self._U)
-
-        # I[XY:U|Z]
-        b = self._conditional_mutual_information(pmf, self._rvs, self._U, self._crvs)
-
-        return a + b
+        pass
 
     def optimize(self, x0=None, nhops=None, polish=1e-6):
         """

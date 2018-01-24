@@ -30,12 +30,27 @@ class BaseMinimalIntrinsicMutualInformation(BaseMoreIntrinsicMutualInformation):
     @abstractmethod
     def measure(self, pmf, rvs, crvs):
         """
+        The multivariate mutual information to minimize.
+
+        Parameters
+        ----------
+        pmf : np.ndarray
+            The joint probability distribution
+        rvs : iterable of iterables
+            The random variables.
+        crvs : iterable
+            The variables to condition on.
+
+        Returns
+        -------
+        meas : float
+            The measure applied to `rvs` given `crvs`.
         """
         pass
 
     def objective(self, x):
         """
-        The multivariate mutual information to minimize.
+        Compute I[X:Y|U] + I[XY:U|Z], or its multivariate analog.
 
         Parameters
         ----------
@@ -70,8 +85,12 @@ class MinimalIntrinsicTotalCorrelation(BaseMinimalIntrinsicMutualInformation):
 
         Parameters
         ----------
-        x : ndarray
-            An optimization vector.
+        pmf : np.ndarray
+            The joint probability distribution
+        rvs : iterable of iterables
+            The random variables.
+        crvs : iterable
+            The variables to condition on.
 
         Returns
         -------
@@ -108,8 +127,12 @@ class MinimalIntrinsicDualTotalCorrelation(BaseMinimalIntrinsicMutualInformation
 
         Parameters
         ----------
-        x : ndarray
-            An optimization vector.
+        pmf : np.ndarray
+            The joint probability distribution
+        rvs : iterable of iterables
+            The random variables.
+        crvs : iterable
+            The variables to condition on.
 
         Returns
         -------
@@ -146,8 +169,12 @@ class MinimalIntrinsicCAEKLMutualInformation(BaseMinimalIntrinsicMutualInformati
 
         Parameters
         ----------
-        x : ndarray
-            An optimization vector.
+        pmf : np.ndarray
+            The joint probability distribution
+        rvs : iterable of iterables
+            The random variables.
+        crvs : iterable
+            The variables to condition on.
 
         Returns
         -------
@@ -215,11 +242,15 @@ def minimal_intrinsic_mutual_information(func):
     docstring = \
     """
     Compute the {name}.
-
+        
     Parameters
     ----------
-    x : ndarray
-        An optimization vector.
+    pmf : np.ndarray
+        The joint probability distribution
+    rvs : iterable of iterables
+        The random variables.
+    crvs : iterable
+        The variables to condition on.
 
     Returns
     -------

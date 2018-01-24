@@ -9,7 +9,7 @@ from __future__ import absolute_import
 
 from debtcollector import removals
 
-from collections import Iterable
+from collections import Iterable, OrderedDict
 from itertools import tee
 import os
 import sys
@@ -36,36 +36,6 @@ __all__ = (
     'digits',
     'pairwise',
 )
-
-######################################################
-# Hacks for simultaneous 2.x and 3.x compatibility.
-#
-try: # pragma: no cover
-    # 2.7+
-    from collections import OrderedDict
-except ImportError: # pragma: no cover
-    # 2.6
-    from ordereddict import OrderedDict
-
-
-def Property(fcn):
-    """Simple property decorator.
-
-    Usage:
-
-        @Property
-        def attr():
-            doc = '''The docstring.'''
-            def fget(self):
-                pass
-            def fset(self, value):
-                pass
-            def fdel(self)
-                pass
-            return locals()
-
-    """
-    return property(**fcn())
 
 
 def default_opener(filename):

@@ -43,6 +43,7 @@ def test_3(dist):
     assert mimi == pytest.approx(dist.secret_rate, abs=1e-5)
 
 
+@pytest.mark.flaky(reruns=5)
 def test_dist():
     """
     Test that the construct dist is accurate.
