@@ -25,6 +25,7 @@ d3 = Distribution(['0', '1', '2'], [1/3, 1/3, 1/3])
 d4 = Distribution(['00', '11'], [2/5, 3/5])
 d5 = Distribution(['00', '11'], [1/2, 1/2])
 
+
 def get_dists_2():
     """
     Construct several example distributions.
@@ -33,6 +34,7 @@ def get_dists_2():
     d2 = Distribution(['0', '1'], [1/3, 2/3])
     d3 = Distribution(['0', '1'], [2/5, 3/5])
     return d1, d2, d3
+
 
 def get_dists_3():
     """
@@ -44,6 +46,7 @@ def get_dists_3():
     d4 = Distribution(['0', '1', '2'], [1/6, 2/6, 3/6])
     return d1, d2, d3, d4
 
+
 @pytest.mark.parametrize('dist', [d1, d2, d3, d4, d5])
 @pytest.mark.parametrize('alpha', [0, 1, 2, 0.5])
 @pytest.mark.parametrize('divergence', divergences)
@@ -53,6 +56,7 @@ def test_positive_definite(dist, alpha, divergence):
     """
     assert divergence(dist, dist, alpha) == pytest.approx(0)
     assert hellinger_sum(dist, dist, alpha) == pytest.approx(1)
+
 
 @pytest.mark.parametrize('alpha', [0.1, 0.5, 1, 1.5])
 @pytest.mark.parametrize('dists', [get_dists_2(), get_dists_3()])
@@ -98,6 +102,7 @@ def test_divergences_to_kl2(dists, divergence):
     for dist1, dist2 in combinations(dists, 2):
         assert divergence(dist1, dist2, alpha=1) == pytest.approx(kullback_leibler_divergence(dist1, dist2))
 
+
 @pytest.mark.parametrize('args', [
     [d4, d1, None, None],
     [d4, d2, None, None],
@@ -117,6 +122,7 @@ def test_exceptions(args, divergence, alpha):
     with pytest.raises(ditException):
         divergence(first, second, alpha, rvs, crvs)
 
+
 def test_renyi_values():
     """
     Test specific values of the Renyi divergence.
@@ -129,6 +135,7 @@ def test_renyi_values():
     assert renyi_divergence(d2, d3, 1/2) == pytest.approx(np.log2(2))
     assert renyi_divergence(d1, d3, 1/2) == pytest.approx(np.inf)
 
+
 @pytest.mark.parametrize('alpha', [0, 1, 2, 0.5])
 def test_renyi(alpha):
     """
@@ -140,6 +147,7 @@ def test_renyi(alpha):
     h_u = renyi_entropy(uniform, alpha)
     div = renyi_divergence(dist1, uniform, alpha)
     assert h == pytest.approx(h_u - div)
+
 
 @pytest.mark.parametrize('alpha', [0.1, 0.5, 1.1])
 def test_f_divergence(alpha, places=1):

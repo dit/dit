@@ -44,6 +44,7 @@ from .samplespace import BaseSampleSpace, ScalarSampleSpace
 
 import numpy as np
 
+
 def _make_distribution(outcomes, pmf=None, sample_space=None,
                             base=None, prng=None, sparse=True):
     """
@@ -107,6 +108,7 @@ def _make_distribution(outcomes, pmf=None, sample_space=None,
     d._meta['is_sparse'] = sparse
 
     return d
+
 
 class ScalarDistribution(BaseDistribution):
     """
@@ -549,7 +551,6 @@ class ScalarDistribution(BaseDistribution):
 
         else:
             raise NotImplementedError(msg.format(type(self), type(other)))
-
 
     def __add__(self, other):
         """

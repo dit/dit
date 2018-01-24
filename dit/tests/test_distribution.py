@@ -7,6 +7,7 @@ from dit import Distribution, ScalarDistribution
 from dit.distribution import BaseDistribution
 from dit.exceptions import ditException, InvalidNormalization
 
+
 def test_dist_iter1():
     outcomes = ['00', '01', '10', '11']
     pmf = [1/4]*4
@@ -50,12 +51,14 @@ def test_to_dict():
     for o, p in dd.items():
         assert d[o] == pytest.approx(p)
 
+
 def test_validate1():
     outcomes = ['00', '01', '10', '11']
     pmf = [1/4]*4
     d = Distribution(outcomes, pmf)
     assert d.validate()
     assert BaseDistribution.validate(d)
+
 
 def test_validate2():
     outcomes = ['00', '01', '10', '11']
@@ -117,6 +120,7 @@ x    p(x)
 11   1/4"""
     assert s == s_
 
+
 def test_to_string3():
     # Test printing
     outcomes = ['00', '01', '10', '11']
@@ -149,6 +153,7 @@ x    p(x)
     s = sio.read()
     assert s == s_
 
+
 def test_to_string4():
     # Basic with marginal
     outcomes = ['00', '01', '10', '11']
@@ -168,6 +173,7 @@ x   p(x)
 1   0.5"""
     assert s == s_
 
+
 def test_to_string5():
     # Basic with marginal and mask
     outcomes = ['00', '01', '10', '11']
@@ -186,6 +192,7 @@ x    p(x)
 0*   0.5
 1*   0.5"""
     assert s == s_
+
 
 def test_to_string6():
     # Basic
@@ -207,6 +214,7 @@ x    p(x)
 11   0.2"""
     assert s == s_
 
+
 def test_to_string7():
     # Basic
     outcomes = ['00', '01', '10', '11']
@@ -223,6 +231,7 @@ x    p(x)
 10   0.25
 11   0.25"""
     assert s == s_
+
 
 def test_to_string8():
     outcomes = ['00', '01', '10', '11']
@@ -241,6 +250,7 @@ x    p(x)
 0!   0.5
 1!   0.5"""
     assert s == s_
+
 
 def test_to_string9():
     # Basic
@@ -263,6 +273,7 @@ x    log p(x)
 11   -2.0"""
     assert s == s_
 
+
 def test_to_string10():
     # Basic
     d = ScalarDistribution([], sample_space=[0, 1], validate=False)
@@ -274,6 +285,7 @@ Base:     2
 x   log p(x)"""
     assert s == s_
 
+
 def test_prepare_string1():
     # Basic
     outcomes = ['00', '01', '10', '11']
@@ -283,6 +295,7 @@ def test_prepare_string1():
     with pytest.raises(ditException):
         prepare_string(d, show_mask=True)
 
+
 def test_prepare_string2():
     # Basic
     outcomes = ['00', '01', '10', '11']
@@ -291,6 +304,7 @@ def test_prepare_string2():
     from dit.distribution import prepare_string
     with pytest.raises(ditException):
         prepare_string(d, str_outcomes=True)
+
 
 def test_prepare_string3():
     outcomes = [(0, 0), (0, 1), (1, 0), (1, 1)]
@@ -310,6 +324,7 @@ x    p(x)
 11   0.25"""
     s = d.to_string(str_outcomes=True)
     assert s == s_
+
 
 def test_prepare_string4():
     class WeirdInt(int):
@@ -333,6 +348,7 @@ x        p(x)
 (1, 1)   0.25"""
     s = d.to_string(str_outcomes=True)
     assert s == s_
+
 
 def test_really_big_words():
     """

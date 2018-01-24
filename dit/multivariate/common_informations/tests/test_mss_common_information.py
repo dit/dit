@@ -9,6 +9,7 @@ import pytest
 from dit import Distribution
 from dit.multivariate import mss_common_information as M
 
+
 def test_M1():
     """ Test M """
     outcomes = ['000',
@@ -30,6 +31,7 @@ def test_M1():
     pmf = [1/16]*16
     d = Distribution(outcomes, pmf)
     assert M(d) == pytest.approx(2.0)
+
 
 def test_M2():
     """ Test M with rv names """

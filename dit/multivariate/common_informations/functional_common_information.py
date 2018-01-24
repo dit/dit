@@ -15,6 +15,7 @@ from ..dual_total_correlation import dual_total_correlation
 
 __all__ = ['functional_common_information']
 
+
 def functional_markov_chain_naive(dist, rvs=None, crvs=None, rv_mode=None): # pragma: no cover
     """
     Add the smallest function of `dist` which renders `rvs` independent.
@@ -53,6 +54,7 @@ def functional_markov_chain_naive(dist, rvs=None, crvs=None, rv_mode=None): # pr
     B = lambda d: dual_total_correlation(d, rvs, crvs+f, rv_mode)
     dists = [ d for d in dists if close(B(d), 0) ]
     return min(dists, key=lambda d: entropy(d, rvs=f, rv_mode=rv_mode))
+
 
 def functional_markov_chain(dist, rvs=None, crvs=None, rv_mode=None):
     """
@@ -142,6 +144,7 @@ def functional_markov_chain(dist, rvs=None, crvs=None, rv_mode=None):
             queue.extendleft(new_parts)
 
     return optimal[1]
+
 
 def functional_common_information(dist, rvs=None, crvs=None, rv_mode=None):
     """

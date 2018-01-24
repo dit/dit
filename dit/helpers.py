@@ -39,6 +39,7 @@ constructor_map = {
     str : str_outcome_ctor,
 }
 
+
 class RV_Mode(object):
     """
     Class to manage how rvs and crvs are specified and interpreted.
@@ -73,7 +74,9 @@ class RV_Mode(object):
 
         return mode
 
+
 RV_MODES = RV_Mode()
+
 
 def construct_alphabets(outcomes):
     """
@@ -139,6 +142,7 @@ def construct_alphabets(outcomes):
     alphabets = _construct_alphabets(outcomes)
     return alphabets
 
+
 def _construct_alphabets(outcomes):
     """
     Core construction of alphabets. No sanity checks.
@@ -160,6 +164,7 @@ def _construct_alphabets(outcomes):
     alphabets = tuple(map(tuple, alphabets))
     return alphabets
 
+
 def get_outcome_ctor(klass):
     """
     Helper function to return an outcome constructor from the outcome class.
@@ -174,6 +179,7 @@ def get_outcome_ctor(klass):
 
     """
     return constructor_map.get(klass, klass)
+
 
 def get_product_func(klass):
     """
@@ -195,6 +201,7 @@ def get_product_func(klass):
         product = product_maker(ctor)
 
     return product
+
 
 def normalize_rvs(dist, rvs, crvs, rv_mode):
     """
@@ -244,6 +251,7 @@ def normalize_rvs(dist, rvs, crvs, rv_mode):
         raise ditException(msg)
 
     return rvs, crvs, rv_mode
+
 
 def parse_rvs(dist, rvs, rv_mode=None, unique=True, sort=True):
     """
@@ -331,6 +339,7 @@ def parse_rvs(dist, rvs, rv_mode=None, unique=True, sort=True):
 
     return rvs, indexes
 
+
 def reorder(outcomes, pmf, sample_space, index=None):
     """
     Helper function to reorder outcomes and pmf to match sample_space.
@@ -363,6 +372,7 @@ def reorder(outcomes, pmf, sample_space, index=None):
     pmf = [pmf[i] for i in order]
     new_index = dict(zip(outcomes, range(len(outcomes))))
     return outcomes, pmf, new_index
+
 
 def copypmf(d, base=None, mode='asis'):
     """

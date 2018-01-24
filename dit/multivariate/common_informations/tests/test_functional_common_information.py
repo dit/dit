@@ -9,6 +9,7 @@ import pytest
 from dit import Distribution
 from dit.multivariate import functional_common_information as F
 
+
 def test_fci1():
     """
     Test known values.
@@ -17,6 +18,7 @@ def test_fci1():
     assert F(d) == pytest.approx(2.0)
     assert F(d, [[0], [1]]) == pytest.approx(0.0)
     assert F(d, [[0], [1]], [2]) == pytest.approx(1.0)
+
 
 def test_fci2():
     """
@@ -27,6 +29,7 @@ def test_fci2():
     assert F(d) == pytest.approx(2.0)
     assert F(d, ['X', 'Y']) == pytest.approx(0.0)
     assert F(d, ['X', 'Y'], 'Z') == pytest.approx(1.0)
+
 
 def test_fci3():
     """

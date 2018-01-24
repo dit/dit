@@ -75,6 +75,7 @@ def prepare_dist(dist, sources, target, rv_mode=None):
 
     return d
 
+
 def marginal_constraints(dist, k, normalization=True, source_marginal=False): # pragma: no cover
     """
     Builds the k-way marginal constraints.
@@ -561,7 +562,6 @@ class MaximumConditionalEntropy(CVXOPT_Template):
 
         self.hessian = hessian
 
-
     def initial_dist(self):
         """
         Find an initial point in the interior of the feasible set.
@@ -648,7 +648,6 @@ class MaximumConditionalEntropy(CVXOPT_Template):
         b = matrix(self.b)
         self.logger.info("Finding initial distribution.")
         initial_x = matrix(self.initial_dist()[0])
-
 
         m = "Optimizing from initial distribution using Frank-Wolfe algorithm."
         self.logger.info(m)

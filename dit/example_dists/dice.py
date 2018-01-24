@@ -3,6 +3,7 @@ from __future__ import division
 import itertools
 import dit
 
+
 def iid_sum(n, k=2):
     """
     Returns a distribution relating n iid uniform draws to their sum.
@@ -15,6 +16,7 @@ def iid_sum(n, k=2):
     d.normalize()
     d = dit.insert_rvf(d, lambda x: (sum(x),))
     return d
+
 
 def summed_dice(a=1, b=1):
     """
@@ -56,6 +58,7 @@ def summed_dice(a=1, b=1):
     b = int(b)
     d = dit.insert_rvf(d, lambda x: (x[0] + b * x[1],))
     return d
+
 
 def Wolfs_dice():
     """

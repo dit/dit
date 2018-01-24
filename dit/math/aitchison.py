@@ -38,6 +38,7 @@ ops = LogOperations(2)
 exp2 = ops.exp
 log2 = ops.log
 
+
 def _gm(x):
     """Returns the geometric means of the rows in `x`.
 
@@ -56,6 +57,7 @@ def _gm(x):
     x_gm = x.prod(axis=last_axis) ** (1/x.shape[last_axis])
 
     return x_gm
+
 
 def _log2_gm(x):
     """
@@ -76,6 +78,7 @@ def _log2_gm(x):
     x_loggm = 1 / x.shape[last_axis] * np.log2(x).sum(axis=last_axis)
 
     return x_loggm
+
 
 def closure(x):
     """Returns the closure operation applied to the composition x.
@@ -101,6 +104,7 @@ def closure(x):
     cx = x / s[..., np.newaxis]
     return cx
 
+
 def subcomposition(x, indexes):
     """Returns the subcomposition over the specified indexes.
 
@@ -120,6 +124,7 @@ def subcomposition(x, indexes):
     xsub = closure(x[..., indexes])
 
     return xsub
+
 
 def perturbation(x, dx):
     """Returns the perturbation of `x` by `dx`.
@@ -143,6 +148,7 @@ def perturbation(x, dx):
     px = closure(x * dx)
 
     return px
+
 
 def power(x, a):
     """Returns the result of powering `x` by `a`.
@@ -170,7 +176,9 @@ def power(x, a):
 
     return px
 
+
 add = perturbation
+
 
 def sub(x, y):
     """Returns the difference of compositions.
@@ -190,6 +198,7 @@ def sub(x, y):
     """
     z = perturbation(x, power(y, -1.0)) # 1.0 and not 1 forces coercion
     return z
+
 
 def inner(x, y):
     """Returns the Aitchison inner product between `x` and `y`.
@@ -226,6 +235,7 @@ def inner(x, y):
 
     return z
 
+
 def norm(x):
     """Returns the norm of `x`.
 
@@ -242,6 +252,7 @@ def norm(x):
     """
     n = np.sqrt(inner(x, x))
     return n
+
 
 def dist(x, y):
     """Returns the distance between `x` and `y`.
@@ -260,7 +271,9 @@ def dist(x, y):
     d = norm(sub(x, y))
     return d
 
+
 metric = dist
+
 
 def clr(x):
     """Returns the centered log-ratio transformation of `x`.
@@ -297,6 +310,7 @@ def clr(x):
 
     return y
 
+
 def alr(x):
     """Returns the additive log-ratio transformation of `x`.
 
@@ -332,6 +346,7 @@ def alr(x):
         y = y[0]
 
     return y
+
 
 def ilr(x):
     """Returns the isometric log-ratio transformation of `x`.
@@ -379,6 +394,7 @@ def ilr(x):
 
     return y
 
+
 def ubasis(n):
     """Returns an orthonormal basis wrt the ordinary Euclidean inner product.
 
@@ -416,6 +432,7 @@ def ubasis(n):
 
     return u
 
+
 def basis(n):
     """Returns an orthonormal basis wrt the Aitchison inner product.
 
@@ -436,6 +453,7 @@ def basis(n):
 
     return b
 
+
 def clr_inv(xclr):
     """"Returns the inverse centered log-ratio transformation of x.
 
@@ -452,6 +470,7 @@ def clr_inv(xclr):
     """
     x = closure(exp2(xclr))
     return x
+
 
 def alr_inv(xalr):
     """Returns the inverse additive log-ratio transformation of x.
@@ -499,6 +518,7 @@ def alr_inv(xalr):
 
     return x
 
+
 def ilr_inv(xilr):
     """Returns the inverse isometric log-ratio transformation of x.
 
@@ -543,5 +563,3 @@ def ilr_inv(xilr):
         x = x[0]
 
     return x
-
-

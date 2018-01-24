@@ -17,6 +17,7 @@ __all__ = (
     'norm',
 )
 
+
 def sample(dist, size=None, rand=None, prng=None):
     """Returns a sample from a discrete distribution.
 
@@ -82,6 +83,7 @@ def sample(dist, size=None, rand=None, prng=None):
 
     return s
 
+
 def _sample_discrete__python(pmf, rand):
     """Returns a sample from a discrete distribution.
 
@@ -107,6 +109,7 @@ def _sample_discrete__python(pmf, rand):
         total += prob
         if rand < total:
             return i
+
 
 def _samples_discrete__python(pmf, rands, out=None):
     """Returns samples from a discrete distribution.
@@ -147,6 +150,7 @@ def _samples_discrete__python(pmf, rands, out=None):
 
     return out
 
+
 def ball(n, size=None, prng=None):
     """
     Return random samples within an n-dimensional standard ball of radius 1.
@@ -181,6 +185,7 @@ def ball(n, size=None, prng=None):
 
     return samples
 
+
 def _ball(n, size, prng):
     """
     Return `size` samples from the unit n-ball.
@@ -204,6 +209,7 @@ def _ball(n, size, prng):
     X = prng.randn(size, n)
     norm = np.sqrt( (X**2).sum(axis=1) )[..., np.newaxis]
     return (R * X) / norm
+
 
 def _2ball(size, prng):
     """
@@ -234,6 +240,7 @@ def _2ball(size, prng):
     y = u * np.sin(theta)
     return np.array([x, y]).transpose()
 
+
 def _3ball_cylinder(size, prng):
     """
     Return `size` samples from the unit 3-ball.
@@ -261,6 +268,7 @@ def _3ball_cylinder(size, prng):
     x = r * np.cos(theta)
     y = r * np.sin(theta)
     return np.array([x, y, z]).transpose()
+
 
 def norm(pmf, ilrcov=None, size=None, prng=None):
     """
@@ -338,6 +346,7 @@ def norm(pmf, ilrcov=None, size=None, prng=None):
         samples = samples[0]
     return samples
 
+
 def _norm(ilrmean, ilrcov, size, prng):
     """
     Low-level sampling of normally distributed pmfs about a mean pmf.
@@ -393,6 +402,7 @@ def _annulus2(rmin, rmax, size=None, prng=None):
         samples = samples[0]
 
     return samples
+
 
 def annulus2(pmf, rmin, rmax, size=None, prng=None):
     """

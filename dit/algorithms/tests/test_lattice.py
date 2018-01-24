@@ -14,6 +14,7 @@ from dit.algorithms.lattice import (dist_from_induced_sigalg, insert_join,
                                     sigma_algebra_sort)
 from dit.utils import powerset
 
+
 def test_sigalg_sort():
     """ Test sigma_algebra_sort """
     sigalg = frozenset([
@@ -25,6 +26,7 @@ def test_sigalg_sort():
     sigalg_ = [(), (1,), (2,), (1, 2)]
     assert sigalg_ == sigma_algebra_sort(sigalg)
 
+
 def test_join_sigalg():
     """ Test join_sigalg """
     outcomes = ['00', '01', '10', '11']
@@ -34,6 +36,7 @@ def test_join_sigalg():
     joined = join_sigalg(d, [[0], [1]])
     assert sigalg == joined
 
+
 def test_meet_sigalg():
     """ Test meet_sigalg """
     outcomes = ['00', '01', '10', '11']
@@ -42,6 +45,7 @@ def test_meet_sigalg():
     sigalg = frozenset([frozenset([]), frozenset(outcomes)])
     meeted = meet_sigalg(d, [[0], [1]])
     assert sigalg == meeted
+
 
 def test_dist_from_induced():
     """ Test dist_from_induced_sigalg """
@@ -63,6 +67,7 @@ def test_dist_from_induced():
     outcomes = (((0,),), ((1,), (2,)))
     assert outcomes == d2.outcomes
 
+
 def test_join():
     """ Test join """
     outcomes = ['00', '01', '10', '11']
@@ -72,6 +77,7 @@ def test_join():
     assert d2.outcomes == (0, 1, 2, 3)
     assert np.allclose(d2.pmf, d.pmf)
 
+
 def test_meet():
     """ Test meet """
     outcomes = ['00', '01', '10', '11']
@@ -80,6 +86,7 @@ def test_meet():
     d2 = meet(d, [[0], [1]])
     assert d2.outcomes == (0,)
     assert np.allclose(d2.pmf, [1])
+
 
 def test_insert_join():
     """ Test insert_join """

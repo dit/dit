@@ -7,6 +7,7 @@ import pytest
 from dit.distconst import uniform
 from dit.multivariate.necessary_conditional_entropy import necessary_conditional_entropy
 
+
 def test_1():
     """
     """

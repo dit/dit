@@ -89,6 +89,7 @@ from .exceptions import (
 from .math import get_ops, LinearOperations
 from .params import ditParams
 
+
 def _make_distribution(outcomes, pmf, base,
                        sample_space=None, prng=None, sparse=True):
     """
@@ -162,6 +163,7 @@ def _make_distribution(outcomes, pmf, base,
     d.rvs = [[i] for i in range(d.outcome_length())]
 
     return d
+
 
 class Distribution(ScalarDistribution):
     """
@@ -771,7 +773,6 @@ class Distribution(ScalarDistribution):
         v &= validate_sequence(self.outcomes[0])
         return v
 
-
     def coalesce(self, rvs, rv_mode=None, extract=False):
         """
         Returns a new joint distribution after coalescing random variables.
@@ -1290,7 +1291,6 @@ class Distribution(ScalarDistribution):
         if self._rvs is not None:
             # Unsure if we should change this automatically.
             self._rv_mode = 'names'
-
 
     def to_html(self, digits=None, exact=None, tol=1e-9): # pragma: no cover
         """

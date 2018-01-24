@@ -21,6 +21,7 @@ __all__ = [
 # For 2.x, these are ascii strings. For 3.x these are unicode strings.
 acceptable_base_strings = set(['linear', 'e'])
 
+
 def get_ops(base):
     """
     Returns an *Operations instance, depending on the base.
@@ -39,6 +40,7 @@ def get_ops(base):
         ops = LogOperations(base)
         cache[base] = ops
     return ops
+
 
 def exp_func(b):
     """
@@ -107,6 +109,7 @@ def exp_func(b):
 
     return exp
 
+
 def log_func(b):
     """
     Returns a base-`b` logarithm function.
@@ -174,6 +177,7 @@ def log_func(b):
             return func(x) / Z
 
     return log
+
 
 class Operations(object):
     """
@@ -246,27 +250,35 @@ class Operations(object):
     def add(self, x, y):
         """ Abstract base class """
         raise NotImplementedError
+
     def add_inplace(self, x, y):
         """ Abstract base class """
         raise NotImplementedError
+
     def add_reduce(self, x):
         """ Abstract base class """
         raise NotImplementedError
+
     def mult(self, x, y):
         """ Abstract base class """
         raise NotImplementedError
+
     def mult_inplace(self, x, y):
         """ Abstract base class """
         raise NotImplementedError
+
     def mult_reduce(self, x):
         """ Abstract base class """
         raise NotImplementedError
+
     def invert(self, x):
         """ Abstract base class """
         raise NotImplementedError
+
     def normalize(self, x):
         """ Abstract base class """
         raise NotImplementedError
+
 
 class LinearOperations(Operations):
     """
@@ -450,6 +462,7 @@ class LinearOperations(Operations):
         z = x / x.sum(axis=None)
         return z
 
+
 def set_add(ops):
     """
     Set the add method on the LogOperations instance.
@@ -497,6 +510,7 @@ def set_add(ops):
     """
     ops.add = MethodType(add, ops)
 
+
 def set_add_inplace(ops):
     """
     Set the add_inplace method on the LogOperations instance.
@@ -534,6 +548,7 @@ def set_add_inplace(ops):
 
     """
     ops.add_inplace = MethodType(add_inplace, ops)
+
 
 def set_add_reduce(ops):
     """
@@ -587,6 +602,7 @@ def set_add_reduce(ops):
 
     """
     ops.add_reduce = MethodType(add_reduce, ops)
+
 
 class LogOperations(Operations):
 

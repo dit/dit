@@ -89,7 +89,7 @@ class BaseProfile(with_metaclass(ABCMeta, object)):
         self._compute()
 
     @abstractmethod
-    def _compute(self): # pragma: no cover
+    def _compute(self):
         """
         Abstract method to compute the profile.
         """

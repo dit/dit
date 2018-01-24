@@ -5,6 +5,7 @@ Infer distributions from time series.
 from .. import modify_outcomes
 from .counts import distribution_from_data
 
+
 def dist_from_timeseries(observations, history_length=1, base='linear'):
     """
     Infer a distribution from time series observations. For each variable, infer a

@@ -22,6 +22,7 @@ from ...utils.optimization import (BasinHoppingCallBack,
 from ..dual_total_correlation import dual_total_correlation
 from ..entropy import entropy
 
+
 class MarkovVarOptimizer(with_metaclass(ABCMeta, object)):
     """
     Abstract base class for constructing auxiliary variables which render a set
@@ -110,7 +111,7 @@ class MarkovVarOptimizer(with_metaclass(ABCMeta, object)):
                            ]
 
     @abstractmethod
-    def compute_bound(self): # pragma: no cover
+    def compute_bound(self):
         """
         Return a bound on the cardinality of the auxiliary variable.
 
@@ -122,7 +123,7 @@ class MarkovVarOptimizer(with_metaclass(ABCMeta, object)):
         pass
 
     @abstractmethod
-    def objective(self, x): # pragma: no cover
+    def objective(self, x):
         """
         Compute the optimization objective function.
 

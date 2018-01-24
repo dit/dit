@@ -7,6 +7,7 @@ from ..algorithms import insert_mss
 from ..helpers import normalize_rvs
 from ..utils import flatten
 
+
 def necessary_conditional_entropy(dist, rvs=None, crvs=None, rv_mode=None):
     """
     Calculates the necessary conditional entropy :math:`\H[X \dagger Y]`.
@@ -19,7 +20,7 @@ def necessary_conditional_entropy(dist, rvs=None, crvs=None, rv_mode=None):
         The distribution from which the necessary conditional entropy is calculated.
     rvs : list, None
         The indexes of the random variable used to calculate the necessary
-        conditional entropy. If None, then the entropy is calculated over 
+        conditional entropy. If None, then the entropy is calculated over
         all random variables.
     crvs : list, None
         The indexes of the random variables to condition on. If None, then no

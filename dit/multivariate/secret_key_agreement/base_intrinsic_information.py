@@ -17,6 +17,7 @@ from ...helpers import flatten, normalize_rvs, parse_rvs
 from ...math import prod
 from ...utils.optimization import Uniquifier, accept_test, colon
 
+
 class BaseMoreIntrinsicMutualInformation(with_metaclass(ABCMeta, object)):
     """
     Compute the minimal intrinsic mutual information, a lower bound on the secret
@@ -163,7 +164,7 @@ class BaseMoreIntrinsicMutualInformation(with_metaclass(ABCMeta, object)):
         return cmi
 
     @abstractmethod
-    def measure(self, pmf, rvs, crvs):  # pragma: no cover
+    def measure(self, pmf, rvs, crvs):
         """
         Abstract method for computing the appropriate measure of generalized
         mutual information.

@@ -7,6 +7,8 @@
 
 from __future__ import absolute_import
 
+from debtcollector import removals
+
 from collections import Iterable
 from itertools import tee
 import os
@@ -66,21 +68,6 @@ def Property(fcn):
     """
     return property(**fcn())
 
-def abstract_method(f):
-    """Simple decorator to designate an abstract method.
-
-    Examples
-    --------
-    class A(object):
-        @abstract_method
-        def method(self):
-            pass
-    """
-    def abstract_f(*args, **kwargs): # pylint: disable=unused-argument
-        raise NotImplementedError("Abstract method.")
-    abstract_f.__name__ = f.__name__
-    abstract_f.__doc__ = f.__doc__
-    return abstract_f
 
 def default_opener(filename):
     """Opens `filename` using system's default program.
@@ -97,6 +84,7 @@ def default_opener(filename):
             'win32': ['cmd.exe', '/c', 'start', '']}
     cmd = cmds[sys.platform] + [filename]
     subprocess.call(cmd)
+
 
 def flatten(l):
     """Flatten an irregular list of lists.
@@ -117,6 +105,7 @@ def flatten(l):
                 yield sub
         else:
             yield el
+
 
 def get_fobj(fname, mode='w+'):
     """Obtain a proper file object.
@@ -154,6 +143,7 @@ def get_fobj(fname, mode='w+'):
         close = True
     return fobj, close
 
+
 def is_string_like(obj):
     """Returns *True* if *obj* is string-like, and *False* otherwise."""
     try:
@@ -161,6 +151,7 @@ def is_string_like(obj):
     except (TypeError, ValueError):
         return False
     return True
+
 
 def quasilexico_key(x):
     """Returns a key suitable for a quasi-lexicographic sort [1]_.
@@ -181,6 +172,7 @@ def quasilexico_key(x):
 
     """
     return (len(x), x)
+
 
 def partition_set(elements, relation=None, innerset=False, reflexive=False,
                   transitive=False):
@@ -288,6 +280,7 @@ def partition_set(elements, relation=None, innerset=False, reflexive=False,
 
     return eqclasses, lookup
 
+
 def powerset(iterable):
     """
     powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)
@@ -296,6 +289,7 @@ def powerset(iterable):
     from itertools import chain, combinations
     s = list(iterable)
     return chain.from_iterable(combinations(s, r) for r in range(len(s)+1))
+
 
 def product_maker(func):
     """
@@ -323,7 +317,9 @@ def product_maker(func):
             yield func(prod)
     return _product
 
+
 str_product = product_maker(''.join)
+
 
 def require_keys(keys, dikt):
     """Verifies that keys appear in the specified dictionary.
@@ -352,6 +348,7 @@ def require_keys(keys, dikt):
             msg = "'%s' is required." % (key,)
             raise Exception(msg)
 
+
 def partitions1(set_):
     """
     Generates partitions of elements in `set_'.
@@ -374,6 +371,7 @@ def partitions1(set_):
             i >>= 1
         for b in partitions1(parts[1]):
             yield (parts[0],) + b
+
 
 def partitions2(n):
     """
@@ -436,6 +434,7 @@ def partitions2(n):
                 # H3
                 a[n] += 1
 
+
 def partitions(seq, tuples=False):
     """
     Generates all partitions of `seq`.
@@ -473,6 +472,7 @@ def partitions(seq, tuples=False):
             partition = frozenset(map(frozenset, partition))
             yield partition
 
+
 def ordered_partitions(seq, tuples=False):
     """
     Generates ordered partitions of elements in `seq`.
@@ -509,6 +509,7 @@ def ordered_partitions(seq, tuples=False):
             partition = list(map(frozenset, partition))
             for perm in permutations(partition):
                 yield perm
+
 
 def digits(n, base, alphabet=None, pad=0, big_endian=True):
     """
@@ -572,6 +573,9 @@ def digits(n, base, alphabet=None, pad=0, big_endian=True):
 
     return sequence
 
+
+@removals.remove(replacement="boltons.iterutils.pairwise",
+                 version="1.0.1")
 def pairwise(iterable):
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
     a, b = tee(iterable)

@@ -9,6 +9,7 @@ import tempfile
 
 from .bindargs import bindcallargs
 
+
 @contextlib.contextmanager
 def cd(newpath):
     """
@@ -26,6 +27,7 @@ def cd(newpath):
         except OSError:
             # If oldpath no longer exists, stay where we are.
             pass
+
 
 @contextlib.contextmanager
 def named_tempfile(*args, **kwargs):
@@ -48,6 +50,7 @@ def named_tempfile(*args, **kwargs):
     finally:
         ntf.close()
         os.remove(ntf.name)
+
 
 @contextlib.contextmanager
 def tempdir(*args, **kwargs):

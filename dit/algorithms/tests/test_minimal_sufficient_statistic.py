@@ -7,12 +7,14 @@ from __future__ import division
 from dit import Distribution, ScalarDistribution, pruned_samplespace
 from dit.algorithms import insert_mss, mss, info_trim
 
+
 def get_gm():
     """
     """
     outcomes = ['0101', '0110', '0111', '1010', '1011', '1101', '1110', '1111']
     pmf = [1/6, 1/12, 1/12, 1/6, 1/6, 1/6, 1/12, 1/12]
     return Distribution(outcomes, pmf)
+
 
 def test_mss():
     """
@@ -26,6 +28,7 @@ def test_mss():
     assert dist.is_approx_equal(d2)
     assert d1.is_approx_equal(d2)
 
+
 def test_insert_mss():
     """
     Test the insertion of minimal sufficient statistics.
@@ -37,6 +40,7 @@ def test_insert_mss():
     dist = pruned_samplespace(Distribution(['01', '10', '11'], [1/3, 1/3, 1/3]))
     assert d.is_approx_equal(dist)
 
+
 def test_info_trim1():
     """
 
@@ -45,6 +49,7 @@ def test_info_trim1():
     d2 = Distribution(['00', '11', '22'], [1/4, 1/4, 1/2])
     d3 = info_trim(d1)
     assert d3.is_approx_equal(d2)
+
 
 def test_info_trim2():
     """

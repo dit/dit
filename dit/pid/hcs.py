@@ -17,6 +17,7 @@ from ..algorithms import maxent_dist
 from ..multivariate import entropy
 from ..utils import flatten, powerset
 
+
 def h_cs(d, inputs, output=None):
     """
     Compute H_cs, the average of positive pointwise co-information values
@@ -57,6 +58,7 @@ def h_cs(d, inputs, output=None):
     # sum positive pointwise terms
     hcs = sum(d[e] * coinfos[e] for e in d.outcomes if coinfos[e] > 0.0)
     return hcs
+
 
 class PED_CS(BasePID):
     """

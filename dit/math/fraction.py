@@ -25,6 +25,7 @@ from math import modf
 
 __all__ = ['approximate_fraction']
 
+
 def simplest_fraction_in_interval(x, y):
     """
     Return the fraction with the lowest denominator in the interval [x, y].
@@ -53,6 +54,7 @@ def simplest_fraction_in_interval(x, y):
             return Fraction(1, int(yc) + 1)
         else:
             return 1 / (int(xc) + simplest_fraction_in_interval(xr, yr))
+
 
 def approximate_fraction(x, e):
     """

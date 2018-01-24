@@ -6,6 +6,7 @@ import numpy as np
 
 import dit
 
+
 def BEC_joint(epsilon):
     """
     The joint distribution for the binary erase channel at channel capacity.
@@ -23,6 +24,7 @@ def BEC_joint(epsilon):
     pXY = dit.joint_from_factors(pX, pYgX, strict=False)
     return pXY
 
+
 def test_channel_capacity_no_rvnames():
     epsilon = .3
     pXY = BEC_joint(epsilon)
@@ -38,6 +40,7 @@ def test_channel_capacity_no_rvnames():
     # Verify joint distribution at channel capacity.
     pXYopt = dit.joint_from_factors(pXopt, pYgX)
     assert pXY.is_approx_equal(pXYopt)
+
 
 def test_channel_capacity_rvnames():
     epsilon = .01
@@ -56,6 +59,7 @@ def test_channel_capacity_rvnames():
     pXYopt = dit.joint_from_factors(pXopt, pYgX)
     assert pXY.is_approx_equal(pXYopt)
 
+
 def test_channel_capacity_array():
     epsilon = .3
     pXY = BEC_joint(epsilon)
@@ -67,6 +71,7 @@ def test_channel_capacity_array():
 
     # Verify maximizing distribution.
     assert np.allclose(pX.pmf, pXopt_pmf)
+
 
 def test_bad_marginal():
     epsilon = .01

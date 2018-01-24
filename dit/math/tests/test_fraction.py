@@ -5,6 +5,7 @@ import pytest
 from fractions import Fraction
 from dit.math.fraction import *
 
+
 def test_fraction():
     """Smoke tests to convert float to fraction."""
     numerators = range(10)
@@ -23,6 +24,7 @@ def test_fraction():
     for y, y_ in zip(yvals, yvals_):
         assert y == y_
 
+
 def test_fraction_zero():
     """Convert float to fraction when closer to 0."""
     x = .1
@@ -31,6 +33,7 @@ def test_fraction_zero():
     assert y == y_
     y = approximate_fraction(-x, .2)
     assert y == -y_
+
 
 def test_fraction_emptyinterval():
     with pytest.raises(ValueError):

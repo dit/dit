@@ -19,6 +19,7 @@ d3 = Distribution(['0', '1', '2'], [1/3, 1/3, 1/3])
 d4 = Distribution(['00', '11'], [2/5, 3/5])
 d5 = Distribution(['00', '11'], [1/2, 1/2])
 
+
 @pytest.mark.parametrize(('args', 'expected'), [
     ([d1, d3], 0.5849625007211563),
     ([d1, d4], 0.0294468445267841),
@@ -39,12 +40,14 @@ def test_dkl_1(args, expected):
     """
     assert kullback_leibler_divergence(*args) == pytest.approx(expected)
 
+
 @pytest.mark.parametrize('d', [d1, d2, d3, d4, d5])
 def test_dkl_2(d):
     """
     Test that DKL(d, d) = 0.
     """
     assert kullback_leibler_divergence(d, d) == pytest.approx(0)
+
 
 @pytest.mark.parametrize('args', [
     [d4, d1, None, None],

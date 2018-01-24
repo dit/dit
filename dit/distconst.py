@@ -44,6 +44,7 @@ __all__ = [
     'random_dist_structure',
 ]
 
+
 def mixture_distribution(dists, weights, merge=False):
     """
     Create a mixture distribution: $\sum p_i d_i$
@@ -100,6 +101,7 @@ def mixture_distribution(dists, weights, merge=False):
     pmf = [ops.add_reduce(np.array(vals(o))) for o in outcomes]
     mix = dists[0].__class__(tuple(outcomes), pmf, base=ops.get_base())
     return mix
+
 
 def mixture_distribution2(dists, weights):
     """

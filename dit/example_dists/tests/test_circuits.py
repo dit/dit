@@ -9,6 +9,7 @@ from dit.example_dists import (Unq, Rdn, Xor, RdnXor, ImperfectRdn, Subtle, And,
 from dit.algorithms import insert_meet, pruned_samplespace
 from dit.shannon import mutual_information
 
+
 def test_unq():
     """ Test the Unq distribution """
     d = Unq()
@@ -22,6 +23,7 @@ def test_unq():
     assert i2 == pytest.approx(1)
     assert i12 == pytest.approx(2)
     assert r == pytest.approx(0)
+
 
 def test_rdn():
     """ Test the Rdn distribution """
@@ -37,6 +39,7 @@ def test_rdn():
     assert i12 == pytest.approx(1)
     assert r == pytest.approx(1)
 
+
 def test_xor():
     """ Test the Xor distribution """
     d = Xor()
@@ -50,6 +53,7 @@ def test_xor():
     assert i2 == pytest.approx(0)
     assert i12 == pytest.approx(1)
     assert r == pytest.approx(0)
+
 
 def test_and():
     """ Test the And distribution """
@@ -65,6 +69,7 @@ def test_and():
     assert i12 == pytest.approx(0.81127812445913294)
     assert r == pytest.approx(0)
 
+
 def test_or():
     """ Test the Or distribution """
     d = Or()
@@ -78,6 +83,7 @@ def test_or():
     assert i2 == pytest.approx(0.31127812445913294)
     assert i12 == pytest.approx(0.81127812445913294)
     assert r == pytest.approx(0)
+
 
 def test_rdnxor():
     """ Test the RdnXor distribution """
@@ -93,6 +99,7 @@ def test_rdnxor():
     assert i12 == pytest.approx(2)
     assert r == pytest.approx(1)
 
+
 def test_imperfectrdn():
     """ Test the ImperfectRdn distribution """
     d = ImperfectRdn()
@@ -106,6 +113,7 @@ def test_imperfectrdn():
     assert i2 == pytest.approx(0.98959007894024409)
     assert i12 == pytest.approx(1)
     assert r == pytest.approx(0)
+
 
 def test_subtle():
     """ Test the Subtle distribution """

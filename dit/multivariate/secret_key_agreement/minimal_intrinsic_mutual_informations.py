@@ -28,7 +28,7 @@ class BaseMinimalIntrinsicMutualInformation(BaseMoreIntrinsicMutualInformation):
     type = "minimal"
 
     @abstractmethod
-    def measure(self, pmf, rvs, crvs): # pragma: no cover
+    def measure(self, pmf, rvs, crvs):
         """
         """
         pass
@@ -92,6 +92,7 @@ class MinimalIntrinsicTotalCorrelation(BaseMinimalIntrinsicMutualInformation):
 
         return tc
 
+
 minimal_intrinsic_total_correlation = MinimalIntrinsicTotalCorrelation.functional()
 
 
@@ -128,6 +129,7 @@ class MinimalIntrinsicDualTotalCorrelation(BaseMinimalIntrinsicMutualInformation
         dtc = a - (len(rvs) - 1) * b - c
 
         return dtc
+
 
 minimal_intrinsic_dual_total_correlation = MinimalIntrinsicDualTotalCorrelation.functional()
 
@@ -169,6 +171,7 @@ class MinimalIntrinsicCAEKLMutualInformation(BaseMinimalIntrinsicMutualInformati
         caekl = min(I_P(p) for p in parts)
 
         return caekl
+
 
 minimal_intrinsic_CAEKL_mutual_information = MinimalIntrinsicCAEKLMutualInformation.functional()
 

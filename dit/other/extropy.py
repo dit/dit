@@ -7,6 +7,7 @@ from ..math.ops import get_ops
 
 import numpy as np
 
+
 def extropy(dist, rvs=None, rv_mode=None):
     """
     Returns the extropy J[X] over the random variables in `rvs`.

@@ -29,6 +29,7 @@ dist5 = Distribution(['0000', '0011', '0101', '0110', '1001', '1010', '1100', '1
 dist6 = Distribution(['0000', '0011', '0101', '0110', '1001', '1010', '1100', '1111'], [1/8]*8)
 dist6.set_rv_names('WXYZ')
 
+
 @pytest.mark.flaky(reruns=5)
 def test_itc1():
     """
@@ -42,6 +43,7 @@ def test_itc1():
     assert itc == pytest.approx(0)
     itc = IMI.intrinsic_total_correlation(dist3, [[0,1], [2]], [3, 4])
     assert itc == pytest.approx(0)
+
 
 @pytest.mark.flaky(reruns=5)
 def test_itc2():
@@ -57,6 +59,7 @@ def test_itc2():
     itc = IMI.intrinsic_total_correlation(dist4, ['VW', 'X'], 'YZ')
     assert itc == pytest.approx(0)
 
+
 @pytest.mark.flaky(reruns=5)
 def test_itc3():
     """
@@ -65,6 +68,7 @@ def test_itc3():
     itc = IMI.intrinsic_total_correlation(dist5, [[0], [1], [2]], [3])
     assert itc == pytest.approx(0)
 
+
 @pytest.mark.flaky(reruns=5)
 def test_itc4():
     """
@@ -72,6 +76,7 @@ def test_itc4():
     """
     itc = IMI.intrinsic_total_correlation(dist6, ['W', 'X', 'Y'], 'Z')
     assert itc == pytest.approx(0)
+
 
 @pytest.mark.flaky(reruns=5)
 def test_itc5():
@@ -84,6 +89,7 @@ def test_itc5():
     print(d)
     val = total_correlation(d, [[0], [1]], [3])
     assert val == pytest.approx(0)
+
 
 @pytest.mark.flaky(reruns=5)
 def test_idtc1():
@@ -99,6 +105,7 @@ def test_idtc1():
     idtc = IMI.intrinsic_dual_total_correlation(dist3, [[0,1], [2]], [3, 4])
     assert idtc == pytest.approx(0)
 
+
 @pytest.mark.flaky(reruns=5)
 def test_idtc2():
     """
@@ -113,6 +120,7 @@ def test_idtc2():
     idtc = IMI.intrinsic_dual_total_correlation(dist4, ['VW', 'X'], 'YZ')
     assert idtc == pytest.approx(0)
 
+
 @pytest.mark.flaky(reruns=5)
 def test_idtc3():
     """
@@ -121,6 +129,7 @@ def test_idtc3():
     idtc = IMI.intrinsic_dual_total_correlation(dist5, [[0], [1], [2]], [3])
     assert idtc == pytest.approx(0)
 
+
 @pytest.mark.flaky(reruns=5)
 def test_idtc4():
     """
@@ -128,6 +137,7 @@ def test_idtc4():
     """
     idtc = IMI.intrinsic_dual_total_correlation(dist6, ['W', 'X', 'Y'], 'Z')
     assert idtc == pytest.approx(0)
+
 
 @pytest.mark.flaky(reruns=5)
 def test_icmi1():
@@ -143,6 +153,7 @@ def test_icmi1():
     icmi = IMI.intrinsic_caekl_mutual_information(dist3, [[0,1], [2]], [3, 4])
     assert icmi == pytest.approx(0)
 
+
 @pytest.mark.flaky(reruns=5)
 def test_icmi2():
     """
@@ -157,6 +168,7 @@ def test_icmi2():
     icmi = IMI.intrinsic_caekl_mutual_information(dist4, ['VW', 'X'], 'YZ')
     assert icmi == pytest.approx(0)
 
+
 @pytest.mark.flaky(reruns=5)
 def test_icmi3():
     """
@@ -165,6 +177,7 @@ def test_icmi3():
     icmi = IMI.intrinsic_caekl_mutual_information(dist5, [[0], [1], [2]], [3])
     assert icmi == pytest.approx(0)
 
+
 @pytest.mark.flaky(reruns=5)
 def test_icmi4():
     """
@@ -172,6 +185,7 @@ def test_icmi4():
     """
     icmi = IMI.intrinsic_caekl_mutual_information(dist6, ['W', 'X', 'Y'], 'Z')
     assert icmi == pytest.approx(0)
+
 
 @pytest.mark.flaky(reruns=5)
 def test_constructor():
@@ -183,12 +197,14 @@ def test_constructor():
     itc2 = test(dist1, [[0], [1]], [2], nhops=5)
     assert itc == pytest.approx(itc2, abs=1e-4)
 
+
 def test_imi_fail():
     """
     Test that things fail when not provided with a conditional variable.
     """
     with pytest.raises(ditException):
         IMI.intrinsic_total_correlation(dist1, [[0], [1], [2]])
+
 
 @pytest.mark.flaky(rerun=5)
 @settings(deadline=None)
@@ -203,6 +219,7 @@ def test_bounds(dist):
     cmi = total_correlation(dist, [[0], [1]], [2])
     assert imi <= mi + 1e-10
     assert imi <= cmi + 1e-10
+
 
 @pytest.mark.parametrize(('dist', 'val'), [(intrinsic_1, 0.0), (intrinsic_2, 1.5), (intrinsic_3, 1.3932929108738521)])
 def test_1(dist, val):

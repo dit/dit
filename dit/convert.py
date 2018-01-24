@@ -10,6 +10,7 @@ __all__ = [
     'SDtoD'
 ]
 
+
 def DtoSD(dist, extract):
     """
     Convert a Distribution to a ScalarDistribution.
@@ -42,6 +43,7 @@ def DtoSD(dist, extract):
                                validate=False)
 
     return d
+
 
 def SDtoD(dist):
     """

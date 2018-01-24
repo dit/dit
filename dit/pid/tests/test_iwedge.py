@@ -7,6 +7,7 @@ import pytest
 from dit.pid.iwedge import i_wedge, PID_GK
 from dit.pid.distributions import bivariates, trivariates
 
+
 def test_iwedge1():
     """
     Test iwedge on redundant distribution.
@@ -14,6 +15,7 @@ def test_iwedge1():
     d = bivariates['redundant']
     red = i_wedge(d, ((0,), (1,)), (2,))
     assert red == pytest.approx(1)
+
 
 def test_iwedge2():
     """
@@ -23,6 +25,7 @@ def test_iwedge2():
     red = i_wedge(d, ((0,), (1,)), (2,))
     assert red == pytest.approx(0)
 
+
 def test_iwedge3():
     """
     Test iwedge on unique distribution.
@@ -30,6 +33,7 @@ def test_iwedge3():
     d = bivariates['cat']
     red = i_wedge(d, ((0,), (1,)), (2,))
     assert red == pytest.approx(0)
+
 
 def test_pid_gk1():
     """
@@ -41,6 +45,7 @@ def test_pid_gk1():
     assert pid[((0,),)] == pytest.approx(1.0)
     assert pid[((1,),)] == pytest.approx(0.98959)
     assert pid[((0, 1),)] == pytest.approx(-0.98959)
+
 
 def test_pid_gk2():
     """

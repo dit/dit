@@ -11,6 +11,7 @@ except ImportError: # no cython
 
     import numpy as np
 
+
     def counts_from_data(data, hLength, fLength, marginals=True, alphabet=None, standardize=True):
         """
         Returns conditional counts from `data`.

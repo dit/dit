@@ -6,6 +6,7 @@ from ..distconst import product_distribution
 from ..divergences import kullback_leibler_divergence
 from ..helpers import normalize_rvs
 
+
 def lautum_information(dist, rvs=None, crvs=None, rv_mode=None):
     """
     Computes the lautum information.

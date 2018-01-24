@@ -3,9 +3,7 @@ from __future__ import division
 import numpy as np
 
 import dit
-from dit.algorithms.maxentropy import (
-    marginal_constraints_generic, marginal_constraints
-)
+from dit.algorithms.maxentropy import marginal_constraints
 
 
 def test_marginal_constraints():

@@ -11,6 +11,7 @@ import numpy as np
 from dit import Distribution
 from dit.other import tsallis_entropy
 
+
 @pytest.mark.parametrize('q', np.arange(-2, 2.5, 0.5))
 def test_tsallis_entropy_1(q):
     """

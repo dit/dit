@@ -26,6 +26,7 @@ DKL
 import dit
 import numpy as np
 
+
 def cross_entropy_pmf(p, q=None):
     """
     Calculates the cross entropy from probability mass functions `p` and `q`.
@@ -44,7 +45,9 @@ def cross_entropy_pmf(p, q=None):
 
     return -np.nansum(p * np.log2(q))
 
+
 entropy_pmf = cross_entropy_pmf
+
 
 def relative_entropy_pmf(p, q):
     """
@@ -59,7 +62,9 @@ def relative_entropy_pmf(p, q):
     """
     return cross_entropy_pmf(p, q) - cross_entropy_pmf(p, p)
 
+
 DKL_pmf = relative_entropy_pmf
+
 
 def cross_entropy(d1, d2, pmf_only=True):
     """
@@ -75,8 +80,10 @@ def cross_entropy(d1, d2, pmf_only=True):
     pmf2 = dit.copypmf(d2, base='linear', mode=mode)
     return -np.nansum(pmf1 * np.log2(pmf2))
 
+
 def relative_entropy(d1, d2):
     ce = cross_entropy(d1, d2, pmf_only=False)
     return ce - dit.shannon.entropy(d1)
+
 
 DKL = relative_entropy

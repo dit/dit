@@ -10,6 +10,7 @@ from dit.multivariate import coinformation as I, dual_total_correlation as B
 from dit.profiles.information_partitions import *
 from dit.utils import partitions, powerset
 
+
 def all_info_measures(vars):
     """
     """
@@ -19,12 +20,14 @@ def all_info_measures(vars):
             for cond in powerset(others):
                 yield (part , cond)
 
+
 @pytest.mark.parametrize('meas', all_info_measures(range(4)))
 def test_sp1(meas):
     """ Test all possible info measures """
     d = n_mod_m(4, 2)
     ip = ShannonPartition(d)
     assert ip[meas] == pytest.approx(I(d, meas[0], meas[1]))
+
 
 @pytest.mark.parametrize('meas', all_info_measures('xyzw'))
 def test_sp2(meas):
@@ -33,6 +36,7 @@ def test_sp2(meas):
     d.set_rv_names('xyzw')
     ip = ShannonPartition(d)
     assert ip[meas] == pytest.approx(I(d, meas[0], meas[1]))
+
 
 def test_sp3():
     """ Test get_atoms() """
@@ -48,6 +52,7 @@ def test_sp3():
               }
     atoms2 = ip.get_atoms()
     assert (atoms1 - atoms2) | (atoms2 - atoms1) == set()
+
 
 def test_sp4():
     """ Test printing """
@@ -66,6 +71,7 @@ def test_sp4():
 | I[0:1:2] | -1.000 |
 +----------+--------+"""
     assert str(ip) == string
+
 
 def test_ep1():
     """
@@ -86,6 +92,7 @@ def test_ep1():
 | X[0:1:2] |  0.510 |
 +----------+--------+"""
     assert str(ep) == string
+
 
 def test_dd1():
     """

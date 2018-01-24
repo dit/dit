@@ -13,9 +13,11 @@ import tempfile
 
 root = 'C:\\' if sys.platform in ('win32', 'cygwin') else '/'
 
+
 def test_cd():
     with cd(root):
         assert os.getcwd() == root
+
 
 def test_cd_bad_oldcwd():
     # Test attempting to go back to a directory that no longer exists.
@@ -27,6 +29,7 @@ def test_cd_bad_oldcwd():
             os.rmdir(name)
         assert os.getcwd() == root
 
+
 def test_named_tempfile1():
     name = None
     with named_tempfile() as tempfile:
@@ -36,6 +39,7 @@ def test_named_tempfile1():
         tempfile.close()
         assert os.path.isfile(name)
     assert not os.path.isfile(name)
+
 
 def test_named_tempfile2():
     name = None

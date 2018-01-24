@@ -7,6 +7,7 @@ import pytest
 from dit.pid.imin import i_min, PID_WB
 from dit.pid.distributions import bivariates, trivariates
 
+
 def test_imin1():
     """
     Test imin on redundant distribution.
@@ -14,6 +15,7 @@ def test_imin1():
     d = bivariates['redundant']
     red = i_min(d, ((0,), (1,)), (2,))
     assert red == pytest.approx(1)
+
 
 def test_imin2():
     """
@@ -23,6 +25,7 @@ def test_imin2():
     red = i_min(d, ((0,), (1,)), (2,))
     assert red == pytest.approx(0)
 
+
 def test_imin3():
     """
     Test imin on unique distribution.
@@ -30,6 +33,7 @@ def test_imin3():
     d = bivariates['cat']
     red = i_min(d, ((0,), (1,)), (2,))
     assert red == pytest.approx(1)
+
 
 def test_pid_wb1():
     """
@@ -41,6 +45,7 @@ def test_pid_wb1():
     assert pid[((0,),)] == pytest.approx(0.15097750043269376)
     assert pid[((1,),)] == pytest.approx(0.0)
     assert pid[((0, 1),)] == pytest.approx(0.0)
+
 
 def test_pid_wb2():
     """
@@ -57,6 +62,7 @@ def test_pid_wb2():
             assert pid[atom] == pytest.approx(1.0)
         else:
             assert pid[atom] == pytest.approx(0.0)
+
 
 def test_pid_wb3():
     """

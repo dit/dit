@@ -7,6 +7,7 @@ from __future__ import division
 from dit import Distribution
 from dit.inference import distribution_from_data
 
+
 def test_dfd():
     """
     Test distribution_from_data.

@@ -10,6 +10,7 @@ from dit.multivariate import wyner_common_information as C
 from dit.multivariate.common_informations.wyner_common_information import WynerCommonInformation
 from dit.shannon import entropy
 
+
 outcomes = ['0000', '0001', '0110', '0111', '1010', '1011', '1100', '1101']
 pmf = [1/8]*8
 xor = D(outcomes, pmf)
@@ -19,6 +20,7 @@ C_sbec = lambda p: 1 if p < 1/2 else entropy(p)
 
 
 pytest.importorskip('scipy')
+
 
 @pytest.mark.slow
 @pytest.mark.flaky(reruns=5)
@@ -34,6 +36,7 @@ def test_wci1(rvs, crvs, val):
     Test against known values.
     """
     assert C(xor, rvs, crvs) == pytest.approx(val, abs=1e-4)
+
 
 @pytest.mark.flaky(reruns=5)
 def test_wci2():
@@ -53,6 +56,7 @@ def test_wci2():
     assert any(equal(d, d_opt) for d_opt in d_opts)
     assert wci.objective(wci._optima) == pytest.approx(2/3, abs=1e-5)
 
+
 @pytest.mark.slow
 @pytest.mark.skip(reason="Jacobian doesn't seem to work well right now.")
 def test_wci3():
@@ -68,6 +72,7 @@ def test_wci3():
 @pytest.fixture
 def x0():
     return {'x0': None}
+
 
 @pytest.mark.slow
 @pytest.mark.flaky(reruns=5)

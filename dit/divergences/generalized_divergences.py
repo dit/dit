@@ -24,6 +24,7 @@ __all__ = ('double_power_sum',
 ## http://mitran-lab.amath.unc.edu:8082/subversion/grants/Proposals/2013/DOE-DataCentric/biblio/LieseVajdaDivergencesInforTheory.pdf
 ## Crooks: http://threeplusone.com/on_information.pdf
 
+
 def double_power_sum(dist1, dist2, exp1=1, exp2=1, rvs=None, crvs=None,
                      rv_mode=None):
     """
@@ -76,6 +77,7 @@ def double_power_sum(dist1, dist2, exp1=1, exp2=1, rvs=None, crvs=None,
 
     return div
 
+
 def hellinger_sum(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None):
     """
     The Hellinger sum/integral of `dist1` and `dist2`, used to define other
@@ -113,10 +115,11 @@ def hellinger_sum(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None):
 
     """
 
-    return double_power_sum(dist1, dist2, alpha, 1.-alpha,
+    return double_power_sum(dist1, dist2, alpha, 1.0-alpha,
                             rvs=rvs, crvs=crvs, rv_mode=rv_mode)
 
-def hellinger_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None,
+
+def hellinger_divergence(dist1, dist2, alpha=1.0, rvs=None, crvs=None,
                          rv_mode=None):
     # http://mitran-lab.amath.unc.edu:8082/subversion/grants/Proposals/2013/DOE-DataCentric/biblio/LieseVajdaDivergencesInforTheory.pdf
     """
@@ -160,9 +163,10 @@ def hellinger_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None,
                                            crvs=crvs, rv_mode=rv_mode)
     s = hellinger_sum(dist1, dist2, rvs=rvs, alpha=alpha,
                       crvs=crvs, rv_mode=rv_mode)
-    return (s-1.)/(alpha-1.)
+    return (s-1.0)/(alpha-1.0)
 
-def tsallis_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None,
+
+def tsallis_divergence(dist1, dist2, alpha=1.0, rvs=None, crvs=None,
                        rv_mode=None):
     """
     The Tsallis divergence of `dist1` and `dist2`.
@@ -207,8 +211,9 @@ def tsallis_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None,
     else:
         s = hellinger_sum(dist1, dist2, rvs=rvs, alpha=alpha,
                           crvs=crvs, rv_mode=rv_mode)
-        div = (s - 1.) /(alpha - 1.)
+        div = (s - 1.0) /(alpha - 1.0)
     return div
+
 
 def renyi_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None):
     """
@@ -254,8 +259,9 @@ def renyi_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None):
     else:
         s = hellinger_sum(dist1, dist2, rvs=rvs,
                           alpha=alpha, crvs=crvs, rv_mode=rv_mode)
-        div = np.log2(s) / (alpha - 1.)
+        div = np.log2(s) / (alpha - 1.0)
     return div
+
 
 def alpha_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None):
     """
@@ -303,9 +309,10 @@ def alpha_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None):
     if alpha == -1:
         return kullback_leibler_divergence(dist2, dist1, rvs=rvs,
                                            crvs=crvs, rv_mode=rv_mode)
-    s = double_power_sum(dist1, dist2, (1.-alpha)/2, (1.+alpha)/2,
+    s = double_power_sum(dist1, dist2, (1.0-alpha)/2, (1.0+alpha)/2,
                          rvs=rvs, crvs=crvs, rv_mode=rv_mode)
-    return 4*(1.-s)/(1.-alpha*alpha)
+    return 4*(1.0-s)/(1.0-alpha*alpha)
+
 
 def f_divergence(dist1, dist2, f, rvs=None, crvs=None, rv_mode=None):
     """

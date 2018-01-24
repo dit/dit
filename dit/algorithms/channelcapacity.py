@@ -14,6 +14,7 @@ __all__ = [
     'channel_capacity',
 ]
 
+
 def channel_capacity(cdists, marginal=None, rtol=None, atol=None):
     """
     Calculates the channel capacity from conditional distributions P(Y|X).

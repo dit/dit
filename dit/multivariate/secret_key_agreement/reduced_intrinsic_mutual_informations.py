@@ -35,7 +35,7 @@ class BaseReducedIntrinsicMutualInformation(BaseMoreIntrinsicMutualInformation):
     @property
     @staticmethod
     @abstractmethod
-    def measure(): # pragma: no cover
+    def measure():
         pass
 
     def objective(self, x): # pragma: no cover
@@ -73,6 +73,7 @@ class ReducedIntrinsicTotalCorrelation(BaseReducedIntrinsicMutualInformation):
     name = 'total correlation'
     measure = staticmethod(intrinsic_total_correlation)
 
+
 reduced_intrinsic_total_correlation = ReducedIntrinsicTotalCorrelation.functional()
 
 
@@ -84,6 +85,7 @@ class ReducedIntrinsicDualTotalCorrelation(BaseReducedIntrinsicMutualInformation
     name = 'dual total correlation'
     measure = staticmethod(intrinsic_dual_total_correlation)
 
+
 reduced_intrinsic_dual_total_correlation = ReducedIntrinsicDualTotalCorrelation.functional()
 
 
@@ -94,6 +96,7 @@ class ReducedIntrinsicCAEKLMutualInformation(BaseReducedIntrinsicMutualInformati
 
     name = 'CAEKL mutual information'
     measure = staticmethod(intrinsic_caekl_mutual_information)
+
 
 reduced_intrinsic_CAEKL_mutual_information = ReducedIntrinsicCAEKLMutualInformation.functional()
 

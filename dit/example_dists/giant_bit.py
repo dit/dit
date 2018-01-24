@@ -8,6 +8,7 @@ from itertools import product
 from .. import Distribution
 from ..distconst import uniform
 
+
 def giant_bit(n, k):
     """
     Return a 'giant bit' distribution of size `n` and alphabet size `k`.

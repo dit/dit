@@ -17,6 +17,7 @@ __all__ = ['info_trim',
            'mss_sigalg',
           ]
 
+
 def partial_match(first, second, places):
     """
     Returns whether `second` is a marginal outcome at `places` of `first`.
@@ -37,6 +38,7 @@ def partial_match(first, second, places):
 
     """
     return tuple([first[i] for i in places]) == tuple(second)
+
 
 def mss_sigalg(dist, rvs, about=None, rv_mode=None):
     """
@@ -94,6 +96,7 @@ def mss_sigalg(dist, rvs, about=None, rv_mode=None):
 
     return mss_sa
 
+
 def insert_mss(dist, idx, rvs, about=None, rv_mode=None):
     """
     Inserts the minimal sufficient statistic of `rvs` about `about` into `dist`
@@ -146,6 +149,7 @@ def insert_mss(dist, idx, rvs, about=None, rv_mode=None):
     new_dist = insert_rv(dist, idx, mss_sa)
     return pruned_samplespace(new_dist)
 
+
 def mss(dist, rvs, about=None, rv_mode=None, int_outcomes=True):
     """
     Parameters
@@ -189,6 +193,7 @@ def mss(dist, rvs, about=None, rv_mode=None, int_outcomes=True):
     mss_sa = mss_sigalg(dist, rvs, about, rv_mode)
     d = dist_from_induced_sigalg(dist, mss_sa, int_outcomes)
     return d
+
 
 def insert_joint_mss(dist, idx, rvs=None, rv_mode=None):
     """
@@ -237,6 +242,7 @@ def insert_joint_mss(dist, idx, rvs=None, rv_mode=None):
         d._sample_space = CartesianProduct(d.alphabet)
 
     return d
+
 
 def info_trim(dist, rvs=None, rv_mode=None):
     """

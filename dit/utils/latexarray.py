@@ -14,6 +14,7 @@ from .exitstack import ExitStack
 from .context import cd, named_tempfile, tempdir
 from .misc import default_opener
 
+
 # http://stackoverflow.com/questions/2891790/pretty-printing-of-numpy-array
 #
 # Includes hack to prevent NumPy from removing trailing zeros.
@@ -29,6 +30,7 @@ def printoptions(strip_zeros=True, **kwargs):
     yield
     np.set_printoptions(**original)
     arrayprint.FloatFormat.__call__ = origcall
+
 
 def to_latex__numerical(a, decimals, tab):
     # The elements of each column are aligned on the decimal, if present.
@@ -100,6 +102,7 @@ def to_latex__numerical(a, decimals, tab):
 
     return template.format(**subs)
 
+
 def to_latex__exact(a, tol, tab):
 
     from dit.math import approximate_fraction
@@ -137,6 +140,7 @@ def to_latex__exact(a, tol, tab):
 \end{{array}}"""
 
     return template.format(**subs)
+
 
 def to_latex(a, exact=False, decimals=3, tab='  '):
     r"""

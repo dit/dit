@@ -7,6 +7,7 @@ from __future__ import division
 from dit import Distribution
 import dit
 
+
 def Unq():
     """
     A distribution with unique information.
@@ -22,6 +23,7 @@ def Unq():
     d = Distribution(outcomes, pmf)
     return d
 
+
 def Rdn():
     """
     A distribution with redundant information.
@@ -30,6 +32,7 @@ def Rdn():
     outcomes = ['000', '111']
     d = Distribution(outcomes, pmf)
     return d
+
 
 def Xor():
     """
@@ -40,6 +43,7 @@ def Xor():
     d = Distribution(outcomes, pmf)
     return d
 
+
 def And(k=2):
     """
     [0] and [1] = [2]
@@ -49,6 +53,7 @@ def And(k=2):
     d = dit.insert_rvf(d, lambda x: '1' if all(map(bool, map(int, x))) else '0')
     return d
 
+
 def Or(k=2):
     """
     [0] or [1] = [2]
@@ -57,6 +62,7 @@ def Or(k=2):
     d = dit.distconst.modify_outcomes(d, lambda x: ''.join(x))
     d = dit.insert_rvf(d, lambda x: '1' if any(map(bool, map(int, x))) else '0')
     return d
+
 
 def RdnXor():
     """
@@ -78,6 +84,7 @@ def RdnXor():
     d = Distribution(outcomes, pmf)
     return d
 
+
 def ImperfectRdn():
     """
     Like Rdn() with a small off-term.
@@ -86,6 +93,7 @@ def ImperfectRdn():
     outcomes = [('0', '0', '0'), ('1', '1', '1'), ('0', '1', '0')]
     d = Distribution(outcomes, pmf)
     return d
+
 
 def Subtle():
     """

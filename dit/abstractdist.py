@@ -13,6 +13,7 @@ __all__ = [
     'get_abstract_dist',
 ]
 
+
 class AbstractDenseDistribution(object):
     """
     An abstract, dense distribution.
@@ -230,6 +231,7 @@ class AbstractDenseDistribution(object):
         d = AbstractDenseDistribution(len(indexes), self.n_symbols)
         return d
 
+
 def distribution_constraint(indexes1, indexes2, distribution):
     """
     Returns an array representing an equality constraint on two distributions.
@@ -285,6 +287,7 @@ def distribution_constraint(indexes1, indexes2, distribution):
 
     return A, b
 
+
 def brute_marginal_array(d, rvs, rv_mode=None):
     """A brute force computation of the marginal array.
 
@@ -324,6 +327,7 @@ def brute_marginal_array(d, rvs, rv_mode=None):
     arr = nz.reshape((n_rows, len(nz) // n_rows))
 
     return arr
+
 
 def get_abstract_dist(dist):
     """

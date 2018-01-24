@@ -14,6 +14,7 @@ __all__ = ['pid_lattice',
            'descendants',
            ]
 
+
 def comparable(a, b):
     """
     Tests if two sets of comparable.
@@ -173,6 +174,7 @@ def descendants(lattice, node, self=False):
     if not self:
         nodes.remove(node)
     return nodes
+
 
 def least_upper_bound(lattice, nodes, predicate=None):
     """

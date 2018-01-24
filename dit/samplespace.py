@@ -56,6 +56,7 @@ from .helpers import (
 from .utils import OrderedDict
 from .exceptions import InvalidOutcome
 
+
 class BaseSampleSpace(Set):
     """
     An abstract representation of a sample space.
@@ -102,10 +103,12 @@ class BaseSampleSpace(Set):
     def sort(self):
         self._samplespace.sort()
 
+
 class ScalarSampleSpace(BaseSampleSpace):
     _meta = {
         'is_joint': False,
     }
+
 
 class SampleSpace(ScalarSampleSpace):
     """
@@ -262,6 +265,7 @@ class SampleSpace(ScalarSampleSpace):
 
     def outcome_length(self):
         return self._outcome_length
+
 
 class CartesianProduct(SampleSpace):
     """

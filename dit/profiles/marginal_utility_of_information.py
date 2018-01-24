@@ -17,6 +17,7 @@ from ..utils import flatten, powerset
 
 __all__ = ['MUIProfile']
 
+
 def get_lp_form(dist, ents):
     """
     Construct the constraint matrix for computing the maximum utility of information in linear programming cononical form.
@@ -92,6 +93,7 @@ def get_lp_form(dist, ents):
 
     return c, A, b, bounds
 
+
 def max_util_of_info(c, A, b, bounds, y):
     """
     Compute the maximum utility of information at scale `y`.
@@ -115,6 +117,7 @@ def max_util_of_info(c, A, b, bounds, y):
     solution = linprog(c, A, b, bounds=bounds)
     maximum_utility_of_information = -solution.fun
     return maximum_utility_of_information
+
 
 class MUIProfile(BaseProfile):
     __doc__ = profile_docstring.format(name='MUIProfile',

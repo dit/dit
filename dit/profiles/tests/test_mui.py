@@ -20,6 +20,7 @@ examples = [ex1, ex2, ex3, ex4]
 
 pytest.importorskip('scipy')
 
+
 @pytest.mark.parametrize(('d', 'prof', 'width'), [
     (ex1, {0.0: 1.0}, [3.0]),
     (ex2, {0.0: 3.0}, [1.0]),

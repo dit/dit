@@ -8,6 +8,7 @@ from dit.pid.ibroja import i_broja, PID_BROJA
 from dit.pid.iproj import PID_Proj
 from dit.pid.distributions import bivariates, trivariates
 
+
 @pytest.mark.flaky(reruns=5)
 def test_ibroja1():
     """
@@ -17,6 +18,7 @@ def test_ibroja1():
     uniques = i_broja(d, ((0,), (1,)), (2,))
     assert uniques[(0,)] == pytest.approx(0, abs=1e-4)
     assert uniques[(1,)] == pytest.approx(0, abs=1e-4)
+
 
 @pytest.mark.flaky(reruns=5)
 def test_ibroja2():
@@ -28,6 +30,7 @@ def test_ibroja2():
     assert uniques[(1,)] == pytest.approx(0, abs=1e-4)
     assert uniques[(0,)] == pytest.approx(0, abs=1e-4)
 
+
 @pytest.mark.flaky(reruns=5)
 def test_ibroja3():
     """
@@ -38,6 +41,7 @@ def test_ibroja3():
     assert uniques[(0,)] == pytest.approx(1, abs=1e-4)
     assert uniques[(1,)] == pytest.approx(1, abs=1e-4)
 
+
 @pytest.mark.flaky(reruns=5)
 def test_ibroja4():
     """
@@ -47,6 +51,7 @@ def test_ibroja4():
     uniques = i_broja(d, ((0,), (1,)), (2,))
     assert uniques[(0,)] == pytest.approx(0, abs=1e-4)
     assert uniques[(1,)] == pytest.approx(0, abs=1e-4)
+
 
 @pytest.mark.flaky(reruns=5)
 def test_pid_broja1():
@@ -59,6 +64,7 @@ def test_pid_broja1():
     assert pid[((0,),)] == pytest.approx(0.18872187554086706, abs=1e-4)
     assert pid[((1,),)] == pytest.approx(0.18872187554086706, abs=1e-4)
     assert pid[((0, 1),)] == pytest.approx(0.0, abs=1e-4)
+
 
 @pytest.mark.flaky(reruns=5)
 def test_pid_broja2():
@@ -75,6 +81,7 @@ def test_pid_broja2():
         else:
             assert pid[atom] == pytest.approx(0.0, abs=1e-4)
 
+
 @pytest.mark.flaky(reruns=5)
 def test_pid_broja3():
     """
@@ -84,6 +91,7 @@ def test_pid_broja3():
     pid1 = PID_BROJA(d)
     pid2 = PID_Proj(d)
     assert pid1 == pid2
+
 
 @pytest.mark.flaky(reruns=5)
 def test_pid_broja4():

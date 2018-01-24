@@ -10,6 +10,7 @@ from string import digits, ascii_letters
 
 import numpy as np
 
+
 class BasinHoppingInnerCallBack(object):
     """
     A callback to track the optimization vectors as the optimization is performed.

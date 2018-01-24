@@ -5,17 +5,19 @@ cumulative residual entropy.
 
 from six.moves import range # pylint: disable=redefined-builtin,import-error
 
+from boltons.iterutils import pairwise
+
 import numpy as np
 
 from .. import Distribution as D, ScalarDistribution as SD
 from ..algorithms.stats import _numerical_test
-from ..utils import pairwise
 
 __all__ = ['cumulative_residual_entropy',
            'generalized_cumulative_residual_entropy',
            'conditional_cumulative_residual_entropy',
            'conditional_generalized_cumulative_residual_entropy',
           ]
+
 
 def _cumulative_residual_entropy(dist, generalized=False):
     """
@@ -48,6 +50,7 @@ def _cumulative_residual_entropy(dist, generalized=False):
         term = (b-a)*pgx*np.log2(pgx)
         terms.append(term)
     return -np.nansum(terms)
+
 
 def generalized_cumulative_residual_entropy(dist, extract=False):
     """
@@ -85,6 +88,7 @@ def generalized_cumulative_residual_entropy(dist, extract=False):
         cres = cres[0]
     return cres
 
+
 def cumulative_residual_entropy(dist, extract=False):
     """
     The cumulative residual entropy is an alternative to the Shannon
@@ -119,6 +123,7 @@ def cumulative_residual_entropy(dist, extract=False):
     es, ps = zip(*[(tuple(abs(ei) for ei in e), p) for e, p in dist.zipped()])
     abs_dist = D(es, ps)
     return generalized_cumulative_residual_entropy(abs_dist, extract)
+
 
 def conditional_cumulative_residual_entropy(dist, rv, crvs=None, rv_mode=None):
     """
@@ -173,6 +178,7 @@ def conditional_cumulative_residual_entropy(dist, rv, crvs=None, rv_mode=None):
     cres = [cumulative_residual_entropy(cd, extract=True) for cd in cdists]
     ccre = SD(cres, mdist.pmf)
     return ccre
+
 
 def conditional_generalized_cumulative_residual_entropy(dist, rv, crvs=None, rv_mode=None):
     """

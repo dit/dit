@@ -10,6 +10,7 @@ from itertools import product
 
 __all__ = ['pr_box']
 
+
 def pr_box(eta=1, name=False):
     """
     The Popescu-Rohrlich box, or PR box, is the canonical non-signalling, non-local probability

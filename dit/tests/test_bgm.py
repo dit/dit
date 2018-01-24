@@ -5,6 +5,7 @@ import numpy as np
 import dit
 import networkx as nx
 
+
 def test_distribution_from_bayesnet_nonames():
     # Smoke test without rv names.
     x = nx.DiGraph()
@@ -29,6 +30,7 @@ def test_distribution_from_bayesnet_nonames():
     with pytest.raises(ValueError):
         dit.distribution_from_bayesnet(x)
 
+
 def test_distribution_from_bayesnet_names():
     # Smoke test with rv names.
     x = nx.DiGraph()
@@ -52,6 +54,7 @@ def test_distribution_from_bayesnet_names():
     dd._sample_space = dit.SampleSpace(list(dd.sample_space()))
     d3 = dit.distribution_from_bayesnet(x)
     assert d.is_approx_equal(d3)
+
 
 def test_distribution_from_bayesnet_func():
     # Smoke test with distributions as functions.
@@ -95,7 +98,6 @@ def test_distribution_from_bayesnet_func():
     assert list(d.sample_space()) == list(d3.sample_space())
 
 
-
 def test_distribution_from_bayesnet_error():
     # Test distribution_from_bayesnet with functions and distributions.
     # This is not allowed and should fail.
@@ -120,6 +122,7 @@ def test_distribution_from_bayesnet_error():
     with pytest.raises(Exception):
         dit.distribution_from_bayesnet(x, sample_space=sample_space)
 
+
 def test_bad_names1():
     x = nx.DiGraph()
     d = dit.example_dists.Xor()
@@ -137,6 +140,7 @@ def test_bad_names1():
         dit.distribution_from_bayesnet(x, [0, 1, 2, 3])
     with pytest.raises(ValueError):
         dit.distribution_from_bayesnet(x, [0, 1, 2, 2])
+
 
 def test_bad_names2():
     """

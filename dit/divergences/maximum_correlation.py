@@ -8,7 +8,9 @@ import numpy as np
 from ..exceptions import ditException
 from ..helpers import normalize_rvs
 
+
 svdvals = lambda m: np.linalg.svd(m, compute_uv=False)
+
 
 def conditional_maximum_correlation_pmf(pmf):
     """

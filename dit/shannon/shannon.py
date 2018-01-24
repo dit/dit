@@ -8,6 +8,7 @@ from ..helpers import RV_MODES
 
 import numpy as np
 
+
 def entropy_pmf(pmf):
     """
     Returns the entropy of the probability mass function.
@@ -22,6 +23,7 @@ def entropy_pmf(pmf):
     """
     pmf = np.asarray(pmf)
     return np.nansum(-pmf * np.log2(pmf), axis=-1)
+
 
 def entropy(dist, rvs=None, rv_mode=None):
     """
@@ -85,6 +87,7 @@ def entropy(dist, rvs=None, rv_mode=None):
     H = np.nansum(terms)
     return H
 
+
 def conditional_entropy(dist, rvs_X, rvs_Y, rv_mode=None):
     """
     Returns the conditional entropy of H[X|Y].
@@ -123,6 +126,7 @@ def conditional_entropy(dist, rvs_X, rvs_Y, rv_mode=None):
     H_X = entropy(dist, rvs_X, rv_mode=rv_mode)
     H_XgY = H_X - MI_XY
     return H_XgY
+
 
 def mutual_information(dist, rvs_X, rvs_Y, rv_mode=None):
     """

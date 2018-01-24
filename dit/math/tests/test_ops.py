@@ -13,9 +13,11 @@ from dit.math.ops import (
     get_ops, LinearOperations, LogOperations, exp_func, log_func
 )
 
+
 def test_get_ops():
     assert isinstance(get_ops('linear'), LinearOperations)
     assert isinstance(get_ops(2), LogOperations)
+
 
 class TestLinear(object):
     def setup_class(self):
@@ -149,27 +151,33 @@ class TestLog3(TestLog2):
     def setup_class(self):
         self.ops = LogOperations(3.5)
 
+
 class TestLogE(TestLog2):
     def setup_class(self):
         self.ops = LogOperations('e')
 
+
 class TestLogHalf(TestLog2):
     def setup_class(self):
         self.ops = LogOperations(0.5)
+
 
 @pytest.mark.parametrize('base', ['pants', -1, 0, 1])
 def test_exp_func1(base):
     with pytest.raises(InvalidBase):
         exp_func(base)
 
+
 def test_exp_func2():
     ops = LogOperations(0.5)
     assert np.allclose([0.5**1, 0.5**2, 0.5**3], ops.exp([1, 2, 3]))
+
 
 @pytest.mark.parametrize('base', ['pants', -1, 0, 1])
 def test_log_func1(base):
     with pytest.raises(InvalidBase):
         log_func(base)
+
 
 def test_log_func2():
     ops = LogOperations(2)

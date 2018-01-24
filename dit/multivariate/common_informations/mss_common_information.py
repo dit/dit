@@ -8,6 +8,7 @@ from ...math import close
 from ..dual_total_correlation import dual_total_correlation
 from ..entropy import entropy
 
+
 def mss_common_information(dist, rvs=None, crvs=None, rv_mode=None):
     """
     Compute the minimal sufficient statistic common information, which is the

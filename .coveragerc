@@ -4,7 +4,7 @@ branch = True
 source = dit
 omit =
 	# don't include tests
-	*/tests/*,
+	*/tests/*
 	# this is just convenience imports
 	dit/abc.py
 	# excluded due to testing difficulty
@@ -23,6 +23,9 @@ exclude_lines =
 
     # Don't worry about deprecated code:
     @removals.remove
+
+    # don't worry about abstract code:
+    @abstractmethod
 
     # Don't complain if tests don't hit defensive assertion code:
     raise AssertionError

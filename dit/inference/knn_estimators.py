@@ -18,6 +18,7 @@ __all__ = ['differential_entropy_knn',
            'total_correlation_ksg',
           ]
 
+
 def _fuzz(data, noise):
     """
     Add noise to the data.

@@ -9,6 +9,7 @@ from scipy.optimize import minimize_scalar
 
 from ..exceptions import ditException
 
+
 def _normalize_pmfs(dist1, dist2):
     """
     Construct probability vectors with common support.
@@ -32,6 +33,7 @@ def _normalize_pmfs(dist1, dist2):
     q = np.array([dist2[e] if e in dist2.outcomes else 0 for e in event_space])
     return p, q
 
+
 def variational_distance_pmf(p, q):
     """
     Compute the variational distance.
@@ -54,6 +56,7 @@ def variational_distance_pmf(p, q):
     """
     return abs(p-q).sum()/2
 
+
 def variational_distance(dist1, dist2):
     """
     Compute the variational distance.
@@ -74,6 +77,7 @@ def variational_distance(dist1, dist2):
     vd = variational_distance_pmf(p, q)
     return vd
 
+
 def bhattacharyya_coefficient_pmf(p, q):
     """
     Compute the Bhattacharyya coefficient.
@@ -91,6 +95,7 @@ def bhattacharyya_coefficient_pmf(p, q):
         The Bhattacharyya coefficient.
     """
     return np.sqrt(p*q).sum()
+
 
 def bhattacharyya_coefficient(dist1, dist2):
     """
@@ -111,6 +116,7 @@ def bhattacharyya_coefficient(dist1, dist2):
     p, q = _normalize_pmfs(dist1, dist2)
     bc = bhattacharyya_coefficient_pmf(p, q)
     return bc
+
 
 def hellinger_distance_pmf(p, q):
     """
@@ -133,6 +139,7 @@ def hellinger_distance_pmf(p, q):
     hd = 0 if np.isnan(hd) else hd
     return hd
 
+
 def hellinger_distance(dist1, dist2):
     """
     Compute the Hellinger distance.
@@ -152,6 +159,7 @@ def hellinger_distance(dist1, dist2):
     p, q = _normalize_pmfs(dist1, dist2)
     hd = hellinger_distance_pmf(p, q)
     return hd
+
 
 def chernoff_information_pmf(p, q):
     """
@@ -183,6 +191,7 @@ def chernoff_information_pmf(p, q):
         ci = 0
 
     return ci
+
 
 def chernoff_information(dist1, dist2):
     """

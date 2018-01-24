@@ -1,5 +1,6 @@
 import logging
 
+
 def basic_logger(name, level):
     """
     Returns a basic logger, with no special string formatting.

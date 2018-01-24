@@ -19,6 +19,7 @@ import dit
 
 __all__ = ['distribution_from_bayesnet']
 
+
 def sanitize_inputs(digraph, nodes, attr):
     """
     Quick sanity checks on the input.

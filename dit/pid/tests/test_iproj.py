@@ -7,6 +7,7 @@ import pytest
 from dit.pid.iproj import i_proj, PID_Proj
 from dit.pid.distributions import bivariates, trivariates
 
+
 def test_iproj1():
     """
     Test iproj on redundant distribution.
@@ -14,6 +15,7 @@ def test_iproj1():
     d = bivariates['redundant']
     red = i_proj(d, ((0,), (1,)), (2,))
     assert red == pytest.approx(1)
+
 
 def test_iproj2():
     """
@@ -23,6 +25,7 @@ def test_iproj2():
     red = i_proj(d, ((0,), (1,)), (2,))
     assert red == pytest.approx(0)
 
+
 def test_iproj3():
     """
     Test iproj on unique distribution.
@@ -30,6 +33,7 @@ def test_iproj3():
     d = bivariates['cat']
     red = i_proj(d, ((0,), (1,)), (2,))
     assert red == pytest.approx(0)
+
 
 def test_pid_proj1():
     """
@@ -41,6 +45,7 @@ def test_pid_proj1():
     assert pid[((0,),)] == pytest.approx(0.1462406251802893)
     assert pid[((1,),)] == pytest.approx(0.1462406251802893)
     assert pid[((0, 1),)] == pytest.approx(0.04248125036057776)
+
 
 def test_pid_proj2():
     """

@@ -49,6 +49,7 @@ class TestSampleSpace(object):
         indexes = [ss.index(i) for i in samplespace]
         assert indexes == [0, 1, 3, 2]
 
+
 class TestCartesianProduct(object):
     def setup_class(self):
         product = dit.helpers.get_product_func(str)
@@ -102,6 +103,7 @@ class TestCartesianProduct(object):
         assert list(ss) == ['00', '01', '10', '11']
         with pytest.raises(ValueError):
             ss.index('22')
+
 
 def test_nested():
     outcomes = ['11', '00']

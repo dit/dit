@@ -12,6 +12,7 @@ from dit.multivariate import (coinformation as I,
                               interaction_information as II,
                              )
 
+
 @pytest.mark.parametrize('d', [random_distribution(2, 4) for _ in range(10)])
 def test_mis1(d):
     """

@@ -16,6 +16,7 @@ __all__ = ['ditException',
            'InvalidOutcome',
            'InvalidProbability']
 
+
 class ditException(Exception):
     """
     Base class for all `dit` exceptions.
@@ -38,6 +39,7 @@ class ditException(Exception):
     def __repr__(self):
         return "{0}{1}".format(self.__class__.__name__, repr(self.args))
 
+
 class IncompatibleDistribution(ditException):
     """
     Exception for an incompatible distribution.
@@ -51,6 +53,7 @@ class IncompatibleDistribution(ditException):
         msg = "The distribution is not compatible."
         args = (msg,) + args
         ditException.__init__(self, *args, **kwargs)
+
 
 class InvalidBase(ditException):
     """
@@ -72,12 +75,14 @@ class InvalidBase(ditException):
             args = (msg,) + args
         ditException.__init__(self, *args, **kwargs)
 
+
 class InvalidDistribution(ditException):
     """
     Exception thrown for an invalid distribution.
 
     """
     pass
+
 
 class InvalidOutcome(ditException):
     """
@@ -113,6 +118,7 @@ class InvalidOutcome(ditException):
         args = (msg,) + args
         ditException.__init__(self, *args, **kwargs)
 
+
 class InvalidNormalization(ditException):
     """
     Exception thrown when a distribution is not normalized.
@@ -129,6 +135,7 @@ class InvalidNormalization(ditException):
         self.summation = args[0]
         args = (msg,) + args
         ditException.__init__(self, *args, **kwargs)
+
 
 class InvalidProbability(ditException):
     """

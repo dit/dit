@@ -46,6 +46,7 @@ def poset_lattice(elements):
 
     return lattice
 
+
 def constraint_lattice(elements):
     """
     Return a lattice of constrained marginals, with k=1 at the bottom and
@@ -106,7 +107,7 @@ class BaseInformationPartition(with_metaclass(ABCMeta, object)):
 
     @staticmethod
     @abstractmethod
-    def _symbol(rvs, crvs): # pragma: no cover
+    def _symbol(rvs, crvs):
         """
         This method should return the information symbol for an atom.
         """

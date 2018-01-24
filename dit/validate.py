@@ -27,6 +27,7 @@ __all__ = [
     'validate_outcome_length',
 ]
 
+
 def is_pmf(pmf, ops):
     """
     Returns `True` if the pmf is valid and `False` otherwise.
@@ -55,6 +56,7 @@ def is_pmf(pmf, ops):
         return False
 
     return True
+
 
 def validate_normalization(pmf, ops):
     """
@@ -86,6 +88,7 @@ def validate_normalization(pmf, ops):
         raise InvalidNormalization(total)
 
     return True
+
 
 def validate_outcomes(outcomes, sample_space):
     """
@@ -128,6 +131,7 @@ def validate_outcomes(outcomes, sample_space):
 
     return True
 
+
 def validate_pmf(pmf, ops):
     """
     Returns `True` if the pmf is valid.
@@ -155,6 +159,7 @@ def validate_pmf(pmf, ops):
     validate_normalization(pmf, ops)
     validate_probabilities(pmf, ops)
     return True
+
 
 def validate_probabilities(pmf, ops):
     """
@@ -199,6 +204,7 @@ def validate_probabilities(pmf, ops):
 
     return True
 
+
 def validate_sequence(outcome):
     """
     Returns `True` if outcome is a sequence, and `False` otherwise.
@@ -220,8 +226,8 @@ def validate_sequence(outcome):
     else:
         return True
 
-# These are used when you don't have a sample space yet.
 
+# These are used when you don't have a sample space yet.
 def validate_outcome_class(outcomes):
     """
     Validates that all outcomes have the same class.
@@ -235,6 +241,7 @@ def validate_outcome_class(outcomes):
         raise ditException('Not all outcomes have the same class.')
     else:
         return True
+
 
 def validate_outcome_length(outcomes):
     """

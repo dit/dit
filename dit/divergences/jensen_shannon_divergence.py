@@ -18,6 +18,7 @@ __all__ = ('jensen_shannon_divergence',
            'jensen_shannon_divergence_pmf',
           )
 
+
 def jensen_shannon_divergence_pmf(pmfs, weights=None):
     """
     The Jensen-Shannon Divergence: H(sum(w_i*P_i)) - sum(w_i*H(P_i)).
@@ -55,6 +56,7 @@ def jensen_shannon_divergence_pmf(pmfs, weights=None):
     entropies = np.apply_along_axis(H_pmf, 1, pmfs)
     two = (entropies * weights).sum()
     return one - two
+
 
 def jensen_shannon_divergence(dists, weights=None):
     """
@@ -99,6 +101,7 @@ def jensen_shannon_divergence(dists, weights=None):
     two = sum(w*H(d) for w, d in zip(weights, dists))
     jsd = one - two
     return jsd
+
 
 def jensen_divergence(func):
     """

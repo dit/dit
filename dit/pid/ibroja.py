@@ -40,7 +40,6 @@ class BROJAOptimizer(BaseConvexOptimizer):
         constraints = [[0, 2], [1, 2]]
         super(BROJAOptimizer, self).__init__(dist, constraints)
 
-
     def objective(self, x):
         """
         Minimize I(input:output|others).

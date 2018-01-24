@@ -7,6 +7,7 @@ from ..helpers import normalize_rvs
 from ..shannon import conditional_entropy, entropy as shannon_entropy
 from ..utils import flatten
 
+
 def entropy(dist, rvs=None, crvs=None, rv_mode=None):
     """
     Calculates the conditional joint entropy.

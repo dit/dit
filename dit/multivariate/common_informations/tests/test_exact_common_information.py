@@ -19,8 +19,6 @@ sbec = lambda p: D(['00', '0e', '1e', '11'], [(1-p)/2, p/2, p/2, (1-p)/2])
 G_sbec = lambda p: min(1, entropy(p) + 1 - p)
 
 
-pytest.importorskip('scipy')
-
 @pytest.mark.slow
 @pytest.mark.flaky(reruns=5)
 @pytest.mark.parametrize(('rvs', 'crvs', 'val'), [
@@ -36,9 +34,11 @@ def test_eci1(rvs, crvs, val):
     """
     assert G(xor, rvs, crvs) == pytest.approx(val, abs=1e-4)
 
+
 @pytest.fixture
 def x0():
     return {'x0': None}
+
 
 @pytest.mark.slow
 @pytest.mark.flaky(reruns=5)

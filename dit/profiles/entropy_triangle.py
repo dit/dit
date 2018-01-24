@@ -17,6 +17,7 @@ __all__ = ['EntropyTriangle',
            'EntropyTriangle2',
 ]
 
+
 class BaseEntropyTriangle(with_metaclass(ABCMeta, object)):
     """
     BaseEntropyTriangle
@@ -63,7 +64,7 @@ class BaseEntropyTriangle(with_metaclass(ABCMeta, object)):
 
     @staticmethod
     @abstractmethod
-    def _compute_point(dist): # pragma: no cover
+    def _compute_point(dist):
         """
         Compute the three normalized axis.
 

@@ -12,6 +12,7 @@ __all__ = ('binding_information',
            'variation_of_information',
           )
 
+
 def dual_total_correlation(dist, rvs=None, crvs=None, rv_mode=None):
     """
     Calculates the dual total correlation, also known as the binding
@@ -104,5 +105,6 @@ def residual_entropy(dist, rvs=None, crvs=None, rv_mode=None):
 
 
 binding_information = dual_total_correlation
+
 
 independent_information = variation_of_information = residual_entropy

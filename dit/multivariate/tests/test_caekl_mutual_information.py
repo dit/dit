@@ -14,6 +14,7 @@ from dit.multivariate import (caekl_mutual_information as J,
                              )
 from dit.exceptions import ditException
 
+
 @pytest.mark.parametrize('d', list(all_dist_structures(2, 3)) +
                               [random_distribution(2, 3, alpha=(0.5,)*9) for _ in range(10)])
 def test_caekl_1(d):
@@ -22,6 +23,7 @@ def test_caekl_1(d):
     distributions.
     """
     assert I(d) == pytest.approx(J(d))
+
 
 @pytest.mark.parametrize('d', list(all_dist_structures(3, 2)) +
                               [random_distribution(3, 2, alpha=(0.5,)*8) for _ in range(10)])
@@ -33,12 +35,14 @@ def test_caekl_2(d):
     rvs = [[0], [1]]
     assert I(d, rvs) == pytest.approx(J(d, rvs))
 
+
 def test_caekl_3():
     """
     Test a known value.
     """
     d = D(['000', '011', '101', '110'], [1/4]*4)
     assert J(d) == pytest.approx(0.5)
+
 
 @pytest.mark.parametrize('d', [random_distribution(4, 3, alpha=(0.5,)*3**4) for _ in range(10)])
 def test_caekl_4(d):

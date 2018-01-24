@@ -27,6 +27,7 @@ _stacked_outcomes = [
 _stacked_pmf = [1/12]*4 + [1/6]*2 + [1/12]*4
 stacked = Distribution(_stacked_outcomes, _stacked_pmf)
 
+
 # each var expands in binary as:
 #    (conditional dependence, conditional independence, intrinsic dependence)
 _mixed_outcomes = [

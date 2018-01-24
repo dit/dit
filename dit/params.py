@@ -8,6 +8,7 @@ from .exceptions import InvalidBase
 
 __all__ = ['ditParams', 'reset_params']
 
+
 def validate_boolean(b):
     """Convert b to a boolean or raise a ValueError."""
     try:
@@ -21,12 +22,14 @@ def validate_boolean(b):
     else:
         raise ValueError('Could not convert "%s" to boolean' % b)
 
+
 def validate_float(s):
     """Convert s to float or raise a ValueError."""
     try:
         return float(s)
     except TypeError:
         raise ValueError('Could not convert "%s" to float' % s)
+
 
 def validate_base(b):
     """Convert s to a valid base or raise InvalidBase."""
@@ -47,6 +50,7 @@ def validate_base(b):
     else:
         return b
 
+
 def validate_choice(s, choices):
     try:
         s = s.lower()
@@ -57,9 +61,11 @@ def validate_choice(s, choices):
     else:
         return s
 
+
 def validate_text(s):
     choices = ['ascii', 'linechar']
     return validate_choice(s, choices)
+
 
 class DITParams(dict):
     """
@@ -97,9 +103,11 @@ class DITParams(dict):
 
         return dict.__getitem__(self, alt)
 
+
 def reset_params():
     """Restore rcParams to defaults from when dit was originally imported."""
     ditParams.update(ditParamsDefault)
+
 
 def set_params():
     """Return the default params, after updating from the .ditrc file."""
@@ -107,6 +115,7 @@ def set_params():
     ## So we just return the default parameters.
     ret = DITParams([(key, tup[0]) for key, tup in defaultParams.items()])
     return ret
+
 
 ## key -> (value, validator)
 ## TODO:  key -> (value, validator, info_string)
@@ -120,11 +129,14 @@ defaultParams = {'rtol': (1e-7, validate_float),
                  'repr.print': (False, validate_boolean),
                 }
 
+
 ## Dictionary relating deprecated parameter names to new parameter names.
 _deprecated_map = {}
 
+
 ### This is what will be used by every dit instance.
 ditParams = set_params()
+
 
 ditParamsDefault = DITParams([(key, tup[0]) \
                              for key, tup in defaultParams.items()])

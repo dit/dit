@@ -16,6 +16,7 @@ from ..shannon import entropy as H
 # from ..divergences import kullback_leibler_divergence as D
 from .base_profile import BaseProfile, profile_docstring
 
+
 class SchneidmanProfile(BaseProfile):
     __doc__ = profile_docstring.format(name='SchneidmanProfile',
                                        static_attributes='',
@@ -25,11 +26,6 @@ class SchneidmanProfile(BaseProfile):
     def _compute(self):
         """
         Compute the connected information decomposition.
-
-        Implementation Notes
-        --------------------
-        This uses the Frank-Wolfe implementation to find the maxent
-        distributions.
         """
         dists = marginal_maxent_dists(self.dist)
         diffs = -np.diff([H(d) for d in dists])

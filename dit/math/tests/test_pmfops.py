@@ -9,12 +9,14 @@ import pytest
 
 module = dit.math.pmfops
 
+
 def test_perturb_one():
     # Smoke test
     d = np.array([0, .5, .5])
     d2 = module.perturb_support(d, .00001)
     d3 = d2.round(2)
     assert np.allclose(d, d3)
+
 
 def test_perturb_one_square():
     # Smoke test
@@ -23,12 +25,14 @@ def test_perturb_one_square():
     d3 = d2.round(2)
     assert np.allclose(d, d3)
 
+
 def test_perturb_many():
     # Smoke test
     d = np.array([[0, .5, .5], [.5, .5, .0]])
     d2 = module.perturb_support(d, .00001)
     d3 = d2.round(2)
     assert np.allclose(d, d3)
+
 
 def test_convex_combination():
     d1 = np.array([0, .5, .5])
@@ -37,12 +41,14 @@ def test_convex_combination():
     d3 = module.convex_combination(np.array([d1, d2]))
     assert np.allclose(d3, d3_)
 
+
 def test_convex_combination_weights():
     d1 = np.array([0, .5, .5])
     d2 = np.array([.5, .5, 0])
     weights = [1, 0]
     d3 = module.convex_combination(np.array([d1, d2]), weights)
     assert np.allclose(d3, d1)
+
 
 def test_downsample_onepmf():
     # One pmf
@@ -51,6 +57,7 @@ def test_downsample_onepmf():
     d2 = module.downsample(d1, 2)
     assert np.allclose(d2, d2_)
 
+
 def test_downsample_twopmf():
     # Two pmf
     d1 = np.array([[0, .51, .49], [.6, .3, .1]])
@@ -58,10 +65,12 @@ def test_downsample_twopmf():
     d2 = module.downsample(d1, 2)
     assert np.allclose(d2, d2_)
 
+
 def test_downsample_badmethod():
     d1 = np.array([0, .51, .49])
     with pytest.raises(NotImplementedError):
         module.downsample(d1, 2**3, method='whatever')
+
 
 def test_projections1():
     d = np.array([ 0.03231933,  0.89992681,  0.06775385])
@@ -73,6 +82,7 @@ def test_projections1():
     d2 = module.projections(d, 2**3)
     assert np.allclose(d2, d2_)
 
+
 def test_projections2():
     d = np.array([ 0.51,  0.48,  0.01])
     d2_ = np.array([
@@ -83,6 +93,7 @@ def test_projections2():
     d2 = module.projections(d, 2**3)
     assert np.allclose(d2, d2_, rtol=1e-7, atol=1e-8)
 
+
 def test_projections_max():
     d = np.array([ 0.51,  0.48,  0.01])
     d2_ = np.array([
@@ -92,6 +103,7 @@ def test_projections_max():
     ])
     d2 = module.projections(d, 2**3, [np.argmax, np.argmax, np.argmax])
     assert np.allclose(d2, d2_, rtol=1e-7, atol=1e-8)
+
 
 def test_projections_0element():
     # During projections, if an element is equal to 0, then searchsorted
@@ -123,6 +135,7 @@ def test_projections_0element():
     ])
     assert np.allclose(x, x_good, rtol=1e-7, atol=1e-8)
 
+
 def test_clamps():
     d = np.array([0.51, 0.48, 0.01])
     locs = np.linspace(0, 1, 2**3+1)
@@ -130,16 +143,19 @@ def test_clamps():
     out = module.clamped_indexes(d, locs)
     assert np.allclose(out, out_)
 
+
 def test_replace_nonzero_rand():
     d = np.array([0.25, 0.75, 0])
     x = module.replace_zeros(d, 0.0001)
     assert np.allclose(d, x.round(2))
+
 
 def test_replace_nonzero_norand():
     d = np.array([0.25, 0.75, 0])
     x = module.replace_zeros(d, 0.0001, rand=False)
     assert x[2] == 0.0001
     assert np.allclose(d, x.round(2))
+
 
 def test_jittered_zeros():
     d = np.array([0.25, 0.75, 0])
@@ -148,12 +164,14 @@ def test_jittered_zeros():
     x_ = np.array([  2.49998269e-01,   7.49997561e-01,   4.17024317e-06])
     assert np.allclose(x, x_)
 
+
 def test_jittered():
     d = np.array([0.25, 0.75, 0])
     prng = np.random.RandomState(1)
     x = module.jittered(d, jitter=1e-5, zeros=False, prng=prng)
     x_ = np.array([ 0.24999923,  0.75000077,  0.0       ])
     assert np.allclose(x, x_)
+
 
 def test_jittered_noprng():
     d = np.array([0.25, 0.75, 0])

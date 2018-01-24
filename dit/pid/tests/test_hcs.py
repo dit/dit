@@ -10,6 +10,7 @@ from dit.pid.hcs import h_cs, PED_CS
 from dit.pid.distributions import bivariates, trivariates
 from dit import Distribution as D
 
+
 def test_iccs1():
     """
     Test hcs on redundant distribution.
@@ -17,6 +18,7 @@ def test_iccs1():
     d = bivariates['redundant']
     red = h_cs(d, ((0,), (1,)), (2,))
     assert red == pytest.approx(1)
+
 
 def test_iccs2():
     """
@@ -26,6 +28,7 @@ def test_iccs2():
     red = h_cs(d, ((0,), (1,)), (2,))
     assert red == pytest.approx(0)
 
+
 def test_iccs3():
     """
     Test hcs on two redundant bits.
@@ -33,6 +36,7 @@ def test_iccs3():
     d = D(['00','11'],[0.5]*2)
     red = h_cs(d, ((0,), (1,)))
     assert red == pytest.approx(1)
+
 
 def test_iccs4():
     """
@@ -42,6 +46,7 @@ def test_iccs4():
     red = h_cs(d, ((0,), (1,)))
     assert red == pytest.approx(0)
 
+
 def test_iccs5():
     """
     Test hcs on two correlated bits
@@ -50,6 +55,7 @@ def test_iccs5():
     red = h_cs(d, ((0,), (1,)))
     assert red == pytest.approx(0.542457524090110)
 
+
 def test_iccs6():
     """
     Test hcs on triadic (required maxent)
@@ -57,6 +63,7 @@ def test_iccs6():
     triadic = D(['000', '111','022','133','202','313','220','331'], [1/8.0]*8)
     red = h_cs(triadic, ((0,), (1,), (2,)))
     assert red == pytest.approx(1)
+
 
 def test_ped_cs1():
     """
@@ -78,9 +85,10 @@ def test_ped_cs1():
         else:
             assert pid[atom] == pytest.approx(0.0)
 
+
 def test_ped_cs2():
     """
-    Test iccs on SUM. 
+    Test iccs on SUM.
     """
     d = D(['000','011','101','112'], [1/4.0]*4)
     pid = PED_CS(d)
@@ -91,6 +99,7 @@ def test_ped_cs2():
             assert pid[atom] == pytest.approx(-0.5)
         else:
             assert pid[atom] == pytest.approx(0.0)
+
 
 def test_ped_cs3():
     d = D(['00','01','10','11'],[0.4,0.1,0.1,0.4])

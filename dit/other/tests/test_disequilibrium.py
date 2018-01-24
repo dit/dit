@@ -16,6 +16,7 @@ from dit.utils import flatten
 d1 = Distribution(['000', '001', '110', '111'], [1/4]*4)
 d2 = Distribution(['000', '011', '101', '110'], [1/4]*4)
 
+
 def test_disequilibrium1():
     """
     Test that two known distributions have the same disequilibrium.
@@ -26,6 +27,7 @@ def test_disequilibrium1():
     assert dis2 == pytest.approx(0.43418979240387018)
     assert dis1 == pytest.approx(dis2)
 
+
 def test_disequilibrium2():
     """
     Test that while the XOR distribution has non-zero disequilibrium, all its
@@ -35,6 +37,7 @@ def test_disequilibrium2():
     for rvs in combinations(flatten(d2.rvs), 2):
         assert disequilibrium(d2, rvs) == pytest.approx(0)
 
+
 @pytest.mark.parametrize('n', range(2, 11))
 def test_disequilibrium3(n):
     """
@@ -42,6 +45,7 @@ def test_disequilibrium3(n):
     """
     d = uniform(n)
     assert disequilibrium(d) == pytest.approx(0)
+
 
 @pytest.mark.parametrize('n', range(2, 11))
 def test_disequilibrium4(n):
@@ -51,6 +55,7 @@ def test_disequilibrium4(n):
     d = Distribution.from_distribution(uniform(n))
     assert disequilibrium(d) == pytest.approx(0)
 
+
 @pytest.mark.parametrize('n', range(2, 11))
 def test_disequilibrium5(n):
     """
@@ -58,6 +63,7 @@ def test_disequilibrium5(n):
     """
     d = ScalarDistribution([1] + [0]*(n-1))
     assert disequilibrium(d) >= 0
+
 
 @pytest.mark.parametrize('n', range(2, 11))
 def test_disequilibrium6(n):
@@ -69,6 +75,7 @@ def test_disequilibrium6(n):
     d = Distribution.from_distribution(d)
     assert disequilibrium(d) >= 0
 
+
 def test_LMPR_complexity1():
     """
     Test LMPR complexity of known examples.
@@ -79,6 +86,7 @@ def test_LMPR_complexity1():
     assert c2 == pytest.approx(0.28945986160258008)
     assert c1 == pytest.approx(c2)
 
+
 @pytest.mark.parametrize('n', range(2, 11))
 def test_LMPR_complexity2(n):
     """
@@ -86,6 +94,7 @@ def test_LMPR_complexity2(n):
     """
     d = uniform(n)
     assert LMPR_complexity(d) == pytest.approx(0)
+
 
 @pytest.mark.parametrize('n', range(2, 11))
 def test_LMPR_complexity3(n):
@@ -95,6 +104,7 @@ def test_LMPR_complexity3(n):
     d = Distribution.from_distribution(uniform(n))
     assert LMPR_complexity(d) == pytest.approx(0)
 
+
 @pytest.mark.parametrize('n', range(2, 11))
 def test_LMPR_complexity4(n):
     """
@@ -102,6 +112,7 @@ def test_LMPR_complexity4(n):
     """
     d = ScalarDistribution([1] + [0]*(n-1))
     assert LMPR_complexity(d) == pytest.approx(0)
+
 
 @pytest.mark.parametrize('n', range(2, 11))
 def test_LMPR_complexity4(n):

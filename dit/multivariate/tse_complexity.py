@@ -9,6 +9,7 @@ from ..shannon import conditional_entropy as H
 from ..helpers import normalize_rvs
 from ..math.misc import combinations as nCk
 
+
 def tse_complexity(dist, rvs=None, crvs=None, rv_mode=None):
     """
     Calculates the TSE complexity.

@@ -24,6 +24,7 @@ __all__ = [
     'intrinsic_caekl_mutual_information',
 ]
 
+
 class BaseIntrinsicMutualInformation(with_metaclass(ABCMeta, object)):
     """
     Compute a generalized intrinsic mutual information:
@@ -143,7 +144,7 @@ class BaseIntrinsicMutualInformation(with_metaclass(ABCMeta, object)):
         return cc
 
     @abstractmethod
-    def objective(self, x): # pragma: no cover
+    def objective(self, x):
         """
         The multivariate mutual information to minimize.
 

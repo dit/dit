@@ -8,6 +8,7 @@ from dit.pid.ibroja import PID_BROJA
 from dit.pid.idep import i_dep, PID_dep
 from dit.pid.distributions import bivariates, trivariates
 
+
 def test_idep1():
     """
     Test idep on redundant distribution.
@@ -16,6 +17,7 @@ def test_idep1():
     uniques = i_dep(d, ((0,), (1,)), (2,))
     assert uniques[(0,)] == pytest.approx(0)
     assert uniques[(1,)] == pytest.approx(0)
+
 
 def test_idep2():
     """
@@ -26,6 +28,7 @@ def test_idep2():
     assert uniques[(0,)] == pytest.approx(0)
     assert uniques[(1,)] == pytest.approx(0)
 
+
 def test_idep3():
     """
     Test idep on unique distribution.
@@ -34,6 +37,7 @@ def test_idep3():
     uniques = i_dep(d, ((0,), (1,)), (2,))
     assert uniques[(0,)] == pytest.approx(1)
     assert uniques[(1,)] == pytest.approx(1)
+
 
 def test_pid_dep1():
     """
@@ -45,6 +49,7 @@ def test_pid_dep1():
     assert pid[((0,),)] == pytest.approx(0.23751682301871169)
     assert pid[((1,),)] == pytest.approx(0.23751682301871169)
     assert pid[((0, 1),)] == pytest.approx(0.45120505252215537)
+
 
 def test_pid_dep2():
     """
@@ -62,6 +67,7 @@ def test_pid_dep2():
         else:
             assert pid[atom] == pytest.approx(0.0, abs=1e-6)
 
+
 def test_pid_dep3():
     """
     Test that idep and ibroja differ on reduced or.
@@ -70,6 +76,7 @@ def test_pid_dep3():
     pid1 = PID_BROJA(d)
     pid2 = PID_dep(d)
     assert pid1 != pid2
+
 
 def test_pid_dep4():
     """

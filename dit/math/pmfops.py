@@ -21,6 +21,7 @@ __all__ = [
     'replace_zeros',
 ]
 
+
 def perturb_support(pmf, eps=.1, shape='ball', prng=None):
     """
     Returns a new distribution with all nonzero probabilities perturbed.
@@ -94,6 +95,7 @@ def perturb_support(pmf, eps=.1, shape='ball', prng=None):
         out = out[0]
 
     return out
+
 
 def replace_zeros(pmf, delta, rand=True, prng=None):
     """
@@ -175,6 +177,7 @@ def replace_zeros(pmf, delta, rand=True, prng=None):
 
     return d
 
+
 def jittered(pmf, jitter=1e-5, zeros=True, prng=None):
     """
     Jitters the elements of `pmf`.
@@ -222,6 +225,7 @@ def jittered(pmf, jitter=1e-5, zeros=True, prng=None):
 
     return d
 
+
 def convex_combination(pmfs, weights=None):
     """
     Forms the convex combination of the pmfs.
@@ -246,6 +250,7 @@ def convex_combination(pmfs, weights=None):
         weights /= weights.sum()
     mixture = (pmfs * weights[:, np.newaxis]).sum(axis=0)
     return mixture
+
 
 def downsample(pmf, subdivisions, method='componentL1'):
     """
@@ -284,6 +289,7 @@ def downsample(pmf, subdivisions, method='componentL1'):
         return _methods[method](pmf, subdivisions)
     else:
         raise NotImplementedError('Unknown method.')
+
 
 def _downsample_componentL1(pmf, i, op, locs):
     """
@@ -332,6 +338,7 @@ def _downsample_componentL1(pmf, i, op, locs):
     temp[zeros, i+1:] = 0
     return locations
 
+
 def downsample_componentL1(pmf, subdivisions):
     """
     Clamps each component, one-by-one.
@@ -351,6 +358,7 @@ def downsample_componentL1(pmf, subdivisions):
     if len(pmf.shape) == 1:
         out = out[0]
     return out
+
 
 def clamped_indexes(pmf, locs):
     """
@@ -390,6 +398,7 @@ def clamped_indexes(pmf, locs):
     lower[mask] = upper[mask]
     clamps = np.array([lower, upper])
     return clamps
+
 
 def projections(pmf, subdivisions, ops=None):
     """

@@ -15,6 +15,7 @@ __all__ = ['disequilibrium',
            'LMPR_complexity',
           ]
 
+
 def disequilibrium(dist, rvs=None, rv_mode=None):
     """
     Compute the (normalized) disequilibrium as measured the Jensen-Shannon
@@ -62,6 +63,7 @@ def disequilibrium(dist, rvs=None, rv_mode=None):
     D = J/Q
 
     return D
+
 
 def LMPR_complexity(dist, rvs=None, rv_mode=None):
     """

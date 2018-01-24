@@ -49,6 +49,7 @@ from .params import ditParams
 
 from six.moves import map, zip # pylint: disable=redefined-builtin
 
+
 def prepare_string(dist, digits=None, exact=False, tol=1e-9,
                    show_mask=False, str_outcomes=False):
     """

@@ -13,6 +13,7 @@ from ..multivariate import entropy
 __all__ = ('tsallis_entropy',
           )
 
+
 def tsallis_entropy(dist, order, rvs=None, rv_mode=None):
     """
     Compute the Tsallis entropy of order `order`.

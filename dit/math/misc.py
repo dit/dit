@@ -16,6 +16,7 @@ __all__ = ['is_number',
            'prod',
            ]
 
+
 def is_number(x):
     """
     Tests if `x` is a number.
@@ -32,6 +33,7 @@ def is_number(x):
     """
     return isinstance(x, Number)
 
+
 def is_integer(x):
     """
     Tests if `x` is a integer.
@@ -47,6 +49,7 @@ def is_integer(x):
         True if `x` is an integer, False otherwise.
     """
     return isinstance(x, Integral)
+
 
 def factorial(n):
     """
@@ -78,6 +81,7 @@ def factorial(n):
     else:
         return n * factorial(n-1)
 
+
 def combinations(n, k):
     """
     Returns the binomial coefficient of `n` choose `k`.
@@ -107,6 +111,7 @@ def combinations(n, k):
         raise ValueError("{0} is larger than {1}.".format(k, n))
     nmkf = factorial(n-k)
     return nf/(kf*nmkf)
+
 
 def prod(vals, start=1):
     """

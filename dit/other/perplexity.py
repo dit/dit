@@ -6,6 +6,7 @@ from ..helpers import RV_MODES
 from ..shannon import conditional_entropy, entropy
 from ..utils.misc import flatten
 
+
 def perplexity(dist, rvs=None, crvs=None, rv_mode=None):
     """
     Parameters

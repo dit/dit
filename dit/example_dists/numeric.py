@@ -7,6 +7,7 @@ from __future__ import division
 from .. import ScalarDistribution
 from ..math.misc import combinations as C, is_integer, is_number
 
+
 def bernoulli(p):
     """
     The Bernoulli distribution:
@@ -31,6 +32,7 @@ def bernoulli(p):
         Raised if not 0 <= `p` <= 1.
     """
     return binomial(1, p)
+
 
 def binomial(n, p):
     """
@@ -70,6 +72,7 @@ def binomial(n, p):
     pmf = [pp(n, k) for k in outcomes]
     return ScalarDistribution(outcomes, pmf)
 
+
 def hypergeometric(N, K, n):
     """
     The hypergeometric distribution:
@@ -107,6 +110,7 @@ def hypergeometric(N, K, n):
     outcomes = list(range(max(0, n+K-N), min(K, n)+1))
     pmf = [C(K, k)*C(N-K, n-k)/C(N, n) for k in outcomes]
     return ScalarDistribution(outcomes, pmf)
+
 
 def uniform(a, b=None):
     """

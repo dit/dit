@@ -13,6 +13,7 @@ from ..multivariate import entropy
 __all__ = ('renyi_entropy',
           )
 
+
 def renyi_entropy(dist, order, rvs=None, rv_mode=None):
     """
     Compute the Renyi entropy of order `order`.

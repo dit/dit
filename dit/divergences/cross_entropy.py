@@ -11,6 +11,7 @@ from ..utils import flatten
 __all__ = ('cross_entropy',
           )
 
+
 def get_prob(d, o):
     """
     Get the probability of `o`, if it's not in the sample space return 0.
@@ -32,6 +33,7 @@ def get_prob(d, o):
     except InvalidOutcome:
         p = 0
     return p
+
 
 def get_pmfs_like(d1, d2, rvs, rv_mode=None):
     """
@@ -66,6 +68,7 @@ def get_pmfs_like(d1, d2, rvs, rv_mode=None):
     ps = dp.pmf
     qs = np.asarray([get_prob(dq, o) for o in dp.outcomes])
     return ps, qs
+
 
 def cross_entropy(dist1, dist2, rvs=None, crvs=None, rv_mode=None):
     """

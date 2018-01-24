@@ -10,6 +10,7 @@ import dit.math.sampling as module
 import dit.example_dists
 from dit.exceptions import ditException
 
+
 #sample(dist, size=None, rand=None, prng=None):
 def test_sample1():
     # Basic sample
@@ -24,6 +25,7 @@ def test_sample1():
     x = module.sample(d)
     assert x == '101'
 
+
 def test_sample2():
     # Specified prng
     d = dit.example_dists.Xor()
@@ -31,11 +33,13 @@ def test_sample2():
     x = module.sample(d, prng=dit.math.prng)
     assert x == '101'
 
+
 def test_sample3():
     # Specified rand number
     d = dit.example_dists.Xor()
     x = module.sample(d, rand=.3)
     assert x == '011'
+
 
 def test_sample4():
     # More than one random number
@@ -44,11 +48,13 @@ def test_sample4():
     x = module.sample(d, 6)
     assert x == ['101', '101', '101', '101', '011', '101']
 
+
 def test_sample5():
     # Bad prng
     d = dit.example_dists.Xor()
     with pytest.raises(ditException):
         module.sample(d, prng=3)
+
 
 def test_sample6():
     # Not enough rands
@@ -56,17 +62,20 @@ def test_sample6():
     with pytest.raises(ditException):
         module.sample(d, 5, rand=[.1]*3)
 
+
 def test_sample_discrete_python1():
     # Specified rand number
     d = dit.example_dists.Xor()
     x = module._sample_discrete__python(d.pmf, .5)
     assert x == 2
 
+
 def test_sample_discrete_python2():
     # Specified rand number
     d = dit.example_dists.Xor()
     x = module._samples_discrete__python(d.pmf, np.array([.5, .3, .2]))
     assert np.allclose(x, np.array([2, 1, 0]))
+
 
 def test_ball_smoke():
     dit.math.prng.seed(0)
@@ -77,6 +86,7 @@ def test_ball_smoke():
     dit.math.prng.seed(0)
     x = module.ball(3, prng=dit.math.prng)
     assert np.allclose(x, x_)
+
 
 def test_base_with_size():
     # size 3, 1
@@ -96,6 +106,7 @@ def test_base_with_size():
     ])
     assert np.allclose(x, x_)
 
+
 def test_2ball():
     dit.math.prng.seed(0)
     x = module._2ball(3, dit.math.prng)
@@ -107,6 +118,7 @@ def test_2ball():
     assert x.shape == (3, 2)
     assert np.allclose(x, x_)
 
+
 def test_3ball_cylinder():
     dit.math.prng.seed(0)
     x = module._3ball_cylinder(3, dit.math.prng)
@@ -117,6 +129,7 @@ def test_3ball_cylinder():
     ])
     assert x.shape == (3, 3)
     assert np.allclose(x, x_)
+
 
 def test_norm_smoketest():
     d = np.array([.2, .3, .5])
@@ -137,6 +150,7 @@ def test_norm_smoketest():
     x = module.norm(d, size=1)
     assert np.allclose(x, np.asarray([x_]))
 
+
 def test_norm_spherical_cov():
     d = np.array([.2, .3, .5])
     dit.math.prng.seed(0)
@@ -144,12 +158,14 @@ def test_norm_spherical_cov():
     x_ = np.array([ 0.34790127,  0.20240029,  0.44969844])
     assert np.allclose(x, x_)
 
+
 def test_norm_diagonal_cov():
     d = np.array([.2, .3, .5])
     dit.math.prng.seed(0)
     x = dit.math.norm(d, np.array([.3, .5]))
     x_ = np.array([ 0.33458841,  0.40485058,  0.26056101])
     assert np.allclose(x, x_)
+
 
 def test_norm_cov():
     d = np.array([.2, .3, .5])
@@ -162,6 +178,7 @@ def test_norm_cov():
         [ 0.07260608,  0.18948779,  0.73790613]
     ])
     assert np.allclose(x, x_)
+
 
 def test_norm_badshape_cov():
     d = np.array([.2, .3, .5])
@@ -178,16 +195,19 @@ def test_norm_badshape_cov():
     with pytest.raises(ditException):
         dit.math.norm(d, ilrcov)
 
+
 def test_norm_toomany():
     d = np.array([[.2, .3, .5], [.5, .2, .3]])
     with pytest.raises(ditException):
         dit.math.norm(d)
+
 
 def test__annulus2_nosize():
     # When size is None, it should just return the sample.
     prng = np.random.RandomState()
     samples = dit.math.sampling._annulus2(0, 1, size=None, prng=prng)
     assert samples.shape == (2,)
+
 
 def test__annulus2_size():
     # When size is not None, it should return an array of the samples.

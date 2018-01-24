@@ -20,6 +20,7 @@ __all__ = ['distributions',
            'markov_chains',
           ]
 
+
 @composite
 def distributions(draw, alphabets=(2, 2, 2), nondegenerate=False):
     """
@@ -117,6 +118,7 @@ def distribution_structures(draw, size=(2, 4), alphabet=(2, 4), uniform=False, m
     dist =  Distribution(events, probs)
     dist.normalize()
     return dist
+
 
 @composite
 def markov_chains(draw, alphabets=((2, 4), (2, 4), (2, 4))):

@@ -32,6 +32,7 @@ import inspect
 
 from inspect import getcallargs
 
+
 try:
     from inspect import getfullargspec
 except ImportError:
@@ -49,6 +50,7 @@ except ImportError:
         annotations = getattr(f, '__annotations__', {})
         return FullArgSpec(args, varargs, varkw, defaults,
                            kwonlyargs, kwonlydefaults, annotations)
+
 
 def bindcallargs_leq32(_fUnCtIoN_, *args, **kwargs):
     """Binds arguments and keyword arguments to a function or method.
@@ -102,6 +104,7 @@ def bindcallargs_leq32(_fUnCtIoN_, *args, **kwargs):
         bkwargs.update(callargs[spec.varkw])
 
     return bargs, bkwargs
+
 
 def bindcallargs_geq33(_fUnCtIoN_, *args, **kwargs):
     # Should match functionality of bindcallargs_32 for Python > 3.3.

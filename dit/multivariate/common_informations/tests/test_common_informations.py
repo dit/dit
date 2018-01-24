@@ -19,6 +19,7 @@ from dit.utils.testing import distributions
 
 epsilon = 1e-4
 
+
 @pytest.mark.slow
 @pytest.mark.flaky(reruns=5)
 @settings(deadline=None,
@@ -44,6 +45,7 @@ def test_cis1(dist):
     assert c <= g + epsilon
     assert g <= f + epsilon
     assert f <= m + epsilon
+
 
 @pytest.mark.slow
 @pytest.mark.flaky(reruns=5)

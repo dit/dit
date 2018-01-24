@@ -9,6 +9,7 @@ import numpy as np
 from ..math.misc import is_number
 from ..utils import flatten
 
+
 def _numerical_test(dist):
     """
     Verifies that all outcomes are numbers.
@@ -30,6 +31,7 @@ def _numerical_test(dist):
     if not all(is_number(o) for o in flatten(dist.outcomes)):
         msg = "The outcomes of this distribution are not numerical"
         raise TypeError(msg)
+
 
 def mean(dist):
     """
@@ -56,6 +58,7 @@ def mean(dist):
     outcomes = np.asarray(outcomes)
     pmf = np.asarray(pmf)
     return np.average(outcomes, axis=0, weights=pmf)
+
 
 def central_moment(dist, n):
     """
@@ -86,6 +89,7 @@ def central_moment(dist, n):
     terms[np.isnan(terms)] = 0
     return np.average(terms, axis=0, weights=pmf)
 
+
 def standard_moment(dist, n):
     """
     Computes the nth standard moment of a distribution.
@@ -109,6 +113,7 @@ def standard_moment(dist, n):
     """
     return central_moment(dist, n)/standard_deviation(dist)**n
 
+
 def standard_deviation(dist):
     """
     Compute the standard deviation of a distribution.
@@ -129,6 +134,7 @@ def standard_deviation(dist):
         If the outcomes of the `dist` are not numerical.
     """
     return np.sqrt(central_moment(dist, 2))
+
 
 def median(dist):
     """
@@ -154,6 +160,7 @@ def median(dist):
     g = np.asarray(dist.outcomes[(dist.pmf.cumsum() > 0.5).argmax()])
     ge = np.asarray(dist.outcomes[(dist.pmf.cumsum() >= 0.5).argmax()])
     return (g+ge)/2
+
 
 def mode(dist):
     """

@@ -39,6 +39,7 @@ def test_closure():
     assert x.shape == cl_x.shape
     assert np.allclose(cl_x, y)
 
+
 def test_closure_invariance():
     x = np.array([1, 2, 3, 4]) / 10
     y = x*2
@@ -51,6 +52,7 @@ def test_closure_invariance():
     assert np.allclose(ycl, zcl)
     assert np.allclose(zcl, xcl)
 
+
 def test_closure_unnormalizable():
     """
     Test an unnormalizable vector.
@@ -59,6 +61,7 @@ def test_closure_unnormalizable():
     x = np.zeros(3)
     with pytest.raises(ditException):
         closure(x)
+
 
 def test_perturbation():
     # 1D
@@ -84,6 +87,7 @@ def test_perturbation():
     pxy = perturbation(x, y)
     assert x.shape == pxy.shape
     assert np.allclose(pxy_, pxy)
+
 
 def test_power():
     # 1D
@@ -115,6 +119,7 @@ def test_power():
     px = power(x, y)
     assert px_.shape == px.shape
     assert np.allclose(px_, px)
+
 
 def test_inner():
     # 1D
@@ -164,6 +169,7 @@ def test_inner():
     xy2d_ = np.array([xy_])
     assert np.allclose(xy2d_, xy2d)
 
+
 def test_clr():
     x = np.array([1/3.0, 2/3.0])
     y = np.array([1/4.0, 3/4.0])
@@ -184,6 +190,7 @@ def test_clr():
     assert xy_clr.shape == xy_clr_.shape
     assert np.allclose(xy_clr, xy_clr_)
 
+
 def test_alr():
     x = np.array([1/3.0, 2/3.0])
     y = np.array([1/4.0, 3/4.0])
@@ -203,6 +210,7 @@ def test_alr():
     xy_alr_ = np.array([x_alr, y_alr])
     assert xy_alr.shape == xy_alr_.shape
     assert np.allclose(xy_alr, xy_alr_)
+
 
 def test_ilr():
     # 1D
@@ -240,12 +248,14 @@ def test_ilr():
     for i, j in zip(ilrxy.ravel(), ilrxy_.ravel()):
         assert i == pytest.approx(j)
 
+
 def test_equiv_inner1():
     x = np.array([1, 2, 3, 4])
     y = np.array([3, 5, 1, 1])
     aitchison_inner = inner(x, y)
     euclidean_inner = np.inner(ilr(x), ilr(y))
     assert aitchison_inner == pytest.approx(euclidean_inner)
+
 
 def test_equiv_inner2():
     x = np.array([1, 2, 3, 4])
@@ -260,11 +270,13 @@ def test_equiv_inner2():
     z2 = 1/D * np.dot(np.dot(clrx, M), clry[:, np.newaxis])
     assert z1 == pytest.approx(z2[0])
 
+
 def test_equiv_norm():
     x = np.array([1, 2, 3, 4])
     aitchison_norm = norm(x)
     euclidean_norm = np.linalg.norm(ilr(x))
     assert aitchison_norm == pytest.approx(euclidean_norm)
+
 
 def test_equiv_dist():
     x = np.array([1, 2, 3, 4])
@@ -272,6 +284,7 @@ def test_equiv_dist():
     aitchison_dist = dist(x, y)
     euclidean_dist = np.linalg.norm(ilr(x)-ilr(y))
     assert aitchison_dist == pytest.approx(euclidean_dist)
+
 
 def test_clr_prop():
     x1 = np.array([1, 2, 3, 4])
@@ -282,6 +295,7 @@ def test_clr_prop():
     z2 = a1 * clr(x1) + a2 * clr(x2)
 
     assert np.allclose(z1, z2)
+
 
 def test_basis():
     b = np.array([[1/1.,   -1,    0,    0,  0],
@@ -294,6 +308,7 @@ def test_basis():
     assert b.shape == b_.shape
     assert np.allclose(b, b_)
 
+
 def test_basis2():
     # test orthonormality in Aitchison inner product
     b = basis(4)
@@ -303,6 +318,7 @@ def test_basis2():
         for j in range(i+1, len(b)):
             ij = inner(b[i], b[j])
             assert ij == pytest.approx(0.0)
+
 
 def test_clr_inv():
     x = np.array([1, 2, 3, 4]) / 10
@@ -317,6 +333,7 @@ def test_clr_inv():
     assert x.shape == y.shape
     assert np.allclose(x, y)
 
+
 def test_alr_inv():
     x = np.array([1, 2, 3, 4]) / 10
     x_alr = alr(x)
@@ -329,6 +346,7 @@ def test_alr_inv():
     y = alr_inv(x_alr)
     assert x.shape == y.shape
     assert np.allclose(x, y)
+
 
 def test_ilr_inv():
     x = np.array([1, 2, 3, 4]) / 10
@@ -343,6 +361,7 @@ def test_ilr_inv():
     assert x.shape == y.shape
     assert np.allclose(x, y)
 
+
 def test_subcomposition():
     """
     Grab a test_subcomposition.
@@ -351,6 +370,7 @@ def test_subcomposition():
     x = np.array([1, 2, 3, 4]) / 10
     y = np.array([1, 2, 3]) / 6
     assert np.allclose(subcomposition(x, [0, 1, 2]), y)
+
 
 def test_gm():
     """
@@ -361,6 +381,7 @@ def test_gm():
     gm = _gm(x)
     loggm = _log2_gm(x)
     assert np.allclose(np.log2(gm), loggm)
+
 
 def test_ilr_inv_underflow():
     """

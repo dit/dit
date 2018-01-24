@@ -14,6 +14,7 @@ __all__ = [
     'joint_from_factors',
 ]
 
+
 def cdist_array(cdists, base='linear', mode='asis'):
     """
     Returns a 2D array for P(Y|X). Rows are X, columns are Y.
@@ -21,6 +22,7 @@ def cdist_array(cdists, base='linear', mode='asis'):
     """
     dists = [copypmf(d, base=base, mode=mode) for d in cdists]
     return np.vstack(dists)
+
 
 def mask_is_complementary(mask1, mask2):
     """
@@ -30,6 +32,7 @@ def mask_is_complementary(mask1, mask2):
     mask1_comp = tuple(not b for b in mask1)
     return mask1_comp == mask2
 
+
 def outcome_iter(outcome_X, outcome_Y, mask_Y):
     it_X = iter(outcome_X)
     it_Y = iter(outcome_Y)
@@ -38,6 +41,7 @@ def outcome_iter(outcome_X, outcome_Y, mask_Y):
             yield next(it_X)
         else:
             yield next(it_Y)
+
 
 def joint_from_factors(mdist, cdists, strict=True):
     """

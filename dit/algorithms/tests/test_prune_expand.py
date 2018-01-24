@@ -6,6 +6,7 @@ import numpy as np
 
 import dit
 
+
 def test_pruned_samplespace_scalar():
     """Prune a sample space from a ScalarDistribution."""
     pmf = [1/2, 0, 1/2]
@@ -15,6 +16,7 @@ def test_pruned_samplespace_scalar():
     ss2 = list(d2.sample_space())
     assert ss2 == ss2_
     assert np.allclose(d2.pmf, [1/2, 1/2])
+
 
 def test_pruned_samplespace():
     """Prune a sample space from a Distribution."""
@@ -26,6 +28,7 @@ def test_pruned_samplespace():
     ss2 = list(d2.sample_space())
     assert ss2 == ss2_
     assert np.allclose(d2.pmf, [1/2, 1/2])
+
 
 def test_pruned_samplespace2():
     """Prune a sample space while specifying a desired sample space."""
@@ -40,6 +43,7 @@ def test_pruned_samplespace2():
     assert ss2 == ss2_
     assert np.allclose(d2.pmf, [1/2, 0, 1/2])
 
+
 def test_expanded_samplespace():
     """Expand a sample space from a Distribution."""
     outcomes = ['01', '10']
@@ -49,6 +53,7 @@ def test_expanded_samplespace():
     d2 = dit.algorithms.expanded_samplespace(d)
     ss = ['00', '01', '10', '11']
     assert list(d2.sample_space()) == ss
+
 
 def test_expanded_samplespace2():
     """Expand a sample space from a ScalarDistribution."""
@@ -60,6 +65,7 @@ def test_expanded_samplespace2():
     d2 = dit.algorithms.expanded_samplespace(d, ss2)
     assert list(d2.sample_space()) == ss2
 
+
 def test_expanded_samplespace3():
     """Expand a sample space without unioning the alphabets."""
     outcomes = ['01a', '10a']
@@ -68,6 +74,7 @@ def test_expanded_samplespace3():
     d2 = dit.algorithms.expanded_samplespace(d, union=False)
     ss_ = ['00a', '01a', '10a', '11a']
     assert list(d2.sample_space()) == ss_
+
 
 def test_expanded_samplespace_bad():
     """Expand a sample space with wrong number of alphabets."""
@@ -79,6 +86,7 @@ def test_expanded_samplespace_bad():
     # This fails because we need to specify two alphabets, not one.
     with pytest.raises(Exception):
         dit.algorithms.expanded_samplespace(d, alphabets)
+
 
 def test_expanded_samplespace_bad2():
     """Expand a sample space with wrong number of alphabets."""

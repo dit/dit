@@ -59,6 +59,7 @@ from ..helpers import parse_rvs, RV_MODES
 from ..math import sigma_algebra, atom_set
 from ..utils import quasilexico_key
 
+
 def sigma_algebra_sort(sigalg):
     """
     Put the sigma algebra in quasi-lexicographical order.
@@ -66,6 +67,7 @@ def sigma_algebra_sort(sigalg):
     sigalg = [tuple(sorted(cet)) for cet in sigalg]
     sigalg.sort(key=quasilexico_key)
     return sigalg
+
 
 def induced_sigalg(dist, rvs, rv_mode=None):
     """
@@ -119,6 +121,7 @@ def induced_sigalg(dist, rvs, rv_mode=None):
     F = sigma_algebra(atoms)
     return F
 
+
 def join_sigalg(dist, rvs, rv_mode=None):
     """
     Returns the sigma-algebra of the join of random variables defined by `rvs`.
@@ -159,6 +162,7 @@ def join_sigalg(dist, rvs, rv_mode=None):
     union_sa = frozenset().union(*sigalgs)
     jsa = sigma_algebra(union_sa)
     return jsa
+
 
 def meet_sigalg(dist, rvs, rv_mode=None):
     """
@@ -201,6 +205,7 @@ def meet_sigalg(dist, rvs, rv_mode=None):
     msa = first_sa.intersection(*sigalgs[1:])
     return msa
 
+
 def dist_from_induced_sigalg(dist, sigalg, int_outcomes=True):
     """
     Returns the distribution associated with an induced sigma algebra.
@@ -241,6 +246,7 @@ def dist_from_induced_sigalg(dist, sigalg, int_outcomes=True):
     d = ScalarDistribution(outcomes, pmf, base=dist.get_base())
     return d
 
+
 def join(dist, rvs, rv_mode=None, int_outcomes=True):
     """
     Returns the distribution of the join of random variables defined by `rvs`.
@@ -274,6 +280,7 @@ def join(dist, rvs, rv_mode=None, int_outcomes=True):
     d = dist_from_induced_sigalg(dist, join_sa, int_outcomes)
     return d
 
+
 def meet(dist, rvs, rv_mode=None, int_outcomes=True):
     """
     Returns the distribution of the meet of random variables defined by `rvs`.
@@ -306,6 +313,7 @@ def meet(dist, rvs, rv_mode=None, int_outcomes=True):
     meet_sa = meet_sigalg(dist, rvs, rv_mode)
     d = dist_from_induced_sigalg(dist, meet_sa, int_outcomes)
     return d
+
 
 def insert_rv(dist, idx, sigalg):
     """
@@ -371,6 +379,7 @@ def insert_rv(dist, idx, sigalg):
     d = dit.modify_outcomes(dist, new_outcome_ctor)
     return d
 
+
 def insert_join(dist, idx, rvs, rv_mode=None):
     """
     Returns a new distribution with the join inserted at index `idx`.
@@ -406,6 +415,7 @@ def insert_join(dist, idx, rvs, rv_mode=None):
     jsa = join_sigalg(dist, rvs, rv_mode)
     d = insert_rv(dist, idx, jsa)
     return d
+
 
 def insert_meet(dist, idx, rvs, rv_mode=None):
     """

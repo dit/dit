@@ -14,12 +14,14 @@ from dit import ditParams
 
 __all__ = ['close', 'allclose']
 
+
 def close__cython(x, y, rtol=None, atol=None): # pylint: disable=missing-docstring
     if rtol is None:
         rtol = ditParams['rtol']
     if atol is None:
         atol = ditParams['atol']
     return close_(x, y, rtol, atol)
+
 
 def close__python(x, y, rtol=None, atol=None): # pylint: disable=missing-docstring
     if rtol is None:
@@ -62,12 +64,14 @@ cython_doc = "\nNote: This version is cythonified.\n"
 close__python.__doc__ = close_docstring
 close__cython.__doc__ = close_docstring + cython_doc
 
+
 # Load the cython function if possible
 try: # pragma: no cover
     from ._close import close as close_
     close = close__cython
 except ImportError: # pragma: no cover
     close = close__python
+
 
 def allclose(x, y, rtol=None, atol=None):
     """Returns True if all components of x and y are close.

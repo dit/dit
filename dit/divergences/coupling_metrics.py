@@ -16,6 +16,7 @@ __all__ = [
     'coupling_metric',
 ]
 
+
 def residual_entropy(dist, rvs=None, crvs=None, p=1.0, rv_mode=None):
     """
     Compute the residual entropy.

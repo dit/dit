@@ -9,6 +9,7 @@ import pytest
 from dit import Distribution
 from dit.multivariate import gk_common_information as K
 
+
 def test_K1():
     """ Test K for dependent events """
     outcomes = ['00', '11']
@@ -18,6 +19,7 @@ def test_K1():
     assert K(d, [[0], [1]]) == pytest.approx(1.0)
     d.set_rv_names("XY")
     assert K(d, [['X'], ['Y']]) == pytest.approx(1.0)
+
 
 def test_K2():
     """ Test conditional K for dependent events """
@@ -30,6 +32,7 @@ def test_K2():
     assert K(d, [['X'], ['Y']], ['X']) == pytest.approx(0.0)
     assert K(d, [['X'], ['Y']], ['Y']) == pytest.approx(0.0)
 
+
 def test_K3():
     """ Test K for mixed events """
     outcomes = ['00', '01', '11']
@@ -40,6 +43,7 @@ def test_K3():
     d.set_rv_names("XY")
     assert K(d, [['X'], ['Y']]) == pytest.approx(0.0)
 
+
 def test_K4():
     """ Test K in a canonical example """
     outcomes = ['00', '01', '10', '11', '22', '33']
@@ -49,6 +53,7 @@ def test_K4():
     assert K(d, [[0], [1]]) == pytest.approx(1.5)
     d.set_rv_names("XY")
     assert K(d, [['X'], ['Y']]) == pytest.approx(1.5)
+
 
 def test_K5():
     """ Test K on subvariables and conditionals """

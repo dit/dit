@@ -35,6 +35,7 @@ __all__ = [
     'pid_broja',
 ]
 
+
 def infer_free_values(A, b):
     """
     Infer the indices of fixed values in an optimization vector.
@@ -99,7 +100,6 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
                             },
                            ]
 
-
     def _expand(self, x):
         """
         Expand the `x` argument to the full pmf.
@@ -136,7 +136,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
         pmf = self._expand(x)
         return sum((np.dot(self._A, pmf) - self._b)**2)
 
-    @abstractmethod # pragma: no cover
+    @abstractmethod
     def objective(self, x):
         """
         The objective of optimization vector `x`.
@@ -297,7 +297,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
         if count < (res.x < cutoff).sum():
             self._polish(cutoff=cutoff)
 
-    @abstractmethod # pragma: no cover
+    @abstractmethod
     def _optimization_backend(self, x0, kwargs, nhops):
         """
         Abstract method for performing an optimization.
@@ -312,7 +312,6 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
             If applicable, the number of iterations to make.
         """
         pass
-
 
     def construct_dist(self, x=None, cutoff=1e-6, sparse=True):
         """
@@ -676,7 +675,7 @@ def marginal_maxent_dists(dist, k_max=None):
 
 PID = namedtuple('PID', ['R', 'U0', 'U1', 'S'])
 
-# pragma: no-cover
+
 @removals.remove(message="Please see dit.pid.PID_BROJA.", version='1.0.0.dev8')
 def pid_broja(dist, sources, target, rv_mode=None, return_opt=False, nhops=10):
     """

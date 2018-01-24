@@ -8,6 +8,7 @@ from ..helpers import normalize_rvs
 from ..utils import partitions
 from .entropy import entropy
 
+
 def caekl_mutual_information(dist, rvs=None, crvs=None, rv_mode=None):
     """
     Calculates the Chan-AlBashabsheh-Ebrahimi-Kaced-Liu mutual information.

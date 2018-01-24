@@ -4,6 +4,7 @@ Combinatorial functions.
 
 """
 
+
 def unitsum_tuples(n, k, mn, mx):
     """Generates unitsum k-tuples with elements from mn to mx.
 

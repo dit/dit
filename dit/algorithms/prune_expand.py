@@ -11,6 +11,7 @@ from six.moves import map # pylint: disable=redefined-builtin
 
 from dit.samplespace import ScalarSampleSpace, SampleSpace, CartesianProduct
 
+
 def pruned_samplespace(d, sample_space=None):
     """
     Returns a new distribution with pruned sample space.
@@ -51,6 +52,7 @@ def pruned_samplespace(d, sample_space=None):
     pd = d.__class__(outcomes, pmf,
                      sample_space=sample_space, base=d.get_base())
     return pd
+
 
 def expanded_samplespace(d, alphabets=None, union=True):
     """

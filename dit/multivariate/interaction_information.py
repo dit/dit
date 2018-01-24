@@ -7,6 +7,7 @@ from ..helpers import normalize_rvs
 from .coinformation import coinformation
 from ..math import close
 
+
 def interaction_information(dist, rvs=None, crvs=None, rv_mode=None):
     """
     Calculates the interaction information.
