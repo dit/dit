@@ -574,7 +574,7 @@ def digits(n, base, alphabet=None, pad=0, big_endian=True):
     return sequence
 
 
-@removals.remove(replacement="boltons.iterutils.pairwise",
+@removals.remove(message="Use boltons.iterutils.pairwise instead.",
                  version="1.0.1")
 def pairwise(iterable):
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
