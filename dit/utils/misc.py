@@ -20,7 +20,6 @@ from six.moves import range, zip # pylint: disable=redefined-builtin
 
 __all__ = (
     'Property',
-    'abstract_method',
     'default_opener',
     'flatten',
     'get_fobj',
