@@ -2,6 +2,8 @@
 Infer distributions from time series.
 """
 
+import numpy as np
+
 from .. import modify_outcomes
 from .counts import distribution_from_data
 
@@ -26,21 +28,17 @@ def dist_from_timeseries(observations, history_length=1, base='linear'):
         A distribution with the first half of the indices as the pasts
         of the various time series, and the second half their present values.
     """
-    try:
-        observations = list(map(tuple, observations.tolist()))
-    except AttributeError:
-        pass
+    observations = np.atleast_2d(observations)
 
-    try:
-        num_ts = len(observations[0])
-    except TypeError:
-        observations = [(_,) for _ in observations]
-        num_ts = 1
+    num_ts = len(observations[0])
 
     d = distribution_from_data(observations, L=history_length+1, base=base)
 
     def f(o):
-        pasts = tuple(tuple(_[i] for _ in o[:-1]) for i in range(num_ts))
+        if history_length > 0:
+            pasts = tuple(tuple(_[i] for _ in o[:-1]) for i in range(num_ts))
+        else:
+            pasts = tuple()
         presents = tuple(o[-1])
         return pasts + presents
 

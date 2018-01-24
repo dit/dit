@@ -73,6 +73,7 @@ except ImportError: # no cython
         Only the rows corresponding to observed histories are returned.
 
         """
+        data = list(map(tuple, data))
         counts = Counter(windowed_iter(data, hLength+fLength))
         cond_counts = defaultdict(lambda: defaultdict(int))
         for word, count in counts.items():

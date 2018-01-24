@@ -33,13 +33,17 @@ def binned(ts, bins=2, style='maxent'):
         Raised if `style` is not a recognized method.
     """
     if style == 'maxent':
-        return maxent_binning(ts, bins)
+        method = maxent_binning
     elif style == 'uniform':
-        return uniform_binning(ts, bins)
+        method = uniform_binning
     else: # pragma: no cover
         msg = "The style {} is not understood.".format(style)
         raise ValueError(msg)
 
+    ts = np.atleast_2d(ts)
+    ts = np.vstack([method(ts[:, col], bins) for col in range(ts.shape[1])]).T
+
+    return ts
 
 def uniform_binning(ts, bins):
     """
@@ -76,10 +80,17 @@ def maxent_binning(ts, bins):
     symb : ndarray
         The discretized time-series.
     """
-    symb = ts.copy()
-    percentiles = np.percentile(symb, [100*i/bins for i in range(bins+1)])
-    percentiles[-1] += 1e-12
+    symb = np.full_like(ts, np.nan)
+
+    percentiles = np.percentile(ts, [100*i/bins for i in range(bins+1)])
+
+    # Sometimes with large magnetude values things get weird. This helps:
+    percentiles[0] = -np.inf
+    percentiles[-1] = np.inf
+
     for i, (a, b) in enumerate(pairwise(percentiles)):
         symb[(a <= ts) & (ts < b)] = i
+
     symb = symb.astype(int)
+
     return symb
