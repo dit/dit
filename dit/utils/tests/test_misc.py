@@ -6,7 +6,7 @@ import pytest
 
 from dit.utils.misc import flatten, is_string_like, partitions, partitions2, \
                            ordered_partitions, require_keys, partition_set, \
-                           abstract_method, digits
+                           digits
 from six import u
 
 
