@@ -466,7 +466,13 @@ def distribution_from_data(d, L, trim=True, base=None):
         value of `dit.ditParams['base']` is used.
 
     """
-    from dit import ditParams, Distribution
+    from dit import ditParams, Distribution, modify_outcomes
+    from dit.exceptions import ditException
+
+    try:
+        d = list(map(tuple, d))
+    except TypeError:
+        pass
 
     if base is None:
         base = ditParams['base']
@@ -487,6 +493,12 @@ def distribution_from_data(d, L, trim=True, base=None):
 
     futures = list(product(alphabet, repeat=fLength))
     dist = Distribution(futures, pmf, trim=trim)
+
+    if L == 1:
+        try:
+            dist = modify_outcomes(dist, lambda o: o[0])
+        except ditException:
+            pass
 
     if base is not None:
         dist.set_base(base)

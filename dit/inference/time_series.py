@@ -29,6 +29,9 @@ def dist_from_timeseries(observations, history_length=1, base='linear'):
         of the various time series, and the second half their present values.
     """
     observations = np.atleast_2d(observations)
+    if observations.shape[0] == 1:
+        observations = observations.T
+    observations = list(map(tuple, observations))
 
     num_ts = len(observations[0])
 

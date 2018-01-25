@@ -40,8 +40,21 @@ def binned(ts, bins=2, style='maxent'):
         msg = "The style {} is not understood.".format(style)
         raise ValueError(msg)
 
+    try:
+        len(ts[0])
+        one_d = False
+    except:
+        one_d = True
+
     ts = np.atleast_2d(ts)
+
+    if one_d:
+        ts = ts.T
+
     ts = np.vstack([method(ts[:, col], bins) for col in range(ts.shape[1])]).T
+
+    if one_d:
+        ts = ts.flatten()
 
     return ts
 

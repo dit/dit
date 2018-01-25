@@ -1,7 +1,10 @@
+"""
+
+"""
 
 try: # cython
 
-    from . import counts_from_data, distribution_from_data
+    from .pycounts import counts_from_data, distribution_from_data
 
 except ImportError: # no cython
 
@@ -10,6 +13,9 @@ except ImportError: # no cython
     from itertools import product
 
     import numpy as np
+
+    from .. import modify_outcomes
+    from ..exceptions import ditException
 
 
     def counts_from_data(data, hLength, fLength, marginals=True, alphabet=None, standardize=True):
@@ -73,7 +79,10 @@ except ImportError: # no cython
         Only the rows corresponding to observed histories are returned.
 
         """
-        data = list(map(tuple, data))
+        try:
+            data = list(map(tuple, data))
+        except TypeError:
+            pass
         counts = Counter(windowed_iter(data, hLength+fLength))
         cond_counts = defaultdict(lambda: defaultdict(int))
         for word, count in counts.items():
@@ -122,6 +131,11 @@ except ImportError: # no cython
         """
         from dit import ditParams, Distribution
 
+        try:
+            d = list(map(tuple, d))
+        except TypeError:
+            pass
+
         if base is None:
             base = ditParams['base']
 
@@ -133,6 +147,12 @@ except ImportError: # no cython
         dist = Distribution(words, pmf, trim=trim)
 
         dist.set_base(base)
+
+        if L == 1:
+            try:
+                dist = modify_outcomes(dist, lambda o: o[0])
+            except ditException:
+                pass
 
         return dist
 
@@ -153,5 +173,6 @@ def get_counts(data, length):
     counts : np.array
         Array with the count values.
     """
-    counts = counts_from_data(data, length, 0)[2]
+    hists, _, counts, _ = counts_from_data(data, length, 0)
+    counts = counts[[len(h) == length for h in hists]]
     return counts
