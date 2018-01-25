@@ -29,7 +29,6 @@ def entropy_0(data, length=1):
     This returns the naive estimate of the entropy.
     """
     counts = get_counts(data, length)
-    print(counts)
     probs = counts/counts.sum()
     h0 = -np.nansum(probs * np.log2(probs))
     return h0

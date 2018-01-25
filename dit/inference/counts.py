@@ -174,5 +174,9 @@ def get_counts(data, length):
         Array with the count values.
     """
     hists, _, counts, _ = counts_from_data(data, length, 0)
-    counts = counts[[len(h) == length for h in hists]]
+    mask = np.array([len(h) == length for h in hists])
+    print(counts)
+    print(mask)
+    counts = counts[mask]
+    print(counts)
     return counts
