@@ -7,13 +7,22 @@ import numpy as np
 from dit.inference import binned
 
 
-def test_maxent_binning():
+def test_maxent_binning1():
     """
     Test maxent binning.
     """
     data = np.random.random(10)
     bd = binned(data)
     assert sum(bd == 0) == 5
+
+
+def test_maxent_binning2():
+    """
+    Test maxent binning.
+    """
+    data = np.random.random((10, 2))
+    bd = binned(data)
+    assert np.all(bd.sum(axis=0) == [5, 5])
 
 
 def test_uniform_binning():
