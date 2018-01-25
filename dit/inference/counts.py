@@ -1,6 +1,8 @@
 """
-
+Non-cython methods for getting counts and distributions from data.
 """
+
+import numpy as np
 
 try: # cython
 
@@ -11,8 +13,6 @@ except ImportError: # no cython
     from boltons.iterutils import windowed_iter
     from collections import Counter, defaultdict
     from itertools import product
-
-    import numpy as np
 
     from .. import modify_outcomes
     from ..exceptions import ditException
