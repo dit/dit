@@ -37,7 +37,7 @@ from .exceptions import (
     InvalidOutcome,
 )
 
-from .math import get_ops, LinearOperations, close
+from .math import get_ops, LinearOperations
 from .params import ditParams
 from .helpers import flatten, reorder
 from .samplespace import BaseSampleSpace, ScalarSampleSpace
@@ -1583,10 +1583,8 @@ class ScalarDistribution(BaseDistribution):
             The distribution to compare against.
         rtol : float
             The relative tolerance to use when comparing probabilities.
-            See :func:`dit.math.close` for more information.
         atol : float
             The absolute tolerance to use when comparing probabilities.
-            See :func:`dit.math.close` for more information.
 
         Notes
         -----
@@ -1605,7 +1603,7 @@ class ScalarDistribution(BaseDistribution):
         # others. No need to check the other way around since we will verify
         # that the sample spaces are equal.
         for outcome in self.outcomes:
-            if not close(self[outcome], other[outcome], rtol=rtol, atol=atol):
+            if not np.isclose(self[outcome], other[outcome], rtol=rtol, atol=atol):
                 return False
 
         # Outcome spaces must be equal.
@@ -1776,12 +1774,11 @@ class ScalarDistribution(BaseDistribution):
         L = len(self)
 
         if trim:
-            ### TODO: Use np.isclose() when it is available (NumPy 1.7)
             zero = self.ops.zero
             outcomes = []
             pmf = []
             for outcome, prob in self.zipped():
-                if not close(prob, zero):
+                if not np.isclose(prob, zero):
                     outcomes.append(outcome)
                     pmf.append(prob)
 

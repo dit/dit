@@ -10,7 +10,6 @@ from types import MethodType
 import numpy as np
 
 from ..exceptions import InvalidBase
-from .equal import close
 
 __all__ = [
     'get_ops',
@@ -83,7 +82,7 @@ def exp_func(b):
         exp = np.exp2
     elif b == 10:
         exp = lambda x: 10**x
-    elif b == 'e' or close(b, np.e):
+    elif b == 'e' or np.isclose(b, np.e):
         exp = np.exp
     else:
         if b <= 0 or b == 1:
@@ -151,7 +150,7 @@ def log_func(b):
         log = np.log2
     elif b == 10:
         log = np.log10
-    elif b == 'e' or close(b, np.e):
+    elif b == 'e' or np.isclose(b, np.e):
         log = np.log
     else:
         if b <= 0 or b == 1:
@@ -233,7 +232,7 @@ class Operations(object):
             The probability to be tested.
 
         """
-        return close(self.zero, p)
+        return np.isclose(self.zero, p)
 
     def is_null_exact(self, p):
         """
@@ -478,7 +477,7 @@ def set_add(ops):
     if base == 2:
         def add(self, x, y, func=np.logaddexp2):
             return func(x, y)
-    elif base == 'e' or close(base, np.e):
+    elif base == 'e' or np.isclose(base, np.e):
         def add(self, x, y, func=np.logaddexp):
             return func(x, y)
     else:
@@ -520,7 +519,7 @@ def set_add_inplace(ops):
     if base == 2:
         def add_inplace(self, x, y, func=np.logaddexp2):
             return func(x, y, x)
-    elif base == 'e' or close(base, np.e):
+    elif base == 'e' or np.isclose(base, np.e):
         def add_inplace(self, x, y, func=np.logaddexp):
             return func(x, y, x)
     else:
@@ -567,7 +566,7 @@ def set_add_reduce(ops):
                 z = func.reduce(x, axis=axis, dtype=float)
             return z
 
-    elif base == 'e' or close(base, np.e):
+    elif base == 'e' or np.isclose(base, np.e):
         def add_reduce(self, x, axis=None, func=np.logaddexp):
             if len(x) == 0:
                 # Since logaddexp.identity is None, we handle it separately.

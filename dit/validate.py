@@ -7,7 +7,6 @@ Centralized location to store validation functions.
 """
 import numpy as np
 
-from .math import close
 from .exceptions import (
     ditException,
     InvalidNormalization,
@@ -84,7 +83,7 @@ def validate_normalization(pmf, ops):
 
     # Make sure the distribution is normalized properly.
     total = ops.add_reduce(pmf)
-    if not close(total, one):
+    if not np.isclose(total, one):
         raise InvalidNormalization(total)
 
     return True

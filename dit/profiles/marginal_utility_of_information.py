@@ -12,7 +12,6 @@ from itertools import product
 import numpy as np
 
 from .information_partitions import ShannonPartition
-from ..math import close
 from ..utils import flatten, powerset
 
 __all__ = ['MUIProfile']
@@ -40,7 +39,7 @@ def get_lp_form(dist, ents):
     """
     pa = list(frozenset(s) for s in powerset(flatten(dist.rvs)))[1:]
     sp = sorted(ents.atoms.items())
-    atoms = list(frozenset(flatten(a[0])) for a, v in sp if not close(v, 0))
+    atoms = list(frozenset(flatten(a[0])) for a, v in sp if not np.isclose(v, 0))
 
     A = []
     b = []
@@ -89,7 +88,7 @@ def get_lp_form(dist, ents):
 
     c = np.array([-len(atom) for atom in atoms]) # negative for minimization
 
-    bounds = [(min(0, val), max(0, val)) for _, val in sp if not close(val, 0)]
+    bounds = [(min(0, val), max(0, val)) for _, val in sp if not np.close(val, 0)]
 
     return c, A, b, bounds
 

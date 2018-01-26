@@ -8,6 +8,8 @@ tolerances. This dynamically chooses a cython implementation if available.
 
 from __future__ import absolute_import
 
+from debtcollector import removals
+
 from numpy import allclose as _allclose, isinf
 
 from dit import ditParams
@@ -15,6 +17,8 @@ from dit import ditParams
 __all__ = ['close', 'allclose']
 
 
+@removals.remove(message="Use numpy.isclose instead",
+                 version='1.0.2')
 def close__cython(x, y, rtol=None, atol=None): # pylint: disable=missing-docstring
     if rtol is None:
         rtol = ditParams['rtol']
@@ -23,6 +27,8 @@ def close__cython(x, y, rtol=None, atol=None): # pylint: disable=missing-docstri
     return close_(x, y, rtol, atol)
 
 
+@removals.remove(message="Use numpy.isclose instead",
+                 version='1.0.2')
 def close__python(x, y, rtol=None, atol=None): # pylint: disable=missing-docstring
     if rtol is None:
         rtol = ditParams['rtol']
@@ -73,6 +79,8 @@ except ImportError: # pragma: no cover
     close = close__python
 
 
+@removals.remove(message="Use numpy.allclose instead",
+                 version='1.0.2')
 def allclose(x, y, rtol=None, atol=None):
     """Returns True if all components of x and y are close.
 

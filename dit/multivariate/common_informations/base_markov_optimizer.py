@@ -12,7 +12,6 @@ import numpy as np
 
 from ... import Distribution
 from ...helpers import flatten, normalize_rvs
-from ...math import close
 from ...utils.optimization import (BasinHoppingCallBack,
                                    BasinHoppingInnerCallBack,
                                    accept_test,
@@ -408,7 +407,7 @@ class MarkovVarOptimizer(with_metaclass(ABCMeta, object)):
         x0[x0 < cutoff] = 0
 
         kwargs = {'method': 'SLSQP',
-                  'bounds': [(0, 0) if close(x, 0) else (0, 1) for x in x0],
+                  'bounds': [(0, 0) if np.isclose(x, 0) else (0, 1) for x in x0],
                   'constraints': self.constraints,
                   'tol': None,
                   'callback': None,
@@ -485,7 +484,7 @@ class MarkovVarOptimizer(with_metaclass(ABCMeta, object)):
         def common_info(dist, rvs=None, crvs=None, rv_mode=None, nhops=5, polish=1e-6, bound=None):
             dtc = dual_total_correlation(dist, rvs, crvs, rv_mode)
             ent = entropy(dist, rvs, crvs, rv_mode)
-            if close(dtc, ent):
+            if np.isclose(dtc, ent):
                 # Common informations are bound between the dual total correlation and the joint
                 # entropy. Therefore, if the two are equal, the common information is equal to them
                 # as well.

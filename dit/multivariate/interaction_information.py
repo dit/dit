@@ -2,10 +2,11 @@
 The interaction information is a form of multivariate information.
 """
 
+import numpy as np
+
 from ..helpers import normalize_rvs
 
 from .coinformation import coinformation
-from ..math import close
 
 
 def interaction_information(dist, rvs=None, crvs=None, rv_mode=None):
@@ -46,7 +47,7 @@ def interaction_information(dist, rvs=None, crvs=None, rv_mode=None):
 
     II = (-1)**len(rvs) * coinformation(dist, rvs, crvs, rv_mode)
 
-    if close(II, 0):
+    if np.isclose(II, 0):
         II = 0.0
 
     return II

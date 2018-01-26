@@ -5,9 +5,10 @@ The functional common information.
 from collections import deque
 from itertools import combinations
 
+import numpy as np
+
 from ...distconst import RVFunctions, insert_rvf, modify_outcomes
 from ...helpers import parse_rvs, normalize_rvs
-from ...math import close
 from ...utils import partitions
 
 from ..entropy import entropy
@@ -52,7 +53,7 @@ def functional_markov_chain_naive(dist, rvs=None, crvs=None, rv_mode=None): # pr
     parts = partitions(outcomes)
     dists = [ insert_rvf(dist, bf.from_partition(part)) for part in parts ]
     B = lambda d: dual_total_correlation(d, rvs, crvs+f, rv_mode)
-    dists = [ d for d in dists if close(B(d), 0) ]
+    dists = [ d for d in dists if np.isclose(B(d), 0) ]
     return min(dists, key=lambda d: entropy(d, rvs=f, rv_mode=rv_mode))
 
 
@@ -127,14 +128,14 @@ def functional_markov_chain(dist, rvs=None, crvs=None, rv_mode=None):
 
         d = insert_rvf(dist, bf.from_partition(part))
 
-        if close(B(d), 0):
+        if np.isclose(B(d), 0):
 
             h = H(d)
 
             if h <= optimal[0]:
                 optimal = (h, d)
 
-            if close(h, optimal_b):
+            if np.isclose(h, optimal_b):
                 break
 
             new_parts = [frozenset([ p for p in part if p not in pair ] +
@@ -182,7 +183,7 @@ def functional_common_information(dist, rvs=None, crvs=None, rv_mode=None):
 
     dtc = dual_total_correlation(dist, rvs, crvs, rv_mode)
     ent = entropy(dist, rvs, crvs, rv_mode)
-    if close(dtc, ent):
+    if np.isclose(dtc, ent):
         return dtc
 
     d = functional_markov_chain(dist, rvs, crvs, rv_mode)
