@@ -89,7 +89,6 @@ def segment_axis(a, length, overlap=0, axis=None, end='cut', endvalue=0):
 
         a = a.swapaxes(-1, axis)
 
-
     l = a.shape[axis]
     if l == 0:
         msg = "Not enough data points to segment array in 'cut' mode;"
