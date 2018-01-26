@@ -63,12 +63,11 @@ def test_sa4():
 
 def test_sa5():
     """
-    Test wrapping.
+    Test bad wrapping.
     """
     a = np.arange(5)
-    sa = segment_axis(a, 5, 0, end='wrap')
-    sa_correct = np.array([[0, 1, 2, 3, 4]])
-    assert np.all(sa == sa_correct)
+    with pytest.raises(ValueError):
+        sa = segment_axis(a, 10, 0, end='cut')
 
 
 def test_sa6():
