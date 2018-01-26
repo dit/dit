@@ -88,7 +88,7 @@ def get_lp_form(dist, ents):
 
     c = np.array([-len(atom) for atom in atoms]) # negative for minimization
 
-    bounds = [(min(0, val), max(0, val)) for _, val in sp if not np.close(val, 0)]
+    bounds = [(min(0, val), max(0, val)) for _, val in sp if not np.isclose(val, 0)]
 
     return c, A, b, bounds
 

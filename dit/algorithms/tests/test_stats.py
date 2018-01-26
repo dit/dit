@@ -88,4 +88,4 @@ def test_standard_moment1(n, p):
     """ Test standard_moment on binomial distribution """
     d = binomial(n, p)
     for i, m in {1: 0, 2: 1, 3: (1-2*p)/np.sqrt(n*p*(1-p))}.items():
-        assert standard_moment(d, i) == pytest.approx(m)
+        assert standard_moment(d, i) == pytest.approx(m, abs=1e-5)

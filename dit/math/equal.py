@@ -72,10 +72,10 @@ close__cython.__doc__ = close_docstring + cython_doc
 
 
 # Load the cython function if possible
-try: # pragma: no cover
+try:
     from ._close import close as close_
     close = close__cython
-except ImportError: # pragma: no cover
+except ImportError:
     close = close__python
 
 
