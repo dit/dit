@@ -7,6 +7,7 @@ from __future__ import division
 import pytest
 
 import numpy as np
+import scipy.stats as sps
 
 from itertools import product
 
@@ -315,3 +316,9 @@ def test_matmul_fail():
     d1 = uniform_scalar_distribution(range(1,7))
     with pytest.raises(NotImplementedError):
         (lambda x: x.__matmul__('0'))(d1)
+
+def test_from_rv():
+    rv = sps.rv_discrete(values=([1, 2], [3/10, 7/10]))
+    d1 = ScalarDistribution.from_rv_discrete(rv)
+    d2 = ScalarDistribution([1, 2], [3/10, 7/10])
+    assert d1.is_approx_equal(d2)

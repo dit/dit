@@ -12,6 +12,7 @@ import pytest
 from six.moves import map, zip # pylint: disable=redefined-builtin
 
 import numpy as np
+import scipy.stats as sps
 
 from dit.npdist import Distribution, ScalarDistribution, _make_distribution
 from dit.exceptions import ditException, InvalidDistribution, InvalidOutcome
@@ -234,3 +235,10 @@ def test_set_rv_names2():
     d = Distribution(outcomes, pmf)
     with pytest.raises(ditException):
         d.set_rv_names('XYZ')
+
+
+def test_from_rv():
+    rv = sps.rv_discrete(values=([1, 2], [3/10, 7/10]))
+    d1 = Distribution.from_rv_discrete(rv)
+    d2 = Distribution([(1,), (2,)], [3/10, 7/10])
+    assert d1.is_approx_equal(d2)
