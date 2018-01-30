@@ -680,6 +680,29 @@ class Distribution(ScalarDistribution):
         """
         return cls(*zip(*np.ndenumerate(ndarray)), base=base, prng=prng)
 
+    @classmethod
+    def from_rv_discrete(cls, ssrv, prng=None):
+        """
+        Create a Distribution from a scipy.states.rv_discrete instance.
+
+        Parameters
+        ----------
+        ssrv : scipy.stats.rv_discrete
+            The random variable to convert to a dit.Distribution.
+        prng : RandomState
+            A pseudo-random number generator with a `rand` method which can
+            generate random numbers. For now, this is assumed to be something
+            with an API compatibile to NumPy's RandomState class. If `None`,
+            then we initialize to dit.math.prng.
+
+        Returns
+        -------
+        d : Distribution
+            A Distribution representation of `ssrv`.
+        """
+        sd = ScalarDistribution.from_rv_discrete(ssrv=ssrv, prng=prng)
+        return cls.from_distribution(sd)
+
     def __setitem__(self, outcome, value):
         """
         Sets the probability associated with `outcome`.
