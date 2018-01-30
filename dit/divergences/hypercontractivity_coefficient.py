@@ -217,10 +217,20 @@ class HypercontractivityCoefficient(object):
                             'bounds': [(0, 1)] * x.size,
                             }
 
-        res1 = minimize(fun=self.objective,
-                        x0=x,
-                        **minimizer_kwargs
-                        )
+        # try five random initial conditions
+        ress = []
+        for _ in range(5):
+            res = minimize(fun=self.objective,
+                            x0=self.construct_random_initial(),
+                            **minimizer_kwargs
+                            )
+            if res.success:
+                ress.append(res)
+
+        try:
+            res1 = min(ress, key=lambda r: self.objective(r.x))
+        except ValueError:
+            res1 = res
 
         self._callback = BasinHoppingCallBack({}, None)
 
