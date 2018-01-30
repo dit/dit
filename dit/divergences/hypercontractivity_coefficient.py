@@ -229,7 +229,7 @@ class HypercontractivityCoefficient(object):
 
         try:
             res1 = min(ress, key=lambda r: self.objective(r.x))
-        except ValueError:
+        except ValueError: # pragma: no cover
             res1 = res
 
         self._callback = BasinHoppingCallBack({}, None)
