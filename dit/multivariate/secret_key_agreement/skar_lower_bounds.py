@@ -185,13 +185,11 @@ class BaseSKARLowerBounds(with_metaclass(ABCMeta, object)):
         if full:
             slc = [np.newaxis] * (len(self._shape) - 3) + [colon] * 4
             joint = self._full_pmf[..., np.newaxis] * channel_u[slc]
-            slc += [colon]
-            joint = joint[..., np.newaxis] * channel_v[slc]
         else:
             slc = [colon] * 4
             joint = self._pmf[..., np.newaxis] * channel_u[slc]
-            slc += [colon]
-            joint = joint[..., np.newaxis] * channel_v[slc]
+        slc += [colon]
+        joint = joint[..., np.newaxis] * channel_v[slc]
 
         return joint
 
@@ -335,7 +333,7 @@ class BaseSKARLowerBounds(with_metaclass(ABCMeta, object)):
             string = False
 
         joint = self.construct_joint(x, full=True)
-        joint = joint.sum(axis=tuple(range(-4, -1)))
+        joint = joint.sum(axis=tuple(range(-5, -2)))
         outcomes, pmf = zip(*[(o, p) for o, p in np.ndenumerate(joint) if p > cutoff])
         outcomes = [tuple(a[i] for i, a in zip(o, alphabets)) for o in outcomes]
 
