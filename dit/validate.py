@@ -233,9 +233,9 @@ def validate_outcome_class(outcomes):
 
     """
     # Make sure the class is the same for all outcomes.
-    classattr = lambda x: getattr(x, '__class__')
-    classes = list(map(classattr, outcomes))
-    equal_classes = np.alltrue(np.equal(classes, outcomes[0].__class__))
+    equal_classes = all(outcomes[0].__class__ == outcome.__class__
+                        for outcome in outcomes)
+
     if not equal_classes:
         raise ditException('Not all outcomes have the same class.')
     else:
