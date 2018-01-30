@@ -63,8 +63,8 @@ def test_median2():
 def test_mode1(n, p):
     """ Test mode on binomial distribution """
     d = binomial(n, p)
-    assert\
-        mode(d)[0][0] in [floor((n+1)*p), floor((n+1)*p)-1]
+    assert mode(d)[0][0] in [floor((n+1)*p), floor((n+1)*p)-1]
+
 
 def test_mode2():
     """ Test mode on a generic distribution """
