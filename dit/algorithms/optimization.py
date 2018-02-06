@@ -8,6 +8,8 @@ from abc import ABCMeta, abstractmethod
 
 from collections import namedtuple
 
+from copy import deepcopy
+
 from six import with_metaclass
 
 from string import ascii_letters, digits
@@ -31,7 +33,7 @@ from ..utils.optimization import (BasinHoppingCallBack,
                                   accept_test,
                                   basinhop_status,
                                   colon,
-                                 )
+                                  )
 
 __all__ = [
     'BaseOptimizer',
@@ -41,6 +43,7 @@ __all__ = [
 ]
 
 h = lambda p: -np.nansum(p*np.log2(p))
+
 
 class BaseOptimizer(with_metaclass(ABCMeta, object)):
     """
@@ -97,13 +100,21 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
 
         self._proxy_vars = tuple(range(self._n, self._n+len(rvs)+1))
 
-        self._maxiters = 1000
+        self._additional_options = {}
 
     ###########################################################################
     # Required methods in subclasses
 
     @abstractmethod
     def construct_initial(self):
+        """
+        Select the default method of generating an initial condition.
+
+        Returns
+        -------
+        x : np.ndarray
+            An optimization vector.
+        """
         pass
 
     @abstractmethod
@@ -134,7 +145,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
 
         Returns
         -------
-        obj : function
+        obj : func
             The objective function.
         """
         pass
@@ -232,7 +243,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
         mi : func
             The mutual information.
         """
-        idx_xy = tuple(self._all_vars - (rv_x|rv_y))
+        idx_xy = tuple(self._all_vars - (rv_x | rv_y))
         idx_x = tuple(self._all_vars - rv_x)
         idx_y = tuple(self._all_vars - rv_y)
 
@@ -278,9 +289,9 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
         cmi : func
             The conditional mutual information.
         """
-        idx_xyz = tuple(self._all_vars - (rv_x|rv_y|rv_z))
-        idx_xz = tuple(self._all_vars - (rv_x|rv_z))
-        idx_yz = tuple(self._all_vars - (rv_y|rv_z))
+        idx_xyz = tuple(self._all_vars - (rv_x | rv_y | rv_z))
+        idx_xz = tuple(self._all_vars - (rv_x | rv_z))
+        idx_yz = tuple(self._all_vars - (rv_y | rv_z))
         idx_z = tuple(self._all_vars - rv_z)
 
         def conditional_mutual_information(pmf):
@@ -375,8 +386,8 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
         """
         if crvs is None:
             crvs = set()
-        idx_margs = [tuple(self._all_vars - ({rv}|crvs)) for rv in rvs]
-        idx_joint = tuple(self._all_vars - (rvs|crvs))
+        idx_margs = [tuple(self._all_vars - ({rv} | crvs)) for rv in rvs]
+        idx_joint = tuple(self._all_vars - (rvs | crvs))
         idx_crvs = tuple(self._all_vars - crvs)
 
         def total_correlation(pmf):
@@ -393,15 +404,15 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
             ci : float
                 The total correlation.
             """
+            pmf_crvs = pmf.sum(axis=idx_crvs)
             pmf_margs = [pmf.sum(axis=marg) for marg in idx_margs]
             pmf_joint = pmf.sum(axis=idx_joint)
-            pmf_crvs = pmf.sum(axis=idx_crvs)
 
             h_crvs = h(pmf_crvs)
-            h_margs = [h(p) - h_crvs for p in pmf_margs]
+            h_margs = sum(h(p) - h_crvs for p in pmf_margs)
             h_joint = h(pmf_joint) - h_crvs
 
-            tc = sum(h_margs) - h_joint
+            tc = h_margs - h_joint
 
             return tc
 
@@ -425,8 +436,8 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
         """
         if crvs is None:
             crvs = set()
-        idx_joint = tuple(self._all_vars - (rvs|crvs))
-        idx_margs = [tuple(self._all_vars - (self._rvs - ({rv})|crvs)) for rv in rvs]
+        idx_joint = tuple(self._all_vars - (rvs | crvs))
+        idx_margs = [tuple(self._all_vars - ((self._rvs - {rv}) | crvs)) for rv in rvs]
         idx_crvs = tuple(self._all_vars - crvs)
         n = len(rvs) - 1
 
@@ -555,10 +566,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
 
         minimizer_kwargs = {'bounds': [(0, 1)] * x0.size,
                             'callback': icb,
-                            'options': {'maxiter': maxiter or self._maxiters,
-                                        'ftol': 5e-7,
-                                        'eps': 1.4901161193847656e-9,
-                                        },
+                            'options': {},
                             }
 
         try:
@@ -577,6 +585,14 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
         except AttributeError:
             pass
 
+        additions = deepcopy(self._additional_options)
+        options = additions.pop('options', {})
+        minimizer_kwargs['options'].update(options)
+        minimizer_kwargs.update(additions)
+
+        if maxiter:
+            minimizer_kwargs['options']['maxiter'] = maxiter
+
         self._callback = BasinHoppingCallBack(minimizer_kwargs.get('constraints', {}), icb)
 
         result = self._optimization_backend(x0, minimizer_kwargs, niter)
@@ -588,7 +604,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
             raise OptimizationException(msg)
 
         if polish:
-            self._polish(cutoff=polish, maxiter=maxiter)
+            self._polish(cutoff=polish)
 
         return result
 
@@ -646,7 +662,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
 
         return result
 
-    def _polish(self, cutoff=1e-6, maxiter=None):
+    def _polish(self, cutoff=1e-6):
         """
         Improve the solution found by the optimizer.
 
@@ -663,10 +679,6 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
         minimizer_kwargs = {'bounds': [(0, 0) if np.isclose(x, 0) else (0, 1) for x in x0],
                             'tol': None,
                             'callback': None,
-                            'options': {'maxiter': maxiter or self._maxiters,
-                                        'ftol': 15e-11,
-                                        'eps': 1.4901161193847656e-12,
-                                        },
                             }
 
         try:
@@ -849,6 +861,30 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
         self._optvec_size = sum([av.size for av in self._aux_vars])
         self._default_hops = prod(self._aux_bounds)
 
+        self._construct_slices()
+
+    def _construct_slices(self):
+        """
+
+        Returns
+        -------
+
+        """
+        arvs = sorted(self._arvs)
+
+        self._full_slices = []
+        for i, (auxvar, var) in enumerate(zip(self._aux_vars, arvs)):
+            relevant_vars = {self._n + b for b in auxvar.bases}
+            index = sorted(self._full_vars) + [self._n + a for a in arvs[:i + 1]]
+            var += self._n
+            self._full_slices.append([colon if i in relevant_vars | {var} else np.newaxis for i in index])
+
+        self._slices = []
+        for i, (auxvar, var) in enumerate(zip(self._aux_vars, arvs)):
+            relevant_vars = auxvar.bases
+            index = sorted(self._rvs | self._crvs | set(arvs[:i + 1]))
+            self._slices.append([colon if i in relevant_vars | {var} else np.newaxis for i in index])
+
     ###########################################################################
     # Constructing the joint distribution.
 
@@ -879,7 +915,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
 
         return channels
 
-    def construct_joint(self, x, full=False):
+    def construct_joint(self, x):
         """
         Construct the joint distribution.
 
@@ -894,22 +930,35 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
             The joint distribution resulting from the distribution passed
             in and the optimization vector.
         """
-        joint = self._full_pmf if full else self._pmf
-
-        arvs = sorted(self._arvs)
+        joint = self._pmf
 
         channels = self._construct_channels(x)
 
-        for i, (channel, auxvar, var) in enumerate(zip(channels, self._aux_vars, arvs)):
-            if full:
-                vars = {self._n + b for b in auxvar.bases}
-                index = sorted(self._full_vars) + [self._n + a for a in arvs[:i+1]]
-                var += self._n
-            else:
-                vars = auxvar.bases
-                index = sorted(self._rvs | self._crvs | set(arvs[:i+1]))
-            slc = [colon if i in vars | {var} else np.newaxis for i in index]
+        for channel, slc in zip(channels, self._slices):
+            joint = joint[..., np.newaxis] * channel[slc]
 
+        return joint
+
+    def construct_full_joint(self, x):
+        """
+        Construct the joint distribution.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            An optimization vector.
+
+        Returns
+        -------
+        joint : np.ndarray
+            The joint distribution resulting from the distribution passed
+            in and the optimization vector.
+        """
+        joint = self._full_pmf
+
+        channels = self._construct_channels(x)
+
+        for channel, slc in zip(channels, self._full_slices):
             joint = joint[..., np.newaxis] * channel[slc]
 
         return joint
@@ -1014,7 +1063,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
                 alphabets += [list(range(bound))]
             string = False
 
-        joint = self.construct_joint(x, full=True)
+        joint = self.construct_full_joint(x)
         joint = joint.sum(axis=self._proxy_vars)
         outcomes, pmf = zip(*[(o, p) for o, p in np.ndenumerate(joint) if p > cutoff])
         outcomes = [tuple(a[i] for i, a in zip(o, alphabets)) for o in outcomes]
@@ -1051,7 +1100,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
         Make this compute the channel capacity of any/all auxvar(s)
         """
         ccs = []
-        for channel in self.construct_channels(x):
+        for channel in self._construct_channels(x):
             ccs.append(channel_capacity(channel)[0])
         return ccs
 
@@ -1061,14 +1110,14 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
 
         Parameters
         ----------
-        nhops : int
-            The number of basin hops to perform.
         style : 'entropy', 'channel'
             The measure to perform the secondary optimization on. If 'entropy',
             the entropy of z_bar is optimized. If 'channel', the channel capacity
             of p(z_bar|z) is optimized.
         minmax : 'min', 'max'
             Whether to minimize or maximize the objective.
+        niter : int
+            The number of basin hops to perform.
 
         Notes
         -----
@@ -1079,24 +1128,74 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
         ----
         This should really use some sort of multiobjective optimization.
         """
+        entropy = self._entropy(self._arvs)
+
+        def objective_entropy(x):
+            """
+            Post-process the entropy.
+
+            Parameters
+            ----------
+            x : np.ndarray
+                An optimization vector.
+
+            Returns
+            -------
+            ent : float
+                The entropy.
+            """
+            ent = entropy(self.construct_joint(x))
+            return sign * ent
+
+        def objective_channelcapacity(x):
+            """
+            Post-process the channel capacity.
+
+            Parameters
+            ----------
+            x : np.ndarray
+                An optimization vector.
+
+            Returns
+            -------
+            cc : float
+                The sum of the channel capacities.
+            """
+            cc = sum(self._channel_capacity(x))
+            return sign * cc
+
         sign = +1 if minmax == 'min' else -1
 
         if style == 'channel':
-            def objective(x):
-                return sign*sum(self._channel_capacity(x))
+            objective = objective_channelcapacity
         elif style == 'entropy':
-            def objective(x):
-                pmf = self.construct_joint(x)
-                return sign*self._entropy(pmf, self._arvs)
+            objective = objective_entropy
+        else:
+            msg = "Style {} is not understood.".format(style)
+            raise OptimizationException(msg)
 
         true_objective = self.objective(self._optima)
 
         def constraint_match_objective(x):
+            """
+            Constraint to ensure that the new solution is not worse than that
+            found before.
+
+            Parameters
+            ----------
+            x : np.ndarray
+                An optimization vector.
+
+            Returns
+            -------
+            obj : float
+                The l2 deviation of the current objective from the true.
+            """
             obj = (self.objective(x) - true_objective)**2
             return obj
 
         constraint = [{'type': 'eq',
-                        'fun': constraint_match_objective,
+                       'fun': constraint_match_objective,
                        }]
 
         # set up required attributes
@@ -1112,7 +1211,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
         # and remove them again.
         self.constraints = self.constraints[:-1]
         if not self.constraints:
-            del(self.constraints)
+            del self.constraints
 
         self.objective = self.__old_objective
-        del(self.__old_objective)
+        del self.__old_objective

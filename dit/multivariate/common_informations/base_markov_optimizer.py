@@ -112,11 +112,16 @@ class MarkovVarOptimizerOld(BaseAuxVarOptimizer):
         self._start = list(range(len(self._finish)))
 
         self._default_hops = 10
-        self._maxiters = 1000
         self._aux_bounds = [self._bound]
         self._arvs = {len(self.construct_joint(self.construct_random_initial()).shape)-1}
         self._proxy_vars = tuple()
         self._optvec_size = self._crv_len
+
+        self._additional_options = {'options': {'maxiter': 1000,
+                                                'ftol': 5e-7,
+                                                'eps': 1.4901161193847656e-9,
+                                                }
+                                    }
 
     @abstractmethod
     def compute_bound(self):
@@ -407,7 +412,7 @@ class MarkovVarOptimizerOld(BaseAuxVarOptimizer):
     construct_initial = construct_random_initial
 
 
-class MarkovVarOptimizer(BaseAuxVarOptimizer):
+class MarkovVarOptimizerNew(BaseAuxVarOptimizer):
     """
     Abstract base class for constructing auxiliary variables which render a set
     of variables conditionally independent.
@@ -503,16 +508,20 @@ class MarkovVarOptimizer(BaseAuxVarOptimizer):
                             },
                            ]
 
-        self._finish = self._rvs[0] + self._crvs + sum(self._rvs[1:], []) + \
-                 sorted(self._others)
+        self._finish = self._rvs[0] + self._crvs + sum(self._rvs[1:], []) + sorted(self._others)
         self._start = list(range(len(self._finish)))
 
         self._default_hops = 10
-        self._maxiters = 1000
         self._aux_bounds = [self._bound]
         self._arvs = {len(self.construct_joint(self.construct_random_initial()).shape)-1}
         self._proxy_vars = tuple()
         self._optvec_size = self._crv_len
+
+        self._additional_options = {'options': {'maxiter': 1000,
+                                                'ftol': 5e-7,
+                                                'eps': 1.4901161193847656e-9,
+                                                }
+                                    }
 
     @abstractmethod
     def compute_bound(self):
@@ -801,6 +810,9 @@ class MarkovVarOptimizer(BaseAuxVarOptimizer):
         return common_info
 
     construct_initial = construct_random_initial
+
+
+MarkovVarOptimizer = MarkovVarOptimizerOld
 
 
 class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):

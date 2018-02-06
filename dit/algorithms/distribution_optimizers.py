@@ -101,6 +101,8 @@ class BaseDistOptimizer(BaseOptimizer):
         self._optvec_size = len(self._free)
         self._default_hops = 50
 
+        self._additional_options = {'options': {'maxiter': 1000}}
+
     def optimize(self, x0=None, niter=None, maxiter=1000, polish=1e-8, callback=False):
         """
         Optimize this distribution w.r.t the objective.
