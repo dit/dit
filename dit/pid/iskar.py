@@ -64,7 +64,7 @@ class PID_uparrow(BaseUniquePID):
     _measure = staticmethod(i_uparrow)
 
 
-def i_double_uparrow(d, inputs, output, nhops=None, bound_u=None):
+def i_double_uparrow(d, inputs, output, niter=None, bound_u=None):
     """
     This computes unique information as I(input : output \\uparrow\\uparrow other_inputs).
 
@@ -87,7 +87,7 @@ def i_double_uparrow(d, inputs, output, nhops=None, bound_u=None):
         others = list(inputs)
         others.remove(input_)
         others = list(flatten(others))
-        uniques[input_] = secrecy_capacity_directed(d, input_, output, others, nhops=nhops,
+        uniques[input_] = secrecy_capacity_directed(d, input_, output, others, niter=niter,
                                                     bound_u=bound_u)
     return uniques
 
@@ -105,7 +105,7 @@ class PID_double_uparrow(BaseUniquePID):
     _measure = staticmethod(i_double_uparrow)
 
 
-def i_triple_uparrow(d, inputs, output, nhops=5, bound_u=None, bound_v=None):
+def i_triple_uparrow(d, inputs, output, niter=5, bound_u=None, bound_v=None):
     """
     This computes unique information as I(input : output \\uparrow\\uparrow\\uparrow other_inputs).
 
@@ -129,7 +129,7 @@ def i_triple_uparrow(d, inputs, output, nhops=5, bound_u=None, bound_v=None):
         others.remove(input_)
         others = list(flatten(others))
         uniques[input_] = necessary_intrinsic_mutual_information_directed(d, input_, output, others,
-                                                                          nhops=nhops,
+                                                                          niter=niter,
                                                                           bound_u=bound_u,
                                                                           bound_v=bound_v)
     return uniques
@@ -148,7 +148,7 @@ class PID_triple_uparrow(BaseUniquePID):
     _measure = staticmethod(i_triple_uparrow)
 
 
-def i_downarrow(d, inputs, output, nhops=25, bound=None):
+def i_downarrow(d, inputs, output, niter=25, bound=None):
     """
     This computes unique information as I(input : output \downarrow other_inputs).
 
@@ -172,7 +172,7 @@ def i_downarrow(d, inputs, output, nhops=25, bound=None):
         others.remove(input_)
         others = list(flatten(others))
         uniques[input_] = intrinsic_mutual_information(d, [input_, output], others,
-                                                       nhops=nhops, bound=bound)
+                                                       niter=niter, bound=bound)
     return uniques
 
 
@@ -189,7 +189,7 @@ class PID_downarrow(BaseUniquePID):
     _measure = staticmethod(i_downarrow)
 
 
-def i_double_downarrow(d, inputs, output, nhops=5): # pragma: no cover
+def i_double_downarrow(d, inputs, output, niter=5): # pragma: no cover
     """
     This computes unique information as I(input : output \Downarrow other_inputs).
 
@@ -213,7 +213,7 @@ def i_double_downarrow(d, inputs, output, nhops=5): # pragma: no cover
         others.remove(input_)
         others = list(flatten(others))
         uniques[input_] = reduced_intrinsic_mutual_information(d, [input_, output], others,
-                                                               nhops=nhops)
+                                                               niter=niter)
     return uniques
 
 
@@ -225,7 +225,7 @@ class PID_double_downarrow(BaseUniquePID):
     _measure = staticmethod(i_double_downarrow)
 
 
-def i_triple_downarrow(d, inputs, output, nhops=5, bounds=None):
+def i_triple_downarrow(d, inputs, output, niter=5, bounds=None):
     """
     This computes unique information as I(input : output \downarrow\downarrow\downarrow other_inputs).
 
@@ -249,7 +249,7 @@ def i_triple_downarrow(d, inputs, output, nhops=5, bounds=None):
         others.remove(input_)
         others = list(flatten(others))
         uniques[input_] = minimal_intrinsic_mutual_information(d, [input_, output], others,
-                                                               nhops=nhops, bounds=bounds)
+                                                               niter=niter, bounds=bounds)
     return uniques
 
 

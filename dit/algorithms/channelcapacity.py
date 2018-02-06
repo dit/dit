@@ -107,7 +107,7 @@ def channel_capacity(cdists, marginal=None, rtol=None, atol=None):
     return cc, marginal_opt
 
 
-def channel_capacity_joint(dist, input, output, rv_mode=None, marginal=False):
+def channel_capacity_joint(dist, input, output, marginal=False, rv_mode=None):
     """
     Compute the channel capacity from ``rvs1`` to ``rvs2``.
 
@@ -119,6 +119,8 @@ def channel_capacity_joint(dist, input, output, rv_mode=None, marginal=False):
         The random variables that are the input of the channel.
     output : iterable
         The random variables that are the output of the channel.
+    marginal : bool
+        Whether to return the marginal distribution or not. Defaults to False.
     rv_mode : str, None
         Specifies how to interpret `rvs` and `crvs`. Valid options are:
         {'indices', 'names'}. If equal to 'indices', then the elements of
@@ -129,7 +131,11 @@ def channel_capacity_joint(dist, input, output, rv_mode=None, marginal=False):
 
     Returns
     -------
-
+    cc : float
+        The channel capacity.
+    marg : Distribution
+        The marginal distribution that achieves the channel capacity.
+        Only returned if `marginal` is True.
     """
     _, cdists = dist.condition_on(crvs=input, rvs=output, rv_mode=rv_mode)
     cc, marg_opt = channel_capacity(cdists)

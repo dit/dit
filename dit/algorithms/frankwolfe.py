@@ -25,7 +25,7 @@ import numpy as np
 from dit.utils import basic_logger
 
 
-@removals.remove(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
                  version='1.0.1')
 def frank_wolfe(objective, gradient, A, b, initial_x,
                 maxiters=2000, tol=1e-4, clean=True, verbose=None):

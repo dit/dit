@@ -27,7 +27,7 @@ from dit.multivariate import (entropy as H,
                              )
 
 
-epsilon = 1e-6
+epsilon = 1e-4
 
 
 @given(dist=distributions())
@@ -237,6 +237,6 @@ def test_mi_hc(dist):
         I[U:Y] <= s*(X||Y)*I[U:X]
     """
     a = I(dist, [[0], [2]])
-    b = hypercontractivity_coefficient(dist, [[1], [2]], nhops=20)
+    b = hypercontractivity_coefficient(dist, [[1], [2]], niter=20)
     c = I(dist, [[0], [1]])
     assert a <= b*c + epsilon

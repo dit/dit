@@ -84,7 +84,7 @@ def test_itc5():
     Test with initial condition.
     """
     itc = IMI.IntrinsicTotalCorrelation(dist1, [[0], [1]], [2])
-    itc.optimize(x0=np.eye(4).ravel(), nhops=5)
+    itc.optimize(x0=np.eye(4).ravel(), niter=5)
     d = itc.construct_distribution()
     print(d)
     val = total_correlation(d, [[0], [1]], [3])
@@ -187,14 +187,15 @@ def test_icmi4():
     assert icmi == pytest.approx(0)
 
 
+@pytest.mark.slow
 @pytest.mark.flaky(reruns=5)
 def test_constructor():
     """
     Test the generic constructor.
     """
-    test = IMI.intrinsic_mutual_information(total_correlation).functional()
-    itc = IMI.intrinsic_total_correlation(dist1, [[0], [1]], [2], nhops=5)
-    itc2 = test(dist1, [[0], [1]], [2], nhops=5)
+    test = IMI.intrinsic_mutual_information_constructor(total_correlation).functional()
+    itc = IMI.intrinsic_total_correlation(dist1, [[0], [1]], [2], bound=3)
+    itc2 = test(dist1, [[0], [1]], [2], bound=3)
     assert itc == pytest.approx(itc2, abs=1e-4)
 
 

@@ -4,15 +4,13 @@ The dependency-decomposition based unique measure partial information decomposit
 
 from __future__ import division
 
-import networkx as nx
-
 from .pid import BaseUniquePID
 
 from ..multivariate import coinformation
 from ..profiles import DependencyDecomposition
 
 
-def i_dep(d, inputs, output, maxiters=1000):
+def i_dep(d, inputs, output, maxiter=500):
     """
     This computes unique information as min(delta(I(inputs : output))) where delta
     is taken over the dependency decomposition.
@@ -35,7 +33,7 @@ def i_dep(d, inputs, output, maxiters=1000):
     measure = {'I': lambda d: coinformation(d, [[0, 1], [2]])}
     if len(inputs) == 2:
         dm = d.coalesce(inputs + (output,))
-        dd = DependencyDecomposition(dm, measures=measure, maxiters=maxiters)
+        dd = DependencyDecomposition(dm, measures=measure, maxiter=maxiter)
         u_0 = min(dd.delta(edge, 'I') for edge in dd.edges(((0, 2),)))
         u_1 = min(dd.delta(edge, 'I') for edge in dd.edges(((1, 2),)))
         uniques[inputs[0]] = u_0
@@ -44,7 +42,7 @@ def i_dep(d, inputs, output, maxiters=1000):
         for input_ in inputs:
             others = sum([i for i in inputs if i != input_], ())
             dm = d.coalesce([input_, others, output])
-            dd = DependencyDecomposition(dm, measures=measure, maxiters=maxiters)
+            dd = DependencyDecomposition(dm, measures=measure, maxiter=maxiter)
             u = min(dd.delta(edge, 'I') for edge in dd.edges(((0, 2),)))
             uniques[input_] = u
 
@@ -59,7 +57,7 @@ class PID_dep(BaseUniquePID):
     _measure = staticmethod(i_dep)
 
 
-def i_dep_a(d, inputs, output): # pragma: no cover
+def i_dep_a(d, inputs, output):  # pragma: no cover
     """
     This computes unique information as min(delta(I(inputs : output))) where delta
     is taken over the dependency decomposition.
@@ -100,7 +98,7 @@ class PID_dep_a(BaseUniquePID):
     _measure = staticmethod(i_dep_a)
 
 
-def i_dep_b(d, inputs, output): # pragma: no cover
+def i_dep_b(d, inputs, output):  # pragma: no cover
     """
     This computes unique information as min(delta(I(inputs : output))) where delta
     is taken over a restricted dependency decomposition which never constrains dependencies
@@ -149,7 +147,7 @@ class PID_dep_b(BaseUniquePID):
     _measure = staticmethod(i_dep_b)
 
 
-def i_dep_c(d, inputs, output): # pragma: no cover
+def i_dep_c(d, inputs, output):  # pragma: no cover
     """
     This computes unique information as min(delta(I(inputs : output))) where delta
     is taken over a restricted dependency decomposition which never constrains dependencies

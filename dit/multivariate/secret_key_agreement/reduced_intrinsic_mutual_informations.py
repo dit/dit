@@ -14,7 +14,6 @@ from .intrinsic_mutual_informations import (intrinsic_total_correlation,
                                             intrinsic_caekl_mutual_information,
                                             )
 from ... import Distribution
-from ...shannon import entropy_pmf as h
 
 __all__ = ['reduced_intrinsic_total_correlation',
            'reduced_intrinsic_dual_total_correlation',
@@ -38,7 +37,7 @@ class BaseReducedIntrinsicMutualInformation(BaseMoreIntrinsicMutualInformation):
     def measure():
         pass
 
-    def objective(self, x): # pragma: no cover
+    def _objective(self, x):  # pragma: no cover
         """
         The multivariate mutual information to minimize.
 
@@ -52,17 +51,22 @@ class BaseReducedIntrinsicMutualInformation(BaseMoreIntrinsicMutualInformation):
         obj : float
             The value of the objective function.
         """
-        pmf = self.construct_joint(x)
+        h = self._entropy(self._arvs)
 
-        # I[X:Y \downarrow ZU]
-        d = Distribution.from_ndarray(pmf)
-        a = self.measure(dist=d, rvs=[[rv] for rv in self._rvs], crvs=self._crvs|self._U)
+        def objective(self, x):
 
-        # H[U]
-        u = pmf.sum(axis=tuple(self._all_vars - self._U))
-        b = h(u.ravel())
+            pmf = self.construct_joint(x)
 
-        return a + b
+            # I[X:Y \downarrow ZU]
+            d = Distribution.from_ndarray(pmf)
+            a = self.measure(dist=d, rvs=[[rv] for rv in self._rvs], crvs=self._crvs|self._arvs)
+
+            # H[U]
+            b = h(pmf)
+
+            return a + b
+
+        return objective
 
 
 class ReducedIntrinsicTotalCorrelation(BaseReducedIntrinsicMutualInformation):
@@ -101,7 +105,7 @@ class ReducedIntrinsicCAEKLMutualInformation(BaseReducedIntrinsicMutualInformati
 reduced_intrinsic_CAEKL_mutual_information = ReducedIntrinsicCAEKLMutualInformation.functional()
 
 
-def reduced_intrinsic_mutual_information(func): # pragma: no cover
+def reduced_intrinsic_mutual_information_constructor(func):  # pragma: no cover
     """
     Given a measure of shared information, construct an optimizer which computes
     its ``reduced intrinsic'' form.

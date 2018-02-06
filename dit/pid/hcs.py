@@ -42,7 +42,7 @@ def h_cs(d, inputs, output=None):
     # pairwise marginal maxent
     if n_variables > 2:
         marginals = list(combinations(range(n_variables), 2))
-        d = maxent_dist(d, marginals, 'indices')
+        d = maxent_dist(d, marginals)
     d = modify_outcomes(d, lambda o: tuple(o))
 
     # calculate pointwise co-information

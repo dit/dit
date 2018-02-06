@@ -8,11 +8,12 @@ import numpy as np
 
 from .pid import BaseUniquePID
 
-from ..algorithms.scipy_optimizers import BaseConvexOptimizer, BROJABivariateOptimizer
+from ..algorithms import BaseConvexOptimizer
+from ..algorithms.distribution_optimizers import BaseDistOptimizer, BROJABivariateOptimizer
 from ..multivariate import coinformation
 
 
-class BROJAOptimizer(BaseConvexOptimizer):
+class BROJAOptimizer(BaseDistOptimizer, BaseConvexOptimizer):
     """
     Optimizer for computing the max mutual information between
     inputs and outputs. In the bivariate case, this corresponds to
@@ -38,9 +39,12 @@ class BROJAOptimizer(BaseConvexOptimizer):
         """
         dist = dist.coalesce((input,) + (sum(others, ()),) + (output,))
         constraints = [[0, 2], [1, 2]]
-        super(BROJAOptimizer, self).__init__(dist, constraints)
+        super(BROJAOptimizer, self).__init__(dist, marginals=constraints, rv_mode=rv_mode)
+        self._input = {0}
+        self._others = {1}
+        self._output = {2}
 
-    def objective(self, x):
+    def _objective(self):
         """
         Minimize I(input:output|others).
 
@@ -51,34 +55,32 @@ class BROJAOptimizer(BaseConvexOptimizer):
 
         Returns
         -------
-        b : float
+        obj : func
             The objective.
         """
-        pmf = self._expand(x).reshape(self._shape)
-        h_total = -np.nansum(pmf * np.log2(pmf))
+        cmi = self._conditional_mutual_information(self._input, self._output, self._others)
 
-        p_output = pmf.sum(axis=(0, 1))
-        h_output = -np.nansum(p_output * np.log2(p_output))
+        def objective(self, x):
+            """
+            Compute I[input : output | others]
 
-        input_pmf = pmf.sum(axis=2)
-        h_input = -np.nansum(input_pmf * np.log2(input_pmf))
+            Parameters
+            ----------
+            x : np.ndarray
+                An optimization vector.
 
-        mi = h_input + h_output - h_total
+            Returns
+            -------
+            obj : float
+                The value of the objective.
+            """
+            pmf = self.construct_joint(x)
+            return cmi(pmf)
 
-        reduced_pmf = pmf.sum(axis=0)
-        h_reduced = -np.nansum(reduced_pmf * np.log2(reduced_pmf))
-
-        others_pmf = pmf.sum(axis=(0, 2))
-        h_others = -np.nansum(others_pmf * np.log2(others_pmf))
-
-        omi = h_others + h_output - h_reduced
-
-        cmi = mi - omi
-
-        return cmi
+        return objective
 
 
-def i_broja(d, inputs, output, maxiters=1000):
+def i_broja(d, inputs, output, maxiter=1000):
     """
     This computes unique information as min{I(input : output | other_inputs)} over the space of distributions
     which matches input-output marginals.
@@ -100,7 +102,7 @@ def i_broja(d, inputs, output, maxiters=1000):
     uniques = {}
     if len(inputs) == 2:
         broja = BROJABivariateOptimizer(d, list(inputs), output)
-        broja.optimize(maxiters=maxiters)
+        broja.optimize(niter=1, maxiter=maxiter)
         opt_dist = broja.construct_dist()
         uniques[inputs[0]] = coinformation(opt_dist, [[0], [2]], [1])
         uniques[inputs[1]] = coinformation(opt_dist, [[1], [2]], [0])
@@ -109,7 +111,7 @@ def i_broja(d, inputs, output, maxiters=1000):
             others = sum([i for i in inputs if i != input_], ())
             dm = d.coalesce([input_, others, output])
             broja = BROJAOptimizer(dm, (0,), ((1,),), (2,))
-            broja.optimize(maxiters=maxiters)
+            broja.optimize(niter=1, maxiter=maxiter)
             d_opt = broja.construct_dist()
             uniques[input_] = coinformation(d_opt, [[0], [2]], [1])
 

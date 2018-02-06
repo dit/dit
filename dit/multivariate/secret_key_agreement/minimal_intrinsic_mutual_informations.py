@@ -4,12 +4,8 @@
 
 from __future__ import division
 
-from abc import abstractmethod
-
 from .base_intrinsic_information import BaseMoreIntrinsicMutualInformation
 from ... import Distribution
-from ...shannon import entropy_pmf as h
-from ...utils import partitions
 
 __all__ = ['minimal_intrinsic_total_correlation',
            'minimal_intrinsic_dual_total_correlation',
@@ -27,50 +23,31 @@ class BaseMinimalIntrinsicMutualInformation(BaseMoreIntrinsicMutualInformation):
 
     type = "minimal"
 
-    @abstractmethod
-    def measure(self, pmf, rvs, crvs):
-        """
-        The multivariate mutual information to minimize.
-
-        Parameters
-        ----------
-        pmf : np.ndarray
-            The joint probability distribution
-        rvs : iterable of iterables
-            The random variables.
-        crvs : iterable
-            The variables to condition on.
-
-        Returns
-        -------
-        meas : float
-            The measure applied to `rvs` given `crvs`.
-        """
-        pass
-
-    def objective(self, x):
+    def _objective(self):
         """
         Compute I[X:Y|U] + I[XY:U|Z], or its multivariate analog.
 
-        Parameters
-        ----------
-        x : ndarray
-            An optimization vector.
-
         Returns
         -------
-        obj : float
-            The value of the objective function.
+        obj : func
+            The objective function.
         """
-        pmf = self.construct_joint(x)
+        mmi = self.measure(self._rvs, self._arvs)
+        cmi = self._conditional_mutual_information(self._rvs, self._arvs, self._crvs)
 
-        # I[X:Y|U]
-        a = self.measure(pmf, self._rvs, self._U)
+        def objective(self, x):
 
-        # I[XY:U|Z]
-        b = self._conditional_mutual_information(pmf, self._rvs, self._U, self._crvs)
+            pmf = self.construct_joint(x)
 
-        return a + b
+            # I[X:Y|U]
+            a = mmi(pmf)
+
+            # I[XY:U|Z]
+            b = cmi(pmf)
+
+            return a + b
+
+        return objective
 
 
 class MinimalIntrinsicTotalCorrelation(BaseMinimalIntrinsicMutualInformation):
@@ -79,14 +56,12 @@ class MinimalIntrinsicTotalCorrelation(BaseMinimalIntrinsicMutualInformation):
     """
     name = 'total correlation'
 
-    def measure(self, joint, rvs, crvs):
+    def measure(self, rvs, crvs):
         """
         The total correlation.
 
         Parameters
         ----------
-        pmf : np.ndarray
-            The joint probability distribution
         rvs : iterable of iterables
             The random variables.
         crvs : iterable
@@ -94,22 +69,10 @@ class MinimalIntrinsicTotalCorrelation(BaseMinimalIntrinsicMutualInformation):
 
         Returns
         -------
-        tc : float
+        tc : func
             The total correlation.
         """
-        others = self._all_vars - (rvs | crvs)
-        joint = joint.sum(axis=tuple(others))
-
-        margs = [joint.sum(axis=tuple(rvs - {rv})) for rv in rvs]
-        crv = joint.sum(axis=tuple(rvs))
-
-        a = sum(h(marg.ravel()) for marg in margs)
-        b = h(joint.ravel())
-        c = h(crv.ravel())
-
-        tc = a - b - (len(rvs) - 1) * c
-
-        return tc
+        return self._total_correlation(rvs, crvs)
 
 
 minimal_intrinsic_total_correlation = MinimalIntrinsicTotalCorrelation.functional()
@@ -121,14 +84,12 @@ class MinimalIntrinsicDualTotalCorrelation(BaseMinimalIntrinsicMutualInformation
     """
     name = 'dual total correlation'
 
-    def measure(self, joint, rvs, crvs):
+    def measure(self, rvs, crvs):
         """
         The dual total correlation, also known as the binding information.
 
         Parameters
         ----------
-        pmf : np.ndarray
-            The joint probability distribution
         rvs : iterable of iterables
             The random variables.
         crvs : iterable
@@ -139,19 +100,7 @@ class MinimalIntrinsicDualTotalCorrelation(BaseMinimalIntrinsicMutualInformation
         dtc : float
             The dual total correlation.
         """
-        others = self._all_vars - (rvs | crvs)
-        joint = joint.sum(axis=tuple(others))
-
-        margs = [joint.sum(axis=(rv,)) for rv in rvs]
-        crv = joint.sum(axis=tuple(rvs))
-
-        a = sum(h(marg.ravel()) for marg in margs)
-        b = h(joint.ravel())
-        c = h(crv.ravel())
-
-        dtc = a - (len(rvs) - 1) * b - c
-
-        return dtc
+        return self._dual_total_correlation(rvs, crvs)
 
 
 minimal_intrinsic_dual_total_correlation = MinimalIntrinsicDualTotalCorrelation.functional()
@@ -163,14 +112,12 @@ class MinimalIntrinsicCAEKLMutualInformation(BaseMinimalIntrinsicMutualInformati
     """
     name = 'CAEKL mutual information'
 
-    def measure(self, joint, rvs, crvs):
+    def measure(self, rvs, crvs):
         """
         The CAEKL mutual information.
 
         Parameters
         ----------
-        pmf : np.ndarray
-            The joint probability distribution
         rvs : iterable of iterables
             The random variables.
         crvs : iterable
@@ -181,36 +128,20 @@ class MinimalIntrinsicCAEKLMutualInformation(BaseMinimalIntrinsicMutualInformati
         caekl : float
             The CAEKL mutual information.
         """
-        others = self._all_vars - (rvs|crvs)
-        joint = joint.sum(axis=tuple(others))
-        crv = joint.sum(axis=tuple(rvs))
-
-        H_crv = h(crv.ravel())
-        H = h(joint.ravel()) - H_crv
-
-        def I_P(part):
-            margs = [ joint.sum(axis=tuple(rvs - p)) for p in part ]
-            a = sum(h(marg.ravel()) - H_crv for marg in margs)
-            return (a - H)/(len(part) - 1)
-
-        parts = [p for p in partitions(rvs) if len(p) > 1]
-
-        caekl = min(I_P(p) for p in parts)
-
-        return caekl
+        return self._caekl_mutual_information(rvs, crvs)
 
 
 minimal_intrinsic_CAEKL_mutual_information = MinimalIntrinsicCAEKLMutualInformation.functional()
 
 
-def minimal_intrinsic_mutual_information(func):
+def minimal_intrinsic_mutual_information_constructor(func):
     """
     Given a measure of shared information, construct an optimizer which computes
     its ``minimal intrinsic'' form.
 
     Parameters
     ----------
-    func : function
+    func : func
         A function which computes the information shared by a set of variables.
         It must accept the arguments `rvs' and `crvs'.
 
@@ -229,10 +160,14 @@ def minimal_intrinsic_mutual_information(func):
     class MinimalIntrinsicMutualInformation(BaseMinimalIntrinsicMutualInformation):
         name = func.__name__
 
-        def measure(self, joint, rvs, crvs):
-            d = Distribution.from_ndarray(joint)
-            mi = func(d, rvs=rvs, crvs=crvs)
-            return mi
+        measure = lambda: None
+
+        def objective(self, x):
+            pmf = self.construct_joint(x)
+            d = Distribution.from_ndarray(pmf)
+            mi = func(d, rvs=self._true_rvs, crvs=self._true_crvs)
+            cmi = self._conditional_mutual_information(self._rvs, self._arvs, self._crvs)(pmf)
+            return mi + cmi
 
     MinimalIntrinsicMutualInformation.__doc__ = \
     """
@@ -245,17 +180,13 @@ def minimal_intrinsic_mutual_information(func):
         
     Parameters
     ----------
-    pmf : np.ndarray
-        The joint probability distribution
-    rvs : iterable of iterables
-        The random variables.
-    crvs : iterable
-        The variables to condition on.
+    x : np.ndarray
+        An optimization vector.
 
     Returns
     -------
-    mi : float
-        The {name}.
+    obj : float
+        The {name}-based objective function.
     """.format(name=func.__name__)
     try:
         # python 2

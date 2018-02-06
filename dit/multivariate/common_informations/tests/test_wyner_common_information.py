@@ -19,11 +19,8 @@ sbec = lambda p: D(['00', '0e', '1e', '11'], [(1-p)/2, p/2, p/2, (1-p)/2])
 C_sbec = lambda p: 1 if p < 1/2 else entropy(p)
 
 
-pytest.importorskip('scipy')
-
-
 @pytest.mark.slow
-@pytest.mark.flaky(reruns=5)
+#@pytest.mark.flaky(reruns=5)
 @pytest.mark.parametrize(('rvs', 'crvs', 'val'), [
     (None, None, 2.0),
     ([[0], [1], [2]], None, 2.0),
@@ -44,8 +41,8 @@ def test_wci2():
     Test the golden mean.
     """
     gm = D([(0,0), (0,1), (1,0)], [1/3]*3)
-    wci = WynerCommonInformation(gm)
-    wci.optimize(minimize=True)
+    wci = WynerCommonInformation(gm, bound=2)
+    wci.optimize(maxiter=1000)
     d = wci.construct_distribution()
     d_opt1 = D([(0,0,0), (0,0,1), (0,1,1), (1,0,0)], [1/6, 1/6, 1/3, 1/3])
     d_opt2 = D([(0,0,1), (0,0,0), (0,1,1), (1,0,0)], [1/6, 1/6, 1/3, 1/3])
@@ -65,9 +62,11 @@ def test_wci3():
     """
     d = D([(0,0), (1,1)], [2/3, 1/3])
     wci = WynerCommonInformation(d)
-    wci.optimize(minimize=True, jacobian=True)
-    d_opt = D([(0,0,0), (1,1,1)], [2/3, 1/3])
+    wci._jacobian = True
+    wci.optimize(minimize=True)
+    d_opt = D([(0, 0, 0), (1, 1, 1)], [2/3, 1/3])
     assert d_opt.is_approx_equal(wci.construct_distribution())
+
 
 @pytest.fixture
 def x0():
@@ -75,7 +74,7 @@ def x0():
 
 
 @pytest.mark.slow
-@pytest.mark.flaky(reruns=5)
+#@pytest.mark.flaky(reruns=5)
 @pytest.mark.parametrize('i', range(1, 10))
 def test_wci4(i, x0):
     """
@@ -83,6 +82,6 @@ def test_wci4(i, x0):
     """
     p = i/10
     wci = WynerCommonInformation(sbec(p))
-    wci.optimize(x0=x0['x0'], nhops=5)
+    wci.optimize(x0=x0['x0'], niter=5, maxiter=1000)
     x0['x0'] = wci._optima
     assert wci.objective(wci._optima) == pytest.approx(C_sbec(p), abs=1e-4)

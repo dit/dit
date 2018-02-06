@@ -34,7 +34,7 @@ __all__ = [
 ]
 
 
-@removals.remove(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
                  version='1.0.1')
 def initial_point_generic(dist, rvs, A=None, b=None, isolated=None, **kwargs):
     """
@@ -108,7 +108,7 @@ def initial_point_generic(dist, rvs, A=None, b=None, isolated=None, **kwargs):
     return xopt, opt
 
 
-@removals.remove(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
                  version='1.0.1')
 def initial_point(dist, k, A=None, b=None, isolated=None, **kwargs):
     """
@@ -129,7 +129,7 @@ def initial_point(dist, k, A=None, b=None, isolated=None, **kwargs):
     return initial_point_generic(dist, rvs, A, b, isolated, **kwargs)
 
 
-@removals.remove(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
                  version='1.0.1')
 def check_feasibility(dist, k, **kwargs):
     """
@@ -166,7 +166,7 @@ def check_feasibility(dist, k, **kwargs):
     return opt
 
 
-@removals.remove(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
                  version='1.0.1')
 def negentropy(p):
     """
@@ -177,7 +177,7 @@ def negentropy(p):
     return np.nansum(p * np.log2(p))
 
 
-@removals.remove(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
                  version='1.0.1')
 def marginal_maxent_generic(dist, rvs, **kwargs):
     from cvxopt import matrix
@@ -240,7 +240,7 @@ def marginal_maxent_generic(dist, rvs, **kwargs):
     return xfinal, obj#, Asmall, b, variables
 
 
-@removals.remove(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
                  version='1.0.1')
 def marginal_maxent(dist, k, **kwargs):
     n_variables = dist.outcome_length()

@@ -60,6 +60,6 @@ def caekl_mutual_information(dist, rvs=None, crvs=None, rv_mode=None):
         a = sum(entropy(dist, rvs=p, crvs=crvs, rv_mode=rv_mode) for p in part)
         return (a - H)/(len(part) - 1)
 
-    J = min( I_P(p) for p in partitions(map(tuple, rvs)) if len(p) > 1 )
+    J = min(I_P(p) for p in partitions(map(tuple, rvs)) if len(p) > 1)
 
     return J
