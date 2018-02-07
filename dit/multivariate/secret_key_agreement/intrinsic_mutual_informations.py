@@ -4,6 +4,8 @@ Intrinsic Mutual Informations
 
 from __future__ import division
 
+import numpy as np
+
 from .base_intrinsic_information import BaseIntrinsicMutualInformation
 
 __all__ = [
@@ -48,6 +50,24 @@ class IntrinsicTotalCorrelation(BaseIntrinsicMutualInformation):
             return total_correlation(pmf)
 
         return objective
+
+    # def objective(self, x):
+    #     idx_joint = (2,)
+    #     idx_margs = [(1,), (0,)]
+    #     idx_crvs = (0, 1)
+    #     n = 1
+    #
+    #     pmf = self.construct_joint(x)
+    #
+    #     pmf_joint = pmf.sum(axis=idx_joint)
+    #     pmf_crvs = pmf_joint.sum(axis=idx_crvs)
+    #     pmf_margs = [pmf_joint.sum(axis=marg) for marg in idx_margs]
+    #
+    #     a = -np.nansum(pmf_joint * np.log2(pmf_joint))
+    #     b = sum(-np.nansum(pmf_marg * np.log2(pmf_marg)) for pmf_marg in pmf_margs)
+    #     c = -np.nansum(pmf_crvs * np.log2(pmf_crvs))
+    #
+    #     return b - a - n * c
 
 
 intrinsic_total_correlation = IntrinsicTotalCorrelation.functional()

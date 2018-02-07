@@ -386,9 +386,11 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
         """
         if crvs is None:
             crvs = set()
-        idx_margs = [tuple(self._all_vars - ({rv} | crvs)) for rv in rvs]
-        idx_joint = tuple(self._all_vars - (rvs | crvs))
-        idx_crvs = tuple(self._all_vars - crvs)
+        joint_rvs = self._all_vars - (rvs | crvs)
+        idx_margs = [tuple(joint_rvs | {rv}) for rv in rvs]
+        idx_crvs = tuple(joint_rvs | crvs)
+        idx_joint = tuple(joint_rvs)
+        n = len(rvs) - 1
 
         def total_correlation(pmf):
             """
@@ -404,15 +406,15 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
             ci : float
                 The total correlation.
             """
-            pmf_crvs = pmf.sum(axis=idx_crvs, keepdims=True)
-            pmf_margs = [pmf.sum(axis=marg, keepdims=True) for marg in idx_margs]
             pmf_joint = pmf.sum(axis=idx_joint, keepdims=True)
+            pmf_crvs = pmf_joint.sum(axis=idx_crvs, keepdims=True)
+            pmf_margs = [pmf_joint.sum(axis=marg, keepdims=True) for marg in idx_margs]
 
-            h_crvs = h(pmf_crvs)
-            h_margs = sum(h(p) - h_crvs for p in pmf_margs)
-            h_joint = h(pmf_joint) - h_crvs
+            h_crvs = h(pmf_crvs.ravel())
+            h_margs = sum(h(p.ravel()) for p in pmf_margs)
+            h_joint = h(pmf_joint.ravel())
 
-            tc = h_margs - h_joint
+            tc = h_margs - h_joint - n*h_crvs
 
             return tc
 

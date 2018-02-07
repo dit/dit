@@ -6,6 +6,8 @@ from __future__ import division
 
 from abc import abstractmethod
 
+import numpy as np
+
 from ... import Distribution
 from ...algorithms import BaseAuxVarOptimizer
 from ...exceptions import ditException
@@ -68,6 +70,30 @@ class BaseIntrinsicMutualInformation(BaseAuxVarOptimizer):
         bound = min(bound, self._crv_size) if bound is not None else self._crv_size
 
         self._construct_auxvars([({crv_index}, bound)])
+
+    def construct_joint(self, x):
+        """
+        Construct the joint distribution.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            An optimization vector.
+
+        Returns
+        -------
+        joint : np.ndarray
+            The joint distribution resulting from the distribution passed
+            in and the optimization vector.
+        """
+        _, _, shape, mask, _ = self._aux_vars[0]
+        channel = x.reshape(shape)
+        channel /= channel.sum(axis=-1, keepdims=True)
+        channel[np.isnan(channel)] = mask[np.isnan(channel)]
+
+        joint = self._pmf[..., np.newaxis] * channel[self._slices[0]]
+
+        return joint
 
     def optimize(self, *args, **kwargs):
         """
