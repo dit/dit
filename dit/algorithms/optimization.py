@@ -215,8 +215,8 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
             h : float
                 The entropy.
             """
-            pmf_joint = pmf.sum(axis=idx_joint)
-            pmf_crvs = pmf.sum(axis=idx_crvs)
+            pmf_joint = pmf.sum(axis=idx_joint, keepdims=True)
+            pmf_crvs = pmf.sum(axis=idx_crvs, keepdims=True)
 
             h_joint = h(pmf_joint)
             h_crvs = h(pmf_crvs)
@@ -404,9 +404,9 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
             ci : float
                 The total correlation.
             """
-            pmf_crvs = pmf.sum(axis=idx_crvs)
-            pmf_margs = [pmf.sum(axis=marg) for marg in idx_margs]
-            pmf_joint = pmf.sum(axis=idx_joint)
+            pmf_crvs = pmf.sum(axis=idx_crvs, keepdims=True)
+            pmf_margs = [pmf.sum(axis=marg, keepdims=True) for marg in idx_margs]
+            pmf_joint = pmf.sum(axis=idx_joint, keepdims=True)
 
             h_crvs = h(pmf_crvs)
             h_margs = sum(h(p) - h_crvs for p in pmf_margs)
@@ -455,9 +455,9 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
             ci : float
                 The dual total correlation.
             """
-            pmf_joint = pmf.sum(axis=idx_joint)
-            pmf_margs = [pmf.sum(axis=marg) for marg in idx_margs]
-            pmf_crvs = pmf.sum(axis=idx_crvs)
+            pmf_joint = pmf.sum(axis=idx_joint, keepdims=True)
+            pmf_margs = [pmf.sum(axis=marg, keepdims=True) for marg in idx_margs]
+            pmf_crvs = pmf.sum(axis=idx_crvs, keepdims=True)
 
             h_crvs = h(pmf_crvs)
             h_joint = h(pmf_joint) - h_crvs
@@ -511,9 +511,9 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
             caekl : float
                 The CAEKL mutual information.
             """
-            pmf_crvs = pmf.sum(axis=idx_crvs)
-            pmf_joint = pmf.sum(axis=idx_joint)
-            pmf_parts = {p: pmf.sum(axis=idx) for p, idx in idx_parts.items()}
+            pmf_crvs = pmf.sum(axis=idx_crvs, keepdims=True)
+            pmf_joint = pmf.sum(axis=idx_joint, keepdims=True)
+            pmf_parts = {p: pmf.sum(axis=idx, keepdims=True) for p, idx in idx_parts.items()}
 
             h_crvs = h(pmf_crvs)
             h_joint = h(pmf_joint) - h_crvs
@@ -860,7 +860,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
         self._aux_bounds = [av.bound for av in self._aux_vars]
         self._optvec_size = sum([av.size for av in self._aux_vars])
         self._default_hops = prod(self._aux_bounds)
-
+        self._parts = list(pairwise(np.cumsum([0] + [av.size for av in self._aux_vars])))
         self._construct_slices()
 
     def _construct_slices(self):
@@ -903,8 +903,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
         channels : [np.ndarray]
             A list of conditional distributions.
         """
-        parts = np.cumsum([0] + [av.size for av in self._aux_vars])
-        parts = [x[a:b] for a, b in pairwise(parts)]
+        parts = [x[a:b] for a, b in self._parts]
 
         channels = []
         for part, auxvar in zip(parts, self._aux_vars):
