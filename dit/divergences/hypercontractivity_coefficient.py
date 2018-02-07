@@ -22,6 +22,8 @@ class HypercontractivityCoefficient(BaseAuxVarOptimizer):
         max_{U - X - Y} I[U:Y]/I[U:X]
     """
 
+    _shotgun = True
+
     def __init__(self, dist, rv_x=None, rv_y=None, bound=None, rv_mode=None):
         """
         Initialize the optimizer.
@@ -54,8 +56,6 @@ class HypercontractivityCoefficient(BaseAuxVarOptimizer):
         bound = min(bound, theoretical_bound) if bound else theoretical_bound
 
         self._construct_auxvars([({0}, bound)])
-
-        self._shotgun = True
 
     def _objective(self):
         """

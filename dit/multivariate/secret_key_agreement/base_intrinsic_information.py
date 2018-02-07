@@ -6,8 +6,6 @@ from __future__ import division
 
 from abc import abstractmethod
 
-import numpy as np
-
 from ... import Distribution
 from ...algorithms import BaseAuxVarOptimizer
 from ...exceptions import ditException
@@ -29,8 +27,6 @@ class BaseIntrinsicMutualInformation(BaseAuxVarOptimizer):
     name = ""
 
     construct_initial = BaseAuxVarOptimizer.construct_random_initial
-
-    _shotgun = True
 
     def __init__(self, dist, rvs=None, crvs=None, rv_mode=None, bound=None):
         """
@@ -71,30 +67,6 @@ class BaseIntrinsicMutualInformation(BaseAuxVarOptimizer):
 
         self._construct_auxvars([({crv_index}, bound)])
 
-    def construct_joint(self, x):
-        """
-        Construct the joint distribution.
-
-        Parameters
-        ----------
-        x : np.ndarray
-            An optimization vector.
-
-        Returns
-        -------
-        joint : np.ndarray
-            The joint distribution resulting from the distribution passed
-            in and the optimization vector.
-        """
-        _, _, shape, mask, _ = self._aux_vars[0]
-        channel = x.reshape(shape)
-        channel /= channel.sum(axis=-1, keepdims=True)
-        channel[np.isnan(channel)] = mask[np.isnan(channel)]
-
-        joint = self._pmf[..., np.newaxis] * channel[self._slices[0]]
-
-        return joint
-
     def optimize(self, *args, **kwargs):
         """
         Perform the optimization.
@@ -108,6 +80,7 @@ class BaseIntrinsicMutualInformation(BaseAuxVarOptimizer):
             hop a number of times equal to the dimension of the conditioning
             variable(s).
         """
+        kwargs['polish'] = False
         result = super(BaseIntrinsicMutualInformation, self).optimize(*args, **kwargs)
 
         # test against known upper bounds as well, in case space wasn't well sampled.
