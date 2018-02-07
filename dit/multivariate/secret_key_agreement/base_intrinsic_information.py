@@ -62,8 +62,8 @@ class BaseIntrinsicMutualInformation(BaseAuxVarOptimizer):
         super(BaseIntrinsicMutualInformation, self).__init__(dist, rvs, crvs, rv_mode=rv_mode)
 
         crv_index = len(self._shape) - 1
-        self._crv_size = self._shape[crv_index]
-        bound = min(bound, self._crv_size) if bound is not None else self._crv_size
+        crv_size = self._shape[crv_index]
+        bound = min([bound, crv_size]) if bound is not None else crv_size
 
         self._construct_auxvars([({crv_index}, bound)])
 
@@ -80,7 +80,8 @@ class BaseIntrinsicMutualInformation(BaseAuxVarOptimizer):
             hop a number of times equal to the dimension of the conditioning
             variable(s).
         """
-        kwargs['polish'] = False
+        if 'polish' not in kwargs:
+            kwargs['polish'] = False
         result = super(BaseIntrinsicMutualInformation, self).optimize(*args, **kwargs)
 
         # test against known upper bounds as well, in case space wasn't well sampled.
@@ -180,7 +181,7 @@ class BaseMoreIntrinsicMutualInformation(BaseAuxVarOptimizer):
         super(BaseMoreIntrinsicMutualInformation, self).__init__(dist, rvs, crvs, rv_mode=rv_mode)
 
         theoretical_bound = prod(self._shape)
-        bound = min(bound, theoretical_bound) if bound else theoretical_bound
+        bound = min([bound, theoretical_bound]) if bound else theoretical_bound
 
         self._construct_auxvars([(self._rvs | self._crvs, bound)])
 
