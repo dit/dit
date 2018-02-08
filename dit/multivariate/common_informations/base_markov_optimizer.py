@@ -452,15 +452,25 @@ class MarkovVarOptimizer(BaseAuxVarOptimizer):
         theoretical_bound = self.compute_bound()
         bound = min(bound, theoretical_bound) if bound else theoretical_bound
 
-        self._m = len(self._rvs) + len(self._crvs)
-        self._pmf_x = self._pmf.sum(axis=tuple(range(1, self._n)))[:, np.newaxis]
-        self._W = {self._m}
+        rv_bounds = self._shape[1:-1]
+        self._pmf_to_match = self._pmf.copy()
 
-        self._construct_auxvars([({0} | self._crvs, bound)] +
-                                [(self._W | self._crvs, s) for i, s in enumerate(self._shape[1:])])
+        self._pmf = self._pmf.sum(axis=tuple(range(1, len(self._shape)-1)))
+        self._shape = self._pmf.shape
+        self._all_vars = {0, 1}
 
-        self._crvs = {max(self._arvs)}
-        self._rvs = {0} | (self._arvs - self._crvs)
+        self.__rvs, self._rvs = self._rvs, {0}
+        self.__crvs, self._crvs = self._crvs, {1}
+
+        self._construct_auxvars([({0, 1}, bound)] +
+                                [({1, 2}, s) for s in rv_bounds])
+
+        self._rvs = self.__rvs
+        self._crvs = self.__crvs
+        del self.__rvs
+        del self.__crvs
+
+        self._W = {1 + len(self._aux_vars)}
 
         # The constraint that the joint doesn't change.
         self.constraints = [{'type': 'eq',
@@ -486,46 +496,10 @@ class MarkovVarOptimizer(BaseAuxVarOptimizer):
         """
         pass
 
-    # def construct_joint(self, x):
-    #     """
-    #     Construct the joint distribution.
-    #
-    #     Parameters
-    #     ----------
-    #     x : np.ndarray
-    #         An optimization vector.
-    #
-    #     Returns
-    #     -------
-    #     joint : np.ndarray
-    #         The joint distribution resulting from the distribution passed
-    #         in and the optimization vector.
-    #     """
-    #     pmf = super(MarkovVarOptimizer, self).construct_joint(x)
-    #     print(pmf.shape)
-    #     pmf = pmf.sum(axis=tuple(range(1, self._m)))
-    #     print(pmf.shape)
-    #     pmf = np.moveaxis(pmf, 1, -1)
-    #     print(pmf.shape)
-    #     return pmf
-
-    def construct_full_joint(self, x):
-        """
-        Construct the joint distribution.
-
-        Parameters
-        ----------
-        x : np.ndarray
-            An optimization vector.
-
-        Returns
-        -------
-        joint : np.ndarray
-            The joint distribution resulting from the distribution passed
-            in and the optimization vector.
-        """
-        joint = super(MarkovVarOptimizer, self).construct_full_joint(x)
-
+    def construct_joint(self, x):
+        joint = super(MarkovVarOptimizer, self).construct_joint(x)
+        joint = np.moveaxis(joint, 1, -1)
+        joint = np.moveaxis(joint, 1, -1)
         return joint
 
     def constraint_match_joint(self, x):
@@ -539,9 +513,9 @@ class MarkovVarOptimizer(BaseAuxVarOptimizer):
             An optimization vector.
         """
         joint = self.construct_joint(x)
-        joint = joint.sum(axis=tuple(range(1, self._m + 1)))  # marginalize out w
+        joint = joint.sum(axis=-1)  # marginalize out w
 
-        delta = (100*(joint - self._pmf)**2).sum()
+        delta = (100*(joint - self._pmf_to_match)**2).sum()
 
         return delta
 

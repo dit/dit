@@ -31,13 +31,13 @@ class ExactCommonInformation(MarkovVarOptimizer):
             The bound.
         """
         # from the Caratheodory-Fenchel theorem
-        bound_1 = np.prod(self._shape)
+        bound_1 = np.prod(self._shape[:-1])
 
         # from number of support-distinct conditional distributions
-        combos = combinations(self._shape, len(self._shape)-1)
+        combos = combinations(self._shape[:-1], len(self._shape[:-1])-1)
         bound_2 = 2**min(np.prod(combo) for combo in combos) - 1
 
-        return min(bound_1, bound_2)
+        return min([bound_1, bound_2])
 
     def _objective(self):
         """
