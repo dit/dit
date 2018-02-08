@@ -30,31 +30,44 @@ class ExactCommonInformation(MarkovVarOptimizer):
         bound : int
             The bound.
         """
-        sizes = [ sum(s) for s in self._rv_sizes ]
         # from the Caratheodory-Fenchel theorem
-        bound_1 = np.prod(sizes)
+        bound_1 = np.prod(self._shape)
 
         # from number of support-distinct conditional distributions
-        combos = combinations(sizes, len(sizes)-1)
+        combos = combinations(self._shape, len(self._shape)-1)
         bound_2 = 2**min(np.prod(combo) for combo in combos) - 1
 
         return min(bound_1, bound_2)
 
-    def objective(self, x):
+    def _objective(self):
         """
         The entropy of the auxiliary random variable.
 
-        Parameters
-        ----------
-        x : ndarray
-            An optimization vector.
-
         Returns
         -------
-        h : float
-            The entropy of the auxiliar random variable.
+        obj : func
+            The objective function.
         """
-        return self.entropy(x)
+        entropy = self._entropy(self._W, self._crvs)
+
+        def objective(self, x):
+            """
+            Compute H[W | crvs]
+
+            Parameters
+            ----------
+            x : np.ndarray
+                An optimization vector.
+
+            Returns
+            -------
+            obj : float
+                The value of the objective.
+            """
+            pmf = self.construct_joint(x)
+            return entropy(pmf)
+
+        return objective
 
 
 exact_common_information = ExactCommonInformation.functional()

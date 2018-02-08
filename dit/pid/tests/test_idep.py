@@ -84,7 +84,6 @@ def test_pid_dep4():
     """
     d = trivariates['anddup']
     pid = PID_dep(d)
-    print(pid)
     assert pid.complete
     assert pid.nonnegative
     assert pid.consistent

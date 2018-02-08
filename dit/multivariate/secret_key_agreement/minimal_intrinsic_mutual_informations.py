@@ -36,7 +36,19 @@ class BaseMinimalIntrinsicMutualInformation(BaseMoreIntrinsicMutualInformation):
         cmi = self._conditional_mutual_information(self._rvs, self._arvs, self._crvs)
 
         def objective(self, x):
+            """
+            Compute I[X:Y|U] + I[XY:U|Z]
 
+            Parameters
+            ----------
+            x : np.ndarray
+                An optimization vector.
+
+            Returns
+            -------
+            obj : float
+                The value of the objective.
+            """
             pmf = self.construct_joint(x)
 
             # I[X:Y|U]

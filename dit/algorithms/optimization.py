@@ -24,7 +24,7 @@ from scipy.optimize import basinhopping, differential_evolution, minimize
 from .. import Distribution, insert_rvf, modify_outcomes
 from ..algorithms.channelcapacity import channel_capacity
 from ..exceptions import OptimizationException
-from ..helpers import flatten, parse_rvs
+from ..helpers import flatten, normalize_rvs, parse_rvs
 from ..math import prod
 from ..utils import partitions, powerset
 from ..utils.optimization import (BasinHoppingCallBack,
@@ -41,8 +41,6 @@ __all__ = [
     'BaseNonConvexOptimizer',
     'BaseAuxVarOptimizer',
 ]
-
-h = lambda p: -np.nansum(p*np.log2(p))
 
 
 class BaseOptimizer(with_metaclass(ABCMeta, object)):
@@ -70,13 +68,14 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
             variable names. If `None`, then the value of `dist._rv_mode` is
             consulted, which defaults to 'indices'.
         """
+        rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
         self._dist = dist.copy(base='linear')
 
         self._alphabet = self._dist.alphabet
         self._original_shape = list(map(len, self._dist.alphabet))
 
-        self._true_rvs = [parse_rvs(self._dist, rv, rv_mode)[1] for rv in rvs]
-        self._true_crvs = parse_rvs(self._dist, crvs, rv_mode)[1]
+        self._true_rvs = [parse_rvs(self._dist, rv, rv_mode=rv_mode)[1] for rv in rvs]
+        self._true_crvs = parse_rvs(self._dist, crvs, rv_mode=rv_mode)[1]
         self._dist = modify_outcomes(self._dist, tuple)
 
         # compress all random variables down to single vars
@@ -180,6 +179,23 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
     ###########################################################################
     # Convenience functions for constructing objectives.
 
+    @staticmethod
+    def _h(p):
+        """
+        Compute the entropy of `p`.
+
+        Parameters
+        ----------
+        p : np.ndarray
+            A vector of probabilities.
+
+        Returns
+        -------
+        h : float
+            The entropy.
+        """
+        return -np.nansum(p*np.log2(p))
+
     def _entropy(self, rvs, crvs=None):
         """
         Compute the conditional entropy, H[X|Y]
@@ -218,8 +234,8 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
             pmf_joint = pmf.sum(axis=idx_joint, keepdims=True)
             pmf_crvs = pmf_joint.sum(axis=idx_crvs, keepdims=True)
 
-            h_joint = h(pmf_joint)
-            h_crvs = h(pmf_crvs)
+            h_joint = self._h(pmf_joint)
+            h_crvs = self._h(pmf_crvs)
 
             ch = h_joint - h_crvs
 
@@ -410,9 +426,9 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
             pmf_margs = [pmf_joint.sum(axis=marg, keepdims=True) for marg in idx_margs]
             pmf_crvs = pmf_margs[0].sum(axis=idx_crvs, keepdims=True)
 
-            h_crvs = h(pmf_crvs.ravel())
-            h_margs = sum(h(p.ravel()) for p in pmf_margs)
-            h_joint = h(pmf_joint.ravel())
+            h_crvs = self._h(pmf_crvs.ravel())
+            h_margs = sum(self._h(p.ravel()) for p in pmf_margs)
+            h_joint = self._h(pmf_joint.ravel())
 
             tc = h_margs - h_joint - n*h_crvs
 
@@ -461,9 +477,9 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
             pmf_margs = [pmf_joint.sum(axis=marg, keepdims=True) for marg in idx_margs]
             pmf_crvs = pmf_joint.sum(axis=idx_crvs, keepdims=True)
 
-            h_crvs = h(pmf_crvs)
-            h_joint = h(pmf_joint) - h_crvs
-            h_margs = [h(marg) - h_crvs for marg in pmf_margs]
+            h_crvs = self._h(pmf_crvs)
+            h_joint = self._h(pmf_joint) - h_crvs
+            h_margs = [self._h(marg) - h_crvs for marg in pmf_margs]
 
             dtc = sum(h_margs) - n*h_joint
 
@@ -517,11 +533,11 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
             pmf_parts = {p: pmf_joint.sum(axis=idx, keepdims=True) for p, idx in idx_parts.items()}
             pmf_crvs = pmf_joint.sum(axis=idx_crvs, keepdims=True)
 
-            h_crvs = h(pmf_crvs)
-            h_joint = h(pmf_joint) - h_crvs
+            h_crvs = self._h(pmf_crvs)
+            h_joint = self._h(pmf_joint) - h_crvs
 
             pairs = zip(parts, part_norms)
-            candidates = [(sum(h(pmf_parts[p]) - h_crvs for p in part)-h_joint)/norm for part, norm in pairs]
+            candidates = [(sum(self._h(pmf_parts[p]) - h_crvs for p in part)-h_joint)/norm for part, norm in pairs]
 
             caekl = min(candidates)
 
@@ -866,8 +882,6 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
         self._construct_slices()
         if len(self._aux_vars) == 1:
             self.construct_joint = self._construct_joint_single
-        else:
-            self.construct_joint = self._construct_joint_many
 
     def _construct_slices(self):
         """
@@ -904,23 +918,21 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
         x : np.ndarray
             An optimization vector
 
-        Returns
-        -------
-        channels : [np.ndarray]
-            A list of conditional distributions.
+        Yields
+        ------
+        channel : np.ndarray
+            A conditional distribution.
         """
         parts = [x[a:b] for a, b in self._parts]
 
-        channels = []
         for part, auxvar in zip(parts, self._aux_vars):
             channel = part.reshape(auxvar.shape)
             channel /= channel.sum(axis=(-1,), keepdims=True)
             channel[np.isnan(channel)] = auxvar.mask[np.isnan(channel)]
-            channels.append(channel)
 
-        return channels
+            yield channel
 
-    def _construct_joint_many(self, x):
+    def construct_joint(self, x):
         """
         Construct the joint distribution.
 

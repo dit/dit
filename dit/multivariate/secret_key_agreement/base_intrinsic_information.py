@@ -80,8 +80,6 @@ class BaseIntrinsicMutualInformation(BaseAuxVarOptimizer):
             hop a number of times equal to the dimension of the conditioning
             variable(s).
         """
-        if 'polish' not in kwargs:
-            kwargs['polish'] = False
         result = super(BaseIntrinsicMutualInformation, self).optimize(*args, **kwargs)
 
         # test against known upper bounds as well, in case space wasn't well sampled.

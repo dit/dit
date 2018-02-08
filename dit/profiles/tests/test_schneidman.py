@@ -29,4 +29,4 @@ def test_schneidman_profile(ex, prof):
     Test against known examples.
     """
     sp = SchneidmanProfile(ex)
-    assert np.allclose([sp.profile[i] for i in (1,2,3)], prof, atol=1e-5)
+    assert np.allclose([sp.profile[i] for i in (1, 2, 3)], prof, atol=1e-5)

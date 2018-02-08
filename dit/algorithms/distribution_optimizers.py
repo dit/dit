@@ -84,7 +84,7 @@ class BaseDistOptimizer(BaseOptimizer):
             variable names. If `None`, then the value of `dist._rv_mode` is
             consulted, which defaults to 'indices'.
         """
-        super(BaseDistOptimizer, self).__init__(dist, dist.rvs, crvs=[], rv_mode=rv_mode)
+        super(BaseDistOptimizer, self).__init__(dist, dist.rvs, crvs=[], rv_mode='indices')
 
         # todo: actually make this class support crvs?
         self._all_vars = self._rvs
@@ -96,14 +96,18 @@ class BaseDistOptimizer(BaseOptimizer):
         self._free = infer_free_values(self._A, self._b)
         self.constraints = [{'type': 'eq',
                              'fun': self.constraint_match_marginals,
-                            },
-                           ]
+                             },
+                            ]
         self._optvec_size = len(self._free)
         self._default_hops = 50
 
-        self._additional_options = {'options': {'maxiter': 1000}}
+        self._additional_options = {'options': {'maxiter': 1000,
+                                                'ftol': 1e-7,
+                                                'eps': 1.4901161193847656e-08,
+                                                }
+                                    }
 
-    def optimize(self, x0=None, niter=None, maxiter=1000, polish=1e-8, callback=False):
+    def optimize(self, x0=None, niter=None, maxiter=None, polish=1e-8, callback=False):
         """
         Optimize this distribution w.r.t the objective.
 
@@ -532,8 +536,6 @@ def marginal_maxent_dists(dist, k_max=None):
         The distribution used to constrain the maxent distributions.
     k_max : int
         The maximum order to calculate.
-    verbose : bool
-        If True, print more information.
 
     Returns
     -------
@@ -572,7 +574,7 @@ def marginal_maxent_dists(dist, k_max=None):
         else:
             rvs = list(combinations(range(n_variables), k))
 
-        dists.append(maxent_dist(dist, rvs, rv_mode))
+        dists.append(maxent_dist(dist, rvs, rv_mode=rv_mode))
 
     # To match the all-way marginal is to match itself. Again, this is a time
     # savings decision, even though the optimization should be fast.

@@ -10,7 +10,7 @@ from ..multivariate import coinformation
 from ..profiles import DependencyDecomposition
 
 
-def i_dep(d, inputs, output, maxiter=500):
+def i_dep(d, inputs, output, maxiter=None):
     """
     This computes unique information as min(delta(I(inputs : output))) where delta
     is taken over the dependency decomposition.
