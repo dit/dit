@@ -92,7 +92,7 @@ class MarkovVarOptimizer(BaseAuxVarOptimizer):
                             ]
 
         self._additional_options = {'options': {'maxiter': 1000,
-                                                'ftol': 2e-7,
+                                                'ftol': 1e-6,
                                                 'eps': 1.4901161193847656e-9,
                                                 }
                                     }
