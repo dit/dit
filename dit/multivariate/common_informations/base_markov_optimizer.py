@@ -94,7 +94,7 @@ class MarkovVarOptimizer(BaseAuxVarOptimizer):
                             ]
 
         self._additional_options = {'options': {'maxiter': 1000,
-                                                'ftol': 5e-7,
+                                                'ftol': 2e-7,
                                                 'eps': 1.4901161193847656e-9,
                                                 }
                                     }
@@ -238,7 +238,7 @@ class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):
     of the auxiliary variable.
     """
 
-    def optimize(self, x0=None, niter=None, polish=1e-6, callback=False, minimize=False, min_niter=15):
+    def optimize(self, x0=None, niter=None, maxiter=None, polish=1e-6, callback=False, minimize=True, min_niter=15):
         """
         Parameters
         ----------
@@ -247,6 +247,8 @@ class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):
             vector is used.
         niter : int
             The number of times to basin hop in the optimization.
+        maxiter : int
+            The number of inner optimizer steps to perform.
         polish : False, float
             Whether to polish the result or not. If a float, this will perform a
             second optimization seeded with the result of the first, but with
@@ -260,9 +262,13 @@ class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):
             The number of basin hops to make during the minimization of the common variable.
         """
         # call the normal optimizer
-        super(MinimizingMarkovVarOptimizer, self).optimize(x0=x0, niter=niter, polish=False, callback=callback)
+        super(MinimizingMarkovVarOptimizer, self).optimize(x0=x0,
+                                                           niter=niter,
+                                                           maxiter=maxiter,
+                                                           polish=False,
+                                                           callback=callback)
         if minimize:
             # minimize the entropy of W
-            self._post_process(style='entropy', minmax='min', niter=min_niter)
+            self._post_process(style='entropy', minmax='min', niter=min_niter, maxiter=maxiter)
         if polish:
             self._polish(cutoff=polish)

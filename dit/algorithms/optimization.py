@@ -1166,7 +1166,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
             ccs.append(channel_capacity(channel)[0])
         return ccs
 
-    def _post_process(self, style='entropy', minmax='min', niter=10):  # pragma: no cover
+    def _post_process(self, style='entropy', minmax='min', niter=10, maxiter=None):  # pragma: no cover
         """
         Find a solution to the minimization with a secondary property.
 
@@ -1180,6 +1180,8 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
             Whether to minimize or maximize the objective.
         niter : int
             The number of basin hops to perform.
+        maxiter : int
+            The number of minimization steps to perform.
 
         Notes
         -----
@@ -1268,7 +1270,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
 
         self.__old_objective, self.objective = self.objective, objective
 
-        self.optimize(x0=self._optima.copy(), niter=niter)
+        self.optimize(x0=self._optima.copy(), niter=niter, maxiter=maxiter)
 
         # and remove them again.
         self.constraints = self.constraints[:-1]
