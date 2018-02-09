@@ -6,8 +6,6 @@ from __future__ import division
 
 from abc import abstractmethod
 
-from functools import lru_cache
-
 import numpy as np
 
 from ... import Distribution
