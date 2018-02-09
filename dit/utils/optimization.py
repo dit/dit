@@ -4,6 +4,8 @@ Helpful utilities for performing optimization.
 
 from collections import namedtuple
 
+from contextlib import contextmanager
+
 from operator import itemgetter
 
 from string import digits, ascii_letters
@@ -11,6 +13,19 @@ from string import digits, ascii_letters
 import numpy as np
 
 from scipy.optimize import OptimizeResult
+
+
+__all__ = [
+    'BasinHoppingCallBack',
+    'BasinHoppingInnerCallBack',
+    'Uniquifier',
+    'accept_test',
+    'basinhop_status',
+    'colon',
+]
+
+
+colon = slice(None, None, None)
 
 
 class BasinHoppingInnerCallBack(object):
@@ -142,7 +157,7 @@ class BasinHoppingCallBack(object):
 
 class Uniquifier(object):
     """
-    Given a stream of catagorical symbols, provide a mapping to unique consecutive integers.
+    Given a stream of categorical symbols, provide a mapping to unique consecutive integers.
 
     Attributes
     ----------
@@ -210,5 +225,3 @@ def basinhop_status(res):
         success = 'success' in res.message[0]
         msg = res.message[0]
     return success, msg
-
-colon = slice(None, None, None)

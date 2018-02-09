@@ -79,9 +79,11 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
         self._dist = modify_outcomes(self._dist, tuple)
 
         # compress all random variables down to single vars
+        self._unqs = []
         for var in self._true_rvs + [self._true_crvs]:
             unq = Uniquifier()
             self._dist = insert_rvf(self._dist, lambda x: (unq(tuple(x[i] for i in var)),))
+            self._unqs.append(unq)
 
         self._dist.make_dense()
 
@@ -1105,18 +1107,37 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
             string = False
 
         joint = self.construct_full_joint(x)
-        joint = joint.sum(axis=self._proxy_vars)
+        # joint = joint.sum(axis=self._proxy_vars)
         outcomes, pmf = zip(*[(o, p) for o, p in np.ndenumerate(joint) if p > cutoff])
-        outcomes = [tuple(a[i] for i, a in zip(o, alphabets)) for o in outcomes]
-
-        if string:
-            outcomes = [''.join(o) for o in outcomes]
+        # outcomes = [tuple(a[i] for i, a in zip(o, alphabets)) for o in outcomes]
 
         # normalize, in case cutoffs removed a significant amount of pmf
         pmf = np.asarray(pmf)
         pmf /= pmf.sum()
 
         d = Distribution(outcomes, pmf)
+
+        mapping = {}
+        for i, unq in zip(sorted(self._n + i for i in self._rvs | self._crvs), self._unqs):
+            if len(unq.inverse) > 1:
+                n = d.outcome_length()
+                d = insert_rvf(d, lambda o: unq.inverse[o[i]])
+                mapping[i] = tuple(range(n, n+len(unq.inverse[0])))
+
+        new_map = {}
+        for rv, rvs in zip(sorted(self._rvs), self._true_rvs):
+            i = rv + self._n
+            for a, b in zip(rvs, mapping[i]):
+                new_map[a] = b
+
+        mapping = [[(new_map[i] if i in new_map else i) for i in range(len(self._full_shape))
+                                                                 if i not in self._proxy_vars]]
+
+        d = d.coalesce(mapping, extract=True)
+
+        if string:
+            d = modify_outcomes(d, lambda o: ''.join(map(str, o)))
+
         return d
 
     ###########################################################################
