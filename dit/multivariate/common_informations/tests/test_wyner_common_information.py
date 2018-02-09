@@ -44,7 +44,7 @@ def test_wci2():
     wci = WynerCommonInformation(gm, bound=2)
     wci.optimize()
     wci._post_process(style='entropy', minmax='min', niter=10)
-    d = wci.construct_distribution()
+    d = wci.construct_distribution(cutoff=1e-2)
     d_opt1 = D([(0, 0, 0), (0, 0, 1), (0, 1, 1), (1, 0, 0)], [1/6, 1/6, 1/3, 1/3])
     d_opt2 = D([(0, 0, 1), (0, 0, 0), (0, 1, 1), (1, 0, 0)], [1/6, 1/6, 1/3, 1/3])
     d_opt3 = D([(0, 0, 0), (0, 0, 1), (0, 1, 0), (1, 0, 1)], [1/6, 1/6, 1/3, 1/3])

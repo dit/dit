@@ -660,7 +660,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
         if x0 is not None:
             res = minimize(fun=self.objective,
                            x0=x0,
-                           **minimizer_kwargs,
+                           **minimizer_kwargs
                            )
             if res.success:
                 results.append(res)
