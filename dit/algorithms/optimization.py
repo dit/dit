@@ -670,7 +670,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
         for initial in ics:
             res = minimize(fun=self.objective,
                            x0=initial,
-                           **minimizer_kwargs,
+                           **minimizer_kwargs
                            )
             if res.success:
                 results.append(res)
