@@ -55,11 +55,12 @@ def test_wci2():
 
 
 @pytest.mark.slow
-# @pytest.mark.skip(reason="Jacobian doesn't seem to work well right now.")
 def test_wci3():
     """
     Test with jacobian=True
     """
+    pytest.importorskip("numdifftools")
+
     d = D([(0, 0), (1, 1)], [2/3, 1/3])
     wci = WynerCommonInformation(d, bound=2)
     wci._jacobian = True
