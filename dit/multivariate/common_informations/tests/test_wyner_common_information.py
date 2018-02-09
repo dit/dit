@@ -55,6 +55,7 @@ def test_wci2():
 
 
 @pytest.mark.slow
+@pytest.mark.skip("Computing Jacobians with numdifftools is too slow.")
 def test_wci3():
     """
     Test with jacobian=True
