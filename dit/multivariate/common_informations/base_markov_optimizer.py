@@ -129,6 +129,7 @@ class MarkovVarOptimizer(BaseAuxVarOptimizer):
         joint = super(MarkovVarOptimizer, self).construct_joint(x)
         joint = np.moveaxis(joint, 1, -1)  # move crvs
         joint = np.moveaxis(joint, 1, -1)  # move W
+
         return joint
 
     def construct_full_joint(self, x):
