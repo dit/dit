@@ -66,6 +66,7 @@ class BaseSKARLowerBounds(BaseAuxVarOptimizer):
         self._z = {2}
         self._u = {3}
         self._v = {4}
+        self._default_hops *= 2
 
     @abstractmethod
     def _get_u_bound(self):
@@ -272,12 +273,14 @@ def necessary_intrinsic_mutual_information_directed(dist, X, Y, Z, rv_mode=None,
     nimi : float
         The necessary intrinsic mutual information.
     """
-    nimi = NecessaryIntrinsicMutualInformation(dist, X, Y, Z, rv_mode=rv_mode,
-                                               bound_u=bound_u, bound_v=bound_v)
-    nimi.optimize(niter=niter)
-    value = -nimi.objective(nimi._optima)
+    values = []
+    for bound in {1, 2, 3, bound_v}:
+        nimi = NecessaryIntrinsicMutualInformation(dist, X, Y, Z, rv_mode=rv_mode,
+                                                   bound_u=bound_u, bound_v=bound)
+        nimi.optimize(niter=niter)
+        values.append(-nimi.objective(nimi._optima))
 
-    return value
+    return max(values)
 
 
 def necessary_intrinsic_mutual_information(dist, rvs, crvs, rv_mode=None,

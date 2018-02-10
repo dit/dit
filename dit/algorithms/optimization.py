@@ -101,6 +101,8 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
 
         self._proxy_vars = tuple(range(self._n, self._n+len(rvs)+1))
 
+        self._prior_x = [0]
+
         self._additional_options = {}
 
     ###########################################################################
@@ -949,12 +951,18 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
             The joint distribution resulting from the distribution passed
             in and the optimization vector.
         """
-        joint = self._pmf
+        if np.allclose(x, self._prior_x):
+            joint = self._prior_pmf
+        else:
+            joint = self._pmf
 
-        channels = self._construct_channels(x)
+            channels = self._construct_channels(x)
 
-        for channel, slc in zip(channels, self._slices):
-            joint = joint[..., np.newaxis] * channel[slc]
+            for channel, slc in zip(channels, self._slices):
+                joint = joint[..., np.newaxis] * channel[slc]
+
+            self._prior_x = x.copy()
+            self._prior_pmf = joint.copy()
 
         return joint
 
