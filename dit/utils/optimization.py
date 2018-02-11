@@ -240,7 +240,7 @@ def memoize_optvec(f):
         try:
             cache = self.__cache
         except AttributeError:
-            obj.__cache = {}
+            cache = self.__cache = {}
 
         if np.allclose(x, prior_x):
             value = cache[f]
