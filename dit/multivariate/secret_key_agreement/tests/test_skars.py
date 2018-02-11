@@ -2,7 +2,7 @@
 Test the hierarchy of secret key agreement rates.
 """
 
-from hypothesis import given
+from hypothesis import given, settings, unlimited, HealthCheck
 
 from dit.utils.testing import distributions
 
@@ -17,6 +17,11 @@ from dit.multivariate.secret_key_agreement import (lower_intrinsic_mutual_inform
 eps = 1e-4
 
 
+@settings(deadline=None,
+          timeout=unlimited,
+          min_satisfying_examples=3,
+          max_examples=5,
+          suppress_health_check=[HealthCheck.hung_test])
 @given(dist=distributions(alphabets=(2,)*3))
 def test_hierarchy(dist):
     """

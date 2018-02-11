@@ -91,7 +91,7 @@ class MarkovVarOptimizer(BaseAuxVarOptimizer):
                              },
                             ]
 
-        self._default_hops = 10
+        self._default_hops = 5
 
         self._additional_options = {'options': {'maxiter': 1000,
                                                 'ftol': 1e-6,

@@ -89,4 +89,4 @@ def test_wci4(i, x0):
     wci = WynerCommonInformation(sbec(p))
     wci.optimize(x0=x0['x0'])
     x0['x0'] = wci._optima.copy()
-    assert wci.objective(wci._optima) == pytest.approx(C_sbec(p), abs=1e-4)
+    assert wci.objective(wci._optima) == pytest.approx(C_sbec(p), abs=1e-3)
