@@ -228,30 +228,27 @@ def basinhop_status(res):
     return success, msg
 
 
-class memoize_optvec(object):
+def memoize_optvec(f):
     """
     """
-    def __init__(self, func):
-        self.func = func
-
-    def __call__(self, obj, x):
+    @wraps(f)
+    def wrapped(self, x):
         try:
-            prior_x = obj.__prior_x
+            prior_x = self.__prior_x
         except AttributeError:
             prior_x = [0]
 
         try:
-            cache = obj.__cache
+            cache = self.__cache
         except AttributeError:
             obj.__cache = {}
 
         if np.allclose(x, prior_x):
             try:
-                value = cache[self.func]
+                value = cache[f]
             except KeyError:
-                value = cache[self.func] = self.func(obj, x)
+                value = cache[f] = f(obj, x)
         else:
-            value = self.func(obj, x)
-            cache[self.func] = value
+            value = cache[f] = f(obj, x)
 
         return value
