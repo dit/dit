@@ -244,11 +244,11 @@ def memoize_optvec(f):
 
         if np.allclose(x, prior_x):
             value = cache[f]
-            print("{} is close to {}; returning {}".format(x, prior_x, value))
+            # print("{} is close to {}; returning {}".format(x, prior_x, value))
         else:
             value = cache[f] = f(self, x)
             self.__prior_x = x
-            print("{} is new; caching {}".format(x, value))
+            # print("{} is new; caching {}".format(x, value))
 
         return value
 

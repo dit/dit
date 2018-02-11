@@ -724,7 +724,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
                        )
 
         if res.success:
-            self._optima = res.x
+            self._optima = res.x.copy()
 
         if count < (res.x < cutoff).sum():
             self._polish(cutoff=cutoff)
