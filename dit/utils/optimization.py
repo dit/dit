@@ -4,6 +4,8 @@ Helpful utilities for performing optimization.
 
 from collections import namedtuple
 
+from copy import copy
+
 from operator import itemgetter
 
 from string import digits, ascii_letters
@@ -20,6 +22,7 @@ __all__ = [
     'accept_test',
     'basinhop_status',
     'colon',
+    'memoize_optvec',
 ]
 
 
@@ -223,3 +226,32 @@ def basinhop_status(res):
         success = 'success' in res.message[0]
         msg = res.message[0]
     return success, msg
+
+
+class memoize_optvec(object):
+    """
+    """
+    def __init__(self, func):
+        self.func = func
+
+    def __call__(self, obj, x):
+        try:
+            prior_x = obj.__prior_x
+        except AttributeError:
+            prior_x = [0]
+
+        try:
+            cache = obj.__cache
+        except AttributeError:
+            obj.__cache = {}
+
+        if np.allclose(x, prior_x):
+            try:
+                value = cache[self.func]
+            except KeyError:
+                value = cache[self.func] = self.func(obj, x)
+        else:
+            value = self.func(obj, x)
+            cache[self.func] = value
+
+        return value

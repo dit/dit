@@ -33,6 +33,7 @@ from ..utils.optimization import (BasinHoppingCallBack,
                                   accept_test,
                                   basinhop_status,
                                   colon,
+                                  memoize_optvec,
                                   )
 
 __all__ = [
@@ -934,6 +935,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
 
             yield channel
 
+    @memoize_optvec
     def construct_joint(self, x):
         """
         Construct the joint distribution.
