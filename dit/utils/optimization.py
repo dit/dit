@@ -245,7 +245,7 @@ def memoize_optvec(f):
         if np.allclose(x, prior_x):
             value = cache[f]
         else:
-            value = cache[f] = f(obj, x)
+            value = cache[f] = f(self, x)
 
         return value
 
