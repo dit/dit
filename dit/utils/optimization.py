@@ -252,3 +252,5 @@ def memoize_optvec(f):
             value = cache[f] = f(obj, x)
 
         return value
+
+    return wrapped
