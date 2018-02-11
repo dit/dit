@@ -4,8 +4,7 @@ Helpful utilities for performing optimization.
 
 from collections import namedtuple
 
-from copy import copy
-
+from functools import wraps
 from operator import itemgetter
 
 from string import digits, ascii_letters
@@ -236,7 +235,7 @@ def memoize_optvec(f):
         try:
             prior_x = self.__prior_x
         except AttributeError:
-            prior_x = [0]
+            prior_x = [np.nan]
 
         try:
             cache = self.__cache
@@ -244,10 +243,7 @@ def memoize_optvec(f):
             obj.__cache = {}
 
         if np.allclose(x, prior_x):
-            try:
-                value = cache[f]
-            except KeyError:
-                value = cache[f] = f(obj, x)
+            value = cache[f]
         else:
             value = cache[f] = f(obj, x)
 
