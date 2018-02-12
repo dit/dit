@@ -2,9 +2,10 @@
 Helpful utilities for performing optimization.
 """
 
-from collections import namedtuple
+from collections import defaultdict, namedtuple
 
 from functools import wraps
+
 from operator import itemgetter
 
 from string import digits, ascii_letters
@@ -229,31 +230,35 @@ def basinhop_status(res):
 
 def memoize_optvec(f):
     """
+    Make a memoized version of methods which take a single argument;
+    an optimization vector.
+
+    Parameters
+    ----------
+    f : func
+        A method which takes as a single argument an np.ndarray.
+
+    Returns
+    -------
+    wrapper : func
+        A memoized version of `f`.
     """
     @wraps(f)
-    def wrapped(self, x):
-        try:
-            prior_x = self.__prior_x
-        except AttributeError:
-            prior_x = [np.nan]
-
+    def wrapper(self, x):
+        tx = tuple(x)
         try:
             cache = self.__cache
         except AttributeError:
-            cache = self.__cache = {}
+            self.__cache = defaultdict(dict)
+            cache = self.__cache
 
-        if np.allclose(x, prior_x):
-            value = cache[f]
-            true_value = f(self, x)
-            if not np.allclose(value, true_value):
-                print("Cached Value:\n{}\n\nTrue Value\n{}".format(value, true_value))
-            true_value = value
-            # print("{} is close to {}; returning {}".format(x, prior_x, value))
-        else:
-            value = cache[f] = f(self, x)
-            self.__prior_x = x
-            # print("{} is new; caching {}".format(x, value))
+        if tx in cache:
+            return cache[tx][f]
+
+        value = f(self, x)
+
+        cache[tx][f] = value
 
         return value
 
-    return wrapped
+    return wrapper

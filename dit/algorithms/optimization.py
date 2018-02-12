@@ -104,6 +104,8 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
 
         self._additional_options = {}
 
+        self._priors = {}
+
     ###########################################################################
     # Required methods in subclasses
 
@@ -935,6 +937,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
 
             yield channel
 
+    @memoize_optvec
     def construct_joint(self, x):
         """
         Construct the joint distribution.
@@ -959,6 +962,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
 
         return joint
 
+    @memoize_optvec
     def _construct_joint_single(self, x):
         """
         Construct the joint distribution.
