@@ -581,7 +581,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
         try:
             callable(self.objective)
         except AttributeError:
-            self.objective = MethodType(memoize_optvec(self._objective()), self)
+            self.objective = MethodType(self._objective(), self)
 
         x0 = x0.copy() if x0 is not None else self.construct_initial()
 
@@ -962,7 +962,6 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
 
         return joint
 
-    @memoize_optvec
     def _construct_joint_single(self, x):
         """
         Construct the joint distribution.
