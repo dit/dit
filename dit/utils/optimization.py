@@ -253,7 +253,8 @@ def memoize_optvec(f):
             cache = self.__cache
 
         if tx in cache:
-            return cache[tx][f]
+            if f in cache[tx]:
+                return cache[tx][f]
 
         value = f(self, x)
 
