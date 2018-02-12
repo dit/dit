@@ -937,7 +937,6 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
 
             yield channel
 
-    @memoize_optvec
     def construct_joint(self, x):
         """
         Construct the joint distribution.
