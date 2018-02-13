@@ -228,7 +228,7 @@ def basinhop_status(res):
     return success, msg
 
 
-def memoize_optvec(f):
+def memoize_optvec(f):  # pragma: no cover
     """
     Make a memoized version of methods which take a single argument;
     an optimization vector.
