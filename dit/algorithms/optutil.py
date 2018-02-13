@@ -10,7 +10,7 @@ import numpy as np
 import dit
 
 
-@removals.remove(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
                  version='1.0.1')
 def as_full_rank(A, b):
     """
@@ -78,7 +78,7 @@ def as_full_rank(A, b):
 
 
 @removals.removed_class('CVXOPT_Template',
-                        message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+                        message="Please see methods in dit.algorithms.distribution_optimizers.py.",
                         version='1.0.1')
 class CVXOPT_Template(object):
     """
@@ -263,7 +263,7 @@ class CVXOPT_Template(object):
         return out
 
 
-@removals.remove(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
                  version='1.0.1')
 class Bunch:
     def __init__(self, **kwds):
@@ -289,7 +289,7 @@ def prepare_dist(dist):
     return dist
 
 
-@removals.remove(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
                  version='1.0.1')
 def op_runner(objective, constraints, **kwargs):
     """
@@ -303,7 +303,7 @@ def op_runner(objective, constraints, **kwargs):
 
     """
     from cvxopt.solvers import options
-    from cvxopt.modeling import variable, op
+    from cvxopt.modeling import op
 
     old_options = options.copy()
 

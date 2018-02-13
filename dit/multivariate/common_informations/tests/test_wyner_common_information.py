@@ -19,9 +19,6 @@ sbec = lambda p: D(['00', '0e', '1e', '11'], [(1-p)/2, p/2, p/2, (1-p)/2])
 C_sbec = lambda p: 1 if p < 1/2 else entropy(p)
 
 
-pytest.importorskip('scipy')
-
-
 @pytest.mark.slow
 @pytest.mark.flaky(reruns=5)
 @pytest.mark.parametrize(('rvs', 'crvs', 'val'), [
@@ -44,30 +41,37 @@ def test_wci2():
     Test the golden mean.
     """
     gm = D([(0,0), (0,1), (1,0)], [1/3]*3)
-    wci = WynerCommonInformation(gm)
-    wci.optimize(minimize=True)
-    d = wci.construct_distribution()
-    d_opt1 = D([(0,0,0), (0,0,1), (0,1,1), (1,0,0)], [1/6, 1/6, 1/3, 1/3])
-    d_opt2 = D([(0,0,1), (0,0,0), (0,1,1), (1,0,0)], [1/6, 1/6, 1/3, 1/3])
-    d_opt3 = D([(0,0,0), (0,0,1), (0,1,0), (1,0,1)], [1/6, 1/6, 1/3, 1/3])
-    d_opt4 = D([(0,0,1), (0,0,0), (0,1,0), (1,0,1)], [1/6, 1/6, 1/3, 1/3])
+    wci = WynerCommonInformation(gm, bound=2)
+    wci.optimize()
+    d = wci.construct_distribution(cutoff=1e-2)
+    d_opt1 = D([(0, 0, 0), (0, 0, 1), (0, 1, 1), (1, 0, 0)], [1/6, 1/6, 1/3, 1/3])
+    d_opt2 = D([(0, 0, 1), (0, 0, 0), (0, 1, 1), (1, 0, 0)], [1/6, 1/6, 1/3, 1/3])
+    d_opt3 = D([(0, 0, 0), (0, 0, 1), (0, 1, 0), (1, 0, 1)], [1/6, 1/6, 1/3, 1/3])
+    d_opt4 = D([(0, 0, 1), (0, 0, 0), (0, 1, 0), (1, 0, 1)], [1/6, 1/6, 1/3, 1/3])
     d_opts = [d_opt1, d_opt2, d_opt3, d_opt4]
-    equal = lambda d1, d2: d1.is_approx_equal(d2, rtol=1e-4, atol=1e-4)
+    equal = lambda d1, d2: d1.is_approx_equal(d2, rtol=1e-2, atol=1e-2)
     assert any(equal(d, d_opt) for d_opt in d_opts)
-    assert wci.objective(wci._optima) == pytest.approx(2/3, abs=1e-5)
+    assert wci.objective(wci._optima) == pytest.approx(2/3, abs=1e-3)
 
 
 @pytest.mark.slow
-@pytest.mark.skip(reason="Jacobian doesn't seem to work well right now.")
+@pytest.mark.skip("Computing Jacobians with numdifftools is too slow.")
 def test_wci3():
     """
     Test with jacobian=True
     """
-    d = D([(0,0), (1,1)], [2/3, 1/3])
-    wci = WynerCommonInformation(d)
-    wci.optimize(minimize=True, jacobian=True)
-    d_opt = D([(0,0,0), (1,1,1)], [2/3, 1/3])
-    assert d_opt.is_approx_equal(wci.construct_distribution())
+    pytest.importorskip("numdifftools")
+
+    d = D([(0, 0), (1, 1)], [2/3, 1/3])
+    wci = WynerCommonInformation(d, bound=2)
+    wci._jacobian = True
+    wci.optimize()
+    d = wci.construct_distribution()
+    d_opt1 = D([(0, 0, 0), (1, 1, 1)], [2/3, 1/3])
+    d_opt2 = D([(0, 0, 1), (1, 1, 0)], [2/3, 1/3])
+    d_opts = [d_opt1, d_opt2]
+    assert any(d_opt.is_approx_equal(d, rtol=1e-4, atol=1e-4) for d_opt in d_opts)
+
 
 @pytest.fixture
 def x0():
@@ -83,6 +87,6 @@ def test_wci4(i, x0):
     """
     p = i/10
     wci = WynerCommonInformation(sbec(p))
-    wci.optimize(x0=x0['x0'], nhops=5)
-    x0['x0'] = wci._optima
-    assert wci.objective(wci._optima) == pytest.approx(C_sbec(p), abs=1e-4)
+    wci.optimize(x0=x0['x0'])
+    x0['x0'] = wci._optima.copy()
+    assert wci.objective(wci._optima) == pytest.approx(C_sbec(p), abs=1e-3)

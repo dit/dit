@@ -284,7 +284,7 @@ class DependencyDecomposition(object):
     distribution.
     """
 
-    def __init__(self, dist, rvs=None, measures={'H': entropy}, maxiters=1000):
+    def __init__(self, dist, rvs=None, measures={'H': entropy}, maxiter=None):
         """
         Construct a Krippendorff-type partition of the information contained in
         `dist`.
@@ -293,11 +293,14 @@ class DependencyDecomposition(object):
         ----------
         dist : distribution
             The distribution to partition.
+        rvs : iterable
+        measures : dict
+        maxiter : int
         """
         self.dist = dist
         self.rvs = sum(dist.rvs, []) if rvs is None else rvs
         self.measures = measures
-        self._partition(maxiters=maxiters)
+        self._partition(maxiter=maxiter)
 
     @staticmethod
     def _stringify(dependency):
@@ -311,9 +314,14 @@ class DependencyDecomposition(object):
         s = ':'.join(''.join(map(str, d)) for d in dependency)
         return s
 
-    def _partition(self, maxiters=1000):
+    def _partition(self, maxiter=None):
         """
         Computes all the dependencies of `dist`.
+
+        Parameters
+        ----------
+        maxiter : int
+            The number of iterations for the optimization subroutine.
         """
         names = self.dist.get_rv_names()
         if names:
@@ -331,7 +339,7 @@ class DependencyDecomposition(object):
                 x0 = dists[parent].pmf
             except KeyError:
                 x0 = None
-            dists[node] = maxent_dist(self.dist, node, x0=x0, sparse=False, maxiters=maxiters)
+            dists[node] = maxent_dist(self.dist, node, x0=x0, sparse=False, maxiter=maxiter)
 
         self.dists = dists
 
@@ -418,7 +426,7 @@ class DependencyDecomposition(object):
         """
         measures = list(self.measures.keys())
         table = prettytable.PrettyTable(['dependency'] + measures)
-        if ditParams['text.font'] == 'linechar': # pragma: no cover
+        if ditParams['text.font'] == 'linechar':  # pragma: no cover
             try:
                 table.set_style(prettytable.BOX_CHARS)
             except AttributeError:

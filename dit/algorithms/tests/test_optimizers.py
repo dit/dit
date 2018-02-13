@@ -9,7 +9,7 @@ import pytest
 from itertools import product
 
 from dit.algorithms import maxent_dist, pid_broja
-from dit.algorithms.scipy_optimizers import (
+from dit.algorithms.distribution_optimizers import (
     MinEntOptimizer,
     MinCoInfoOptimizer,
     MaxDualTotalCorrelationOptimizer,
@@ -50,6 +50,7 @@ def test_maxent_2():
     assert d2.is_approx_equal(d1_maxent, rtol=1e-3, atol=1e-3)
 
 
+@pytest.mark.slow
 def test_maxent_3():
     """
     Test the RdnUnqXor distribution.

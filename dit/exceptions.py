@@ -14,7 +14,9 @@ __all__ = ['ditException',
            'InvalidDistribution',
            'InvalidNormalization',
            'InvalidOutcome',
-           'InvalidProbability']
+           'InvalidProbability',
+           'OptimizationException',
+           ]
 
 
 class ditException(Exception):
@@ -52,7 +54,7 @@ class IncompatibleDistribution(ditException):
         """
         msg = "The distribution is not compatible."
         args = (msg,) + args
-        ditException.__init__(self, *args, **kwargs)
+        super(IncompatibleDistribution, self).__init__(self, *args, **kwargs)
 
 
 class InvalidBase(ditException):
@@ -73,7 +75,7 @@ class InvalidBase(ditException):
         if args:
             msg = "{0} is not a valid logarithm base.".format(args[0])
             args = (msg,) + args
-        ditException.__init__(self, *args, **kwargs)
+        super(InvalidBase, self).__init__(self, *args, **kwargs)
 
 
 class InvalidDistribution(ditException):
@@ -116,7 +118,7 @@ class InvalidOutcome(ditException):
             else:
                 msg = "Outcomes {0} are not in the sample space.".format(bad)
         args = (msg,) + args
-        ditException.__init__(self, *args, **kwargs)
+        super(InvalidOutcome, self).__init__(self, *args, **kwargs)
 
 
 class InvalidNormalization(ditException):
@@ -134,7 +136,7 @@ class InvalidNormalization(ditException):
         msg = "Bad normalization: {0!r}".format(args[0])
         self.summation = args[0]
         args = (msg,) + args
-        ditException.__init__(self, *args, **kwargs)
+        super(InvalidNormalization, self).__init__(self, *args, **kwargs)
 
 
 class InvalidProbability(ditException):
@@ -164,4 +166,11 @@ class InvalidProbability(ditException):
             msg = "Probabilities {0} are not in {1} (base: {2!r})."
         msg = msg.format(prob, bounds, ops.base)
         args = (msg,) + args
-        ditException.__init__(self, *args, **kwargs)
+        super(InvalidProbability, self).__init__(self, *args, **kwargs)
+
+
+class OptimizationException(ditException):
+    """
+    Exception representing a failure of optimization.
+    """
+    pass

@@ -1,0 +1,8 @@
+inherits:
+    - strictness_medium
+
+ignore-paths:
+   - dit/abc.py
+
+ignore-patterns:
+   - .*/__init__\.py

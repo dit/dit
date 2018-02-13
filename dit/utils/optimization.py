@@ -2,13 +2,31 @@
 Helpful utilities for performing optimization.
 """
 
-from collections import namedtuple
+from collections import defaultdict, namedtuple
+
+from functools import wraps
 
 from operator import itemgetter
 
 from string import digits, ascii_letters
 
 import numpy as np
+
+from scipy.optimize import OptimizeResult
+
+
+__all__ = [
+    'BasinHoppingCallBack',
+    'BasinHoppingInnerCallBack',
+    'Uniquifier',
+    'accept_test',
+    'basinhop_status',
+    'colon',
+    'memoize_optvec',
+]
+
+
+colon = slice(None, None, None)
 
 
 class BasinHoppingInnerCallBack(object):
@@ -41,6 +59,17 @@ class BasinHoppingInnerCallBack(object):
         """
         self.positions.append(x.copy())
 
+    def jumped(self, time):
+        """
+        Add jump time to `self.jumps`
+
+        Parameters
+        ----------
+        time : int
+            The time of a jump
+        """
+        self.jumps.append(time)
+
 
 Candidate = namedtuple('Candidate', ['position', 'value', 'constraints'])
 
@@ -60,6 +89,10 @@ class BasinHoppingCallBack(object):
         A callback object for recording the full path.
     candidates : [ndarray]
         The minima of each basin.
+
+    Notes
+    -----
+    This will be unneccessary once this PR if complete: https://github.com/scipy/scipy/pull/7819
     """
 
     def __init__(self, constraints, icb=None):
@@ -69,8 +102,8 @@ class BasinHoppingCallBack(object):
         optimizer : MarkovVarOptimizer
             The optimizer to track the optimization of.
         """
-        self.eq_constraints = [ c['fun'] for c in constraints if c['type'] == 'eq']
-        self.ineq_constraints = [ c['fun'] for c in constraints if c['type'] == 'ineq']
+        self.eq_constraints = [c['fun'] for c in constraints if c['type'] == 'eq']
+        self.ineq_constraints = [c['fun'] for c in constraints if c['type'] == 'ineq']
         self.icb = icb
         self.eq_candidates = []
         self.ineq_candidates = []
@@ -93,7 +126,7 @@ class BasinHoppingCallBack(object):
         self.ineq_candidates.append(Candidate(x, f, ineq_constraints))
 
         if self.icb:
-            self.icb.jumps.append(len(self.icb.positions))
+            self.icb.jumped(len(self.icb.positions))
 
     def minimum(self, cutoff=1e-7):
         """
@@ -106,19 +139,26 @@ class BasinHoppingCallBack(object):
 
         Returns
         -------
-        min : ndarray
+        min : np.ndarray
             The minimum basin.
         """
-        eq_possible = [(x, f) for x, f, cs in self.eq_candidates if max(cs) < cutoff]
-        ineq_possible = [(x, f) for x, f, cs in self.ineq_candidates if min(cs) > -cutoff]
-        possible = [(x, f) for x, f in eq_possible if (x, f) in ineq_possible]
+        eq_possible = [(x, f) for x, f, cs in self.eq_candidates if all(c < cutoff for c in cs)]
+        ineq_possible = [(x, f) for x, f, cs in self.ineq_candidates if all(c > -cutoff for c in cs)]
+        possible = [(x, f) for x, f in eq_possible if any(np.allclose(x, x2) for x2, _ in ineq_possible)]
         possible = [(x, f) for x, f in possible if accept_test(x_new=x)]
-        return min(possible, key=itemgetter(1))[0] if possible else None
+        try:
+            x, val = min(possible, key=itemgetter(1))
+            opt_res = OptimizeResult({'x': x,
+                                      'success': True,
+                                      })
+            return opt_res
+        except ValueError:
+            return None
 
 
 class Uniquifier(object):
     """
-    Given a stream of catagorical symbols, provide a mapping to unique consecutive integers.
+    Given a stream of categorical symbols, provide a mapping to unique consecutive integers.
 
     Attributes
     ----------
@@ -187,4 +227,39 @@ def basinhop_status(res):
         msg = res.message[0]
     return success, msg
 
-colon = slice(None, None, None)
+
+def memoize_optvec(f):  # pragma: no cover
+    """
+    Make a memoized version of methods which take a single argument;
+    an optimization vector.
+
+    Parameters
+    ----------
+    f : func
+        A method which takes as a single argument an np.ndarray.
+
+    Returns
+    -------
+    wrapper : func
+        A memoized version of `f`.
+    """
+    @wraps(f)
+    def wrapper(self, x):
+        tx = tuple(x)
+        try:
+            cache = self.__cache
+        except AttributeError:
+            self.__cache = defaultdict(dict)
+            cache = self.__cache
+
+        if tx in cache:
+            if f in cache[tx]:
+                return cache[tx][f]
+
+        value = f(self, x)
+
+        cache[tx][f] = value
+
+        return value
+
+    return wrapper

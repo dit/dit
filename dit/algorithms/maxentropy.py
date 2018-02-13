@@ -47,7 +47,7 @@ __all__ = [
 ]
 
 
-@removals.remove(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
                  version='1.0.1')
 def isolate_zeros_generic(dist, rvs):
     """
@@ -90,7 +90,7 @@ def isolate_zeros_generic(dist, rvs):
     return variables
 
 
-@removals.remove(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
                  version='1.0.1')
 def isolate_zeros(dist, k):
     """
@@ -431,7 +431,7 @@ def negentropy(p):
 
 @removals.removed_class('MaximumEntropy',
                         replacement="dit.algorithms.scipy_optimizers.MaxEntOptimizer",
-                        message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+                        message="Please see methods in dit.algorithms.distribution_optimizers.py.",
                         version='1.0.1')
 class MaximumEntropy(CVXOPT_Template):
     """
@@ -444,7 +444,7 @@ class MaximumEntropy(CVXOPT_Template):
 
 @removals.removed_class('MarginalMaximumEntropy',
                         replacement="dit.algorithms.scipy_optimizers.MaxEntOptimizer",
-                        message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+                        message="Please see methods in dit.algorithms.distribution_optimizers.py.",
                         version='1.0.1')
 class MarginalMaximumEntropy(MaximumEntropy):
     """
@@ -596,7 +596,7 @@ class MomentMaximumEntropy(MaximumEntropy):
         self.b = bb
 
 
-@removals.remove(message="Please see methods in dit.algorithms.scipy_optimizers.py.",
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
                  version='1.0.1')
 def marginal_maxent_dists(dist, k_max=None, jitter=True, show_progress=True):
     """

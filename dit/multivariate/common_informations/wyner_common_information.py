@@ -4,12 +4,12 @@ The Wyner common information.
 
 import numpy as np
 
-from .base_markov_optimizer import MinimizingMarkovVarOptimizer
+from .base_markov_optimizer import MarkovVarOptimizer
 
 __all__ = ['wyner_common_information']
 
 
-class WynerCommonInformation(MinimizingMarkovVarOptimizer):
+class WynerCommonInformation(MarkovVarOptimizer):
     """
     Compute the Wyner common information, min I[X:V], taken over all V which
     render the X_i conditionally independent.
@@ -27,26 +27,39 @@ class WynerCommonInformation(MinimizingMarkovVarOptimizer):
         bound : int
             The upper bound on the alphabet size of the auxiliary variable.
         """
-        bound = np.prod([ sum(s) for s in self._rv_sizes ]) + 1
+        bound = np.prod(self._shape) + 1
 
         return bound
 
-
-    def objective(self, x):
+    def _objective(self):
         """
         The mutual information between the auxiliary random variable and `rvs`.
 
-        Parameters
-        ----------
-        x : ndarray
-            An optimization vector.
-
         Returns
         -------
-        mi : float
-            The mutual information.
+        obj : func
+            The objective function.
         """
-        return self.mutual_information(x)
+        conditional_mutual_information = self._conditional_mutual_information(self._rvs, self._W, self._crvs)
+
+        def objective(self, x):
+            """
+            Compute I[rvs : W | crvs]
+
+            Parameters
+            ----------
+            x : np.ndarray
+                An optimization vector.
+
+            Returns
+            -------
+            obj : float
+                The value of the objective.
+            """
+            pmf = self.construct_joint(x)
+            return conditional_mutual_information(pmf)
+
+        return objective
 
 
 wyner_common_information = WynerCommonInformation.functional()

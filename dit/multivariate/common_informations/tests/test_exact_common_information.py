@@ -49,6 +49,6 @@ def test_eci2(i, x0):
     """
     p = i/10
     eci = ExactCommonInformation(sbec(p))
-    eci.optimize(x0=x0['x0'], nhops=5)
+    eci.optimize(x0=x0['x0'])
     x0['x0'] = eci._optima
     assert eci.objective(eci._optima) == pytest.approx(G_sbec(p), abs=1e-4)

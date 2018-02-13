@@ -8,7 +8,7 @@ from boltons.iterutils import pairwise
 
 import numpy as np
 
-from ..algorithms.scipy_optimizers import MinEntOptimizer
+from ..algorithms.distribution_optimizers import MinEntOptimizer
 from ..helpers import normalize_rvs
 from ..multivariate import entropy as H
 
@@ -89,7 +89,7 @@ def coupling_metric(dists, p=1.0):
     dist_ids = [list(range(a, b)) for a, b in pairwise(np.cumsum(lengths))]
 
     meo = MinEntOptimizer(d, dist_ids)
-    meo.optimize(nhops=25)
+    meo.optimize(niter=25)
 
     od = meo.construct_dist()
     re = residual_entropy(od, rvs=dist_ids, p=p)

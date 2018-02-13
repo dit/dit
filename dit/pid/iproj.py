@@ -74,7 +74,7 @@ class MinDKLOptimizer(object):
 
     def optimize(self):
         """
-        Perform the optmization.
+        Perform the optimization.
 
         Notes
         -----
@@ -94,7 +94,7 @@ class MinDKLOptimizer(object):
                                 },
                        )
 
-        if not res.success: # pragma: no cover
+        if not res.success:  # pragma: no cover
             msg = "Optimization failed: {}".format(res.message)
             raise ditException(msg)
 
@@ -104,8 +104,8 @@ class MinDKLOptimizer(object):
         """
         Construct a distribution from a vector.
 
-        Paramters
-        ---------
+        Parameters
+        ----------
         q : np.ndarray, None
             The vector to turn in to a distribution. If None, use self._optima.
 
@@ -114,7 +114,7 @@ class MinDKLOptimizer(object):
         dist : Distribution
             The distribution of `q`.
         """
-        if q is None: # pragma: no cover
+        if q is None:  # pragma: no cover
             q = self._q(self._optima)
 
         dist = Distribution(self._dist.outcomes, q)
@@ -127,8 +127,8 @@ def min_dkl(dist, domain):
     Given a distribution and a domain, find the minimum D(p||q) where
     p is `dist` and q is in `domain`.
 
-    Paramters
-    ---------
+    Parameters
+    ----------
     dist : Distribution
         The distribution for p.
     domain : list of lists
@@ -170,7 +170,7 @@ def projected_information(dist, X, Y, Z):
     for d in p_z_ys:
         d.make_dense()
     domain = [d.pmf for d in p_z_ys]
-    p_xz = dist.coalesce((X, Z)) # can't use marginal, order is important
+    p_xz = dist.coalesce((X, Z))  # can't use marginal, order is important
     p_z = dist.marginal(Z)
     p_x, p_z_xs = dist.condition_on(rvs=Z, crvs=X)
 
@@ -202,7 +202,7 @@ def i_proj(d, inputs, output):
     iproj : float
         The value of I_proj.
     """
-    if len(inputs) != 2: # pragma: no cover
+    if len(inputs) != 2:  # pragma: no cover
         msg = "This method needs exact two inputs, {} given.".format(len(inputs))
         raise ditException(msg)
 

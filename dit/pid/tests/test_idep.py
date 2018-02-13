@@ -15,8 +15,8 @@ def test_idep1():
     """
     d = bivariates['redundant']
     uniques = i_dep(d, ((0,), (1,)), (2,))
-    assert uniques[(0,)] == pytest.approx(0)
-    assert uniques[(1,)] == pytest.approx(0)
+    assert uniques[(0,)] == pytest.approx(0, abs=1e-6)
+    assert uniques[(1,)] == pytest.approx(0, abs=1e-6)
 
 
 def test_idep2():
@@ -25,8 +25,8 @@ def test_idep2():
     """
     d = bivariates['synergy']
     uniques = i_dep(d, ((0,), (1,)), (2,))
-    assert uniques[(0,)] == pytest.approx(0)
-    assert uniques[(1,)] == pytest.approx(0)
+    assert uniques[(0,)] == pytest.approx(0, abs=1e-6)
+    assert uniques[(1,)] == pytest.approx(0, abs=1e-6)
 
 
 def test_idep3():
@@ -45,10 +45,10 @@ def test_pid_dep1():
     """
     d = bivariates['reduced or']
     pid = PID_dep(d, ((0,), (1,)), (2,))
-    assert pid[((0,), (1,))] == pytest.approx(0.073761301440421256)
-    assert pid[((0,),)] == pytest.approx(0.23751682301871169)
-    assert pid[((1,),)] == pytest.approx(0.23751682301871169)
-    assert pid[((0, 1),)] == pytest.approx(0.45120505252215537)
+    assert pid[((0,), (1,))] == pytest.approx(0.073761301440421256, abs=1e-4)
+    assert pid[((0,),)] == pytest.approx(0.23751682301871169, abs=1e-4)
+    assert pid[((1,),)] == pytest.approx(0.23751682301871169, abs=1e-4)
+    assert pid[((0, 1),)] == pytest.approx(0.45120505252215537, abs=1e-4)
 
 
 def test_pid_dep2():
@@ -65,7 +65,7 @@ def test_pid_dep2():
         elif atom in [((0,), (2,)), ((1,),)]:
             assert pid[atom] == pytest.approx(0.22957374150893717, abs=1e-4)
         else:
-            assert pid[atom] == pytest.approx(0.0, abs=1e-6)
+            assert pid[atom] == pytest.approx(0.0, abs=1e-4)
 
 
 def test_pid_dep3():
