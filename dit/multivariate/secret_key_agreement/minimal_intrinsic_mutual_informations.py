@@ -172,7 +172,11 @@ def minimal_intrinsic_mutual_information_constructor(func):
     class MinimalIntrinsicMutualInformation(BaseMinimalIntrinsicMutualInformation):
         name = func.__name__
 
-        measure = lambda: None
+        def measure(self, rvs, crvs):  # pragma: no cover
+            """
+            Dummy method.
+            """
+            pass
 
         def objective(self, x):
             pmf = self.construct_joint(x)

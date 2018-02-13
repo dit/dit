@@ -7,7 +7,7 @@ from __future__ import division
 import numpy as np
 from scipy.optimize import minimize_scalar
 
-from ..exceptions import ditException
+from ..exceptions import OptimizationException
 
 
 def _normalize_pmfs(dist1, dist2):
@@ -182,12 +182,14 @@ def chernoff_information_pmf(p, q):
 
     res = minimize_scalar(fun=func, bounds=(0, 1), method='bounded')
 
-    if not -1e-8 <= res.x <= 1 + 1e-8:
+    if not -1e-8 <= res.x <= 1 + 1e-8:  # pragma: no cover
         msg = "Appropriate optima could not be found."
-        raise ditException(msg)
+        raise OptimizationException(msg)
 
     ci = -func(res.x)
-    if ci < 0:
+    # sometimes things are very slightly negative due to optimization fuzziness.
+    # since this can throw off some inequalities, we set to zero in this case.
+    if ci < 0:  # pragma: no cover
         ci = 0
 
     return ci

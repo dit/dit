@@ -5,6 +5,7 @@ Tests for dit.multivariate.secret_key_agreement.minimal_intrinsic_mutual_informa
 import pytest
 
 from dit.example_dists.intrinsic import *
+from dit.exceptions import ditException
 from dit.multivariate import entropy, total_correlation
 from dit.multivariate.secret_key_agreement.minimal_intrinsic_mutual_informations import (
     minimal_intrinsic_total_correlation,
@@ -54,6 +55,14 @@ def test_dist():
     mimi.optimize()
     d = mimi.construct_distribution()
     assert entropy(d, [3]) == pytest.approx(1.5)
+
+
+def test_failure():
+    """
+    Test that things fail with no CRV specified.
+    """
+    with pytest.raises(ditException):
+        MinimalIntrinsicTotalCorrelation(intrinsic_1, [[0], [1]])
 
 
 @pytest.mark.slow

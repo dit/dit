@@ -4,7 +4,9 @@ import pytest
 
 import numpy as np
 
-import dit
+from dit import Distribution, joint_from_factors
+from dit.algorithms.channelcapacity import channel_capacity, channel_capacity_joint
+from dit.exceptions import ditException
 
 
 def BEC_joint(epsilon):
@@ -17,19 +19,19 @@ def BEC_joint(epsilon):
         The noise level at which the input is erased.
 
     """
-    pX = dit.Distribution(['0', '1'], [1/2, 1/2])
-    pYgX0 = dit.Distribution(['0', '1', 'e'], [1 - epsilon, 0, epsilon])
-    pYgX1 = dit.Distribution(['0', '1', 'e'], [0, 1 - epsilon, epsilon])
+    pX = Distribution(['0', '1'], [1/2, 1/2])
+    pYgX0 = Distribution(['0', '1', 'e'], [1 - epsilon, 0, epsilon])
+    pYgX1 = Distribution(['0', '1', 'e'], [0, 1 - epsilon, epsilon])
     pYgX = [pYgX0, pYgX1]
-    pXY = dit.joint_from_factors(pX, pYgX, strict=False)
+    pXY = joint_from_factors(pX, pYgX, strict=False)
     return pXY
 
 
 def test_channel_capacity_no_rvnames():
-    epsilon = .3
+    epsilon = 0.3
     pXY = BEC_joint(epsilon)
     pX, pYgX = pXY.condition_on([0])
-    cc, pXopt = dit.algorithms.channel_capacity(pYgX, pX)
+    cc, pXopt = channel_capacity(pYgX, pX)
 
     # Verify channel capacity.
     assert np.allclose(cc, 1 - epsilon)
@@ -38,16 +40,16 @@ def test_channel_capacity_no_rvnames():
     assert pX.is_approx_equal(pXopt)
 
     # Verify joint distribution at channel capacity.
-    pXYopt = dit.joint_from_factors(pXopt, pYgX)
+    pXYopt = joint_from_factors(pXopt, pYgX)
     assert pXY.is_approx_equal(pXYopt)
 
 
 def test_channel_capacity_rvnames():
-    epsilon = .01
+    epsilon = 0.01
     pXY = BEC_joint(epsilon)
     pXY.set_rv_names('XY')
     pX, pYgX = pXY.condition_on('X')
-    cc, pXopt = dit.algorithms.channel_capacity(pYgX, pX)
+    cc, pXopt = channel_capacity(pYgX, pX)
 
     # Verify channel capacity.
     assert np.allclose(cc, 1 - epsilon)
@@ -56,15 +58,15 @@ def test_channel_capacity_rvnames():
     assert pX.is_approx_equal(pXopt)
 
     # Verify joint distribution at channel capacity.
-    pXYopt = dit.joint_from_factors(pXopt, pYgX)
+    pXYopt = joint_from_factors(pXopt, pYgX)
     assert pXY.is_approx_equal(pXYopt)
 
 
 def test_channel_capacity_array():
-    epsilon = .3
+    epsilon = 0.3
     pXY = BEC_joint(epsilon)
     pX, pYgX = pXY.condition_on([0])
-    cc, pXopt_pmf = dit.algorithms.channel_capacity(pYgX)
+    cc, pXopt_pmf = channel_capacity(pYgX)
 
     # Verify channel capacity.
     assert np.allclose(cc, 1 - epsilon)
@@ -74,12 +76,21 @@ def test_channel_capacity_array():
 
 
 def test_bad_marginal():
-    epsilon = .01
+    epsilon = 0.01
     pXY = BEC_joint(epsilon)
     pXY.set_rv_names('XY')
     pX, pYgX = pXY.condition_on('X')
     pX['0'] = 0
     # Now make its length disagree with the number of cdists.
     pX.make_sparse()
-    with pytest.raises(dit.exceptions.ditException):
-        dit.algorithms.channel_capacity(pYgX, pX)
+    with pytest.raises(ditException):
+        channel_capacity(pYgX, pX)
+
+
+def test_channel_capacity_joint():
+    """
+    Test against a known value.
+    """
+    gm = Distribution(['00', '01', '10'], [1/3]*3)
+    cc = channel_capacity_joint(gm)
+    assert cc == pytest.approx(0.3219280796196524)

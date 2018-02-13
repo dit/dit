@@ -12,11 +12,11 @@ from debtcollector import removals
 import numpy as np
 
 from .maxentropy import marginal_constraints_generic
+from .optimization import BaseOptimizer, BaseConvexOptimizer, BaseNonConvexOptimizer
 from .optutil import prepare_dist
 from .pid_broja import (extra_constraints as broja_extra_constraints,
                         prepare_dist as broja_prepare_dist)
 from .. import Distribution, product_distribution
-from ..algorithms import BaseOptimizer, BaseConvexOptimizer, BaseNonConvexOptimizer
 from ..helpers import RV_MODES
 from ..multivariate import coinformation as I
 from ..utils import flatten

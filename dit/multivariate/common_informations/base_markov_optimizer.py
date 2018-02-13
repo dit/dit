@@ -232,7 +232,7 @@ class MarkovVarOptimizer(BaseAuxVarOptimizer):
         return common_info
 
 
-class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):
+class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):  # pragma: no cover
     """
     Abstract base class for an optimizer which additionally minimizes the size
     of the auxiliary variable.
