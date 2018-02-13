@@ -65,4 +65,4 @@ def test_constructor():
     test = minimal_intrinsic_mutual_information_constructor(total_correlation).functional()
     itc = minimal_intrinsic_total_correlation(intrinsic_1, [[0], [1]], [2], bounds=(2,))
     itc2 = test(intrinsic_1, [[0], [1]], [2], bounds=(2,))
-    assert itc == pytest.approx(itc2, abs=1e-4)
+    assert itc == pytest.approx(itc2, abs=1e-3)

@@ -5,10 +5,8 @@ A catch-all module for miscellaneous pmf-based operations.
 Eventually, we will need to reorganize.
 
 """
-from __future__ import division
-from __future__ import print_function
 
-from itertools import product
+from __future__ import division, print_function
 
 import dit
 import numpy as np

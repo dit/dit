@@ -33,7 +33,6 @@ from ..utils.optimization import (BasinHoppingCallBack,
                                   accept_test,
                                   basinhop_status,
                                   colon,
-                                  memoize_optvec,
                                   )
 
 __all__ = [

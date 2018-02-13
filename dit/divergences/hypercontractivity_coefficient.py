@@ -7,7 +7,6 @@ from __future__ import division
 
 import numpy as np
 
-from .. import Distribution
 from ..algorithms import BaseAuxVarOptimizer
 from ..exceptions import ditException
 from ..helpers import normalize_rvs

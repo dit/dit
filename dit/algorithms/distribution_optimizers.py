@@ -7,8 +7,6 @@ from collections import namedtuple
 
 from itertools import combinations
 
-from types import MethodType
-
 from debtcollector import removals
 
 import numpy as np

@@ -6,7 +6,6 @@ from __future__ import division
 
 from abc import abstractmethod
 
-from ... import Distribution
 from ...algorithms import BaseAuxVarOptimizer
 
 __all__ = [

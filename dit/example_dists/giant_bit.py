@@ -6,7 +6,6 @@ from __future__ import division
 from itertools import product
 
 from .. import Distribution
-from ..distconst import uniform
 
 
 def giant_bit(n, k):

@@ -567,14 +567,13 @@ class MaximumConditionalEntropy(CVXOPT_Template):
         Find an initial point in the interior of the feasible set.
 
         """
-        from cvxopt import matrix
         from cvxopt.modeling import variable
 
         A = self.A
         b = self.b
 
         # Assume they are already CVXOPT matrices
-        if self.vartypes and A.size[1] != len(self.vartypes.free): # pylint: disable=no-member
+        if self.vartypes and A.size[1] != len(self.vartypes.free):  # pylint: disable=no-member
             msg = 'A must be the reduced equality constraint matrix.'
             raise Exception(msg)
 
@@ -584,7 +583,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
         else:
             show_progress = False
 
-        n = len(self.vartypes.free) # pylint: disable=no-member
+        n = len(self.vartypes.free)  # pylint: disable=no-member
         x = variable(n)
         t = variable()
 
@@ -600,7 +599,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
 
             opt = op_runner(objective, constraints, show_progress=show_progress)
             if opt.status == 'optimal':
-                #print("Found initial point with tol={}".format(tol))
+                # print("Found initial point with tol={}".format(tol))
                 break
         else:
             msg = 'Could not find valid initial point: {}'
@@ -623,8 +622,8 @@ class MaximumConditionalEntropy(CVXOPT_Template):
 
         # Do not build the full vector since this is input to the reduced
         # optimization problem.
-        #xx = np.zeros(len(dist.pmf))
-        #xx[variables.nonzero] = xopt
+        # xx = np.zeros(len(dist.pmf))
+        # xx[variables.nonzero] = xopt
 
         return xopt, opt
 

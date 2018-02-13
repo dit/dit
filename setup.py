@@ -12,9 +12,8 @@ import re
 import sys
 import warnings
 
-from setuptools import find_packages, setup
+from setuptools import Extension, find_packages, setup
 
-from distutils.core import Extension
 from distutils.command import install_data
 
 _version_re = re.compile(r'__version__\s+=\s+(.*)')

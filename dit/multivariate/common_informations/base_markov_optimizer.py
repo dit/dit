@@ -8,7 +8,6 @@ from abc import abstractmethod
 
 import numpy as np
 
-from ... import Distribution
 from ...algorithms import BaseAuxVarOptimizer
 from ..dual_total_correlation import dual_total_correlation
 from ..entropy import entropy

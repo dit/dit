@@ -303,7 +303,7 @@ def op_runner(objective, constraints, **kwargs):
 
     """
     from cvxopt.solvers import options
-    from cvxopt.modeling import variable, op
+    from cvxopt.modeling import op
 
     old_options = options.copy()
 
