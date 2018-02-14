@@ -222,7 +222,7 @@ def basinhop_status(res):
     try:
         success = res.lowest_optimization_result.success
         msg = res.lowest_optimization_result.message
-    except AttributeError:
+    except AttributeError:  # pragma: no cover
         success = 'success' in res.message[0]
         msg = res.message[0]
     return success, msg
