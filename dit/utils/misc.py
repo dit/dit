@@ -37,7 +37,7 @@ __all__ = (
 )
 
 
-def default_opener(filename):
+def default_opener(filename):  # pragma: no cover
     """Opens `filename` using system's default program.
 
     Parameters
@@ -47,8 +47,8 @@ def default_opener(filename):
 
     """
     cmds = {'darwin': ['open'],
-            'linux2': ['xdg-open'], # Python 2.x
-            'linux': ['xdg-open'],  # Python 3.x
+            'linux2': ['xdg-open'],  # Python 2.x
+            'linux': ['xdg-open'],   # Python 3.x
             'win32': ['cmd.exe', '/c', 'start', '']}
     cmd = cmds[sys.platform] + [filename]
     subprocess.call(cmd)
@@ -75,7 +75,7 @@ def flatten(l):
             yield el
 
 
-def get_fobj(fname, mode='w+'):
+def get_fobj(fname, mode='w+'):  # pragma: no cover
     """Obtain a proper file object.
 
     Parameters

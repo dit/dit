@@ -125,7 +125,7 @@ class BasinHoppingCallBack(object):
         self.eq_candidates.append(Candidate(x, f, eq_constraints))
         self.ineq_candidates.append(Candidate(x, f, ineq_constraints))
 
-        if self.icb:
+        if self.icb:  # pragma: no cover
             self.icb.jumped(len(self.icb.positions))
 
     def minimum(self, cutoff=1e-7):
@@ -152,7 +152,7 @@ class BasinHoppingCallBack(object):
                                       'success': True,
                                       })
             return opt_res
-        except ValueError:
+        except ValueError:  # pragma: no cover
             return None
 
 
