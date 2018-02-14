@@ -92,5 +92,5 @@ def test_channel_capacity_joint():
     Test against a known value.
     """
     gm = Distribution(['00', '01', '10'], [1/3]*3)
-    cc = channel_capacity_joint(gm)
+    cc = channel_capacity_joint(gm, [0], [1])
     assert cc == pytest.approx(0.3219280796196524)
