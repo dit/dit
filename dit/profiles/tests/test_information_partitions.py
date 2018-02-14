@@ -115,3 +115,43 @@ def test_dd1():
 |   0:1:2    |  0.000 |
 +------------+--------+"""
     assert str(ep) == string
+
+
+def test_dd2():
+    """
+    Test against known values.
+    """
+    d = n_mod_m(3, 2)
+    d.set_rv_names('XYZ')
+    dd = DependencyDecomposition(d)
+    assert dd[(('X', 'Y', 'Z'),)]['H'] == pytest.approx(2.0)
+
+
+def test_dd3():
+    """
+    Test dependencies.
+    """
+    d = n_mod_m(3, 2)
+    dd = DependencyDecomposition(d)
+    deps = dd.get_dependencies()
+    true_deps = {'012', '01:02:12', '01:02', '01:12', '02:12', '01:2', '02:1', '12:0', '0:1:2'}
+    assert deps == true_deps
+
+
+def test_dd4():
+    """
+    Test dependencies.
+    """
+    d = n_mod_m(3, 2)
+    dd = DependencyDecomposition(d)
+    deps = dd.get_dependencies(string=False)
+    true_deps = {((0, 1, 2),),
+                 ((0, 1), (0, 2), (1, 2)),
+                 ((0, 1), (0, 2)),
+                 ((0, 1), (1, 2)),
+                 ((0, 2), (1, 2)),
+                 ((0, 1), (2,)),
+                 ((0, 2), (1,)),
+                 ((1, 2), (0,)),
+                 ((0,), (1,), (2,))}
+    assert deps == true_deps

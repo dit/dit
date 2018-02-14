@@ -333,11 +333,11 @@ class DependencyDecomposition(object):
         dists = {}
 
         # Entropies
-        for node in nx.topological_sort(self._lattice):
+        for node in nx.topological_sort(self._lattice.reverse()):
             try:
-                parent = self._lattice.reverse()[node][0]
+                parent = self._lattice[node].keys()[0]
                 x0 = dists[parent].pmf
-            except KeyError:
+            except IndexError:
                 x0 = None
             dists[node] = maxent_dist(self.dist, node, x0=x0, sparse=False, maxiter=maxiter)
 
