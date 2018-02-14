@@ -28,7 +28,7 @@ def test_vd2():
     """
     Test against known value.
     """
-    vd = variational_distance(d1, d2)
+    vd = variational_distance(d2, d1)
     assert vd == pytest.approx(0.75)
 
 

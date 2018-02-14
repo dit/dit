@@ -47,7 +47,6 @@ Kumar **et. al.** :cite:`kumar2014exact` have shown that the exact common inform
    In [5]: 2*G(d)
    Out[5]: 1.8365916681089791
 
-   @doctest float
    In [6]: G(d2, [[0, 2], [1, 3]], niter=25, maxiter=2000, polish=1e-9)
    Out[6]: 1.7524948651314414
 
