@@ -6,9 +6,11 @@ omit =
 	# don't include tests
 	*/tests/*
 	# this is just convenience imports
-	dit/abc.py
+	*/dit/abc.py
 	# excluded due to testing difficulty
-	dit/utils/logger.py
+	*/dit/utils/logger.py
+	# exclude hypothesis strategies, because they don't get covered
+	*/dit/utils/testing.py
 
 [report]
 # Regexes for lines to exclude from consideration

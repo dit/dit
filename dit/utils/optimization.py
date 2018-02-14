@@ -29,7 +29,7 @@ __all__ = [
 colon = slice(None, None, None)
 
 
-class BasinHoppingInnerCallBack(object):
+class BasinHoppingInnerCallBack(object):  # pragma: no cover
     """
     A callback to track the optimization vectors as the optimization is performed.
 
