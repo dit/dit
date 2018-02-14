@@ -133,6 +133,10 @@ class BaseDistOptimizer(BaseOptimizer):
         if len(self._free) == 0:
             self._optima = self._vpmf
         else:
+            if x0 is not None and len(x0) == len(self._vpmf):
+                # if a full pmf vector was passed in, restrict it to the free
+                # indices:
+                x0 = x0[self._free]
             result = super(BaseDistOptimizer, self).optimize(x0=x0,
                                                              niter=niter,
                                                              maxiter=maxiter,
