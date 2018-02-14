@@ -57,3 +57,15 @@ def test_dfts3():
     d1 = dist_from_timeseries(ts, history_length=0)
     d2 = Distribution([(0,), (1,)], [2/3, 1/3])
     assert d1.is_approx_equal(d2, atol=1e-3)
+
+
+@pytest.mark.flaky(reruns=5)
+def test_dfts4():
+    """
+    Test inferring a distribution from a time-series.
+    """
+    gm = golden_mean()
+    ts = np.array([next(gm) for _ in range(1000000)]).T
+    d1 = dist_from_timeseries(ts)
+    d2 = Distribution([((0,), 0), ((0,), 1), ((1,), 0)], [1/3, 1/3, 1/3])
+    assert d1.is_approx_equal(d2, atol=1e-3)

@@ -200,7 +200,38 @@ def test_f_divergence(alpha):
             div2 = div_func(dist1, dist2)
             assert div1 == pytest.approx(div2, abs=1e-1)
 
-            if dist1.outcome_length() == dist2.outcome_length() == 2:
-                div1 = f_divergence(dist1, dist2, f, rvs=[0], crvs=[1])
-                div2 = div_func(dist1, dist2, rvs=[0], crvs=[1])
-                assert div1 == pytest.approx(div2, abs=1e-1)
+
+@pytest.mark.parametrize('alpha', [0.1, 0.5, 1.1])
+def test_f_divergence2(alpha):
+    """
+    Tests various known relations of f-divergences to other divergences.
+    """
+    def f_alpha(alpha):
+        if alpha == 1:
+            def f(x):
+                return x * np.log2(x)
+        elif alpha == -1:
+            def f(x):
+                return - np.log2(x)
+        else:
+            def f(x):
+                return 4.0 / (1.0 - alpha*alpha) * (1.0 - np.power(x, (1.0 + alpha)/2))
+        return f
+
+    def f_tsallis(alpha):
+        def f(x):
+            return (np.power(x, 1.0 - alpha) - 1.0) / (alpha - 1.0)
+        return f
+    test_functions = []
+    test_functions.append((f_alpha(alpha), partial(alpha_divergence, alpha=alpha)))
+    test_functions.append((f_tsallis(alpha), partial(tsallis_divergence, alpha=alpha)))
+
+    dists = [d4, d5]
+
+    for dist1, dist2 in combinations(dists, 2):
+        for f, div_func in test_functions:
+            div1 = f_divergence(dist1, dist2, f, rvs=[0], crvs=[1])
+            div2 = div_func(dist1, dist2, rvs=[0], crvs=[1])
+            assert div1 == pytest.approx(div2, abs=1e-1)
+
+

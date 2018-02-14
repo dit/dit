@@ -109,3 +109,12 @@ def test_plugable():
     assert val1 == pytest.approx(val2)
     assert val1 == pytest.approx(val3)
     assert val2 == pytest.approx(val3)
+
+
+def test_plugable_fail():
+    """ Tests for the pluggable form """
+    d1 = Distribution("AB", [0.5, 0.5])
+    d2 = Distribution("BC", [0.5, 0.5])
+    f = jensen_divergence(renyi_entropy)
+    with pytest.raises(ditException):
+        f(d1, d2)

@@ -76,16 +76,19 @@ def segment_axis(a, length, overlap=0, axis=None, end='cut', endvalue=0):
 
         if end == 'cut':
             a = a[..., :rounddown]
-        elif end in ['pad', 'wrap']: # copying will be necessary
+        elif end in ['pad', 'wrap']:  # copying will be necessary
             s = list(a.shape)
             s[-1] = roundup
             b = np.empty(s, dtype=a.dtype)
             b[..., :l] = a
             if end == 'pad':
                 b[..., l:] = endvalue
-            elif end == 'wrap':
+            else:  # end == 'wrap'
                 b[..., l:] = a[..., :roundup - l]
             a = b
+        else:
+            msg = "`end` {} is not recognized.".format(end)
+            raise ValueError(msg)
 
         a = a.swapaxes(-1, axis)
 
@@ -105,7 +108,7 @@ def segment_axis(a, length, overlap=0, axis=None, end='cut', endvalue=0):
 
     try:
         return as_strided(a, strides=newstrides, shape=newshape)
-    except TypeError: # pragma: no cover
+    except TypeError:  # pragma: no cover
         warnings.warn("Problem with ndarray creation forces copy.")
         a = a.copy()
         # Shape doesn't change but strides does

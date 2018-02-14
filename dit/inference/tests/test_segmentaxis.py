@@ -67,7 +67,7 @@ def test_sa5():
     """
     a = np.arange(5)
     with pytest.raises(ValueError):
-        sa = segment_axis(a, 10, 0, end='cut')
+        segment_axis(a, 10, 0, end='cut')
 
 
 def test_sa6():
@@ -76,7 +76,7 @@ def test_sa6():
     """
     a = np.arange(5)
     with pytest.raises(ValueError):
-        sa = segment_axis(a, 2, 3, end='wrap')
+        segment_axis(a, 2, 3, end='wrap')
 
 
 def test_sa7():
@@ -85,4 +85,13 @@ def test_sa7():
     """
     a = np.arange(5)
     with pytest.raises(ValueError):
-        sa = segment_axis(a, 2, -1, end='wrap')
+        segment_axis(a, 2, -1, end='wrap')
+
+
+def test_sa8():
+    """
+    Test exceptions.
+    """
+    a = np.arange(5)
+    with pytest.raises(ValueError):
+        segment_axis(a, 2, -1, end='pants')
