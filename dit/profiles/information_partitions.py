@@ -335,7 +335,7 @@ class DependencyDecomposition(object):
         # Entropies
         for node in nx.topological_sort(self._lattice.reverse()):
             try:
-                parent = self._lattice[node].keys()[0]
+                parent = list(self._lattice[node].keys())[0]
                 x0 = dists[parent].pmf
             except IndexError:
                 x0 = None
