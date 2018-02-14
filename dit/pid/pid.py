@@ -168,9 +168,9 @@ class BasePID(with_metaclass(ABCMeta, object)):
         """
         Use the redundancy measure to populate the lattice.
         """
-        if reds is None: # pragma: no cover
+        if reds is None:  # pragma: no cover
             reds = {}
-        if pis is None: # pragma: no cover
+        if pis is None:  # pragma: no cover
             pis = {}
 
         for node in self._lattice:
@@ -200,9 +200,9 @@ class BasePID(with_metaclass(ABCMeta, object)):
         pis : dict
             Updated partial information values.
         """
-        if reds is None: # pragma: no cover
+        if reds is None:  # pragma: no cover
             reds = {}
-        if pis is None:
+        if pis is None:  # pragma: no cover
             pis = {}
 
         for node in reversed(list(nx.topological_sort(self._lattice))):
@@ -265,7 +265,7 @@ class BasePID(with_metaclass(ABCMeta, object)):
 
         table = prettytable.PrettyTable([self.name, red_string, pi_string], title=getattr(self._dist, 'name', ''))
 
-        if ditParams['text.font'] == 'linechar': # pragma: no cover
+        if ditParams['text.font'] == 'linechar':  # pragma: no cover
             try:
                 table.set_style(prettytable.BOX_CHARS)
             except AttributeError:
@@ -278,16 +278,16 @@ class BasePID(with_metaclass(ABCMeta, object)):
             node_label = ''.join('{{{}}}'.format(':'.join(map(str, n))) for n in node)
             red_value = self.get_redundancy(node)
             pi_value = self.get_partial(node)
-            if np.isclose(0, red_value, atol=10 ** -(digits - 1), rtol=10 ** -(digits - 1)):
+            if np.isclose(0, red_value, atol=10 ** -(digits - 1), rtol=10 ** -(digits - 1)):  # pragma: no cover
                 red_value = 0.0
-            if np.isclose(0, pi_value, atol=10 ** -(digits - 1), rtol=10 ** -(digits - 1)):
+            if np.isclose(0, pi_value, atol=10 ** -(digits - 1), rtol=10 ** -(digits - 1)):  # pragma: no cover
                 pi_value = 0.0
             table.add_row([node_label, red_value, pi_value])
 
         return table.get_string()
 
     @property
-    def name(self):
+    def name(self):  # pragma: no cover
         """
         Get the name of the decomposition. If colorama is available, the name will be styled
         according to its properties.
@@ -297,7 +297,7 @@ class BasePID(with_metaclass(ABCMeta, object)):
         name : str
             The name of the decomposition.
         """
-        try: # pragma: no cover
+        try:
             from colorama import Fore, Style
             inconsistent_style = lambda x: Fore.RED + x + Style.RESET_ALL
             negative_style = lambda x: Fore.GREEN + x + Style.RESET_ALL
@@ -339,7 +339,8 @@ class BasePID(with_metaclass(ABCMeta, object)):
             True if all pi values are non-negative, False otherwise.
         """
         pis = nx.get_node_attributes(self._lattice, 'pi')
-        return all(pi >= -1e-6 for pi in pis.values() if not np.isnan(pi))
+        nonnegative = all(pi >= -1e-6 for pi in pis.values() if not np.isnan(pi))
+        return nonnegative
 
     @property
     def complete(self):
@@ -403,7 +404,7 @@ class BaseIncompletePID(BasePID):
         pis : dict
             Updated partial information values.
         """
-        # everything below a redundancy of 0 is a redundany of 0
+        # everything below a redundancy of 0 is a redundancy of 0
         nodes = list(nx.topological_sort(self._lattice))
         while nodes:
             node = nodes.pop(0)
@@ -434,7 +435,7 @@ class BaseIncompletePID(BasePID):
                         if node not in reds:
                             reds[node] = reds[top]
 
-        # if redundancy of A is equal to the reundancy any of A's children, then pi(A) = 0
+        # if redundancy of A is equal to the redundancy any of A's children, then pi(A) = 0
         for node in self._lattice:
             if node not in pis:
                 if node in reds and all(n in reds for n in self._lattice[node]) and self._lattice[node]:
