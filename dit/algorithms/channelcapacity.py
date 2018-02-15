@@ -137,9 +137,10 @@ def channel_capacity_joint(dist, input, output, marginal=False, rv_mode=None):
         The marginal distribution that achieves the channel capacity.
         Only returned if `marginal` is True.
     """
-    _, cdists = dist.condition_on(crvs=input, rvs=output, rv_mode=rv_mode)
+    marg, cdists = dist.condition_on(crvs=input, rvs=output, rv_mode=rv_mode)
     cc, marg_opt = channel_capacity(cdists)
     if marginal:
-        return cc, marg_opt
+        marg.pmf = marg_opt
+        return cc, marg
     else:
         return cc

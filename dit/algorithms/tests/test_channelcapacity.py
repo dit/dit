@@ -7,6 +7,7 @@ import numpy as np
 from dit import Distribution, joint_from_factors
 from dit.algorithms.channelcapacity import channel_capacity, channel_capacity_joint
 from dit.exceptions import ditException
+from dit.cdisthelpers import cdist_array
 
 
 def BEC_joint(epsilon):
@@ -62,11 +63,25 @@ def test_channel_capacity_rvnames():
     assert pXY.is_approx_equal(pXYopt)
 
 
-def test_channel_capacity_array():
+def test_channel_capacity_array1():
     epsilon = 0.3
     pXY = BEC_joint(epsilon)
     pX, pYgX = pXY.condition_on([0])
     cc, pXopt_pmf = channel_capacity(pYgX)
+
+    # Verify channel capacity.
+    assert np.allclose(cc, 1 - epsilon)
+
+    # Verify maximizing distribution.
+    assert np.allclose(pX.pmf, pXopt_pmf)
+
+
+def test_channel_capacity_array2():
+    epsilon = 0.3
+    pXY = BEC_joint(epsilon)
+    pX, pYgX = pXY.condition_on([0])
+    pYgX = cdist_array(pYgX, base='linear', mode='dense')
+    cc, pXopt_pmf = channel_capacity(pYgX, atol=1e-9, rtol=1e-9)
 
     # Verify channel capacity.
     assert np.allclose(cc, 1 - epsilon)
@@ -87,10 +102,20 @@ def test_bad_marginal():
         channel_capacity(pYgX, pX)
 
 
-def test_channel_capacity_joint():
+def test_channel_capacity_joint1():
     """
     Test against a known value.
     """
     gm = Distribution(['00', '01', '10'], [1/3]*3)
     cc = channel_capacity_joint(gm, [0], [1])
     assert cc == pytest.approx(0.3219280796196524)
+
+
+def test_channel_capacity_joint2():
+    """
+    Test against a known value.
+    """
+    gm = Distribution(['00', '01', '10'], [1/3]*3)
+    m = Distribution(['0', '1'], [2/5, 3/5])
+    _, marg = channel_capacity_joint(gm, [0], [1], marginal=True)
+    assert marg.is_approx_equal(m, atol=1e-3)

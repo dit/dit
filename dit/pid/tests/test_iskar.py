@@ -14,6 +14,7 @@ from dit.pid.iskar import (i_downarrow,
 from dit.pid.distributions import bivariates, trivariates
 
 
+@pytest.mark.flaky(rerun=5)
 def test_idownarrow1():
     """
     Test idownarrow on redundant distribution.
@@ -24,6 +25,7 @@ def test_idownarrow1():
     assert uniques[(1,)] == pytest.approx(0, abs=1e-4)
 
 
+@pytest.mark.flaky(rerun=5)
 def test_idownarrow2():
     """
     Test idownarrow on synergistic distribution.
@@ -34,6 +36,7 @@ def test_idownarrow2():
     assert uniques[(1,)] == pytest.approx(0, abs=1e-4)
 
 
+@pytest.mark.flaky(rerun=5)
 def test_idownarrow3():
     """
     Test idownarrow on unique distribution.
@@ -44,6 +47,7 @@ def test_idownarrow3():
     assert uniques[(1,)] == pytest.approx(1, abs=1e-4)
 
 
+@pytest.mark.flaky(rerun=5)
 def test_pid_downarrow1():
     """
     Test idownarrow on a generic distribution.
@@ -56,6 +60,7 @@ def test_pid_downarrow1():
     assert pid[((0, 1),)] == pytest.approx(0.18872187554086706, abs=1e-4)
 
 
+@pytest.mark.flaky(rerun=5)
 def test_pid_downarrow2():
     """
     Test idownarrow on another generic distribution.
@@ -71,6 +76,7 @@ def test_pid_downarrow2():
             assert pid[atom] == pytest.approx(0.0, abs=1e-4)
 
 
+@pytest.mark.flaky(rerun=5)
 def test_pid_downarrow3():
     """
     Test that idownarrow is inconsistent on prob 2.
@@ -91,6 +97,7 @@ def test_pid_uparrow1():
     assert pid[((0, 1),)] == pytest.approx(0.45914791702724411, abs=1e-4)
 
 
+@pytest.mark.flaky(rerun=5)
 def test_pid_double_uparrow1():
     """
     """
@@ -102,6 +109,7 @@ def test_pid_double_uparrow1():
     assert pid[((0, 1),)] == pytest.approx(0.3333333333376699, abs=1e-4)
 
 
+@pytest.mark.flaky(rerun=5)
 def test_pid_triple_uparrow1():
     """
     """
@@ -113,6 +121,7 @@ def test_pid_triple_uparrow1():
     assert pid[((0, 1),)] == pytest.approx(0.33333333334723803, abs=1e-4)
 
 
+@pytest.mark.flaky(rerun=5)
 def test_pid_downarrow4():
     """
     """
@@ -124,11 +133,12 @@ def test_pid_downarrow4():
     assert pid[((0, 1),)] == pytest.approx(0.12581458369391196, abs=1e-4)
 
 
+@pytest.mark.flaky(rerun=5)
 def test_pid_triple_downarrow1():
     """
     """
     d = bivariates['boom']
-    pid = PID_triple_downarrow(d, bounds=(3,), niter=10)
+    pid = PID_triple_downarrow(d, bounds=(3,))
     assert pid[((0,), (1,))] == pytest.approx(0.29288371792167206, abs=1e-4)
     assert pid[((0,),)] == pytest.approx(0.3737829487445149, abs=1e-4)
     assert pid[((1,),)] == pytest.approx(0.33333333333333348, abs=1e-4)
