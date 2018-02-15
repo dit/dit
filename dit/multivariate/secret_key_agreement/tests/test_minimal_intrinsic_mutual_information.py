@@ -66,12 +66,12 @@ def test_failure():
 
 
 @pytest.mark.slow
-@pytest.mark.flaky(reruns=5)
+@pytest.mark.flaky(reruns=10)
 def test_constructor():
     """
     Test the generic constructor.
     """
     test = minimal_intrinsic_mutual_information_constructor(total_correlation).functional()
-    itc = minimal_intrinsic_total_correlation(intrinsic_1, [[0], [1]], [2], niter=10, bounds=(2,))
-    itc2 = test(intrinsic_1, [[0], [1]], [2], niter=10, bounds=(2,))
+    itc = minimal_intrinsic_total_correlation(intrinsic_1, [[0], [1]], [2], bounds=(2,))
+    itc2 = test(intrinsic_1, [[0], [1]], [2], bounds=(2,))
     assert itc == pytest.approx(itc2, abs=1e-3)
