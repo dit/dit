@@ -97,10 +97,10 @@ def test_partition_set3():
 
 
 def test_partition_set4():
-    stuff = ['0', '1', '00', '11', '000', '111', [0, 1, 2]]
+    stuff = ['0', '1', '00', '11', '000', '111', (0, 1, 2)]
     fn = lambda a, b: a[0] == b[0]
-    _, lookup = partition_set(stuff, fn, reflexive=True, transitive=False)
-    assert lookup == [0, 1, 0, 1, 0, 1, 2]
+    eqclasses, _ = partition_set(stuff, fn, reflexive=True, transitive=False, innerset=True)
+    assert eqclasses == [frozenset(['0', '00', '000']), frozenset(['1', '11', '111']), frozenset([(0, 1, 2)])]
 
 
 class TestDigits():
