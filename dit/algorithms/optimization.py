@@ -805,7 +805,7 @@ class BaseNonConvexOptimizer(BaseOptimizer):
                               callback=self._callback,
                               )
 
-        success, msg = basinhop_status(result)
+        success, _ = basinhop_status(result)
         if not success:  # pragma: no cover
             result = self._callback.minimum() or res_shotgun
 

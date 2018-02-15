@@ -14,8 +14,6 @@ from itertools import combinations
 
 import logging
 
-from debtcollector import removals
-
 import numpy as np
 
 import dit
@@ -55,7 +53,7 @@ def initial_point_generic(dist, rvs, A=None, b=None, isolated=None, **kwargs):
         # Reduce the size of A so that only nonzero elements are searched.
         # Also make it full rank.
         Asmall = A[:, variables.nonzero] # pylint: disable=no-member
-        Asmall, b, rank = as_full_rank(Asmall, b)
+        Asmall, b, _ = as_full_rank(Asmall, b)
         Asmall = matrix(Asmall)
         b = matrix(b)
     else:
@@ -307,7 +305,7 @@ def marginal_maxent_dists(dist, k_max=None, maxiters=1000, tol=1e-3, verbose=Fal
             continue
 
         kwargs = {'maxiters': maxiters, 'tol': tol, 'verbose': verbose}
-        pmf_opt, opt = marginal_maxent(dist, k, **kwargs)
+        pmf_opt, _ = marginal_maxent(dist, k, **kwargs)
         d = dit.Distribution(outcomes, pmf_opt)
         d.make_sparse()
         dists.append(d)

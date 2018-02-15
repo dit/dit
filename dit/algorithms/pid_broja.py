@@ -706,7 +706,7 @@ def dice(a, b):
     # DoF: 85, 36, 15, 10, 5, 0
     d = dit.example_dists.summed_dice(a, b)
     x = MaximumConditionalEntropy(d, [[0], [1]], [2], extra_constraints=True)
-    pmf_opt, obj = x.optimize()
+    pmf_opt, _ = x.optimize()
     d_opt = x.dist.copy()
     d_opt.pmf[:] = pmf_opt
     print(pi_decomp(x.dist, d_opt))

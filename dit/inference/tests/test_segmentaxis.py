@@ -94,4 +94,4 @@ def test_sa8():
     """
     a = np.arange(5)
     with pytest.raises(ValueError):
-        segment_axis(a, 2, 1, end='pants')
+        segment_axis(a, 7, 0, end='pants')
