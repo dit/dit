@@ -65,7 +65,7 @@ def test_dfts4():
     Test inferring a distribution from a time-series.
     """
     gm = golden_mean()
-    ts = np.array([next(gm) for _ in range(1000000)]).T
+    ts = np.array([next(gm) for _ in range(1000000)]).reshape(10000000, 1)
     d1 = dist_from_timeseries(ts)
     d2 = Distribution([((0,), 0), ((0,), 1), ((1,), 0)], [1/3, 1/3, 1/3])
     assert d1.is_approx_equal(d2, atol=1e-3)
