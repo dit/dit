@@ -174,7 +174,7 @@ class BasePID(with_metaclass(ABCMeta, object)):
             pis = {}
 
         for node in self._lattice:
-            if node not in reds:
+            if node not in reds:  # pragma: no branch
                 reds[node] = self._measure(self._dist, node, self._output, **self._kwargs)
 
         reds, pis = self._compute_mobius_inversion(reds=reds, pis=pis)
@@ -495,7 +495,7 @@ class BaseIncompletePID(BasePID):
                         if node not in reds:
                             try:
                                 reds[node] = sum(pis[n] for n in descendants(self._lattice, node, self=True))
-                            except KeyError:
+                            except KeyError:  # pragma: no cover
                                 pass
 
                     break
@@ -552,16 +552,16 @@ class BaseIncompletePID(BasePID):
 
         # set redundancies of single input sets to I(input, output) and
         # plug in computed unique values
-        if self.SELF_REDUNDANCY:
+        if self.SELF_REDUNDANCY:  # pragma: no branch
             for node in self._lattice:
                 if len(node) == 1:
                     reds[node] = coinformation(self._dist, [node[0], self._output])
 
-        if self.LATTICE_MONOTONICITY:
+        if self.LATTICE_MONOTONICITY:  # pragma: no branch
             reds, pis = self._compute_lattice_monotonicity(reds, pis)
 
         # if a node exists in a smaller PID, use that to compute redundancy (if possible)
-        if self.REDUCED_PID:
+        if self.REDUCED_PID:  # pragma: no branch
             for node in self._lattice:
                 if node not in reds and len(node) < len(self._inputs):
                     sub_pid = self.__class__(self._dist.copy(), node, self._output)
@@ -575,7 +575,7 @@ class BaseIncompletePID(BasePID):
             reds, pis = self._compute_single_child(reds=reds, pis=pis)
 
             # if the lattice is monotonic, then everything below a zero is zero, and everything above a max is max
-            if self.LATTICE_MONOTONICITY:
+            if self.LATTICE_MONOTONICITY:  # pragma: no branch
                 reds, pis = self._compute_lattice_monotonicity(reds=reds, pis=pis)
 
             # do as much of the mobius inversion as possible
@@ -662,7 +662,7 @@ class BaseUniquePID(BaseIncompletePID):
         """
         """
         uniques = self._measure(self._dist, self._inputs, self._output, **self._kwargs)
-        if pis is None:
+        if pis is None:  # pragma: no branch
             pis = {}
 
         for node in self._lattice:
@@ -680,7 +680,7 @@ class BaseBivariatePID(BaseIncompletePID):
     def _compute(self, reds=None, pis=None):
         """
         """
-        if reds is None:
+        if reds is None:  # pragma: no branch
             reds = {}
         for node in self._lattice:
             if len(node) == 2 and node not in reds:

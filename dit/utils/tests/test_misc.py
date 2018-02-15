@@ -90,6 +90,19 @@ def test_partition_set2():
     assert lookup == [0, 0, 1, 1, 2, 2, 2]
 
 
+def test_partition_set3():
+    stuff = ['0', '1', '00', '11', '000', '111', [0, 1, 2]]
+    _, lookup = partition_set(stuff, reflexive=False, transitive=True)
+    assert lookup == [0, 1, 2, 3, 4, 5, 6]
+
+
+def test_partition_set4():
+    stuff = ['0', '1', '00', '11', '000', '111', [0, 1, 2]]
+    fn = lambda a, b: a[0] == b[0]
+    _, lookup = partition_set(stuff, fn, reflexive=True, transitive=False)
+    assert lookup == [0, 1, 0, 1, 0, 1, 2]
+
+
 class TestDigits():
     def test_bad_base(self):
         with pytest.raises(ValueError):
