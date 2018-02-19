@@ -889,10 +889,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
 
     def _construct_slices(self):
         """
-
-        Returns
-        -------
-
+        Construct the slices used to construct the joint pmf.
         """
         arvs = sorted(self._arvs)
 
@@ -1109,9 +1106,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
             string = False
 
         joint = self.construct_full_joint(x)
-        # joint = joint.sum(axis=self._proxy_vars)
         outcomes, pmf = zip(*[(o, p) for o, p in np.ndenumerate(joint) if p > cutoff])
-        # outcomes = [tuple(a[i] for i, a in zip(o, alphabets)) for o in outcomes]
 
         # normalize, in case cutoffs removed a significant amount of pmf
         pmf = np.asarray(pmf)
