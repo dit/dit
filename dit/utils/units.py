@@ -16,6 +16,7 @@ try:
     ureg = pint.UnitRegistry()
     ureg.define('nat = {} * bit'.format(np.log2(np.e)))
     ureg.define('dit = {} * bit'.format(np.log2(10)))
+    pint.set_application_registry(ureg)
 
 
     def unitful(f):

@@ -24,7 +24,9 @@ def test_bit():
     h = entropy(d)
     ditParams['units'] = False
     true = ureg.Quantity(1, ureg.bit)
-    assert h.to_base_units() == true.to_base_units()
+    print(h == true)
+    print(h - true)
+    assert h.to_base_units() == pytest.approx(true.to_base_units())
 
 
 def test_nat():
@@ -36,7 +38,9 @@ def test_nat():
     h = entropy(d)
     ditParams['units'] = False
     true = ureg.Quantity(np.log(2), ureg.nat)
-    assert h.to_base_units() == true.to_base_units()
+    print(h == true)
+    print(h - true)
+    assert h.to_base_units() == pytest.approx(true.to_base_units())
 
 
 def test_dit():
@@ -48,4 +52,6 @@ def test_dit():
     h = entropy(d)
     ditParams['units'] = False
     true = ureg.Quantity(1, ureg.dit)
-    assert h.to_base_units() == true.to_base_units()
+    print(h == true)
+    print(h - true)
+    assert h.to_base_units() == pytest.approx(true.to_base_units())
