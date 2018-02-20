@@ -2,6 +2,8 @@
 Tests for dit.utils.units.
 """
 
+from __future__ import division
+
 import pytest
 
 import numpy as np
