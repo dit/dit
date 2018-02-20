@@ -8,11 +8,11 @@ import pytest
 
 import numpy as np
 
-pint = pytest.importorskip('pint')
-
 from dit import Distribution, ditParams
 from dit.multivariate import entropy
 from dit.utils.units import ureg
+
+pint = pytest.importorskip('pint')
 
 
 def test_bit():
@@ -23,7 +23,8 @@ def test_bit():
     ditParams['units'] = True
     h = entropy(d)
     ditParams['units'] = False
-    assert h == 1*ureg.bit
+    true = ureg.Quantity(1, ureg.bit)
+    assert h.to_base_units() == true.to_base_units()
 
 
 def test_nat():
@@ -34,7 +35,8 @@ def test_nat():
     ditParams['units'] = True
     h = entropy(d)
     ditParams['units'] = False
-    assert h == np.log(2)*ureg.nat
+    true = ureg.Quantity(np.log(2), ureg.nat)
+    assert h.to_base_units() == true.to_base_units()
 
 
 def test_dit():
@@ -45,4 +47,5 @@ def test_dit():
     ditParams['units'] = True
     h = entropy(d)
     ditParams['units'] = False
-    assert h == 1*ureg.dit
+    true = ureg.Quantity(1, ureg.dit)
+    assert h.to_base_units() == true.to_base_units()
