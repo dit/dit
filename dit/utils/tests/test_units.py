@@ -6,13 +6,13 @@ from __future__ import division
 
 import pytest
 
+pint = pytest.importorskip('pint')
+
 import numpy as np
 
 from dit import Distribution, ditParams
 from dit.multivariate import entropy
 from dit.utils.units import ureg
-
-pint = pytest.importorskip('pint')
 
 
 def test_bit():
