@@ -127,6 +127,7 @@ defaultParams = {'rtol': (1e-7, validate_float),
                  'text.font': ('ascii', validate_text),
                  'print.exact': (False, validate_boolean),
                  'repr.print': (False, validate_boolean),
+                 'units': (False, validate_boolean),
                 }
 
 

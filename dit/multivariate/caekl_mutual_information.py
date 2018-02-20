@@ -5,10 +5,11 @@ The CAEKL mutual information, as define [Chan, Chung, et al. "Multivariate Mutua
 from __future__ import division
 
 from ..helpers import normalize_rvs
-from ..utils import partitions
+from ..utils import partitions, unitful
 from .entropy import entropy
 
 
+@unitful
 def caekl_mutual_information(dist, rvs=None, crvs=None, rv_mode=None):
     """
     Calculates the Chan-AlBashabsheh-Ebrahimi-Kaced-Liu mutual information.

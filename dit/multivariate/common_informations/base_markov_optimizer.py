@@ -9,6 +9,7 @@ from abc import abstractmethod
 import numpy as np
 
 from ...algorithms import BaseAuxVarOptimizer
+from ...utils import unitful
 from ..dual_total_correlation import dual_total_correlation
 from ..entropy import entropy
 
@@ -173,7 +174,7 @@ class MarkovVarOptimizer(BaseAuxVarOptimizer):
         """
         Construct a functional form of the optimizer.
         """
-
+        @unitful
         def common_info(dist, rvs=None, crvs=None, niter=None, maxiter=1000, polish=1e-6, bound=None, rv_mode=None):
             dtc = dual_total_correlation(dist, rvs, crvs, rv_mode)
             ent = entropy(dist, rvs, crvs, rv_mode)

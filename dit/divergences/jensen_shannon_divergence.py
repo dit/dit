@@ -7,12 +7,13 @@ This is a reasonable measure of distinguishablity between distribution.
 from __future__ import division
 
 import numpy as np
-from six.moves import zip # pylint: disable=redefined-builtin,import-error
+from six.moves import zip  # pylint: disable=redefined-builtin,import-error
 
 import dit
 from ..exceptions import ditException
 from ..distconst import mixture_distribution
 from ..shannon import entropy as H, entropy_pmf as H_pmf
+from ..utils import unitful
 
 __all__ = ('jensen_shannon_divergence',
            'jensen_shannon_divergence_pmf',
@@ -58,6 +59,7 @@ def jensen_shannon_divergence_pmf(pmfs, weights=None):
     return one - two
 
 
+@unitful
 def jensen_shannon_divergence(dists, weights=None):
     """
     The Jensen-Shannon Divergence: H(sum(w_i*P_i)) - sum(w_i*H(P_i)).
@@ -118,7 +120,7 @@ def jensen_divergence(func):
     jensen_func_divergence : function
         The divergence based on `func`
     """
-
+    @unitful
     def jensen_blank_divergence(dists, weights=None, *args, **kwargs):
         if weights is None:
             weights = np.array([1 / len(dists)] * len(dists))

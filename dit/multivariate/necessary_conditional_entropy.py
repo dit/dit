@@ -5,9 +5,10 @@
 from .entropy import entropy
 from ..algorithms import insert_mss
 from ..helpers import normalize_rvs
-from ..utils import flatten
+from ..utils import flatten, unitful
 
 
+@unitful
 def necessary_conditional_entropy(dist, rvs=None, crvs=None, rv_mode=None):
     """
     Calculates the necessary conditional entropy :math:`\H[X \dagger Y]`.

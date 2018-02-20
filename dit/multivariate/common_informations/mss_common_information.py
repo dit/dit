@@ -6,10 +6,12 @@ import numpy as np
 
 from ...algorithms.minimal_sufficient_statistic import insert_joint_mss
 from ...helpers import normalize_rvs
+from ...utils import unitful
 from ..dual_total_correlation import dual_total_correlation
 from ..entropy import entropy
 
 
+@unitful
 def mss_common_information(dist, rvs=None, crvs=None, rv_mode=None):
     """
     Compute the minimal sufficient statistic common information, which is the

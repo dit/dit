@@ -5,9 +5,10 @@ measures.
 
 from ..helpers import normalize_rvs
 from ..shannon import conditional_entropy, entropy as shannon_entropy
-from ..utils import flatten
+from ..utils import flatten, unitful
 
 
+@unitful
 def entropy(dist, rvs=None, crvs=None, rv_mode=None):
     """
     Calculates the conditional joint entropy.

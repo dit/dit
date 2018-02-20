@@ -5,10 +5,11 @@ The interaction information is a form of multivariate information.
 import numpy as np
 
 from ..helpers import normalize_rvs
-
+from ..utils import unitful
 from .coinformation import coinformation
 
 
+@unitful
 def interaction_information(dist, rvs=None, crvs=None, rv_mode=None):
     """
     Calculates the interaction information.
