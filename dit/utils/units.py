@@ -37,7 +37,10 @@ try:
             value = f(*args, **kwargs)
 
             if ditParams['units']:
-                value *= ureg.bit
+                if isinstance(value, tuple):
+                    value = (value[0] * ureg.bit,) + value[1:]
+                else:
+                    value *= ureg.bit
 
             return value
 
