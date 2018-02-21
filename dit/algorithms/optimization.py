@@ -10,6 +10,8 @@ from collections import namedtuple
 
 from copy import deepcopy
 
+from functools import reduce
+
 from six import with_metaclass
 
 from string import ascii_letters, digits
@@ -361,7 +363,8 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
         idx_crvs = tuple(self._all_vars - crvs)
         idx_subrvs = [tuple(self._all_vars - set(ss)) for ss in sorted(powerset(rvs), key=len)[1:-1]]
         power = [(-1)**len(ss) for ss in sorted(powerset(rvs), key=len)[1:-1]]
-        power += [(-1)**len(rvs), sum(power)]
+        power += [(-1)**len(rvs)]
+        power += [-sum(power)]
 
         def coinformation(pmf):
             """
@@ -381,7 +384,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
             pmf_crvs = pmf_joint.sum(axis=idx_crvs, keepdims=True)
             pmf_subrvs = [pmf_joint.sum(axis=idx, keepdims=True) for idx in idx_subrvs] + [pmf_joint, pmf_crvs]
 
-            pmf_ci = np.prod([pmf**p for pmf, p in zip(pmf_subrvs, power)])
+            pmf_ci = reduce(np.multiply, [pmf**p for pmf, p in zip(pmf_subrvs, power)])
 
             ci = np.nansum(pmf_joint * np.log2(pmf_ci))
 
