@@ -6,6 +6,12 @@ from __future__ import division
 
 from .. import Distribution
 
+__all__ = [
+    'intrinsic_1',
+    'intrinsic_2',
+    'intrinsic_3',
+]
+
 
 # from the intrinsic information paper
 intrinsic_1 = Distribution(['000', '011', '101', '110', '222', '333'], [1/8]*4 + [1/4]*2)

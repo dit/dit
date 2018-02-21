@@ -181,7 +181,7 @@ def minimal_intrinsic_mutual_information_constructor(func):
         def objective(self, x):
             pmf = self.construct_joint(x)
             d = Distribution.from_ndarray(pmf)
-            mi = func(d, rvs=self._true_rvs, crvs=self._true_crvs)
+            mi = func(d, rvs=[[rv] for rv in self._rvs], crvs=self._arvs)
             cmi = self._conditional_mutual_information(self._rvs, self._arvs, self._crvs)(pmf)
             return mi + cmi
 

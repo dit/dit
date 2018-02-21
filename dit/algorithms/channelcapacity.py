@@ -8,6 +8,7 @@ import dit
 
 from ..exceptions import ditException
 from ..cdisthelpers import cdist_array
+from ..utils import unitful
 
 
 __all__ = [
@@ -107,6 +108,7 @@ def channel_capacity(cdists, marginal=None, rtol=None, atol=None):
     return cc, marginal_opt
 
 
+@unitful
 def channel_capacity_joint(dist, input, output, marginal=False, rv_mode=None):
     """
     Compute the channel capacity from ``rvs1`` to ``rvs2``.

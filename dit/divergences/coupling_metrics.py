@@ -11,12 +11,14 @@ import numpy as np
 from ..algorithms.distribution_optimizers import MinEntOptimizer
 from ..helpers import normalize_rvs
 from ..multivariate import entropy as H
+from ..utils import unitful
 
 __all__ = [
     'coupling_metric',
 ]
 
 
+@unitful
 def residual_entropy(dist, rvs=None, crvs=None, p=1.0, rv_mode=None):
     """
     Compute the residual entropy.

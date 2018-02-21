@@ -4,6 +4,7 @@ The dual total correlation and variation of information.
 
 from ..shannon import conditional_entropy as H
 from ..helpers import normalize_rvs
+from ..utils import unitful
 
 __all__ = ('binding_information',
            'dual_total_correlation',
@@ -13,6 +14,7 @@ __all__ = ('binding_information',
           )
 
 
+@unitful
 def dual_total_correlation(dist, rvs=None, crvs=None, rv_mode=None):
     """
     Calculates the dual total correlation, also known as the binding

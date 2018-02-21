@@ -7,6 +7,7 @@ from __future__ import division
 from abc import abstractmethod
 
 from ...algorithms import BaseAuxVarOptimizer
+from ...utils import unitful
 
 __all__ = [
     'necessary_intrinsic_mutual_information',
@@ -161,6 +162,7 @@ class SecrecyCapacity(NecessaryIntrinsicMutualInformation):
         return 1
 
 
+@unitful
 def secrecy_capacity_directed(dist, X, Y, Z, rv_mode=None, niter=None, bound_u=None):
     """
     The rate at which X and Y can agree upon a key with Z eavesdropping,
@@ -238,6 +240,7 @@ def secrecy_capacity(dist, rvs=None, crvs=None, rv_mode=None, niter=None, bound_
     return max([a, b])
 
 
+@unitful
 def necessary_intrinsic_mutual_information_directed(dist, X, Y, Z, rv_mode=None,
                                                     niter=None, bound_u=None, bound_v=None):
     """

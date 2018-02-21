@@ -6,7 +6,7 @@ import numpy as np
 
 from ..exceptions import InvalidOutcome
 from ..helpers import normalize_rvs
-from ..utils import flatten
+from ..utils import flatten, unitful
 
 __all__ = ('cross_entropy',
           )
@@ -70,6 +70,7 @@ def get_pmfs_like(d1, d2, rvs, rv_mode=None):
     return ps, qs
 
 
+@unitful
 def cross_entropy(dist1, dist2, rvs=None, crvs=None, rv_mode=None):
     """
     The cross entropy between `dist1` and `dist2`.

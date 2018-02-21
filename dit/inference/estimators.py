@@ -47,12 +47,13 @@ def entropy_1(data, length=1):
 
     Returns
     -------
-    h0 : float
+    h1 : float
         An estimate of the entropy.
 
     Notes
     -----
-    This returns a less naive estimate of the entropy.
+    If M is the alphabet size and N is the number of samples, then the bias of this estimator is:
+        B ~ M/N
     """
     counts = get_counts(data, length)
     total = counts.sum()
@@ -76,12 +77,13 @@ def entropy_2(data, length=1):
 
     Returns
     -------
-    h0 : float
+    h2 : float
         An estimate of the entropy.
 
     Notes
     -----
-    This returns a bias-corrected estimate of the entropy.
+    If M is the alphabet size and N is the number of samples, then the bias of this estimator is:
+        B ~ (M+1)/(2N)
     """
     counts = get_counts(data, length)
     total = counts.sum()

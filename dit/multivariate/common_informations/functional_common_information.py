@@ -9,7 +9,7 @@ import numpy as np
 
 from ...distconst import RVFunctions, insert_rvf, modify_outcomes
 from ...helpers import parse_rvs, normalize_rvs
-from ...utils import partitions
+from ...utils import partitions, unitful
 
 from ..entropy import entropy
 from ..dual_total_correlation import dual_total_correlation
@@ -147,6 +147,7 @@ def functional_markov_chain(dist, rvs=None, crvs=None, rv_mode=None):
     return optimal[1]
 
 
+@unitful
 def functional_common_information(dist, rvs=None, crvs=None, rv_mode=None):
     """
     Compute the functional common information, F, of `dist`. It is the entropy

@@ -9,6 +9,7 @@ from abc import abstractmethod
 from ...algorithms import BaseAuxVarOptimizer
 from ...exceptions import ditException
 from ...math import prod
+from ...utils import unitful
 
 __all__ = [
     'BaseIntrinsicMutualInformation',
@@ -94,6 +95,7 @@ class BaseIntrinsicMutualInformation(BaseAuxVarOptimizer):
         """
         Construct a functional form of the optimizer.
         """
+        @unitful
         def intrinsic(dist, rvs=None, crvs=None, niter=None, bound=None, rv_mode=None):
             opt = cls(dist, rvs, crvs, rv_mode, bound=bound)
             opt.optimize(niter=niter)
