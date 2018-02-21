@@ -23,6 +23,7 @@ Optional Dependencies:
    * colorama
    * cython
    * numdifftools
+   * pint
    * scikit-learn
 
 Note:
