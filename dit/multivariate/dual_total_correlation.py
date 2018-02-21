@@ -62,6 +62,7 @@ def dual_total_correlation(dist, rvs=None, crvs=None, rv_mode=None):
     return B
 
 
+@unitful
 def residual_entropy(dist, rvs=None, crvs=None, rv_mode=None):
     """
     Compute the residual entropy.
