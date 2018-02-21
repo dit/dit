@@ -11,6 +11,7 @@ pint = pytest.importorskip('pint')
 import numpy as np
 
 from dit import Distribution, ditParams
+from dit.algorithms.channelcapacity import channel_capacity_joint
 from dit.multivariate import entropy
 from dit.utils.units import ureg
 
@@ -24,7 +25,7 @@ def test_bit():
     h = entropy(d)
     ditParams['units'] = False
     true = ureg.Quantity(1, ureg.bit)
-    assert h.to_base_units() == pytest.approx(true.to_base_units())
+    assert h == pytest.approx(true)
 
 
 def test_nat():
@@ -36,7 +37,7 @@ def test_nat():
     h = entropy(d)
     ditParams['units'] = False
     true = ureg.Quantity(np.log(2), ureg.nat)
-    assert h.to_base_units() == pytest.approx(true.to_base_units())
+    assert h == pytest.approx(true)
 
 
 def test_dit():
@@ -48,4 +49,14 @@ def test_dit():
     h = entropy(d)
     ditParams['units'] = False
     true = ureg.Quantity(1, ureg.dit)
-    assert h.to_base_units() == pytest.approx(true.to_base_units())
+    assert h == pytest.approx(true)
+
+
+def test_cc():
+    """
+    Test against a known value.
+    """
+    gm = Distribution(['00', '01', '10'], [1/3]*3)
+    cc, marg = channel_capacity_joint(gm, [0], [1], marginal=True)
+    true = ureg.Quantity(0.3219280796196524, ureg.bit)
+    assert cc == pytest.approx(true)
