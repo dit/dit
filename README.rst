@@ -10,21 +10,21 @@ Downloads:
 
 Dependencies:
    * Python 2.7, 3.3, 3.4, 3.5, or 3.6
-   * boltons
-   * contextlib2
-   * debtcollector
-   * networkx
-   * numpy
-   * prettytable
-   * scipy
-   * six
+   * `boltons <https://boltons.readthedocs.io>`_
+   * `contextlib2 <https://contextlib2.readthedocs.io>`_
+   * `debtcollector <https://docs.openstack.org/debtcollector/>`_
+   * `networkx <https://networkx.github.io/>`_
+   * `numpy <http://www.numpy.org/>`_
+   * `prettytable <https://code.google.com/archive/p/prettytable/>`_
+   * `scipy <https://www.scipy.org/>`_
+   * `six <http://pythonhosted.org/six/>`_
 
 Optional Dependencies:
-   * colorama
-   * cython
-   * numdifftools
-   * pint
-   * scikit-learn
+   * `colorama <https://pypi.python.org/pypi/colorama>`_
+   * `cython <http://cython.org/>`_
+   * `numdifftools <https://pypi.python.org/pypi/Numdifftools>`_
+   * `pint <https://pint.readthedocs.io>`_
+   * `scikit-learn <http://scikit-learn.org/>`_
 
 Note:
    The cython extensions are currently not supported on windows. Please install
