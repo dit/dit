@@ -5,7 +5,7 @@ from itertools import product
 
 from ..algorithms import BaseAuxVarOptimizer
 from ..distconst import RVFunctions, insert_rvf
-from dit.helpers import normalize_rvs
+from ..helpers import normalize_rvs
 from ..utils import extended_partition, partitions, unitful
 
 

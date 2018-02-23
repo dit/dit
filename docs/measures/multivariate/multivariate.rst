@@ -24,10 +24,11 @@ These measures all reduce to the standard Shannon :ref:`mutual_information` for 
    :maxdepth: 1
 
    coinformation
-   interaction_information
-   caekl_mutual_information
    total_correlation
    dual_total_correlation
+   caekl_mutual_information
+   interaction_information
+   deweese
 
 It is perhaps illustrative to consider how each of these measures behaves on two canonical distributions: the giant bit and parity.
 
