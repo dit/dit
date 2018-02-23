@@ -39,3 +39,11 @@ def test_deweese(dist, true):
     """ Test against known value """
     val = deweese_coinformation(dist)
     assert val == pytest.approx(true)
+
+
+def test_return_dist():
+    """ Test the return dist """
+    f = deweese_constructor(coinformation)
+    _, d = f(triadic, return_opt=True)
+    d = d.marginal([4, 5, 6])
+    assert len(d.outcomes) == 2
