@@ -13,7 +13,7 @@ Python package for sigma-algebras defined on finite sets.
 
 """
 
-__version__ = "1.0.2"
+__version__ = "1.1.0"
 
 # Order is important!
 from .params import ditParams
