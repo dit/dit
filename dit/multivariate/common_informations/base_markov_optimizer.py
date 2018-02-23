@@ -86,10 +86,10 @@ class MarkovVarOptimizer(BaseAuxVarOptimizer):
         self._W = {1 + len(self._aux_vars)}
 
         # The constraint that the joint doesn't change.
-        self.constraints = [{'type': 'eq',
-                             'fun': self.constraint_match_joint,
-                             },
-                            ]
+        self.constraints += [{'type': 'eq',
+                              'fun': self.constraint_match_joint,
+                              },
+                             ]
 
         self._default_hops = 5
 

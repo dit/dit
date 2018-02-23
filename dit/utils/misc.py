@@ -27,6 +27,7 @@ __all__ = (
     'ordered_partitions',
     'OrderedDict',
     'partitions',
+    'extended_partition',
     'partition_set',
     'powerset',
     'product_maker',
@@ -439,6 +440,30 @@ def partitions(seq, tuples=False):
         for partition in partitions1(seq):
             partition = frozenset(map(frozenset, partition))
             yield partition
+
+
+def extended_partition(outcomes, indices, part, ctr):
+    """
+    Expand a partition over a subset of outcome indices to the entire outcome.
+
+    Parameters
+    ----------
+    outcomes : list
+        List of outcomes.
+    indices : [int]
+        A list of indices corresponding to which indices of each outcome an
+        element of `part` corresponds to.
+    part : frozenset[frozenset]
+        A partition on some subset of indices of the outcomes.
+    ctr : func
+        The constructor to build sub-outcomes from.
+
+    Returns
+    -------
+    partition : frozenset[frozenset]
+        The expanded partition.
+    """
+    return frozenset([frozenset([o for o in outcomes if ctr(o[i] for i in indices) in p]) for p in part])
 
 
 def ordered_partitions(seq, tuples=False):

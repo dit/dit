@@ -46,7 +46,9 @@ dit/math/_*.html
 docs/_build/
 docs/images/idiagrams.pdf
 docs/images/*.png
-.idea
-.cache
-.hypothesis
+.idea/
+.cache/
+.hypothesis/
 .pypirc
+.pytest_cache/
+.vscode

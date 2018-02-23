@@ -122,7 +122,7 @@ def prod(vals, start=1):
     vals : iterable
         The values to compute the product of.
     start : object
-        The multiplicitive identity to use.
+        The multiplicative identity to use.
 
     Returns
     -------

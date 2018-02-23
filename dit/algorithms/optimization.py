@@ -105,7 +105,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
 
         self._additional_options = {}
 
-        self._priors = {}
+        self.constraints = []
 
     ###########################################################################
     # Required methods in subclasses
@@ -462,7 +462,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
         if crvs is None:
             crvs = set()
         idx_joint = tuple(self._all_vars - (rvs | crvs))
-        idx_margs = [tuple(self._all_vars - ((self._rvs - {rv}) | crvs)) for rv in rvs]
+        idx_margs = [tuple(self._all_vars - ((rvs - {rv}) | crvs)) for rv in rvs]
         idx_crvs = tuple(self._all_vars - crvs)
         n = len(rvs) - 1
 
@@ -591,13 +591,9 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
 
         minimizer_kwargs = {'bounds': [(0, 1)] * x0.size,
                             'callback': icb,
+                            'constraints': self.constraints,
                             'options': {},
                             }
-
-        try:
-            minimizer_kwargs['constraints'] = self.constraints
-        except AttributeError:
-            pass
 
         try:  # pragma: no cover
             if callable(self._jacobian):
@@ -1139,6 +1135,40 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
             d = modify_outcomes(d, lambda o: ''.join(map(str, o)))
 
         return d
+
+    ###########################################################################
+    # Constraints which may or may not be useful in certain contexts.
+
+    def _constraint_deterministic(self):
+        """
+        Constructor for a constraint which specifies that auxiliary variables
+        must be a deterministic function of the random variables.
+
+        Returns
+        -------
+        constraint : func
+            The constraint function.
+        """
+        entropy = self._entropy(self._arvs, self._rvs | self._crvs)
+
+        def constraint(x):
+            """
+            Constraint which ensure that the auxiliary variables are a function
+            of the random variables.
+
+            Parameters
+            ----------
+            x : np.ndarray
+                An optimization vector.
+
+            Returns
+            -------
+
+            """
+            pmf = self.construct_joint(x)
+            return entropy(pmf) ** 2
+
+        return constraint
 
     ###########################################################################
     # todo

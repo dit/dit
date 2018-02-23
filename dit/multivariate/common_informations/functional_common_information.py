@@ -88,7 +88,7 @@ def functional_markov_chain(dist, rvs=None, crvs=None, rv_mode=None):
 
     Notes
     -----
-    The implimentation of this function is quite slow. It is approximately
+    The implementation of this function is quite slow. It is approximately
     doubly exponential in the size of the sample space. This method is several
     times faster than the naive method however. It remains an open question as
     to whether a method to directly construct this variable exists (as it does

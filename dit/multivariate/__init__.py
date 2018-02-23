@@ -6,6 +6,7 @@ measures and others are more distantly related.
 from .caekl_mutual_information import caekl_mutual_information
 from .coinformation import coinformation
 from .common_informations import *
+from .deweese import *
 from .dual_total_correlation import (binding_information,
                                      dual_total_correlation,
                                      independent_information,
@@ -13,7 +14,6 @@ from .dual_total_correlation import (binding_information,
                                      variation_of_information)
 from .entropy import entropy
 from .interaction_information import interaction_information
-from .lautum_information import lautum_information
 from .secret_key_agreement import *
 from .total_correlation import total_correlation
 from .tse_complexity import tse_complexity

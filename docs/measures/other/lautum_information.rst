@@ -1,5 +1,5 @@
 .. lautum_information.rst
-.. py:module:: dit.multivariate.lautum_information
+.. py:module:: dit.other.lautum_information
 
 ******************
 Lautum Information

@@ -2,9 +2,9 @@
 The lautum (mutual backwards) information, as defined by Palomar & Verdu.
 """
 
-from ..distconst import product_distribution
-from ..divergences import kullback_leibler_divergence
-from ..helpers import normalize_rvs
+from dit.distconst import product_distribution
+from dit.divergences import kullback_leibler_divergence
+from dit.helpers import normalize_rvs
 
 
 def lautum_information(dist, rvs=None, crvs=None, rv_mode=None):
@@ -41,16 +41,16 @@ def lautum_information(dist, rvs=None, crvs=None, rv_mode=None):
     >>> outcomes = ['000', '001', '010', '011', '100', '101', '110', '111']
     >>> pmf = [3/16, 1/16, 1/16, 3/16, 1/16, 3/16, 3/16, 1/16]
     >>> d = dit.Distribution(outcomes, pmf)
-    >>> dit.multivariate.lautum_information(d)
+    >>> dit.other.lautum_information(d)
     0.20751874963942196
-    >>> dit.multivariate.lautum_information(d, rvs=[[0], [1]])
+    >>> dit.other.lautum_information(d, rvs=[[0], [1]])
     0.0
 
     Raises
     ------
     ditException
         Raised if `dist` is not a joint distribution or if `rvs` or `crvs`
-        contain non-existant random variables.
+        contain non-existent random variables.
     """
     rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
 

@@ -7,7 +7,7 @@ from __future__ import division
 import pytest
 
 from dit import Distribution as D
-from dit.multivariate import lautum_information as L
+from dit.other import lautum_information as L
 
 
 def test_lm1():
