@@ -209,8 +209,11 @@ class BaseMoreIntrinsicMutualInformation(BaseAuxVarOptimizer):
         """
         Construct a functional form of the optimizer.
         """
+        @unitful
+        def intrinsic(dist, rvs=None, crvs=None, niter=None, bounds=None, rv_mode=None):
+            if bounds is None:
+                bounds = (2, 3, 4, None)
 
-        def intrinsic(dist, rvs=None, crvs=None, niter=None, bounds=(2, 3, 4, None), rv_mode=None):
             candidates = []
             for bound in bounds:
                 opt = cls(dist, rvs, crvs, bound, rv_mode)
