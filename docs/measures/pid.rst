@@ -413,7 +413,7 @@ They then define two partial information lattices, one quantified locally by :ma
    ║  {1}   │ 0.5000 │ 0.5000 ║
    ║ {0}{1} │ 0.0000 │ 0.0000 ║
    ╚════════╧════════╧════════╝
-   
+
 .. py:module:: dit.pid.irav
 :math:`\Irav{\bullet}`
 ---------------------
@@ -438,7 +438,6 @@ This measure is designed to exploit the conflation of synergy and redundancy in 
   ║  {1}   │ 0.5000 │ 0.5000 ║
   ║ {0}{1} │ 0.0000 │ 0.0000 ║
   ╚════════╧════════╧════════╝
-<<<<<<< HEAD
 
 Partial Entropy Decomposition
 =============================
