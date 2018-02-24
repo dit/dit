@@ -13,7 +13,8 @@ from ..distconst import RVFunctions, insert_rvf
 
 def i_rav(d, inputs, output):
     """
-    I_RAV is maximum coinformation between all sources, targets, and aan arbitrary function of the sources
+    I_RAV is maximum coinformation between all sources, targets, and an 
+    arbitrary function of the sources.
 
     Parameters
     ----------
