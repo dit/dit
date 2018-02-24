@@ -621,7 +621,7 @@ class BaseIncompletePID(BasePID):
         reds = nx.get_node_attributes(self._lattice, 'red')
         pis = nx.get_node_attributes(self._lattice, 'pi')
 
-        if self.SELF_REDUNDANCY: # pragma: no cover
+        if self.SELF_REDUNDANCY:  # pragma: no branch
             for node in self._lattice:
                 if len(node) == 1:
                     red = reds[node]
