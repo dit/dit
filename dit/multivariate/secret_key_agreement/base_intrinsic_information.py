@@ -139,7 +139,7 @@ class BaseMoreIntrinsicMutualInformation(BaseAuxVarOptimizer):
     Compute the reduced and minimal intrinsic mutual informations, upper bounds on the secret
     key agreement rate:
 
-        I[X : Y \downarrow\downarrow\downarrow Z] = min_U I[X:Y|U] + I[XY:U|Z]
+        I[X : Y \\downarrow\\downarrow\\downarrow Z] = min_U I[X:Y|U] + I[XY:U|Z]
     """
 
     name = ""

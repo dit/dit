@@ -150,7 +150,7 @@ class PID_triple_uparrow(BaseUniquePID):
 
 def i_downarrow(d, inputs, output, niter=25, bound=None):
     """
-    This computes unique information as I(input : output \downarrow other_inputs).
+    This computes unique information as I(input : output \\downarrow other_inputs).
 
     Parameters
     ----------
@@ -191,7 +191,7 @@ class PID_downarrow(BaseUniquePID):
 
 def i_double_downarrow(d, inputs, output, niter=5): # pragma: no cover
     """
-    This computes unique information as I(input : output \Downarrow other_inputs).
+    This computes unique information as I(input : output \\Downarrow other_inputs).
 
     Parameters
     ----------
@@ -227,7 +227,7 @@ class PID_double_downarrow(BaseUniquePID):
 
 def i_triple_downarrow(d, inputs, output, niter=5, bounds=None):
     """
-    This computes unique information as I(input : output \downarrow\downarrow\downarrow other_inputs).
+    This computes unique information as I(input : output \\downarrow\\downarrow\\downarrow other_inputs).
 
     Parameters
     ----------
