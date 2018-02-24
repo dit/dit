@@ -588,14 +588,16 @@ class BaseIncompletePID(BasePID):
                 break
 
         # if we know all but one partial, we know the last
+        # note: this might be subsumed by _compute_attempt_linsolve
         diff = set(self._lattice) - set(pis)
-        if len(diff) == 1:
+        if len(diff) == 1:  # pragma: no cover
             pis[diff.pop()] = self._total - sum(pis.values())
 
         # if the sum of known PIs is I(inputs, output), all other PIs are zero
+        # note: this might be subsumed by _compute_attempt_linsolve
         if np.isclose(sum(pis.values()), self._total):
             for node in self._lattice:
-                if node not in pis or np.isnan(pis[node]):
+                if node not in pis or np.isnan(pis[node]):  # pragma: no cover
                     pis[node] = 0
 
         # plug in nan for all unknown values
@@ -626,7 +628,7 @@ class BaseIncompletePID(BasePID):
                 if len(node) == 1:
                     red = reds[node]
                     mi = coinformation(self._dist, [node[0], self._output])
-                    if not np.isclose(red, mi, atol=1e-5, rtol=1e-5):
+                    if not np.isclose(red, mi, atol=1e-5, rtol=1e-5):  # pragma: no cover
                         return False
 
         # ensure that the mobius inversion holds
