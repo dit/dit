@@ -7,7 +7,7 @@ from __future__ import division
 from .pid import BaseBivariatePID
 
 from ..multivariate import coinformation
-from ..utils import partitions
+from ..utils import partitions, extended_partition
 from ..distconst import RVFunctions, insert_rvf
 
 
@@ -33,23 +33,10 @@ def i_rav(d, inputs, output):
 
     input_parts = partitions(d.marginal(sum(d.rvs[:-1], [])).outcomes)
     outcomes = d.outcomes
-    #print(f"input_outcome[1]: {outcomes[1][:-1]}")
+    ctor = d._outcome_ctor
+    idxs = list(range(len(inputs)))
 
-    parts = ()
-    #extended_dists = []
-    for input_part in input_parts:
-        #print(f"input part: {input_part}")
-        part = ()
-        for input_part_element in input_part:
-            #print(input_part_element)
-            part_element = ()
-            for input_outcome in input_part_element:
-                part_element += tuple(outcome for outcome in outcomes if outcome[:-1] == input_outcome)
-            #print(f"part element: {part_element}")
-            part += (part_element,)
-        parts += (part,)
-        #extended_dists += [insert_rvf(d, bf.from_partition(part))]
-        #print(f"parts: {parts}")
+    parts = [extended_partition(outcomes, idxs, input_part, ctor) for input_part in input_parts]
 
     bf = RVFunctions(d)
     extended_dists = [insert_rvf(d, bf.from_partition(part)) for part in parts]

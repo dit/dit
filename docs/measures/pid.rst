@@ -422,22 +422,22 @@ Taking a functional perspective as in :math:`\Iwedge`, :math:`\Irav` defines biv
 
 .. math::
 
-  \Irav{X_{0:2} : Y} = \max_f\left(\I{X_0\!:\!X_1\!:\!Y\!:\!f(X_0,X_1)}
+   \Irav{X_{0:2} : Y} = \max_f\left(\I{X_0\!:\!X_1\!:\!Y\!:\!f(X_0,X_1)}
 
 This measure is designed to exploit the conflation of synergy and redundancy in the three variable coinformation: :math:`\I{X_0\!:\!X_1\!:\!Y} = R - S`.
 
 .. ipython::
 
-  In [24]: PID_RAV(bivariates['pnt. unq'])
-  Out[24]:
-  ╔════════╤════════╤════════╗
-  ║ I_pm   │  I_r   │   pi   ║
-  ╟────────┼────────┼────────╢
-  ║ {0:1}  │ 1.0000 │ 0.0000 ║
-  ║  {0}   │ 0.5000 │ 0.5000 ║
-  ║  {1}   │ 0.5000 │ 0.5000 ║
-  ║ {0}{1} │ 0.0000 │ 0.0000 ║
-  ╚════════╧════════╧════════╝
+   In [24]: PID_RAV(bivariates['pnt. unq'])
+   Out[24]:
+   ╔════════╤════════╤════════╗
+   ║ I_pm   │  I_r   │   pi   ║
+   ╟────────┼────────┼────────╢
+   ║ {0:1}  │ 1.0000 │ 0.0000 ║
+   ║  {0}   │ 0.5000 │ 0.5000 ║
+   ║  {1}   │ 0.5000 │ 0.5000 ║
+   ║ {0}{1} │ 0.0000 │ 0.0000 ║
+   ╚════════╧════════╧════════╝
 
 Partial Entropy Decomposition
 =============================
