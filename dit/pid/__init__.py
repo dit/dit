@@ -17,6 +17,7 @@ from .iskar import (PID_uparrow,
                     PID_triple_downarrow,
                     )
 from .ipm import PID_PM
+from .irav import PID_RAV
 from .hcs import PED_CS
 from .distributions import bivariates, trivariates
 
@@ -35,4 +36,5 @@ __all_pids = [
     PID_Proj,
     PID_BROJA,
     PID_dep,
+    PID_RAV,
 ]

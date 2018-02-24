@@ -52,3 +52,4 @@ docs/images/*.png
 .pypirc
 .pytest_cache/
 .vscode
+dit/inference/pycounts.c
