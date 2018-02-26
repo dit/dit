@@ -700,12 +700,8 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
         minimizer_kwargs = {'bounds': [(0, 0) if np.isclose(x, 0) else (0, 1) for x in x0],
                             'tol': None,
                             'callback': None,
+                            'constraints': self.constraints,
                             }
-
-        try:
-            minimizer_kwargs['constraints'] = self.constraints
-        except AttributeError:
-            pass
 
         try:  # pragma: no cover
             if callable(self._jacobian):
@@ -726,8 +722,8 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
         if res.success:
             self._optima = res.x.copy()
 
-        if count < (res.x < cutoff).sum():
-            self._polish(cutoff=cutoff)
+            if count < (res.x < cutoff).sum():
+                self._polish(cutoff=cutoff)
 
 
 class BaseConvexOptimizer(BaseOptimizer):
