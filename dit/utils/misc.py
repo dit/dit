@@ -224,7 +224,9 @@ def partition_set(elements, relation=None, innerset=False, reflexive=False,
                     return True
                 else:
                     # Test against all members
-                    continue
+                    # python optimizes away this line, so it never actually
+                    # gets executed during tests...
+                    continue  # pragma: no cover
 
             # Then it equals all memembers symmetrically.
             return True
