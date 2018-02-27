@@ -71,7 +71,7 @@ def test_atom_set2():
     Find the atoms.
     """
     atoms = atom_set(not_sa1, method=1)
-    assert atoms == frozenset([frozenset('c')])
+    assert atoms == frozenset([frozenset('c'), frozenset(['a', 'b'])])
 
 
 def test_atom_set3():
