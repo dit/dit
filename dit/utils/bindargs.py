@@ -94,11 +94,13 @@ def bindcallargs_leq32(_fUnCtIoN_, *args, **kwargs):
     bargs = tuple(bargs)
 
     # Start with kwonlyargs.
-    bkwargs = dict((kwonlyarg, callargs[kwonlyarg]) for kwonlyarg in spec.kwonlyargs)
+    bkwargs = {kwonlyarg: callargs[kwonlyarg] for kwonlyarg in spec.kwonlyargs}
     # Add in kwonlydefaults for unspecified kwonlyargs only.
-    if spec.kwonlydefaults is not None:
-        bkwargs.update(dict([(k, v) for k, v in spec.kwonlydefaults.items()
-                             if k not in bkwargs]))
+    # Since keyword only arguements aren't allowed in python2, and we
+    # don't support python 3.0, 3.1, 3.2, this should never be executed:
+    if spec.kwonlydefaults is not None:  # praga: no cover
+        bkwargs.update({k: v for k, v in spec.kwonlydefaults.items()
+                             if k not in bkwargs})
     # Add in varkw.
     if spec.varkw is not None:
         bkwargs.update(callargs[spec.varkw])
