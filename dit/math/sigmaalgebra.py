@@ -155,18 +155,13 @@ def is_sigma_algebra(F, X=None):
     #    m + 2 == 2**(len(X) - q)).
     # where m is the number of elements in F not equal to the empty set or
     # or the universal set X.
-
     Fmatrix, X = sets2matrix(F, X)
     unique_cols = unique_columns(Fmatrix)
 
     m = len(F)
-    emptyset = set([])
-    if emptyset in F:
-        m -= 1
-    if X in F:
-        m -= 1
+    emptyset = frozenset([])
 
-    if m + 2 == 2**len(unique_cols):
+    if frozenset([emptyset, X]) <= F and m == 2**len(unique_cols):
         return True
     else:
         return False
@@ -211,7 +206,7 @@ def is_sigma_algebra__brute(F, X=None):
         return True
 
 
-def atom_set(F, X=None):
+def atom_set(F, X=None, method=2):
     """
     Returns the atoms of the sigma-algebra F.
 
@@ -252,7 +247,7 @@ def atom_set(F, X=None):
             # elements...in addition to taking forever, we can't even store
             # that in memory.
             #
-            subsets = list(powerset(cet))[1:-1] # nonempty and proper
+            subsets = sorted(powerset(cet))[1:-1] # nonempty and proper
             for subset in subsets:
                 if frozenset(subset) in F:
                     break
@@ -289,6 +284,6 @@ def atom_set(F, X=None):
 
         return atoms
 
-    atoms = method2()
+    atoms = {1: method1, 2: method2}[method]()
 
     return frozenset(atoms)
