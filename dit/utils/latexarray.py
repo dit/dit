@@ -235,7 +235,7 @@ def to_pdf(a, exact=False,
     fline = line.format(to_latex(a, exact=exact, decimals=decimals))
     latex = template.format(fline)
 
-    with ExitStack() as stack:
+    with ExitStack() as stack:  # pragma: no cover
         EC = stack.enter_context
         tmpdir = EC(tempdir())
         EC(cd(tmpdir))
