@@ -97,6 +97,13 @@ def test_partition_set3():
 
 
 def test_partition_set4():
+    stuff = ['01', '10', '00', '11', '000', '111', [0, 1, 2]]
+    fn = lambda a, b: a[0] == b[1]
+    _, lookup = partition_set(stuff, fn, reflexive=False, transitive=True)
+    assert lookup == [0, 0, 1, 2, 1, 2, 3]
+
+
+def test_partition_set5():
     stuff = ['0', '1', '00', '11', '000', '111', (0, 1, 2)]
     fn = lambda a, b: a[0] == b[0]
     eqclasses, _ = partition_set(stuff, fn, reflexive=True, transitive=False, innerset=True)
