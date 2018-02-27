@@ -9,7 +9,7 @@ from dit.math.sigmaalgebra import is_sigma_algebra, is_sigma_algebra__brute, ato
 sa = frozenset([frozenset([]), frozenset(['a']), frozenset(['b']), frozenset(['c']), 
                 frozenset(['a', 'b']), frozenset(['a', 'c']), frozenset(['b', 'c']),
                 frozenset(['a', 'b', 'c'])])
-not_sa1 = frozenset([frozenset([]), frozenset('c'), frozenset(['a', 'b'])])
+not_sa1 = frozenset([frozenset([]), frozenset('c'), frozenset('b'), frozenset(['a', 'b'])])
 not_sa2 = frozenset([frozenset([]), frozenset(['a']), frozenset(['b']), frozenset(['c']), 
                 frozenset(['a', 'b']), frozenset(['a', 'c']), frozenset(['b', 'c'])])
 
