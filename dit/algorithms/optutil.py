@@ -27,14 +27,14 @@ def as_full_rank(A, b):
     a particular solution. Now, it may happen that q < p, which means that some
     of your constraint equations are not independent. Since CVXOPT requires
     that A have full rank, we must isolate an equivalent system Bx = c which
-    does have full rank. We use SVD for this. So A = U \Sigma V^*, where
-    U is (p, p), \Sigma is (p, n) and V^* is (n, n). Then:
+    does have full rank. We use SVD for this. So A = U \\Sigma V^*, where
+    U is (p, p), \\Sigma is (p, n) and V^* is (n, n). Then:
 
-        \Sigma V^* x = U^{-1} b
+        \\Sigma V^* x = U^{-1} b
 
-    We take B = \Sigma V^* and c = U^T b, where we use U^T instead of U^{-1}
+    We take B = \\Sigma V^* and c = U^T b, where we use U^T instead of U^{-1}
     for computational efficiency (and since U is orthogonal). But note, we
-    take only the cols of U (which are rows in U^{-1}) and rows of \Sigma that
+    take only the cols of U (which are rows in U^{-1}) and rows of \\Sigma that
     have nonzero singular values.
 
     Parameters
@@ -276,7 +276,7 @@ def prepare_dist(dist):
         dist = dit.expanded_samplespace(dist, union=True)
 
     if not dist.is_dense():
-        if len(dist._sample_space) > 1e4:
+        if len(dist._sample_space) > 1e4:  # pragma: no cover
             import warnings
             msg = "Sample space has more than 10k elements."
             msg += " This could be slow."

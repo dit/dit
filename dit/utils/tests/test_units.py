@@ -59,7 +59,7 @@ def test_cc():
     """
     gm = Distribution(['00', '01', '10'], [1/3]*3)
     ditParams['units'] = True
-    cc, marg = channel_capacity_joint(gm, [0], [1], marginal=True)
+    cc, _ = channel_capacity_joint(gm, [0], [1], marginal=True)
     reset_params()
     true = ureg.Quantity(0.3219280796196524, ureg.bit)
     assert cc == pytest.approx(true)
