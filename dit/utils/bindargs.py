@@ -118,7 +118,7 @@ def bindcallargs_geq33(_fUnCtIoN_, *args, **kwargs):
             ba.arguments[param.name] = param.default
     return ba.args, ba.kwargs
 
-if sys.version_info[0:2] < (3,3): # pragma: no cover
+if sys.version_info[0:2] < (3,3):
     bindcallargs = bindcallargs_leq32
-else: # pragma: no cover
+else:
     bindcallargs = bindcallargs_geq33
