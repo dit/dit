@@ -98,7 +98,7 @@ def bindcallargs_leq32(_fUnCtIoN_, *args, **kwargs):
     # Add in kwonlydefaults for unspecified kwonlyargs only.
     # Since keyword only arguements aren't allowed in python2, and we
     # don't support python 3.0, 3.1, 3.2, this should never be executed:
-    if spec.kwonlydefaults is not None:  # praga: no cover
+    if spec.kwonlydefaults is not None:  # pragma: no cover
         bkwargs.update({k: v for k, v in spec.kwonlydefaults.items()
                              if k not in bkwargs})
     # Add in varkw.
