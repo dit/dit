@@ -66,7 +66,7 @@ def unitsum_tuples(n, k, mn, mx):
         assert( s > .001 )
         yield tuple(t)
 
-        for idx, val in enumerate(seq):
+        for idx, val in enumerate(seq):  # pragma: no branch
             if abs(val) < 1e-9:
                 i = idx - 1
                 break

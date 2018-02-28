@@ -64,7 +64,7 @@ def sample(dist, size=None, rand=None, prng=None):
     else:
         if size is None:
             rand = np.array([rand])
-        elif n != len(rand):
+        elif n != len(rand):  # pragma: no branch
             msg = "The number of random numbers must equal n."
             e = dit.exceptions.ditException(msg)
             raise e
@@ -105,7 +105,7 @@ def _sample_discrete__python(pmf, rand):
 
     """
     total = 0
-    for i, prob in enumerate(pmf):
+    for i, prob in enumerate(pmf):  # pragma: no branch
         total += prob
         if rand < total:
             return i
@@ -142,7 +142,7 @@ def _samples_discrete__python(pmf, rands, out=None):
     for i in range(L):
         rand = rands[i]
         total = 0
-        for j in range(n):
+        for j in range(n):  # pragma: no branch
             total += pmf[j]
             if rand < total:
                 out[i] = j

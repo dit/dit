@@ -1,6 +1,7 @@
 """
 Tests for dit.math.sampling.
 """
+from __future__ import division
 
 import pytest
 
@@ -75,6 +76,14 @@ def test_sample_discrete_python2():
     d = dit.example_dists.Xor()
     x = module._samples_discrete__python(d.pmf, np.array([.5, .3, .2]))
     assert np.allclose(x, np.array([2, 1, 0]))
+
+
+def test_sample_discrete_python3():
+    # Specified rand number
+    d = dit.example_dists.Xor()
+    out = np.zeros((3,))
+    module._samples_discrete__python(d.pmf, np.array([.5, .3, .2]), out=out)
+    assert np.allclose(out, np.array([2, 1, 0]))
 
 
 def test_ball_smoke():
@@ -214,3 +223,19 @@ def test__annulus2_size():
     prng = np.random.RandomState()
     samples = dit.math.sampling._annulus2(0, 1, size=1, prng=prng)
     assert samples.shape == (1,2)
+
+
+def test_annulus2_nosize():
+    # When size is not None, it should return an array of the samples.
+    dit.math.prng.seed(0)
+    pmf = np.array([1/3, 1/3, 1/3])
+    sample = dit.math.sampling.annulus2(pmf, 0, 1, size=None)
+    assert sample == 0.2398208154908835
+
+
+def test_annulus2_size():
+    # When size is not None, it should return an array of the samples.
+    prng = np.random.RandomState()
+    pmf = np.array([1/3, 1/3, 1/3])
+    samples = dit.math.sampling.annulus2(pmf, 0, 1, size=3, prng=prng)
+    assert samples.shape == (3,3)
