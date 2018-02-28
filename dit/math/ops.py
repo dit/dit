@@ -77,7 +77,7 @@ def exp_func(b):
         raise InvalidBase(msg=b)
 
     if b == 'linear':
-        exp = lambda x: x
+        exp = lambda x: x  # pragma: no branch
     elif b == 2:
         exp = np.exp2
     elif b == 10:
@@ -145,7 +145,7 @@ def log_func(b):
         raise InvalidBase(msg=b)
 
     if b == 'linear':
-        log = lambda x: x
+        log = lambda x: x  # pragma: no branch
     elif b == 2:
         log = np.log2
     elif b == 10:
