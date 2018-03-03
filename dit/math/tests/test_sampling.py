@@ -230,7 +230,7 @@ def test_annulus2_nosize():
     dit.math.prng.seed(0)
     pmf = np.array([1/3, 1/3, 1/3])
     sample = dit.math.sampling.annulus2(pmf, 0, 1, size=None)
-    assert sample == 0.2398208154908835
+    assert sample == pytest.approx(0.2398208154908835)
 
 
 def test_annulus2_size():
