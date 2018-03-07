@@ -1065,6 +1065,9 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
             vecs.append(vec.ravel())
         return np.concatenate(vecs, axis=0)
 
+    # Default to using a random initial condition:
+    construct_initial = construct_random_initial
+
     ###########################################################################
     # Construct the optimized distribution.
 

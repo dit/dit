@@ -89,8 +89,6 @@ class HypercontractivityCoefficient(BaseAuxVarOptimizer):
 
         return objective
 
-    construct_initial = BaseAuxVarOptimizer.construct_random_initial
-
 
 def hypercontractivity_coefficient(dist, rvs, bound=None, niter=None, rv_mode=None):
     """

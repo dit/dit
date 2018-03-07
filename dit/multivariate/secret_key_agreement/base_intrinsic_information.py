@@ -26,9 +26,7 @@ class BaseIntrinsicMutualInformation(BaseAuxVarOptimizer):
 
     name = ""
 
-    construct_initial = BaseAuxVarOptimizer.construct_random_initial
-
-    def __init__(self, dist, rvs=None, crvs=None, rv_mode=None, bound=None):
+    def __init__(self, dist, rvs=None, crvs=None, bound=None, rv_mode=None):
         """
         Initialize the optimizer.
 
@@ -44,6 +42,9 @@ class BaseIntrinsicMutualInformation(BaseAuxVarOptimizer):
         crvs : list
             A single list of indexes specifying the random variables to
             condition on.
+        bound : int, None
+            Specifies a bound on the size of the auxiliary random variable. If None,
+            then the theoretical bound is used.
         rv_mode : str, None
             Specifies how to interpret `rvs` and `crvs`. Valid options are:
             {'indices', 'names'}. If equal to 'indices', then the elements of
@@ -51,9 +52,6 @@ class BaseIntrinsicMutualInformation(BaseAuxVarOptimizer):
             equal to 'names', the the elements are interpreted as random
             variable names. If `None`, then the value of `dist._rv_mode` is
             consulted, which defaults to 'indices'.
-        bound : int, None
-            Specifies a bound on the size of the auxiliary random variable. If None,
-            then the theoretical bound is used.
         """
         if not crvs:
             msg = "Intrinsic mutual informations require a conditional variable."
@@ -143,8 +141,6 @@ class BaseMoreIntrinsicMutualInformation(BaseAuxVarOptimizer):
     """
 
     name = ""
-
-    construct_initial = BaseAuxVarOptimizer.construct_random_initial
 
     def __init__(self, dist, rvs=None, crvs=None, bound=None, rv_mode=None):
         """

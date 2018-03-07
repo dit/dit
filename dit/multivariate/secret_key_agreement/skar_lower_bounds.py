@@ -22,8 +22,6 @@ class BaseSKARLowerBounds(BaseAuxVarOptimizer):
         max_{V - U - X - YZ} objective()
     """
 
-    construct_initial = BaseAuxVarOptimizer.construct_random_initial
-
     def __init__(self, dist, rv_x=None, rv_y=None, rv_z=None, rv_mode=None, bound_u=None, bound_v=None):
         """
         Initialize the optimizer.
@@ -290,8 +288,8 @@ def necessary_intrinsic_mutual_information(dist, rvs, crvs, rv_mode=None,
     """
     Compute a non-trivial lower bound on secret key agreement rate.
 
-    Paramters
-    ---------
+    Parameters
+    ----------
     dist : Distribution
         The distribution of interest.
     rvs : iterable of iterables, len(rvs) == 2

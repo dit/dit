@@ -23,8 +23,6 @@ class MarkovVarOptimizer(BaseAuxVarOptimizer):
     name = ""
     description = ""
 
-    construct_initial = BaseAuxVarOptimizer.construct_random_initial
-
     def __init__(self, dist, rvs=None, crvs=None, bound=None, rv_mode=None):
         """
         Initialize the optimizer.

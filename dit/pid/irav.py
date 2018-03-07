@@ -4,7 +4,7 @@ The I_rav measure, defining a 'redundancy' auxiliary variable to capture the red
 
 from __future__ import division
 
-from .pid import BaseBivariatePID
+from .pid import BasePID
 
 from ..multivariate import coinformation
 from ..utils import partitions, extended_partition
@@ -44,7 +44,7 @@ def i_rav(d, inputs, output):
     return max([coinformation(extended_dist) for extended_dist in extended_dists])
 
 
-class PID_RAV(BaseBivariatePID):
+class PID_RAV(BasePID):
     """
     The maximum coinformation auxiliary random variable method
     """
