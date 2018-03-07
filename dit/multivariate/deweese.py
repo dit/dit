@@ -111,7 +111,7 @@ class BaseDeWeeseOptimizer(BaseAuxVarOptimizer):
     """
     construct_initial = BaseAuxVarOptimizer.construct_copy_initial
 
-    _shotgun = True
+    _shotgun = 5
 
     def __init__(self, dist, rvs=None, crvs=None, deterministic=False, rv_mode=None):
         """

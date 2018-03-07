@@ -786,7 +786,7 @@ class BaseNonConvexOptimizer(BaseOptimizer):
             niter = self._default_hops
 
         if self._shotgun:
-            res_shotgun = self._optimize_shotgun(x0.copy(), minimizer_kwargs, 5)
+            res_shotgun = self._optimize_shotgun(x0.copy(), minimizer_kwargs, self._shotgun)
             if res_shotgun:
                 x0 = res_shotgun.x.copy()
         else:

@@ -95,7 +95,7 @@ class BaseIntrinsicMutualInformation(BaseAuxVarOptimizer):
         """
         @unitful
         def intrinsic(dist, rvs=None, crvs=None, niter=None, bound=None, rv_mode=None):
-            opt = cls(dist, rvs, crvs, rv_mode, bound=bound)
+            opt = cls(dist, rvs=rvs, crvs=crvs, rv_mode=rv_mode, bound=bound)
             opt.optimize(niter=niter)
             return opt.objective(opt._optima)
 
@@ -212,7 +212,7 @@ class BaseMoreIntrinsicMutualInformation(BaseAuxVarOptimizer):
 
             candidates = []
             for bound in bounds:
-                opt = cls(dist, rvs, crvs, bound, rv_mode)
+                opt = cls(dist, rvs=rvs, crvs=crvs, bound=bound, rv_mode=rv_mode)
                 opt.optimize(niter=niter)
                 candidates.append(opt.objective(opt._optima))
             return min(candidates)

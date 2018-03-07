@@ -21,7 +21,7 @@ class HypercontractivityCoefficient(BaseAuxVarOptimizer):
         max_{U - X - Y} I[U:Y]/I[U:X]
     """
 
-    _shotgun = True
+    _shotgun = 5
 
     def __init__(self, dist, rv_x=None, rv_y=None, bound=None, rv_mode=None):
         """
