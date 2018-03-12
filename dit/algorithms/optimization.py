@@ -25,7 +25,7 @@ from scipy.optimize import basinhopping, differential_evolution, minimize
 
 from .. import Distribution, insert_rvf, modify_outcomes
 from ..algorithms.channelcapacity import channel_capacity
-from ..exceptions import OptimizationException
+from ..exceptions import ditException, OptimizationException
 from ..helpers import flatten, normalize_rvs, parse_rvs
 from ..math import prod
 from ..utils import partitions, powerset
@@ -1131,7 +1131,10 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
         d = d.coalesce(mapping, extract=True)
 
         if string:
-            d = modify_outcomes(d, lambda o: ''.join(map(str, o)))
+            try:
+                d = modify_outcomes(d, lambda o: ''.join(map(str, o)))
+            except ditException:
+                pass
 
         return d
 
