@@ -18,7 +18,7 @@ from dit.divergences import (chernoff_information,
                              relative_entropy,
                              variational_distance,
                             )
-from dit.divergences.variational_distance import _normalize_pmfs
+from dit.helpers import normalize_pmfs
 from dit.multivariate import (entropy as H,
                               total_correlation as I,
                               gk_common_information as K,
@@ -217,7 +217,7 @@ def test_chernoff_inequalities(dist1, dist2):
     1/8 sum p_i ((q_i - p_i)/max(p_i, q_i))^2 <= 1 - 2^(-C)
                                               <= 1/8 sum p_i ((q_i - p_i)/min(p_i, q_i))^2
     """
-    p, q = _normalize_pmfs(dist1, dist2)
+    p, q = normalize_pmfs(dist1, dist2)
     pq = np.vstack([p, q])
     c = chernoff_information(dist1, dist2)
     a = (p*((q-p)/pq.max(axis=0))**2).sum()/8

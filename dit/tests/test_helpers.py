@@ -9,7 +9,7 @@ import pytest
 from dit import Distribution
 from dit.exceptions import ditException, InvalidDistribution, InvalidOutcome
 from dit.helpers import construct_alphabets, get_product_func, parse_rvs, \
-                        reorder
+                        reorder, normalize_pmfs, numerical_test
 
 
 def test_construct_alphabets1():
@@ -75,3 +75,17 @@ def test_reorder2():
     sample_space = ('00', '01', '10', '11')
     with pytest.raises(InvalidOutcome):
         reorder(outcomes, pmf, sample_space)
+
+
+def test__numerical_test1():
+    """ test _numerical_test on a good distribution """
+    d = D([(0, 0), (1, 0), (2, 1), (3, 1)], [1/8, 1/8, 3/8, 3/8])
+    assert _numerical_test(d) is None
+
+
+def test__numerical_test2():
+    """ Test _numerical_test on a bad distribution """
+    # A bad distribution is one with a non-numerical alphabet
+    d = D([(0, '0'), (1, '0'), (2, '1'), (3, '1')], [1/8, 1/8, 3/8, 3/8])
+    with pytest.raises(TypeError):
+        _numerical_test(d)
