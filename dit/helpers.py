@@ -13,10 +13,11 @@ import warnings
 
 # Other
 import numpy as np
-from six.moves import map, range, zip # pylint: disable=redefined-builtin
+from six.moves import map, range, zip  # pylint: disable=redefined-builtin
 
 # dit
 from .exceptions import ditException, InvalidOutcome
+from .math.misc import is_number
 from .utils import flatten, product_maker
 
 
@@ -444,3 +445,50 @@ def copypmf(d, base=None, mode='asis'):
         pmf = ops_new.log(pmf)
 
     return pmf
+
+
+def normalize_pmfs(dist1, dist2):
+    """
+    Construct probability vectors with common support.
+
+    Parameters
+    ----------
+    dist1 : Distribution
+        The first distribution.
+    dist2 : Distribution
+        The second distribution.
+
+    Returns
+    -------
+    p : np.ndarray
+        The pmf of `dist1`.
+    q : np.ndarray
+        The pmf of `dist2`.
+    """
+    event_space = list(set().union(dist1.outcomes, dist2.outcomes))
+    p = np.array([dist1[e] if e in dist1.outcomes else 0 for e in event_space])
+    q = np.array([dist2[e] if e in dist2.outcomes else 0 for e in event_space])
+    return p, q
+
+
+def numerical_test(dist):
+    """
+    Verifies that all outcomes are numbers.
+
+    Parameters
+    ----------
+    dist : Distribution
+        The distribution whose outcomes are to be checked.
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    TypeError
+        If the outcomes of the `dist` are not numerical.
+    """
+    if not all(is_number(o) for o in flatten(dist.outcomes)):
+        msg = "The outcomes of this distribution are not numerical"
+        raise TypeError(msg)

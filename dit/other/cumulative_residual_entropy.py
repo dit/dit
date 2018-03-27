@@ -3,14 +3,14 @@ The (generalized) cumulative residual entropy and conditional (generalized)
 cumulative residual entropy.
 """
 
-from six.moves import range # pylint: disable=redefined-builtin,import-error
+from six.moves import range  # pylint: disable=redefined-builtin,import-error
 
 from boltons.iterutils import pairwise
 
 import numpy as np
 
 from .. import Distribution as D, ScalarDistribution as SD
-from ..algorithms.stats import _numerical_test
+from ..helpers import numerical_test
 
 __all__ = ['cumulative_residual_entropy',
            'generalized_cumulative_residual_entropy',
@@ -22,14 +22,14 @@ __all__ = ['cumulative_residual_entropy',
 def _cumulative_residual_entropy(dist, generalized=False):
     """
     The cumulative residual entropy is an alternative to the Shannon
-    differential entropy with several advantagious properties.
+    differential entropy with several advantageous properties.
 
     Parameters
     ----------
     dist : ScalarDistribution
         The distribution to compute the cumulative residual entropy of.
     generalized : bool
-        Wheither to integrate from zero over the CDF or to integrate from zero
+        Whether to integrate from zero over the CDF or to integrate from zero
         over the CDF of the absolute value.
 
     Returns
@@ -40,7 +40,7 @@ def _cumulative_residual_entropy(dist, generalized=False):
     Examples
     --------
     """
-    _numerical_test(dist)
+    numerical_test(dist)
     eps = ((e if generalized else abs(e), p) for e, p in dist.zipped())
     events, probs = zip(*sorted(eps))
     cdf = dict((a, p) for a, p in zip(events, np.cumsum(probs)))
@@ -55,7 +55,7 @@ def _cumulative_residual_entropy(dist, generalized=False):
 def generalized_cumulative_residual_entropy(dist, extract=False):
     """
     The generalized cumulative residual entropy is a generalized from of the
-    cumulative residual entropy. Rarther than integrating from 0 to infinty over
+    cumulative residual entropy. Rather than integrating from 0 to infinity over
     the absolute value of the CDF.
 
     Parameters

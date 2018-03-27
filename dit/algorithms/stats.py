@@ -6,31 +6,7 @@ from __future__ import division
 
 import numpy as np
 
-from ..math.misc import is_number
-from ..utils import flatten
-
-
-def _numerical_test(dist):
-    """
-    Verifies that all outcomes are numbers.
-
-    Parameters
-    ----------
-    dist : Distribution
-        The distribution whose outcomes are to be checked.
-
-    Returns
-    -------
-    None
-
-    Raises
-    ------
-    TypeError
-        If the outcomes of the `dist` are not numerical.
-    """
-    if not all(is_number(o) for o in flatten(dist.outcomes)):
-        msg = "The outcomes of this distribution are not numerical"
-        raise TypeError(msg)
+from ..helpers import numerical_test
 
 
 def mean(dist):
@@ -52,7 +28,7 @@ def mean(dist):
     TypeError
         If the outcomes of the `dist` are not numerical.
     """
-    _numerical_test(dist)
+    numerical_test(dist)
 
     outcomes, pmf = zip(*dist.zipped(mode='patoms'))
     outcomes = np.asarray(outcomes)
@@ -155,7 +131,7 @@ def median(dist):
     TypeError
         If the outcomes of the `dist` are not numerical.
     """
-    _numerical_test(dist)
+    numerical_test(dist)
 
     g = np.asarray(dist.outcomes[(dist.pmf.cumsum() > 0.5).argmax()])
     ge = np.asarray(dist.outcomes[(dist.pmf.cumsum() >= 0.5).argmax()])
@@ -182,7 +158,7 @@ def mode(dist):
     TypeError
         If the outcomes of the `dist` are not numerical.
     """
-    _numerical_test(dist)
+    numerical_test(dist)
 
     try:
         dists = [dist.marginal([i]) for i in range(dist.outcome_length())]

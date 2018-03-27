@@ -3,6 +3,10 @@ Provide a common place to access pmf-based divergences.
 
 """
 
+from .earth_movers_distance import (
+    earth_movers_distance_pmf as earth_movers_distance,
+)
+
 from .jensen_shannon_divergence import (
     jensen_shannon_divergence_pmf as jensen_shannon_divergence,
 )
@@ -13,8 +17,8 @@ from ._kl_nonmerge import (
 )
 
 from .maximum_correlation import (
-    maximum_correlation_pmf,
-    conditional_maximum_correlation_pmf,
+    maximum_correlation_pmf as maximum_correlation,
+    conditional_maximum_correlation_pmf as conditional_maximum_correlation,
 )
 
 from .variational_distance import (

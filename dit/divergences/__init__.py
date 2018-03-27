@@ -20,6 +20,10 @@ from .generalized_divergences import (
     hellinger_sum,
 )
 
+from .earth_movers_distance import (
+    earth_movers_distance,
+)
+
 from .hypercontractivity_coefficient import (
     hypercontractivity_coefficient,
 )

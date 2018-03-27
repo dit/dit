@@ -177,7 +177,7 @@ def noisy(dist, noise=0.5):
 
     Returns
     -------
-    fu zzy: Distribution
+    fuzzy: Distribution
         The noisy distribution.
     """
     fuzz = uniform(list(product(*dist.alphabet)))

@@ -8,30 +8,7 @@ import numpy as np
 from scipy.optimize import minimize_scalar
 
 from ..exceptions import OptimizationException
-
-
-def _normalize_pmfs(dist1, dist2):
-    """
-    Construct probability vectors with common support.
-
-    Parameters
-    ----------
-    dist1 : Distribution
-        The first distribution.
-    dist2 : Distribution
-        The second distribution.
-
-    Returns
-    -------
-    p : np.ndarray
-        The pmf of `dist1`.
-    q : np.ndarray
-        The pmf of `dist2`.
-    """
-    event_space = list(set().union(dist1.outcomes, dist2.outcomes))
-    p = np.array([dist1[e] if e in dist1.outcomes else 0 for e in event_space])
-    q = np.array([dist2[e] if e in dist2.outcomes else 0 for e in event_space])
-    return p, q
+from ..helpers import normalize_pmfs
 
 
 def variational_distance_pmf(p, q):
@@ -73,7 +50,7 @@ def variational_distance(dist1, dist2):
     vd : float
         The variational distance.
     """
-    p, q = _normalize_pmfs(dist1, dist2)
+    p, q = normalize_pmfs(dist1, dist2)
     vd = variational_distance_pmf(p, q)
     return vd
 
@@ -113,7 +90,7 @@ def bhattacharyya_coefficient(dist1, dist2):
     bc : float
         The Bhattacharyya coefficient.
     """
-    p, q = _normalize_pmfs(dist1, dist2)
+    p, q = normalize_pmfs(dist1, dist2)
     bc = bhattacharyya_coefficient_pmf(p, q)
     return bc
 
@@ -156,7 +133,7 @@ def hellinger_distance(dist1, dist2):
     hd : float
         The Hellinger distance.
     """
-    p, q = _normalize_pmfs(dist1, dist2)
+    p, q = normalize_pmfs(dist1, dist2)
     hd = hellinger_distance_pmf(p, q)
     return hd
 
@@ -211,6 +188,6 @@ def chernoff_information(dist1, dist2):
     ci : float
         The Chernoff information.
     """
-    p, q = _normalize_pmfs(dist1, dist2)
+    p, q = normalize_pmfs(dist1, dist2)
     ci = chernoff_information_pmf(p, q)
     return ci
