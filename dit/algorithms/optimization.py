@@ -25,7 +25,6 @@ from scipy.optimize import basinhopping, differential_evolution, minimize
 
 from .. import Distribution, insert_rvf, modify_outcomes
 from ..algorithms.channelcapacity import channel_capacity
-from ..divergences.maximum_correlation import svdvals
 from ..exceptions import ditException, OptimizationException
 from ..helpers import flatten, normalize_rvs, parse_rvs
 from ..math import prod
@@ -45,6 +44,8 @@ __all__ = [
     'BaseAuxVarOptimizer',
 ]
 
+
+svdvals = lambda m: np.linalg.svd(m, compute_uv=False)
 
 class BaseOptimizer(with_metaclass(ABCMeta, object)):
     """
