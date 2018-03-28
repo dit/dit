@@ -12,11 +12,11 @@ from copy import deepcopy
 
 from functools import reduce
 
-from six import with_metaclass
-
 from string import ascii_letters, digits
 
 from types import MethodType
+
+from six import with_metaclass
 
 from boltons.iterutils import pairwise
 
@@ -25,6 +25,7 @@ from scipy.optimize import basinhopping, differential_evolution, minimize
 
 from .. import Distribution, insert_rvf, modify_outcomes
 from ..algorithms.channelcapacity import channel_capacity
+from ..divergences.maximum_correlation import svdvals
 from ..exceptions import ditException, OptimizationException
 from ..helpers import flatten, normalize_rvs, parse_rvs
 from ..math import prod
@@ -220,7 +221,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
         """
         if crvs is None:
             crvs = set()
-        idx_joint = tuple(self._all_vars - (rvs|crvs))
+        idx_joint = tuple(self._all_vars - (rvs | crvs))
         idx_crvs = tuple(self._all_vars - crvs)
 
         def entropy(pmf):
@@ -551,6 +552,156 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
             return caekl
 
         return caekl_mutual_information
+    
+    def _maximum_correlation(self, rv_x, rv_y):
+        """
+        Compute the maximum correlation.
+
+        Parameters
+        ----------
+        rv_x : collection
+            The indices to consider as the X variable.
+        rv_y : collection
+            The indices to consider as the Y variable.
+
+        Returns
+        -------
+        mc : func
+            The maximum correlation.
+        """
+        idx_xy = tuple(self._all_vars - (rv_x | rv_y))
+        idx_x = tuple(self._all_vars - rv_x)
+        idx_y = tuple(self._all_vars - rv_y)
+
+        def maximum_correlation(pmf):
+            """
+            Compute the specified maximum correlation.
+
+            Parameters
+            ----------
+            pmf : np.ndarray
+                The joint probability distribution.
+
+            Returns
+            -------
+            mi : float
+                The mutual information.
+            """
+            pmf_xy = pmf.sum(axis=idx_xy, keepdims=True)
+            pmf_x = pmf_xy.sum(axis=idx_x, keepdims=True)
+            pmf_y = pmf_xy.sum(axis=idx_y, keepdims=True)
+    
+            Q = pmf_xy / (np.sqrt(pmf_x)*np.sqrt(pmf_y))
+            Q[np.isnan(Q)] = 0
+
+            mc = svdvals(Q)[1]
+
+            return mc
+
+        return maximum_correlation
+    
+    def _conditional_maximum_correlation(self, rv_x, rv_y, rv_z):
+        """
+        Compute the conditional maximum correlation.
+
+        Parameters
+        ----------
+        rv_x : collection
+            The indices to consider as the X variable.
+        rv_y : collection
+            The indices to consider as the Y variable.
+        rv_z : collection
+            The indices to consider as the Z variable.
+
+        Returns
+        -------
+        cmc : func
+            The conditional maximum correlation.
+        """
+        idx_xyz = tuple(self._all_vars - (rv_x | rv_y | rv_z))
+        idx_xz = tuple(self._all_vars - (rv_x | rv_z))
+        idx_yz = tuple(self._all_vars - (rv_y | rv_z))
+        idx_z = tuple(self._all_vars - rv_z)
+
+        def conditional_maximum_correlation(pmf):
+            """
+            Compute the specified maximum correlation.
+
+            Parameters
+            ----------
+            pmf : np.ndarray
+                The joint probability distribution.
+
+            Returns
+            -------
+            mi : float
+                The mutual information.
+            """
+            p_xyz = pmf.sum(axis=idx_xyz, keepdims=True)
+            p_xz = p_xyz.sum(axis=idx_xz, keepdims=True)
+            p_yz = p_xyz.sum(axis=idx_yz, keepdims=True)
+            p_z = p_xyz.sum(axis=idx_z, keepdims=True)
+
+            p_xy_z = p_xyz / p_z
+            p_x_z = p_xz / p_z
+            p_y_z = p_yz / p_z
+
+            Q = np.where(pmf, p_xy_z / (np.sqrt(p_x_z)*np.sqrt(p_y_z)), 0)
+            Q[np.isnan(Q)] = 0
+
+            cmc = max([svdvals(np.squeeze(m))[1] for m in np.dsplit(Q, Q.shape[2])])
+
+            return cmc
+
+        return conditional_maximum_correlation
+
+    def _total_variation(self, rv_x, rv_y):
+        """
+        Compute the total variation, TV[X||Y].
+
+        Parameters
+        ----------
+        rv_x : collection
+            The indices to consider as the X variable.
+        rv_y : collection
+            The indices to consider as the Y variable.
+
+        Returns
+        -------
+        tv : func
+            The total variation.
+        
+        Note
+        ----
+        The pmfs are assumed to be over the same alphabet.
+        """
+        idx_xy = tuple(self._all_vars - (rv_x | rv_y))
+        idx_x = tuple(self._all_vars - rv_x)
+        idx_y = tuple(self._all_vars - rv_y)
+
+        def total_variation(pmf):
+            """
+            Compute the specified total variation.
+
+            Parameters
+            ----------
+            pmf : np.ndarray
+                The joint probability distribution.
+
+            Returns
+            -------
+            tv : float
+                The total variation.
+            """
+            pmf_xy = pmf.sum(axis=idx_xy, keepdims=True)
+            pmf_x = pmf_xy.sum(axis=idx_x)
+            pmf_y = pmf_xy.sum(axis=idx_y)
+
+            tv = abs(pmf_x - pmf_y).sum()/2
+
+            return tv
+
+        return total_variation
 
     ###########################################################################
     # Optimization methods.
