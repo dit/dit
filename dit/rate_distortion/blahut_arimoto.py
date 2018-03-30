@@ -7,6 +7,11 @@ import numpy as np
 
 from .distortions import hamming_distortion
 from .rate_distortion import RateDistortionResult
+from ..divergences.pmf import (earth_movers_distance,
+                               maximum_correlation,
+                               relative_entropy,
+                               variational_distance,
+                               )
 
 
 ###############################################################################
@@ -87,24 +92,19 @@ def blahut_arimoto(p_x, beta, distortion=hamming_distortion, max_iters=100, rest
 ###############################################################################
 # Information Bottleneck
 
-def _blahut_arimoto_ib(p_xy, beta, q_t_x, max_iters=300):
+def _blahut_arimoto_ib(p_xy, beta, q_t_x, distortion, max_iters=300):
     """
     """
     p_x = p_xy.sum(axis=1)
     p_y = p_xy.sum(axis=0)
     p_y_x = p_xy / p_x[:, np.newaxis]
 
-    def dkl(p, q, axis=-1):
-        return np.nansum(p * np.log(p/q), axis=axis)
-
     def next_q_t(q_t_x):
         return np.matmul(p_x, q_t_x)
 
     def next_q_t_x(q_t, q_y_t):
-        dkls = dkl(q_y_t.T[np.newaxis, :, :], p_y_x[:, np.newaxis, :])
-        dkls2 = np.asarray([dkl(a, b) for b in p_y_x for a in q_y_t.T]).reshape(q_y_t.shape)
-        assert np.allclose(dkls, dkls2)
-        q_t_x = q_t * np.exp(-beta * dkls)
+        distortions = np.asarray([distortion(a, b) for b in p_y_x for a in q_y_t.T]).reshape(q_y_t.shape)
+        q_t_x = q_t * np.exp(-beta * distortions)
         q_t_x /= q_t_x.sum(axis=1, keepdims=True)
         nans = np.isnan(q_t_x)
         q_t_x[nans] = np.eye(*q_t_x.shape)[nans]
@@ -112,10 +112,6 @@ def _blahut_arimoto_ib(p_xy, beta, q_t_x, max_iters=300):
 
     def next_q_y_t(q_t, q_t_x):
         q_xyt = q_t_x[:, np.newaxis, :] * p_xy[:, :, np.newaxis]
-        assert np.allclose(p_xy, q_xyt.sum(axis=2))
-        q_xt = q_xyt.sum(axis=1)
-        new_q_t_x = q_xt / q_xt.sum(axis=1, keepdims=True)
-        assert np.allclose(q_t_x, new_q_t_x)
         q_yt = q_xyt.sum(axis=0)
         q_y_t = q_yt / q_yt.sum(axis=0, keepdims=True)
         q_y_t[np.isnan(q_y_t)] = 0
@@ -130,7 +126,7 @@ def _blahut_arimoto_ib(p_xy, beta, q_t_x, max_iters=300):
 
     old_q_t_x = q_t_x.copy()
     q_iter = iter(next_ib(old_q_t_x))
-    next(q_iter); next(q_iter) #  prime the pump
+    next(q_iter); next(q_iter)  # prime the pump
     q_t_x = next(q_iter)
 
     iters = 0
@@ -148,7 +144,7 @@ def _blahut_arimoto_ib(p_xy, beta, q_t_x, max_iters=300):
     return result, q_xyt
 
 
-def blahut_arimoto_ib(p_xy, beta, max_iters=100, restarts=100):
+def blahut_arimoto_ib(p_xy, beta, distortion=relative_entropy, max_iters=100, restarts=100):
     """
     Todo
     ----
@@ -165,12 +161,13 @@ def blahut_arimoto_ib(p_xy, beta, max_iters=100, restarts=100):
         else:
             q_t_x = np.random.random(size=(n, n))
             q_t_x /= q_t_x.sum(axis=1, keepdims=True)
-        candidate, _ = _blahut_arimoto_ib(p_xy=p_xy,
+        candidate, q = _blahut_arimoto_ib(p_xy=p_xy,
                                           beta=beta,
                                           q_t_x=q_t_x,
+                                          distortion=distortion,
                                           max_iters=max_iters
                                           )
-        candidates.append(candidate)
+        candidates.append((candidate, q))
 
-    rd = min(candidates, key=lambda rd: rd.rate - beta*rd.distortion)
-    return rd
+    rd = min(candidates, key=lambda rd: rd[0].rate - beta*rd[0].distortion)
+    return rd[1]

@@ -8,7 +8,6 @@ import numpy as np
 
 from ..algorithms import BaseAuxVarOptimizer
 from ..exceptions import ditException
-from ..multivariate import entropy
 from ..utils import flatten
 
 
@@ -52,7 +51,7 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
             iter(rv[0])
             msg = "Rate-Distortion is only defined for one variable."
             raise ditException(msg)
-        except:
+        except TypeError:
             pass
 
         super(BaseRateDistortion, self).__init__(dist=dist, rvs=[rv], crvs=crvs, rv_mode=rv_mode)
@@ -133,24 +132,6 @@ class RateDistortionHamming(BaseRateDistortion):
         return distortion
 
 
-class RateDistortionTotalVariation(BaseRateDistortion):
-    """
-    """
-    _type = "Total Variation"
-
-    def _distortion(self):
-        """
-        """
-        tv = self._total_variation(self._x, self._t)
-
-        def distortion(pmf):
-            """
-            """
-            return tv(pmf)
-
-        return distortion
-
-
 class RateDistortionResidualEntropy(BaseRateDistortion):
     """
     """
@@ -189,68 +170,3 @@ class RateDistortionMaximumCorrelation(BaseRateDistortion):
             return 1 - mc(pmf)
 
         return distortion
-
-
-class RDCurve(object):
-    """
-    """
-    def __init__(self, dist, rv=None, crvs=None, beta_min=0, beta_max=10, beta_num=101, rd=RateDistortionHamming):
-        """
-        """
-        if rv is None:
-            rv = list(flatten(dist.rvs))
-
-        self.dist = dist.copy()
-        self.rv = rv
-        self.crvs = crvs
-
-        self.betas = np.linspace(beta_min, beta_max, beta_num)
-        self._rd = rd
-
-        d = dist.coalesce([self.rv])
-        self._max_rate = entropy(d)
-        rd = self._rd(d, beta=0.0)
-        rd.optimize()
-        self._max_distortion = rd.distortion(rd.construct_joint(rd._optima))
-
-        try:
-            dist_name = dist.name
-        except AttributeError:
-            dist_name = dist.__name__
-
-        self.label = "{} {}".format(dist_name, rd._type)
-
-        self.compute()
-
-    def compute(self):
-        """
-        """
-        rates = []
-        distortions = []
-
-        for beta in self.betas:
-            rd = self._rd(self.dist, beta=beta, rv=self.rv, crvs=self.crvs)
-            rd.optimize()
-            pmf = rd.construct_joint(rd._optima)
-            rates.append(rd.rate(pmf))
-            distortions.append(rd.distortion(pmf))
-
-        self.rates = np.asarray(rates)
-        self.distortions = np.asarray(distortions)
-
-    def plot(self, downsample=5):
-        """
-        """
-        from .plotting import RDPlotter
-        plotter = RDPlotter(self)
-        return plotter.plot(downsample)
-
-    def __add__(self, other):
-        """
-        """
-        from .plotting import RDPlotter
-        if isinstance(other, RDCurve):
-            plotter = RDPlotter(self, other)
-            return plotter
-        else:
-            return NotImplemented

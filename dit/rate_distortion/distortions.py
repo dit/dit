@@ -1,10 +1,27 @@
 """
-Distortion measures for use with the Blahut-Arimoto algorithms.
+Distortion measures for use with rate distortion theory.
 """
 
 from __future__ import division
 
+from collections import namedtuple
+
 import numpy as np
+
+from .rate_distortion import (RateDistortionHamming,
+                              RateDistortionMaximumCorrelation,
+                              RateDistortionResidualEntropy,
+                              )
+
+
+__all__ = (
+    'hamming',
+    'residual_entropy',
+    'maximum_correlation',
+)
+
+
+Distortion = namedtuple('Distortion', ['matrix', 'optimizer'])
 
 
 def hamming_distortion(p_xy):
@@ -21,3 +38,8 @@ def residual_entropy_distortion(p_xy):
     h_y_x = -np.log2(p_xy / p_xy.sum(axis=1, keepdims=True))
     distortion = h_x_y + h_y_x
     return distortion
+
+
+hamming = Distortion(hamming_distortion, RateDistortionHamming)
+residual_entropy = Distortion(residual_entropy_distortion, RateDistortionResidualEntropy)
+maximum_correlation = Distortion(None, RateDistortionMaximumCorrelation)

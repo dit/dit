@@ -9,8 +9,7 @@ from six import with_metaclass
 
 import matplotlib.pyplot as plt
 
-from .rate_distortion import RDCurve
-from .information_bottleneck import IBCurve
+from .curves import RDCurve, IBCurve
 
 
 __all__ = (
@@ -42,23 +41,25 @@ class BasePlotter(with_metaclass(ABCMeta, object)):
         for i, curve in enumerate(self.curves):
             x = axis_1.data(curve)
             y = axis_2.data(curve)
-            ax.plot(x, y, label=curve.label)
+            line = ax.plot(x, y, lw=2, label=curve.label)[0]
             ax.scatter(x[::downsample],
                        y[::downsample],
                        c=curve.betas[::downsample])
 
             lim_1 = axis_1.limit(curve)
             if lim_1 is not None:
-                ax.axvline(lim_1, ls=':', c='C{}'.format(i))
+                ax.axvline(lim_1, ls=':', c=line.get_c())
             lim_2 = axis_2.limit(curve)
             if lim_2 is not None:
-                ax.axhline(lim_2, ls=':', c='C{}'.format(i))
+                ax.axhline(lim_2, ls=':', c=line.get_c())
 
         ax.set_xlabel(axis_1.label)
         ax.set_ylabel(axis_2.label)
 
         try:
             ax_lim_1 = max([axis_1.limit(c) for c in self.curves])
+            if ax_lim_1 is None:
+                raise TypeError
         except TypeError:
             ax_lim_1 = max([c.betas[-1] for c in self.curves])
         ax_lim_2 = max([axis_2.limit(c) for c in self.curves])
@@ -98,6 +99,7 @@ class RDPlotter(BasePlotter):
         fig, axs = plt.subplots(2, 2, figsize=(16, 8))
 
         self._plot(axs[0, 0], self._beta_axis, self._rate_axis, downsample)
+        axs[0, 0].legend(loc='best')
         self._plot(axs[0, 1], self._distortion_axis, self._rate_axis, downsample)
         self._plot(axs[1, 0], self._beta_axis, self._distortion_axis, downsample)
 
@@ -121,6 +123,7 @@ class IBPlotter(BasePlotter):
         fig, axs = plt.subplots(3, 2, figsize=(16, 16))
 
         self._plot(axs[0, 0], self._beta_axis, self._complexity_axis, downsample)
+        axs[0, 0].legend(loc='best')
         self._plot(axs[1, 0], self._beta_axis, self._relevance_axis, downsample)
         self._plot(axs[2, 0], self._beta_axis, self._error_axis, downsample)
         self._plot(axs[0, 1], self._complexity_axis, self._relevance_axis, downsample)
