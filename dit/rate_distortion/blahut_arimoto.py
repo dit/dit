@@ -103,7 +103,7 @@ def _blahut_arimoto_ib(p_xy, beta, q_t_x, distortion, max_iters=300):
         return np.matmul(p_x, q_t_x)
 
     def next_q_t_x(q_t, q_y_t):
-        distortions = np.asarray([distortion(a, b) for b in p_y_x for a in q_y_t.T]).reshape(q_y_t.shape)
+        distortions = np.asarray([distortion(a, b) for b in p_y_t.T for a in q_y_x]).reshape(q_y_t.shape)
         q_t_x = q_t * np.exp(-beta * distortions)
         q_t_x /= q_t_x.sum(axis=1, keepdims=True)
         nans = np.isnan(q_t_x)
