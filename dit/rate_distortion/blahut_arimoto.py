@@ -29,7 +29,7 @@ def _blahut_arimoto(p_x, beta, q_y_x, distortion, max_iters=100):
         return q_y
 
     def next_q_y_x(q_y, q_y_x):
-        d = distortion(q_xy(q_y_x))
+        d = distortion(p_x, q_y_x)
         q_y_x = q_y * np.exp2(-beta * d)
         q_y_x /= q_y_x.sum(axis=1, keepdims=True)
         return q_y_x
@@ -103,14 +103,14 @@ def _blahut_arimoto_ib(p_xy, beta, q_t_x, distortion, max_iters=300):
         return np.matmul(p_x, q_t_x)
 
     def next_q_t_x(q_t, q_y_t):
-        distortions = np.asarray([distortion(a, b) for b in p_y_t.T for a in q_y_x]).reshape(q_y_t.shape)
+        distortions = np.asarray([distortion(a, b) for b in q_y_t.T for a in p_y_x]).reshape(q_y_t.shape)
         q_t_x = q_t * np.exp(-beta * distortions)
         q_t_x /= q_t_x.sum(axis=1, keepdims=True)
         nans = np.isnan(q_t_x)
         q_t_x[nans] = np.eye(*q_t_x.shape)[nans]
         return q_t_x
 
-    def next_q_y_t(q_t, q_t_x):
+    def next_q_y_t(q_t_x):
         q_xyt = q_t_x[:, np.newaxis, :] * p_xy[:, :, np.newaxis]
         q_yt = q_xyt.sum(axis=0)
         q_y_t = q_yt / q_yt.sum(axis=0, keepdims=True)
@@ -121,7 +121,7 @@ def _blahut_arimoto_ib(p_xy, beta, q_t_x, distortion, max_iters=300):
         while True:
             yield q_t_x
             q_t = next_q_t(q_t_x)
-            q_y_t = next_q_y_t(q_t, q_t_x)
+            q_y_t = next_q_y_t(q_t_x)
             q_t_x = next_q_t_x(q_t, q_y_t)
 
     old_q_t_x = q_t_x.copy()
@@ -171,3 +171,31 @@ def blahut_arimoto_ib(p_xy, beta, distortion=relative_entropy, max_iters=100, re
 
     rd = min(candidates, key=lambda rd: rd[0].rate - beta*rd[0].distortion)
     return rd[1]
+
+
+def blahut_arimoto_ib2(p_xy, beta, divergence=relative_entropy, max_iters=100, restarts=100):
+    """
+    """
+    p_x = p_xy.sum(axis=1)
+    p_y_x = p_xy / p_xy.sum(axis=1, keepdims=True)
+
+    def next_q_y_t(q_t_x):
+        q_xyt = q_t_x[:, np.newaxis, :] * p_xy[:, :, np.newaxis]
+        q_yt = q_xyt.sum(axis=0)
+        q_y_t = q_yt / q_yt.sum(axis=0, keepdims=True)
+        q_y_t[np.isnan(q_y_t)] = 0
+        return q_y_t
+
+    def distortion(p_x, q_t_x):
+        """
+        """
+        q_y_t = next_q_y_t(q_t_x)
+        distortions = np.asarray([divergence(a, b) for b in q_y_t.T for a in p_y_x]).reshape(q_y_t.shape)
+        return distortions
+
+    return blahut_arimoto(p_x=p_x,
+                          beta=beta,
+                          distortion=distortion,
+                          max_iters=max_iters,
+                          restarts=restarts
+                         )
