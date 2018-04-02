@@ -41,12 +41,12 @@ def _blahut_arimoto(p_x, beta, q_y_x, distortion, max_iters=100):
     def next_rd(q_y, q_y_x):
         q_y = next_q_y(q_y_x)
         q_y_x = next_q_y_x(q_y, q_y_x)
-        d = av_dist(q_y_x, distortion(q_xy(q_y_x)))
+        d = av_dist(q_y_x, distortion(p_x, q_y_x))
         return q_y, q_y_x, d
 
     q_y = next_q_y(q_y_x)
     prev_d = 0
-    d = av_dist(q_y_x, distortion(q_xy(q_y_x)))
+    d = av_dist(q_y_x, distortion(p_x, q_y_x))
 
     iters = 0
     while not np.isclose(prev_d, d) and iters < max_iters:
