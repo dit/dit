@@ -163,7 +163,7 @@ class IBCurve(object):
             entropies.append(ib.entropy(pmf))
             relevances.append(ib.relevance(pmf))
             errors.append(ib.error(pmf))
-            ranks.append(np.linalg.matrix_rank(pmf.sum(axis=1)))
+            ranks.append(sum(pmf.sum(axis=(0, 1)) > 0))
 
         self.complexities = np.asarray(complexities)
         self.entropies = np.asarray(entropies)
