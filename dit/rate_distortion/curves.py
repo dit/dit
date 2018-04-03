@@ -111,6 +111,7 @@ class IBCurve(object):
         """
         """
         self.dist = dist.copy()
+        self.dist.make_dense()
 
         self._x, self._y = rvs if rvs is not None else ([0], [1])
         self._z = crvs if crvs is not None else []
@@ -162,7 +163,7 @@ class IBCurve(object):
             entropies.append(ib.entropy(pmf))
             relevances.append(ib.relevance(pmf))
             errors.append(ib.error(pmf))
-            ranks.append(np.linalg.matrix_rank(pmf.sum(axis=2)))
+            ranks.append(np.linalg.matrix_rank(pmf.sum(axis=1)))
 
         self.complexities = np.asarray(complexities)
         self.entropies = np.asarray(entropies)
@@ -177,6 +178,9 @@ class IBCurve(object):
         entropies = []
         relevances = []
         errors = []
+
+        p_xy = self.dist.coalesce(self._x + self._y)
+        p_xy = p_xy.pmf.reshape(tuple(map(len, p_xy.alphabet)))
 
         for beta in self.betas:
             q_xyt = blahut_arimoto_ib(p_xy=p_xy,
