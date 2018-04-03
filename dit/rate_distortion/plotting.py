@@ -114,6 +114,7 @@ class IBPlotter(BasePlotter):
     _entropy_axis = Axis(attrgetter('entropies'), attrgetter('_true_complexity'), r"$H[T]$")
     _relevance_axis = Axis(attrgetter('relevances'), attrgetter('_true_relevance'), r"$I[Y:T]$")
     _error_axis = Axis(attrgetter('errors'), attrgetter('_true_relevance'), r"$I[X:Y|T]$")
+    _rank_axis = Axis(attrgetter('ranks'), lambda _: None, r"rank")
 
     _curve_type = IBCurve
 
@@ -125,7 +126,7 @@ class IBPlotter(BasePlotter):
         self._plot(axs[0, 0], self._beta_axis, self._complexity_axis, downsample)
         axs[0, 0].legend(loc='best')
         self._plot(axs[1, 0], self._beta_axis, self._relevance_axis, downsample)
-        self._plot(axs[2, 0], self._beta_axis, self._error_axis, downsample)
+        self._plot(axs[2, 0], self._beta_axis, self._rank_axis, downsample)
         self._plot(axs[0, 1], self._complexity_axis, self._relevance_axis, downsample)
         self._plot(axs[1, 1], self._entropy_axis, self._relevance_axis, downsample)
         self._plot(axs[2, 1], self._error_axis, self._complexity_axis, downsample)
