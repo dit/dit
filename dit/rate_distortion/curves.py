@@ -167,7 +167,7 @@ class IBCurve(object):
             errors.append(ib.error(pmf))
             q_xt = pmf.sum(axis=(1, 2))
             q_x_t = (q_xt / q_xt.sum(axis=0, keepdims=True))
-            ranks.append(np.linalg.matrix_rank(q_x_t.T))
+            ranks.append(np.linalg.matrix_rank(q_x_t), tol=1e-5)
             alphabets.append((pmf.sum(axis=(0, 1, 2)) > 1e-6).sum())
 
         self.complexities = np.asarray(complexities)
