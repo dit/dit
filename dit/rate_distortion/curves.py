@@ -120,6 +120,7 @@ class IBCurve(object):
 
         self._true_complexity = entropy(dist, self._x)  # TODO: replace with MSS
         self._true_relevance = total_correlation(dist, [self._x, self._y])
+        self._max_rank = len(dist.marginal(self._x).outcomes)
 
         self._args = {'dist': self.dist,
                       'rvs': [self._x, self._y],
