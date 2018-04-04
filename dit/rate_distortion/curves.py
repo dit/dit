@@ -134,7 +134,7 @@ class IBCurve(object):
         self._rv_mode = rv_mode
 
         self.p_xy = self.dist.coalesce([self._x, self._y])
-        self.p_xy = self.p_xy.pmf.reshape(tuple(map(len, p_xy.alphabet)))
+        self.p_xy = self.p_xy.pmf.reshape(tuple(map(len, self.p_xy.alphabet)))
 
         self._true_complexity = entropy(dist, self._x)  # TODO: replace with MSS
         self._true_relevance = total_correlation(dist, [self._x, self._y])
