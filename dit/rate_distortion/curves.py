@@ -151,6 +151,7 @@ class IBCurve(object):
         relevances = []
         errors = []
         ranks = []
+        alphabets = []
 
         x0 = None
 
@@ -163,13 +164,17 @@ class IBCurve(object):
             entropies.append(ib.entropy(pmf))
             relevances.append(ib.relevance(pmf))
             errors.append(ib.error(pmf))
-            ranks.append(sum(pmf.sum(axis=(0, 1)) > 0))
+            ranks.append(np.linalg.matrix_rank(pmf.sum(axis=1)))
+            alphabets.append((pmf.sum(axis=(0, 1)) > 0).sum())
 
+        print(ranks)
+        print(alphabets)
         self.complexities = np.asarray(complexities)
         self.entropies = np.asarray(entropies)
         self.relevances = np.asarray(relevances)
         self.errors = np.asarray(errors)
         self.ranks = np.asarray(ranks)
+        self.alphabets = np.asarray(alphabets)
 
     def compute_ba(self):
         """
