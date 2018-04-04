@@ -164,8 +164,8 @@ class IBCurve(object):
             entropies.append(ib.entropy(pmf))
             relevances.append(ib.relevance(pmf))
             errors.append(ib.error(pmf))
-            ranks.append(np.linalg.matrix_rank(pmf.sum(axis=1)))
-            alphabets.append((pmf.sum(axis=(0, 1)) > 0).sum())
+            ranks.append(np.linalg.matrix_rank(pmf.sum(axis=(1, 2))))
+            alphabets.append((pmf.sum(axis=(0, 1, 2)) > 1e-6).sum())
 
         print(ranks)
         print(alphabets)
