@@ -58,7 +58,7 @@ class RDCurve(object):
         q = rd.construct_joint(rd._optima)
         r = rd.rate(q)
         d = rd.distortion(q)
-        return r, d, q
+        return r, d, q.sum(axis=1)
 
     def _get_rd_ba(self, beta):
         """
