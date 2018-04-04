@@ -90,6 +90,8 @@ class RDPlotter(BasePlotter):
     _beta_axis = Axis(attrgetter('betas'), lambda _: None, r"$\beta$")
     _rate_axis = Axis(attrgetter('rates'), attrgetter('_max_rate'), "$I[X:\hat{X}]$")
     _distortion_axis = Axis(attrgetter('distortions'), attrgetter('_max_distortion'), r"$\langle d(x, \hat{x}) \rangle$")
+    _rank_axis = Axis(attrgetter('ranks'), attrgetter('_max_rank'), r"rank")
+    _alphabet_axis = Axis(attrgetter('alphabets'), attrgetter('_max_rank'), r"$|\mathcal{A}|$")
 
     _curve_type = RDCurve
 
@@ -102,6 +104,7 @@ class RDPlotter(BasePlotter):
         axs[0, 0].legend(loc='best')
         self._plot(axs[0, 1], self._distortion_axis, self._rate_axis, downsample)
         self._plot(axs[1, 0], self._beta_axis, self._distortion_axis, downsample)
+        self._plot(axs[1, 1], self._beta_axis, self._rank_axis, downsample)
 
         return fig
 
@@ -115,6 +118,7 @@ class IBPlotter(BasePlotter):
     _relevance_axis = Axis(attrgetter('relevances'), attrgetter('_true_relevance'), r"$I[Y:T]$")
     _error_axis = Axis(attrgetter('errors'), attrgetter('_true_relevance'), r"$I[X:Y|T]$")
     _rank_axis = Axis(attrgetter('ranks'), attrgetter('_max_rank'), r"rank")
+    _alphabet_axis = Axis(attrgetter('alphabets'), attrgetter('_max_rank'), r"$|\mathcal{A}|$")
 
     _curve_type = IBCurve
 

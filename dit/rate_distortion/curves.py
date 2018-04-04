@@ -37,6 +37,9 @@ class RDCurve(object):
         rd = self._distortion.optimizer(d, beta=0.0)
         rd.optimize()
         self._max_distortion = rd.distortion(rd.construct_joint(rd._optima))
+        self._max_rank = len(dist.marginal(self._x).outcomes)
+
+        self.p_x = d.pmf
 
         try:
             dist_name = dist.name
@@ -50,40 +53,55 @@ class RDCurve(object):
         else:
             self.compute_sp()
 
-    def compute_sp(self):
+    def _get_rd_sp(self, beta):
         """
         """
+        rd = self._distortion.optimizer(self.dist, beta=beta, rv=self.rv, crvs=self.crvs)
+        rd.optimize()
+        q = rd.construct_joint(rd._optima)
+        r = rd.rate(q)
+        d = rd.distortion(q)
+        return r, d, q
+
+    def _get_rd_ba(self, beta):
+        """
+        """
+        (r, d), q = blahut_arimoto(p_x=self.p_x,
+                              beta=beta,
+                              distortion=self._distortion.matrix,
+                              )
+        return r, d, q
+
+    def compute(self, style='sp'):
+        """
+        """
+        if style == 'sp':
+            get_rd = self._get_rd_sp
+        elif style == 'ba':
+            get_rd = self._get_rd_ba
+        else:
+            msg = ""
+            raise ValueError(msg)
+
         rates = []
         distortions = []
+        ranks = []
+        alphabets = []
 
         for beta in self.betas:
-            rd = self._distortion.optimizer(self.dist, beta=beta, rv=self.rv, crvs=self.crvs)
-            rd.optimize()
-            pmf = rd.construct_joint(rd._optima)
-            rates.append(rd.rate(pmf))
-            distortions.append(rd.distortion(pmf))
-
-        self.rates = np.asarray(rates)
-        self.distortions = np.asarray(distortions)
-
-    def compute_ba(self):
-        """
-        """
-        p_x = self.dist.marginal(self.rv).pmf
-
-        rates = []
-        distortions = []
-
-        for beta in self.betas:
-            r, d = blahut_arimoto(p_x=p_x,
-                                  beta=beta,
-                                  distortion=self._distortion.matrix,
-                                  )
+            r, d, q = get_rd(beta)
             rates.append(r)
             distortions.append(d)
 
+            q_x_xhat = q / q.sum(axis=0, keepdims=True)
+
+            ranks.append(np.linalg.matrix_rank(q_x_xhat, tol=1e-5))
+            alphabets.append((q.sum(axis=0) > 1e-6).sum())
+
         self.rates = np.asarray(rates)
         self.distortions = np.asarray(distortions)
+        self.ranks = np.asarray(ranks)
+        self.alphabets = np.asarray(alphabets)
 
     def plot(self, downsample=5):
         """
@@ -118,6 +136,9 @@ class IBCurve(object):
         self._aux = [dist.outcome_length()]
         self._rv_mode = rv_mode
 
+        self.p_xy = self.dist.coalesce([self._x, self._y])
+        self.p_xy = self.p_xy.pmf.reshape(tuple(map(len, p_xy.alphabet)))
+
         self._true_complexity = entropy(dist, self._x)  # TODO: replace with MSS
         self._true_relevance = total_correlation(dist, [self._x, self._y])
         self._max_rank = len(dist.marginal(self._x).outcomes)
@@ -142,11 +163,34 @@ class IBCurve(object):
         beta_max = self.find_max_beta() if beta_max is None else beta_max
         self.betas = np.linspace(beta_min, beta_max, beta_num)
 
-        self.compute_sp()
+        self.compute()
 
-    def compute_sp(self):
+    def _get_opt_sp(beta):
         """
         """
+        ib = self._bottleneck(beta=beta, **self._args)
+        ib.optimize()
+        q_xyzt = ib.construct_joint(ib._optima)
+        return q_xyzt
+
+    def _get_opt_ba(beta):
+        """
+        """
+        q_xyt = blahut_arimoto_ib(p_xy=self.p_xy, beta=beta)
+        q_xyzt = q_xyt[:, :, np.newaxis, :]
+        return q_xyzt
+
+    def compute(self, style='sp'):
+        """
+        """
+        if style == 'sp':
+            get_opt = self._get_opt_sp
+        elif style == 'ba':
+            get_opt = self._get_opt_ba
+        else:
+            msg = ""
+            raise ValueError(msg)
+
         complexities = []
         entropies = []
         relevances = []
@@ -154,21 +198,21 @@ class IBCurve(object):
         ranks = []
         alphabets = []
 
-        x0 = None
+        x, y, z, t = [[0], [1], [2], [3]]
 
         for beta in self.betas:
-            ib = self._bottleneck(beta=beta, **self._args)
-            ib.optimize(x0=x0)
-            x0 = ib._optima.copy()
-            pmf = ib.construct_joint(ib._optima)
-            complexities.append(ib.complexity(pmf))
-            entropies.append(ib.entropy(pmf))
-            relevances.append(ib.relevance(pmf))
-            errors.append(ib.error(pmf))
-            q_xt = pmf.sum(axis=(1, 2))
+            q_xyzt = get_opt(beta)
+            d = Distribution.from_ndarray(q_xyzt)
+            complexities.append(total_correlation(d, [x, t], z))
+            entropies.append(entropy(d, x, z))
+            relevances.append(total_correlation(d, [y, t], z))
+            errors.append(total_correlation(d, [x, y], z + t))
+
+            q_xt = q_xyzt.sum(axis=(1, 2))
             q_x_t = (q_xt / q_xt.sum(axis=0, keepdims=True))
-            ranks.append(np.linalg.matrix_rank(q_x_t, tol=1e-5))
-            alphabets.append((pmf.sum(axis=(0, 1, 2)) > 1e-6).sum())
+
+            ranks.append(np.linalg.matrix_rank(q_x_t, tol=1e-4))
+            alphabets.append((q_xt.sum(axis=0) > 1e-6).sum())
 
         self.complexities = np.asarray(complexities)
         self.entropies = np.asarray(entropies)
@@ -176,32 +220,6 @@ class IBCurve(object):
         self.errors = np.asarray(errors)
         self.ranks = np.asarray(ranks)
         self.alphabets = np.asarray(alphabets)
-
-    def compute_ba(self):
-        """
-        """
-        complexities = []
-        entropies = []
-        relevances = []
-        errors = []
-
-        p_xy = self.dist.coalesce(self._x + self._y)
-        p_xy = p_xy.pmf.reshape(tuple(map(len, p_xy.alphabet)))
-
-        for beta in self.betas:
-            q_xyt = blahut_arimoto_ib(p_xy=p_xy,
-                                      beta=beta,
-                                      )
-            d = Distribution.from_ndarray(q_xyt)
-            complexities.append(total_correlation(d, [[0], [2]]))
-            entropies.append(entropy(d, [2]))
-            relevances.append(total_correlation(d, [[1], [2]]))
-            errors.append(total_correlation(d, [[0], [1]], [2]))
-
-        self.complexities = np.asarray(complexities)
-        self.entropies = np.asarray(entropies)
-        self.relevances = np.asarray(relevances)
-        self.errors = np.asarray(errors)
 
     def find_max_beta(self):
         """

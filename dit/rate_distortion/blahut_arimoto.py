@@ -77,103 +77,22 @@ def blahut_arimoto(p_x, beta, distortion=hamming_distortion, max_iters=100, rest
         else:
             q_y_x = np.random.random((n, n))
             q_y_x /= q_y_x.sum(axis=1, keepdims=True)
-        candidate, _ = _blahut_arimoto(p_x=p_x,
-                                       beta=beta,
-                                       q_y_x=q_y_x,
-                                       distortion=distortion,
-                                       max_iters=max_iters
-                                       )
-        candidates.append(candidate)
+        result = _blahut_arimoto(p_x=p_x,
+                                 beta=beta,
+                                 q_y_x=q_y_x,
+                                 distortion=distortion,
+                                 max_iters=max_iters
+                                 )
+        candidates.append(result)
 
-    rd = min(candidates, key=lambda rd: rd.rate + beta*rd.distortion)
+    rd = min(result, key=lambda result: result[0].rate + beta*result[0].distortion)
     return rd
 
 
 ###############################################################################
 # Information Bottleneck
 
-def _blahut_arimoto_ib(p_xy, beta, q_t_x, distortion, max_iters=300):
-    """
-    """
-    p_x = p_xy.sum(axis=1)
-    p_y = p_xy.sum(axis=0)
-    p_y_x = p_xy / p_x[:, np.newaxis]
-
-    def next_q_t(q_t_x):
-        return np.matmul(p_x, q_t_x)
-
-    def next_q_t_x(q_t, q_y_t):
-        distortions = np.asarray([distortion(a, b) for b in q_y_t.T for a in p_y_x]).reshape(q_y_t.shape)
-        q_t_x = q_t * np.exp(-beta * distortions)
-        q_t_x /= q_t_x.sum(axis=1, keepdims=True)
-        nans = np.isnan(q_t_x)
-        q_t_x[nans] = np.eye(*q_t_x.shape)[nans]
-        return q_t_x
-
-    def next_q_y_t(q_t_x):
-        q_xyt = q_t_x[:, np.newaxis, :] * p_xy[:, :, np.newaxis]
-        q_yt = q_xyt.sum(axis=0)
-        q_y_t = q_yt / q_yt.sum(axis=0, keepdims=True)
-        q_y_t[np.isnan(q_y_t)] = 0
-        return q_y_t
-
-    def next_ib(q_t_x):
-        while True:
-            yield q_t_x
-            q_t = next_q_t(q_t_x)
-            q_y_t = next_q_y_t(q_t_x)
-            q_t_x = next_q_t_x(q_t, q_y_t)
-
-    old_q_t_x = q_t_x.copy()
-    q_iter = iter(next_ib(old_q_t_x))
-    next(q_iter); next(q_iter)  # prime the pump
-    q_t_x = next(q_iter)
-
-    iters = 0
-    while not np.allclose(old_q_t_x, q_t_x) and iters < max_iters:
-        old_q_t_x, q_t_x = q_t_x, next(q_iter)
-        iters += 1
-
-    q_xyt = p_xy[:, :, np.newaxis] * q_t_x[:, np.newaxis, :]
-    q_xt = q_xyt.sum(axis=1)
-    r = np.nansum(q_xt * np.log2(q_xt / (q_xt.sum(axis=0, keepdims=True) * q_xt.sum(axis=1, keepdims=True))))
-    q_yt = q_xyt.sum(axis=0)
-    d = np.nansum(q_yt * np.log2(q_yt / (q_yt.sum(axis=0, keepdims=True) * q_yt.sum(axis=1, keepdims=True))))
-    result = RateDistortionResult(r, d)
-
-    return result, q_xyt
-
-
-def blahut_arimoto_ib(p_xy, beta, distortion=relative_entropy, max_iters=100, restarts=100):
-    """
-    Todo
-    ----
-    latin hypercube sampling
-    """
-    n = p_xy.shape[0]
-    candidates = []
-    for i in range(restarts):
-        if i == 0:
-            q_t_x = np.ones((n, n)) / n
-        elif i == 1:
-            q_t_x = np.zeros((n, n))
-            q_t_x[0, :] = 1
-        else:
-            q_t_x = np.random.random(size=(n, n))
-            q_t_x /= q_t_x.sum(axis=1, keepdims=True)
-        candidate, q = _blahut_arimoto_ib(p_xy=p_xy,
-                                          beta=beta,
-                                          q_t_x=q_t_x,
-                                          distortion=distortion,
-                                          max_iters=max_iters
-                                          )
-        candidates.append((candidate, q))
-
-    rd = min(candidates, key=lambda rd: rd[0].rate - beta*rd[0].distortion)
-    return rd[1]
-
-
-def blahut_arimoto_ib2(p_xy, beta, divergence=relative_entropy, max_iters=100, restarts=100):
+def blahut_arimoto_ib(p_xy, beta, divergence=relative_entropy, max_iters=100, restarts=100):
     """
     """
     p_x = p_xy.sum(axis=1)
@@ -198,4 +117,4 @@ def blahut_arimoto_ib2(p_xy, beta, divergence=relative_entropy, max_iters=100, r
                           distortion=distortion,
                           max_iters=max_iters,
                           restarts=restarts
-                         )
+                          )
