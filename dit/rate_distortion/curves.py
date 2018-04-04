@@ -166,12 +166,10 @@ class IBCurve(object):
             relevances.append(ib.relevance(pmf))
             errors.append(ib.error(pmf))
             q_xt = pmf.sum(axis=(1, 2))
-            q_t_x = (q_xt / q_xt.sum(axis=1, keepdims=True)).T
-            ranks.append(np.linalg.matrix_rank(q_t_x))
+            q_x_t = (q_xt / q_xt.sum(axis=0, keepdims=True))
+            ranks.append(np.linalg.matrix_rank(q_x_t))
             alphabets.append((pmf.sum(axis=(0, 1, 2)) > 1e-6).sum())
 
-        print(ranks)
-        print(alphabets)
         self.complexities = np.asarray(complexities)
         self.entropies = np.asarray(entropies)
         self.relevances = np.asarray(relevances)
