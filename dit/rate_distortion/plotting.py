@@ -104,7 +104,7 @@ class RDPlotter(BasePlotter):
         axs[0, 0].legend(loc='best')
         self._plot(axs[0, 1], self._distortion_axis, self._rate_axis, downsample)
         self._plot(axs[1, 0], self._beta_axis, self._distortion_axis, downsample)
-        self._plot(axs[1, 1], self._beta_axis, self._rank_axis, downsample)
+        self._plot(axs[1, 1], self._beta_axis, self._alphabet_axis, downsample)
 
         return fig
 
