@@ -48,10 +48,7 @@ class RDCurve(object):
 
         self.label = "{} {}".format(dist_name, rd._type)
 
-        if ba:
-            self.compute_ba()
-        else:
-            self.compute_sp()
+        self.compute(style=('ba' if ba else 'sp'))
 
     def _get_rd_sp(self, beta):
         """
