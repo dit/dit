@@ -37,7 +37,7 @@ class RDCurve(object):
         rd = self._distortion.optimizer(d, beta=0.0)
         rd.optimize()
         self._max_distortion = rd.distortion(rd.construct_joint(rd._optima))
-        self._max_rank = len(dist.marginal(self._x).outcomes)
+        self._max_rank = len(d.outcomes)
 
         self.p_x = d.pmf
 
@@ -160,9 +160,9 @@ class IBCurve(object):
         beta_max = self.find_max_beta() if beta_max is None else beta_max
         self.betas = np.linspace(beta_min, beta_max, beta_num)
 
-        self.compute()
+        self.compute(style=('ba' if ba else 'sp'))
 
-    def _get_opt_sp(beta):
+    def _get_opt_sp(self, beta):
         """
         """
         ib = self._bottleneck(beta=beta, **self._args)
@@ -170,7 +170,7 @@ class IBCurve(object):
         q_xyzt = ib.construct_joint(ib._optima)
         return q_xyzt
 
-    def _get_opt_ba(beta):
+    def _get_opt_ba(self, beta):
         """
         """
         q_xyt = blahut_arimoto_ib(p_xy=self.p_xy, beta=beta)
