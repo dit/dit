@@ -84,6 +84,7 @@ though it is not in the literature, the multivariate conditional exact common in
   * Kullback-Leibler Divergence
   * Cross Entropy
   * Jensen-Shannon Divergence
+  * Earth Mover's Distance
 
 - Common Informations:
 
