@@ -79,13 +79,13 @@ def test_reorder2():
 
 def test__numerical_test1():
     """ test _numerical_test on a good distribution """
-    d = D([(0, 0), (1, 0), (2, 1), (3, 1)], [1/8, 1/8, 3/8, 3/8])
-    assert _numerical_test(d) is None
+    d = Distribution([(0, 0), (1, 0), (2, 1), (3, 1)], [1/8, 1/8, 3/8, 3/8])
+    assert numerical_test(d) is None
 
 
 def test__numerical_test2():
     """ Test _numerical_test on a bad distribution """
     # A bad distribution is one with a non-numerical alphabet
-    d = D([(0, '0'), (1, '0'), (2, '1'), (3, '1')], [1/8, 1/8, 3/8, 3/8])
+    d = Distribution([(0, '0'), (1, '0'), (2, '1'), (3, '1')], [1/8, 1/8, 3/8, 3/8])
     with pytest.raises(TypeError):
-        _numerical_test(d)
+        numerical_test(d)
