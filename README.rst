@@ -112,6 +112,7 @@ though it is not in the literature, the multivariate conditional exact common in
   * :math:`I_{ccs}`
   * :math:`I_{\pm}`
   * :math:`I_{dep}`
+  * :math:`I_{RAV}`
 
 - Other measures
 
