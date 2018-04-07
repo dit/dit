@@ -29,6 +29,9 @@ def _rescale_axes(ax, xmax, ymax):
 class BasePlotter(with_metaclass(ABCMeta, object)):
     """
     """
+    _beta_axis = Axis(attrgetter('betas'), lambda _: None, r"$\beta$")
+    _rank_axis = Axis(attrgetter('ranks'), attrgetter('_max_rank'), r"rank")
+    _alphabet_axis = Axis(attrgetter('alphabets'), attrgetter('_max_rank'), r"$|\mathcal{A}|$")
 
     def __init__(self, *curves):
         """
@@ -38,7 +41,7 @@ class BasePlotter(with_metaclass(ABCMeta, object)):
     def _plot(self, ax, axis_1, axis_2, downsample):
         """
         """
-        for i, curve in enumerate(self.curves):
+        for curve in self.curves:
             x = axis_1.data(curve)
             y = axis_2.data(curve)
             line = ax.plot(x, y, lw=2, label=curve.label)[0]
@@ -65,6 +68,8 @@ class BasePlotter(with_metaclass(ABCMeta, object)):
         ax_lim_2 = max([axis_2.limit(c) for c in self.curves])
         _rescale_axes(ax, ax_lim_1, ax_lim_2)
 
+        return ax
+
     @abstractmethod
     def plot(self, downsample=5):
         """
@@ -87,11 +92,8 @@ class BasePlotter(with_metaclass(ABCMeta, object)):
 class RDPlotter(BasePlotter):
     """
     """
-    _beta_axis = Axis(attrgetter('betas'), lambda _: None, r"$\beta$")
     _rate_axis = Axis(attrgetter('rates'), attrgetter('_max_rate'), "$I[X:\hat{X}]$")
     _distortion_axis = Axis(attrgetter('distortions'), attrgetter('_max_distortion'), r"$\langle d(x, \hat{x}) \rangle$")
-    _rank_axis = Axis(attrgetter('ranks'), attrgetter('_max_rank'), r"rank")
-    _alphabet_axis = Axis(attrgetter('alphabets'), attrgetter('_max_rank'), r"$|\mathcal{A}|$")
 
     _curve_type = RDCurve
 
@@ -104,7 +106,6 @@ class RDPlotter(BasePlotter):
         axs[0, 0].legend(loc='best')
         self._plot(axs[0, 1], self._distortion_axis, self._rate_axis, downsample)
         self._plot(axs[1, 0], self._beta_axis, self._distortion_axis, downsample)
-        self._plot(axs[1, 1], self._beta_axis, self._alphabet_axis, downsample)
 
         return fig
 
@@ -112,15 +113,24 @@ class RDPlotter(BasePlotter):
 class IBPlotter(BasePlotter):
     """
     """
-    _beta_axis = Axis(attrgetter('betas'), lambda _: None, r"$\beta$")
     _complexity_axis = Axis(attrgetter('complexities'), attrgetter('_true_complexity'), "$I[X:T]$")
     _entropy_axis = Axis(attrgetter('entropies'), attrgetter('_true_complexity'), r"$H[T]$")
     _relevance_axis = Axis(attrgetter('relevances'), attrgetter('_true_relevance'), r"$I[Y:T]$")
     _error_axis = Axis(attrgetter('errors'), attrgetter('_true_relevance'), r"$I[X:Y|T]$")
-    _rank_axis = Axis(attrgetter('ranks'), attrgetter('_max_rank'), r"rank")
-    _alphabet_axis = Axis(attrgetter('alphabets'), attrgetter('_max_rank'), r"$|\mathcal{A}|$")
 
     _curve_type = IBCurve
+
+    def _plot(self, ax, axis_1, axis_2, downsample):
+        """
+        """
+        ax = super(IBPlotter, self)._plot(ax, axis_1, axis_2, downsample)
+
+        if axis_1 is self._beta_axis:
+            for curve in self.curves:
+                for kink in curve.find_kinks():
+                    ax.axvline(kink, ls=':', c='k')
+
+        return ax
 
     def plot(self, downsample=5):
         """

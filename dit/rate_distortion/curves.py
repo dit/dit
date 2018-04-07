@@ -1,4 +1,5 @@
 """
+Objects to compute single rate-distortion curves.
 """
 
 from __future__ import division
@@ -42,32 +43,33 @@ class RDCurve(object):
         self.p_x = d.pmf
 
         try:
-            dist_name = dist.name
+            dist_name = [dist.name]
         except AttributeError:
-            dist_name = r"\b"
+            dist_name = []
 
-        self.label = "{} {}".format(dist_name, rd._type)
+        self.label = " ".join(dist_name + [rd._type])
 
         self.compute(style=('ba' if ba else 'sp'))
 
-    def _get_rd_sp(self, beta):
+    def _get_rd_sp(self, beta, initial=None):
         """
         """
         rd = self._distortion.optimizer(self.dist, beta=beta, rv=self.rv, crvs=self.crvs)
-        rd.optimize()
+        rd.optimize(x0=initial)
+        x0 = rd._optima.copy()
         q = rd.construct_joint(rd._optima)
         r = rd.rate(q)
         d = rd.distortion(q)
-        return r, d, q.sum(axis=1)
+        return r, d, q.sum(axis=1), x0
 
-    def _get_rd_ba(self, beta):
+    def _get_rd_ba(self, beta, initial=None):
         """
         """
         (r, d), q = blahut_arimoto(p_x=self.p_x,
-                              beta=beta,
-                              distortion=self._distortion.matrix,
-                              )
-        return r, d, q
+                                   beta=beta,
+                                   distortion=self._distortion.matrix,
+                                   )
+        return r, d, q, initial
 
     def compute(self, style='sp'):
         """
@@ -85,8 +87,10 @@ class RDCurve(object):
         ranks = []
         alphabets = []
 
+        x0 = None
+
         for beta in self.betas:
-            r, d, q = get_rd(beta)
+            r, d, q, x0 = get_rd(beta, initial=x0)
             rates.append(r)
             distortions.append(d)
 
@@ -162,20 +166,31 @@ class IBCurve(object):
 
         self.compute(style=('ba' if ba else 'sp'))
 
-    def _get_opt_sp(self, beta):
+    def __add__(self, other):
+        """
+        """
+        from .plotting import IBPlotter
+        if isinstance(other, IBCurve):
+            plotter = IBPlotter(self, other)
+            return plotter
+        else:
+            return NotImplemented
+
+    def _get_opt_sp(self, beta, initial=None):
         """
         """
         ib = self._bottleneck(beta=beta, **self._args)
-        ib.optimize()
+        ib.optimize(x0=initial)
+        x0 = ib._optima.copy()
         q_xyzt = ib.construct_joint(ib._optima)
-        return q_xyzt
+        return q_xyzt, x0
 
-    def _get_opt_ba(self, beta):
+    def _get_opt_ba(self, beta, initial=None):
         """
         """
-        q_xyt = blahut_arimoto_ib(p_xy=self.p_xy, beta=beta)
+        q_xyt = blahut_arimoto_ib(p_xy=self.p_xy, beta=beta)[1]
         q_xyzt = q_xyt[:, :, np.newaxis, :]
-        return q_xyzt
+        return q_xyzt, None
 
     def compute(self, style='sp'):
         """
@@ -197,8 +212,10 @@ class IBCurve(object):
 
         x, y, z, t = [[0], [1], [2], [3]]
 
+        x0 = None
+
         for beta in self.betas:
-            q_xyzt = get_opt(beta)
+            q_xyzt, x0 = get_opt(beta, x0)
             d = Distribution.from_ndarray(q_xyzt)
             complexities.append(total_correlation(d, [x, t], z))
             entropies.append(entropy(d, x, z))
@@ -224,7 +241,7 @@ class IBCurve(object):
         beta_max = 2/3
         relevance = 0
 
-        while not np.isclose(relevance, self._true_relevance, atol=1e-3, rtol=1e-3):
+        while not np.isclose(relevance, self._true_relevance, atol=1e-5, rtol=1e-5):
             beta_max = int(np.ceil(1.5*beta_max))
             ib = self._bottleneck(beta=beta_max, **self._args)
             ib.optimize()
@@ -235,7 +252,10 @@ class IBCurve(object):
     def find_kinks(self):
         """
         """
-        pass
+        diff = np.diff(self.ranks)
+        jumps = np.arange(len(diff))[diff > 0]
+        kinks = np.asarray([jump for jump in jumps if diff[jump-1] == 0])
+        return self.betas[kinks]
 
     def plot(self, downsample=5):
         """
@@ -243,13 +263,3 @@ class IBCurve(object):
         from .plotting import IBPlotter
         plotter = IBPlotter(self)
         return plotter.plot(downsample)
-
-    def __add__(self, other):
-        """
-        """
-        from .plotting import IBPlotter
-        if isinstance(other, IBCurve):
-            plotter = IBPlotter(self, other)
-            return plotter
-        else:
-            return NotImplemented

@@ -1,4 +1,5 @@
 """
+Optimizers for computing rate-distortion points.
 """
 
 from abc import abstractmethod

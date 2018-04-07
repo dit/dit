@@ -1,9 +1,8 @@
 """
+Optimizers for computing information bottleneck points.
 """
 
 from __future__ import division
-
-import numpy as np
 
 from ..algorithms import BaseAuxVarOptimizer
 from ..exceptions import ditException

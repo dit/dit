@@ -553,7 +553,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
             return caekl
 
         return caekl_mutual_information
-    
+
     def _maximum_correlation(self, rv_x, rv_y):
         """
         Compute the maximum correlation.
@@ -561,9 +561,9 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
         Parameters
         ----------
         rv_x : collection
-            The indices to consider as the X variable.
+            The index to consider as the X variable.
         rv_y : collection
-            The indices to consider as the Y variable.
+            The index to consider as the Y variable.
 
         Returns
         -------
@@ -588,10 +588,10 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
             mi : float
                 The mutual information.
             """
-            pmf_xy = pmf.sum(axis=idx_xy, keepdims=True)
-            pmf_x = pmf_xy.sum(axis=idx_x, keepdims=True)
-            pmf_y = pmf_xy.sum(axis=idx_y, keepdims=True)
-    
+            pmf_xy = pmf.sum(axis=idx_xy)
+            pmf_x = pmf.sum(axis=idx_x)[:, np.newaxis]
+            pmf_y = pmf.sum(axis=idx_y)[np.newaxis, :]
+
             Q = pmf_xy / (np.sqrt(pmf_x)*np.sqrt(pmf_y))
             Q[np.isnan(Q)] = 0
 
@@ -600,7 +600,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
             return mc
 
         return maximum_correlation
-    
+
     def _conditional_maximum_correlation(self, rv_x, rv_y, rv_z):
         """
         Compute the conditional maximum correlation.
@@ -608,11 +608,11 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
         Parameters
         ----------
         rv_x : collection
-            The indices to consider as the X variable.
+            The index to consider as the X variable.
         rv_y : collection
-            The indices to consider as the Y variable.
+            The index to consider as the Y variable.
         rv_z : collection
-            The indices to consider as the Z variable.
+            The index to consider as the Z variable.
 
         Returns
         -------
@@ -638,16 +638,16 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
             mi : float
                 The mutual information.
             """
-            p_xyz = pmf.sum(axis=idx_xyz, keepdims=True)
-            p_xz = p_xyz.sum(axis=idx_xz, keepdims=True)
-            p_yz = p_xyz.sum(axis=idx_yz, keepdims=True)
-            p_z = p_xyz.sum(axis=idx_z, keepdims=True)
+            p_xyz = pmf.sum(axis=idx_xyz)
+            p_xz = pmf.sum(axis=idx_xz)[:, np.newaxis, :]
+            p_yz = pmf.sum(axis=idx_yz)[np.newaxis, :, :]
+            p_z = pmf.sum(axis=idx_z)[np.newaxis, np.newaxis, :]
 
             p_xy_z = p_xyz / p_z
             p_x_z = p_xz / p_z
             p_y_z = p_yz / p_z
 
-            Q = np.where(pmf, p_xy_z / (np.sqrt(p_x_z)*np.sqrt(p_y_z)), 0)
+            Q = np.where(p_xyz, p_xy_z / (np.sqrt(p_x_z)*np.sqrt(p_y_z)), 0)
             Q[np.isnan(Q)] = 0
 
             cmc = max([svdvals(np.squeeze(m))[1] for m in np.dsplit(Q, Q.shape[2])])
@@ -671,7 +671,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
         -------
         tv : func
             The total variation.
-        
+
         Note
         ----
         The pmfs are assumed to be over the same alphabet.

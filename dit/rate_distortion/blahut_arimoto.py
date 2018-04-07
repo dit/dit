@@ -1,4 +1,5 @@
 """
+The Blahut-Arimoto algorithm for solving the rate-distortion problem.
 """
 
 from __future__ import division
@@ -7,11 +8,7 @@ import numpy as np
 
 from .distortions import hamming_distortion
 from .rate_distortion import RateDistortionResult
-from ..divergences.pmf import (earth_movers_distance,
-                               maximum_correlation,
-                               relative_entropy,
-                               variational_distance,
-                               )
+from ..divergences.pmf import relative_entropy
 
 
 ###############################################################################
@@ -19,6 +16,20 @@ from ..divergences.pmf import (earth_movers_distance,
 
 def _blahut_arimoto(p_x, beta, q_y_x, distortion, max_iters=100):
     """
+    Perform the Blahut-Arimoto algorithms.
+
+    Parameters
+    ----------
+    p_x : np.ndarray
+    beta : float
+    q_y_x : np.ndarray
+    distortion : np.ndarray
+    max_iters : int
+
+    Returns
+    -------
+    result : RateDistortionResult
+    q : np.ndarray
     """
     def q_xy(q_y_x):
         q_xy = p_x[:, np.newaxis] * q_y_x
@@ -62,6 +73,21 @@ def _blahut_arimoto(p_x, beta, q_y_x, distortion, max_iters=100):
 
 def blahut_arimoto(p_x, beta, distortion=hamming_distortion, max_iters=100, restarts=100):
     """
+    Perform a robust form of the Blahut-Arimoto algorithms.
+
+    Parameters
+    ----------
+    p_x : np.ndarray
+    beta : float
+    distortion : np.ndarray
+    max_iters : int
+    restarts : int
+
+    Returns
+    -------
+    result : RateDistortionResult
+    q : np.ndarray
+
     Todo
     ----
     latin hypercube sampling
@@ -94,6 +120,20 @@ def blahut_arimoto(p_x, beta, distortion=hamming_distortion, max_iters=100, rest
 
 def blahut_arimoto_ib(p_xy, beta, divergence=relative_entropy, max_iters=100, restarts=100):
     """
+    Perform a robust form of the Blahut-Arimoto algorithms.
+
+    Parameters
+    ----------
+    p_xy : np.ndarray
+    beta : float
+    divergence : func
+    max_iters : int
+    restarts : int
+
+    Returns
+    -------
+    result : RateDistortionResult
+    q_xyt : np.ndarray
     """
     p_x = p_xy.sum(axis=1)
     p_y_x = p_xy / p_xy.sum(axis=1, keepdims=True)
@@ -112,9 +152,14 @@ def blahut_arimoto_ib(p_xy, beta, divergence=relative_entropy, max_iters=100, re
         distortions = np.asarray([divergence(a, b) for b in q_y_t.T for a in p_y_x]).reshape(q_y_t.shape)
         return distortions
 
-    return blahut_arimoto(p_x=p_x,
-                          beta=beta,
-                          distortion=distortion,
-                          max_iters=max_iters,
-                          restarts=restarts
-                          )
+    rd, q_xt = blahut_arimoto(p_x=p_x,
+                              beta=beta,
+                              distortion=distortion,
+                              max_iters=max_iters,
+                              restarts=restarts
+                              )
+
+    q_t_x = q_xt / q_xt.sum(axis=1, keepdims=True)
+    q_xyt = p_xy[:, :, np.newaxis] * q_t_x[:, np.newaxis, :]
+
+    return rd, q_xyt

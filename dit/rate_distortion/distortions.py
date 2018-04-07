@@ -44,3 +44,13 @@ def residual_entropy_distortion(p_x, p_y_x):
 hamming = Distortion(hamming_distortion, RateDistortionHamming)
 residual_entropy = Distortion(residual_entropy_distortion, RateDistortionResidualEntropy)
 maximum_correlation = Distortion(None, RateDistortionMaximumCorrelation)
+
+###############################################################################
+# Information Bottleneck-like distortions
+
+IBDistortion = namedtuple('IBDistortion', ['divergence', 'optimizer'])
+
+def divergence_to_distortion(divergence):
+    """
+    """
+    pass
