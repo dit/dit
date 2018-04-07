@@ -15,6 +15,7 @@ __all__ = (
     'sample',
     'ball',
     'norm',
+    'sample_simplex',
 )
 
 
@@ -82,6 +83,29 @@ def sample(dist, size=None, rand=None, prng=None):
         s = s[0]
 
     return s
+
+
+def sample_simplex(dim, num_samples=1):
+    """
+    Sample uniformly from the simplex.
+
+    Parameters
+    ----------
+    dim : int
+        The dimension of the simplex to sample from.
+    num_samples : int
+        The number of samples to generate.
+
+    Returns
+    -------
+    pmf : np.ndarray
+        A matrix of shape (`num_samples`, `dim`), where each pmf[i] is a sample
+        from the simplex.
+    """
+    cmf = np.sort(np.random.random((num_samples, dim-1)))
+    cmf = np.vstack([np.zeros(num_samples), cmf.T, np.ones(num_samples)]).T
+    pmf = np.diff(cmf)
+    return pmf
 
 
 def _sample_discrete__python(pmf, rand):
