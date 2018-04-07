@@ -38,6 +38,18 @@ class BasePlotter(with_metaclass(ABCMeta, object)):
         """
         self.curves = curves
 
+    def __add__(self, other):
+        """
+        """
+        if isinstance(other, self._curve_type):
+            self.curves += (other,)
+            return self
+        elif isinstance(other, type(self)):
+            self.curves += other.curves
+            return self
+        else:
+            return NotImplemented
+
     def _plot(self, ax, axis_1, axis_2, downsample):
         """
         """
@@ -75,18 +87,6 @@ class BasePlotter(with_metaclass(ABCMeta, object)):
         """
         """
         pass
-
-    def __add__(self, other):
-        """
-        """
-        if isinstance(other, self._curve_type):
-            self.curves += (other,)
-            return self
-        elif isinstance(other, type(self)):
-            self.curves += other.curves
-            return self
-        else:
-            return NotImplemented
 
 
 class RDPlotter(BasePlotter):
