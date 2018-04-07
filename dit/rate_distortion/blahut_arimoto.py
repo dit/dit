@@ -16,20 +16,27 @@ from ..divergences.pmf import relative_entropy
 
 def _blahut_arimoto(p_x, beta, q_y_x, distortion, max_iters=100):
     """
-    Perform the Blahut-Arimoto algorithms.
+    Perform the Blahut-Arimoto algorithm.
 
     Parameters
     ----------
     p_x : np.ndarray
+        The pmf to work with.
     beta : float
+        The beta value for the optimization.
     q_y_x : np.ndarray
+        The initial condition to work with.
     distortion : np.ndarray
+        The distortion matrix.
     max_iters : int
+        The maximum number of iterations.
 
     Returns
     -------
     result : RateDistortionResult
+        A rate, distortion pair.
     q : np.ndarray
+        The joint distribution q(x, y).
     """
     def q_xy(q_y_x):
         q_xy = p_x[:, np.newaxis] * q_y_x
@@ -78,15 +85,24 @@ def blahut_arimoto(p_x, beta, distortion=hamming_distortion, max_iters=100, rest
     Parameters
     ----------
     p_x : np.ndarray
+        The pmf to work with.
     beta : float
+        The beta value for the optimization.
+    q_y_x : np.ndarray
+        The initial condition to work with.
     distortion : np.ndarray
+        The distortion matrix.
     max_iters : int
+        The maximum number of iterations.
     restarts : int
+        The number of initial conditions to try.
 
     Returns
     -------
     result : RateDistortionResult
+        The rate, distortion pair.
     q : np.ndarray
+        The distribution p(x, y) which achieves the optimal rate, distortion.
 
     Todo
     ----
