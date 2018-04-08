@@ -9,6 +9,7 @@ import numpy as np
 from .distortions import hamming_distortion
 from .rate_distortion import RateDistortionResult
 from ..divergences.pmf import relative_entropy
+from ..math.sampling import sample_simplex
 
 
 ###############################################################################
@@ -35,7 +36,7 @@ def _blahut_arimoto(p_x, beta, q_y_x, distortion, max_iters=100):
     -------
     result : RateDistortionResult
         A rate, distortion pair.
-    q : np.ndarray
+    q_xy : np.ndarray
         The joint distribution q(x, y).
     """
     def q_xy(q_y_x):
@@ -101,24 +102,21 @@ def blahut_arimoto(p_x, beta, distortion=hamming_distortion, max_iters=100, rest
     -------
     result : RateDistortionResult
         The rate, distortion pair.
-    q : np.ndarray
+    q_xy : np.ndarray
         The distribution p(x, y) which achieves the optimal rate, distortion.
-
-    Todo
-    ----
-    latin hypercube sampling
     """
     n = len(p_x)
     candidates = []
     for i in range(restarts):
+
         if i == 0:
             q_y_x = np.ones((n, n)) / n
         elif i == 1:
             q_y_x = np.zeros((n, n))
             q_y_x[0, :] = 1
         else:
-            q_y_x = np.random.random((n, n))
-            q_y_x /= q_y_x.sum(axis=1, keepdims=True)
+            q_y_x = sample_simplex(n, n)
+
         result = _blahut_arimoto(p_x=p_x,
                                  beta=beta,
                                  q_y_x=q_y_x,
@@ -141,15 +139,24 @@ def blahut_arimoto_ib(p_xy, beta, divergence=relative_entropy, max_iters=100, re
     Parameters
     ----------
     p_xy : np.ndarray
+        The pmf to work with.
     beta : float
+        The beta value for the optimization.
+    q_y_x : np.ndarray
+        The initial condition to work with.
     divergence : func
+        The divergence measure to construct a distortion from: D(p(Y|x)||q(Y|t)).
     max_iters : int
+        The maximum number of iterations.
     restarts : int
+        The number of initial conditions to try.
 
     Returns
     -------
     result : RateDistortionResult
+        The rate, distortion pair.
     q_xyt : np.ndarray
+        The distribution p(x, y, t) which achieves the optimal rate, distortion.
     """
     p_x = p_xy.sum(axis=1)
     p_y_x = p_xy / p_xy.sum(axis=1, keepdims=True)

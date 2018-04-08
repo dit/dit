@@ -21,7 +21,7 @@ __all__ = (
 )
 
 
-Distortion = namedtuple('Distortion', ['matrix', 'optimizer'])
+Distortion = namedtuple('Distortion', ['name', 'matrix', 'optimizer'])
 
 
 def hamming_distortion(p_x, p_y_x):
@@ -41,9 +41,9 @@ def residual_entropy_distortion(p_x, p_y_x):
     return distortion
 
 
-hamming = Distortion(hamming_distortion, RateDistortionHamming)
-residual_entropy = Distortion(residual_entropy_distortion, RateDistortionResidualEntropy)
-maximum_correlation = Distortion(None, RateDistortionMaximumCorrelation)
+hamming = Distortion('Hamming', hamming_distortion, RateDistortionHamming)
+residual_entropy = Distortion('Residual Entropy', residual_entropy_distortion, RateDistortionResidualEntropy)
+maximum_correlation = Distortion('Maximum Correlation', None, RateDistortionMaximumCorrelation)
 
 ###############################################################################
 # Information Bottleneck-like distortions

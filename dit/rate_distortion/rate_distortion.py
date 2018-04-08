@@ -116,7 +116,6 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
 class RateDistortionHamming(BaseRateDistortion):
     """
     """
-    _type = "Hamming"
     _optimization_backend = BaseRateDistortion._optimize_shotgun
 
     def _distortion(self):
@@ -136,8 +135,6 @@ class RateDistortionHamming(BaseRateDistortion):
 class RateDistortionResidualEntropy(BaseRateDistortion):
     """
     """
-    _type = "Residual Entropy"
-
     def _distortion(self):
         """
         """
@@ -155,8 +152,6 @@ class RateDistortionResidualEntropy(BaseRateDistortion):
 class RateDistortionMaximumCorrelation(BaseRateDistortion):
     """
     """
-    _type = "Maximum Correlation"
-
     def _distortion(self):
         """
         """

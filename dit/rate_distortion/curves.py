@@ -13,15 +13,40 @@ from .information_bottleneck import (DeterministicInformationBottleneck,
                                      InformationBottleneck,
                                      )
 from .. import Distribution
+from ..exceptions import ditException
 from ..multivariate import entropy, total_correlation
 from ..utils import flatten
 
 
 class RDCurve(object):
     """
+    Compute a rate-distortion curve.
     """
-    def __init__(self, dist, rv=None, crvs=None, beta_min=0, beta_max=10, beta_num=101, distortion=hamming, ba=False):
+    def __init__(self, dist, rv=None, crvs=None, beta_min=0, beta_max=10, beta_num=101, distortion=hamming, method='sp'):
         """
+        Initialize the curve computer.
+
+        Parameters
+        ----------
+        dist : Distribution
+            The distribution of interest.
+        rv : iterable, None
+            The random variables to compute the rate-distortion curve of.
+            If None, use all.
+        crvs : iterable, None
+            The random variables to condition on.
+        beta_min : float
+            The minimum beta value for the curve. Defaults to 0.
+        beta_max : float
+            The maximum beta value for the curve. Defaults to 10.
+        beta_num : int
+            The number of beta values for the curve. Defaults to 101.
+        distortion : Distortion
+            The distortion to use.
+        method : {'sp', 'ba'}
+            The method to utilize in computing the curve. If 'sp', utilize
+            scipy.optimize; if 'ba' utilize the iterative Blahut-Arimoto
+            algorithm. Defaults to 'sp'.
         """
         if rv is None:
             rv = list(flatten(dist.rvs))
@@ -30,29 +55,105 @@ class RDCurve(object):
         self.rv = rv
         self.crvs = crvs
 
-        self.betas = np.linspace(beta_min, beta_max, beta_num)
+        d = dist.coalesce([self.rv])
+        self.p_x = d.pmf
+
         self._distortion = distortion
 
-        d = dist.coalesce([self.rv])
+        if method not in ('sp', 'ba'):
+            msg = "Method '{}' not supported.".format(method)
+            raise ditException(msg)
+        elif method == 'sp' and not distortion.optimizer:
+            msg = "Method is 'sp' but distortion does not have an optimizer."
+            raise ditException(msg)
+        elif method == 'ba' and not distortion.matrix:
+            msg = "Method is 'ba' but distortion does not have a matrix."
+            raise ditException(msg)
+        elif method == 'ba' and crvs:
+            msg = "Method 'ba' does not support conditional variables."
+            raise ditException(msg)
+        else:
+            self._get_rd = {'ba': self._get_rd_ba,
+                            'sp': self._get_rd_sp,
+                            }[method]
+
         self._max_rate = entropy(d)
-        rd = self._distortion.optimizer(d, beta=0.0)
-        rd.optimize()
-        self._max_distortion = rd.distortion(rd.construct_joint(rd._optima))
+        _, self._max_distortion, _, _ = self._get_rd(beta=0.0)
         self._max_rank = len(d.outcomes)
 
-        self.p_x = d.pmf
+        if beta_max is None:
+            beta_max = self.find_max_beta()
+        self.betas = np.linspace(beta_min, beta_max, beta_num)
 
         try:
             dist_name = [dist.name]
         except AttributeError:
             dist_name = []
+        self.label = " ".join(dist_name + [self._distortion.name])
 
-        self.label = " ".join(dist_name + [rd._type])
+        self.compute(method=method)
 
-        self.compute(style=('ba' if ba else 'sp'))
+    def __add__(self, other):
+        """
+        Combine two RDCurves into an RDPlotter.
+
+        Parameters
+        ----------
+        other : RDCurve
+            The curve to aggregate with `self`.
+
+        Returns
+        -------
+        plotter : RDPlotter
+            A plotter with both `self` and `other`.
+        """
+        from .plotting import RDPlotter
+        if isinstance(other, RDCurve):
+            plotter = RDPlotter(self, other)
+            return plotter
+        else:
+            return NotImplemented
+
+    def find_max_beta(self):
+        """
+        Find a beta value which maximizes the rate.
+
+        Returns
+        -------
+        beta_max : float
+            The the smallest found beta value which achieves minimal
+            distortion.
+        """
+        beta_max = 1
+        rate = 0
+
+        while not np.isclose(rate, self._max_rate, atol=1e-5, rtol=1e-5):
+            beta_max = 1.5*beta_max
+            rate, _, _, _ = self._get_rd(beta=beta_max)
+
+        return beta_max
 
     def _get_rd_sp(self, beta, initial=None):
         """
+        Compute the rate-distortion pair for `beta` using scipy.optimize.
+
+        Parameters
+        ----------
+        beta : float
+            The beta value to optimize for.
+        initial : np.ndarray, None
+            An initial optimization vector, useful for numerical continuation.
+
+        Returns
+        -------
+        r : float
+            The rate.
+        d : float
+            The distortion.
+        q : np.ndarray
+            The matrix p(x, x_hat)
+        x0 : np.ndarray
+            The found optima.
         """
         rd = self._distortion.optimizer(self.dist, beta=beta, rv=self.rv, crvs=self.crvs)
         rd.optimize(x0=initial)
@@ -64,6 +165,25 @@ class RDCurve(object):
 
     def _get_rd_ba(self, beta, initial=None):
         """
+        Compute the rate-distortion pair for `beta` using Blahut-Arimoto.
+
+        Parameters
+        ----------
+        beta : float
+            The beta value to optimize for.
+        initial : np.ndarray, None
+            An initial optimization vector, useful for numerical continuation.
+
+        Returns
+        -------
+        r : float
+            The rate.
+        d : float
+            The distortion.
+        q : np.ndarray
+            The matrix p(x, x_hat)
+        x0 : np.ndarray
+            The found optima.
         """
         (r, d), q = blahut_arimoto(p_x=self.p_x,
                                    beta=beta,
@@ -71,17 +191,16 @@ class RDCurve(object):
                                    )
         return r, d, q, initial
 
-    def compute(self, style='sp'):
+    def compute(self, method='sp'):
         """
-        """
-        if style == 'sp':
-            get_rd = self._get_rd_sp
-        elif style == 'ba':
-            get_rd = self._get_rd_ba
-        else:
-            msg = ""
-            raise ValueError(msg)
+        Sweep beta and compute the rate-distortion curve.
 
+        Parameters
+        ----------
+        method : {'sp', 'ba'}
+            The method of computation to use. 'sp' denotes scipy.optimize;
+            'ba' denotes blahut-arimoto.
+        """
         rates = []
         distortions = []
         ranks = []
@@ -90,7 +209,7 @@ class RDCurve(object):
         x0 = None
 
         for beta in self.betas:
-            r, d, q, x0 = get_rd(beta, initial=x0)
+            r, d, q, x0 = self._get_rd(beta, initial=x0)
             rates.append(r)
             distortions.append(d)
 
@@ -106,27 +225,29 @@ class RDCurve(object):
 
     def plot(self, downsample=5):
         """
+        Construct an RDPlotter and utilize it to plot the rate-distortion
+        curve.
+
+        Parameters
+        ----------
+        downsample : int
+            The how frequent to display points along the RD curve.
+
+        Returns
+        -------
+        fig : plt.figure
+            The resulting figure.
         """
         from .plotting import RDPlotter
         plotter = RDPlotter(self)
         return plotter.plot(downsample)
-
-    def __add__(self, other):
-        """
-        """
-        from .plotting import RDPlotter
-        if isinstance(other, RDCurve):
-            plotter = RDPlotter(self, other)
-            return plotter
-        else:
-            return NotImplemented
 
 
 class IBCurve(object):
     """
     """
 
-    def __init__(self, dist, rvs=None, crvs=None, rv_mode=None, beta_min=0.0, beta_max=15.0, beta_num=101, alpha=1.0, ba=False):
+    def __init__(self, dist, rvs=None, crvs=None, rv_mode=None, beta_min=0.0, beta_max=15.0, beta_num=101, alpha=1.0, method='sp'):
         """
         """
         self.dist = dist.copy()
@@ -164,7 +285,7 @@ class IBCurve(object):
         beta_max = self.find_max_beta() if beta_max is None else beta_max
         self.betas = np.linspace(beta_min, beta_max, beta_num)
 
-        self.compute(style=('ba' if ba else 'sp'))
+        self.compute(method)
 
     def __add__(self, other):
         """
@@ -192,16 +313,12 @@ class IBCurve(object):
         q_xyzt = q_xyt[:, :, np.newaxis, :]
         return q_xyzt, None
 
-    def compute(self, style='sp'):
+    def compute(self, method='sp'):
         """
         """
-        if style == 'sp':
-            get_opt = self._get_opt_sp
-        elif style == 'ba':
-            get_opt = self._get_opt_ba
-        else:
-            msg = ""
-            raise ValueError(msg)
+        get_opt = {'ba': self._get_opt_ba,
+                   'sp': self._get_opt_sp,
+                  }[method]
 
         complexities = []
         entropies = []
@@ -251,6 +368,12 @@ class IBCurve(object):
 
     def find_kinks(self):
         """
+        Determine the beta values where new features are discovered.
+
+        Returns
+        -------
+        kinks : np.ndarray
+            An array of beta values where new features are discovered.
         """
         diff = np.diff(self.ranks)
         jumps = np.arange(len(diff))[diff > 0]
@@ -259,6 +382,18 @@ class IBCurve(object):
 
     def plot(self, downsample=5):
         """
+        Construct an IBPlotter and utilize it to plot the information
+        bottleneck curve.
+
+        Parameters
+        ----------
+        downsample : int
+            The how frequent to display points along the IB curve.
+
+        Returns
+        -------
+        fig : plt.figure
+            The resulting figure.
         """
         from .plotting import IBPlotter
         plotter = IBPlotter(self)

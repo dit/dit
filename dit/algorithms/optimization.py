@@ -27,7 +27,7 @@ from .. import Distribution, insert_rvf, modify_outcomes
 from ..algorithms.channelcapacity import channel_capacity
 from ..exceptions import ditException, OptimizationException
 from ..helpers import flatten, normalize_rvs, parse_rvs
-from ..math import prod
+from ..math import prod, sample_simplex
 from ..utils import partitions, powerset
 from ..utils.optimization import (BasinHoppingCallBack,
                                   BasinHoppingInnerCallBack,
@@ -169,7 +169,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
         x : np.ndarray
             A random optimization vector.
         """
-        vec = np.random.random(size=self._optvec_size)
+        vec = sample_simplex(self._optvec_size)
         return vec
 
     def construct_uniform_initial(self):
@@ -1166,7 +1166,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
         """
         vecs = []
         for av in self._aux_vars:
-            vec = np.random.random(av.shape) / av.bound
+            vec = sample_simplex(*av.shape)
             vecs.append(vec.ravel())
         return np.concatenate(vecs, axis=0)
 
