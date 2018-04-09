@@ -8,10 +8,7 @@ import numpy as np
 
 from .blahut_arimoto import blahut_arimoto, blahut_arimoto_ib
 from .distortions import hamming
-from .information_bottleneck import (DeterministicInformationBottleneck,
-                                     GeneralizedInformationBottleneck,
-                                     InformationBottleneck,
-                                     )
+from .information_bottleneck import InformationBottleneck
 from .. import Distribution
 from ..exceptions import ditException
 from ..multivariate import entropy, total_correlation
@@ -76,6 +73,11 @@ class RDCurve(object):
             self._get_rd = {'ba': self._get_rd_ba,
                             'sp': self._get_rd_sp,
                             }[method]
+
+        self._rd_opt = self._distortion.optimizer(self.dist,
+                                                  beta=beta,
+                                                  rv=self.rv,
+                                                  crvs=self.crvs)
 
         self._max_rate = entropy(d)
         _, self._max_distortion, _, _ = self._get_rd(beta=0.0)
@@ -155,12 +157,12 @@ class RDCurve(object):
         x0 : np.ndarray
             The found optima.
         """
-        rd = self._distortion.optimizer(self.dist, beta=beta, rv=self.rv, crvs=self.crvs)
-        rd.optimize(x0=initial)
-        x0 = rd._optima.copy()
-        q = rd.construct_joint(rd._optima)
-        r = rd.rate(q)
-        d = rd.distortion(q)
+        self._rd_opt._beta = beta
+        self._rd_opt.optimize(x0=initial)
+        x0 = self._rd_opt._optima.copy()
+        q = self._rd_opt.construct_joint(self._rd_opt._optima)
+        r = self._rd_opt.rate(q)
+        d = self._rd_opt.distortion(q)
         return r, d, q.sum(axis=1), x0
 
     def _get_rd_ba(self, beta, initial=None):
@@ -261,25 +263,23 @@ class IBCurve(object):
         self.p_xy = self.dist.coalesce([self._x, self._y])
         self.p_xy = self.p_xy.pmf.reshape(tuple(map(len, self.p_xy.alphabet)))
 
-        self._true_complexity = entropy(dist, self._x)  # TODO: replace with MSS
-        self._true_relevance = total_correlation(dist, [self._x, self._y])
+        self._max_complexity = entropy(dist, self._x)  # TODO: replace with MSS
+        self._max_relevance = total_correlation(dist, [self._x, self._y])
         self._max_rank = len(dist.marginal(self._x).outcomes)
 
-        self._args = {'dist': self.dist,
-                      'rvs': [self._x, self._y],
-                      'crvs': self._z,
-                      'rv_mode': self._rv_mode,
-                      }
+        self._bn = InformationBottleneck(dist=self.dist,
+                                         beta=0.0,
+                                         alpha=alpha,
+                                         rvs=[self._x, self._y],
+                                         crvs=self._z,
+                                         rv_mode=self._rv_mode,
+                                         )
 
         if np.isclose(alpha, 1.0):
-            self._bottleneck = InformationBottleneck
             self.label = "IB"
         elif np.isclose(alpha, 0.0):
-            self._bottleneck = DeterministicInformationBottleneck
             self.label = "DIB"
-        else:
-            self._bottleneck = GeneralizedInformationBottleneck
-            self._args['alpha'] = alpha
+        else:]
             self.label = "GIB({:.3f})".format(alpha)
 
         beta_max = self.find_max_beta() if beta_max is None else beta_max
@@ -300,10 +300,10 @@ class IBCurve(object):
     def _get_opt_sp(self, beta, initial=None):
         """
         """
-        ib = self._bottleneck(beta=beta, **self._args)
-        ib.optimize(x0=initial)
-        x0 = ib._optima.copy()
-        q_xyzt = ib.construct_joint(ib._optima)
+        self._bn._beta = beta
+        self_bn.optimize(x0=initial)
+        x0 = self._bn._optima.copy()
+        q_xyzt = self._bn.construct_joint(self._bn._optima)
         return q_xyzt, x0
 
     def _get_opt_ba(self, beta, initial=None):
@@ -355,14 +355,14 @@ class IBCurve(object):
     def find_max_beta(self):
         """
         """
-        beta_max = 2/3
-        relevance = 0
+        beta_max = 1.0
+        relevance = 0.0
 
-        while not np.isclose(relevance, self._true_relevance, atol=1e-5, rtol=1e-5):
-            beta_max = int(np.ceil(1.5*beta_max))
-            ib = self._bottleneck(beta=beta_max, **self._args)
-            ib.optimize()
-            relevance = ib.relevance(ib.construct_joint(ib._optima))
+        while not np.isclose(relevance, self._max_relevance, atol=1e-5, rtol=1e-5):
+            beta_max = 1.5*beta_max
+            self._bn._beta = beta_max
+            self._bn.optimize()
+            relevance = self._bn.relevance(self._bn.construct_joint(self._bn._optima))
 
         return beta_max
 

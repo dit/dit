@@ -1166,7 +1166,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
         """
         vecs = []
         for av in self._aux_vars:
-            vec = sample_simplex(*av.shape)
+            vec = sample_simplex(av.shape[-1], prod(av.shape[:-1]))
             vecs.append(vec.ravel())
         return np.concatenate(vecs, axis=0)
 

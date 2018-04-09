@@ -113,10 +113,10 @@ class RDPlotter(BasePlotter):
 class IBPlotter(BasePlotter):
     """
     """
-    _complexity_axis = Axis(attrgetter('complexities'), attrgetter('_true_complexity'), "$I[X:T]$")
-    _entropy_axis = Axis(attrgetter('entropies'), attrgetter('_true_complexity'), r"$H[T]$")
-    _relevance_axis = Axis(attrgetter('relevances'), attrgetter('_true_relevance'), r"$I[Y:T]$")
-    _error_axis = Axis(attrgetter('errors'), attrgetter('_true_relevance'), r"$I[X:Y|T]$")
+    _complexity_axis = Axis(attrgetter('complexities'), attrgetter('_max_complexity'), "$I[X:T]$")
+    _entropy_axis = Axis(attrgetter('entropies'), attrgetter('_max_complexity'), r"$H[T]$")
+    _relevance_axis = Axis(attrgetter('relevances'), attrgetter('_max_relevance'), r"$I[Y:T]$")
+    _error_axis = Axis(attrgetter('errors'), attrgetter('_max_relevance'), r"$I[X:Y|T]$")
 
     _curve_type = IBCurve
 
