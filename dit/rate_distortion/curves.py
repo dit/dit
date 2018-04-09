@@ -75,7 +75,7 @@ class RDCurve(object):
                             }[method]
 
         self._rd_opt = self._distortion.optimizer(self.dist,
-                                                  beta=beta,
+                                                  beta=0.0,
                                                   rv=self.rv,
                                                   crvs=self.crvs)
 
@@ -93,7 +93,7 @@ class RDCurve(object):
             dist_name = []
         self.label = " ".join(dist_name + [self._distortion.name])
 
-        self.compute(method=method)
+        self.compute()
 
     def __add__(self, other):
         """
@@ -193,7 +193,7 @@ class RDCurve(object):
                                    )
         return r, d, q, initial
 
-    def compute(self, method='sp'):
+    def compute(self):
         """
         Sweep beta and compute the rate-distortion curve.
 
@@ -279,7 +279,7 @@ class IBCurve(object):
             self.label = "IB"
         elif np.isclose(alpha, 0.0):
             self.label = "DIB"
-        else:]
+        else:
             self.label = "GIB({:.3f})".format(alpha)
 
         beta_max = self.find_max_beta() if beta_max is None else beta_max
@@ -301,7 +301,7 @@ class IBCurve(object):
         """
         """
         self._bn._beta = beta
-        self_bn.optimize(x0=initial)
+        self._bn.optimize(x0=initial)
         x0 = self._bn._optima.copy()
         q_xyzt = self._bn.construct_joint(self._bn._optima)
         return q_xyzt, x0
