@@ -40,24 +40,39 @@ def _blahut_arimoto(p_x, beta, q_y_x, distortion, max_iters=100):
         The joint distribution q(x, y).
     """
     def q_xy(q_y_x):
+        """
+        q(x,y) = q(y|x)p(x)
+        """
         q_xy = p_x[:, np.newaxis] * q_y_x
         return q_xy
 
     def next_q_y(q_y_x):
+        """
+        q(y) = \sum_x q(y|x)p(x)
+        """
         q_y = np.matmul(p_x, q_y_x)
         return q_y
 
     def next_q_y_x(q_y, q_y_x):
+        """
+        q(y|x) = q(y) 2^{-\\beta * distortion}
+        """
         d = distortion(p_x, q_y_x)
         q_y_x = q_y * np.exp2(-beta * d)
         q_y_x /= q_y_x.sum(axis=1, keepdims=True)
         return q_y_x
 
     def av_dist(q_y_x, dist):
+        """
+        <dist> = \sum_{x, t} q(x,t) * d(x,t)
+        """
         d = np.matmul(p_x, (q_y_x * dist)).sum()
         return d
 
     def next_rd(q_y, q_y_x):
+        """
+        Iterate the BA equations.
+        """
         q_y = next_q_y(q_y_x)
         q_y_x = next_q_y_x(q_y, q_y_x)
         d = av_dist(q_y_x, distortion(p_x, q_y_x))
@@ -132,7 +147,7 @@ def blahut_arimoto(p_x, beta, distortion=hamming_distortion, max_iters=100, rest
 ###############################################################################
 # Information Bottleneck
 
-def blahut_arimoto_ib(p_xy, beta, divergence=relative_entropy, max_iters=100, restarts=100):
+def blahut_arimoto_ib(p_xy, beta, divergence=relative_entropy, max_iters=100, restarts=250):
     """
     Perform a robust form of the Blahut-Arimoto algorithms.
 
@@ -162,17 +177,19 @@ def blahut_arimoto_ib(p_xy, beta, divergence=relative_entropy, max_iters=100, re
     p_y_x = p_xy / p_xy.sum(axis=1, keepdims=True)
 
     def next_q_y_t(q_t_x):
+        """
+        """
         q_xyt = q_t_x[:, np.newaxis, :] * p_xy[:, :, np.newaxis]
-        q_yt = q_xyt.sum(axis=0)
-        q_y_t = q_yt / q_yt.sum(axis=0, keepdims=True)
-        q_y_t[np.isnan(q_y_t)] = 0
+        q_ty = q_xyt.sum(axis=0).T
+        q_y_t = q_ty / q_ty.sum(axis=1, keepdims=True)
+        q_y_t[np.isnan(q_y_t)] = 1
         return q_y_t
 
     def distortion(p_x, q_t_x):
         """
         """
         q_y_t = next_q_y_t(q_t_x)
-        distortions = np.asarray([divergence(a, b) for b in q_y_t.T for a in p_y_x]).reshape(q_y_t.shape)
+        distortions = np.asarray([divergence(a, b) for a in p_y_x for b in q_y_t]).reshape(q_y_t.shape)
         return distortions
 
     rd, q_xt = blahut_arimoto(p_x=p_x,

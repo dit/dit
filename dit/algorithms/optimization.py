@@ -641,14 +641,8 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
             p_xyz = pmf.sum(axis=idx_xyz)
             p_xz = pmf.sum(axis=idx_xz)[:, np.newaxis, :]
             p_yz = pmf.sum(axis=idx_yz)[np.newaxis, :, :]
-            p_z = pmf.sum(axis=idx_z)[np.newaxis, np.newaxis, :]
 
-            p_xy_z = p_xyz / p_z
-            p_x_z = p_xz / p_z
-            p_y_z = p_yz / p_z
-
-            Q = np.where(p_xyz, p_xy_z / (np.sqrt(p_x_z)*np.sqrt(p_y_z)), 0)
-            Q[np.isnan(Q)] = 0
+            Q = np.where(p_xyz, p_xyz / (np.sqrt(p_xz * p_yz)), 0)
 
             cmc = max([svdvals(np.squeeze(m))[1] for m in np.dsplit(Q, Q.shape[2])])
 

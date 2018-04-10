@@ -21,7 +21,7 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
     """
     _shotgun = 10
 
-    def __init__(self, dist, beta=0.0, rv=None, crvs=None, bound=None, rv_mode=None):
+    def __init__(self, dist, beta, alpha=1.0, rv=None, crvs=None, bound=None, rv_mode=None):
         """
         Initialize the bottleneck.
 
@@ -56,6 +56,7 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
             pass
 
         super(BaseRateDistortion, self).__init__(dist=dist, rvs=[rv], crvs=crvs, rv_mode=rv_mode)
+        self._alpha = alpha
         self._beta = beta
 
         self._x = {0}
@@ -70,20 +71,42 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
 
         self.rate = self._conditional_mutual_information(self._x, self._t, self._z)
         self.distortion = self._distortion()
+        self.entropy = self._entropy(self._t, self._z)
+        self.other = self._entropy(self._t, self._x | self._z)
 
         self._default_hops *= 2
 
     def _objective(self):
         """
+        Produce the rate-distortion Lagrangian.
         """
-        def objective(self, x):
+        def rd_objective(self, x):
             """
             """
             pmf = self.construct_joint(x)
             obj = self.rate(pmf) + self._beta * self.distortion(pmf)
             return obj
 
-        return objective
+        def grd_objective(self, x):
+            """
+            """
+            pmf = self.construct_joint(x)
+            obj = self.entropy(pmf) - self._alpha * self.other(pmf) + self._beta * self.distortion(pmf)
+            return obj
+
+        def drd_objective(self, x):
+            """
+            """
+            pmf = self.construct_joint(x)
+            obj = self.entropy(pmf) + self._beta * self.distortion(pmf)
+            return obj
+
+        if np.isclose(self._alpha, 1.0):
+            return rd_objective
+        elif np.isclose(self._alpha, 0.0):
+            return drd_objective
+        else:
+            return grd_objective
 
     @abstractmethod
     def _distortion(self):
