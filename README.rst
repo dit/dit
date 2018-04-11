@@ -56,7 +56,8 @@ generality, where such generalizations either exist in the literature or are rel
 though it is not in the literature, the multivariate conditional exact common information is implemented here.
 
 +------------------------------------------+-----------------------------------------+-----------------------------------+
-| Entropies:                               | Mutual Informations:                    | Divergences:                      |
+| Entropies                                | Mutual Informations                     | Divergences                       |
+| *********                                | *******************                     | ***********                       |
 | * Shannon Entropy                        | * Co-Information                        | * Variational Distance            |
 | * Renyi Entropy                          | * Interaction Information               | * Kullback-Leibler Divergence \   |
 | * Tsallis Entropy                        | * Total Correlation /                   |   Relative Entropy                |
@@ -65,20 +66,21 @@ though it is not in the literature, the multivariate conditional exact common in
 |   Independent Information /              |   Binding Information                   | * Earth Mover's Distance          |
 |   Variation of Information               | * CAEKL Multivariate Mutual Information |                                   |
 +------------------------------------------+-----------------------------------------+-----------------------------------+
-| Common Informations:                     | Partial Information Decomposition:      | Other Measures:                   |
+| Common Informations                      | Partial Information Decomposition       | Other Measures                    |
+| *******************                      | *********************************       | **************                    |
 | * Gacs-Korner Common Information         | * :math:`I_{min}`                       | * Channel Capacity                |
 | * Wyner Common Information               | * :math:`I_{\wedge}`                    | * Complexity Profile              |
 | * Exact Common Information               | * :math:`I_{\downarrow}`                | * Connected Informations          |
 | * Functional Common Information          | * :math:`I_{proj}`                      | * Cumulative Residual Entropy     |
 | * MSS Common Information                 | * :math:`I_{BROJA}`                     | * Extropy                         |
 +------------------------------------------+ * :math:`I_{ccs}`                       | * Hypercontractivity Coefficient  |
-| Secret Key Agreement Bounds:             | * :math:`I_{\pm}`                       | * Information Bottleneck          |
-| * Intrinsic Mutual Information           | * :math:`I_{dep}`                       | * Information Diagrams            |
-| * Reduced Intrinsic Mutual Information   | * :math:`I_{RAV}`                       | * Information Trimming            |
-| * Minimal Intrinsic Mutual Information   |                                         | * Lautum Information              |
-| * Necessary Intrinsic Mutual Information |                                         | * LMPR Complexity                 |
-| * Secrecy Capacity                       |                                         | * Marginal Utility of Information |
-|                                          |                                         | * Maximum Correlation             |
+| Secret Key Agreement Bounds              | * :math:`I_{\pm}`                       | * Information Bottleneck          |
+| ***************************              | * :math:`I_{dep}`                       | * Information Diagrams            |
+| * Intrinsic Mutual Information           | * :math:`I_{RAV}`                       | * Information Trimming            |
+| * Reduced Intrinsic Mutual Information   |                                         | * Lautum Information              |
+| * Minimal Intrinsic Mutual Information   |                                         | * LMPR Complexity                 |
+| * Necessary Intrinsic Mutual Information |                                         | * Marginal Utility of Information |
+| * Secrecy Capacity                       |                                         | * Maximum Correlation             |
 |                                          |                                         | * Maximum Entropy Distributions   |
 |                                          |                                         | * Perplexity                      |
 |                                          |                                         | * Rate-Distortion Theory          |
