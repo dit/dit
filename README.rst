@@ -1,12 +1,23 @@
 ``dit`` is a Python package for information theory.
 
-|build| |build_windows| |codecov| |health| |docs| |deps| |zenodo| |gitter| |saythanks|
+|build| |build_windows| |codecov| |health| |deps|
 
-Documentation:
-   http://docs.dit.io
+|docs| |slack| |saythanks|
 
-Downloads:
-   https://pypi.org/project/dit/
+|zenodo|
+
+Basic Information
+-----------------
+
+Documentation
+*************
+
+http://docs.dit.io
+
+Downloads
+*********
+
+https://pypi.org/project/dit/
 
 +-------------------------------------------------------------------+---------------------------------------------------------------+
 | Dependencies                                                      | Optional Dependencies                                         |
@@ -22,31 +33,37 @@ Downloads:
 | * `six <http://pythonhosted.org/six/>`_                           |                                                               |
 +-------------------------------------------------------------------+---------------------------------------------------------------+
 
-Install:
-   The easiest way to install is:
+Install
+*******
 
-   .. code-block:: bash
+The easiest way to install is:
 
-      pip install dit
+.. code-block:: bash
 
-   Alternatively, you can clone this repository, move into the newly created
-   ``dit`` directory, and then install the package:
+  pip install dit
 
-   .. code-block:: bash
+Alternatively, you can clone this repository, move into the newly created
+``dit`` directory, and then install the package:
 
-      git clone https://github.com/dit/dit.git
-      cd dit
-      pip install .
+.. code-block:: bash
 
-   .. note::
-      The cython extensions are currently not supported on windows. Please install
-      using the ``--nocython`` option.
+  git clone https://github.com/dit/dit.git
+  cd dit
+  pip install .
 
-Code and bug tracker:
-   https://github.com/dit/dit
+.. note::
+  The cython extensions are currently not supported on windows. Please install
+  using the ``--nocython`` option.
 
-License:
-   BSD 2-Clause, see LICENSE.txt for details.
+Code and bug tracker
+********************
+
+https://github.com/dit/dit
+
+License
+*******
+
+BSD 2-Clause, see LICENSE.txt for details.
 
 Implemented Measures
 --------------------
@@ -86,79 +103,6 @@ though it is not in the literature, the multivariate conditional exact common in
 |                                          |                                         | * Rate-Distortion Theory          |
 |                                          |                                         | * TSE Complexity                  |
 +------------------------------------------+-----------------------------------------+-----------------------------------+
-
-- Entropies:
-
-  * Shannon Entropy
-  * Renyi Entropy
-  * Tsallis Entropy
-  * Necessary Conditional Entropy
-  * Residual Entropy / Independent Information / Variation of Information
-
-- Mutual Informations:
-
-  * Co-Information
-  * Interaction Information
-  * Total Correlation / Multi-Information
-  * Dual Total Correlation / Binding Information
-  * CAEKL Multivariate Mutual Information
-
-- Divergences
-
-  * Variational Distance
-  * Kullback-Leibler Divergence
-  * Cross Entropy
-  * Jensen-Shannon Divergence
-  * Earth Mover's Distance
-
-- Common Informations:
-
-  * Gacs-Korner Common Information
-  * Wyner Common Information
-  * Exact Common Information
-  * Functional Common Information
-  * MSS Common Information
-
-- Secret Key Agreement bounds:
-
-  * Intrinsic Mutual Information
-  * Reduced Intrinsic Mutual Information
-  * Minimal Intrinsic Mutual Information
-  * Necessary Intrinsic Mutual Information
-  * Secrecy Capacity
-
-- Partial Information Decompositions:
-
-  * :math:`I_{min}`
-  * :math:`I_{\wedge}`
-  * :math:`I_{\downarrow}`
-  * :math:`I_{proj}`
-  * :math:`I_{BROJA}`
-  * :math:`I_{ccs}`
-  * :math:`I_{\pm}`
-  * :math:`I_{dep}`
-  * :math:`I_{RAV}`
-
-- Other measures
-
-  * Channel Capacity
-  * Complexity Profile
-  * Connected Informations
-  * Cumulative Residual Entropy
-  * Extropy
-  * Information Bottleneck
-  * Information Diagrams
-  * Information Trimming
-  * Lautum Information
-  * LMPR Complexity
-  * Marginal Utility of Information
-  * Maximum Correlation
-  * Hypercontractivity Coefficient
-  * Maximum Entropy Distributions
-  * Perplexity
-  * Rate-Distortion Theory
-  * TSE Complexity
-
 
 Quickstart
 ----------
@@ -279,7 +223,15 @@ Draw 5 random samples from this distribution.
    >>> d2.rand(5)
    ['01', '10', '00', '01', '00']
 
-Enjoy!
+Contributions & Help
+--------------------
+
+If you'd like a feature added to ``dit`` or notice any problems, please file an issue, or, even better, open a pull request. We'll work with you to ensure that the code is tested and documented.
+
+If you have any questions about using ``dit``, you can reach us over at our `slack channel<https://dit-python.slack.com/>`_.
+
+
+.. badges:
 
 .. |build| image:: https://travis-ci.org/dit/dit.png?branch=master
    :target: https://travis-ci.org/dit/dit
@@ -328,3 +280,7 @@ Enjoy!
 .. |waffle| image:: https://badge.waffle.io/dit/dit.png?label=ready&title=Ready
    :target: https://waffle.io/dit/dit?utm_source=badge
    :alt: Stories in Ready
+
+.. |slack| image:: https://img.shields.io/badge/Slack-dit--python-lightgrey.svg
+   :target: https://dit-python.slack.com/
+   :alt: dit chat
