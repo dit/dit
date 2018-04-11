@@ -86,12 +86,13 @@ class InformationBottleneck(BaseAuxVarOptimizer):
     def _distortion(self):
         """
         """
+        cmi = self._conditional_mutual_information(self._x, self._y, self._z)(self.construct_joint(self.construct_random_initial()))
         relevance = self._conditional_mutual_information(self._y, self._t, self._z)
 
         def distortion(pmf):
             """
             """
-            return -relevance(pmf)
+            return cmi - relevance(pmf)
 
         return distortion
 
@@ -267,40 +268,6 @@ class InformationBottleneckDivergence(InformationBottleneck):
                                                               rv_mode=rv_mode,
                                                               )
 
-    def _distortion2(self):
-        """
-        Construct the distortion measure from a divergence.
-
-        Parameters
-        ----------
-        divergence : func
-            A divergence measure.
-
-        Returns
-        -------
-        distortion : func
-            A function computing the average distortion.
-        """
-        idx_xyz = (3,)
-        idx_yzt = (0,)
-        idx_xzt = (1,)
-
-        def distortion(pmf):
-            """
-            """
-            q_zxt = np.transpose(pmf.sum(axis=idx_xzt), (1, 0, 2))
-
-            p_zxy = np.transpose(pmf.sum(axis=idx_xyz), (2, 0, 1))
-            q_zty = np.transpose(pmf.sum(axis=idx_yzt), (1, 2, 0))
-            p_y_zx = p_zxy / p_zxy.sum(axis=2, keepdims=True)
-            q_y_zt = q_zty / q_zty.sum(axis=2, keepdims=True)
-
-            dist_zxt = np.asarray([[[self._divergence(a, b) for b in q_y_t] for a in p_y_x] for p_y_x, q_y_t in zip(p_y_zx, q_y_zt)])
-            dist = (q_zxt * dist_zxt).sum()
-            return dist
-
-        return distortion
-
     def _distortion(self):
         """
         Construct the distortion measure from a divergence.
@@ -315,23 +282,46 @@ class InformationBottleneckDivergence(InformationBottleneck):
         distortion : func
             A function computing the average distortion.
         """
-        idx_xy = (2, 3)
-        idx_yt = (0, 2)
-        idx_xt = (1, 2)
 
-        def distortion(pmf):
-            """
-            """
-            q_xt = pmf.sum(axis=idx_xt)
+        if self._crvs:
+            idx_xyz = (3,)
+            idx_yzt = (0,)
+            idx_xzt = (1,)
 
-            p_xy = pmf.sum(axis=idx_xy)
-            q_ty = pmf.sum(axis=idx_yt).T
-            p_y_x = p_xy / p_xy.sum(axis=1, keepdims=True)
-            q_y_t = q_ty / q_ty.sum(axis=1, keepdims=True)
+            def distortion(pmf):
+                """
+                """
+                q_zxt = np.transpose(pmf.sum(axis=idx_xzt), (1, 0, 2))
 
-            dist_xt = np.asarray([[self._divergence(a, b) for b in q_y_t] for a in p_y_x])
-            dist_xt[np.isnan(dist_xt)] = 0
-            dist = (q_xt * dist_xt).sum()
-            return dist
+                p_zxy = np.transpose(pmf.sum(axis=idx_xyz), (2, 0, 1))
+                q_zty = np.transpose(pmf.sum(axis=idx_yzt), (1, 2, 0))
+                p_y_zx = p_zxy / p_zxy.sum(axis=2, keepdims=True)
+                q_y_zt = q_zty / q_zty.sum(axis=2, keepdims=True)
+
+                dist_zxt = np.asarray([[[self._divergence(a, b) for b in q_y_t] for a in p_y_x] for p_y_x, q_y_t in zip(p_y_zx, q_y_zt)])
+                dist_zxt[np.isinf(dist_zxt)] = 0
+                dist = (q_zxt * dist_zxt).sum()
+                return dist
+
+        else:
+            idx_xy = (2, 3)
+            idx_yt = (0, 2)
+            idx_xt = (1, 2)
+
+            def distortion(pmf):
+                """
+                """
+                q_xt = pmf.sum(axis=idx_xt)
+
+                p_xy = pmf.sum(axis=idx_xy)
+                q_ty = pmf.sum(axis=idx_yt).T
+                p_y_x = p_xy / p_xy.sum(axis=1, keepdims=True)
+                q_y_t = q_ty / q_ty.sum(axis=1, keepdims=True)
+
+                dist_xt = np.asarray([[self._divergence(a, b) for b in q_y_t] for a in p_y_x])
+                dist_xt[np.isinf(dist_xt)] = 0
+                dist = (q_xt * dist_xt).sum()
+
+                return dist
 
         return distortion

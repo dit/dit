@@ -27,3 +27,22 @@ from .variational_distance import (
     hellinger_distance_pmf as hellinger_distance,
     variational_distance_pmf as variational_distance,
 )
+
+
+def jensen_shannon_divergence2(p, q):
+    """
+    Compute the Jensen-Shannon divergence between two pmfs.
+
+    Parameters
+    ----------
+    p : np.ndarray
+        The first pmf.
+    q : np.ndarray
+        The second pmf.
+
+    Returns
+    -------
+    jsd : float
+        The Jensen-Shannon divergence.
+    """
+    return jensen_shannon_divergence([p, q])

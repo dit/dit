@@ -8,6 +8,9 @@ from collections import namedtuple
 
 import numpy as np
 
+from .information_bottleneck import (InformationBottleneck,
+                                     InformationBottleneckDivergence,
+                                     )
 from .rate_distortion import (RateDistortionHamming,
                               RateDistortionMaximumCorrelation,
                               RateDistortionResidualEntropy,
@@ -48,9 +51,5 @@ maximum_correlation = Distortion('Maximum Correlation', None, RateDistortionMaxi
 ###############################################################################
 # Information Bottleneck-like distortions
 
-IBDistortion = namedtuple('IBDistortion', ['divergence', 'optimizer'])
+IBDistortion = namedtuple('IBDistortion', ['name', 'divergence', 'optimizer'])
 
-def divergence_to_distortion(divergence):
-    """
-    """
-    pass

@@ -8,8 +8,9 @@ import numpy as np
 
 from .blahut_arimoto import blahut_arimoto, blahut_arimoto_ib
 from .distortions import hamming
-from .information_bottleneck import InformationBottleneck
+from .information_bottleneck import InformationBottleneck, InformationBottleneckDivergence
 from .. import Distribution
+from ..algorithms.minimal_sufficient_statistic import mss
 from ..exceptions import ditException
 from ..multivariate import entropy, total_correlation
 from ..utils import flatten
@@ -249,7 +250,7 @@ class IBCurve(object):
     """
     """
 
-    def __init__(self, dist, rvs=None, crvs=None, rv_mode=None, beta_min=0.0, beta_max=15.0, beta_num=101, alpha=1.0, method='sp'):
+    def __init__(self, dist, rvs=None, crvs=None, rv_mode=None, beta_min=0.0, beta_max=15.0, beta_num=101, alpha=1.0, method='sp', divergence=None):
         """
         """
         self.dist = dist.copy()
@@ -263,17 +264,25 @@ class IBCurve(object):
         self.p_xy = self.dist.coalesce([self._x, self._y])
         self.p_xy = self.p_xy.pmf.reshape(tuple(map(len, self.p_xy.alphabet)))
 
-        self._max_complexity = entropy(dist, self._x)  # TODO: replace with MSS
+        args = {'dist': self.dist,
+                'beta': 0.0,
+                'alpha': alpha,
+                'rvs': [self._x, self._y],
+                'crvs': self._z,
+                'rv_mode': self._rv_mode
+        }
+
+        if divergence is not None:
+            bottleneck = InformationBottleneckDivergence
+            args['divergence'] = divergence
+        else:
+            bottleneck = InformationBottleneck
+        self._bn = bottleneck(**args)
+
+        self._max_complexity = entropy(mss(dist, self._x, self._y))
         self._max_relevance = total_correlation(dist, [self._x, self._y])
         self._max_rank = len(dist.marginal(self._x).outcomes)
-
-        self._bn = InformationBottleneck(dist=self.dist,
-                                         beta=0.0,
-                                         alpha=alpha,
-                                         rvs=[self._x, self._y],
-                                         crvs=self._z,
-                                         rv_mode=self._rv_mode,
-                                         )
+        self._max_distortion = self._bn.distortion(self._get_opt_sp(beta=0.0)[0])
 
         if np.isclose(alpha, 1.0):
             self.label = "IB"
@@ -289,6 +298,17 @@ class IBCurve(object):
 
     def __add__(self, other):
         """
+        Combine two IBCurves into an IBPlotter.
+
+        Parameters
+        ----------
+        other : IBCurve
+            The curve to aggregate with `self`.
+
+        Returns
+        -------
+        plotter : IBPlotter
+            A plotter with both `self` and `other`.
         """
         from .plotting import IBPlotter
         if isinstance(other, IBCurve):
@@ -299,6 +319,21 @@ class IBCurve(object):
 
     def _get_opt_sp(self, beta, initial=None):
         """
+        Compute the information bottleneck solution for `beta` using scipy.optimize.
+
+        Parameters
+        ----------
+        beta : float
+            The beta value to optimize for.
+        initial : np.ndarray, None
+            An initial optimization vector, useful for numerical continuation.
+
+        Returns
+        -------
+        q : np.ndarray
+            The matrix p(x, y, z, t)
+        x0 : np.ndarray
+            The found optima.
         """
         self._bn._beta = beta
         self._bn.optimize(x0=initial)
@@ -308,6 +343,21 @@ class IBCurve(object):
 
     def _get_opt_ba(self, beta, initial=None):
         """
+        Compute the information bottleneck solution for `beta` using blahut-arimoto.
+
+        Parameters
+        ----------
+        beta : float
+            The beta value to optimize for.
+        initial : np.ndarray, None
+            An initial optimization vector, useful for numerical continuation.
+
+        Returns
+        -------
+        q : np.ndarray
+            The matrix p(x, y, z, t)
+        x0 : np.ndarray
+            The found optima.
         """
         q_xyt = blahut_arimoto_ib(p_xy=self.p_xy, beta=beta)[1]
         q_xyzt = q_xyt[:, :, np.newaxis, :]
@@ -315,10 +365,17 @@ class IBCurve(object):
 
     def compute(self, method='sp'):
         """
+        Sweep beta and compute the information bottleneck curve.
+
+        Parameters
+        ----------
+        method : {'sp', 'ba'}
+            The method of computation to use. 'sp' denotes scipy.optimize;
+            'ba' denotes blahut-arimoto.
         """
         get_opt = {'ba': self._get_opt_ba,
                    'sp': self._get_opt_sp,
-                  }[method]
+                   }[method]
 
         complexities = []
         entropies = []
@@ -326,6 +383,7 @@ class IBCurve(object):
         errors = []
         ranks = []
         alphabets = []
+        distortions = []
 
         x, y, z, t = [[0], [1], [2], [3]]
 
@@ -338,6 +396,7 @@ class IBCurve(object):
             entropies.append(entropy(d, x, z))
             relevances.append(total_correlation(d, [y, t], z))
             errors.append(total_correlation(d, [x, y], z + t))
+            distortions.append(self._bn.distortion(q_xyzt))
 
             q_xt = q_xyzt.sum(axis=(1, 2))
             q_x_t = (q_xt / q_xt.sum(axis=0, keepdims=True))
@@ -351,18 +410,25 @@ class IBCurve(object):
         self.errors = np.asarray(errors)
         self.ranks = np.asarray(ranks)
         self.alphabets = np.asarray(alphabets)
+        self.distortions = np.asarray(distortions)
 
     def find_max_beta(self):
         """
+        Find a beta value which maximizes the rate.
+
+        Returns
+        -------
+        beta_max : float
+            The the smallest found beta value which achieves minimal
+            distortion.
         """
         beta_max = 1.0
         relevance = 0.0
 
         while not np.isclose(relevance, self._max_relevance, atol=1e-5, rtol=1e-5):
             beta_max = 1.5*beta_max
-            self._bn._beta = beta_max
-            self._bn.optimize()
-            relevance = self._bn.relevance(self._bn.construct_joint(self._bn._optima))
+            q, _ = self._get_opt_sp(beta=beta_max)
+            relevance = self._bn.relevance(q)
 
         return beta_max
 

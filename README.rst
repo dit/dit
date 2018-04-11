@@ -8,27 +8,19 @@ Documentation:
 Downloads:
    https://pypi.org/project/dit/
 
-Dependencies:
-   * Python 2.7, 3.3, 3.4, 3.5, or 3.6
-   * `boltons <https://boltons.readthedocs.io>`_
-   * `contextlib2 <https://contextlib2.readthedocs.io>`_
-   * `debtcollector <https://docs.openstack.org/debtcollector/>`_
-   * `networkx <https://networkx.github.io/>`_
-   * `numpy <http://www.numpy.org/>`_
-   * `prettytable <https://code.google.com/archive/p/prettytable/>`_
-   * `scipy <https://www.scipy.org/>`_
-   * `six <http://pythonhosted.org/six/>`_
-
-Optional Dependencies:
-   * `colorama <https://pypi.python.org/pypi/colorama>`_
-   * `cython <http://cython.org/>`_
-   * `numdifftools <https://pypi.python.org/pypi/Numdifftools>`_
-   * `pint <https://pint.readthedocs.io>`_
-   * `scikit-learn <http://scikit-learn.org/>`_
-
-Note:
-   The cython extensions are currently not supported on windows. Please install
-   using the ``--nocython`` option.
++-------------------------------------------------------------------+---------------------------------------------------------------+
+| Dependencies                                                      | Optional Dependencies                                         |
++===================================================================+===============================================================+
+| * Python 2.7, 3.3, 3.4, 3.5, or 3.6                               | * `colorama <https://pypi.python.org/pypi/colorama>`_         |
+| * `boltons <https://boltons.readthedocs.io>`_                     | * `cython <http://cython.org/>`_                              |
+| * `contextlib2 <https://contextlib2.readthedocs.io>`_             | * `numdifftools <https://pypi.python.org/pypi/Numdifftools>`_ |
+| * `debtcollector <https://docs.openstack.org/debtcollector/>`_    | * `pint <https://pint.readthedocs.io>`_                       |
+| * `networkx <https://networkx.github.io/>`_                       | * `scikit-learn <http://scikit-learn.org/>`_                  |
+| * `numpy <http://www.numpy.org/>`_                                |                                                               |
+| * `prettytable <https://code.google.com/archive/p/prettytable/>`_ |                                                               |
+| * `scipy <https://www.scipy.org/>`_                               |                                                               |
+| * `six <http://pythonhosted.org/six/>`_                           |                                                               |
++-------------------------------------------------------------------+---------------------------------------------------------------+
 
 Install:
    The easiest way to install is:
@@ -46,8 +38,9 @@ Install:
       cd dit
       pip install .
 
-Mailing list:
-   None
+   .. note::
+      The cython extensions are currently not supported on windows. Please install
+      using the ``--nocython`` option.
 
 Code and bug tracker:
    https://github.com/dit/dit
@@ -61,6 +54,36 @@ Implemented Measures
 ``dit`` implements the following information measures. Most of these are implemented in multivariate & conditional
 generality, where such generalizations either exist in the literature or are relatively obvious --- for example,
 though it is not in the literature, the multivariate conditional exact common information is implemented here.
+
++------------------------------------------+-----------------------------------------+-----------------------------------+
+| Entropies:                               | Mutual Informations:                    | Divergences:                      |
+| * Shannon Entropy                        | * Co-Information                        | * Variational Distance            |
+| * Renyi Entropy                          | * Interaction Information               | * Kullback-Leibler Divergence \   |
+| * Tsallis Entropy                        | * Total Correlation /                   |   Relative Entropy                |
+| * Necessary Conditional Entropy          |   Multi-Information                     | * Cross Entropy                   |
+| * Residual Entropy /                     | * Dual Total Correlation /              | * Jensen-Shannon Divergence       |
+|   Independent Information /              |   Binding Information                   | * Earth Mover's Distance          |
+|   Variation of Information               | * CAEKL Multivariate Mutual Information |                                   |
++------------------------------------------+-----------------------------------------+-----------------------------------+
+| Common Informations:                     | Partial Information Decomposition:      | Other Measures:                   |
+| * Gacs-Korner Common Information         | * :math:`I_{min}`                       | * Channel Capacity                |
+| * Wyner Common Information               | * :math:`I_{\wedge}`                    | * Complexity Profile              |
+| * Exact Common Information               | * :math:`I_{\downarrow}`                | * Connected Informations          |
+| * Functional Common Information          | * :math:`I_{proj}`                      | * Cumulative Residual Entropy     |
+| * MSS Common Information                 | * :math:`I_{BROJA}`                     | * Extropy                         |
++------------------------------------------+ * :math:`I_{ccs}`                       | * Hypercontractivity Coefficient  |
+| Secret Key Agreement Bounds:             | * :math:`I_{\pm}`                       | * Information Bottleneck          |
+| * Intrinsic Mutual Information           | * :math:`I_{dep}`                       | * Information Diagrams            |
+| * Reduced Intrinsic Mutual Information   | * :math:`I_{RAV}`                       | * Information Trimming            |
+| * Minimal Intrinsic Mutual Information   |                                         | * Lautum Information              |
+| * Necessary Intrinsic Mutual Information |                                         | * LMPR Complexity                 |
+| * Secrecy Capacity                       |                                         | * Marginal Utility of Information |
+|                                          |                                         | * Maximum Correlation             |
+|                                          |                                         | * Maximum Entropy Distributions   |
+|                                          |                                         | * Perplexity                      |
+|                                          |                                         | * Rate-Distortion Theory          |
+|                                          |                                         | * TSE Complexity                  |
++------------------------------------------+-----------------------------------------+-----------------------------------+
 
 - Entropies:
 
@@ -121,6 +144,7 @@ though it is not in the literature, the multivariate conditional exact common in
   * Connected Informations
   * Cumulative Residual Entropy
   * Extropy
+  * Information Bottleneck
   * Information Diagrams
   * Information Trimming
   * Lautum Information
@@ -130,6 +154,7 @@ though it is not in the literature, the multivariate conditional exact common in
   * Hypercontractivity Coefficient
   * Maximum Entropy Distributions
   * Perplexity
+  * Rate-Distortion Theory
   * TSE Complexity
 
 

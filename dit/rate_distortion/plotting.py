@@ -1,4 +1,5 @@
 """
+Routines for plotting rate-distortion and information bottleneck curves.
 """
 
 from abc import ABCMeta, abstractmethod
@@ -14,6 +15,7 @@ from .curves import RDCurve, IBCurve
 
 __all__ = (
     'RDPlotter',
+    'IBPlotter',
 )
 
 Axis = namedtuple('Axis', ['data' ,'limit', 'label'])
@@ -32,6 +34,7 @@ class BasePlotter(with_metaclass(ABCMeta, object)):
     _beta_axis = Axis(attrgetter('betas'), lambda _: None, r"$\beta$")
     _rank_axis = Axis(attrgetter('ranks'), attrgetter('_max_rank'), r"rank")
     _alphabet_axis = Axis(attrgetter('alphabets'), attrgetter('_max_rank'), r"$|\mathcal{A}|$")
+    _distortion_axis = Axis(attrgetter('distortions'), attrgetter('_max_distortion'), r"$\langle d(x, \hat{x}) \rangle$")
 
     def __init__(self, *curves):
         """
@@ -93,7 +96,6 @@ class RDPlotter(BasePlotter):
     """
     """
     _rate_axis = Axis(attrgetter('rates'), attrgetter('_max_rate'), "$I[X:\hat{X}]$")
-    _distortion_axis = Axis(attrgetter('distortions'), attrgetter('_max_distortion'), r"$\langle d(x, \hat{x}) \rangle$")
 
     _curve_type = RDCurve
 
@@ -142,7 +144,7 @@ class IBPlotter(BasePlotter):
         self._plot(axs[1, 0], self._beta_axis, self._relevance_axis, downsample)
         self._plot(axs[2, 0], self._beta_axis, self._rank_axis, downsample)
         self._plot(axs[0, 1], self._complexity_axis, self._relevance_axis, downsample)
-        self._plot(axs[1, 1], self._entropy_axis, self._relevance_axis, downsample)
-        self._plot(axs[2, 1], self._error_axis, self._complexity_axis, downsample)
+        self._plot(axs[1, 1], self._error_axis, self._complexity_axis, downsample)
+        self._plot(axs[2, 1], self._distortion_axis, self._complexity_axis, downsample)
 
         return fig
