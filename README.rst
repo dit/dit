@@ -57,7 +57,7 @@ though it is not in the literature, the multivariate conditional exact common in
 
 +------------------------------------------+-----------------------------------------+-----------------------------------+
 | Entropies                                | Mutual Informations                     | Divergences                       |
-| *********                                | *******************                     | ***********                       |
+|                                          |                                         |                                   |
 | * Shannon Entropy                        | * Co-Information                        | * Variational Distance            |
 | * Renyi Entropy                          | * Interaction Information               | * Kullback-Leibler Divergence \   |
 | * Tsallis Entropy                        | * Total Correlation /                   |   Relative Entropy                |
@@ -67,7 +67,7 @@ though it is not in the literature, the multivariate conditional exact common in
 |   Variation of Information               | * CAEKL Multivariate Mutual Information |                                   |
 +------------------------------------------+-----------------------------------------+-----------------------------------+
 | Common Informations                      | Partial Information Decomposition       | Other Measures                    |
-| *******************                      | *********************************       | **************                    |
+|                                          |                                         |                                   |
 | * Gacs-Korner Common Information         | * :math:`I_{min}`                       | * Channel Capacity                |
 | * Wyner Common Information               | * :math:`I_{\wedge}`                    | * Complexity Profile              |
 | * Exact Common Information               | * :math:`I_{\downarrow}`                | * Connected Informations          |
@@ -75,7 +75,7 @@ though it is not in the literature, the multivariate conditional exact common in
 | * MSS Common Information                 | * :math:`I_{BROJA}`                     | * Extropy                         |
 +------------------------------------------+ * :math:`I_{ccs}`                       | * Hypercontractivity Coefficient  |
 | Secret Key Agreement Bounds              | * :math:`I_{\pm}`                       | * Information Bottleneck          |
-| ***************************              | * :math:`I_{dep}`                       | * Information Diagrams            |
+|                                          | * :math:`I_{dep}`                       | * Information Diagrams            |
 | * Intrinsic Mutual Information           | * :math:`I_{RAV}`                       | * Information Trimming            |
 | * Reduced Intrinsic Mutual Information   |                                         | * Lautum Information              |
 | * Minimal Intrinsic Mutual Information   |                                         | * LMPR Complexity                 |
