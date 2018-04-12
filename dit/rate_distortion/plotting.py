@@ -23,6 +23,17 @@ Axis = namedtuple('Axis', ['data' ,'limit', 'label'])
 
 def _rescale_axes(ax, xmax, ymax):
     """
+    Given a matplotlib axis, set the xmin and ymin to zero, and the xmax and
+    ymax accordingly.
+
+    Parameters
+    ----------
+    ax : plt.axis
+        The axis to adjust the limits of.
+    xmax : float
+        The xmax value.
+    ymax : float
+        Tye ymax value.
     """
     ax.set_xlim(0, 1.05*xmax)
     ax.set_ylim(0, 1.05*ymax)
