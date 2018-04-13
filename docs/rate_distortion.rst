@@ -34,7 +34,7 @@ It is known that under the Hamming distortion (:math:`d(x, \hat{x}) = x \neq \ha
    In [2]: d = dit.Distribution(['0', '1'], [1/2, 1/2])
 
    @savefig rate_distortion.png width=500 align=center
-   In [3]: RDCurve(d).plot();
+   In [3]: RDCurve(d, beta_num=26).plot();
 
 Information Bottleneck
 ======================
@@ -76,20 +76,36 @@ Consider this distribution:
 There are effectively three features that the fist index, :math:`X`, has regarding the second index, :math:`Y`. We can find them using the standard information bottleneck:
 
 .. ipython::
+   :verbatim:
 
    In [5]: from dit.rate_distortion import IBCurve
 
    @savefig information_bottleneck_1.png width=500 align=center
-   In [6]: IBCurve(d).plot();
+   In [6]: IBCurve(d, beta_num=26).plot();
+
+.. image:: ../../images/information_bottleneck_1.png
+   :alt: The information bottleneck curve of the distribution.
+   :width: 500px
+   :align: center
 
 We can also find them utilizing the total variation:
 
 .. ipython::
+   :verbatim:
 
    In [7]: from dit.divergences.pmf import variational_distance
 
    @savefig information_bottleneck_2.png width=500 align=center
    In [8]: IBCurve(d, divergence=variational_distance).plot();
+
+.. image:: ../../images/information_bottleneck_2.png
+   :alt: The information bottleneck curve of the distribution, using the non-standard total variation divergence measure for distortion.
+   :width: 500px
+   :align: center
+
+.. note::
+
+   The spiky behavior at low :math:`\beta` values is due to numerical imprecision.
 
 APIs
 ====
