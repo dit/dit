@@ -45,7 +45,7 @@ def _rescale_axes(ax, xmax, ymax):
 
 class BasePlotter(with_metaclass(ABCMeta, object)):
     """
-
+    A plotter of rate-distortion-like curves.
     """
     _beta_axis = Axis(attrgetter('betas'), lambda _: None, r"$\beta$")
     _rank_axis = Axis(attrgetter('ranks'), attrgetter('_max_rank'), r"rank")
@@ -110,6 +110,7 @@ class BasePlotter(with_metaclass(ABCMeta, object)):
 
 class RDPlotter(BasePlotter):
     """
+    A plotter for rate-distortion curves.
     """
     _rate_axis = Axis(attrgetter('rates'), attrgetter('_max_rate'), "$I[X:\hat{X}]$")
 
@@ -117,6 +118,12 @@ class RDPlotter(BasePlotter):
 
     def plot(self, downsample=5):
         """
+        Plot various views of the rate-distortion curve.
+
+        Parameters
+        ----------
+        downsample : int
+            Show markers every `downsample` points.
         """
         fig, axs = plt.subplots(2, 2, figsize=(16, 8))
 
@@ -130,6 +137,7 @@ class RDPlotter(BasePlotter):
 
 class IBPlotter(BasePlotter):
     """
+    A plotter for information bottleneck curves.
     """
     _complexity_axis = Axis(attrgetter('complexities'), attrgetter('_max_complexity'), "$I[X:\hat{X}]$")
     _entropy_axis = Axis(attrgetter('entropies'), attrgetter('_max_complexity'), r"$H[\hat{X}]$")
@@ -140,6 +148,12 @@ class IBPlotter(BasePlotter):
 
     def _plot(self, ax, axis_1, axis_2, downsample):
         """
+        Plot various views of the information bottleneck curve.
+
+        Parameters
+        ----------
+        downsample : int
+            Show markers every `downsample` points.
         """
         ax = super(IBPlotter, self)._plot(ax, axis_1, axis_2, downsample)
 

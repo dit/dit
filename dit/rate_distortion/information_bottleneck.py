@@ -85,12 +85,29 @@ class InformationBottleneck(BaseAuxVarOptimizer):
 
     def _distortion(self):
         """
+        Construct the distortion function.
+
+        Returns
+        -------
+        distortion : func
+            The distortion function.
         """
         cmi = self._conditional_mutual_information(self._x, self._y, self._z)(self.construct_joint(self.construct_random_initial()))
         relevance = self._conditional_mutual_information(self._y, self._t, self._z)
 
         def distortion(pmf):
             """
+            Compute the distortion.
+
+            Parameters
+            ----------
+            pmf : np.ndarray
+                The joint probability mass function.
+
+            Returns
+            -------
+            dist : float
+                The average distortion value.
             """
             return cmi - relevance(pmf)
 
@@ -267,6 +284,7 @@ class InformationBottleneckDivergence(InformationBottleneck):
                                                               bound=bound,
                                                               rv_mode=rv_mode,
                                                               )
+        self._default_hops *= 2
 
     def _distortion(self):
         """
@@ -290,6 +308,12 @@ class InformationBottleneckDivergence(InformationBottleneck):
 
             def distortion(pmf):
                 """
+                Compute the distortion.
+
+                Parameters
+                ----------
+                pmf : np.ndarray
+                    The joint probability mass function.
                 """
                 q_zxt = np.transpose(pmf.sum(axis=idx_xzt), (1, 0, 2))
 
@@ -310,6 +334,12 @@ class InformationBottleneckDivergence(InformationBottleneck):
 
             def distortion(pmf):
                 """
+                Compute the distortion.
+
+                Parameters
+                ----------
+                pmf : np.ndarray
+                    The joint probability mass function.
                 """
                 q_xt = pmf.sum(axis=idx_xt)
 
