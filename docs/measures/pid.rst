@@ -328,7 +328,7 @@ In the BROJA paper :cite:`bertschinger2014quantifying` the only example given wh
 
    In [18]: from dit.utils.testing import distributions
 
-   In [19]: find(distributions(3, 2, True), lambda d: PID_Proj(d) != PID_BROJA(d))
+   In [19]: find(distributions((2, 2, 2), nondegenerate=True), lambda d: PID_Proj(d) != PID_BROJA(d))
    Out[19]:
    Class:          Distribution
    Alphabet:       (0, 1) for all rvs
