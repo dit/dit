@@ -608,7 +608,7 @@ class BaseDistribution(object):
         """
         return dict(self.zipped())
 
-    def to_html(self, digits=None, exact=None, tol=1e-9): # pragma: no cover
+    def to_html(self, digits=None, exact=None, tol=1e-9):  # pragma: no cover
         """
         Construct an HTML representation of the distribution.
 
@@ -648,7 +648,10 @@ class BaseDistribution(object):
         infos = ''.join("<tr><th>{}:</th><td>{}</td></tr>".format(a, b) for a, b in info)
         header = '<table border="1">{}</table>'.format(infos)
 
-        rv_names = self.get_rv_names()
+        try:
+            rv_names = self.get_rv_names()
+        except AttributeError:
+            rv_names = None
         if rv_names is None:
             rv_names = ["x[{}]".format(i) for i in range(self.outcome_length())]
 
