@@ -86,7 +86,7 @@ We can also find them utilizing the total variation:
 
 .. ipython::
 
-   In [7]: from dit.divergences import variational_distance
+   In [7]: from dit.divergences.pmf import variational_distance
 
    @savefig information_bottleneck_2.png width=500 align=center
    In [8]: IBCurve(d, divergence=variational_distance).plot();
