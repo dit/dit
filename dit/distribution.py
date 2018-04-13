@@ -650,10 +650,10 @@ class BaseDistribution(object):
 
         try:
             rv_names = self.get_rv_names()
+            if rv_names is None:
+                rv_names = ["x[{}]".format(i) for i in range(self.outcome_length())]
         except AttributeError:
-            rv_names = None
-        if rv_names is None:
-            rv_names = ["x[{}]".format(i) for i in range(self.outcome_length())]
+            rv_names = ["x"]
 
         table_header = '<tr>' + ''.join("<th>{}</th>".format(a) for a in rv_names) + "<th>{}</th></tr>".format(pstr)
         table_rows = ''.join(
