@@ -8,6 +8,7 @@ from operator import attrgetter
 
 from six import with_metaclass
 
+import numpy as np
 import matplotlib.pyplot as plt
 
 from .curves import RDCurve, IBCurve
@@ -18,7 +19,7 @@ __all__ = (
     'IBPlotter',
 )
 
-Axis = namedtuple('Axis', ['data' ,'limit', 'label'])
+Axis = namedtuple('Axis', ['data', 'limit', 'label'])
 
 
 def _rescale_axes(ax, xmax, ymax):
@@ -35,12 +36,16 @@ def _rescale_axes(ax, xmax, ymax):
     ymax : float
         Tye ymax value.
     """
-    ax.set_xlim(0, 1.05*xmax)
-    ax.set_ylim(0, 1.05*ymax)
+    xmax = ax.get_xlim()[1] if np.isnan(xmax) else 1.05*xmax
+    ymax = ax.get_ylim()[1] if np.isnan(ymax) else 1.05*ymax
+
+    ax.set_xlim(0, xmax)
+    ax.set_ylim(0, ymax)
 
 
 class BasePlotter(with_metaclass(ABCMeta, object)):
     """
+
     """
     _beta_axis = Axis(attrgetter('betas'), lambda _: None, r"$\beta$")
     _rank_axis = Axis(attrgetter('ranks'), attrgetter('_max_rank'), r"rank")
@@ -126,10 +131,10 @@ class RDPlotter(BasePlotter):
 class IBPlotter(BasePlotter):
     """
     """
-    _complexity_axis = Axis(attrgetter('complexities'), attrgetter('_max_complexity'), "$I[X:T]$")
-    _entropy_axis = Axis(attrgetter('entropies'), attrgetter('_max_complexity'), r"$H[T]$")
-    _relevance_axis = Axis(attrgetter('relevances'), attrgetter('_max_relevance'), r"$I[Y:T]$")
-    _error_axis = Axis(attrgetter('errors'), attrgetter('_max_relevance'), r"$I[X:Y|T]$")
+    _complexity_axis = Axis(attrgetter('complexities'), attrgetter('_max_complexity'), "$I[X:\hat{X}]$")
+    _entropy_axis = Axis(attrgetter('entropies'), attrgetter('_max_complexity'), r"$H[\hat{X}]$")
+    _relevance_axis = Axis(attrgetter('relevances'), attrgetter('_max_relevance'), r"$I[Y:\hat{X}]$")
+    _error_axis = Axis(attrgetter('errors'), attrgetter('_max_relevance'), r"$I[X:Y|\hat{X}]$")
 
     _curve_type = IBCurve
 

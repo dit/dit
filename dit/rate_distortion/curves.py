@@ -20,7 +20,8 @@ class RDCurve(object):
     """
     Compute a rate-distortion curve.
     """
-    def __init__(self, dist, rv=None, crvs=None, beta_min=0, beta_max=10, beta_num=101, distortion=hamming, method='sp'):
+
+    def __init__(self, dist, rv=None, crvs=None, beta_min=0, beta_max=10, beta_num=101, alpha=1.0, distortion=hamming, method='sp'):
         """
         Initialize the curve computer.
 
@@ -36,9 +37,13 @@ class RDCurve(object):
         beta_min : float
             The minimum beta value for the curve. Defaults to 0.
         beta_max : float
-            The maximum beta value for the curve. Defaults to 10.
+            The maximum beta value for the curve. Defaults to 10. If None,
+            iteratively find a beta value with nearly maximal rate.
         beta_num : int
             The number of beta values for the curve. Defaults to 101.
+        alpha : float
+            The alpha value to utilize. 1.0 corresponds to the standard information
+            bottleneck, while 0.0 corresponds to the deterministic bottleneck.
         distortion : Distortion
             The distortion to use.
         method : {'sp', 'ba'}
@@ -77,6 +82,7 @@ class RDCurve(object):
 
         self._rd_opt = self._distortion.optimizer(self.dist,
                                                   beta=0.0,
+                                                  alpha=alpha,
                                                   rv=self.rv,
                                                   crvs=self.crvs)
 
@@ -211,7 +217,7 @@ class RDCurve(object):
 
         x0 = None
 
-        for beta in self.betas:
+        for beta in self.betas[::-1]:
             r, d, q, x0 = self._get_rd(beta, initial=x0)
             rates.append(r)
             distortions.append(d)
@@ -221,10 +227,10 @@ class RDCurve(object):
             ranks.append(np.linalg.matrix_rank(q_x_xhat, tol=1e-5))
             alphabets.append((q.sum(axis=0) > 1e-6).sum())
 
-        self.rates = np.asarray(rates)
-        self.distortions = np.asarray(distortions)
-        self.ranks = np.asarray(ranks)
-        self.alphabets = np.asarray(alphabets)
+        self.rates = np.asarray(rates)[::-1]
+        self.distortions = np.asarray(distortions)[::-1]
+        self.ranks = np.asarray(ranks)[::-1]
+        self.alphabets = np.asarray(alphabets)[::-1]
 
     def plot(self, downsample=5):
         """
@@ -248,10 +254,46 @@ class RDCurve(object):
 
 class IBCurve(object):
     """
+    Compute an information bottleneck curve.
     """
 
     def __init__(self, dist, rvs=None, crvs=None, rv_mode=None, beta_min=0.0, beta_max=15.0, beta_num=101, alpha=1.0, method='sp', divergence=None):
         """
+        Initialize the curve computer.
+
+        Parameters
+        ----------
+        dist : Distribution
+            The distribution of interest.
+        rv : iterable, None
+            The random variables to compute the information bottleneck curve of.
+            If None, use [0], [1].
+        crvs : iterable, None
+            The random variables to condition on.
+        rv_mode : str, None
+            Specifies how to interpret `rvs` and `crvs`. Valid options are:
+            {'indices', 'names'}. If equal to 'indices', then the elements of
+            `crvs` and `rvs` are interpreted as random variable indices. If
+            equal to 'names', the the elements are interpreted as random
+            variable names. If `None`, then the value of `dist._rv_mode` is
+            consulted, which defaults to 'indices'.
+        beta_min : float
+            The minimum beta value for the curve. Defaults to 0.
+        beta_max : float, None
+            The maximum beta value for the curve. Defaults to 15. If None,
+            iteratively find a beta value with nearly maximal complexity.
+        beta_num : int
+            The number of beta values for the curve. Defaults to 101.
+        alpha : float
+            The alpha value to utilize. 1.0 corresponds to the standard information
+            bottleneck, while 0.0 corresponds to the deterministic bottleneck.
+        method : {'sp', 'ba'}
+            The method to utilize in computing the curve. If 'sp', utilize
+            scipy.optimize; if 'ba' utilize the iterative Blahut-Arimoto
+            algorithm. Defaults to 'sp'.
+        divergence : func
+            The divergence measure to use as a distortion. Defaults to the standard
+            relative entropy.
         """
         self.dist = dist.copy()
         self.dist.make_dense()
@@ -389,7 +431,7 @@ class IBCurve(object):
 
         x0 = None
 
-        for beta in self.betas:
+        for beta in self.betas[::-1]:
             q_xyzt, x0 = get_opt(beta, x0)
             d = Distribution.from_ndarray(q_xyzt)
             complexities.append(total_correlation(d, [x, t], z))
@@ -404,13 +446,13 @@ class IBCurve(object):
             ranks.append(np.linalg.matrix_rank(q_x_t, tol=1e-4))
             alphabets.append((q_xt.sum(axis=0) > 1e-6).sum())
 
-        self.complexities = np.asarray(complexities)
-        self.entropies = np.asarray(entropies)
-        self.relevances = np.asarray(relevances)
-        self.errors = np.asarray(errors)
-        self.ranks = np.asarray(ranks)
-        self.alphabets = np.asarray(alphabets)
-        self.distortions = np.asarray(distortions)
+        self.complexities = np.asarray(complexities)[::-1]
+        self.entropies = np.asarray(entropies)[::-1]
+        self.relevances = np.asarray(relevances)[::-1]
+        self.errors = np.asarray(errors)[::-1]
+        self.ranks = np.asarray(ranks)[::-1]
+        self.alphabets = np.asarray(alphabets)[::-1]
+        self.distortions = np.asarray(distortions)[::-1]
 
     def find_max_beta(self):
         """
