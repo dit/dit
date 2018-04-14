@@ -49,7 +49,7 @@ where :math:`D` is an arbitrary divergence measure, and :math:`\hat{X} - X - Y` 
 
 .. math::
 
-   \langle d(x, \hat{x}) \rangle &= \sum_{x, \hat{x}} q(x, \hat{x}) \DKL{ p(Y | x) || q(Y | \hat{x}) ) \\
+   \langle d(x, \hat{x}) \rangle &= \sum_{x, \hat{x}} q(x, \hat{x}) \DKL{ p(Y | x) || q(Y | \hat{x}) } \\
                                  &= \sum_{x, \hat{x}} q(x, \hat{x}) \sum_{y} p(y | x) \log_2 \frac{p(y | x)}{q(y | \hat{x})} \\
                                  &= \sum_{x, \hat{x}, y} q(x, \hat{x}, y) \log_2 \frac{p(y | x) p(x) p(y) q(\hat{x})}{q(y | \hat{x}) p(x) p(y) q(\hat{x})} \\
                                  &= \I{X : Y} - \I{\hat{X} : Y}
@@ -82,7 +82,7 @@ There are effectively three features that the fist index, :math:`X`, has regardi
 
    In [6]: IBCurve(d, beta_num=26).plot();
 
-.. image:: ../images/information_bottleneck_1.png
+.. image:: images/information_bottleneck_1.png
    :alt: The information bottleneck curve of the distribution.
    :width: 1000px
    :align: center
@@ -96,7 +96,7 @@ We can also find them utilizing the total variation:
 
    In [8]: IBCurve(d, divergence=variational_distance).plot();
 
-.. image:: ../images/information_bottleneck_2.png
+.. image:: images/information_bottleneck_2.png
    :alt: The information bottleneck curve of the distribution, using the non-standard total variation divergence measure for distortion.
    :width: 1000px
    :align: center
