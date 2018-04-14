@@ -25,7 +25,7 @@ where minimizing at each :math:`\beta` produces a point on the curve.
 Example
 -------
 
-It is known that under the Hamming distortion (:math:`d(x, \hat{x}) = x \neq \hat{x}`) the rate-distortion function for a biased coin has the following solution: :math:`R(D) = \H{p} - \H{D}`:
+It is known that under the Hamming distortion (:math:`d(x, \hat{x}) = \left[ x \neq \hat{x} \right]`) the rate-distortion function for a biased coin has the following solution: :math:`R(D) = \H{p} - \H{D}`:
 
 .. ipython::
 
@@ -33,7 +33,7 @@ It is known that under the Hamming distortion (:math:`d(x, \hat{x}) = x \neq \ha
 
    In [2]: d = dit.Distribution(['0', '1'], [1/2, 1/2])
 
-   @savefig rate_distortion.png width=500 align=center
+   @savefig rate_distortion.png width=1000 align=center
    In [3]: RDCurve(d, beta_num=26).plot();
 
 Information Bottleneck
@@ -80,12 +80,11 @@ There are effectively three features that the fist index, :math:`X`, has regardi
 
    In [5]: from dit.rate_distortion import IBCurve
 
-   @savefig information_bottleneck_1.png width=500 align=center
    In [6]: IBCurve(d, beta_num=26).plot();
 
-.. image:: ../../images/information_bottleneck_1.png
+.. image:: ../images/information_bottleneck_1.png
    :alt: The information bottleneck curve of the distribution.
-   :width: 500px
+   :width: 1000px
    :align: center
 
 We can also find them utilizing the total variation:
@@ -95,12 +94,11 @@ We can also find them utilizing the total variation:
 
    In [7]: from dit.divergences.pmf import variational_distance
 
-   @savefig information_bottleneck_2.png width=500 align=center
    In [8]: IBCurve(d, divergence=variational_distance).plot();
 
-.. image:: ../../images/information_bottleneck_2.png
+.. image:: ../images/information_bottleneck_2.png
    :alt: The information bottleneck curve of the distribution, using the non-standard total variation divergence measure for distortion.
-   :width: 500px
+   :width: 1000px
    :align: center
 
 .. note::
