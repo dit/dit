@@ -22,7 +22,7 @@ __all__ = (
 Axis = namedtuple('Axis', ['data', 'limit', 'label'])
 
 
-def _rescale_axes(ax, xmax, ymax):
+def _rescale_axes(ax, xmin=None, xmax=None, ymin=None, ymax=None):
     """
     Given a matplotlib axis, set the xmin and ymin to zero, and the xmax and
     ymax accordingly.
@@ -36,11 +36,20 @@ def _rescale_axes(ax, xmax, ymax):
     ymax : float
         Tye ymax value.
     """
-    xmax = ax.get_xlim()[1] if np.isnan(xmax) else 1.05*xmax
-    ymax = ax.get_ylim()[1] if np.isnan(ymax) else 1.05*ymax
+    x_min, x_max = ax.get_xlim()
+    y_min, y_max = ax.get_ylim()
 
-    ax.set_xlim(0, xmax)
-    ax.set_ylim(0, ymax)
+    if xmin is not None:
+        x_min = xmin
+    if xmax is not None and not np.isnan(xmax):
+        x_max = 1.05 * xmax
+    if ymin is not None:
+        y_min = ymin
+    if ymax is not None and not np.isnan(ymax):
+        y_max = 1.05 * ymax
+
+    ax.set_xlim(x_min, x_max)
+    ax.set_ylim(y_min, y_max)
 
 
 class BasePlotter(with_metaclass(ABCMeta, object)):
@@ -122,14 +131,16 @@ class BasePlotter(with_metaclass(ABCMeta, object)):
         ax.set_ylabel(axis_2.label)
 
         # determine bounds so that axes can be scaled.
-        try:
-            ax_lim_1 = max([axis_1.limit(c) for c in self.curves])
-            if ax_lim_1 is None:
-                raise TypeError
-        except TypeError:
-            ax_lim_1 = max([c.betas[-1] for c in self.curves])
-        ax_lim_2 = max([axis_2.limit(c) for c in self.curves])
-        _rescale_axes(ax, ax_lim_1, ax_lim_2)
+        ax_min_1 = 0
+        ax_min_2 = 0
+
+        ax_max_1 = max([axis_1.limit(c) for c in self.curves])
+        if ax_max_1 is None:
+            ax_min_1 = min([c.betas[0] for c in self.curves])
+            ax_max_1 = max([c.betas[-1] for c in self.curves])
+
+        ax_max_2 = max([axis_2.limit(c) for c in self.curves])
+        _rescale_axes(ax, xmin=ax_min_1, xmax=ax_max_1, ymin=ax_min_2, ymax=ax_max_2)
 
         return ax
 
