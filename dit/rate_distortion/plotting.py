@@ -54,11 +54,24 @@ class BasePlotter(with_metaclass(ABCMeta, object)):
 
     def __init__(self, *curves):
         """
+        Initialize the plotter.
+
+        Parameters
+        ----------
+        curves : *{RDCurve, IBCurve}
+            The curves to plot.
         """
         self.curves = curves
 
     def __add__(self, other):
         """
+        Add a new curve to the plot, or combine two plotters.
+
+        Parameters
+        ----------
+        other : RDCurve, IBCurve, BasePlotter
+            If a curve, add it to self.curves. If a plotter, add all its
+            curves to self.curves.
         """
         if isinstance(other, self._curve_type):
             self.curves += (other,)
@@ -71,6 +84,23 @@ class BasePlotter(with_metaclass(ABCMeta, object)):
 
     def _plot(self, ax, axis_1, axis_2, downsample):
         """
+        Plot two arrays relative to one another.
+
+        Parameters
+        ----------
+        ax : mpl.Axis
+            The axis to plot on.
+        axis_1 : Axis
+            The axis to put along the x axis.
+        axis_2 : Axis
+            The axis to put along the y axis.
+        downsample : int
+            The rate at which to put markers along the curve.
+
+        Returns
+        -------
+        ax : mpl.Axis
+            The modified axis.
         """
         for curve in self.curves:
             x = axis_1.data(curve)
@@ -80,6 +110,7 @@ class BasePlotter(with_metaclass(ABCMeta, object)):
                        y[::downsample],
                        c=curve.betas[::downsample])
 
+            # if there is an upper bound, plot it.
             lim_1 = axis_1.limit(curve)
             if lim_1 is not None:
                 ax.axvline(lim_1, ls=':', c=line.get_c())
@@ -90,6 +121,7 @@ class BasePlotter(with_metaclass(ABCMeta, object)):
         ax.set_xlabel(axis_1.label)
         ax.set_ylabel(axis_2.label)
 
+        # determine bounds so that axes can be scaled.
         try:
             ax_lim_1 = max([axis_1.limit(c) for c in self.curves])
             if ax_lim_1 is None:
@@ -104,6 +136,17 @@ class BasePlotter(with_metaclass(ABCMeta, object)):
     @abstractmethod
     def plot(self, downsample=5):
         """
+        Plot several rate-distortion-like curves.
+
+        Parameters
+        ----------
+        downsample : int
+            Show markers every `downsample` points.
+
+        Returns
+        -------
+        fig : mpl.Figure
+            The figure with several subplots.
         """
         pass
 
@@ -131,6 +174,7 @@ class RDPlotter(BasePlotter):
         axs[0, 0].legend(loc='best')
         self._plot(axs[0, 1], self._distortion_axis, self._rate_axis, downsample)
         self._plot(axs[1, 0], self._beta_axis, self._distortion_axis, downsample)
+        axs[1, 1].axis('off')
 
         return fig
 
@@ -166,6 +210,12 @@ class IBPlotter(BasePlotter):
 
     def plot(self, downsample=5):
         """
+        Plot various views of the information bottleneck curve.
+
+        Parameters
+        ----------
+        downsample : int
+            Show markers every `downsample` points.
         """
         fig, axs = plt.subplots(3, 2, figsize=(16, 16))
 

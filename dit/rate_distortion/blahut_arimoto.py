@@ -147,6 +147,7 @@ def blahut_arimoto(p_x, beta, distortion=hamming_distortion, max_iters=100, rest
 ###############################################################################
 # Information Bottleneck
 
+# pragma: no cover
 def blahut_arimoto_ib(p_xy, beta, divergence=relative_entropy, max_iters=100, restarts=250):
     """
     Perform a robust form of the Blahut-Arimoto algorithms.
@@ -178,6 +179,7 @@ def blahut_arimoto_ib(p_xy, beta, divergence=relative_entropy, max_iters=100, re
 
     def next_q_y_t(q_t_x):
         """
+        q(y|t) = (\sum_x p(x, y) * q(t|x)) / q(t)
         """
         q_xyt = q_t_x[:, np.newaxis, :] * p_xy[:, :, np.newaxis]
         q_ty = q_xyt.sum(axis=0).T
@@ -187,6 +189,7 @@ def blahut_arimoto_ib(p_xy, beta, divergence=relative_entropy, max_iters=100, re
 
     def distortion(p_x, q_t_x):
         """
+        d(x, t) = D[ p(Y|x) || q(Y|t) ]
         """
         q_y_t = next_q_y_t(q_t_x)
         distortions = np.asarray([divergence(a, b) for a in p_y_x for b in q_y_t]).reshape(q_y_t.shape)

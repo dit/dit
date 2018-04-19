@@ -43,7 +43,7 @@ The information bottleneck :cite:`tishby2000information` is a form of rate-disto
 
 .. math::
 
-   d(x, \hat{x}) = D\left[~p(Y | x)~\mid|\mid|~q(Y | \hat{x})~\right]
+   d(x, \hat{x}) = D\left[~p(Y | x)~\mid\mid~q(Y | \hat{x})~\right]
 
 where :math:`D` is an arbitrary divergence measure, and :math:`\hat{X} - X - Y` form a Markov chain. Traditionally, :math:`D` is the :doc:`measures/divergences/kullback_leibler_divergence`, in which case the average distortion takes a particular form:
 

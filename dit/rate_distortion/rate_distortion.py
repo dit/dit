@@ -82,6 +82,17 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
         """
         def rd_objective(self, x):
             """
+            The rate-distortion objective.
+
+            Parameters
+            ----------
+            x : np.ndarray
+                An optimization vector.
+
+            Returns
+            -------
+            obj : float
+                The objective value.
             """
             pmf = self.construct_joint(x)
             obj = self.rate(pmf) + self._beta * self.distortion(pmf)
@@ -89,6 +100,17 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
 
         def grd_objective(self, x):
             """
+            The generalized rate-distortion objective.
+
+            Parameters
+            ----------
+            x : np.ndarray
+                An optimization vector.
+
+            Returns
+            -------
+            obj : float
+                The objective value.
             """
             pmf = self.construct_joint(x)
             obj = self.entropy(pmf) - self._alpha * self.other(pmf) + self._beta * self.distortion(pmf)
@@ -96,6 +118,17 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
 
         def drd_objective(self, x):
             """
+            The deterministic rate-distortion objective.
+
+            Parameters
+            ----------
+            x : np.ndarray
+                An optimization vector.
+
+            Returns
+            -------
+            obj : float
+                The objective value.
             """
             pmf = self.construct_joint(x)
             obj = self.entropy(pmf) + self._beta * self.distortion(pmf)
@@ -120,12 +153,39 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
         """
         pass
 
-    @classmethod
+    @classmethod  # pragma: no cover
     def functional(cls):
         """
+        Construct a functional form of the optimizer.
         """
         def rate_distortion(dist, beta=0.0, rv=None, crvs=None, bound=None, rv_mode=None):
             """
+            Compute a rate-distortion point.
+
+            Parameters
+            ----------
+            dist : Distribution
+                The distribution of interest.
+            beta : float
+                The beta value to optimize with.
+            rv : iterable, None
+                The indices to consider. If None, use all.
+            crvs : iterable, None
+                The indices to condition on. If None, use none.
+            bound : int, None
+                Bound the size of the compressed variable.
+            rv_mode : str, None
+                Specifies how to interpret `rvs` and `crvs`. Valid options are:
+                {'indices', 'names'}. If equal to 'indices', then the elements of
+                `crvs` and `rvs` are interpreted as random variable indices. If
+                equal to 'names', the the elements are interpreted as random
+                variable names. If `None`, then the value of `dist._rv_mode` is
+                consulted, which defaults to 'indices'.
+
+            Returns
+            -------
+            result : RateDistortionResult
+                The optimal rate-distortion pair.
             """
             rd = cls(dist, beta=beta, rv=rv, crvs=crvs, bound=bound, rv_mode=rv_mode)
             rd.optimize()
@@ -138,16 +198,36 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
 
 class RateDistortionHamming(BaseRateDistortion):
     """
+    Rate distortion optimizer based around the Hamming distortion.
     """
     _optimization_backend = BaseRateDistortion._optimize_shotgun
 
     def _distortion(self):
         """
+        Construct the distortion function.
+
+        Returns
+        -------
+        distortion : func
+            The distortion function.
         """
         hamming = 1 - np.eye(self._shape[0], self._shape[2])
         idx_xt = tuple(self._all_vars - (self._x | self._t))
 
         def distortion(pmf):
+            """
+            The Hamming distortion.
+
+            Parameters
+            ----------
+            pmf : np.ndarray
+                The joint probability distribution.
+
+            Returns
+            -------
+            d : float
+                The average distortion.
+            """
             pmf_xt = pmf.sum(axis=idx_xt)
             d = (hamming * pmf_xt).sum()
             return d
@@ -157,15 +237,33 @@ class RateDistortionHamming(BaseRateDistortion):
 
 class RateDistortionResidualEntropy(BaseRateDistortion):
     """
+    Rate distortion optimizer based around the residual entropy distortion.
     """
     def _distortion(self):
         """
+        Construct the distortion function.
+
+        Returns
+        -------
+        distortion : func
+            The distortion function.
         """
         h = self._entropy(self._x | self._t, self._z)
         i = self._conditional_mutual_information(self._x, self._t, self._z)
 
         def distortion(pmf):
             """
+            The residual entropy distortion.
+
+            Parameters
+            ----------
+            pmf : np.ndarray
+                The joint probability distribution.
+
+            Returns
+            -------
+            d : float
+                The average distortion.
             """
             return h(pmf) - i(pmf)
 
@@ -174,9 +272,16 @@ class RateDistortionResidualEntropy(BaseRateDistortion):
 
 class RateDistortionMaximumCorrelation(BaseRateDistortion):
     """
+    Rate distortion optimizer based around the maximum correlation distortion.
     """
     def _distortion(self):
         """
+        Construct the distortion function.
+
+        Returns
+        -------
+        distortion : func
+            The distortion function.
         """
         if self._shape[1] == 1:
             mc = self._maximum_correlation(self._x, self._t)
@@ -185,6 +290,17 @@ class RateDistortionMaximumCorrelation(BaseRateDistortion):
 
         def distortion(pmf):
             """
+            The maximum correlation distortion.
+
+            Parameters
+            ----------
+            pmf : np.ndarray
+                The joint probability distribution.
+
+            Returns
+            -------
+            d : float
+                The average distortion.
             """
             return 1 - mc(pmf)
 

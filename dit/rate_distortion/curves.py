@@ -63,16 +63,16 @@ class RDCurve(object):
 
         self._distortion = distortion
 
-        if method not in ('sp', 'ba'):
+        if method not in ('sp', 'ba'):  # pragma: no cover
             msg = "Method '{}' not supported.".format(method)
             raise ditException(msg)
-        elif method == 'sp' and not distortion.optimizer:
+        elif method == 'sp' and not distortion.optimizer:  # pragma: no cover
             msg = "Method is 'sp' but distortion does not have an optimizer."
             raise ditException(msg)
-        elif method == 'ba' and not distortion.matrix:
+        elif method == 'ba' and not distortion.matrix:  # pragma: no cover
             msg = "Method is 'ba' but distortion does not have a matrix."
             raise ditException(msg)
-        elif method == 'ba' and crvs:
+        elif method == 'ba' and crvs:  # pragma: no cover
             msg = "Method 'ba' does not support conditional variables."
             raise ditException(msg)
         else:
@@ -94,7 +94,7 @@ class RDCurve(object):
             beta_max = self.find_max_beta()
         self.betas = np.linspace(beta_min, beta_max, beta_num)
 
-        try:
+        try:  # pragma: no cover
             dist_name = [dist.name]
         except AttributeError:
             dist_name = []
@@ -102,7 +102,7 @@ class RDCurve(object):
 
         self.compute()
 
-    def __add__(self, other):
+    def __add__(self, other):  # pragma: no cover
         """
         Combine two RDCurves into an RDPlotter.
 
@@ -232,7 +232,7 @@ class RDCurve(object):
         self.ranks = np.asarray(ranks)[::-1]
         self.alphabets = np.asarray(alphabets)[::-1]
 
-    def plot(self, downsample=5):
+    def plot(self, downsample=5):  # pragma: no cover
         """
         Construct an RDPlotter and utilize it to plot the rate-distortion
         curve.
@@ -338,7 +338,7 @@ class IBCurve(object):
 
         self.compute(method)
 
-    def __add__(self, other):
+    def __add__(self, other):  # pragma: no cover
         """
         Combine two IBCurves into an IBPlotter.
 
@@ -383,7 +383,7 @@ class IBCurve(object):
         q_xyzt = self._bn.construct_joint(self._bn._optima)
         return q_xyzt, x0
 
-    def _get_opt_ba(self, beta, initial=None):
+    def _get_opt_ba(self, beta, initial=None):  # pragma: no cover
         """
         Compute the information bottleneck solution for `beta` using blahut-arimoto.
 
@@ -488,7 +488,7 @@ class IBCurve(object):
         kinks = np.asarray([jump for jump in jumps if diff[jump-1] == 0])
         return self.betas[kinks]
 
-    def plot(self, downsample=5):
+    def plot(self, downsample=5):  # pragma: no cover
         """
         Construct an IBPlotter and utilize it to plot the information
         bottleneck curve.
