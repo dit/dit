@@ -314,7 +314,7 @@ class IBCurve(object):
                 'rv_mode': self._rv_mode
         }
 
-        if divergence is not None:
+        if divergence is not None:  # pragma: no cover
             bottleneck = InformationBottleneckDivergence
             args['divergence'] = divergence
         else:

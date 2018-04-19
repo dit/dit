@@ -147,8 +147,7 @@ def blahut_arimoto(p_x, beta, distortion=hamming_distortion, max_iters=100, rest
 ###############################################################################
 # Information Bottleneck
 
-# pragma: no cover
-def blahut_arimoto_ib(p_xy, beta, divergence=relative_entropy, max_iters=100, restarts=250):
+def blahut_arimoto_ib(p_xy, beta, divergence=relative_entropy, max_iters=100, restarts=250):  # pragma: no cover
     """
     Perform a robust form of the Blahut-Arimoto algorithms.
 

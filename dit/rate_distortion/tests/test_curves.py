@@ -2,6 +2,8 @@
 Tests for dit.rate_distortion.curves
 """
 
+from __future__ import division
+
 import pytest
 
 import numpy as np
@@ -54,3 +56,31 @@ def test_simple_ib_1():
     assert ib.relevances[5] == pytest.approx(0.4)
     assert ib.relevances[20] == pytest.approx(0.5701613885745838)
     assert 3.0 in ib.find_kinks()
+
+
+def test_simple_ib_2():
+    """
+    Test against known values.
+    """
+    dist = Distribution(['00', '02', '12', '21', '22'], [1/5]*5)
+    ib = IBCurve(dist, beta_max=None, beta_num=21, alpha=0.0)
+    assert ib.complexities[2] == pytest.approx(0.0)
+    assert ib.complexities[12] == pytest.approx(1.0)
+    assert ib.complexities[20] == pytest.approx(1.5129028136502387)
+    assert ib.relevances[2] == pytest.approx(0.0)
+    assert ib.relevances[12] == pytest.approx(0.4)
+    assert ib.relevances[20] == pytest.approx(0.5701613885745838)
+
+
+def test_simple_ib_3():
+    """
+    Test against known values.
+    """
+    dist = Distribution(['00', '02', '12', '21', '22'], [1/5]*5)
+    ib = IBCurve(dist, beta_max=None, beta_num=21, alpha=0.5)
+    assert ib.complexities[2] == pytest.approx(0.0)
+    assert ib.complexities[5] == pytest.approx(0.8522009308325029)
+    assert ib.complexities[20] == pytest.approx(1.5219280948873621)
+    assert ib.relevances[2] == pytest.approx(0.0)
+    assert ib.relevances[5] == pytest.approx(0.4080081559717983)
+    assert ib.relevances[20] == pytest.approx(0.5709505944546684)
