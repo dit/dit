@@ -442,6 +442,7 @@ class IBCurve(object):
 
             q_xt = q_xyzt.sum(axis=(1, 2))
             q_x_t = (q_xt / q_xt.sum(axis=0, keepdims=True))
+            q_x_t[np.isnan(q_x_t)] = 0
 
             ranks.append(np.linalg.matrix_rank(q_x_t, tol=1e-4))
             alphabets.append((q_xt.sum(axis=0) > 1e-6).sum())

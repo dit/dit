@@ -32,7 +32,8 @@ def test_wci1(rvs, crvs, val):
     """
     Test against known values.
     """
-    assert C(xor, rvs, crvs) == pytest.approx(val, abs=1e-4)
+    c = C(xor, rvs, crvs)
+    assert c == pytest.approx(val, abs=1e-4)
 
 
 @pytest.mark.flaky(reruns=5)
@@ -50,8 +51,9 @@ def test_wci2():
     d_opt4 = D([(0, 0, 1), (0, 0, 0), (0, 1, 0), (1, 0, 1)], [1/6, 1/6, 1/3, 1/3])
     d_opts = [d_opt1, d_opt2, d_opt3, d_opt4]
     equal = lambda d1, d2: d1.is_approx_equal(d2, rtol=1e-2, atol=1e-2)
+    c = wci.objective(wci._optima)
     assert any(equal(d, d_opt) for d_opt in d_opts)
-    assert wci.objective(wci._optima) == pytest.approx(2/3, abs=1e-3)
+    assert c == pytest.approx(2/3, abs=1e-3)
 
 
 @pytest.mark.slow
@@ -89,4 +91,5 @@ def test_wci4(i, x0):
     wci = WynerCommonInformation(sbec(p))
     wci.optimize(x0=x0['x0'])
     x0['x0'] = wci._optima.copy()
-    assert wci.objective(wci._optima) == pytest.approx(C_sbec(p), abs=1e-3)
+    c = wci.objective(wci._optima)
+    assert c == pytest.approx(C_sbec(p), abs=1e-3)

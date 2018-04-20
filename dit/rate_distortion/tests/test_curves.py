@@ -13,6 +13,7 @@ from dit.rate_distortion.curves import IBCurve, RDCurve
 from dit.shannon import entropy
 
 
+@pytest.mark.flaky(reruns=5)
 def test_simple_rd_1():
     """
     Test against know result, using scipy.
@@ -23,6 +24,7 @@ def test_simple_rd_1():
         assert r == pytest.approx(1 - entropy(d))
 
 
+@pytest.mark.flaky(reruns=5)
 def test_simple_rd_2():
     """
     Test against know result, using blahut-arimoto.
@@ -33,6 +35,7 @@ def test_simple_rd_2():
         assert r == pytest.approx(1 - entropy(d))
 
 
+@pytest.mark.flaky(reruns=5)
 def test_simple_rd_3():
     """
     Test against know result, using blahut-arimoto.
@@ -43,6 +46,7 @@ def test_simple_rd_3():
         assert r == pytest.approx(1 - entropy(d))
 
 
+@pytest.mark.flaky(reruns=5)
 def test_simple_ib_1():
     """
     Test against known values.
@@ -58,6 +62,7 @@ def test_simple_ib_1():
     assert 3.0 in ib.find_kinks()
 
 
+@pytest.mark.flaky(reruns=5)
 def test_simple_ib_2():
     """
     Test against known values.
@@ -72,6 +77,7 @@ def test_simple_ib_2():
     assert ib.relevances[20] == pytest.approx(0.5701613885745838, abs=1e-4)
 
 
+@pytest.mark.flaky(reruns=5)
 def test_simple_ib_3():
     """
     Test against known values.
