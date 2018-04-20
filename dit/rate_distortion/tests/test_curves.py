@@ -66,7 +66,7 @@ def test_simple_ib_2():
     ib = IBCurve(dist, beta_max=None, beta_num=21, alpha=0.0)
     assert ib.complexities[2] == pytest.approx(0.0)
     assert ib.complexities[12] == pytest.approx(0.97095059445466858)
-    assert ib.complexities[20] == pytest.approx(1.5129028136502387)
+    assert ib.complexities[20] == pytest.approx(1.5219280948873621)
     assert ib.relevances[2] == pytest.approx(0.0)
     assert ib.relevances[12] == pytest.approx(0.4)
     assert ib.relevances[20] == pytest.approx(0.5701613885745838)
