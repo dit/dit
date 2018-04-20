@@ -81,7 +81,7 @@ class InformationBottleneck(BaseAuxVarOptimizer):
         self.error = self._conditional_mutual_information(self._x, self._y, self._t | self._z)
         self.distortion = self._distortion()
 
-        self._default_hops *= 2
+        self._default_hops *= 3
 
     def _distortion(self):
         """
