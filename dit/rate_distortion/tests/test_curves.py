@@ -68,7 +68,7 @@ def test_simple_ib_2():
     assert ib.complexities[12] == pytest.approx(0.97095059445466858)
     assert ib.complexities[20] == pytest.approx(1.5219280948873621)
     assert ib.relevances[2] == pytest.approx(0.0)
-    assert ib.relevances[12] == pytest.approx(0.4)
+    assert ib.relevances[12] == pytest.approx(0.4199730940219748)
     assert ib.relevances[20] == pytest.approx(0.5701613885745838)
 
 

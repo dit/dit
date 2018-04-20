@@ -134,8 +134,11 @@ class BasePlotter(with_metaclass(ABCMeta, object)):
         ax_min_1 = 0
         ax_min_2 = 0
 
-        ax_max_1 = max([axis_1.limit(c) for c in self.curves])
-        if ax_max_1 is None:
+        try:
+            ax_max_1 = max([axis_1.limit(c) for c in self.curves])
+            if ax_max_1 is None:
+                raise TypeError
+        except TypeError:
             ax_min_1 = min([c.betas[0] for c in self.curves])
             ax_max_1 = max([c.betas[-1] for c in self.curves])
 
