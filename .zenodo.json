@@ -1,0 +1,17 @@
+{
+    "description": "Python package for information theory.",
+    "license": "BSD 2-clause",
+    "title": "dit",
+    "upload_type": "software",
+    "creators": [
+        {
+            "name": "Ryan G. James",
+            "affiliation": "Complexity Sciences Center, Physics Department, University of California Davis",
+            "orcid": "0000-0003-2149-9085"
+        },
+        {
+            "name": "Christopher J. Ellison"
+        }
+    ],
+    "access_right": "open"
+}
