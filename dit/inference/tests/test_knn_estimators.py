@@ -65,7 +65,7 @@ def test_cmi_knn1(means, stds, rho):
     cov = np.array([[stds[0]**2, stds[0]*stds[1]*rho, 0],
                     [stds[0]*stds[1]*rho, stds[1]**2, 0],
                     [0, 0, stds[2]**2]])
-    n = 300000
+    n = 150000
     data = np.random.multivariate_normal(means, cov, n)
     mi = total_correlation_ksg(data, [[0], [1]], [2])
     assert mi == pytest.approx(-np.log2(1-rho**2)/2, abs=1e-1)

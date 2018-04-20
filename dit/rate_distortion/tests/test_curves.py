@@ -49,12 +49,12 @@ def test_simple_ib_1():
     """
     dist = Distribution(['00', '02', '12', '21', '22'], [1/5]*5)
     ib = IBCurve(dist, beta_max=10, beta_num=21)
-    assert ib.complexities[2] == pytest.approx(0.0)
-    assert ib.complexities[5] == pytest.approx(0.8)
-    assert ib.complexities[20] == pytest.approx(1.5129028136502387)
-    assert ib.relevances[2] == pytest.approx(0.0)
-    assert ib.relevances[5] == pytest.approx(0.4)
-    assert ib.relevances[20] == pytest.approx(0.5701613885745838)
+    assert ib.complexities[2] == pytest.approx(0.0, abs=1e-4)
+    assert ib.complexities[5] == pytest.approx(0.8, abs=1e-4)
+    assert ib.complexities[20] == pytest.approx(1.5129028136502387, abs=1e-4)
+    assert ib.relevances[2] == pytest.approx(0.0, abs=1e-4)
+    assert ib.relevances[5] == pytest.approx(0.4, abs=1e-4)
+    assert ib.relevances[20] == pytest.approx(0.5701613885745838, abs=1e-4)
     assert 3.0 in ib.find_kinks()
 
 
@@ -64,12 +64,12 @@ def test_simple_ib_2():
     """
     dist = Distribution(['00', '02', '12', '21', '22'], [1/5]*5)
     ib = IBCurve(dist, beta_max=None, beta_num=21, alpha=0.0)
-    assert ib.complexities[2] == pytest.approx(0.0)
-    assert ib.complexities[12] == pytest.approx(0.97095059445466858)
-    assert ib.complexities[20] == pytest.approx(1.5219280948873621)
-    assert ib.relevances[2] == pytest.approx(0.0)
-    assert ib.relevances[12] == pytest.approx(0.4199730940219748)
-    assert ib.relevances[20] == pytest.approx(0.5701613885745838)
+    assert ib.complexities[2] == pytest.approx(0.0, abs=1e-4)
+    assert ib.complexities[12] == pytest.approx(0.97095059445466858, abs=1e-4)
+    assert ib.complexities[20] == pytest.approx(1.5219280948873621, abs=1e-4)
+    assert ib.relevances[2] == pytest.approx(0.0, abs=1e-4)
+    assert ib.relevances[12] == pytest.approx(0.4199730940219748, abs=1e-4)
+    assert ib.relevances[20] == pytest.approx(0.5701613885745838, abs=1e-4)
 
 
 def test_simple_ib_3():
@@ -78,9 +78,9 @@ def test_simple_ib_3():
     """
     dist = Distribution(['00', '02', '12', '21', '22'], [1/5]*5)
     ib = IBCurve(dist, beta_max=None, beta_num=21, alpha=0.5)
-    assert ib.complexities[2] == pytest.approx(0.0)
-    assert ib.complexities[5] == pytest.approx(0.8522009308325029)
-    assert ib.complexities[20] == pytest.approx(1.5219280948873621)
-    assert ib.relevances[2] == pytest.approx(0.0)
-    assert ib.relevances[5] == pytest.approx(0.4080081559717983)
-    assert ib.relevances[20] == pytest.approx(0.5709505944546684)
+    assert ib.complexities[2] == pytest.approx(0.0, abs=1e-4)
+    assert ib.complexities[5] == pytest.approx(0.8522009308325029, abs=1e-4)
+    assert ib.complexities[20] == pytest.approx(1.5219280948873621, abs=1e-4)
+    assert ib.relevances[2] == pytest.approx(0.0, abs=1e-4)
+    assert ib.relevances[5] == pytest.approx(0.4080081559717983, abs=1e-4)
+    assert ib.relevances[20] == pytest.approx(0.5709505944546684, abs=1e-4)
