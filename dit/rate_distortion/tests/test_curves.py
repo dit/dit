@@ -74,7 +74,7 @@ def test_simple_ib_2():
     assert ib.complexities[20] == pytest.approx(1.5219280948873621, abs=1e-4)
     assert ib.relevances[2] == pytest.approx(0.0, abs=1e-4)
     assert ib.relevances[12] == pytest.approx(0.4199730940219748, abs=1e-4)
-    assert ib.relevances[20] == pytest.approx(0.5701613885745838, abs=1e-4)
+    assert ib.relevances[20] == pytest.approx(0.5709505944546684, abs=1e-4)
 
 
 @pytest.mark.flaky(reruns=5)
