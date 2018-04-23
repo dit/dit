@@ -40,13 +40,23 @@ def test_simple_rd_3():
     """
     Test against know result, using scipy.
     """
+    dist = Distribution(['00', '01', '10', '11'], [1/4]*4)
+    rd = RDCurve(dist, rv=[0], crvs=[1], beta_num=10, alpha=0.5, distortion=maximum_correlation)
+    assert rd.distortions[0] == pytest.approx(1.0)
+
+
+@pytest.mark.flaky(reruns=5)
+def test_simple_rd_4():
+    """
+    Test against know result, using scipy.
+    """
     dist = Distribution(['0', '1'], [1/2, 1/2])
     rd = RDCurve(dist, rv=[0], beta_num=10, alpha=0.0, distortion=residual_entropy)
     assert rd.distortions[0] == pytest.approx(2.0)
 
 
 @pytest.mark.flaky(reruns=5)
-def test_simple_rd_4():
+def test_simple_rd_5():
     """
     Test against know result, using blahut-arimoto.
     """
@@ -57,7 +67,7 @@ def test_simple_rd_4():
 
 
 @pytest.mark.flaky(reruns=5)
-def test_simple_rd_5():
+def test_simple_rd_6():
     """
     Test against know result, using blahut-arimoto.
     """
