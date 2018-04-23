@@ -51,8 +51,8 @@ def test_simple_rd_4():
     Test against know result, using scipy.
     """
     dist = Distribution(['0', '1'], [1/2, 1/2])
-    rd = RDCurve(dist, rv=[0], beta_num=10, alpha=0.0, distortion=residual_entropy)
-    assert rd.distortions[0] == pytest.approx(2.0)
+    rd = RDCurve(dist, beta_num=10, alpha=0.0, distortion=residual_entropy)
+    assert rd.distortions[0] == pytest.approx(1.0)
 
 
 @pytest.mark.flaky(reruns=5)
@@ -82,7 +82,7 @@ def test_simple_ib_1():
     Test against known values.
     """
     dist = Distribution(['00', '02', '12', '21', '22'], [1/5]*5)
-    ib = IBCurve(dist, beta_max=10, beta_num=21)
+    ib = IBCurve(dist, rvs=[[0], [1]], beta_max=10, beta_num=21)
     assert ib.complexities[2] == pytest.approx(0.0, abs=1e-4)
     assert ib.complexities[5] == pytest.approx(0.8, abs=1e-4)
     assert ib.complexities[20] == pytest.approx(1.5129028136502387, abs=1e-4)
