@@ -10,6 +10,7 @@ import numpy as np
 
 from dit import Distribution
 from dit.rate_distortion.curves import IBCurve, RDCurve
+from dit.rate_distortion.distortions import hamming, maximum_correlation, residual_entropy
 from dit.shannon import entropy
 
 
@@ -27,6 +28,26 @@ def test_simple_rd_1():
 @pytest.mark.flaky(reruns=5)
 def test_simple_rd_2():
     """
+    Test against know result, using scipy.
+    """
+    dist = Distribution(['0', '1'], [1/2, 1/2])
+    rd = RDCurve(dist, rv=[0], beta_num=10, alpha=0.5, distortion=maximum_correlation)
+    assert rd.distortions[0] == pytest.approx(1.0)
+
+
+@pytest.mark.flaky(reruns=5)
+def test_simple_rd_3():
+    """
+    Test against know result, using scipy.
+    """
+    dist = Distribution(['0', '1'], [1/2, 1/2])
+    rd = RDCurve(dist, rv=[0], beta_num=10, alpha=0.0, distortion=residual_entropy)
+    assert rd.distortions[0] == pytest.approx(2.0)
+
+
+@pytest.mark.flaky(reruns=5)
+def test_simple_rd_4():
+    """
     Test against know result, using blahut-arimoto.
     """
     dist = Distribution(['0', '1'], [1/2, 1/2])
@@ -36,14 +57,13 @@ def test_simple_rd_2():
 
 
 @pytest.mark.flaky(reruns=5)
-def test_simple_rd_3():
+def test_simple_rd_5():
     """
     Test against know result, using blahut-arimoto.
     """
     dist = Distribution(['0', '1'], [1/2, 1/2])
-    rd = RDCurve(dist, beta_num=10, beta_max=None, method='ba')
-    for r, d in zip(rd.rates, rd.distortions):
-        assert r == pytest.approx(1 - entropy(d))
+    rd = RDCurve(dist, rv=[0], beta_num=10, beta_max=None, method='ba', distortion=residual_entropy)
+    assert rd.distortions[0] == pytest.approx(2.0)
 
 
 @pytest.mark.flaky(reruns=5)

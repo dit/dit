@@ -48,7 +48,7 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
         if rv is None:
             rv = list(flatten(dist.rvs))
 
-        try:
+        try:  # pragma: no cover
             iter(rv[0])
             msg = "Rate-Distortion is only defined for one variable."
             raise ditException(msg)
