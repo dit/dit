@@ -153,7 +153,7 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
         """
         pass
 
-    @classmethod  # pragma: no cover
+    @classmethod
     def functional(cls):
         """
         Construct a functional form of the optimizer.
