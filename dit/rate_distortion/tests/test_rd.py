@@ -9,7 +9,7 @@ import pytest
 import numpy as np
 
 from dit import Distribution
-from dit.rate_distortion import RateDistortionHamming
+from dit.rate_distortion.rate_distortion import RateDistortionHamming
 
 
 def test_rd():
