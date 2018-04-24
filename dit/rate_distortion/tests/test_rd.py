@@ -1,5 +1,5 @@
 """
-Tests for dit.rate_distortion.curves
+Tests for dit.rate_distortion.rate_distortion
 """
 
 from __future__ import division
@@ -14,6 +14,7 @@ from dit.rate_distortion.rate_distortion import RateDistortionHamming
 
 def test_rd():
     """
+    Test specific RD optimizer.
     """
     dist = Distribution(['0', '1'], [1/2, 1/2])
     rd = RateDistortionHamming.functional()
