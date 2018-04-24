@@ -9,7 +9,7 @@ import pytest
 import numpy as np
 
 from dit import Distribution
-from dit.divergences import variational_distance
+from dit.divergences.pmf import variational_distance
 from dit.exceptions import ditException
 from dit.rate_distortion.information_bottleneck import InformationBottleneck, InformationBottleneckDivergence
 
