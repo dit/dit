@@ -622,7 +622,6 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
         idx_xyz = tuple(self._all_vars - (rv_x | rv_y | rv_z))
         idx_xz = tuple(self._all_vars - (rv_x | rv_z))
         idx_yz = tuple(self._all_vars - (rv_y | rv_z))
-        idx_z = tuple(self._all_vars - rv_z)
 
         def conditional_maximum_correlation(pmf):
             """

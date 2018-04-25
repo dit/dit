@@ -9,7 +9,7 @@ import pytest
 import numpy as np
 
 from dit import Distribution
-from dit.divergences.pmf import variational_distance
+from dit.divergences.pmf import relative_entropy, variational_distance
 from dit.exceptions import ditException
 from dit.rate_distortion.information_bottleneck import InformationBottleneck, InformationBottleneckDivergence
 
@@ -64,11 +64,12 @@ def test_ibd_1():
     assert ibd.relevance(pmf) == pytest.approx(0.0)
 
 
+pytest.mark.xfail
 def test_ibd_2():
     """
     Test with custom distortion.
     """
-    ibd = InformationBottleneckDivergence(dist2, rvs=[[0], [1]], crvs=[2], beta=0.0, divergence=variational_distance)
+    ibd = InformationBottleneckDivergence(dist2, rvs=[[0], [1]], crvs=[2], beta=0.0, divergence=relative_entropy)
     ibd.optimize()
     pmf = ibd.construct_joint(ibd._optima)
     assert ibd.complexity(pmf) == pytest.approx(0.0)
