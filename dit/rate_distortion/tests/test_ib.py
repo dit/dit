@@ -64,7 +64,7 @@ def test_ibd_1():
     assert ibd.relevance(pmf) == pytest.approx(0.0)
 
 
-pytest.mark.xfail
+@pytest.mark.xfail
 def test_ibd_2():
     """
     Test with custom distortion.
