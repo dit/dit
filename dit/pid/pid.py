@@ -137,7 +137,7 @@ class BasePID(with_metaclass(ABCMeta, object)):
         pi : float
             The partial information associated with `key`.
         """
-        return self.get_partial(key)
+        return float(self.get_partial(key))
 
     def __repr__(self): # pragma: no cover
         """

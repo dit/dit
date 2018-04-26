@@ -205,3 +205,7 @@ def blahut_arimoto_ib(p_xy, beta, divergence=relative_entropy, max_iters=100, re
     q_xyt = p_xy[:, :, np.newaxis] * q_t_x[:, np.newaxis, :]
 
     return rd, q_xyt
+
+
+###############################################################################
+# TODO: Deterministic Forms

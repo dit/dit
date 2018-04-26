@@ -33,7 +33,7 @@ def test_wci1(rvs, crvs, val):
     Test against known values.
     """
     c = C(xor, rvs, crvs)
-    assert c == pytest.approx(val, abs=1e-4)
+    assert float(c) == pytest.approx(val, abs=1e-4)
 
 
 @pytest.mark.flaky(reruns=5)
@@ -53,7 +53,7 @@ def test_wci2():
     equal = lambda d1, d2: d1.is_approx_equal(d2, rtol=1e-2, atol=1e-2)
     c = wci.objective(wci._optima)
     assert any(equal(d, d_opt) for d_opt in d_opts)
-    assert c == pytest.approx(2/3, abs=1e-3)
+    assert float(c) == pytest.approx(2/3, abs=1e-3)
 
 
 @pytest.mark.slow
