@@ -21,7 +21,7 @@ class RDCurve(object):
     Compute a rate-distortion curve.
     """
 
-    def __init__(self, dist, rv=None, crvs=None, beta_min=0, beta_max=10, beta_num=101, alpha=1.0, distortion=hamming, method='sp'):
+    def __init__(self, dist, rv=None, crvs=None, beta_min=0, beta_max=10, beta_num=101, alpha=1.0, distortion=hamming, method=None):
         """
         Initialize the curve computer.
 
@@ -46,10 +46,16 @@ class RDCurve(object):
             bottleneck, while 0.0 corresponds to the deterministic bottleneck.
         distortion : Distortion
             The distortion to use.
-        method : {'sp', 'ba'}
+        method : {'sp', 'ba', None}
             The method to utilize in computing the curve. If 'sp', utilize
             scipy.optimize; if 'ba' utilize the iterative Blahut-Arimoto
-            algorithm. Defaults to 'sp'.
+            algorithm. Defaults to None, in which case 'sp' is used if
+            `distortion` supports it, and 'ba' if not.
+
+        Raises
+        ------
+        ditException
+            Raised if any of the parameters are not viable.
         """
         if rv is None:
             rv = list(flatten(dist.rvs))
@@ -63,7 +69,15 @@ class RDCurve(object):
 
         self._distortion = distortion
 
-        if method not in ('sp', 'ba'):  # pragma: no cover
+        if method is None:
+            if distortion.optimizer:
+                method = 'sp'
+            elif distortion.matrix:
+                method = 'ba'
+            else:
+                msg = "Distortion measure is vacuous."
+                raise ditException(msg)
+        elif method not in ('sp', 'ba'):  # pragma: no cover
             msg = "Method '{}' not supported.".format(method)
             raise ditException(msg)
         elif method == 'sp' and not distortion.optimizer:  # pragma: no cover

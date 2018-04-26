@@ -19,4 +19,4 @@ def test_rd():
     dist = Distribution(['0', '1'], [1/2, 1/2])
     rd = RateDistortionHamming.functional()
     r, d = rd(dist, beta=0.0)
-    assert d == pytest.approx(0.5)
+    assert d == pytest.approx(0.5, abs=1e-5)
