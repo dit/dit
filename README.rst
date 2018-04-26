@@ -52,6 +52,7 @@ Alternatively, you can clone this repository, move into the newly created
   pip install .
 
 .. note::
+
   The cython extensions are currently not supported on windows. Please install
   using the ``--nocython`` option.
 
@@ -81,24 +82,23 @@ though it is not in the literature, the multivariate conditional exact common in
 | * Necessary Conditional Entropy          |   Multi-Information                     | * Cross Entropy                   |
 | * Residual Entropy /                     | * Dual Total Correlation /              | * Jensen-Shannon Divergence       |
 |   Independent Information /              |   Binding Information                   | * Earth Mover's Distance          |
-|   Variation of Information               | * CAEKL Multivariate Mutual Information |                                   |
-+------------------------------------------+-----------------------------------------+-----------------------------------+
-| Common Informations                      | Partial Information Decomposition       | Other Measures                    |
-|                                          |                                         |                                   |
-| * Gacs-Korner Common Information         | * :math:`I_{min}`                       | * Channel Capacity                |
-| * Wyner Common Information               | * :math:`I_{\wedge}`                    | * Complexity Profile              |
-| * Exact Common Information               | * :math:`I_{\downarrow}`                | * Connected Informations          |
-| * Functional Common Information          | * :math:`I_{proj}`                      | * Cumulative Residual Entropy     |
-| * MSS Common Information                 | * :math:`I_{BROJA}`                     | * Extropy                         |
-+------------------------------------------+ * :math:`I_{ccs}`                       | * Hypercontractivity Coefficient  |
-| Secret Key Agreement Bounds              | * :math:`I_{\pm}`                       | * Information Bottleneck          |
-|                                          | * :math:`I_{dep}`                       | * Information Diagrams            |
-| * Intrinsic Mutual Information           | * :math:`I_{RAV}`                       | * Information Trimming            |
-| * Reduced Intrinsic Mutual Information   |                                         | * Lautum Information              |
-| * Minimal Intrinsic Mutual Information   |                                         | * LMPR Complexity                 |
-| * Necessary Intrinsic Mutual Information |                                         | * Marginal Utility of Information |
-| * Secrecy Capacity                       |                                         | * Maximum Correlation             |
-|                                          |                                         | * Maximum Entropy Distributions   |
+|   Variation of Information               | * CAEKL Multivariate Mutual Information +-----------------------------------+
++------------------------------------------+-----------------------------------------+ Other Measures                    |
+| Common Informations                      | Partial Information Decomposition       |                                   |
+|                                          |                                         | * Channel Capacity                |
+| * Gacs-Korner Common Information         | * :math:`I_{min}`                       | * Complexity Profile              |
+| * Wyner Common Information               | * :math:`I_{\wedge}`                    | * Connected Informations          |
+| * Exact Common Information               | * :math:`I_{\downarrow}`                | * Cumulative Residual Entropy     |
+| * Functional Common Information          | * :math:`I_{proj}`                      | * Extropy                         |
+| * MSS Common Information                 | * :math:`I_{BROJA}`                     | * Hypercontractivity Coefficient  |
++------------------------------------------+ * :math:`I_{ccs}`                       | * Information Bottleneck          |
+| Secret Key Agreement Bounds              | * :math:`I_{\pm}`                       | * Information Diagrams            |
+|                                          | * :math:`I_{dep}`                       | * Information Trimming            |
+| * Intrinsic Mutual Information           | * :math:`I_{RAV}`                       | * Lautum Information              |
+| * Reduced Intrinsic Mutual Information   |                                         | * LMPR Complexity                 |
+| * Minimal Intrinsic Mutual Information   |                                         | * Marginal Utility of Information |
+| * Necessary Intrinsic Mutual Information |                                         | * Maximum Correlation             |
+| * Secrecy Capacity                       |                                         | * Maximum Entropy Distributions   |
 |                                          |                                         | * Perplexity                      |
 |                                          |                                         | * Rate-Distortion Theory          |
 |                                          |                                         | * TSE Complexity                  |

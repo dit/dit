@@ -89,10 +89,10 @@ class RDCurve(object):
         elif method == 'ba' and crvs:  # pragma: no cover
             msg = "Method 'ba' does not support conditional variables."
             raise ditException(msg)
-        else:
-            self._get_rd = {'ba': self._get_rd_ba,
-                            'sp': self._get_rd_sp,
-                            }[method]
+
+        self._get_rd = {'ba': self._get_rd_ba,
+                        'sp': self._get_rd_sp,
+                        }[method]
 
         self._rd_opt = self._distortion.optimizer(self.dist,
                                                   beta=0.0,
