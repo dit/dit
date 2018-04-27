@@ -76,7 +76,7 @@ def i_ccs(d, inputs, output):
     # fix the sign of things close to zero
     for pmi in pmis.values():
         for e, val in pmi.items():
-            if np.isclose(val, 0.0):
+            if np.isclose(val, 0.0):  # pragma: no cover
                 pmi[e] = 0.0
     for e, val in coinfos.items():
         if np.isclose(val, 0.0):

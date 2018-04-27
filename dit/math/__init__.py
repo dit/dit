@@ -15,7 +15,7 @@ np.seterr(all='ignore')
 del np
 
 from .equal import close, allclose
-from .sampling import sample, _sample, _samples, ball, norm
+from .sampling import sample, _sample, _samples, ball, norm, sample_simplex
 from .ops import get_ops, LinearOperations, LogOperations
 from .fraction import approximate_fraction
 from .misc import combinations, prod

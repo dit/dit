@@ -11,6 +11,8 @@ omit =
 	*/dit/utils/logger.py
 	# exclude hypothesis strategies, because they don't get covered
 	*/dit/utils/testing.py
+    # don't cover plotting code
+    dit/rate_distortion/plotting.py
 
 [report]
 # Regexes for lines to exclude from consideration

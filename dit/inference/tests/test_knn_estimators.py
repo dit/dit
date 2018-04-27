@@ -45,7 +45,7 @@ def test_entropy_knn2(mean, std):
        rho=floats(min_value=-0.9, max_value=0.9))
 def test_mi_knn1(means, stds, rho):
     """
-    Test entropy of normal samples.
+    Test mutual information of multinormal samples.
     """
     cov = np.array([[stds[0]**2, stds[0]*stds[1]*rho], [stds[0]*stds[1]*rho, stds[1]**2]])
     n = 100000
@@ -60,7 +60,7 @@ def test_mi_knn1(means, stds, rho):
        rho=floats(min_value=-0.9, max_value=0.9))
 def test_cmi_knn1(means, stds, rho):
     """
-    Test entropy of normal samples.
+    Test conditional mutual information of multinormal samples.
     """
     cov = np.array([[stds[0]**2, stds[0]*stds[1]*rho, 0],
                     [stds[0]*stds[1]*rho, stds[1]**2, 0],

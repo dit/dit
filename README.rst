@@ -1,59 +1,70 @@
 ``dit`` is a Python package for information theory.
 
-|build| |build_windows| |codecov| |health| |docs| |deps| |zenodo| |gitter| |saythanks|
+|build| |build_windows| |codecov| |health| |deps|
 
-Documentation:
-   http://docs.dit.io
+|docs| |slack| |saythanks|
 
-Downloads:
-   https://pypi.org/project/dit/
+|zenodo|
 
-Dependencies:
-   * Python 2.7, 3.3, 3.4, 3.5, or 3.6
-   * `boltons <https://boltons.readthedocs.io>`_
-   * `contextlib2 <https://contextlib2.readthedocs.io>`_
-   * `debtcollector <https://docs.openstack.org/debtcollector/>`_
-   * `networkx <https://networkx.github.io/>`_
-   * `numpy <http://www.numpy.org/>`_
-   * `prettytable <https://code.google.com/archive/p/prettytable/>`_
-   * `scipy <https://www.scipy.org/>`_
-   * `six <http://pythonhosted.org/six/>`_
+Basic Information
+-----------------
 
-Optional Dependencies:
-   * `colorama <https://pypi.python.org/pypi/colorama>`_
-   * `cython <http://cython.org/>`_
-   * `numdifftools <https://pypi.python.org/pypi/Numdifftools>`_
-   * `pint <https://pint.readthedocs.io>`_
-   * `scikit-learn <http://scikit-learn.org/>`_
+Documentation
+*************
 
-Note:
-   The cython extensions are currently not supported on windows. Please install
-   using the ``--nocython`` option.
+http://docs.dit.io
 
-Install:
-   The easiest way to install is:
+Downloads
+*********
 
-   .. code-block:: bash
+https://pypi.org/project/dit/
 
-      pip install dit
++-------------------------------------------------------------------+---------------------------------------------------------------+
+| Dependencies                                                      | Optional Dependencies                                         |
++===================================================================+===============================================================+
+| * Python 2.7, 3.3, 3.4, 3.5, or 3.6                               | * `colorama <https://pypi.python.org/pypi/colorama>`_         |
+| * `boltons <https://boltons.readthedocs.io>`_                     | * `cython <http://cython.org/>`_                              |
+| * `contextlib2 <https://contextlib2.readthedocs.io>`_             | * `numdifftools <https://pypi.python.org/pypi/Numdifftools>`_ |
+| * `debtcollector <https://docs.openstack.org/debtcollector/>`_    | * `pint <https://pint.readthedocs.io>`_                       |
+| * `networkx <https://networkx.github.io/>`_                       | * `scikit-learn <http://scikit-learn.org/>`_                  |
+| * `numpy <http://www.numpy.org/>`_                                |                                                               |
+| * `prettytable <https://code.google.com/archive/p/prettytable/>`_ |                                                               |
+| * `scipy <https://www.scipy.org/>`_                               |                                                               |
+| * `six <http://pythonhosted.org/six/>`_                           |                                                               |
++-------------------------------------------------------------------+---------------------------------------------------------------+
 
-   Alternatively, you can clone this repository, move into the newly created
-   ``dit`` directory, and then install the package:
+Install
+*******
 
-   .. code-block:: bash
+The easiest way to install is:
 
-      git clone https://github.com/dit/dit.git
-      cd dit
-      pip install .
+.. code-block:: bash
 
-Mailing list:
-   None
+  pip install dit
 
-Code and bug tracker:
-   https://github.com/dit/dit
+Alternatively, you can clone this repository, move into the newly created
+``dit`` directory, and then install the package:
 
-License:
-   BSD 2-Clause, see LICENSE.txt for details.
+.. code-block:: bash
+
+  git clone https://github.com/dit/dit.git
+  cd dit
+  pip install .
+
+.. note::
+
+  The cython extensions are currently not supported on windows. Please install
+  using the ``--nocython`` option.
+
+Code and bug tracker
+********************
+
+https://github.com/dit/dit
+
+License
+*******
+
+BSD 2-Clause, see LICENSE.txt for details.
 
 Implemented Measures
 --------------------
@@ -62,76 +73,36 @@ Implemented Measures
 generality, where such generalizations either exist in the literature or are relatively obvious --- for example,
 though it is not in the literature, the multivariate conditional exact common information is implemented here.
 
-- Entropies:
-
-  * Shannon Entropy
-  * Renyi Entropy
-  * Tsallis Entropy
-  * Necessary Conditional Entropy
-  * Residual Entropy / Independent Information / Variation of Information
-
-- Mutual Informations:
-
-  * Co-Information
-  * Interaction Information
-  * Total Correlation / Multi-Information
-  * Dual Total Correlation / Binding Information
-  * CAEKL Multivariate Mutual Information
-
-- Divergences
-
-  * Variational Distance
-  * Kullback-Leibler Divergence
-  * Cross Entropy
-  * Jensen-Shannon Divergence
-  * Earth Mover's Distance
-
-- Common Informations:
-
-  * Gacs-Korner Common Information
-  * Wyner Common Information
-  * Exact Common Information
-  * Functional Common Information
-  * MSS Common Information
-
-- Secret Key Agreement bounds:
-
-  * Intrinsic Mutual Information
-  * Reduced Intrinsic Mutual Information
-  * Minimal Intrinsic Mutual Information
-  * Necessary Intrinsic Mutual Information
-  * Secrecy Capacity
-
-- Partial Information Decompositions:
-
-  * :math:`I_{min}`
-  * :math:`I_{\wedge}`
-  * :math:`I_{\downarrow}`
-  * :math:`I_{proj}`
-  * :math:`I_{BROJA}`
-  * :math:`I_{ccs}`
-  * :math:`I_{\pm}`
-  * :math:`I_{dep}`
-  * :math:`I_{RAV}`
-
-- Other measures
-
-  * Channel Capacity
-  * Complexity Profile
-  * Connected Informations
-  * Cumulative Residual Entropy
-  * Extropy
-  * Information Diagrams
-  * Information Trimming
-  * Lautum Information
-  * LMPR Complexity
-  * Marginal Utility of Information
-  * Maximum Correlation
-  * Hypercontractivity Coefficient
-  * Maximum Entropy Distributions
-  * Perplexity
-  * TSE Complexity
-
++------------------------------------------+-----------------------------------------+-----------------------------------+
+| Entropies                                | Mutual Informations                     | Divergences                       |
+|                                          |                                         |                                   |
+| * Shannon Entropy                        | * Co-Information                        | * Variational Distance            |
+| * Renyi Entropy                          | * Interaction Information               | * Kullback-Leibler Divergence \   |
+| * Tsallis Entropy                        | * Total Correlation /                   |   Relative Entropy                |
+| * Necessary Conditional Entropy          |   Multi-Information                     | * Cross Entropy                   |
+| * Residual Entropy /                     | * Dual Total Correlation /              | * Jensen-Shannon Divergence       |
+|   Independent Information /              |   Binding Information                   | * Earth Mover's Distance          |
+|   Variation of Information               | * CAEKL Multivariate Mutual Information +-----------------------------------+
++------------------------------------------+-----------------------------------------+ Other Measures                    |
+| Common Informations                      | Partial Information Decomposition       |                                   |
+|                                          |                                         | * Channel Capacity                |
+| * Gacs-Korner Common Information         | * :math:`I_{min}`                       | * Complexity Profile              |
+| * Wyner Common Information               | * :math:`I_{\wedge}`                    | * Connected Informations          |
+| * Exact Common Information               | * :math:`I_{\downarrow}`                | * Cumulative Residual Entropy     |
+| * Functional Common Information          | * :math:`I_{proj}`                      | * Extropy                         |
+| * MSS Common Information                 | * :math:`I_{BROJA}`                     | * Hypercontractivity Coefficient  |
++------------------------------------------+ * :math:`I_{ccs}`                       | * Information Bottleneck          |
+| Secret Key Agreement Bounds              | * :math:`I_{\pm}`                       | * Information Diagrams            |
+|                                          | * :math:`I_{dep}`                       | * Information Trimming            |
+| * Intrinsic Mutual Information           | * :math:`I_{RAV}`                       | * Lautum Information              |
+| * Reduced Intrinsic Mutual Information   |                                         | * LMPR Complexity                 |
+| * Minimal Intrinsic Mutual Information   |                                         | * Marginal Utility of Information |
+| * Necessary Intrinsic Mutual Information |                                         | * Maximum Correlation             |
+| * Secrecy Capacity                       |                                         | * Maximum Entropy Distributions   |
+|                                          |                                         | * Perplexity                      |
+|                                          |                                         | * Rate-Distortion Theory          |
+|                                          |                                         | * TSE Complexity                  |
++------------------------------------------+-----------------------------------------+-----------------------------------+
 
 Quickstart
 ----------
@@ -252,7 +223,15 @@ Draw 5 random samples from this distribution.
    >>> d2.rand(5)
    ['01', '10', '00', '01', '00']
 
-Enjoy!
+Contributions & Help
+--------------------
+
+If you'd like a feature added to ``dit`` or notice any problems, please file an issue, or, even better, open a pull request. We'll work with you to ensure that the code is tested and documented.
+
+If you have any questions about using ``dit``, you can reach us over at our `slack channel <https://dit-python.slack.com/>`_.
+
+
+.. badges:
 
 .. |build| image:: https://travis-ci.org/dit/dit.png?branch=master
    :target: https://travis-ci.org/dit/dit
@@ -301,3 +280,7 @@ Enjoy!
 .. |waffle| image:: https://badge.waffle.io/dit/dit.png?label=ready&title=Ready
    :target: https://waffle.io/dit/dit?utm_source=badge
    :alt: Stories in Ready
+
+.. |slack| image:: https://img.shields.io/badge/Slack-dit--python-lightgrey.svg
+   :target: https://dit-python.slack.com/
+   :alt: dit chat
