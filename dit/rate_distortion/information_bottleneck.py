@@ -301,7 +301,7 @@ class InformationBottleneckDivergence(InformationBottleneck):
             A function computing the average distortion.
         """
 
-        if self._crvs:
+        if self._shape[2] > 1:
             idx_xyz = (3,)
             idx_yzt = (0,)
             idx_xzt = (1,)
