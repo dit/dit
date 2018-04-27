@@ -72,9 +72,9 @@ class RDCurve(object):
         if method is None:
             if distortion.optimizer:
                 method = 'sp'
-            elif distortion.matrix:
+            elif distortion.matrix:  # pragma: no cover
                 method = 'ba'
-            else:
+            else:  # pragma: no cover
                 msg = "Distortion measure is vacuous."
                 raise ditException(msg)
         elif method not in ('sp', 'ba'):  # pragma: no cover
