@@ -60,8 +60,8 @@ def test_ibd_1():
     ibd = InformationBottleneckDivergence(dist, beta=0.0, divergence=relative_entropy)
     ibd.optimize()
     pmf = ibd.construct_joint(ibd._optima)
-    assert ibd.complexity(pmf) == pytest.approx(0.0, abs=1e-4)
-    assert ibd.relevance(pmf) == pytest.approx(0.0, abs=1e-4)
+    assert float(ibd.complexity(pmf)) == pytest.approx(0.0, abs=1e-4)
+    assert float(ibd.relevance(pmf)) == pytest.approx(0.0, abs=1e-4)
 
 
 def test_ibd_2():
@@ -71,5 +71,5 @@ def test_ibd_2():
     ibd = InformationBottleneckDivergence(dist2, rvs=[[0], [1]], crvs=[2], beta=0.0, divergence=relative_entropy)
     ibd.optimize()
     pmf = ibd.construct_joint(ibd._optima)
-    assert ibd.complexity(pmf) == pytest.approx(0.0, abs=1e-4)
-    assert ibd.relevance(pmf) == pytest.approx(0.0, abs=1e-4)
+    assert float(ibd.complexity(pmf)) == pytest.approx(0.0, abs=1e-4)
+    assert float(ibd.relevance(pmf)) == pytest.approx(0.0, abs=1e-4)
