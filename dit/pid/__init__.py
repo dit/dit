@@ -18,15 +18,16 @@ from .iskar import (PID_uparrow,
                     )
 from .ipm import PID_PM
 from .irav import PID_RAV
+from .irr import PID_RR
 from .hcs import PED_CS
 from .distributions import bivariates, trivariates
 
 __all_pids = [
     PID_MMI,
-    PID_uparrow,
-    PID_double_uparrow,
-    PID_triple_uparrow,
-    PID_triple_downarrow,
+    # PID_uparrow,
+    # PID_double_uparrow,
+    # PID_triple_uparrow,
+    # PID_triple_downarrow,
     # PID_double_downarrow,
     PID_downarrow,
     PID_GK,
@@ -37,4 +38,5 @@ __all_pids = [
     PID_BROJA,
     PID_dep,
     PID_RAV,
+    PID_RR,
 ]

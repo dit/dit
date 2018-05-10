@@ -428,8 +428,8 @@ This measure is designed to exploit the conflation of synergy and redundancy in 
 
 .. ipython::
 
-   In [24]: PID_RAV(bivariates['pnt. unq'])
-   Out[24]:
+   In [23]: PID_RAV(bivariates['pnt. unq'])
+   Out[23]:
    ╔════════╤════════╤════════╗
    ║ I_pm   │  I_r   │   pi   ║
    ╟────────┼────────┼────────╢
@@ -438,6 +438,35 @@ This measure is designed to exploit the conflation of synergy and redundancy in 
    ║  {1}   │ 0.5000 │ 0.5000 ║
    ║ {0}{1} │ 0.0000 │ 0.0000 ║
    ╚════════╧════════╧════════╝
+
+
+.. py:module:: dit.pid.irr
+:math:`\Irr{\bullet}`
+---------------------
+
+In order to combine :math:`\Immi{\bullet}` with the coinformation, Goodwell and Kumar :cite:`goodwell2017temporal` have introduced their *rescaled redundancy*:
+
+.. math::
+
+   \Irr{X_0 : X_1} = R_{\text{min}} + I_{S} (\Immi{X_{0:2} : Y} - R_{\text{min}}
+
+   R_{\text{min}} = \max\{ 0, \I{X_0 : X_1 : Y} \}
+
+   I_{S} = \frac{\I{X_0 : X_1}}{\min\{ \H{X_0}, \H{X_1} \}}
+
+.. ipython::
+
+   In [24]: PID_RR(bivariates['pnt. unq'])
+   Out[24]:
+   ╔════════╤════════╤════════╗
+   ║ I_rr   │  I_r   │   pi   ║
+   ╟────────┼────────┼────────╢
+   ║ {0:1}  │ 1.0000 │ 0.3333 ║
+   ║  {0}   │ 0.5000 │ 0.1667 ║
+   ║  {1}   │ 0.5000 │ 0.1667 ║
+   ║ {0}{1} │ 0.3333 │ 0.3333 ║
+   ╚════════╧════════╧════════╝
+
 
 Partial Entropy Decomposition
 =============================
@@ -464,8 +493,8 @@ Like :math:`\Iccs{\bullet}`,  :math:`\Hcs{\bullet}` is also subadditive.
 
 .. ipython::
 
-   In [23]: PED_CS(dit.Distribution(['00','01','10','11'],[0.25]*4))
-   Out[23]:
+   In [25]: PED_CS(dit.Distribution(['00','01','10','11'],[0.25]*4))
+   Out[25]:
    ╔════════╤════════╤════════╗
    ║  H_cs  │  H_r   │  H_d   ║
    ╟────────┼────────┼────────╢

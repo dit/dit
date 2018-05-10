@@ -254,6 +254,7 @@ macros = r'''
 \newcommand{\Hpart}[1] {\op{H_{\partial}}{#1}}
 \newcommand{\Hcs}[1] {\op{H_{cs}}{#1}}
 \newcommand{\Irav}[1] {\op{I_{RAV}}{#1}}
+\newcommand{\Irr}[1] {\op{I_{RR}}{#1}}
 
 \newcommand{\meet} {\curlywedge}
 \newcommand{\join} {\curlyvee}
