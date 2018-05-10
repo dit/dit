@@ -64,7 +64,7 @@ https://github.com/dit/dit
 License
 *******
 
-BSD 2-Clause, see LICENSE.txt for details.
+BSD 3-Clause, see LICENSE.txt for details.
 
 Implemented Measures
 --------------------
