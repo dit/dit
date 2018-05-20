@@ -131,7 +131,7 @@ def construct_alphabets(outcomes):
     try:
         lengths = list(map(len, outcomes))
     except TypeError:
-        raise ditException('One or more outcomes is not sized. len() fails.')
+        raise ditException('At least one element in `outcomes` does not implement __len__.')
     else:
         outcome_length = lengths[0]
 
