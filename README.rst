@@ -55,6 +55,16 @@ Alternatively, you can clone this repository, move into the newly created
 
   The cython extensions are currently not supported on windows. Please install
   using the ``--nocython`` option.
+  
+  
+Testing
+*******
+.. code-block:: shell
+  
+  $ git clone https://github.com/dit/dit.git
+  $ cd dit
+  $ pip install -r requirements_testing.txt
+  $ py.test
 
 Code and bug tracker
 ********************
