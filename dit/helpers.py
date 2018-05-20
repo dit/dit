@@ -131,7 +131,9 @@ def construct_alphabets(outcomes):
     try:
         lengths = list(map(len, outcomes))
     except TypeError:
-        raise ditException('At least one element in `outcomes` does not implement __len__.')
+        raise ditException('At least one element in `outcomes` does not implement __len__. '
+                           'Distribution.from_ndarray or ScalarDistribution may help '
+                           'resolve this.')
     else:
         outcome_length = lengths[0]
 
