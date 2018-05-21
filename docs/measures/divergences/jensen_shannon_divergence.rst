@@ -85,7 +85,7 @@ The Jensen-Shannon divergence is the average Kullback-Leibler divergence of :mat
 
 .. math::
 
-   \JSD[X || Y] &= \frac{1}{2} \left( \DKL[X || M] + \DKL[Y || M] \right) \\
+   \JSD{X || Y} &= \frac{1}{2} \left( \DKL{X || M} + \DKL{Y || M} \right) \\
    M &= \frac{X + Y}{2}
 
 
@@ -94,7 +94,7 @@ Mutual Information
 
 .. math::
 
-   \JSD[X || Y] = \I[Z:M]
+   \JSD{X || Y} = \I{Z : M}
 
 where :math:`M` is the mixture distribution as before, and :math:`Z` is an indicator variable over :math:`X` and :math:`Y`. In essence, if :math:`X` and :math:`Y` are each an urn containing colored balls, and I randomly selected one of the urns and draw a ball from it, then the Jensen-Shannon divergence is the mutual information between which urn I drew the ball from, and the color of the ball drawn.
 
