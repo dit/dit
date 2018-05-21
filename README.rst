@@ -4,7 +4,24 @@
 
 |docs| |slack| |saythanks|
 
-|zenodo|
+|joss| |zenodo|
+
+Introduction
+------------
+
+Information theory is a powerful extension to probability and statistics, quantifying dependencies
+among arbitrary random variables in a way tha tis consistent and comparable across systems and
+scales. Information theory was originally developed to quantify how quickly and reliably information
+could be transmitted across an arbitrary channel. The demands of modern, data-driven science have
+been coopting and extending these quantities and methods into unknown, multivariate settings where
+the interpretation and best practices are not known. For example, there are at least four reasonable
+multivariate generalizations of the mutual information, none of which inherit all the
+interpretations of the standard bivariate case. Which is best to use is context-dependent. ``dit``
+implements a vast range of multivariate information measures in an effort to allow information
+practitioners to study how these various measures behave and interact in a variety of contexts. We
+hope that having all these measures and techniques implemented in one place will allow the
+development of robust techniques for the automated quantification of dependencies within a system
+and concrete interpretation of what those dependencies mean.
 
 Basic Information
 -----------------
@@ -304,3 +321,7 @@ If you have any questions about using ``dit``, you can reach us over at our `sla
 .. |slack| image:: https://img.shields.io/badge/Slack-dit--python-lightgrey.svg
    :target: https://dit-python.slack.com/
    :alt: dit chat
+
+.. |joss| image:: http://joss.theoj.org/papers/ba78ef2d389a4954aab904b5fb53f18d/status.svg
+   :target: http://joss.theoj.org/papers/ba78ef2d389a4954aab904b5fb53f18d
+   :alt: JOSS Status
