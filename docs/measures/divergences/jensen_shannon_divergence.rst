@@ -59,7 +59,7 @@ where :math:`\Psi` is a concave function. If we consider the *divergence* of the
 
    \Psi \left( \mathbb{E}(x) \right) - \mathbb{E} \left( \Psi(x) \right) \geq 0
 
-If we make that concave function :math:`\Psi` the Shannon entropy :math:`\H`, we get the Jensen-Shannon divergence. Jensen from Jensen's inequality, and Shannon from the use of the Shannon entropy.
+If we make that concave function :math:`\Psi` the Shannon entropy :math:`\H{}`, we get the Jensen-Shannon divergence. Jensen from Jensen's inequality, and Shannon from the use of the Shannon entropy.
 
 .. note::
 
