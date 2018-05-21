@@ -132,7 +132,7 @@ chance of it landing on its edge. Here is how we might represent the coin in
 .. code:: python
 
    >>> d = dit.Distribution(['H', 'T', 'E'], [.4, .4, .2])
-   >>> print d
+   >>> print(d)
    Class:          Distribution
    Alphabet:       ('E', 'H', 'T') for all rvs
    Base:           linear
@@ -170,7 +170,7 @@ Create a distribution where ``Z = xor(X, Y)``.
    >>> import dit.example_dists
    >>> d = dit.example_dists.Xor()
    >>> d.set_rv_names(['X', 'Y', 'Z'])
-   >>> print d
+   >>> print(d)
    Class:          Distribution
    Alphabet:       ('0', '1') for all rvs
    Base:           linear
@@ -202,7 +202,7 @@ Then print its probabilities as fractions, showing the mask.
 .. code:: python
 
    >>> d2 = d.marginal(['X', 'Z'])
-   >>> print d2.to_string(show_mask=True, exact=True)
+   >>> print(d2.to_string(show_mask=True, exact=True))
    Class:          Distribution
    Alphabet:       ('0', '1') for all rvs
    Base:           linear
