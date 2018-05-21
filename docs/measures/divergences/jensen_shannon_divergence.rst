@@ -69,7 +69,7 @@ If we make that concave function :math:`\Psi` the Shannon entropy :math:`\H`, we
 Metric
 ======
 
-The square root of the Jensen-Shannon divergence, :math:`\sqrt{\JSD}`, is a true metric between distributions.
+The square root of the Jensen-Shannon divergence, :math:`\sqrt{\JSD{}}`, is a true metric between distributions.
 
 
 Relationship to the Other Measures
