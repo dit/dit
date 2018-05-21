@@ -15,12 +15,17 @@ Dependencies:
    * `scipy <https://www.scipy.org/>`_
    * `six <http://pythonhosted.org/six/>`_
 
-Optional Dependencies:
-   * `colorama <https://pypi.python.org/pypi/colorama>`_
-   * `cython <http://cython.org/>`_
-   * `numdifftools <https://pypi.python.org/pypi/Numdifftools>`_
-   * `pint <https://pint.readthedocs.io>`_
-   * `scikit-learn <http://scikit-learn.org/>`_
+
+
+Optional Dependencies
+~~~~~~~~~~~~~~~~~~~~~
+* colorama: colored column heads in PID indicating failure modes
+* cython: faster sampling from distributions
+* hypothesis: random sampling of distributions
+* matplotlib, python-ternary: plotting of various information-theoretic expansions
+* numdifftools: numerical evaluation of gradients and hessians during optimization
+* pint: add units to informational values
+* scikit-learn: faster nearest-neighbor lookups during entropy/mutual information estimation from samples
 
 Mailing list:
    None

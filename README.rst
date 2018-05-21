@@ -19,19 +19,29 @@ Downloads
 
 https://pypi.org/project/dit/
 
-+-------------------------------------------------------------------+---------------------------------------------------------------+
-| Dependencies                                                      | Optional Dependencies                                         |
-+===================================================================+===============================================================+
-| * Python 2.7, 3.3, 3.4, 3.5, or 3.6                               | * `colorama <https://pypi.python.org/pypi/colorama>`_         |
-| * `boltons <https://boltons.readthedocs.io>`_                     | * `cython <http://cython.org/>`_                              |
-| * `contextlib2 <https://contextlib2.readthedocs.io>`_             | * `numdifftools <https://pypi.python.org/pypi/Numdifftools>`_ |
-| * `debtcollector <https://docs.openstack.org/debtcollector/>`_    | * `pint <https://pint.readthedocs.io>`_                       |
-| * `networkx <https://networkx.github.io/>`_                       | * `scikit-learn <http://scikit-learn.org/>`_                  |
-| * `numpy <http://www.numpy.org/>`_                                |                                                               |
-| * `prettytable <https://code.google.com/archive/p/prettytable/>`_ |                                                               |
-| * `scipy <https://www.scipy.org/>`_                               |                                                               |
-| * `six <http://pythonhosted.org/six/>`_                           |                                                               |
-+-------------------------------------------------------------------+---------------------------------------------------------------+
++-------------------------------------------------------------------+
+| Dependencies                                                      |
++===================================================================+
+| * Python 2.7, 3.3, 3.4, 3.5, or 3.6                               |
+| * `boltons <https://boltons.readthedocs.io>`_                     |
+| * `contextlib2 <https://contextlib2.readthedocs.io>`_             |
+| * `debtcollector <https://docs.openstack.org/debtcollector/>`_    |
+| * `networkx <https://networkx.github.io/>`_                       |
+| * `numpy <http://www.numpy.org/>`_                                |
+| * `prettytable <https://code.google.com/archive/p/prettytable/>`_ |
+| * `scipy <https://www.scipy.org/>`_                               |
+| * `six <http://pythonhosted.org/six/>`_                           |
++-------------------------------------------------------------------+
+
+Optional Dependencies
+~~~~~~~~~~~~~~~~~~~~~
+* colorama: colored column heads in PID indicating failure modes
+* cython: faster sampling from distributions
+* hypothesis: random sampling of distributions
+* matplotlib, python-ternary: plotting of various information-theoretic expansions
+* numdifftools: numerical evaluation of gradients and hessians during optimization
+* pint: add units to informational values
+* scikit-learn: faster nearest-neighbor lookups during entropy/mutual information estimation from samples
 
 Install
 *******
@@ -55,12 +65,12 @@ Alternatively, you can clone this repository, move into the newly created
 
   The cython extensions are currently not supported on windows. Please install
   using the ``--nocython`` option.
-  
-  
+
+
 Testing
 *******
 .. code-block:: shell
-  
+
   $ git clone https://github.com/dit/dit.git
   $ cd dit
   $ pip install -r requirements_testing.txt
