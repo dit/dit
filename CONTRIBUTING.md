@@ -8,3 +8,5 @@ It's appropriate to file an issue when you encounter a problem with `dit`. Be su
 * the `dit` version you're using
 * the operating system and Python version
 * full tracebacks
+
+If you'd like to get in contact about anything, you can reach us through our `slack channel <https://dit-python.slack.com/>`_.
