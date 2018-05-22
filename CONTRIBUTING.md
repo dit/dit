@@ -1,6 +1,12 @@
 Contributing
 ------------
 
-If you'd like to feature added to ``dit``, please file an issue. Or, better yet, open a pull request. Ideally, all code should be tested and documented, but pleast don't let this be a barrier to contributing. We'll work with you to ensure that all pull requests are in a mergable state.
+If you'd like a feature added to ``dit`` or notice any problems, please file an issue, or, even better, open a pull request. We'll work with you to ensure that the code is tested and documented.
+
+It's appropriate to file an issue when you encounter a problem with `dit`. Be sure to include
+
+* the `dit` version you're using
+* the operating system and Python version
+* full tracebacks
 
 If you'd like to get in contact about anything, you can reach us through our `slack channel <https://dit-python.slack.com/>`_.
