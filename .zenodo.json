@@ -1,7 +1,5 @@
 {
-    "description": "Python package for information theory.",
-    "license": "BSD 2-clause",
-    "title": "dit",
+    "license": "BSD 3-clause",
     "upload_type": "software",
     "creators": [
         {
@@ -12,6 +10,5 @@
         {
             "name": "Christopher J. Ellison"
         }
-    ],
-    "access_right": "open"
+    ]
 }
