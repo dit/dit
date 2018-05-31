@@ -23,6 +23,22 @@ hope that having all these measures and techniques implemented in one place will
 development of robust techniques for the automated quantification of dependencies within a system
 and concrete interpretation of what those dependencies mean.
 
+Citing
+------
+
+If you use `dit` in your research, please cite it as:
+
+| @article{dit,
+|   Author = {James, R. G.; Ellison, C. J; Crutchfield, J. P.},
+|   Title = {{dit}: a {P}ython package for discrete information theory},
+|   Journal = {The Journal of Open Source Software},
+|   Volume = {3},
+|   Number = {25},
+|   Pages = {738},
+|   Year = {2018},
+|   Doi = {https://doi.org/10.21105/joss.00738}
+| }
+
 Basic Information
 -----------------
 
@@ -322,6 +338,6 @@ If you'd like to get in contact about anything, you can reach us through our `sl
    :target: https://dit-python.slack.com/
    :alt: dit chat
 
-.. |joss| image:: http://joss.theoj.org/papers/ba78ef2d389a4954aab904b5fb53f18d/status.svg
-   :target: http://joss.theoj.org/papers/ba78ef2d389a4954aab904b5fb53f18d
+.. |joss| image:: http://joss.theoj.org/papers/10.21105/joss.00738/status.svg
+   :target: https://doi.org/10.21105/joss.00738
    :alt: JOSS Status
