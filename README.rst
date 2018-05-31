@@ -29,7 +29,7 @@ Citing
 If you use `dit` in your research, please cite it as::
 
    @article{dit,
-     Author = {James, R. G.; Ellison, C. J; Crutchfield, J. P.},
+     Author = {James, R. G. and Ellison, C. J and Crutchfield, J. P.},
      Title = {{dit}: a {P}ython package for discrete information theory},
      Journal = {The Journal of Open Source Software},
      Volume = {3},
