@@ -26,18 +26,18 @@ and concrete interpretation of what those dependencies mean.
 Citing
 ------
 
-If you use `dit` in your research, please cite it as:
+If you use `dit` in your research, please cite it as::
 
-   | @article{dit,
-   |   Author = {James, R. G.; Ellison, C. J; Crutchfield, J. P.},
-   |   Title = {{dit}: a {P}ython package for discrete information theory},
-   |   Journal = {The Journal of Open Source Software},
-   |   Volume = {3},
-   |   Number = {25},
-   |   Pages = {738},
-   |   Year = {2018},
-   |   Doi = {https://doi.org/10.21105/joss.00738}
-   | }
+   @article{dit,
+     Author = {James, R. G.; Ellison, C. J; Crutchfield, J. P.},
+     Title = {{dit}: a {P}ython package for discrete information theory},
+     Journal = {The Journal of Open Source Software},
+     Volume = {3},
+     Number = {25},
+     Pages = {738},
+     Year = {2018},
+     Doi = {https://doi.org/10.21105/joss.00738}
+   }
 
 Basic Information
 -----------------
