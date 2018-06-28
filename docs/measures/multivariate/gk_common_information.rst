@@ -79,7 +79,7 @@ Visualization
 The Gács-Körner common information is the largest "circle" that entirely fits within the mutual information's "football":
 
 .. image:: ../../images/idiagrams/k_xy.png
-   :alt: The Gács-Körner common information :math:`\K[X:Y]`
+   :alt: The Gács-Körner common information :math:`\K{X:Y}`
    :width: 342px
    :align: center
 

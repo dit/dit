@@ -54,6 +54,7 @@ Contents:
    profiles
    rate_distortion
    measures/pid
+   stumbling
    zreferences
    changelog
 
