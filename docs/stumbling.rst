@@ -27,7 +27,7 @@ can not be embodied. That is, generically there does not exist a variable
 
    \I{X : Y | Z} = 0 \\
    \textrm{and} \\
-   \H{Z | X} = \H{Z | Y} = 0
+   \H{Z} - \I{X : Y} = 0
 
 That is, there is no :math:`Z` which captures the entirety of :math:`\I{X : Y}`
 and nothing more.
@@ -54,6 +54,11 @@ in :ref:`Common Informations`.
    In [4]: G(d, [[0], [1]])
    Out[4]: 0.9182909718428677
 
+In this case, we see a wide gap. The largest random variable capturing nothing
+outside of :math:`\I{X : Y}` is null, indicated by the Gács-Körner common
+information being zero, while the smallest variable capturing all of
+:math:`I{X : Y}` is much larger, capturing two-thirds of a bit more than the
+actual shared information.
 
 Conditional Dependence
 ----------------------
