@@ -109,7 +109,7 @@ The following implication holds, so long as :math:`p(w, x, y, z) > 0`:
 
 .. math::
 
-   \left. \begin{array}{l} W \perp Z | (X, Y) \\ W \perp Y | (X, Z) \end{array} \right\} \imply W \perp (Y, Z) | X
+   \left. \begin{array}{l} W \perp Z | (X, Y) \\ W \perp Y | (X, Z) \end{array} \right\} \implies W \perp (Y, Z) | X
 
 This demonstrates that structural properties, such as conditional independence,
 is sensitive to the distinction between "small" probability and zero
@@ -253,12 +253,14 @@ consists of exactly one distribution: the ``and`` distribution!
    100   1/4
    111   1/4
 
-   In [21]: meo = MinEntOptimizer(d, [[0, 1], [0, 2], [1, 2]])
+   In [21]: from dit.algorithms.distribution_optimizers import MinEntOptimizer
 
-   In [22]: meo.optimize()
+   In [22]: meo = MinEntOptimizer(d, [[0, 1], [0, 2], [1, 2]])
 
-   In [23]: meo.construct_dist()
-   Out[23]:
+   In [23]: meo.optimize()
+
+   In [24]: meo.construct_dist()
+   Out[24]:
    Class:          Distribution
    Alphabet:       ('0', '1') for all rvs
    Base:           linear
@@ -278,3 +280,11 @@ at least the cyclic pairwise constraints. But this raises an important
 observation: negative coinformations can be constructed solely with pairwise
 interactions, and so conditional dependence is not a phenomena which requires
 triadic interactions.
+
+Closing
+-------
+
+At this point one might suspect that information theory is in shambles, and not
+up for the task of accurately detecting and quantifying dependencies. However,
+I believe the limitation lies not with information theory but rather with our
+impression of what it should be.
