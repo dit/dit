@@ -57,7 +57,7 @@ in :ref:`Common Informations`.
 In this case, we see a wide gap. The largest random variable capturing nothing
 outside of :math:`\I{X : Y}` is null, indicated by the Gács-Körner common
 information being zero, while the smallest variable capturing all of
-:math:`I{X : Y}` is much larger, capturing two-thirds of a bit more than the
+:math:`\I{X : Y}` is much larger, capturing two-thirds of a bit more than the
 actual shared information.
 
 Conditional Dependence
