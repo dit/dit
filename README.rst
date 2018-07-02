@@ -341,3 +341,7 @@ If you'd like to get in contact about anything, you can reach us through our `sl
 .. |joss| image:: http://joss.theoj.org/papers/10.21105/joss.00738/status.svg
    :target: https://doi.org/10.21105/joss.00738
    :alt: JOSS Status
+
+.. |binder| image:: https://mybinder.org/badge.svg
+   :target: https://mybinder.org/v2/gh/dit/dit/master?filepath=examples
+   :alt: Run `dit` live!
