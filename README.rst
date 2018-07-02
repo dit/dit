@@ -6,6 +6,8 @@
 
 |joss| |zenodo|
 
+Try ``dit`` live: |binder|
+
 Introduction
 ------------
 
