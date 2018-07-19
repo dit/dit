@@ -12,7 +12,7 @@ Introduction
 ------------
 
 Information theory is a powerful extension to probability and statistics, quantifying dependencies
-among arbitrary random variables in a way tha tis consistent and comparable across systems and
+among arbitrary random variables in a way that is consistent and comparable across systems and
 scales. Information theory was originally developed to quantify how quickly and reliably information
 could be transmitted across an arbitrary channel. The demands of modern, data-driven science have
 been coopting and extending these quantities and methods into unknown, multivariate settings where
