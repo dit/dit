@@ -1193,7 +1193,14 @@ class Distribution(ScalarDistribution):
             return True
 
         a1 = self.alphabet[0]
-        h = all(a2 == a1 for a2 in self.alphabet[1:])
+        try:
+            h = all(a2 == a1 for a2 in self.alphabet[1:])
+        except ValueError:
+            try:
+                h = all(np.equal(a1, a2).all() for a2 in self.alphabet[1:])
+                h &= all(len(a1) == len(a2) for a2 in self.alphabet[1:])
+            except ValueError:
+                return False
 
         return h
 
