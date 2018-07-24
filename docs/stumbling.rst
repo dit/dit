@@ -34,9 +34,9 @@ and nothing more.
 
 When embodying the information shared by :math:`X` and :math:`Y` is desired,
 one must make a choice. Choosing the variable capturing as much of
-:math:`I{X : Y}` and nothing more results in the
+:math:`\I{X : Y}` and nothing more results in the
 :ref:`Gács-Körner Common Information`. Choosing the variable capturing all of
-:math:`I{X : Y}` with as little else as possible results in the
+:math:`\I{X : Y}` with as little else as possible results in the
 :ref:`Exact Common Information`. If one chooses to incorporate only information
 from :math:`X` we arrive as :math:`Z = X \mss Y`. Other choices are described
 in :ref:`Common Informations`.
@@ -93,7 +93,7 @@ would hold:
 This, however, has a couple major difficulties. Firstly, the mutual information
 between two variables does not itself correspond to a random variable, as we saw
 in :ref:`Necessity of Common Informations` and so the analogy does not hold.
-Secondly, the inequality does not hold. The most simplest counterexample is the
+Secondly, the inequality does not hold. The most simple counterexample is the
 ``xor`` distribution:
 
 .. ipython::
