@@ -1,0 +1,20 @@
+# Citation
+
+## bibtex
+
+@article{dit,
+    Author = {James, R. G. and Ellison, C. J. and Crutchfield, J. P.},
+    Title = {{dit}: a {P}ython package for discrete information theory},
+    Journal = {The Journal of Open Source Software},
+    Volume = {3},
+    Number = {25},
+    Pages = {738},
+    Year = {2018},
+    Doi = {https://doi.org/10.21105/joss.00738}
+}
+
+## other
+
+dit: a Python package for discrete information theory
+RG James, CJ Ellison, JP Crutchfield
+The Journal of Open Source Software 3 (25), 738
