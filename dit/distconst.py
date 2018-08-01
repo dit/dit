@@ -258,7 +258,7 @@ def random_scalar_distribution(n, base=None, alpha=None, prng=None):
     except TypeError:
         nOutcomes = n
 
-    d = uniform_scalar_distribution(nOutcomes)
+    d = uniform_scalar_distribution(n)
     if alpha is None:
         alpha = np.ones(len(d))
     elif len(alpha) != nOutcomes:
