@@ -184,36 +184,35 @@ def projected_information(dist, X, Y, Z):
     return val
 
 
-def i_proj(d, inputs, output):
-    """
-    Compute I_proj(inputs : output) = min{PI(X \searrow Y), PI(Y \searrow X)}
-
-    Parameters
-    ----------
-    d : Distribution
-        The distribution to compute i_proj for.
-    inputs : iterable of iterables, len(inputs) == 2
-        The input variables.
-    output : iterable
-        The output variable.
-
-    Returns
-    -------
-    iproj : float
-        The value of I_proj.
-    """
-    if len(inputs) != 2:  # pragma: no cover
-        msg = "This method needs exact two inputs, {} given.".format(len(inputs))
-        raise ditException(msg)
-
-    pi_0 = projected_information(d, inputs[0], inputs[1], output)
-    pi_1 = projected_information(d, inputs[1], inputs[0], output)
-    return min(pi_0, pi_1)
-
-
 class PID_Proj(BaseBivariatePID):
     """
     The Harder et al partial information decomposition.
     """
     _name = "I_proj"
-    _measure = staticmethod(i_proj)
+
+    @staticmethod
+    def _measure(d, inputs, output):
+        """
+        Compute I_proj(inputs : output) = min{PI(X \searrow Y), PI(Y \searrow X)}
+
+        Parameters
+        ----------
+        d : Distribution
+            The distribution to compute i_proj for.
+        inputs : iterable of iterables, len(inputs) == 2
+            The input variables.
+        output : iterable
+            The output variable.
+
+        Returns
+        -------
+        iproj : float
+            The value of I_proj.
+        """
+        if len(inputs) != 2:  # pragma: no cover
+            msg = "This method needs exact two inputs, {} given.".format(len(inputs))
+            raise ditException(msg)
+
+        pi_0 = projected_information(d, inputs[0], inputs[1], output)
+        pi_1 = projected_information(d, inputs[1], inputs[0], output)
+        return min(pi_0, pi_1)

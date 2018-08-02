@@ -38,32 +38,31 @@ def s_i(d, input_, output, output_value):
     return np.nansum([p_a_s[a] * np.log2(psa / p_s) for a, psa in p_s_a.items()])
 
 
-def i_min(d, inputs, output):
-    """
-    Compute I_min(inputs : output) =
-        \sum_{s \in output} p(s) min_{input_ \in inputs} I(input_ : output=s)
-
-    Parameters
-    ----------
-    d : Distribution
-        The distribution to compute i_min for.
-    inputs : iterable of iterables
-        The input variables.
-    output : iterable
-        The output variable.
-
-    Returns
-    -------
-    imin : float
-        The value of I_min.
-    """
-    p_s = d.marginal(output)
-    return sum(p_s[s] * min(s_i(d, input_, output, s) for input_ in inputs) for s in p_s.outcomes)
-
-
 class PID_WB(BasePID):
     """
     The Williams & Beer partial information decomposition.
     """
     _name = "I_min"
-    _measure = staticmethod(i_min)
+
+    @staticmethod
+    def _measure(d, inputs, output):
+        """
+        Compute I_min(inputs : output) =
+            \sum_{s \in output} p(s) min_{input_ \in inputs} I(input_ : output=s)
+
+        Parameters
+        ----------
+        d : Distribution
+            The distribution to compute i_min for.
+        inputs : iterable of iterables
+            The input variables.
+        output : iterable
+            The output variable.
+
+        Returns
+        -------
+        imin : float
+            The value of I_min.
+        """
+        p_s = d.marginal(output)
+        return sum(p_s[s] * min(s_i(d, input_, output, s) for input_ in inputs) for s in p_s.outcomes)
