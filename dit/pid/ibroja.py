@@ -78,44 +78,6 @@ class BROJAOptimizer(BaseDistOptimizer, BaseConvexOptimizer):
         return objective
 
 
-def i_broja(d, inputs, output, maxiter=1000):
-    """
-    This computes unique information as min{I(input : output | other_inputs)} over the space of distributions
-    which matches input-output marginals.
-
-    Parameters
-    ----------
-    d : Distribution
-        The distribution to compute i_broja for.
-    inputs : iterable of iterables
-        The input variables.
-    output : iterable
-        The output variable.
-
-    Returns
-    -------
-    ibroja : dict
-        The value of I_broja for each individual input.
-    """
-    uniques = {}
-    if len(inputs) == 2:
-        broja = BROJABivariateOptimizer(d, list(inputs), output)
-        broja.optimize(niter=1, maxiter=maxiter)
-        opt_dist = broja.construct_dist()
-        uniques[inputs[0]] = coinformation(opt_dist, [[0], [2]], [1])
-        uniques[inputs[1]] = coinformation(opt_dist, [[1], [2]], [0])
-    else:
-        for input_ in inputs:
-            others = sum([i for i in inputs if i != input_], ())
-            dm = d.coalesce([input_, others, output])
-            broja = BROJAOptimizer(dm, (0,), ((1,),), (2,))
-            broja.optimize(niter=1, maxiter=maxiter)
-            d_opt = broja.construct_dist()
-            uniques[input_] = coinformation(d_opt, [[0], [2]], [1])
-
-    return uniques
-
-
 class PID_BROJA(BaseUniquePID):
     """
     The BROJA partial information decomposition.
@@ -126,4 +88,41 @@ class PID_BROJA(BaseUniquePID):
     was independently suggested by Griffith.
     """
     _name = "I_broja"
-    _measure = staticmethod(i_broja)
+
+    @staticmethod
+    def _measure(d, inputs, output, maxiter=1000):
+        """
+        This computes unique information as min{I(input : output | other_inputs)} over the space of distributions
+        which matches input-output marginals.
+
+        Parameters
+        ----------
+        d : Distribution
+            The distribution to compute i_broja for.
+        inputs : iterable of iterables
+            The input variables.
+        output : iterable
+            The output variable.
+
+        Returns
+        -------
+        ibroja : dict
+            The value of I_broja for each individual input.
+        """
+        uniques = {}
+        if len(inputs) == 2:
+            broja = BROJABivariateOptimizer(d, list(inputs), output)
+            broja.optimize(niter=1, maxiter=maxiter)
+            opt_dist = broja.construct_dist()
+            uniques[inputs[0]] = coinformation(opt_dist, [[0], [2]], [1])
+            uniques[inputs[1]] = coinformation(opt_dist, [[1], [2]], [0])
+        else:
+            for input_ in inputs:
+                others = sum([i for i in inputs if i != input_], ())
+                dm = d.coalesce([input_, others, output])
+                broja = BROJAOptimizer(dm, (0,), ((1,),), (2,))
+                broja.optimize(niter=1, maxiter=maxiter)
+                d_opt = broja.construct_dist()
+                uniques[input_] = coinformation(d_opt, [[0], [2]], [1])
+
+        return uniques

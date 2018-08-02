@@ -10,9 +10,11 @@ from __future__ import division
 
 from .pid import BaseUniquePID
 
+from ..exceptions import ditException
 from ..multivariate import (intrinsic_mutual_information,
                             minimal_intrinsic_mutual_information,
                             reduced_intrinsic_mutual_information,
+                            total_correlation,
                            )
 from ..multivariate.secret_key_agreement.skar_lower_bounds import (
     necessary_intrinsic_mutual_information_directed,
@@ -22,6 +24,17 @@ from ..multivariate.secret_key_agreement.trivial_bounds import (
     lower_intrinsic_mutual_information_directed,
     )
 from ..utils import flatten
+
+
+__all__ = [
+    'PID_uparrow',
+    'PID_double_uparrow',
+    'PID_triple_uparrow',
+    'PID_downarrow',
+    'PID_double_downarrow',
+    'PID_triple_downarrow',
+    'PID_rectified_downarrow',
+]
 
 
 class PID_uparrow(BaseUniquePID):
@@ -252,4 +265,57 @@ class PID_triple_downarrow(BaseUniquePID):
             others = list(flatten(others))
             uniques[input_] = minimal_intrinsic_mutual_information(d, [input_, output], others,
                                                                 niter=niter, bounds=bounds)
+        return uniques
+
+
+################################################################################
+# Rectified versions to avoid inconsistent PIDs
+
+
+class PID_rectified_downarrow(BaseUniquePID):
+    """
+    The intrinsic mutual information partial information decomposition.
+
+    Notes
+    -----
+    This decomposition is known to be invalid; that is, the redundancy values
+    computed using either unique value are not consistent.
+    """
+    _name = "I_rda"
+
+    @staticmethod
+    def _measure(d, inputs, output, niter=25, bound=None):
+        """
+        This computes unique information as I(input : output \\downarrow other_inputs).
+
+        Parameters
+        ----------
+        d : Distribution
+            The distribution to compute i_downarrow for.
+        inputs : iterable of iterables
+            The input variables.
+        output : iterable
+            The output variable.
+
+        Returns
+        -------
+        ida : dict
+            The value of I_downarrow for each individual input.
+        """
+        if len(inputs) != 2:
+            msg = ""
+            raise ditException(msg)
+
+        x0, x1 = inputs
+        y = output
+
+        mis = [total_correlation(d, [x0, y]), total_correlation(d, [x1, y])]
+
+        imis = [intrinsic_mutual_information(d, [x0, y], x1, niter=niter, bound=bound),
+                intrinsic_mutual_information(d, [x1, y], x0, niter=niter, bound=bound)]
+
+        uniques = {}
+        uniques[x0] = min([imis[0], imis[1] + mis[0] - mis[1]])
+        uniques[x1] = min([imis[1], imis[0] + mis[1] - mis[0]])
+
         return uniques
