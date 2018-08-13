@@ -99,15 +99,15 @@ class NecessaryIntrinsicMutualInformation(BaseSKARLowerBounds):
 
     def _get_u_bound(self):
         """
-        |U| <= |X|
+        |U| <= |X| + 1
         """
-        return self._shape[0]
+        return self._shape[0] + 1
 
     def _get_v_bound(self):
         """
-        |U| <= |X|^2
+        |U| <= |X| + 1
         """
-        return self._shape[0]**2
+        return self._shape[0] + 1
 
     def _objective(self):
         """
@@ -242,10 +242,12 @@ def secrecy_capacity(dist, rvs=None, crvs=None, rv_mode=None, niter=None, bound_
 def necessary_intrinsic_mutual_information_directed(dist, X, Y, Z, rv_mode=None,
                                                     niter=None, bound_u=None, bound_v=None):
     """
-    Compute a non-trivial lower bound on secret key agreement rate.
+    Compute the secret key agreement rate constrained to one-way communication.
+    This forms a lower bound on the general secret key agreement rate which
+    allows for bidirectional communcation.
 
-    Paramters
-    ---------
+    Parameters
+    -----------
     dist : Distribution
         The distribution of interest.
     X : iterable

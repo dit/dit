@@ -315,7 +315,7 @@ class PID_rectified_downarrow(BaseUniquePID):
                 intrinsic_mutual_information(d, [x1, y], x0, niter=niter, bound=bound)]
 
         uniques = {}
-        uniques[x0] = min([imis[0], imis[1] + mis[0] - mis[1]])
-        uniques[x1] = min([imis[1], imis[0] + mis[1] - mis[0]])
+        uniques[x0] = max([imis[0], imis[1] + mis[0] - mis[1]])
+        uniques[x1] = max([imis[1], imis[0] + mis[1] - mis[0]])
 
         return uniques
