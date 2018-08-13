@@ -1044,7 +1044,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
         for i, (auxvar, var) in enumerate(zip(self._aux_vars, arvs)):
             relevant_vars = auxvar.bases
             index = sorted(self._rvs | self._crvs | set(arvs[:i + 1]))
-            self._slices.append([colon if i in relevant_vars | {var} else np.newaxis for i in index])
+            self._slices.append(tuple([colon if i in relevant_vars | {var} else np.newaxis for i in index]))
 
     ###########################################################################
     # Constructing the joint distribution.
