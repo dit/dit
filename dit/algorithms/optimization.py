@@ -22,6 +22,7 @@ from boltons.iterutils import pairwise
 
 import numpy as np
 from scipy.optimize import basinhopping, differential_evolution, minimize
+from scipy.special import xlogy
 
 from .. import Distribution, insert_rvf, modify_outcomes
 from ..algorithms.channelcapacity import channel_capacity
@@ -202,7 +203,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
         h : float
             The entropy.
         """
-        return -np.nansum(p*np.log2(p))
+        return -xlogy(p, p).sum()/np.log(2)
 
     def _entropy(self, rvs, crvs=None):
         """
@@ -289,7 +290,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
             pmf_x = pmf_xy.sum(axis=idx_x, keepdims=True)
             pmf_y = pmf_xy.sum(axis=idx_y, keepdims=True)
 
-            mi = np.nansum(pmf_xy * np.log2(pmf_xy / (pmf_x * pmf_y)))
+            mi = xlogy(pmf_xy, pmf_xy / (pmf_x * pmf_y)).sum()/np.log(2)
 
             return mi
 
@@ -337,7 +338,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
             pmf_yz = pmf_xyz.sum(axis=idx_yz, keepdims=True)
             pmf_z = pmf_xz.sum(axis=idx_z, keepdims=True)
 
-            cmi = np.nansum(pmf_xyz * np.log2(pmf_z * pmf_xyz / pmf_xz / pmf_yz))
+            cmi = xlogy(pmf_xyz, pmf_z * pmf_xyz / pmf_xz / pmf_yz).sum()/np.log(2)
 
             return cmi
 
@@ -388,7 +389,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
 
             pmf_ci = reduce(np.multiply, [pmf**p for pmf, p in zip(pmf_subrvs, power)])
 
-            ci = np.nansum(pmf_joint * np.log2(pmf_ci))
+            ci = xlogy(pmf_joint, pmf_ci).sum()/np.log(2)
 
             return ci
 
@@ -519,9 +520,9 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
         for part in parts:
             for p in part:
                 if p not in idx_parts:
-                    idx_parts[p] = tuple(self._all_vars - (p|crvs))
+                    idx_parts[p] = tuple(self._all_vars - (p | crvs))
         part_norms = [len(part) - 1 for part in parts]
-        idx_joint = tuple(self._all_vars - (rvs|crvs))
+        idx_joint = tuple(self._all_vars - (rvs | crvs))
         idx_crvs = tuple(self._all_vars - crvs)
 
         def caekl_mutual_information(pmf):
@@ -546,7 +547,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
             h_joint = self._h(pmf_joint) - h_crvs
 
             pairs = zip(parts, part_norms)
-            candidates = [(sum(self._h(pmf_parts[p]) - h_crvs for p in part)-h_joint)/norm for part, norm in pairs]
+            candidates = [(sum(self._h(pmf_parts[p]) - h_crvs for p in part) - h_joint)/norm for part, norm in pairs]
 
             caekl = min(candidates)
 
