@@ -16,9 +16,11 @@ from ..multivariate import (intrinsic_mutual_information,
                             reduced_intrinsic_mutual_information,
                             total_correlation,
                            )
-from ..multivariate.secret_key_agreement.skar_lower_bounds import (
-    necessary_intrinsic_mutual_information_directed,
-    secrecy_capacity_directed,
+from ..multivariate.secret_key_agreement.secrecy_capacity import (
+    secrecy_capacity,
+    )
+from ..multivariate.secret_key_agreement.one_way_skar import (
+    one_way_skar,
     )
 from ..multivariate.secret_key_agreement.trivial_bounds import (
     lower_intrinsic_mutual_information_directed,
@@ -111,8 +113,7 @@ class PID_double_uparrow(BaseUniquePID):
             others = list(inputs)
             others.remove(input_)
             others = list(flatten(others))
-            uniques[input_] = secrecy_capacity_directed(d, input_, output, others, niter=niter,
-                                                        bound_u=bound_u)
+            uniques[input_] = secrecy_capacity(d, input_, output, others, niter=niter, bound_u=bound_u)
         return uniques
 
 
@@ -151,10 +152,7 @@ class PID_triple_uparrow(BaseUniquePID):
             others = list(inputs)
             others.remove(input_)
             others = list(flatten(others))
-            uniques[input_] = necessary_intrinsic_mutual_information_directed(d, input_, output, others,
-                                                                            niter=niter,
-                                                                            bound_u=bound_u,
-                                                                            bound_v=bound_v)
+            uniques[input_] = one_way_skar(d, input_, output, others,  niter=niter, bound_u=bound_u, bound_v=bound_v)
         return uniques
 
 
@@ -193,8 +191,7 @@ class PID_downarrow(BaseUniquePID):
             others = list(inputs)
             others.remove(input_)
             others = list(flatten(others))
-            uniques[input_] = intrinsic_mutual_information(d, [input_, output], others,
-                                                        niter=niter, bound=bound)
+            uniques[input_] = intrinsic_mutual_information(d, [input_, output], others, niter=niter, bound=bound)
         return uniques
 
 

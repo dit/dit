@@ -1,5 +1,5 @@
 """
-
+An upper bound on the two-way secret key agreement rate.
 """
 
 from __future__ import division
@@ -7,10 +7,12 @@ from __future__ import division
 from .base_intrinsic_information import BaseMoreIntrinsicMutualInformation
 from ... import Distribution
 
-__all__ = ['minimal_intrinsic_total_correlation',
-           'minimal_intrinsic_dual_total_correlation',
-           'minimal_intrinsic_CAEKL_mutual_information',
-          ]
+
+__all__ = [
+    'minimal_intrinsic_total_correlation',
+    'minimal_intrinsic_dual_total_correlation',
+    'minimal_intrinsic_CAEKL_mutual_information',
+]
 
 
 class BaseMinimalIntrinsicMutualInformation(BaseMoreIntrinsicMutualInformation):
@@ -193,7 +195,7 @@ def minimal_intrinsic_mutual_information_constructor(func):
     docstring = \
     """
     Compute the {name}.
-        
+
     Parameters
     ----------
     x : np.ndarray
