@@ -7,7 +7,7 @@ from hypothesis import given, settings, unlimited, HealthCheck
 from dit.utils.testing import distributions
 
 from dit.multivariate.secret_key_agreement import (lower_intrinsic_mutual_information,
-                                                   secrecy_capacity,
+                                                   secrecy_capacity_skar,
                                                    necessary_intrinsic_mutual_information,
                                                    minimal_intrinsic_mutual_information,
                                                    # reduced_intrinsic_mutual_information,
@@ -28,7 +28,7 @@ def test_hierarchy(dist):
     Test that the bounds are ordered correctly.
     """
     limi = lower_intrinsic_mutual_information(dist, [[0], [1]], [2])
-    sc = secrecy_capacity(dist, [[0], [1]], [2])
+    sc = secrecy_capacity_skar(dist, [[0], [1]], [2])
     nimi = necessary_intrinsic_mutual_information(dist, [[0], [1]], [2])
     mimi = minimal_intrinsic_mutual_information(dist, [[0], [1]], [2])
     # rimi = reduced_intrinsic_mutual_information(dist, [[0], [1]], [2])

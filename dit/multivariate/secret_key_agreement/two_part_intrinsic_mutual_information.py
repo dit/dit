@@ -1,23 +1,23 @@
 """
-An upper bound on the two-way secret key agreement rate.
+The tightest known upper bound on two-way secret key agreement rate.
 """
 
 from __future__ import division
 
-from .base_skar_optimizers import BaseMinimalIntrinsicMutualInformation
+from .base_skar_optimizers import BaseTwoPartIntrinsicMutualInformation
 from ... import Distribution
 
 
 __all__ = [
-    'minimal_intrinsic_total_correlation',
-    'minimal_intrinsic_dual_total_correlation',
-    'minimal_intrinsic_CAEKL_mutual_information',
+    'two_part_intrinsic_total_correlation',
+    'two_part_intrinsic_dual_total_correlation',
+    'two_part_intrinsic_CAEKL_mutual_information',
 ]
 
 
-class MinimalIntrinsicTotalCorrelation(BaseMinimalIntrinsicMutualInformation):
+class TwoPartIntrinsicTotalCorrelation(BaseTwoPartIntrinsicMutualInformation):
     """
-    Compute the minimal intrinsic total correlation.
+    Compute the two part intrinsic total correlation.
     """
     name = 'total correlation'
 
@@ -40,12 +40,12 @@ class MinimalIntrinsicTotalCorrelation(BaseMinimalIntrinsicMutualInformation):
         return self._total_correlation(rvs, crvs)
 
 
-minimal_intrinsic_total_correlation = MinimalIntrinsicTotalCorrelation.functional()
+two_part_intrinsic_total_correlation = TwoPartIntrinsicTotalCorrelation.functional()
 
 
-class MinimalIntrinsicDualTotalCorrelation(BaseMinimalIntrinsicMutualInformation):
+class TwoPartIntrinsicDualTotalCorrelation(BaseTwoPartIntrinsicMutualInformation):
     """
-    Compute the minimal intrinsic dual total correlation.
+    Compute the two part intrinsic dual total correlation.
     """
     name = 'dual total correlation'
 
@@ -68,12 +68,12 @@ class MinimalIntrinsicDualTotalCorrelation(BaseMinimalIntrinsicMutualInformation
         return self._dual_total_correlation(rvs, crvs)
 
 
-minimal_intrinsic_dual_total_correlation = MinimalIntrinsicDualTotalCorrelation.functional()
+two_part_intrinsic_dual_total_correlation = TwoPartIntrinsicDualTotalCorrelation.functional()
 
 
-class MinimalIntrinsicCAEKLMutualInformation(BaseMinimalIntrinsicMutualInformation):
+class TwoPartIntrinsicCAEKLMutualInformation(BaseTwoPartIntrinsicMutualInformation):
     """
-    Compute the minimal intrinsic CAEKL mutual information.
+    Compute the two part intrinsic CAEKL mutual information.
     """
     name = 'CAEKL mutual information'
 
@@ -96,13 +96,13 @@ class MinimalIntrinsicCAEKLMutualInformation(BaseMinimalIntrinsicMutualInformati
         return self._caekl_mutual_information(rvs, crvs)
 
 
-minimal_intrinsic_CAEKL_mutual_information = MinimalIntrinsicCAEKLMutualInformation.functional()
+two_part_intrinsic_CAEKL_mutual_information = TwoPartIntrinsicCAEKLMutualInformation.functional()
 
 
-def minimal_intrinsic_mutual_information_constructor(func):
+def two_part_intrinsic_mutual_information_constructor(func):
     """
     Given a measure of shared information, construct an optimizer which computes
-    its ``minimal intrinsic'' form.
+    its ``two part intrinsic'' form.
 
     Parameters
     ----------
@@ -112,8 +112,8 @@ def minimal_intrinsic_mutual_information_constructor(func):
 
     Returns
     -------
-    MIMI : BaseMinimalIntrinsicMutualInformation
-        An minimal intrinsic mutual information optimizer using `func` as the
+    TPIMI : BaseTwoPartIntrinsicMutualInformation
+        An two part intrinsic mutual information optimizer using `func` as the
         measure of multivariate mutual information.
 
     Notes
@@ -122,7 +122,7 @@ def minimal_intrinsic_mutual_information_constructor(func):
     using this function will be significantly slower than if the objective were
     written directly using the joint probability ndarray.
     """
-    class MinimalIntrinsicMutualInformation(BaseMinimalIntrinsicMutualInformation):
+    class TwoPartIntrinsicMutualInformation(BaseTwoPartIntrinsicMutualInformation):
         name = func.__name__
 
         def measure(self, rvs, crvs):  # pragma: no cover
@@ -134,13 +134,14 @@ def minimal_intrinsic_mutual_information_constructor(func):
         def objective(self, x):
             pmf = self.construct_joint(x)
             d = Distribution.from_ndarray(pmf)
-            mi = func(d, rvs=[[rv] for rv in self._rvs], crvs=self._arvs)
-            cmi = self._conditional_mutual_information(self._rvs, self._arvs, self._crvs)(pmf)
-            return mi + cmi
+            mi = func(d, rvs=[[rv] for rv in self._rvs], crvs=self._j)
+            cmi1 = self._conditional_mutual_information(self._u, self._j, self._v)(pmf)
+            cmi1 = self._conditional_mutual_information(self._u, self._crvs, self._v)(pmf)
+            return mi + cmi1 - cmi2
 
-    MinimalIntrinsicMutualInformation.__doc__ = \
+    TwoPartIntrinsicMutualInformation.__doc__ = \
     """
-    Compute the minimal intrinsic {name}.
+    Compute the two part intrinsic {name}.
     """.format(name=func.__name__)
 
     docstring = \
@@ -159,9 +160,9 @@ def minimal_intrinsic_mutual_information_constructor(func):
     """.format(name=func.__name__)
     try:
         # python 2
-        MinimalIntrinsicMutualInformation.objective.__func__.__doc__ = docstring
+        TwoPartIntrinsicMutualInformation.objective.__func__.__doc__ = docstring
     except AttributeError:
         # python 3
-        MinimalIntrinsicMutualInformation.objective.__doc__ = docstring
+        TwoPartIntrinsicMutualInformation.objective.__doc__ = docstring
 
-    return MinimalIntrinsicMutualInformation
+    return TwoPartIntrinsicMutualInformation

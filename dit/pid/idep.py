@@ -10,6 +10,12 @@ from ..multivariate import coinformation
 from ..profiles import DependencyDecomposition
 
 
+__all__ = [
+    'PID_dep',
+    'PID_RA',
+]
+
+
 class PID_dep(BaseUniquePID):
     """
     The dependency partial information decomposition, as defined by James at al.
@@ -51,6 +57,53 @@ class PID_dep(BaseUniquePID):
                 dm = d.coalesce([input_, others, output])
                 dd = DependencyDecomposition(dm, measures=measure, maxiter=maxiter)
                 u = min(dd.delta(edge, 'I') for edge in dd.edges(((0, 2),)))
+                uniques[input_] = u
+
+        return uniques
+
+
+class PID_RA(BaseUniquePID):
+    """
+    The "reproducibility analysis" partial information decomposition, derived
+    from the work of Zwick.
+    """
+    _name = "I_RA"
+
+    @staticmethod
+    def _measure(d, inputs, output, maxiter=None):
+        """
+        This computes unique information as the change in I[inputs : output]
+        when adding the input-output constraint.
+
+        Parameters
+        ----------
+        d : Distribution
+            The distribution to compute i_RA for.
+        inputs : iterable of iterables
+            The input variables.
+        output : iterable
+            The output variable.
+
+        Returns
+        -------
+        ira : dict
+            The value of I_RA for each individual input.
+        """
+        uniques = {}
+        measure = {'I': lambda d: coinformation(d, [[0, 1], [2]])}
+        if len(inputs) == 2:
+            dm = d.coalesce(inputs + (output,))
+            dd = DependencyDecomposition(dm, measures=measure, maxiter=maxiter)
+            u_0 = dd.delta((((0, 1), (0, 2), (1, 2)), ((0, 1), (1, 2))), 'I')
+            u_1 = dd.delta((((0, 1), (0, 2), (1, 2)), ((0, 1), (0, 2))), 'I')
+            uniques[inputs[0]] = u_0
+            uniques[inputs[1]] = u_1
+        else:
+            for input_ in inputs:
+                others = sum([i for i in inputs if i != input_], ())
+                dm = d.coalesce([input_, others, output])
+                dd = DependencyDecomposition(dm, measures=measure, maxiter=maxiter)
+                u = dd.delta((((0, 1), (0, 2), (1, 2)), ((0, 1), (1, 2))), 'I')
                 uniques[input_] = u
 
         return uniques

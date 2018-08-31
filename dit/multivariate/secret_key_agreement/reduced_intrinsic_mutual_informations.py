@@ -8,7 +8,7 @@ from __future__ import division
 
 from abc import abstractmethod
 
-from .base_intrinsic_information import BaseMoreIntrinsicMutualInformation
+from .base_skar_optimizers import BaseReducedIntrinsicMutualInformation
 from .intrinsic_mutual_informations import (intrinsic_total_correlation,
                                             intrinsic_dual_total_correlation,
                                             intrinsic_caekl_mutual_information,
@@ -19,54 +19,6 @@ __all__ = ['reduced_intrinsic_total_correlation',
            'reduced_intrinsic_dual_total_correlation',
            'reduced_intrinsic_CAEKL_mutual_information',
           ]
-
-
-class BaseReducedIntrinsicMutualInformation(BaseMoreIntrinsicMutualInformation):
-    """
-    Compute the reduced intrinsic mutual information, a lower bound on the secret
-    key agreement rate:
-
-        I[X : Y \Downarrow Z] = min_U I[X : Y \downarrow ZU] + H[U]
-    """
-
-    type = "reduced"
-
-    @property
-    @staticmethod
-    @abstractmethod
-    def measure():
-        pass
-
-    def _objective(self, x):  # pragma: no cover
-        """
-        The multivariate mutual information to minimize.
-
-        Parameters
-        ----------
-        x : ndarray
-            An optimization vector.
-
-        Returns
-        -------
-        obj : float
-            The value of the objective function.
-        """
-        h = self._entropy(self._arvs)
-
-        def objective(self, x):
-
-            pmf = self.construct_joint(x)
-
-            # I[X:Y \downarrow ZU]
-            d = Distribution.from_ndarray(pmf)
-            a = self.measure(dist=d, rvs=[[rv] for rv in self._rvs], crvs=self._crvs|self._arvs)
-
-            # H[U]
-            b = h(pmf)
-
-            return a + b
-
-        return objective
 
 
 class ReducedIntrinsicTotalCorrelation(BaseReducedIntrinsicMutualInformation):

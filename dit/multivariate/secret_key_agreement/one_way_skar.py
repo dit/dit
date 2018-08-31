@@ -8,6 +8,7 @@ from __future__ import division
 
 from abc import abstractmethod
 
+from .base_skar_optimizers import BaseOneWaySKAR
 from ...algorithms import BaseAuxVarOptimizer
 from ...utils import unitful
 
@@ -15,82 +16,6 @@ from ...utils import unitful
 __all__ = [
     'one_way_skar',
 ]
-
-
-class BaseOneWaySKAR(BaseAuxVarOptimizer):
-    """
-    Compute lower bounds on the secret key agreement rate of the form:
-
-        max_{V - U - X - YZ} objective()
-    """
-
-    def __init__(self, dist, rv_x=None, rv_y=None, rv_z=None, rv_mode=None, bound_u=None, bound_v=None):
-        """
-        Initialize the optimizer.
-
-        Parameters
-        ----------
-        dist : Distribution
-            The distribution to compute the intrinsic mutual information of.
-        rv_x : iterable
-            The variables to consider `X`.
-        rv_y : iterable
-            The variables to consider `Y`.
-        rv_z : iterable
-            The variables to consider `Z`.
-        rv_mode : str, None
-            Specifies how to interpret `rvs` and `crvs`. Valid options are:
-            {'indices', 'names'}. If equal to 'indices', then the elements of
-            `crvs` and `rvs` are interpreted as random variable indices. If
-            equal to 'names', the the elements are interpreted as random
-            variable names. If `None`, then the value of `dist._rv_mode` is
-            consulted, which defaults to 'indices'.
-        bound_u : int, None
-            Specifies a bound on the size of the auxiliary random variable. If
-            None, then the theoretical bound is used.
-        bound_v : int, None
-            Specifies a bound on the size of the auxiliary random variable. If
-            None, then the theoretical bound is used.
-        """
-        super(BaseOneWaySKAR, self).__init__(dist, [rv_x, rv_y], rv_z, rv_mode=rv_mode)
-
-        theoretical_bound_u = self._get_u_bound()
-        bound_u = min(bound_u, theoretical_bound_u) if bound_u else theoretical_bound_u
-
-        theoretical_bound_v = self._get_v_bound()
-        bound_v = min(bound_v, theoretical_bound_v) if bound_v else theoretical_bound_v
-
-        self._construct_auxvars([({0}, bound_u), ({3}, bound_v)])
-        self._x = {0}
-        self._y = {1}
-        self._z = {2}
-        self._u = {3}
-        self._v = {4}
-        self._default_hops *= 2
-
-    @abstractmethod
-    def _get_u_bound(self):
-        """
-        Bound of |U|
-
-        Returns
-        -------
-        bound : int
-            The bound
-        """
-        pass
-
-    @abstractmethod
-    def _get_v_bound(self):
-        """
-        Bound of |V|
-
-        Returns
-        -------
-        bound : int
-            The bound
-        """
-        pass
 
 
 class OneWaySKAR(BaseOneWaySKAR):
@@ -113,7 +38,7 @@ class OneWaySKAR(BaseOneWaySKAR):
 
     def _objective(self):
         """
-        The multivariate mutual information to minimize.
+        Maximize I[U:Y|V] - I[U:Z|V]
 
         Returns
         -------
@@ -127,7 +52,7 @@ class OneWaySKAR(BaseOneWaySKAR):
 
         def objective(self, x):
             """
-            Compute I[U:Y]/I[U:X]
+            Compute I[U:Y] - I[U:X]
 
             Parameters
             ----------

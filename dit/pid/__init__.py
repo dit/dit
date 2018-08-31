@@ -8,13 +8,11 @@ from .iwedge import PID_GK
 from .immi import PID_MMI
 from .ibroja import PID_BROJA
 from .iccs import PID_CCS
-from .idep import PID_dep
-from .iskar import (PID_uparrow,
-                    PID_double_uparrow,
-                    PID_triple_uparrow,
-                    PID_downarrow,
-                    PID_double_downarrow,
-                    PID_triple_downarrow,
+from .idep import PID_dep, PID_RA
+from .iskar import (PID_SKAR_nw,
+                    PID_SKAR_owa,
+                    PID_SKAR_owb,
+                    PID_SKAR_tw,
                     )
 from .ipm import PID_PM
 from .irav import PID_RAV
@@ -24,19 +22,18 @@ from .distributions import bivariates, trivariates
 
 __all_pids = [
     PID_MMI,
-    # PID_uparrow,
-    # PID_double_uparrow,
-    # PID_triple_uparrow,
-    # PID_triple_downarrow,
-    # PID_double_downarrow,
-    PID_downarrow,
     PID_GK,
     PID_WB,
+    PID_RR,
     PID_CCS,
     PID_PM,
     PID_Proj,
     PID_BROJA,
     PID_dep,
+    PID_RA,
     PID_RAV,
-    PID_RR,
+    PID_SKAR_nw,
+    PID_SKAR_owa,
+    PID_SKAR_owb,
+    PID_SKAR_tw,
 ]

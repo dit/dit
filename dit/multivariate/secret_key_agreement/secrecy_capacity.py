@@ -1,6 +1,10 @@
 """
 The secrecy capacity is the rate at which X and Y can agree upon a secret key
 while Z eavesdrops, and X controlls the channel p(YZ|X).
+
+Given a fixed joint p(XYZ), the secrecy capacity is a lower bound on the one-way
+secret key agreement rate since arbitrary input to the channel p(YZ|X) can be
+emulated through proper communication on the part of X.
 """
 
 from __future__ import division

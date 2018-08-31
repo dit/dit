@@ -22,7 +22,6 @@ from boltons.iterutils import pairwise
 
 import numpy as np
 from scipy.optimize import basinhopping, differential_evolution, minimize
-from scipy.special import xlogy
 
 from .. import Distribution, insert_rvf, modify_outcomes
 from ..algorithms.channelcapacity import channel_capacity
@@ -203,7 +202,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
         h : float
             The entropy.
         """
-        return -xlogy(p, p).sum()/np.log(2)
+        return -np.nansum(p*np.log2(p))
 
     def _entropy(self, rvs, crvs=None):
         """
@@ -290,7 +289,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
             pmf_x = pmf_xy.sum(axis=idx_x, keepdims=True)
             pmf_y = pmf_xy.sum(axis=idx_y, keepdims=True)
 
-            mi = xlogy(pmf_xy, pmf_xy / (pmf_x * pmf_y)).sum()/np.log(2)
+            mi = np.nansum(pmf_xy * np.log2(pmf_xy / (pmf_x * pmf_y)))
 
             return mi
 
@@ -314,6 +313,9 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
         cmi : func
             The conditional mutual information.
         """
+        if not rv_z:
+            return self._mutual_information(rv_x=rv_x, rv_y=rv_y)
+
         idx_xyz = tuple(self._all_vars - (rv_x | rv_y | rv_z))
         idx_xz = tuple(self._all_vars - (rv_x | rv_z))
         idx_yz = tuple(self._all_vars - (rv_y | rv_z))
@@ -338,7 +340,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
             pmf_yz = pmf_xyz.sum(axis=idx_yz, keepdims=True)
             pmf_z = pmf_xz.sum(axis=idx_z, keepdims=True)
 
-            cmi = xlogy(pmf_xyz, pmf_z * pmf_xyz / pmf_xz / pmf_yz).sum()/np.log(2)
+            cmi = np.nansum(pmf_xyz * np.log2(pmf_z * pmf_xyz / pmf_xz / pmf_yz))
 
             return cmi
 
@@ -389,7 +391,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
 
             pmf_ci = reduce(np.multiply, [pmf**p for pmf, p in zip(pmf_subrvs, power)])
 
-            ci = xlogy(pmf_joint, pmf_ci).sum()/np.log(2)
+            ci = np.nansum(pmf_joint * np.log2(pmf_ci))
 
             return ci
 
@@ -1039,7 +1041,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
             relevant_vars = {self._n + b for b in auxvar.bases}
             index = sorted(self._full_vars) + [self._n + a for a in arvs[:i + 1]]
             var += self._n
-            self._full_slices.append([colon if i in relevant_vars | {var} else np.newaxis for i in index])
+            self._full_slices.append(tuple([colon if i in relevant_vars | {var} else np.newaxis for i in index]))
 
         self._slices = []
         for i, (auxvar, var) in enumerate(zip(self._aux_vars, arvs)):

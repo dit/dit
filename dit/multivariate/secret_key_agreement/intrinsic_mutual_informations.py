@@ -4,7 +4,7 @@ Intrinsic Mutual Informations
 
 from __future__ import division
 
-from .base_intrinsic_information import BaseIntrinsicMutualInformation
+from .base_skar_optimizers import BaseIntrinsicMutualInformation
 
 __all__ = [
     'intrinsic_total_correlation',
@@ -175,12 +175,12 @@ def intrinsic_mutual_information_constructor(func):
             docstring = \
             """
             Compute the {name}.
-        
+
             Parameters
             ----------
             x : ndarray
                 An optimization vector.
-        
+
             Returns
             -------
             mi : float
