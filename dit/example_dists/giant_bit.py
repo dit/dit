@@ -8,16 +8,16 @@ from itertools import product
 from .. import Distribution
 
 
-def giant_bit(n, k):
+def giant_bit(n=3, k=2):
     """
     Return a 'giant bit' distribution of size `n` and alphabet size `k`.
 
     Parameters
     ----------
     n : int
-        The number of identical bits.
+        The number of identical bits. Defaults to 3.
     k : int
-        The number of states for each bit.
+        The number of states for each bit. Defaults to 2.
 
     Returns
     -------

@@ -32,6 +32,7 @@ bivariates = {'uniform': bivariate.uni,
               'boom': bivariate.boom,
               'not two': bivariate.not_two,
               'pnt. unq': bivariate.pwu,
+              'erase': bivariate.erase,
               }
 
 trivariates = {'uniform': trivariate.uni,

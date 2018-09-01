@@ -29,6 +29,7 @@ __all__ = [
     'mixture_distribution',
     'mixture_distribution2',
     'noisy',
+    'erasure',
     'modify_outcomes',
     'random_scalar_distribution',
     'random_distribution',
@@ -185,6 +186,35 @@ def noisy(dist, noise=0.5):
         fuzz = modify_outcomes(fuzz, lambda o: ''.join(o))
     fuzzy = mixture_distribution([dist, fuzz], [1-noise, noise], merge=True)
     return fuzzy
+
+
+def erasure(dist, epsilon=1/3):
+    """
+    Construct a version of `dist` where each variable has been passed through
+    an erasure channel.
+
+    Parameters
+    ----------
+    dist : Distribution
+        The distribution to fuzz.
+    epsilon : float, 0 <= `epsilon` <= 1
+        The erasure probability.
+
+    Returns
+    -------
+    erased : Distribution
+        The erased distribution.
+    """
+    ctor = dist._outcome_ctor
+    outcomes = defaultdict(float)
+    n = dist.outcome_length()
+
+    for outcome, prob in dist.zipped():
+        for o in product(*zip(outcome, '_'*n)):
+            count = o.count('_')
+            outcomes[ctor(o)] += prob * epsilon**count * (1-epsilon)**(n - count)
+
+    return Distribution(outcomes)
 
 
 def modify_outcomes(dist, ctor):
