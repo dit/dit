@@ -196,7 +196,5 @@ class PID_SKAR_tw(BaseUniquePID):
                     uniques[input_] = lower
                     break
             else:
-                print(lower)
-                print(upper)
                 uniques[input_] = np.nan
         return uniques

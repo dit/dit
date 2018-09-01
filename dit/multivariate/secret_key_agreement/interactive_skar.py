@@ -39,6 +39,10 @@ class InteractiveSKAR(BaseAuxVarOptimizer):
             equal to 'names', the the elements are interpreted as random
             variable names. If `None`, then the value of `dist._rv_mode` is
             consulted, which defaults to 'indices'.
+
+        Todo
+        ----
+        Make bounds flexible.
         """
         super(InteractiveSKAR, self).__init__(dist, [rv_x, rv_y], rv_z, rv_mode=rv_mode)
 
