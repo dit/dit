@@ -15,12 +15,8 @@ from .pid import BaseUniquePID
 from ..exceptions import ditException
 from ..multivariate.secret_key_agreement import (
     no_communication_skar,
-    interactive_skar,
-    intrinsic_mutual_information,
-    minimal_intrinsic_mutual_information,
-    necessary_intrinsic_mutual_information,
     one_way_skar,
-    two_part_intrinsic_mutual_information,
+    two_way_skar,
 )
 from ..utils import flatten
 
@@ -171,30 +167,10 @@ class PID_SKAR_tw(BaseUniquePID):
         i_skar_tw : dict
             The value of I_SKAR_tw for each individual input.
         """
-        def bounds(input_, output, others):
-            lower = no_communication_skar(d, input_, output, others)
-            upper = intrinsic_mutual_information(d, [input_, output], others)
-            yield lower, upper
-            lower = necessary_intrinsic_mutual_information(d, [input_, output], others, niter=niter, bound_u=bound, bound_v=bound)
-            yield lower, upper
-            upper = minimal_intrinsic_mutual_information(d, [input_, output], others, niter=niter, bounds=(bound,))
-            yield lower, upper
-            lower = interactive_skar(d, [input_, output], others, niter=niter)
-            yield lower, upper
-            lower = interactive_skar(d, [input_, output], others, niter=niter, rounds=3)
-            yield lower, upper
-            upper = two_part_intrinsic_mutual_information(d, [input_, output], others, niter=niter, bound_j=2, bound_u=2, bound_v=2)
-            yield lower, upper
-
         uniques = {}
         for input_ in inputs:
             others = list(inputs)
             others.remove(input_)
             others = list(flatten(others))
-            for lower, upper in bounds(input_, output, others):
-                if np.isclose(lower, upper):
-                    uniques[input_] = lower
-                    break
-            else:
-                uniques[input_] = np.nan
+            uniques[input_] = two_way_skar(d, [input_, output], others)
         return uniques

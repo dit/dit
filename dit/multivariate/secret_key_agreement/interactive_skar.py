@@ -16,7 +16,7 @@ class InteractiveSKAR(BaseAuxVarOptimizer):
     communication between Alice and Bob.
     """
 
-    def __init__(self, dist, rv_x=None, rv_y=None, rv_z=None, rounds=2, rv_mode=None):
+    def __init__(self, dist, rv_x=None, rv_y=None, rv_z=None, rounds=2, bound_func=None, rv_mode=None):
         """
         Initialize the optimizer.
 
@@ -32,6 +32,8 @@ class InteractiveSKAR(BaseAuxVarOptimizer):
             The variables to consider `Z`.
         rounds : int
             The number of communication rounds to utilize. Defaults to 2.
+        bound_func : func
+            A function over i, |X|, |Y| which returns the bound on variable U_i.
         rv_mode : str, None
             Specifies how to interpret `rvs` and `crvs`. Valid options are:
             {'indices', 'names'}. If equal to 'indices', then the elements of
@@ -39,20 +41,29 @@ class InteractiveSKAR(BaseAuxVarOptimizer):
             equal to 'names', the the elements are interpreted as random
             variable names. If `None`, then the value of `dist._rv_mode` is
             consulted, which defaults to 'indices'.
-
-        Todo
-        ----
-        Make bounds flexible.
         """
         super(InteractiveSKAR, self).__init__(dist, [rv_x, rv_y], rv_z, rv_mode=rv_mode)
 
         self._rounds = rounds
+        if bound_func is None:
+            bound_func = self.bound
 
-        bound_size = lambda i: self._shape[0]**(i//2 + i%2) * self._shape[1]**(i//2)
-        auxvars = [({i%2} | set(range(len(self._shape), len(self._shape) + i)), bound_size(i+1)) for i in range(rounds)]
+        auxvars = []
+        for i in range(rounds):
+            markov = {i%2} | set(range(len(self._shape), len(self._shape) + i))
+            bound = bound_func(i, self._shape[0], self._shape[1])
+            auxvars.append((markov, bound))
+
         self._construct_auxvars(auxvars)
         self._x, self._y = [{rv} for rv in sorted(self._rvs)]
         self._z = self._crvs
+
+    @staticmethod
+    def bound(self, i, x, y):
+        """
+        """
+        i += 1
+        return x**(i//2 + i%2) * y**(i//2)
 
     def _objective(self):
         """
@@ -98,7 +109,7 @@ class InteractiveSKAR(BaseAuxVarOptimizer):
 
 
 @unitful
-def interactive_skar(dist, rvs=None, crvs=None, rounds=2, niter=None, rv_mode=None):
+def interactive_skar(dist, rvs=None, crvs=None, rounds=2, bound_func=None, niter=None, rv_mode=None):
     """
     Compute a lower bound on the secret key agreement rate based on interactive communicaiton.
 
@@ -112,6 +123,8 @@ def interactive_skar(dist, rvs=None, crvs=None, rounds=2, niter=None, rv_mode=No
         The indices to consider as Z (Eve).
     rounds : int
         The number of rounds of communication to allow. Defaults to 2.
+    bound_func : func
+        A function over i, |X|, |Y| which returns the bound on variable U_i.
     niter : int, None
         The number of hops to perform during optimization.
     rv_mode : str, None
@@ -127,7 +140,7 @@ def interactive_skar(dist, rvs=None, crvs=None, rounds=2, niter=None, rv_mode=No
     iskar : float
         The lower bound.
     """
-    iskar = InteractiveSKAR(dist, rv_x=rvs[0], rv_y=rvs[1], rv_z=crvs, rounds=rounds, rv_mode=rv_mode)
+    iskar = InteractiveSKAR(dist, rv_x=rvs[0], rv_y=rvs[1], rv_z=crvs, rounds=rounds, bound_func=bound_func, rv_mode=rv_mode)
     iskar.optimize(niter=niter)
     value = -iskar.objective(iskar._optima)
 

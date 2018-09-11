@@ -10,6 +10,9 @@ from .no_communication import no_communication_skar
 from .one_way_skar import one_way_skar
 
 # two-way communication
+from .two_way_skar import two_way_skar
+
+# two-way bounds
 from .interactive_skar import interactive_skar
 from .intrinsic_mutual_informations import (intrinsic_total_correlation,
                                             intrinsic_dual_total_correlation,
@@ -31,10 +34,10 @@ from .trivial_bounds import (lower_intrinsic_mutual_information,
                              upper_intrinsic_dual_total_correlation,
                              upper_intrinsic_caekl_mutual_information,
                              )
-from .two_part_intrinsic_mutual_information import (two_part_intrinsic_total_correlation,
-                                                    two_part_intrinsic_dual_total_correlation,
-                                                    two_part_intrinsic_CAEKL_mutual_information,
-                                                    )
+from .two_part_intrinsic_mutual_informations import (two_part_intrinsic_total_correlation,
+                                                     two_part_intrinsic_dual_total_correlation,
+                                                     two_part_intrinsic_CAEKL_mutual_information,
+                                                     )
 
 intrinsic_mutual_information = intrinsic_total_correlation
 reduced_intrinsic_mutual_information = reduced_intrinsic_total_correlation
