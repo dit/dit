@@ -10,6 +10,11 @@ from ...algorithms.optimization import BaseAuxVarOptimizer
 from ...utils import unitful
 
 
+__all__ = [
+    'interactive_intrinsic_mutual_information',
+]
+
+
 class InteractiveSKAR(BaseAuxVarOptimizer):
     """
     Compute a lower bound on the secret key agreement rate based on interactive
@@ -109,7 +114,7 @@ class InteractiveSKAR(BaseAuxVarOptimizer):
 
 
 @unitful
-def interactive_skar(dist, rvs=None, crvs=None, rounds=2, bound_func=None, niter=None, rv_mode=None):
+def interactive_intrinsic_mutual_information(dist, rvs=None, crvs=None, rounds=2, bound_func=None, niter=None, rv_mode=None):
     """
     Compute a lower bound on the secret key agreement rate based on interactive communicaiton.
 

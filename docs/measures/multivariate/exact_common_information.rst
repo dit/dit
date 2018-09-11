@@ -22,7 +22,7 @@ Kumar **et. al.** :cite:`kumar2014exact` have shown that the exact common inform
 
    In [2]: d = dit.Distribution([(0,0), (0,1), (1,0)], [1/3]*3)
 
-   In [3]: d2 = d.__matmul__(d) # RTD doesn't use python 3
+   In [3]: d2 = d @ d  # python 3.6 syntax for d.__matmul__(d)
 
    In [4]: print(d2)
    Class:          Distribution
@@ -43,7 +43,7 @@ Kumar **et. al.** :cite:`kumar2014exact` have shown that the exact common inform
    (1, 0, 0, 1)   1/9
    (1, 0, 1, 0)   1/9
 
-   @doctest float
+   @doctest float 1e-3 1e-3
    In [5]: 2*G(d)
    Out[5]: 1.8365916681089791
 

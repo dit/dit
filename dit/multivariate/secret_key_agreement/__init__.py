@@ -13,7 +13,7 @@ from .one_way_skar import one_way_skar
 from .two_way_skar import two_way_skar
 
 # two-way bounds
-from .interactive_skar import interactive_skar
+from .interactive_intrinsic_mutual_informations import interactive_intrinsic_mutual_information
 from .intrinsic_mutual_informations import (intrinsic_total_correlation,
                                             intrinsic_dual_total_correlation,
                                             intrinsic_caekl_mutual_information,
