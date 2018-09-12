@@ -5,8 +5,8 @@ Tests for dit.multivariate.secret_key_agreement.secrecy_capacity
 import pytest
 
 from dit.example_dists.intrinsic import *
-from dit.multivariate import total_correlation, secrecy_capacity
-from dit.multivariate.secret_key_agreement.secrecy_capacity import SecrecyCapacity
+from dit.multivariate import total_correlation
+from dit.multivariate.secret_key_agreement.secrecy_capacity import secrecy_capacity, SecrecyCapacity
 
 
 @pytest.mark.flaky(reruns=5)
@@ -15,7 +15,7 @@ def test_sc_1(dist):
     """
     Test against known values.
     """
-    sc = secrecy_capacity(dist, [[0], [1]], [2], bound_u=2)
+    sc = secrecy_capacity(dist, [0], [1], [2], bound_u=2)
     assert sc == pytest.approx(dist.secret_rate, abs=1e-5)
 
 

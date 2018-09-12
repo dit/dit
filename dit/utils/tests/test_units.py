@@ -26,7 +26,7 @@ def test_bit():
     h = entropy(d)
     reset_params()
     true = ureg.Quantity(1, ureg.bit)
-    assert float(h) == pytest.approx(true)
+    assert float(h) == true
 
 
 def test_nat():
@@ -38,7 +38,7 @@ def test_nat():
     h = entropy(d)
     reset_params()
     true = ureg.Quantity(np.log(2), ureg.nat)
-    assert float(h) == pytest.approx(true)
+    assert float(h) == true
 
 
 def test_dit():
@@ -50,7 +50,7 @@ def test_dit():
     h = entropy(d)
     reset_params()
     true = ureg.Quantity(1, ureg.dit)
-    assert float(h) == pytest.approx(true)
+    assert float(h) == true
 
 
 def test_cc():
@@ -62,4 +62,4 @@ def test_cc():
     cc, _ = channel_capacity_joint(gm, [0], [1], marginal=True)
     reset_params()
     true = ureg.Quantity(0.3219280796196524, ureg.bit)
-    assert float(cc) == pytest.approx(true)
+    assert float(cc) == true
