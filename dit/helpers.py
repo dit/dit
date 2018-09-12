@@ -69,7 +69,7 @@ class RV_Mode(object):
             raise KeyError('Invalid value for `rv_mode`')
 
         if item in self._deprecated:
-            dep = _deprecated[_deprecated.index(item)]
+            dep = self._deprecated[self._deprecated.index(item)]
             if type(item) == type(dep):
                 msg = 'Deprecated value for `rv_mode`: {0!r}.'.format(item)
                 msg += ' See docstring for new conventions.'
