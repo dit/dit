@@ -4,35 +4,8 @@ Tests for dit.pid.iwedge.
 
 import pytest
 
-from dit.pid.iwedge import i_wedge, PID_GK
+from dit.pid.iwedge import PID_GK
 from dit.pid.distributions import bivariates, trivariates
-
-
-def test_iwedge1():
-    """
-    Test iwedge on redundant distribution.
-    """
-    d = bivariates['redundant']
-    red = i_wedge(d, ((0,), (1,)), (2,))
-    assert red == pytest.approx(1)
-
-
-def test_iwedge2():
-    """
-    Test iwedge on synergistic distribution.
-    """
-    d = bivariates['synergy']
-    red = i_wedge(d, ((0,), (1,)), (2,))
-    assert red == pytest.approx(0)
-
-
-def test_iwedge3():
-    """
-    Test iwedge on unique distribution.
-    """
-    d = bivariates['cat']
-    red = i_wedge(d, ((0,), (1,)), (2,))
-    assert red == pytest.approx(0)
 
 
 def test_pid_gk1():

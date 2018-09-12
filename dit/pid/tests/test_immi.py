@@ -4,35 +4,8 @@ Tests for dit.pid.immi.
 
 import pytest
 
-from dit.pid.immi import i_mmi, PID_MMI
+from dit.pid.immi import PID_MMI
 from dit.pid.distributions import bivariates, trivariates
-
-
-def test_immi1():
-    """
-    Test immi on redundant distribution.
-    """
-    d = bivariates['redundant']
-    red = i_mmi(d, ((0,), (1,)), (2,))
-    assert red == pytest.approx(1)
-
-
-def test_immi2():
-    """
-    Test immi on synergistic distribution.
-    """
-    d = bivariates['synergy']
-    red = i_mmi(d, ((0,), (1,)), (2,))
-    assert red == pytest.approx(0)
-
-
-def test_immi3():
-    """
-    Test immi on unique distribution.
-    """
-    d = bivariates['cat']
-    red = i_mmi(d, ((0,), (1,)), (2,))
-    assert red == pytest.approx(1)
 
 
 def test_pid_mmi1():

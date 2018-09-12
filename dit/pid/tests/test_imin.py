@@ -4,35 +4,8 @@ Tests for dit.pid.imin.
 
 import pytest
 
-from dit.pid.imin import i_min, PID_WB
+from dit.pid.imin import PID_WB
 from dit.pid.distributions import bivariates, trivariates
-
-
-def test_imin1():
-    """
-    Test imin on redundant distribution.
-    """
-    d = bivariates['redundant']
-    red = i_min(d, ((0,), (1,)), (2,))
-    assert red == pytest.approx(1)
-
-
-def test_imin2():
-    """
-    Test imin on synergistic distribution.
-    """
-    d = bivariates['synergy']
-    red = i_min(d, ((0,), (1,)), (2,))
-    assert red == pytest.approx(0)
-
-
-def test_imin3():
-    """
-    Test imin on unique distribution.
-    """
-    d = bivariates['cat']
-    red = i_min(d, ((0,), (1,)), (2,))
-    assert red == pytest.approx(1)
 
 
 def test_pid_wb1():

@@ -4,35 +4,8 @@ Tests for dit.pid.irr.
 
 import pytest
 
-from dit.pid.irr import i_rr, PID_RR
+from dit.pid.irr import PID_RR
 from dit.pid.distributions import bivariates, trivariates
-
-
-def test_irr1():
-    """
-    Test irr on redundant distribution.
-    """
-    d = bivariates['redundant']
-    red = i_rr(d, ((0,), (1,)), (2,))
-    assert red == pytest.approx(1)
-
-
-def test_irr2():
-    """
-    Test irr on synergistic distribution.
-    """
-    d = bivariates['synergy']
-    red = i_rr(d, ((0,), (1,)), (2,))
-    assert red == pytest.approx(0)
-
-
-def test_irr3():
-    """
-    Test irr on unique distribution.
-    """
-    d = bivariates['cat']
-    red = i_rr(d, ((0,), (1,)), (2,))
-    assert red == pytest.approx(0)
 
 
 def test_pid_rr1():

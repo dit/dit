@@ -5,38 +5,8 @@ Tests for dit.pid.idep.
 import pytest
 
 from dit.pid.ibroja import PID_BROJA
-from dit.pid.idep import i_dep, PID_dep
+from dit.pid.idep import PID_dep
 from dit.pid.distributions import bivariates, trivariates
-
-
-def test_idep1():
-    """
-    Test idep on redundant distribution.
-    """
-    d = bivariates['redundant']
-    uniques = i_dep(d, ((0,), (1,)), (2,))
-    assert uniques[(0,)] == pytest.approx(0, abs=1e-6)
-    assert uniques[(1,)] == pytest.approx(0, abs=1e-6)
-
-
-def test_idep2():
-    """
-    Test idep on synergistic distribution.
-    """
-    d = bivariates['synergy']
-    uniques = i_dep(d, ((0,), (1,)), (2,))
-    assert uniques[(0,)] == pytest.approx(0, abs=1e-6)
-    assert uniques[(1,)] == pytest.approx(0, abs=1e-6)
-
-
-def test_idep3():
-    """
-    Test idep on unique distribution.
-    """
-    d = bivariates['cat']
-    uniques = i_dep(d, ((0,), (1,)), (2,))
-    assert uniques[(0,)] == pytest.approx(1)
-    assert uniques[(1,)] == pytest.approx(1)
 
 
 def test_pid_dep1():

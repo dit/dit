@@ -6,35 +6,8 @@ import pytest
 
 import sys
 
-from dit.pid.iccs import i_ccs, PID_CCS
+from dit.pid.iccs import PID_CCS
 from dit.pid.distributions import bivariates, trivariates
-
-
-def test_iccs1():
-    """
-    Test iccs on redundant distribution.
-    """
-    d = bivariates['redundant']
-    red = i_ccs(d, ((0,), (1,)), (2,))
-    assert red == pytest.approx(1)
-
-
-def test_iccs2():
-    """
-    Test iccs on synergistic distribution.
-    """
-    d = bivariates['synergy']
-    red = i_ccs(d, ((0,), (1,)), (2,))
-    assert red == pytest.approx(0)
-
-
-def test_iccs3():
-    """
-    Test iccs on unique distribution.
-    """
-    d = bivariates['cat']
-    red = i_ccs(d, ((0,), (1,)), (2,))
-    assert red == pytest.approx(0)
 
 
 def test_pid_ccs1():

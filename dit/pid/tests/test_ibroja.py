@@ -4,53 +4,9 @@ Tests for dit.pid.ibroja.
 
 import pytest
 
-from dit.pid.ibroja import i_broja, PID_BROJA
+from dit.pid.ibroja import PID_BROJA
 from dit.pid.iproj import PID_Proj
 from dit.pid.distributions import bivariates, trivariates
-
-
-@pytest.mark.flaky(reruns=5)
-def test_ibroja1():
-    """
-    Test ibroja on redundant distribution.
-    """
-    d = bivariates['redundant']
-    uniques = i_broja(d, ((0,), (1,)), (2,))
-    assert uniques[(0,)] == pytest.approx(0, abs=1e-4)
-    assert uniques[(1,)] == pytest.approx(0, abs=1e-4)
-
-
-@pytest.mark.flaky(reruns=5)
-def test_ibroja2():
-    """
-    Test ibroja on synergistic distribution.
-    """
-    d = bivariates['synergy']
-    uniques = i_broja(d, ((0,), (1,)), (2,))
-    assert uniques[(1,)] == pytest.approx(0, abs=1e-4)
-    assert uniques[(0,)] == pytest.approx(0, abs=1e-4)
-
-
-@pytest.mark.flaky(reruns=5)
-def test_ibroja3():
-    """
-    Test ibroja on unique distribution.
-    """
-    d = bivariates['cat']
-    uniques = i_broja(d, ((0,), (1,)), (2,))
-    assert uniques[(0,)] == pytest.approx(1, abs=1e-4)
-    assert uniques[(1,)] == pytest.approx(1, abs=1e-4)
-
-
-@pytest.mark.flaky(reruns=5)
-def test_ibroja4():
-    """
-    Test ibroja on a non-unique (?) distribution.
-    """
-    d = bivariates['pnt. unq']
-    uniques = i_broja(d, ((0,), (1,)), (2,))
-    assert uniques[(0,)] == pytest.approx(0, abs=1e-4)
-    assert uniques[(1,)] == pytest.approx(0, abs=1e-4)
 
 
 @pytest.mark.flaky(reruns=5)

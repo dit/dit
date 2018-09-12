@@ -4,48 +4,8 @@ Tests for dit.pid.irav.
 
 import pytest
 
-from dit.pid.irav import i_rav, PID_RAV
+from dit.pid.irav import PID_RAV
 from dit.pid.distributions import bivariates, trivariates
-
-def test_irav1():
-    """
-    Test irav on redundant distribution.
-    """
-    d = bivariates['redundant']
-    red = i_rav(d, ((0,), (1,)), (2,))
-    assert red == pytest.approx(1)
-
-def test_irav2():
-    """
-    Test irav on synergistic distribution.
-    """
-    d = bivariates['synergy']
-    red = i_rav(d, ((0,), (1,)), (2,))
-    assert red == pytest.approx(0)
-
-def test_irav3():
-    """
-    Test irav on unique distribution.
-    """
-    d = bivariates['cat']
-    red = i_rav(d, ((0,), (1,)), (2,))
-    assert red == pytest.approx(0)
-
-def test_irav4():
-    """
-    Test irav on pointwise unique distribution.
-    """
-    d = bivariates['pnt. unq']
-    red = i_rav(d, ((0,), (1,)), (2,))
-    assert red == pytest.approx(0)
-
-def test_irav5():
-    """
-    Test irav on a bivariate distribution without concensus.
-    """
-    d = bivariates['and']
-    red = i_rav(d, ((0,), (1,)), (2,))
-    assert red == pytest.approx(0.12255624891826589)
 
 def test_pid_rav1():
     """
