@@ -4,7 +4,9 @@ A lower bound on the two-way secret key agreement rate.
 
 from __future__ import division
 
-from itertools import chain, zip_longest
+from six.moves import zip_longest
+
+from itertools import chain
 
 from ...algorithms.optimization import BaseAuxVarOptimizer
 from ...utils import unitful
