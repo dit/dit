@@ -60,7 +60,7 @@ class RV_Mode(object):
     }
 
     # Temporary until we can convert everything to using: rv_mode
-    _deprecated = set([True, False])
+    _deprecated = [True, False]
 
     def __getitem__(self, item):
         try:
@@ -69,9 +69,11 @@ class RV_Mode(object):
             raise KeyError('Invalid value for `rv_mode`')
 
         if item in self._deprecated:
-            msg = 'Deprecated value for `rv_mode`: {0!r}.'.format(item)
-            msg += ' See docstring for new conventions.'
-            warnings.warn(msg, DeprecationWarning)
+            dep = _deprecated[_deprecated.index(item)]
+            if type(item) == type(dep):
+                msg = 'Deprecated value for `rv_mode`: {0!r}.'.format(item)
+                msg += ' See docstring for new conventions.'
+                warnings.warn(msg, DeprecationWarning)
 
         return mode
 
