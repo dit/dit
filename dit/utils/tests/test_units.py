@@ -37,7 +37,7 @@ def test_nat():
     ditParams['units'] = True
     h = entropy(d)
     reset_params()
-    true = ureg.Quantity(np.log(2), ureg.nat)
+    true = ureg.Quantity(np.log(2), ureg.nat).ito_base_units()
     assert h == true
 
 
@@ -49,7 +49,7 @@ def test_dit():
     ditParams['units'] = True
     h = entropy(d)
     reset_params()
-    true = ureg.Quantity(1, ureg.dit)
+    true = ureg.Quantity(1, ureg.dit).ito_base_units()
     assert h == true
 
 
