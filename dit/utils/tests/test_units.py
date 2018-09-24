@@ -62,4 +62,4 @@ def test_cc():
     cc, _ = channel_capacity_joint(gm, [0], [1], marginal=True)
     reset_params()
     true = ureg.Quantity(0.3219280796196524, ureg.bit)
-    assert h.m == pytest.approx(true.m)
+    assert cc.m == pytest.approx(true.m)
