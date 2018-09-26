@@ -3,11 +3,11 @@
 
 import numpy as np
 
-from .no_communication import no_communication_skar
-from .intrinsic_mutual_informations import intrinsic_total_correlation as intrinsic_mutual_information
-from .skar_lower_bounds import necessary_intrinsic_mutual_information
-from .minimal_intrinsic_mutual_informations import minimal_intrinsic_total_correlation as minimal_intrinsic_mutual_information
 from .interactive_intrinsic_mutual_informations import interactive_intrinsic_mutual_information
+from .intrinsic_mutual_informations import intrinsic_total_correlation as intrinsic_mutual_information
+from .minimal_intrinsic_mutual_informations import minimal_intrinsic_total_correlation as minimal_intrinsic_mutual_information
+from .no_communication import no_communication_skar
+from .skar_lower_bounds import necessary_intrinsic_mutual_information
 from .two_part_intrinsic_mutual_informations import two_part_intrinsic_total_correlation as two_part_intrinsic_mutual_information
 
 
@@ -55,13 +55,13 @@ def _two_way_skar_bounds_iter(dist, rvs=None, crvs=None, rv_mode=None):
     new_upper = minimal_intrinsic_mutual_information(dist, rvs, crvs, rv_mode=rv_mode)
     upper = min([upper, new_upper])
     yield lower, upper
-    new_lower = interactive_skar(dist, rvs, crvs, bound_func=bound_func, rounds=2, rv_mode=rv_mode)
+    new_lower = interactive_intrinsic_mutual_information(dist, rvs, crvs, bound_func=bound_func, rounds=2, rv_mode=rv_mode)
     lower = max([lower, new_lower])
     yield lower, upper
-    new_lower = interactive_skar(dist, rvs, crvs, bound_func=bound_func, rounds=3, rv_mode=rv_mode)
+    new_lower = interactive_intrinsic_mutual_information(dist, rvs, crvs, bound_func=bound_func, rounds=3, rv_mode=rv_mode)
     lower = max([lower, new_lower])
     yield lower, upper
-    new_lower = interactive_skar(dist, rvs, crvs, bound_func=bound_func, rounds=4, rv_mode=rv_mode)
+    new_lower = interactive_intrinsic_mutual_information(dist, rvs, crvs, bound_func=bound_func, rounds=4, rv_mode=rv_mode)
     lower = max([lower, new_lower])
     yield lower, upper
     new_upper = two_part_intrinsic_mutual_information(dist, rvs, crvs, bound_j=2, bound_u=2, bound_v=2, rv_mode=rv_mode)
@@ -97,7 +97,7 @@ def two_way_skar_bounds(dist, rvs, crvs, rv_mode=None):
         The best upper bound.
     """
     for lower, upper in _two_way_skar_bounds_iter(dist, rvs, crvs, rv_mode):
-        if np.isclose(lower, upper):
+        if np.isclose(lower, upper, atol=1e-6):
             return lower, upper
     return lower, upper
 
@@ -129,7 +129,7 @@ def two_way_skar(dist, rvs, crvs, rv_mode=None):
         The two way secret key agreement rate.
     """
     lower, upper = two_way_skar_bounds(dist, rvs, crvs, rv_mode)
-    if np.isclose(lower, upper):
+    if np.isclose(lower, upper, atol=1e-6):
         return lower
     else:
         return np.nan
