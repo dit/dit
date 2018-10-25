@@ -94,15 +94,15 @@ Let us consider the special case of two inputs. The lattice consists of four ele
 
 .. math::
 
-   \I{X_0, X_1 : Y} = \Icap{\left\{X_0\right\}, \left\{X_1\right\} : Y} + \Icap{\left\{X_0\right\} : Y} + \Icap{\left\{X_1\right\} : Y} + \Icap{\left\{X_0, X_1\right\} : Y}
+   \I{X_0, X_1 : Y} = \Ipart{\left\{X_0\right\}, \left\{X_1\right\} : Y} + \Ipart{\left\{X_0\right\} : Y} + \Ipart{\left\{X_1\right\} : Y} + \Ipart{\left\{X_0, X_1\right\} : Y}
 
 Furthermore, due to the self-redundancy axiom (described ahead), the single-input mutual informations decomposed in the following way:
 
 .. math::
 
-   \I{X_0 : Y} = \Icap{\left\{X_0\right\}, \left\{X_1\right\} : Y} + \Icap{\left\{X_0\right\} : Y}
+   \I{X_0 : Y} = \Ipart{\left\{X_0\right\}, \left\{X_1\right\} : Y} + \Ipart{\left\{X_0\right\} : Y}
 
-   \I{X_1 : Y} = \Icap{\left\{X_0\right\}, \left\{X_1\right\} : Y} + \Icap{\left\{X_1\right\} : Y}
+   \I{X_1 : Y} = \Ipart{\left\{X_0\right\}, \left\{X_1\right\} : Y} + \Ipart{\left\{X_1\right\} : Y}
 
 Colloquially, from input :math:`X_0` one can learn what is redundantly provided by either input, plus what is uniquely provided by :math:`X_0`, but not what is uniquely provided by :math:`X_1` or what can only be learned synergistically from both inputs.
 
@@ -207,34 +207,6 @@ One potential measure of redundancy is the *minimum mutual information* :cite:`b
 
 This measure, though crude, is known to be correct for multivariate gaussian variables :cite:`olbrich2015information`.
 
-.. py:module:: dit.pid.idownarrow
-:math:`\Ida{\bullet}`
----------------------
-
-Drawing inspiration from information-theoretic cryptography, this PID quantifies unique information using the :ref:`Intrinsic Mutual Information`:
-
-.. math::
-
-   \Ida{X_{0:n} : Y} = \I{X_i : Y \downarrow X_\overline{\{i\}}}
-
-While this seems intuitively plausible, it turns out that this leads to an inconsistent decomposition :cite:`bertschinger2013shared`; namely, in the bivariate case, if one were to compute redundancy using either unique information subtracted from that inputs mutual information with the output the value should be the same. There are examples where this is not the case:
-
-.. ipython::
-
-   In [14]: d = bivariates['prob 2']
-
-   In [15]: PID_downarrow(d)
-   ╔════════╤════════╤════════╗
-   ║  I_da  │  I_r   │   pi   ║
-   ╟────────┼────────┼────────╢
-   ║ {0:1}  │ 1.0000 │ 0.1887 ║
-   ║  {0}   │ 0.3113 │ 0.1887 ║
-   ║  {1}   │ 0.5000 │ 0.5000 ║
-   ║ {0}{1} │ 0.1226 │ 0.1226 ║
-   ╚════════╧════════╧════════╝
-
-Interestingly, compared to other measures the intrinsic mutual information seems to *overestimate* unique information. Since :math:`\I{X_0 : Y \downarrow X_1} \leq \min\left\{ \I{X_0 : Y | X_1}, \I{X_0 : Y} \right\} = \min\left\{ U_0 + S, U_0 + R\right\}`, where :math:`R` is redundancy, :math:`U_0` is unique information from input :math:`X_0`, and :math:`S` is synergy, this implies that the optimization performed in computing the intrinsic mutual information is unable to completely remove either redundancy, synergy, or both.
-
 .. py:module:: dit.pid.iwedge
 :math:`\Iwedge{\bullet}`
 ------------------------
@@ -245,7 +217,11 @@ Redundancy seems to intuitively be related to common information :ref:`Common In
 
    \Iwedge{X_{0:n} : Y} = \I{ \meet X_i : Y}
 
-That is, redundancy is the information the :ref:`Gács-Körner Common Information` of the inputs shares with the output. This measure is known to produce negative partial information values in some instances.
+That is, redundancy is the information the :ref:`Gács-Körner Common Information` of the inputs shares with the output.
+
+.. warning::
+
+   This measure can result in a negative PID.
 
 .. py:module:: dit.pid.iproj
 :math:`\Iproj{\bullet}`
@@ -318,7 +294,7 @@ The BROJA measure has recently been criticized for behaving in an unintuitive ma
 We see that in this instance BROJA assigns no partial information to either unique information. However, it is not difficult to argue that in the case that either input is a 1, that input then has unique information regarding the output.
 
 :math:`\Iproj{\bullet}` and :math:`\Ibroja{\bullet}` are Distinct
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In the BROJA paper :cite:`bertschinger2014quantifying` the only example given where their decomposition differs from that of Harder et al. is the :py:func:`dit.example_dists.summed_dice`. We can find a simpler example where they differ using hypothesis:
 
@@ -370,6 +346,10 @@ This decomposition also displays an interesting phenomena, that of *subadditive 
    ║ {0}{1} │ 0.8113 │ 0.8113 ║
    ╚════════╧════════╧════════╝
 
+.. warning::
+
+   This measure can result in a negative PID.
+
 .. py:module:: dit.pid.idep
 :math:`\Idep{\bullet}`
 ----------------------
@@ -413,6 +393,10 @@ They then define two partial information lattices, one quantified locally by :ma
    ║  {1}   │ 0.5000 │ 0.5000 ║
    ║ {0}{1} │ 0.0000 │ 0.0000 ║
    ╚════════╧════════╧════════╝
+
+.. warning::
+
+   This measure can result in a negative PID.
 
 .. py:module:: dit.pid.irav
 :math:`\Irav{\bullet}`
@@ -466,6 +450,71 @@ In order to combine :math:`\Immi{\bullet}` with the coinformation, Goodwell and 
    ║  {1}   │ 0.5000 │ 0.1667 ║
    ║ {0}{1} │ 0.3333 │ 0.3333 ║
    ╚════════╧════════╧════════╝
+
+.. py:module:: dit.pid.ira
+:math:`\Ira{\bullet}`
+---------------------
+
+Drawing from the reconstructability analysis work of Zwick :cite:`zwick2004overview`, we can define :math:`Ira{\bullet}` as a restricted form of :math:`\Idep{\bullet}`.
+
+.. warning::
+
+   This measure can result in a negative PID.
+
+.. py:module:: dit.pid.iskar
+Secret Key Agreement Rates
+--------------------------
+
+One can associate :ref:`Secret Key Agreement` rates with unique informations by considering the rate at which one source and the target can agree upon a secret key while the other source eavesdrops. This results in four possibilities:
+- neither source nor target communicate
+- only the source communicates
+- only the target communicates
+- both the source and the target communicate
+
+No Communication
+~~~~~~~~~~~~~~~~
+
+.. math::
+
+   \Ipart{X_i \rightarrow Y \setminus X_j} = \operatorname{S}[X_i : Y || X_j]
+
+.. warning::
+
+   This measure can result in an inconsistent PID.
+
+
+One-Way Communication
+~~~~~~~~~~~~~~~~~~~~~
+
+Camel
+^^^^^
+
+.. math::
+
+   \Ipart{X_i \rightarrow Y \setminus X_j} = \operatorname{S}[X_i \rightarrow Y || X_j]
+
+Elephant
+^^^^^^^^
+
+.. math::
+
+   \Ipart{X_i \rightarrow Y \setminus X_j} = \operatorname{S}[X_i \leftarrow Y || X_j]
+
+.. warning::
+
+   This measure can result in an inconsistent PID.
+
+
+Two-Way Communication
+~~~~~~~~~~~~~~~~~~~~~
+
+.. math::
+
+   \Ipart{X_i \rightarrow Y \setminus X_j} = \operatorname{S}[X_i \leftrightarrow Y || X_j]
+
+.. warning::
+
+   This measure can result in an inconsistent PID.
 
 
 Partial Entropy Decomposition

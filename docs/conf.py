@@ -242,19 +242,25 @@ macros = r'''
 \newcommand{\JSD}[1]  {\op{D_{JS}}{#1}}
 
 \newcommand{\Icap}[1] {\op{I_{\cap}}{#1}}
+\newcommand{\Ipart}[1] {\op{I_{\partial}}{#1}}
+
 \newcommand{\Imin}[1] {\op{I_{min}}{#1}}
 \newcommand{\Immi}[1] {\op{I_{MMI}}{#1}}
 \newcommand{\Iwedge}[1] {\op{I_{\wedge}}{#1}}
 \newcommand{\Iproj}[1] {\op{I_{proj}}{#1}}
 \newcommand{\Ibroja}[1] {\op{I_{BROJA}}{#1}}
 \newcommand{\Iccs}[1] {\op{I_{ccs}}{#1}}
-\newcommand{\Ida}[1] {\op{I_{\downarrow}}{#1}}
-\newcommand{\Idda}[1] {\op{I_{\Downarrow}}{#1}}
 \newcommand{\Idep}[1] {\op{I_{dep}}{#1}}
-\newcommand{\Hpart}[1] {\op{H_{\partial}}{#1}}
-\newcommand{\Hcs}[1] {\op{H_{cs}}{#1}}
 \newcommand{\Irav}[1] {\op{I_{RAV}}{#1}}
 \newcommand{\Irr}[1] {\op{I_{RR}}{#1}}
+\newcommand{\Ira}[1] {\op{I_{RA}}{#1}}
+\newcommand{\Iskara}[1] {\op{I_{:}}{#1}}
+\newcommand{\Iskarb}[1] {\op{I_{\rightarrow}}{#1}}
+\newcommand{\Iskarc}[1] {\op{I_{\leftarrow}}{#1}}
+\newcommand{\Iskard}[1] {\op{I_{\leftrightarrow}}{#1}}
+
+\newcommand{\Hpart}[1] {\op{H_{\partial}}{#1}}
+\newcommand{\Hcs}[1] {\op{H_{cs}}{#1}}
 
 \newcommand{\meet} {\curlywedge}
 \newcommand{\join} {\curlyvee}
