@@ -13,8 +13,9 @@ from ..distconst import product_distribution, uniform_like
 from ..multivariate import (entropy, residual_entropy, dual_total_correlation,
                             total_correlation)
 
-__all__ = ['EntropyTriangle',
-           'EntropyTriangle2',
+__all__ = [
+    'EntropyTriangle',
+    'EntropyTriangle2',
 ]
 
 

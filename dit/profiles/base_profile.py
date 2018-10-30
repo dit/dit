@@ -11,6 +11,8 @@ from six import with_metaclass
 
 import numpy as np
 
+from .. import Distribution
+
 
 profile_docstring = """
 {name}
@@ -85,7 +87,8 @@ class BaseProfile(with_metaclass(ABCMeta, object)):
             The distribution to compute the profile for.
         """
         super(BaseProfile, self).__init__()
-        self.dist = dist.copy(base='linear')
+        outcomes, pmf = zip(*dist.zipped(mode='atoms'))
+        self.dist = Distribution(outcomes, pmf)
         self._compute()
 
     @abstractmethod

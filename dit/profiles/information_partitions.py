@@ -25,10 +25,11 @@ from ..other import extropy
 from ..shannon import entropy
 from ..utils import powerset
 
-__all__ = ['ShannonPartition',
-           'ExtropyPartition',
-           'DependencyDecomposition',
-          ]
+__all__ = [
+    'ShannonPartition',
+    'ExtropyPartition',
+    'DependencyDecomposition',
+]
 
 
 ### TODO: enable caching on this?

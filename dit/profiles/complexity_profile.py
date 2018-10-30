@@ -11,6 +11,11 @@ from .information_partitions import ShannonPartition
 from .base_profile import BaseProfile, profile_docstring
 
 
+__all__ = [
+    'ComplexityProfile',
+]
+
+
 class ComplexityProfile(BaseProfile):
     __doc__ = profile_docstring.format(name='ComplexityProfile',
                                        static_attributes='',
