@@ -18,10 +18,10 @@ def test_pid_nw1():
     """
     d = bivariates['sum']
     pid = PID_SKAR_nw(d, ((0,), (1,)), (2,))
-    assert pid[((0,), (1,))] == pytest.approx(0.0, abs=1e-4)
-    assert pid[((0,),)] == pytest.approx(0.5, abs=1e-4)
-    assert pid[((1,),)] == pytest.approx(0.5, abs=1e-4)
-    assert pid[((0, 1),)] == pytest.approx(0.5, abs=1e-4)
+    assert pid[((0,), (1,))] == pytest.approx(0.5, abs=1e-4)
+    assert pid[((0,),)] == pytest.approx(0.0, abs=1e-4)
+    assert pid[((1,),)] == pytest.approx(0.0, abs=1e-4)
+    assert pid[((0, 1),)] == pytest.approx(1.0, abs=1e-4)
 
 
 def test_pid_owa1():
@@ -30,7 +30,7 @@ def test_pid_owa1():
     """
     d = bivariates['pnt. unq.']
     pid = PID_SKAR_owa(d, ((0,), (1,)), (2,))
-    assert pid[((0,), (1,))] == pytest.approx(0.5, abs=1e-4)
+    assert pid[((0,), (1,))] == pytest.approx(0.0, abs=1e-4)
     assert pid[((0,),)] == pytest.approx(0.5, abs=1e-4)
     assert pid[((1,),)] == pytest.approx(0.5, abs=1e-4)
     assert pid[((0, 1),)] == pytest.approx(0.0, abs=1e-4)
@@ -66,7 +66,7 @@ def test_pid_tw1():
     """
     d = bivariates['erase']
     pid = PID_SKAR_tw(d, ((0,), (1,)), (2,))
-    assert pid[((0,), (1,))] == pytest.approx(0.0, abs=1e-4)
+    assert pid[((0,), (1,))] == pytest.approx(0.125, abs=1e-4)
     assert pid[((0,),)] == pytest.approx(0.125, abs=1e-4)
     assert pid[((1,),)] == pytest.approx(0.125, abs=1e-4)
     assert pid[((0, 1),)] == pytest.approx(0.0, abs=1e-4)
