@@ -2,6 +2,8 @@
 Tests of dit.example_dists.dependencies
 """
 
+from __future__ import division
+
 import pytest
 
 from dit.example_dists.dependencies import mixed, stacked
