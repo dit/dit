@@ -5,7 +5,7 @@ Tests for dit.pid.idep.
 import pytest
 
 from dit.pid.ibroja import PID_BROJA
-from dit.pid.idep import PID_dep
+from dit.pid.idep import PID_dep, PID_RA
 from dit.pid.distributions import bivariates, trivariates
 
 
@@ -57,3 +57,13 @@ def test_pid_dep4():
     assert pid.complete
     assert pid.nonnegative
     assert pid.consistent
+
+def test_pid_ra1():
+    """
+    """
+    d = bivariates['and']
+    pid = PID_RA(d, ((0,), (1,)), (2,))
+    assert pid[((0,), (1,))] == pytest.approx(-0.18872, abs=1e-4)
+    assert pid[((0,),)] == pytest.approx(0.5, abs=1e-4)
+    assert pid[((1,),)] == pytest.approx(0.5, abs=1e-4)
+    assert pid[((0, 1),)] == pytest.approx(0.0, abs=1e-4)

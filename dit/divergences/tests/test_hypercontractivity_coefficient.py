@@ -50,7 +50,6 @@ def test_hypercontractivity_coefficient_failure(rvs):
        dist2=distributions(alphabets=(2,)*2, nondegenerate=True))
 @settings(deadline=None,
           timeout=unlimited,
-          min_satisfying_examples=3,
           max_examples=5,
           suppress_health_check=[HealthCheck.hung_test],
           )

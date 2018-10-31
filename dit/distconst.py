@@ -165,7 +165,7 @@ def mixture_distribution2(dists, weights):
     return mix
 
 
-def noisy(dist, noise=0.5):
+def noisy(dist, noise=1/2):
     """
     Construct a noisy version of `dist`.
 
@@ -188,7 +188,7 @@ def noisy(dist, noise=0.5):
     return fuzzy
 
 
-def erasure(dist, epsilon=1/3):
+def erasure(dist, epsilon=1/2):
     """
     Construct a version of `dist` where each variable has been passed through
     an erasure channel.

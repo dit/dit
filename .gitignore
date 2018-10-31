@@ -53,3 +53,4 @@ docs/images/*.png
 .pytest_cache/
 .vscode
 dit/inference/pycounts.c
+.mypy_cache

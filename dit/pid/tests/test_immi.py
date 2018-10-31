@@ -12,7 +12,7 @@ def test_pid_mmi1():
     """
     Test immi on a generic distribution.
     """
-    d = bivariates['prob 1']
+    d = bivariates['prob. 1']
     pid = PID_MMI(d, ((0,), (1,)), (2,))
     assert pid[((0,), (1,))] == pytest.approx(0.019973094021974794)
     assert pid[((0,),)] == pytest.approx(0.15097750043269376)

@@ -24,7 +24,6 @@ epsilon = 1e-4
 @pytest.mark.flaky(reruns=5)
 @settings(deadline=None,
           timeout=unlimited,
-          min_satisfying_examples=3,
           max_examples=5,
           suppress_health_check=[HealthCheck.hung_test])
 @given(dist=distributions(alphabets=(2,)*2))
@@ -51,7 +50,6 @@ def test_cis1(dist):
 @pytest.mark.flaky(reruns=5)
 @settings(deadline=None,
           timeout=unlimited,
-          min_satisfying_examples=3,
           max_examples=5,
           suppress_health_check=[HealthCheck.hung_test])
 @given(dist=distributions(alphabets=(2,)*3))
