@@ -1,5 +1,5 @@
 """
-Distributions illustrating three times of dependency among two variables.
+Distributions illustrating three types of dependency among two variables.
 """
 
 from __future__ import division
