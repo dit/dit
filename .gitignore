@@ -19,8 +19,8 @@ dit/math/_close.c
 dit/math/_samplediscrete.c
 dit/math/_*.html
 
-# ignore coverage information output by `nosetests --with-coverage`
-.coverage
+# ignore coverage information
+.coverage*
 
 # ignore project files for various IDEs
 

@@ -13,6 +13,8 @@ omit =
 	*/dit/utils/testing.py
     # don't cover plotting code
     dit/rate_distortion/plotting.py
+    # don't cover table generation
+    dit/pid/helplers.py
 
 [report]
 # Regexes for lines to exclude from consideration
