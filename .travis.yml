@@ -162,22 +162,21 @@ script:
   #
   # Export current directory for logs.
   - cd $DIT_INSTALL
+  - cd ..
   - printenv PWD
-
-  - echo "import tempfile; print(tempfile)" | python
 
   # Run pytest.
   - if [[ "$TRAVIS_PYTHON_VERSION" =~ pypy.* ]]; then
       if [ "${OPTIONAL_DEPS}" == "true" ]; then
-        sudo $TRAVIS_PYTHON_VERSION -m pytest;
+        sudo $TRAVIS_PYTHON_VERSION -m pytest dit;
       else
-        sudo $TRAVIS_PYTHON_VERSION -m pytest -m "not cython";
+        sudo $TRAVIS_PYTHON_VERSION -m pytest -m "not cython" dit;
       fi
     else
       if [ "${OPTIONAL_DEPS}" == "true" ]; then
-        pytest --numprocesses=auto;
+        pytest --numprocesses=auto dit;
       else
-        pytest -m "not cython" --numprocesses=auto;
+        pytest -m "not cython" --numprocesses=auto dit;
       fi
     fi
 
