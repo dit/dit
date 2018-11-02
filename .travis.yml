@@ -173,9 +173,9 @@ script:
       fi
     else
       if [ "${OPTIONAL_DEPS}" == "true" ]; then
-        pytest;
+        pytest --numprocesses=auto;
       else
-        pytest -m "not cython";
+        pytest -m "not cython" --numprocesses=auto;
       fi
     fi
 
