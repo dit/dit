@@ -57,7 +57,7 @@ def get_dists_3():
 @pytest.mark.parametrize('dist', [d1, d2, d3, d4, d5])
 @pytest.mark.parametrize('alpha', [0, 1, 2, 0.5])
 @pytest.mark.parametrize('divergence', divergences)
-def test_positive_definite(dist, alpha, divergence):
+def test_positive_definite1(dist, alpha, divergence):
     """
     Tests that divergences are zero when the input distributions are the same, and that the Hellinger sum is equal to 1.
     """
@@ -68,7 +68,7 @@ def test_positive_definite(dist, alpha, divergence):
 @pytest.mark.parametrize('dist', [d4, d5])
 @pytest.mark.parametrize('alpha', [0, 1, 2, 0.5])
 @pytest.mark.parametrize('divergence', divergences)
-def test_positive_definite(dist, alpha, divergence):
+def test_positive_definite2(dist, alpha, divergence):
     """
     Tests that divergences are zero when the input distributions are the same, and that the Hellinger sum is equal to 1.
     """
@@ -167,7 +167,7 @@ def test_renyi(alpha):
     assert h == pytest.approx(h_u - div)
 
 
-@pytest.mark.parametrize('alpha', [0.1, 0.5, 1.1])
+@pytest.mark.parametrize('alpha', [-1.0, 0.1, 0.5, 1.0, 1.1])
 def test_f_divergence(alpha):
     """
     Tests various known relations of f-divergences to other divergences.
@@ -201,7 +201,7 @@ def test_f_divergence(alpha):
             assert div1 == pytest.approx(div2, abs=1e-1)
 
 
-@pytest.mark.parametrize('alpha', [0.1, 0.5, 1.1])
+@pytest.mark.parametrize('alpha', [-1.0, 0.1, 0.5, 1.0, 1.1])
 def test_f_divergence2(alpha):
     """
     Tests various known relations of f-divergences to other divergences.
@@ -233,5 +233,3 @@ def test_f_divergence2(alpha):
             div1 = f_divergence(dist1, dist2, f, rvs=[0], crvs=[1])
             div2 = div_func(dist1, dist2, rvs=[0], crvs=[1])
             assert div1 == pytest.approx(div2, abs=1e-1)
-
-

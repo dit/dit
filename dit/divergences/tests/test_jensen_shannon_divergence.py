@@ -10,6 +10,7 @@ from dit.divergences.jensen_shannon_divergence import (
     jensen_shannon_divergence_pmf as JSD_pmf,
     jensen_divergence,
 )
+from dit.divergences.pmf import jensen_shannon_divergence2
 from dit.other import renyi_entropy
 
 
@@ -96,6 +97,13 @@ def test_jsd_pmf5():
     d2 = [0.0, 0.5, 0.5]
     with pytest.raises(ditException):
         JSD_pmf([d1, d2], [0.1, 0.6, 0.2, 0.1])
+
+
+def test_jsd_pmf2_1():
+    """ Test the JSD of a distribution with itself """
+    d1 = [0.5, 0.5]
+    jsd = jensen_shannon_divergence2(d1, d1)
+    assert jsd == pytest.approx(0)
 
 
 def test_plugable():
