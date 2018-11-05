@@ -117,14 +117,11 @@ before_script:
   - if [[ "$TRAVIS_PYTHON_VERSION" =~ (2|3)\..* ]]; then
       conda install scipy cvxopt;
       pip install --upgrade --ignore-installed -r requirements_testing.txt;
-      pip install --upgrade pytest-sugar;
     elif [[ "$TRAVIS_PYTHON_VERSION" == "nightly" ]]; then
       pip install scipy cvxopt;
       pip install --upgrade --ignore-installed -r requirements_testing.txt;
-      pip install --upgrade pytest-sugar;
     elif [[ "$TRAVIS_PYTHON_VERSION" =~ pypy.* ]]; then
       sudo $TRAVIS_PYTHON_VERSION -m pip install --ignore-installed -r requirements_testing.txt;
-      sudo $TRAVIS_PYTHON_VERSION -m pip install --upgrade pytest-sugar;
     fi;
 
 script:
