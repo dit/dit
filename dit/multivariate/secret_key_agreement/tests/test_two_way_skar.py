@@ -21,8 +21,8 @@ def test_two_way_skar1():
 
 def test_two_way_skar2():
     """
-    Test an unknown example.
+    Test an unknown example (reduced or).
     """
-    d = Distribution(['000', '011', '020', '101'], [1/4]*4)
+    d = Distribution(['000', '011', '101'], [1/2, 1/4, 1/4])
     skar = two_way_skar(d, [[0], [2]], [1])
     assert np.isnan(skar)
