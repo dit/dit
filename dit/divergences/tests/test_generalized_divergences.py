@@ -209,10 +209,10 @@ def test_f_divergence2(alpha):
     def f_alpha(alpha):
         if alpha == 1:
             def f(x):
-                return x * np.log2(x)
+                return x * np.log(x)
         elif alpha == -1:
             def f(x):
-                return - np.log2(x)
+                return - np.log(x)
         else:
             def f(x):
                 return 4.0 / (1.0 - alpha*alpha) * (1.0 - np.power(x, (1.0 + alpha)/2))
