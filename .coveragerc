@@ -53,6 +53,17 @@ exclude_lines =
     except RuntimeError
 
     # hard to test (potentially long running)
+omit =
+	# this is just convenience imports
+	*/dit/abc.py
+	# excluded due to testing difficulty
+	*/dit/utils/logger.py
+	# exclude hypothesis strategies, because they don't get covered
+	*/dit/utils/testing.py
+    # don't cover plotting code
+    dit/rate_distortion/plotting.py
+    # don't cover table generation
+    dit/pid/helplers.py
 
 ignore_errors = True
 
