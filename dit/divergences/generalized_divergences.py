@@ -25,8 +25,7 @@ __all__ = ('double_power_sum',
 ## Crooks: http://threeplusone.com/on_information.pdf
 
 
-def double_power_sum(dist1, dist2, exp1=1, exp2=1, rvs=None, crvs=None,
-                     rv_mode=None):
+def double_power_sum(dist1, dist2, exp1=1, exp2=1, rvs=None, rv_mode=None):
     """
     A common generalization of the sums needed to compute the Hellinger
     and alpha divergences below.
@@ -64,21 +63,17 @@ def double_power_sum(dist1, dist2, exp1=1, exp2=1, rvs=None, crvs=None,
 
     """
 
-    rvs, crvs, rv_mode = normalize_rvs(dist1, rvs, crvs, rv_mode)
-    rvs, crvs = list(flatten(rvs)), list(flatten(crvs))
-    normalize_rvs(dist2, rvs, crvs, rv_mode)
+    rvs, _, rv_mode = normalize_rvs(dist1, rvs, None, rv_mode)
+    rvs = list(flatten(rvs))
+    normalize_rvs(dist2, rvs, None, rv_mode)
 
-    p1s, q1s = get_pmfs_like(dist1, dist2, rvs+crvs, rv_mode)
-    div = np.nansum(np.power(p1s, exp1) * np.power(q1s, exp2))
-
-    if crvs:
-        p2s, q2s = get_pmfs_like(dist1, dist2, crvs, rv_mode)
-        div = np.nansum(np.power(p2s, exp1) * np.power(q2s, exp2))
+    ps, qs = get_pmfs_like(dist1, dist2, rvs, rv_mode)
+    div = np.nansum(np.power(ps, exp1) * np.power(qs, exp2))
 
     return div
 
 
-def hellinger_sum(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None):
+def hellinger_sum(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
     """
     The Hellinger sum/integral of `dist1` and `dist2`, used to define other
     divergences.
@@ -115,12 +110,10 @@ def hellinger_sum(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None):
 
     """
 
-    return double_power_sum(dist1, dist2, alpha, 1.0-alpha,
-                            rvs=rvs, crvs=crvs, rv_mode=rv_mode)
+    return double_power_sum(dist1, dist2, alpha, 1.0-alpha, rvs=rvs, rv_mode=rv_mode)
 
 
-def hellinger_divergence(dist1, dist2, alpha=1.0, rvs=None, crvs=None,
-                         rv_mode=None):
+def hellinger_divergence(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
     # http://mitran-lab.amath.unc.edu:8082/subversion/grants/Proposals/2013/DOE-DataCentric/biblio/LieseVajdaDivergencesInforTheory.pdf
     """
     The Hellinger divergence of `dist1` and `dist2`.
@@ -159,15 +152,12 @@ def hellinger_divergence(dist1, dist2, alpha=1.0, rvs=None, crvs=None,
     """
 
     if alpha == 1:
-        return kullback_leibler_divergence(dist1, dist2, rvs=rvs,
-                                           crvs=crvs, rv_mode=rv_mode)
-    s = hellinger_sum(dist1, dist2, rvs=rvs, alpha=alpha,
-                      crvs=crvs, rv_mode=rv_mode)
+        return kullback_leibler_divergence(dist1, dist2, rvs=rvs, rv_mode=rv_mode)
+    s = hellinger_sum(dist1, dist2, rvs=rvs, alpha=alpha, rv_mode=rv_mode)
     return (s-1.0)/(alpha-1.0)
 
 
-def tsallis_divergence(dist1, dist2, alpha=1.0, rvs=None, crvs=None,
-                       rv_mode=None):
+def tsallis_divergence(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
     """
     The Tsallis divergence of `dist1` and `dist2`.
 
@@ -206,16 +196,14 @@ def tsallis_divergence(dist1, dist2, alpha=1.0, rvs=None, crvs=None,
 
     # D_T = (D_alpha -1) / (alpha-1)
     if alpha == 1:
-        div = kullback_leibler_divergence(dist1, dist2, rvs=rvs,
-                                          crvs=crvs, rv_mode=rv_mode)
+        div = kullback_leibler_divergence(dist1, dist2, rvs=rvs, rv_mode=rv_mode)
     else:
-        s = hellinger_sum(dist1, dist2, rvs=rvs, alpha=alpha,
-                          crvs=crvs, rv_mode=rv_mode)
+        s = hellinger_sum(dist1, dist2, rvs=rvs, alpha=alpha, rv_mode=rv_mode)
         div = (s - 1.0) /(alpha - 1.0)
     return div
 
 
-def renyi_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None):
+def renyi_divergence(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
     """
     The Renyi divergence of `dist1` and `dist2`.
 
@@ -254,16 +242,14 @@ def renyi_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None):
 
     # D_R = log D_alpha / (alpha-1)
     if alpha == 1:
-        div = kullback_leibler_divergence(dist1, dist2, rvs=rvs,
-                                          crvs=crvs, rv_mode=rv_mode)
+        div = kullback_leibler_divergence(dist1, dist2, rvs=rvs, rv_mode=rv_mode)
     else:
-        s = hellinger_sum(dist1, dist2, rvs=rvs,
-                          alpha=alpha, crvs=crvs, rv_mode=rv_mode)
+        s = hellinger_sum(dist1, dist2, rvs=rvs, alpha=alpha, rv_mode=rv_mode)
         div = np.log2(s) / (alpha - 1.0)
     return div
 
 
-def alpha_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None):
+def alpha_divergence(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
     """
     The alpha divergence of `dist1` and `dist2`, as used in Information
     Geometry. Note there is more than one inequivalent definition of
@@ -303,18 +289,15 @@ def alpha_divergence(dist1, dist2, alpha=1., rvs=None, crvs=None, rv_mode=None):
 
     """
 
-    if alpha == 1:
-        return kullback_leibler_divergence(dist1, dist2, rvs=rvs,
-                                           crvs=crvs, rv_mode=rv_mode)
-    if alpha == -1:
-        return kullback_leibler_divergence(dist2, dist1, rvs=rvs,
-                                           crvs=crvs, rv_mode=rv_mode)
-    s = double_power_sum(dist1, dist2, (1.0-alpha)/2, (1.0+alpha)/2,
-                         rvs=rvs, crvs=crvs, rv_mode=rv_mode)
+    if alpha == 1.0:
+        return kullback_leibler_divergence(dist1, dist2, rvs=rvs, rv_mode=rv_mode)
+    if alpha == -1.0:
+        return kullback_leibler_divergence(dist2, dist1, rvs=rvs, rv_mode=rv_mode)
+    s = double_power_sum(dist1, dist2, (1.0-alpha)/2, (1.0+alpha)/2, rvs=rvs, rv_mode=rv_mode)
     return 4*(1.0-s)/(1.0-alpha*alpha)
 
 
-def f_divergence(dist1, dist2, f, rvs=None, crvs=None, rv_mode=None):
+def f_divergence(dist1, dist2, f, rvs=None, rv_mode=None):
     """
     The Csiszar f-divergence of `dist1` and `dist2`. Note that it is typically
     more accurate to use a specialized divergence function when available
@@ -353,17 +336,14 @@ def f_divergence(dist1, dist2, f, rvs=None, crvs=None, rv_mode=None):
 
     """
 
-    rvs, crvs, rv_mode = normalize_rvs(dist1, rvs, crvs, rv_mode)
-    rvs, crvs = list(flatten(rvs)), list(flatten(crvs))
-    normalize_rvs(dist2, rvs, crvs, rv_mode)
+    rvs, _, rv_mode = normalize_rvs(dist1, rvs, None, rv_mode)
+    rvs = list(flatten(rvs))
+    normalize_rvs(dist2, rvs, None, rv_mode)
 
-    p1s, q1s = get_pmfs_like(dist1, dist2, rvs+crvs, rv_mode)
+    ps, qs = get_pmfs_like(dist1, dist2, rvs, rv_mode)
+    print(f"ps: {ps}")
+    print(f"qs: {qs}")
     vfunc = np.vectorize(f)
-    div = np.nansum(vfunc(np.divide(p1s, q1s)) * q1s)
-
-    if crvs:
-        p2s, q2s = get_pmfs_like(dist1, dist2, crvs, rv_mode)
-        div = np.nansum(vfunc(np.divide(p2s, q2s)) * q2s)
+    div = np.nansum(qs * vfunc(np.divide(ps, qs)))
 
     return div
-

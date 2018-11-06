@@ -72,8 +72,8 @@ def test_positive_definite2(dist, alpha, divergence):
     """
     Tests that divergences are zero when the input distributions are the same, and that the Hellinger sum is equal to 1.
     """
-    assert divergence(dist, dist, alpha, rvs=[0], crvs=[1]) == pytest.approx(0)
-    assert hellinger_sum(dist, dist, alpha, rvs=[0], crvs=[1]) == pytest.approx(1)
+    assert divergence(dist, dist, alpha, rvs=[0, 1]) == pytest.approx(0)
+    assert hellinger_sum(dist, dist, alpha, rvs=[0, 1]) == pytest.approx(1)
 
 
 @pytest.mark.parametrize('alpha', [0.1, 0.5, 1, 1.5])
@@ -122,13 +122,13 @@ def test_divergences_to_kl2(dists, divergence):
 
 
 @pytest.mark.parametrize('args', [
-    [d4, d1, None, None],
-    [d4, d2, None, None],
-    [d4, d3, None, None],
-    [d1, d2, [0, 1], None],
-    [d3, d4, [1], None],
-    [d5, d1, [0], [1]],
-    [d4, d3, [1], [0]]
+    [d4, d1, None],
+    [d4, d2, None],
+    [d4, d3, None],
+    [d1, d2, [0, 1]],
+    [d3, d4, [1]],
+    [d5, d1, [0, 1]],
+    [d4, d3, [1, 0]],
 ])
 @pytest.mark.parametrize('divergence', divergences)
 @pytest.mark.parametrize('alpha', [0, 1, 2, 0.5])
@@ -136,9 +136,9 @@ def test_exceptions(args, divergence, alpha):
     """
     Test that when p has outcomes that q doesn't have, that we raise an exception.
     """
-    first, second, rvs, crvs = args
+    first, second, rvs = args
     with pytest.raises(ditException):
-        divergence(first, second, alpha, rvs, crvs)
+        divergence(first, second, alpha, rvs)
 
 
 def test_renyi_values():
@@ -168,68 +168,77 @@ def test_renyi(alpha):
 
 
 @pytest.mark.parametrize('alpha', [-1.0, 0.1, 0.5, 1.0, 1.1])
-def test_f_divergence(alpha):
+@pytest.mark.parametrize('dist1', get_dists_3())
+@pytest.mark.parametrize('dist2', get_dists_3())
+def test_f_divergence(alpha, dist1, dist2):
     """
     Tests various known relations of f-divergences to other divergences.
     """
     def f_alpha(alpha):
         if alpha == 1:
             def f(x):
-                return x * np.log(x)
+                return x * np.log2(x)
         elif alpha == -1:
             def f(x):
-                return - np.log(x)
+                return - np.log2(x)
         else:
             def f(x):
-                return 4.0 / (1.0 - alpha*alpha) * (1.0 - np.power(x, (1.0 + alpha)/2))
+                return 4.0 / (1.0 - alpha**2) * (1.0 - np.power(x, (1.0 + alpha)/2))
         return f
 
     def f_tsallis(alpha):
-        def f(x):
-            return (np.power(x, 1.0 - alpha) - 1.0) / (alpha - 1.0)
+        if alpha == 1:
+            def f(x):
+                return -np.log2(x)
+        else:
+            def f(x):
+                return (np.power(x, 1.0 - alpha) - 1.0) / (alpha - 1.0)
         return f
+
     test_functions = []
     test_functions.append((f_alpha(alpha), partial(alpha_divergence, alpha=alpha)))
     test_functions.append((f_tsallis(alpha), partial(tsallis_divergence, alpha=alpha)))
 
-    dists = get_dists_3()
-
-    for dist1, dist2 in combinations(dists, 2):
-        for f, div_func in test_functions:
-            div1 = f_divergence(dist1, dist2, f)
-            div2 = div_func(dist1, dist2)
-            assert div1 == pytest.approx(div2, abs=1e-1)
+    for f, div_func in test_functions:
+        div1 = f_divergence(dist1, dist2, f)
+        div2 = div_func(dist1, dist2)
+        print(f"div1: {div1}\ndiv2: {div2}")
+        assert div1 == pytest.approx(div2, abs=1e-1)
 
 
 @pytest.mark.parametrize('alpha', [-1.0, 0.1, 0.5, 1.0, 1.1])
-def test_f_divergence2(alpha):
+@pytest.mark.parametrize('dist1', [d4, d5])
+@pytest.mark.parametrize('dist2', [d4, d5])
+def test_f_divergence2(alpha, dist1, dist2):
     """
     Tests various known relations of f-divergences to other divergences.
     """
     def f_alpha(alpha):
         if alpha == 1:
             def f(x):
-                return x * np.log(x)
+                return x * np.log2(x)
         elif alpha == -1:
             def f(x):
-                return - np.log(x)
+                return - np.log2(x)
         else:
             def f(x):
-                return 4.0 / (1.0 - alpha*alpha) * (1.0 - np.power(x, (1.0 + alpha)/2))
+                return 4.0 / (1.0 - alpha**2) * (1.0 - np.power(x, (1.0 + alpha)/2))
         return f
 
     def f_tsallis(alpha):
-        def f(x):
-            return (np.power(x, 1.0 - alpha) - 1.0) / (alpha - 1.0)
+        if alpha == 1:
+            def f(x):
+                return -np.log2(x)
+        else:
+            def f(x):
+                return (np.power(x, 1.0 - alpha) - 1.0) / (alpha - 1.0)
         return f
+
     test_functions = []
     test_functions.append((f_alpha(alpha), partial(alpha_divergence, alpha=alpha)))
     test_functions.append((f_tsallis(alpha), partial(tsallis_divergence, alpha=alpha)))
 
-    dists = [d4, d5]
-
-    for dist1, dist2 in combinations(dists, 2):
-        for f, div_func in test_functions:
-            div1 = f_divergence(dist1, dist2, f, rvs=[0], crvs=[1])
-            div2 = div_func(dist1, dist2, rvs=[0], crvs=[1])
-            assert div1 == pytest.approx(div2, abs=1e-1)
+    for f, div_func in test_functions:
+        div1 = f_divergence(dist1=dist1, dist2=dist2, f=f, rvs=[0, 1])
+        div2 = div_func(dist1=dist1, dist2=dist2, rvs=[0, 1])
+        assert div1 == pytest.approx(div2, abs=1e-1)
