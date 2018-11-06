@@ -195,14 +195,14 @@ def test_f_divergence(alpha, dist1, dist2):
                 return (np.power(x, 1.0 - alpha) - 1.0) / (alpha - 1.0)
         return f
 
-    test_functions = []
-    test_functions.append((f_alpha(alpha), partial(alpha_divergence, alpha=alpha)))
-    test_functions.append((f_tsallis(alpha), partial(tsallis_divergence, alpha=alpha)))
+    test_functions = [
+        (f_alpha(alpha), partial(alpha_divergence, alpha=alpha)),
+        (f_tsallis(alpha), partial(tsallis_divergence, alpha=alpha)),
+    ]
 
     for f, div_func in test_functions:
         div1 = f_divergence(dist1, dist2, f)
         div2 = div_func(dist1, dist2)
-        print(f"div1: {div1}\ndiv2: {div2}")
         assert div1 == pytest.approx(div2, abs=1e-1)
 
 
@@ -234,9 +234,10 @@ def test_f_divergence2(alpha, dist1, dist2):
                 return (np.power(x, 1.0 - alpha) - 1.0) / (alpha - 1.0)
         return f
 
-    test_functions = []
-    test_functions.append((f_alpha(alpha), partial(alpha_divergence, alpha=alpha)))
-    test_functions.append((f_tsallis(alpha), partial(tsallis_divergence, alpha=alpha)))
+    test_functions = [
+        (f_alpha(alpha), partial(alpha_divergence, alpha=alpha)),
+        (f_tsallis(alpha), partial(tsallis_divergence, alpha=alpha)),
+    ]
 
     for f, div_func in test_functions:
         div1 = f_divergence(dist1=dist1, dist2=dist2, f=f, rvs=[0, 1])

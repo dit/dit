@@ -341,8 +341,6 @@ def f_divergence(dist1, dist2, f, rvs=None, rv_mode=None):
     normalize_rvs(dist2, rvs, None, rv_mode)
 
     ps, qs = get_pmfs_like(dist1, dist2, rvs, rv_mode)
-    print(f"ps: {ps}")
-    print(f"qs: {qs}")
     vfunc = np.vectorize(f)
     div = np.nansum(qs * vfunc(np.divide(ps, qs)))
 
