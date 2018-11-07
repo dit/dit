@@ -99,7 +99,7 @@ class TwoPartIntrinsicCAEKLMutualInformation(BaseTwoPartIntrinsicMutualInformati
 two_part_intrinsic_CAEKL_mutual_information = TwoPartIntrinsicCAEKLMutualInformation.functional()
 
 
-def two_part_intrinsic_mutual_information_constructor(func):
+def two_part_intrinsic_mutual_information_constructor(func):  # pragma: no cover
     """
     Given a measure of shared information, construct an optimizer which computes
     its ``two part intrinsic'' form.

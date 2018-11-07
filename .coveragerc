@@ -52,6 +52,9 @@ exclude_lines =
     # runtime errors
     except RuntimeError
 
+    # skipped tests
+    @pytest.mark.skip
+
     # hard to test (potentially long running)
 omit =
 	# this is just convenience imports

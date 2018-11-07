@@ -133,7 +133,7 @@ class IntrinsicCAEKLMutualInformation(BaseIntrinsicMutualInformation):
 intrinsic_caekl_mutual_information = IntrinsicCAEKLMutualInformation.functional()
 
 
-def intrinsic_mutual_information_constructor(func):
+def intrinsic_mutual_information_constructor(func):  # pragma: no cover
     """
     Given a measure of shared information, construct an optimizer which computes
     its ``intrinsic'' form.

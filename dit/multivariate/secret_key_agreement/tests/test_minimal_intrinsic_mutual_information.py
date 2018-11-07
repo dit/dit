@@ -14,7 +14,6 @@ from dit.multivariate.secret_key_agreement.minimal_intrinsic_mutual_informations
     minimal_intrinsic_total_correlation,
     minimal_intrinsic_dual_total_correlation,
     minimal_intrinsic_CAEKL_mutual_information,
-    minimal_intrinsic_mutual_information_constructor,
 )
 from dit.multivariate.secret_key_agreement.minimal_intrinsic_mutual_informations import MinimalIntrinsicTotalCorrelation
 
@@ -66,16 +65,3 @@ def test_failure():
     """
     with pytest.raises(ditException):
         MinimalIntrinsicTotalCorrelation(intrinsic_1, [[0], [1]])
-
-
-@pytest.mark.slow
-@pytest.mark.flaky(reruns=10)
-def test_constructor():
-    """
-    Test the generic constructor.
-    """
-    d = Distribution(['000', '011', '101', '222'], [1/6]*3 + [1/2])
-    test = minimal_intrinsic_mutual_information_constructor(total_correlation).functional()
-    itc = minimal_intrinsic_total_correlation(d, [[0], [1]], [2], bounds=(2,))
-    itc2 = test(d, [[0], [1]], [2], bounds=(2,))
-    assert itc == pytest.approx(itc2, abs=1e-3)

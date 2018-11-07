@@ -99,7 +99,7 @@ class MinimalIntrinsicCAEKLMutualInformation(BaseMinimalIntrinsicMutualInformati
 minimal_intrinsic_CAEKL_mutual_information = MinimalIntrinsicCAEKLMutualInformation.functional()
 
 
-def minimal_intrinsic_mutual_information_constructor(func):
+def minimal_intrinsic_mutual_information_constructor(func):  # pragma: no cover
     """
     Given a measure of shared information, construct an optimizer which computes
     its ``minimal intrinsic'' form.
@@ -125,7 +125,7 @@ def minimal_intrinsic_mutual_information_constructor(func):
     class MinimalIntrinsicMutualInformation(BaseMinimalIntrinsicMutualInformation):
         name = func.__name__
 
-        def measure(self, rvs, crvs):  # pragma: no cover
+        def measure(self, rvs, crvs):
             """
             Dummy method.
             """
