@@ -76,7 +76,7 @@ def predicate(d):
 
 
 @pytest.mark.flaky(reruns=5)
-def test_distribution_structures1():
+def test_distribution_structures5():
     """
     A test for the distribution_structures strategy.
     """
@@ -86,7 +86,7 @@ def test_distribution_structures1():
 
 
 @pytest.mark.flaky(reruns=5)
-def test_distribution_structures2():
+def test_distribution_structures6():
     """
     A test for the distribution_structures strategy.
     """
