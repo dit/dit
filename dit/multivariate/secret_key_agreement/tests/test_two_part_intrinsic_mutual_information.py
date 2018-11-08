@@ -12,6 +12,7 @@ from dit.multivariate.secret_key_agreement import (
 )
 
 
+@pytest.mark.flaky(reruns=5)
 @pytest.mark.parametrize(['dist', 'value'], [
     (giant_bit(3, 2), 0.0),
     (n_mod_m(3, 2), 0.0)
@@ -23,6 +24,7 @@ def test_tpitc1(dist, value):
     assert tpitc == pytest.approx(value)
 
 
+@pytest.mark.flaky(reruns=5)
 @pytest.mark.parametrize(['dist', 'value'], [
     (giant_bit(3, 2), 0.0),
     (n_mod_m(3, 2), 0.0)
@@ -34,6 +36,7 @@ def test_tpidtc1(dist, value):
     assert tpidtc == pytest.approx(value)
 
 
+@pytest.mark.flaky(reruns=5)
 @pytest.mark.parametrize(['dist', 'value'], [
     (giant_bit(3, 2), 0.0),
     (n_mod_m(3, 2), 0.0)
