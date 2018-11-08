@@ -6,8 +6,6 @@ from __future__ import division
 
 import pytest
 
-import numpy as np
-
 from dit import Distribution
 from dit.divergences.pmf import relative_entropy
 from dit.exceptions import ditException
@@ -42,10 +40,17 @@ def test_ib_3():
     """
     with pytest.raises(ditException):
         InformationBottleneck(dist, beta=0.0, alpha=99)
-        InformationBottleneck(dist, rvs=[[0]], beta=0.0)
 
 
 def test_ib_4():
+    """
+    Test simple IB failure.
+    """
+    with pytest.raises(ditException):
+        InformationBottleneck(dist, rvs=[[0]], beta=0.0)
+
+
+def test_ib_5():
     """
     Test simple IB failure.
     """

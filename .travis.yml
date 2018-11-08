@@ -9,7 +9,6 @@ python:
   - "3.4"
   - "3.5"
   - "3.6"
-  - "3.7"
   - "nightly"
 
 os:
@@ -19,6 +18,10 @@ matrix:
   fast_finish: true
 
   include:
+    # https://github.com/travis-ci/travis-ci/issues/9815
+    - python: "3.7"
+      dist: xenial
+      sudo: true
     - os: osx
       language: generic
       python: "2.7"
