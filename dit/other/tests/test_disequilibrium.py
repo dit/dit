@@ -115,7 +115,7 @@ def test_LMPR_complexity4(n):
 
 
 @pytest.mark.parametrize('n', range(2, 11))
-def test_LMPR_complexity4(n):
+def test_LMPR_complexity5(n):
     """
     Test that peaked Distributions have zero complexity.
     """

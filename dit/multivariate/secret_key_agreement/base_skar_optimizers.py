@@ -450,7 +450,7 @@ class InnerTwoPartIntrinsicMutualInformation(BaseAuxVarOptimizer):
 
     name = ""
 
-    def __init__(self, dist, measure, rvs=None, crvs=None, j=None, bound_u=None, bound_v=None, rv_mode=None):
+    def __init__(self, dist, rvs=None, crvs=None, j=None, bound_u=None, bound_v=None, rv_mode=None):
         """
         Initialize the optimizer.
 
@@ -458,8 +458,6 @@ class InnerTwoPartIntrinsicMutualInformation(BaseAuxVarOptimizer):
         ----------
         dist : Distribution
             The distribution to compute the intrinsic mutual information of.
-        measure : func
-            The appropriate multivariate mutual information.
         rvs : list, None
             A list of lists. Each inner list specifies the indexes of the random
             variables used to calculate the intrinsic mutual information. If
@@ -490,8 +488,6 @@ class InnerTwoPartIntrinsicMutualInformation(BaseAuxVarOptimizer):
             raise ditException(msg)
 
         super(InnerTwoPartIntrinsicMutualInformation, self).__init__(dist, rvs + [j], crvs, rv_mode=rv_mode)
-
-        self.measure = measure
 
         theoretical_bound_u = prod(self._shape[rv] for rv in self._rvs)
         bound_u = min([bound_u, theoretical_bound_u]) if bound_u else theoretical_bound_u
@@ -641,7 +637,6 @@ class BaseTwoPartIntrinsicMutualInformation(BaseAuxVarOptimizer):
             dist = Distribution(outcomes, pmf)
 
             inner = InnerTwoPartIntrinsicMutualInformation(dist=dist,
-                                                           measure=self.measure,
                                                            rvs=[[rv] for rv in self._rvs],
                                                            crvs=self._crvs,
                                                            j=self._j,

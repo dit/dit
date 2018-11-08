@@ -51,7 +51,7 @@ def test_et2_1(d, val):
 
 
 @pytest.mark.parametrize('val', [(1, 0, 0), (0, 2/3, 1/3), (1/3, 1/3, 1/3), (0, 1/3, 2/3)])
-def test_et_2(val):
+def test_et2_2(val):
     """
     Test EntropyTriangle against known values.
     """

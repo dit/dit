@@ -66,7 +66,7 @@ class InteractiveSKAR(BaseAuxVarOptimizer):
         self._z = self._crvs
 
     @staticmethod
-    def bound(self, i, x, y):
+    def bound(i, x, y):
         """
         """
         i += 1
