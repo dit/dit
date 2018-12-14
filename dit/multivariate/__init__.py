@@ -4,6 +4,7 @@ measures and others are more distantly related.
 """
 
 from .caekl_mutual_information import caekl_mutual_information
+from .cohesion import *
 from .coinformation import coinformation
 from .common_informations import *
 from .deweese import *

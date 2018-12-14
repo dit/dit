@@ -1,7 +1,10 @@
 """
 miscellaneous math.
 """
-
+try:
+    from functools import lru_cache
+except ImportError:
+    lru_cache = lambda f: f
 from itertools import chain
 from operator import mul
 
@@ -13,6 +16,7 @@ __all__ = ['is_number',
            'is_integer',
            'factorial',
            'combinations',
+           'multinomial',
            'prod',
            ]
 
@@ -51,6 +55,7 @@ def is_integer(x):
     return isinstance(x, Integral)
 
 
+@lru_cache
 def factorial(n):
     """
     Computes n!
@@ -111,6 +116,19 @@ def combinations(n, k):
         raise ValueError("{0} is larger than {1}.".format(k, n))
     nmkf = factorial(n-k)
     return nf/(kf*nmkf)
+
+
+def multinomial(n, ks):
+    """
+    Compute the multinomial coefficient, equal to the number of ways of
+    arranging `n` items into groups of sizes `k1`, `k2`, ...
+    """
+    if sum(ks) != n:
+        raise ValueError("The values in `ks` ({}) must sum to n ({})".format(ks, n))
+    if min(ks) < 0:
+        raise ValueError("All values in `ks` must be non-negative; found {}".format(min(ks)))
+
+    return factorial(n) / prod(factorial(k) for k in ks)
 
 
 def prod(vals, start=1):
