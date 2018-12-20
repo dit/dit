@@ -32,7 +32,7 @@ class OneWaySKAR(BaseOneWaySKAR):
 
     def _get_v_bound(self):
         """
-        |U| <= |X|^2
+        |V| <= |X|^2
         """
         return self._shape[0]**2
 

@@ -10,7 +10,7 @@ from operator import mul
 
 from numbers import Integral, Number
 
-from six.moves import reduce # pylint: disable=redefined-builtin
+from six.moves import reduce  # pylint: disable=redefined-builtin
 
 __all__ = ['is_number',
            'is_integer',
@@ -55,7 +55,7 @@ def is_integer(x):
     return isinstance(x, Integral)
 
 
-@lru_cache
+@lru_cache(maxsize=None)
 def factorial(n):
     """
     Computes n!

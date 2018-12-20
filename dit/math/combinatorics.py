@@ -118,5 +118,3 @@ def slots(n, k, normalized=False):
             yield tuple((seq[i] - seq[i + 1]) for i in range(k))
             i = seq.index(0) - 1
             seq[i:k] = [seq[i] - 1] * (k - i)
-
-
