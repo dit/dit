@@ -4,7 +4,7 @@ miscellaneous math.
 try:
     from functools import lru_cache
 except ImportError:
-    lru_cache = lambda f: f
+    lru_cache = lambda maxsize: (lambda f: f)
 from itertools import chain
 from operator import mul
 
