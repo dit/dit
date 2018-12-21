@@ -99,7 +99,7 @@ def distribution_structures(draw, size=(2, 4), alphabet=(2, 4), uniform=False, m
     except TypeError:
         alphabet = (alphabet, alphabet)
 
-    alphabet = tuple(tuple(map(int, alpha)) for alpha in alphabet)
+    alphabet = tuple(map(int, alphabet))
 
     size_ = draw(integers(*size))
     alphabet_ = draw(integers(*alphabet))
