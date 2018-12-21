@@ -26,6 +26,7 @@ These measures all reduce to the standard Shannon :ref:`mutual_information` for 
    coinformation
    total_correlation
    dual_total_correlation
+   cohesion
    caekl_mutual_information
    interaction_information
    deweese
