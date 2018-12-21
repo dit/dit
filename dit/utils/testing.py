@@ -49,9 +49,7 @@ def distributions(draw, alphabets=(2, 2, 2), nondegenerate=False):
     except TypeError:
         alphabets = ((2, 2),)*alphabets
 
-    alphabets = tuple(tuple(map(int, alpha)) for alpha in alphabets)
-
-    alphabets = [draw(integers(*alpha)) for alpha in alphabets]
+    alphabets = [int(draw(integers(*alpha))) for alpha in alphabets]
 
     pmf = draw(arrays(np.float, shape=alphabets, elements=floats(0, 1)))
 
@@ -99,10 +97,8 @@ def distribution_structures(draw, size=(2, 4), alphabet=(2, 4), uniform=False, m
     except TypeError:
         alphabet = (alphabet, alphabet)
 
-    alphabet = tuple(map(int, alphabet))
-
     size_ = draw(integers(*size))
-    alphabet_ = draw(integers(*alphabet))
+    alphabet_ = int(draw(integers(*alphabet)))
 
     events = draw(lists(tuples(*[integers(0, alphabet_ - 1)] * size_), min_size=min_events, unique=True))
 
@@ -152,9 +148,7 @@ def markov_chains(draw, alphabets=((2, 4), (2, 4), (2, 4))):
     except TypeError:
         alphabets = ((2, 2),)*alphabets
 
-    alphabets = tuple(tuple(map(int, alpha)) for alpha in alphabets)
-
-    alphabets = [draw(integers(*alpha)) for alpha in alphabets]
+    alphabets = [int(draw(integers(*alpha))) for alpha in alphabets]
 
     px = draw(arrays(np.float, shape=alphabets[0], elements=floats(0, 1)))
     cds = [draw(arrays(np.float, shape=(a, b), elements=floats(0, 1))) for a, b in pairwise(alphabets)]
