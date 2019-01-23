@@ -74,7 +74,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   TEX.Macro("meetop", "\\DeclareMathOperator*{\\meetop}{\\scalerel*{\\meet}{\\textstyle\\sum}}")
   TEX.Macro("joinop", "\\DeclareMathOperator*{\\joinop}{\]scalerel*{\]join}{\]textstyle\]sum}}")
 
-  TEX.Macro("ind", "\\mathrel{\\text{\\scalebox{1.07}{$\\perp\\mkern-10mu\\perp$}}}")
+  TEX.Macro("ind", "\\mathrel{\\large\\text{$\\perp\\mkern-10mu\\perp$}}")
 
 
   // don't use stix, it's pretty ugly
