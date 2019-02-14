@@ -95,17 +95,22 @@ def pid_lattice(variables):
 
     for a, b in combinations(nodes, 2):
         if parent(a, b):
-            lattice.add_edge(b, a)
+            lattice.add_edge(b, a, weight=-1)
         elif parent(b, a):
-            lattice.add_edge(a, b)
+            lattice.add_edge(a, b, weight=-1)
 
-    for a, b in list(lattice.edges()):
-        if any(n > 2 for n in map(len, nx.all_simple_paths(lattice, a, b))):
-            lattice.remove_edge(a, b)
+    longest_paths = nx.algorithms.all_pairs_bellman_ford_path_length(lattice)
 
-    lattice.root = next(iter(nx.topological_sort(lattice)))
+    new_lattice = nx.DiGraph()
 
-    return lattice
+    for i, paths in longest_paths:
+        for j, weight in paths.items():
+            if weight == -1:
+                new_lattice.add_edge(i, j)
+
+    new_lattice.root = next(iter(nx.topological_sort(new_lattice)))
+
+    return new_lattice
 
 
 def sort_key(lattice):

@@ -1,5 +1,5 @@
 """
-The total correlation, aka the multi-information or the integration.
+Cohesion, a generalization bridging the total correlation and the dual total correlation.
 """
 
 from itertools import combinations
