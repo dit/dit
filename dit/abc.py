@@ -51,7 +51,7 @@ _mutual_informations = [
     'I',    # the multivariate conditional mututal information
     'T',    # the conditional total correlation [multi-information/integration]
     'B',    # the conditional dual total correlation [binding information]
-    'J',    # the CAEKL common information
+    'J',    # the CAEKL mutual information
     'II',   # the interaction information
 ]
 
