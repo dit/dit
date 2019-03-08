@@ -9,6 +9,11 @@ from ..utils import partitions, unitful
 from .entropy import entropy
 
 
+__all__ = [
+    'caekl_mutual_information',
+]
+
+
 @unitful
 def caekl_mutual_information(dist, rvs=None, crvs=None, rv_mode=None):
     """

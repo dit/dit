@@ -9,6 +9,11 @@ from ..utils import unitful
 from .coinformation import coinformation
 
 
+__all__ = [
+    'interaction_information',
+]
+
+
 @unitful
 def interaction_information(dist, rvs=None, crvs=None, rv_mode=None):
     """

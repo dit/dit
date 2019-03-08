@@ -7,11 +7,11 @@ from __future__ import absolute_import
 
 from abc import ABCMeta, abstractmethod
 
-from six import with_metaclass
-
 from collections import defaultdict
 
 from itertools import combinations, islice, permutations
+
+from six import with_metaclass
 
 import prettytable
 

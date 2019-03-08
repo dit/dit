@@ -8,6 +8,11 @@ from ..shannon import conditional_entropy, entropy as shannon_entropy
 from ..utils import flatten, unitful
 
 
+__all__ = [
+    'entropy',
+]
+
+
 @unitful
 def entropy(dist, rvs=None, crvs=None, rv_mode=None):
     """

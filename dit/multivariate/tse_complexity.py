@@ -11,6 +11,11 @@ from ..math.misc import combinations as nCk
 from ..utils import unitful
 
 
+__all__ = [
+    'tse_complexity',
+]
+
+
 @unitful
 def tse_complexity(dist, rvs=None, crvs=None, rv_mode=None):
     """

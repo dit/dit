@@ -7,11 +7,13 @@ from __future__ import division
 import pytest
 
 from dit import Distribution as D, ScalarDistribution as SD
+from dit.example_dists import n_mod_m
+from dit.exceptions import ditException
 from dit.multivariate import (dual_total_correlation as B,
+                              generalized_dual_total_correlation as GB,
                               residual_entropy as R)
 from dit.shannon import (entropy as H,
                          mutual_information as I)
-from dit.exceptions import ditException
 
 
 def test_B1():
@@ -94,3 +96,21 @@ def test_BR1():
     """ Test that B + R = H """
     d = D(['000', '001', '010', '100', '111'], [1/5]*5)
     assert B(d)+R(d) == pytest.approx(H(d))
+
+
+@pytest.mark.parametrize(['order', 'rvs', 'crvs', 'value'], [
+    (1, None, None, 4),
+    (2, None, None, 4),
+    (3, None, None, -6),
+    (4, None, None, 4),
+    (5, None, None, -1),
+    (2, [[0], [1], [2], [3]], None, 0),
+    (2, [[0], [1], [2], [3]], [4], 3),
+    (3, [[0], [1], [2], [3]], [4], -3),
+])
+def test_GB(order, rvs, crvs, value):
+    """
+    Tests for the generalized dual total correlation.
+    """
+    d = n_mod_m(5, 2)
+    assert GB(d, order=order, rvs=rvs, crvs=crvs) == pytest.approx(value)

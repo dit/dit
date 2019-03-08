@@ -7,6 +7,11 @@ from ..shannon import conditional_entropy as H
 from ..utils import powerset, unitful
 
 
+__all__ = [
+    'coinformation',
+]
+
+
 @unitful
 def coinformation(dist, rvs=None, crvs=None, rv_mode=None):
     """

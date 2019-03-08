@@ -1,11 +1,17 @@
 """
-
+The necessary conditional entropy is the entropy of the minimal sufficient
+statistic of X about Y, given Y.
 """
 
 from .entropy import entropy
 from ..algorithms import insert_mss
 from ..helpers import normalize_rvs
 from ..utils import flatten, unitful
+
+
+__all__ = [
+    'necessary_conditional_entropy',
+]
 
 
 @unitful
@@ -18,7 +24,8 @@ def necessary_conditional_entropy(dist, rvs=None, crvs=None, rv_mode=None):
     Parameters
     ----------
     dist : Distribution
-        The distribution from which the necessary conditional entropy is calculated.
+        The distribution from which the necessary conditional entropy is
+        calculated.
     rvs : list, None
         The indexes of the random variable used to calculate the necessary
         conditional entropy. If None, then the entropy is calculated over
