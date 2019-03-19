@@ -111,6 +111,8 @@ class BaseDeWeeseOptimizer(BaseAuxVarOptimizer):
     """
     construct_initial = BaseAuxVarOptimizer.construct_copy_initial
 
+    _sign = -1
+
     _shotgun = 5
 
     def __init__(self, dist, rvs=None, crvs=None, deterministic=False, rv_mode=None):
@@ -192,7 +194,7 @@ class BaseDeWeeseOptimizer(BaseAuxVarOptimizer):
                             rv_mode=rv_mode,
                             deterministic=deterministic)
             opt.optimize(niter=niter)
-            return -opt.objective(opt._optima)
+            return self._sign * opt.objective(opt._optima)
 
         function.__doc__ = function.__doc__.format(name=cls.name)
 
