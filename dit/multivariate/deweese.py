@@ -194,7 +194,7 @@ class BaseDeWeeseOptimizer(BaseAuxVarOptimizer):
                             rv_mode=rv_mode,
                             deterministic=deterministic)
             opt.optimize(niter=niter)
-            return self._sign * opt.objective(opt._optima)
+            return cls._sign * opt.objective(opt._optima)
 
         function.__doc__ = function.__doc__.format(name=cls.name)
 
