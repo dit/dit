@@ -2,6 +2,8 @@
 Compute the minimal sufficient statistic common information.
 """
 
+from copy import deepcopy
+
 import numpy as np
 
 from ...algorithms.minimal_sufficient_statistic import insert_joint_mss
@@ -35,6 +37,8 @@ def mss_common_information(dist, rvs=None, crvs=None, rv_mode=None):
         defaults to 'indices'.
 
     """
+    dist = deepcopy(dist)
+    dist.make_sparse()
     rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
 
     dtc = dual_total_correlation(dist, rvs, crvs, rv_mode)
