@@ -14,4 +14,3 @@ dependencies:
     - ipython[nbconvert]
     - python-ternary
     - sarge
-    - .
