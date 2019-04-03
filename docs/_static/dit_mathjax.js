@@ -80,7 +80,7 @@ MathJax.Hub.Config({
             mss: "\\searrow",
             meetop: "\\DeclareMathOperator*{\\meetop}{\\scalerel*{\\meet}{\\textstyle\\sum}}",
             joinop: "\\DeclareMathOperator*{\\joinop}{\\scalerel*{\\join}{\\textstyle\\sum}}",
-            ind: "\\mathrel{\\text{\\scalebox{1.07}{$\\perp\\mkern-10mu\\perp$}}}"
+            ind: "\\mathrel{\\large\\text{$\\perp\\mkern-10mu\\perp$}}"
         }
     }
 });

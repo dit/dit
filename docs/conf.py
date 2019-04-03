@@ -272,7 +272,7 @@ macros = r'''
 \DeclareMathOperator*{\meetop}{\scalerel*{\meet}{\textstyle\sum}}
 \DeclareMathOperator*{\joinop}{\scalerel*{\join}{\textstyle\sum}}
 
-\newcommand{\ind}{\mathrel{\text{\scalebox{1.07}{$\perp\mkern-10mu\perp$}}}}
+\newcommand{\ind}{\mathrel{\large\text{$\perp\mkern-10mu\perp$}}}
 '''
 
 latex_elements = {
