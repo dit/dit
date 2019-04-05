@@ -349,10 +349,12 @@ def insert_rv(dist, idx, sigalg):
     atoms = atom_set(sigalg)
     atoms = [sorted(atom) for atom in atoms]
     atoms.sort(key=quasilexico_key)
-    labels = range(len(atoms))
     if dist._outcome_class == str:
         # Then the labels for the new random variable must be strings.
-        labels = map(str, labels)
+        from string import ascii_letters, digits
+        labels = (digits + ascii_letters)[:len(atoms)]
+    else:
+        labels = range(len(atoms))
 
     # Create an index from outcomes to atoms.
     atom_of = {}
