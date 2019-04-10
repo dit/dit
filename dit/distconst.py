@@ -1053,10 +1053,10 @@ def _int_to_dist(number, outcome_length, alphabet_size):
         A uniform distribution over the joint event specified by the parameters.
     """
     alphabet = ''.join(str(i) for i in range(alphabet_size))
-    words = product(alphabet, repeat=outcome_length)
+    words = [''.join(word) for word in product(alphabet, repeat=outcome_length)]
     events = digits(number, 2, pad=alphabet_size**outcome_length, big_endian=False)
-    outcomes = [''.join(word) for include, word in zip(events, words) if include ]
-    return uniform(outcomes)
+    pmf = [p/sum(events) for p in events]
+    return Distribution(words, pmf)
 
 
 def random_dist_structure(outcome_length, alphabet_size):
