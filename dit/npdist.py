@@ -680,6 +680,62 @@ class Distribution(ScalarDistribution):
         """
         return cls(*zip(*np.ndenumerate(ndarray)), base=base, prng=prng)
 
+    @property
+    def DataArray(self):
+        """
+        Convert the distribution to a DataArray.
+        """
+        import xarray as xr
+
+        dist = self.copy()
+        dist.make_dense()
+
+        sizes = [len(a) for a in dist.alphabet]
+
+        rv_names = dist.get_rv_names()
+        if rv_names is None:
+            rv_names = ['x[{}]'.format(i) for i in range(dist.outcome_length())]
+
+        dims = rv_names
+
+        coords = {d: sorted(a) for d, a in zip(dims, dist.alphabet)}
+
+        return xr.DataArray(dist.pmf.reshape(*sizes), dims=dims, coords=coords)
+
+    @classmethod
+    def from_DataArray(cls, da, base=None, prng=None):
+        """
+        Construct a Distribution from a pmf stored as a DataArray. Dimension
+        names and coordinates are extracted if available.
+
+        Parameters
+        ----------
+        da : xr.DataArray
+            pmf in the form of a DataArray, where each axis is a variable and
+            the index along that axis is the variable's value.
+        base : 'linear', 'e', or float
+            Optionally, specify the base of the new distribution. If `None`,
+            then the new distribution will be assumed to have a linear
+            distribution.
+        prng : RandomState
+            A pseudo-random number generator with a `rand` method which can
+            generate random numbers. For now, this is assumed to be something
+            with an API compatible to NumPy's RandomState class. If `None`,
+            then we initialize to dit.math.prng.
+
+        Returns
+        -------
+        d : Distribution
+            The distribution resulting from interpreting `da` as a pmf.
+
+        """
+        rv_names = da.dims
+        events, pmf = zip(*np.ndenumerate(da))
+        events = [tuple([da.coords[rv][_].values.flatten()[0] for _, rv in zip(e, rv_names)]) for e in events]
+        dist = Distribution(events, pmf, base=base, prng=prng)
+        dist.set_rv_names(rv_names)
+        return dist
+
     @classmethod
     def from_rv_discrete(cls, ssrv, prng=None):
         """
