@@ -692,11 +692,9 @@ class Distribution(ScalarDistribution):
 
         sizes = [len(a) for a in dist.alphabet]
 
-        rv_names = dist.get_rv_names()
-        if rv_names is None:
-            rv_names = ['x[{}]'.format(i) for i in range(dist.outcome_length())]
-
-        dims = rv_names
+        dims = dist.get_rv_names()
+        if dims is None:
+            dims = ['x[{}]'.format(i) for i in range(dist.outcome_length())]
 
         coords = {d: sorted(a) for d, a in zip(dims, dist.alphabet)}
 
