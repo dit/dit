@@ -691,6 +691,7 @@ class Distribution(ScalarDistribution):
         dist.make_dense()
 
         sizes = [len(a) for a in dist.alphabet]
+        pmf = dist.pmf.reshape(*sizes)
 
         dims = dist.get_rv_names()
         if dims is None:
@@ -698,7 +699,7 @@ class Distribution(ScalarDistribution):
 
         coords = {d: sorted(a) for d, a in zip(dims, dist.alphabet)}
 
-        return xr.DataArray(dist.pmf.reshape(*sizes), dims=dims, coords=coords)
+        return xr.DataArray(pmf, dims=dims, coords=coords)
 
     @classmethod
     def from_DataArray(cls, da, base=None, prng=None):
