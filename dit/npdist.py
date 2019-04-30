@@ -687,17 +687,19 @@ class Distribution(ScalarDistribution):
         """
         import xarray as xr
 
+        alphabet = self.alphabet
+
         dist = self.copy()
         dist.make_dense()
 
-        sizes = [len(a) for a in self.alphabet]
+        sizes = [len(a) for a in alphabet]
         pmf = dist.pmf.reshape(*sizes)
 
         dims = dist.get_rv_names()
         if dims is None:
             dims = ['x[{}]'.format(i) for i in range(dist.outcome_length())]
 
-        coords = {d: sorted(a) for d, a in zip(dims, dist.alphabet)}
+        coords = {d: sorted(a) for d, a in zip(dims, alphabet)}
 
         return xr.DataArray(pmf, dims=dims, coords=coords)
 
