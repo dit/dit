@@ -687,12 +687,11 @@ class Distribution(ScalarDistribution):
         """
         import xarray as xr
 
-        print(self.alphabet)
-
         dist = self.copy()
         dist.make_dense()
 
         sizes = [len(a) for a in self.alphabet]
+        pmf = dist.pmf.reshape(*sizes)
 
         dims = dist.get_rv_names()
         if dims is None:
