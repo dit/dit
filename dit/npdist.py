@@ -692,10 +692,7 @@ class Distribution(ScalarDistribution):
         dist = self.copy()
         dist.make_dense()
 
-        print(dist.alphabet)
-
-        sizes = [len(a) for a in dist.alphabet]
-        pmf = dist.pmf.reshape(*sizes)
+        sizes = [len(a) for a in self.alphabet]
 
         dims = dist.get_rv_names()
         if dims is None:
