@@ -687,8 +687,12 @@ class Distribution(ScalarDistribution):
         """
         import xarray as xr
 
+        print(self.alphabet)
+
         dist = self.copy()
         dist.make_dense()
+
+        print(dist.alphabet)
 
         sizes = [len(a) for a in dist.alphabet]
         pmf = dist.pmf.reshape(*sizes)
