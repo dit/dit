@@ -9,11 +9,7 @@ from .immi import PID_MMI
 from .ibroja import PID_BROJA
 from .iccs import PID_CCS
 from .idep import PID_dep, PID_RA
-from .iskar import (PID_SKAR_nw,
-                    PID_SKAR_owa,
-                    PID_SKAR_owb,
-                    PID_SKAR_tw,
-                    )
+from .iskar import PID_SKAR_owb
 from .ipm import PID_PM
 from .irav import PID_RAV
 from .irr import PID_RR
