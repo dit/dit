@@ -32,8 +32,5 @@ __all_pids = [
     PID_dep,
     PID_RA,
     PID_RAV,
-    PID_SKAR_nw,
-    PID_SKAR_owa,
     PID_SKAR_owb,
-    PID_SKAR_tw,
 ]
