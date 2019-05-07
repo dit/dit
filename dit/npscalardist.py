@@ -1425,6 +1425,9 @@ class ScalarDistribution(BaseDistribution):
             If `outcome` does not exist in the sample space.
 
         """
+        if self.is_joint():
+            outcome = self._outcome_ctor(outcome)
+
         if not self.has_outcome(outcome, null=True):
             raise InvalidOutcome(outcome)
 
