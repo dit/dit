@@ -81,6 +81,7 @@ class BasePID(with_metaclass(ABCMeta, object)):
         pass
 
     @property
+    @classmethod
     @abstractmethod
     def _name(self):
         """

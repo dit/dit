@@ -640,6 +640,9 @@ class BaseDistribution(object):
         x = prepare_string(self, digits, exact, tol)
         pmf, outcomes, base, colsep, max_length, pstr = x
 
+        if not self.is_joint():
+            outcomes = [(o,) for o in outcomes]
+
         info = [
             ("Class", self.__class__.__name__),
             ("Alphabet", self.alphabet),
