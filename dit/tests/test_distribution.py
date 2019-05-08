@@ -360,3 +360,16 @@ def test_really_big_words():
     d = d.coalesce([range(30), range(30, 60), range(60, 90)])
     new_outcomes = (('10'*15,)*3, ('01'*15,)*3)
     assert d.outcomes == new_outcomes
+
+
+def test_multivariate_lookup():
+    # issue #156
+    outcomes = ['000', '010', '100', '111']
+    pmf = [1/4]*4
+    d = Distribution(outcomes, pmf)
+
+    assert d['000'] == 1/4
+    assert d['0','0','0'] == 1/4
+
+    with pytest.raises(Exception):
+        d['0','0','A'] # should raise exception
