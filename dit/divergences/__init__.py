@@ -3,6 +3,10 @@ Divergences, measuring the distance between distributions. They are not
 necessarily true metrics, but some are.
 """
 
+from .copy_mutual_information import (
+    copy_mutual_information,
+)
+
 # from .coupling_metrics import (
 #     coupling_metric,
 # )
