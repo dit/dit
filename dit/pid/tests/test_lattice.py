@@ -11,5 +11,5 @@ def test_lub():
     """
     lattice = pid_lattice(((0,), (1,)))
     lub = least_upper_bound(lattice, [((0,), (1,)), ((0,),)])
-    assert lub == ((0, 1),)
+    assert lub == ((0,),)
 
