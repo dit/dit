@@ -5,7 +5,7 @@
 Cohesion
 ********
 
-The cohesion is a paramitrized multivariate mutual information which spans from the :ref:`Total Correlation` to the :ref:`Dual Total Correlation`:
+The cohesion is a parameterized multivariate mutual information which spans from the :ref:`Total Correlation` to the :ref:`Dual Total Correlation`:
 
 .. math::
 

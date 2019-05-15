@@ -1,5 +1,5 @@
 """
-
+Tests for dit.divergences.coupling_merics
 """
 
 from __future__ import division
