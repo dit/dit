@@ -13,6 +13,8 @@ The copy mutual information :cite:`kolchinsky2019decomposing` is a measure captu
                                                                             0                                     & \textrm{otherwise}
                                                               \end{cases}
 
+Consider the binary symmetric channel. With probabilities :math:`\leq \frac{1}{2}`, the input (:math:`X`) is largely copied to the output (:math:`Y`); while when the probabilities :math:`\geq \frac{1}{2}`, the output is largely opposite the input. We therefore expect the mutual information to be "copy-like" for :math:`0 \leq p \leq \frac{1}{2}`, while the mutual information should be not "copy-like" for :math:`\frac{1}{2} \leq p \leq 1`:
+
 .. ipython::
 
    In [1]: from dit.divergences import copy_mutual_information as Icopy

@@ -30,6 +30,7 @@ def binary_kullback_leibler_divergence(p, q):
     return relative_entropy([p, 1-p], [q, 1-q])
 
 
+@unitful
 def specific_copy_mutual_information(p_Y_g_x, p_Y, x):
     """
     Compute the specific copy mutual information. Roughly it is the
