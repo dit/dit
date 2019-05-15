@@ -201,7 +201,7 @@ def least_upper_bound(lattice, nodes, predicate=None):
     """
     parents = ascendants(lattice, nodes[0], self=True)
     snodes = set(nodes)
-    for node in sorted(parents, key=sort_key(lattice)):
+    for node in sorted(parents, key=sort_key(lattice), reverse=True):
         if snodes <= set(descendants(lattice, node, self=True)):
             if predicate is not None:
                 if predicate(node, nodes):

@@ -476,15 +476,14 @@ class BaseIncompletePID(BasePID):
 
             lub = least_upper_bound(self._lattice, vars, predicate)
 
-
             if lub is None:
                 continue
 
             row = lambda node: [1 if (c in descendants(self._lattice, node, self=True)) else 0 for c in vars]
 
             A = np.array([row(node) for node in vars if node in reds] + [[1] * len(vars)])
-            if version_info >= (3, 0, 0): # not sure why this is needed...
-                A = A.T
+            # if version_info >= (3, 0, 0): # not sure why this is needed...
+            #     A = A.T
             b = np.array([reds[node] for node in vars if node in reds] + [reds[lub] - sum(pis[node] for node in descendants(self._lattice, lub, self=True) if node in pis)])
             try:
                 new_pis = np.linalg.solve(A, b)
