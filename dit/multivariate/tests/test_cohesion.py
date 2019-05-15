@@ -26,7 +26,7 @@ def test_cohesion_1(dist):
     """
     tc = total_correlation(dist)
     c = cohesion(dist, k=1)
-    assert tc == pytest.approx(c)
+    assert tc == pytest.approx(c, abs=1e-4)
 
 
 def test_cohesion_2():
@@ -45,4 +45,4 @@ def test_cohesion_3(dist):
     """
     dtc = dual_total_correlation(dist)
     c = cohesion(dist, k=3)
-    assert dtc == pytest.approx(c)
+    assert dtc == pytest.approx(c, abs=1e-4)
