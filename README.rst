@@ -2,7 +2,7 @@
 
 |build| |build_windows| |codecov| |health| |deps|
 
-|docs| |slack| |saythanks|
+|docs| |slack| |saythanks| |conda|
 
 |joss| |zenodo|
 
@@ -54,6 +54,8 @@ Downloads
 
 https://pypi.org/project/dit/
 
+https://anaconda.org/conda-forge/dit
+
 +-------------------------------------------------------------------+
 | Dependencies                                                      |
 +===================================================================+
@@ -86,6 +88,12 @@ The easiest way to install is:
 .. code-block:: bash
 
   pip install dit
+  
+If you want to install `dit` within a conda environment, you can simply do:
+
+.. code-block:: bash
+
+  conda install -c conda-forge dit
 
 Alternatively, you can clone this repository, move into the newly created
 ``dit`` directory, and then install the package:
@@ -315,6 +323,10 @@ If you'd like to get in contact about anything, you can reach us through our `sl
 .. |deps| image:: https://requires.io/github/dit/dit/requirements.svg?branch=master
    :target: https://requires.io/github/dit/dit/requirements/?branch=master
    :alt: Requirements Status
+   
+.. |conda| image:: https://anaconda.org/conda-forge/dit/badges/installer/conda.svg
+   :target: https://anaconda.org/conda-forge/dit
+   :alt: Conda installation
 
 .. |zenodo| image:: https://zenodo.org/badge/13201610.svg
    :target: https://zenodo.org/badge/latestdoi/13201610
