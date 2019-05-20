@@ -109,6 +109,7 @@ def test_shannon_inequality(dist):
 
 
 @given(dist=distributions(alphabets=((2, 4),)*4))
+@settings(deadline=None)
 def test_zhang_yeung_inequality(dist):
     """
     2I(C:D) <= I(A:B)+I(A:CD)+3I(C:D|A)+I(C:D|B)
