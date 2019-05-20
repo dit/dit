@@ -3,6 +3,8 @@ Documentation:
 
 Downloads:
    https://pypi.org/project/dit/
+   
+   https://anaconda.org/conda-forge/dit
 
 Dependencies:
    * Python 2.7, 3.3, 3.4, 3.5, or 3.6
