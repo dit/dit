@@ -48,7 +48,7 @@ def test_hypercontractivity_coefficient_failure(rvs):
 @pytest.mark.slow
 @given(dist1=distributions(alphabets=(2,)*2, nondegenerate=True),
        dist2=distributions(alphabets=(2,)*2, nondegenerate=True))
-@settings(deadline=None, max_examples=5
+@settings(deadline=None, max_examples=5)
 def test_hypercontractivity_coefficient_tensorization(dist1, dist2):
     """
     Test tensorization:
