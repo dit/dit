@@ -18,7 +18,7 @@ the cross entropy of a distribution with itself is the entropy of that
 distribion because the entropy quantifies the average cost of representing a
 distribution:
 
-.. ipython::
+.. ipython:: python
 
    In [1]: from dit.divergences import cross_entropy
 
@@ -31,7 +31,7 @@ distribution:
 If, however, we attempted to model a fair coin with a biased on, we could
 compute this mis-match with the cross entropy:
 
-.. ipython::
+.. ipython:: python
 
    In [4]: q = dit.Distribution(['0', '1'], [3/4, 1/4])
 
@@ -43,7 +43,7 @@ Meaning, we will on average use about :math:`1.2` bits to represent the flips of
 a fair coin. Turning things around, what if we had a biased coin that we
 attempted to represent with a fair coin:
 
-.. ipython::
+.. ipython:: python
 
    @doctest float
    In [6]: cross_entropy(q, p)

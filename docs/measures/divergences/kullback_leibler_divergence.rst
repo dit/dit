@@ -25,7 +25,7 @@ using :math:`q`, and the :doc:`../multivariate/entropy` quantifies the true,
 minimum cost of encoding :math:`p`. For example, let's consider the cost of
 representing a biased coin by a fair one:
 
-.. ipython::
+.. ipython:: python
 
    In [1]: from dit.divergences import kullback_leibler_divergence
 

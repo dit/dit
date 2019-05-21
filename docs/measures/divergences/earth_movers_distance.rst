@@ -8,7 +8,7 @@ The Earth mover's distance is a distance measure between probability distributio
 
 For categorical data, the "distance" between unequal symbols is unitary. In this case, :math:`1/6` of the probability in symbol '0' needs to be moved to '1', and :math:`1/6` needs to be moved to '2', for a total of :math:`1/3`:
 
-.. ipython::
+.. ipython:: python
 
    In [1]: from dit.divergences import earth_movers_distance
 
@@ -22,7 +22,7 @@ For categorical data, the "distance" between unequal symbols is unitary. In this
 
  For numerical data, "distance" defaults to the difference between the symbols. In this case, :math:`1/6` of the probability in symbol '0' needs to be moved to '1' (a distance of 1), and :math:`1/6` needs to be moved to '2' (a distance of 2), for a total of :math:`1/2`:
 
-.. ipython::
+.. ipython:: python
 
    In [1]: from dit.divergences import earth_movers_distance
 

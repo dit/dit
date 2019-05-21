@@ -7,7 +7,7 @@ Information Profiles
 
 There are several ways to decompose the information contained in a joint distribution. Here, we will demonstrate their behavior using four examples drawn from :cite:`Allen2014`:
 
-.. ipython::
+.. ipython:: python
 
    In [1]: from dit.profiles import *
 
@@ -26,7 +26,7 @@ Shannon Partition and Extropy Partition
 
 The I-diagrams, or :class:`ShannonPartition`, for these four examples can be computed thusly:
 
-.. ipython::
+.. ipython:: python
    :doctest:
 
    In [6]: ShannonPartition(ex1)
@@ -83,7 +83,7 @@ The I-diagrams, or :class:`ShannonPartition`, for these four examples can be com
 
 And their X-diagrams, or :class:`ExtropyDiagram`, can be computed like so:
 
-.. ipython::
+.. ipython:: python
    :doctest:
 
    In [10]: ExtropyPartition(ex1)
@@ -147,28 +147,28 @@ The complexity profile, implimented by :class:`ComplexityProfile` is simply the 
 
 Consider example 1, which contains three independent bits. Each of these bits are in the outermost "layer" of the i-diagram, and so the information in the complexity profile is all at layer 1:
 
-.. ipython::
+.. ipython:: python
 
    @savefig complexity_profile_example_1.png width=500 align=center
    In [14]: ComplexityProfile(ex1).draw();
 
 Whereas in example 2, all the information is in the center, and so each scale of the complexity profile picks up that one bit:
 
-.. ipython::
+.. ipython:: python
 
    @savefig complexity_profile_example_2.png width=500 align=center
    In [15]: ComplexityProfile(ex2).draw();
 
 Both bits in example 3 are at a scale of at least 1, but only the shared bit persists to scale 2:
 
-.. ipython::
+.. ipython:: python
 
    @savefig complexity_profile_example_3.png width=500 align=center
    In [16]: ComplexityProfile(ex3).draw();
 
 Finally, example 4 (where each variable is the ``exclusive or`` of the other two):
 
-.. ipython::
+.. ipython:: python
 
    @savefig complexity_profile_example_4.png width=500 align=center
    In [17]: ComplexityProfile(ex4).draw();
@@ -182,28 +182,28 @@ The marginal utility of information (MUI) :cite:`Allen2014`, implimented by :cla
 
 For the first example, each bit is independent and so basically must be extracted independently. Thus, as one increases :math:`y` the maximum amount extracted grows equally:
 
-.. ipython::
+.. ipython:: python
 
    @savefig mui_profile_example_1.png width=500 align=center
    In [18]: MUIProfile(ex1).draw();
 
 In the second example, there is only one bit total to be extracted, but it is shared by each pairwise mutual information. Therefore, for each increase in :math:`y` we get a threefold increase in the amount extracted:
 
-.. ipython::
+.. ipython:: python
 
    @savefig mui_profile_example_2.png width=500 align=center
    In [19]: MUIProfile(ex2).draw();
 
 For the third example, for the first one bit of :math:`y` we can pull from the shared bit, but after that one must pull from the independent bit, so we see a step in the MUI profile:
 
-.. ipython::
+.. ipython:: python
 
    @savefig mui_profile_example_3.png width=500 align=center
    In [20]: MUIProfile(ex3).draw();
 
 Lastly, the ``xor`` example:
 
-.. ipython::
+.. ipython:: python
 
    @savefig mui_profile_example_4.png width=500 align=center
    In [21]: MUIProfile(ex4).draw();
@@ -217,7 +217,7 @@ Also known as the *connected information* or *network informations*, the Schneid
 
 In the first example, all the random variables are independent already, so fixing marginals above :math:`k=1` does not result in any change to the inferred distribution:
 
-.. ipython::
+.. ipython:: python
 
    @savefig schneidman_profile_example_1.png width=500 align=center
    In [22]: SchneidmanProfile(ex1).draw();
@@ -227,21 +227,21 @@ In the first example, all the random variables are independent already, so fixin
 
 In the second example, by learning the pairwise marginals, we reduce the entropy of the distribution by two bits (from three independent bits, to one giant bit):
 
-.. ipython::
+.. ipython:: python
 
    @savefig schneidman_profile_example_2.png width=500 align=center
    In [23]: SchneidmanProfile(ex2).draw();
 
 For the third example, learning pairwise marginals only reduces the entropy by one bit:
 
-.. ipython::
+.. ipython:: python
 
    @savefig schneidman_profile_example_3.png width=500 align=center
    In [24]: SchneidmanProfile(ex3).draw();
 
 And for the ``xor``, all bits appear independent until fixing the three-way marginals at which point one bit about the distribution is learned:
 
-.. ipython::
+.. ipython:: python
 
    @savefig schneidman_profile_example_4.png width=500 align=center
    In [25]: SchneidmanProfile(ex4).draw();
@@ -257,40 +257,40 @@ All four examples lay along the left axis because their distributions are unifor
 
 In the first example, the distribution is all independence because the three variables are, in fact, independent:
 
-.. ipython::
+.. ipython:: python
 
    @savefig entropy_triangle_example_1.png width=500 align=center
    In [26]: EntropyTriangle(ex1).draw();
 
 In the second example, the distribution is all dependence, because the three variables are perfectly entwined:
 
-.. ipython::
+.. ipython:: python
 
    @savefig entropy_triangle_example_2.png width=500 align=center
    In [27]: EntropyTriangle(ex2).draw();
 
 Here, there is a mix of independence and dependence:
 
-.. ipython::
+.. ipython:: python
 
    @savefig entropy_triangle_example_3.png width=500 align=center
    In [28]: EntropyTriangle(ex3).draw();
 
 And finally, in the case of ``xor``, the variables are completely dependent again:
 
-.. ipython::
+.. ipython:: python
 
    @savefig entropy_triangle_example_4.png width=500 align=center
    In [29]: EntropyTriangle(ex4).draw();
 
 We can also plot all four on the same entropy triangle:
 
-.. ipython::
+.. ipython:: python
 
    @savefig entropy_triangle_all_examples.png width=500 align=center
    In [30]: EntropyTriangle([ex1, ex2, ex3, ex4]).draw();
 
-.. ipython::
+.. ipython:: python
 
    In [31]: dists = [ dit.random_distribution(3, 2, alpha=(0.5,)*8) for _ in range(250) ]
 
@@ -299,7 +299,7 @@ We can also plot all four on the same entropy triangle:
 
 We can plot these same distributions on a slightly different entropy triangle as well, :class:`EntropyTriangle2`, one comparing the :doc:`measures/multivariate/residual_entropy`, :doc:`measures/multivariate/total_correlation`, and :doc:`measures/multivariate/dual_total_correlation`:
 
-.. ipython::
+.. ipython:: python
 
    @savefig entropy_triangle2_example.png width=500 align=center
    In [33]: EntropyTriangle2(dists).draw();
@@ -309,7 +309,7 @@ Dependency Decomposition
 
 Using :class:`DependencyDecomposition`, one can discover how an arbitrary information measure varies as marginals of the distribution are fixed. In our first example, each variable is independent of the others, and so constraining marginals makes no difference:
 
-.. ipython::
+.. ipython:: python
    :doctest:
 
    In [34]: DependencyDecomposition(ex1)
@@ -329,7 +329,7 @@ Using :class:`DependencyDecomposition`, one can discover how an arbitrary inform
 
 In the second example, we see that fixing any one of the pairwise marginals reduces the entropy by one bit, and by fixing a second we reduce the entropy down to one bit:
 
-.. ipython::
+.. ipython:: python
    :doctest:
 
    In [35]: DependencyDecomposition(ex2)
@@ -349,7 +349,7 @@ In the second example, we see that fixing any one of the pairwise marginals redu
 
 In the third example, only constraining the 01 marginal reduces the entropy, and it reduces it by one bit:
 
-.. ipython::
+.. ipython:: python
    :doctest:
 
    In [36]: DependencyDecomposition(ex3)
@@ -369,7 +369,7 @@ In the third example, only constraining the 01 marginal reduces the entropy, and
 
 And finally in the case of the exclusive or, only constraining the 012 marginal reduces the entropy.
 
-.. ipython::
+.. ipython:: python
    :doctest:
 
    In [37]: DependencyDecomposition(ex4)

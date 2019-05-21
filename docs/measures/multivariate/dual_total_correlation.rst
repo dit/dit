@@ -14,7 +14,7 @@ The dual total correlation :cite:`Han1975linear`, or binding information :cite:`
 
 In a sense the binding information captures the same information that the :doc:`total_correlation` does, in that both measures are zero or non-zero together. However, the two measures take on very different quantitative values for different distributions. By way of example, the type of distribution that maximizes the total correlation is a "giant bit":
 
-.. ipython::
+.. ipython:: python
 
    In [1]: from dit.multivariate import binding_information, total_correlation
 
@@ -30,7 +30,7 @@ In a sense the binding information captures the same information that the :doc:`
 
 For the same distribution, the dual total correlation takes on a relatively low value. On the other hand, the type of distribution that maximizes the dual total correlation is a "parity" distribution:
 
-.. ipython::
+.. ipython:: python
 
    In [5]: from dit.example_dists import n_mod_m
 

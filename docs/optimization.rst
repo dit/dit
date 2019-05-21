@@ -7,7 +7,7 @@ Optimization
 
 It is often useful to construct a distribution :math:`d^\prime` which is consistent with some marginal aspects of :math:`d`, but otherwise optimizes some information measure. For example, perhaps we are interested in constructing a distribution which matches pairwise marginals with another, but otherwise has maximum entropy:
 
-.. ipython::
+.. ipython:: python
 
     In [1]: from dit.algorithms.distribution_optimizers import MaxEntOptimizer
 
@@ -43,13 +43,13 @@ Helper Functions
 
 There are three special functions to handle common optimization problems:
 
-.. ipython::
+.. ipython:: python
 
     In [7]: from dit.algorithms import maxent_dist, marginal_maxent_dists
 
 The first is maximum entropy distributions with specific fixed marginals. It encapsulates the steps run above:
 
-.. ipython::
+.. ipython:: python
 
     In [8]: print(maxent_dist(xor, [[0,1], [0,2], [1,2]]))
     Class:          Distribution
@@ -71,7 +71,7 @@ The first is maximum entropy distributions with specific fixed marginals. It enc
 
 The second constructs several maximum entropy distributions, each with all subsets of variables of a particular size fixed:
 
-.. ipython::
+.. ipython:: python
 
     In [9]: k0, k1, k2, k3 = marginal_maxent_dists(xor)
 

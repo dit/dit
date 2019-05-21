@@ -15,7 +15,7 @@ The Chan-AlBashabsheh-Ebrahimi-Kaced-Liu mutual information :cite:`chan2015multi
 
 for some non-trivial partition :math:`\mathcal{P}` of :math:`\left\{0:n\right\}`. For example, the CAEKL mutual information for the ``xor`` distribution is :math:`\frac{1}{2}`, because the joint entropy is 2 bits, each of the three marginals is 1 bit, and :math:`2 - \frac{1}{2} = 3 (1 - \frac{1}{2})`.
 
-.. ipython::
+.. ipython:: python
 
    In [1]: from dit.multivariate import caekl_mutual_information as J
 

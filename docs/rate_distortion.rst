@@ -27,7 +27,7 @@ Example
 
 It is known that under the Hamming distortion (:math:`d(x, \hat{x}) = \left[ x \neq \hat{x} \right]`) the rate-distortion function for a biased coin has the following solution: :math:`R(D) = \H{p} - \H{D}`:
 
-.. ipython::
+.. ipython:: python
 
    In [1]: from dit.rate_distortion import RDCurve
 
@@ -78,13 +78,13 @@ Example
 
 Consider this distribution:
 
-.. ipython::
+.. ipython:: python
 
    In [4]: d = dit.Distribution(['00', '02', '12', '21', '22'], [1/5]*5)
 
 There are effectively three features that the fist index, :math:`X`, has regarding the second index, :math:`Y`. We can find them using the standard information bottleneck:
 
-.. ipython::
+.. ipython:: python
    :verbatim:
 
    In [5]: from dit.rate_distortion import IBCurve
@@ -98,7 +98,7 @@ There are effectively three features that the fist index, :math:`X`, has regardi
 
 We can also find them utilizing the total variation:
 
-.. ipython::
+.. ipython:: python
    :verbatim:
 
    In [7]: from dit.divergences.pmf import variational_distance

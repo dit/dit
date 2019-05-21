@@ -12,7 +12,7 @@ Background
 
 It is often desirable to determine how a set of inputs influence the behavior of an output. Consider the exclusive or logic gates, for example:
 
-.. ipython::
+.. ipython:: python
 
    In [1]: from dit.pid.distributions import bivariates, trivariates
 
@@ -34,7 +34,7 @@ It is often desirable to determine how a set of inputs influence the behavior of
 
 We can see from inspection that either input (the first two indexes) is independent of the output (the final index), yet the two inputs together determine the output. One could call this "synergistic" information. Next, consider the giant bit distribution:
 
-.. ipython::
+.. ipython:: python
 
    In [4]: gb = bivariates['redundant']
 
@@ -52,7 +52,7 @@ We can see from inspection that either input (the first two indexes) is independ
 
 Here, we see that either input informs us of exactly what the output is. One could call this "redundant" information. Furthermore, consider the :ref:`coinformation` of these distributions:
 
-.. ipython::
+.. ipython:: python
 
    In [6]: from dit.multivariate import coinformation as I
 
@@ -64,7 +64,7 @@ Here, we see that either input informs us of exactly what the output is. One cou
 
 This could lead one to intuit that negative values of the coinformation correspond to synergistic effects in a distribution, while positive values correspond to redundant effects. This intuition, however, is at best misleading: the coinformation of a 4-variable giant bit and 4-variable parity distribution are both positive:
 
-.. ipython::
+.. ipython:: python
 
    In [9]: I(dit.example_dists.giant_bit(4, 2))
    Out[9]: 1.0
@@ -163,7 +163,7 @@ Measures
 
 We now turn our attention a variety of methods proposed to flesh out this partial information decomposition.
 
-.. ipython::
+.. ipython:: python
 
    In [11]: from dit.pid import *
 
@@ -179,7 +179,7 @@ We now turn our attention a variety of methods proposed to flesh out this partia
 
 However, this measure has been criticized for acting in an unintuitive manner :cite:`griffith2014quantifying`:
 
-.. ipython::
+.. ipython:: python
 
    In [12]: d = dit.Distribution(['000', '011', '102', '113'], [1/4]*4)
 
@@ -265,7 +265,7 @@ In a very intuitive effort, Bertschinger et al (henceforth BROJA) :cite:`bertsch
 
 The BROJA measure has recently been criticized for behaving in an unintuitive manner on some examples. Consider the *reduced or* distribution:
 
-.. ipython::
+.. ipython:: python
 
    In [16]: bivariates['reduced or']
    Out[16]:
@@ -298,7 +298,7 @@ We see that in this instance BROJA assigns no partial information to either uniq
 
 In the BROJA paper :cite:`bertschinger2014quantifying` the only example given where their decomposition differs from that of Harder et al. is the :py:func:`dit.example_dists.summed_dice`. We can find a simpler example where they differ using hypothesis:
 
-.. ipython::
+.. ipython:: python
 
    In [17]: from hypothesis import find
 
@@ -333,7 +333,7 @@ While this measure behaves intuitively in many examples, it also assigns negativ
 
 This decomposition also displays an interesting phenomena, that of *subadditive redundancy*. The **gband** distribution is an independent mix of a giant bit (redundancy of 1 bit) and the **and** distribution (redundancy of 0.1038 bits), and yet **gband** has 0.8113 bits of redundancy:
 
-.. ipython::
+.. ipython:: python
 
    In [20]: PID_CCS(bivariates['gband'])
    Out[20]:
@@ -356,7 +356,7 @@ This decomposition also displays an interesting phenomena, that of *subadditive 
 
 James et al :cite:`james2017unique` have developed a method of quantifying unique information based on the :ref:`Dependency Decomposition`. Unique information from variable :math:`X_i` is evaluated as the least change in sources-target mutual information when adding the constraint :math:`X_i Y`.
 
-.. ipython::
+.. ipython:: python
 
    In [21]: PID_dep(bivariates['not two'])
    Out[21]:
@@ -381,7 +381,7 @@ Also taking a pointwise view, Finn & Lizier's :math:`\Ipm{\bullet}` :cite:`finn2
 
 They then define two partial information lattices, one quantified locally by :math:`h(s)` and the other by :math:`h(s|t)`. By averaging these local lattices and then recombining them, we arrive at a standard Williams & Beer redundancy lattice.
 
-.. ipython::
+.. ipython:: python
 
    In [22]: PID_PM(bivariates['pnt. unq'])
    Out[22]:
@@ -410,7 +410,7 @@ Taking a functional perspective as in :math:`\Iwedge`, :math:`\Irav` defines biv
 
 This measure is designed to exploit the conflation of synergy and redundancy in the three variable coinformation: :math:`\I{X_0\!:\!X_1\!:\!Y} = R - S`.
 
-.. ipython::
+.. ipython:: python
 
    In [23]: PID_RAV(bivariates['pnt. unq'])
    Out[23]:
@@ -438,7 +438,7 @@ In order to combine :math:`\Immi{\bullet}` with the coinformation, Goodwell and 
 
    I_{S} = \frac{\I{X_0 : X_1}}{\min\{ \H{X_0}, \H{X_1} \}}
 
-.. ipython::
+.. ipython:: python
 
    In [24]: PID_RR(bivariates['pnt. unq'])
    Out[24]:
@@ -540,7 +540,7 @@ While this measure behaves intuitively in many examples, it also assigns negativ
 
 Like :math:`\Iccs{\bullet}`,  :math:`\Hcs{\bullet}` is also subadditive.
 
-.. ipython::
+.. ipython:: python
 
    In [25]: PED_CS(dit.Distribution(['00','01','10','11'],[0.25]*4))
    Out[25]:

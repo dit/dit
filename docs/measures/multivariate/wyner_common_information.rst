@@ -26,7 +26,7 @@ The Wyner common information of the binary symmetric erasure channel is known to
 
 We can verify this:
 
-.. ipython::
+.. ipython:: python
    :verbatim:
 
    In [1]: from dit.multivariate import wyner_common_information as C

@@ -7,7 +7,7 @@ DeWeese-like Measures
 
 Mike DeWeese has introduced a family of multivariate information measures based on a multivariate extension of the data processing inequality. The general idea is the following: local modification of a single variable can not increase the amount of correlation or dependence it has with the other variables. Consider, however, the triadic distribution:
 
-.. ipython::
+.. ipython:: python
 
    In [1]: from dit.example_dists import dyadic, triadic
 
@@ -32,7 +32,7 @@ Mike DeWeese has introduced a family of multivariate information measures based 
 
 This particular distribution has zero :ref:`coinformation`:
 
-.. ipython::
+.. ipython:: python
 
    In [3]: from dit.multivariate import coinformation
 
@@ -46,7 +46,7 @@ Yet the distribution is a product of a giant bit (coinformation :math:`1.0`) and
 
    \ID{X_0 : \ldots : X_n} = \max_{p(x'_i | x_i)} \I{X'_0 : \ldots : X'_n}
 
-.. ipython::
+.. ipython:: python
 
    In [5]: from dit.multivariate import deweese_coinformation
 

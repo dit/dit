@@ -21,7 +21,7 @@ where :math:`P_e` is a uniform distribution over the same outcome space as :math
 
 The LMPR complexity does not necessarily behave as one might intuitively hope. For example, the LMPR complexity of the ``xor`` and "double bit" with independent bit are identical:
 
-.. ipython::
+.. ipython:: python
 
    In [1]: from dit.other.disequilibrium import *
 

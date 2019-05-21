@@ -20,7 +20,7 @@ Marginal
 
 :mod:`dit` supports two ways of selecting only a subset of random variables. :meth:`~Distribution.marginal` returns a distribution containing only the random variables specified, whereas :meth:`~Distribution.marginalize` return a distribution containing all random variables *except* the ones specified:
 
-.. ipython::
+.. ipython:: python
    :doctest:
 
    In [3]: print(d.marginal('XY'))
@@ -57,7 +57,7 @@ Conditional
 
 We can also condition on a subset of random variables:
 
-.. ipython::
+.. ipython:: python
 
    In [5]: marginal, cdists = d.condition_on('XY')
 
@@ -139,7 +139,7 @@ We can construct the join of two random variables:
 
 Where :math:`\min` is understood to be minimizing with respect to the entropy.
 
-.. ipython::
+.. ipython:: python
 
    In [11]: from dit.algorithms.lattice import join
 
@@ -169,7 +169,7 @@ We can construct the meet of two random variabls:
 
 Where :math:`\max` is understood to be maximizing with respect to the entropy.
 
-.. ipython::
+.. ipython:: python
 
    In [13]: from dit.algorithms.lattice import meet
 
@@ -205,7 +205,7 @@ This method constructs the minimal sufficient statistic of :math:`X` about
 
    X \mss Y = \min \{ V | V \iless X \land \I[X:Y] = \I[V:Y] \}
 
-.. ipython::
+.. ipython:: python
 
    In [18]: from dit.algorithms import insert_mss
 

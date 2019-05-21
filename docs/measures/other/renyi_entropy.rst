@@ -11,7 +11,7 @@ The Rényi entropy is a spectrum of generalizations to the Shannon :doc:`../mult
 
    \RE{\alpha}{X} = \frac{1}{1-\alpha} \log_2 \left( \sum_{x \in \mathcal{X}} p(x)^\alpha \right)
 
-.. ipython::
+.. ipython:: python
 
    In [1]: from dit.other import renyi_entropy
 
@@ -39,7 +39,7 @@ When :math:`\alpha = 0` the Rényi entropy becomes what is known as the Hartley 
 
     \RE{0}{X} = \log_2 |X|
 
-.. ipython::
+.. ipython:: python
 
    @doctest float
    In [5]: renyi_entropy(d, 0)
@@ -55,7 +55,7 @@ When :math:`\alpha = 1` the Rényi entropy becomes the standard Shannon entropy:
 
     \RE{1}{X} = \H{X}
 
-.. ipython::
+.. ipython:: python
 
    @doctest float
    In [6]: renyi_entropy(d, 1)
@@ -73,7 +73,7 @@ When :math:`\alpha = 2`, the Rényi entropy becomes what is known as the collisi
 
 where :math:`Y` is an IID copy of X. This is basically the surprisal of "rolling doubles"
 
-.. ipython::
+.. ipython:: python
 
    @doctest float
    In [7]: renyi_entropy(d, 2)
@@ -89,7 +89,7 @@ Finally, when :math:`\alpha = \infty` the Rényi entropy picks out the probabili
 
     \RE{\infty}{X} = - \log_2 \max_{x \in \mathcal{X}} p(x)
 
-.. ipython::
+.. ipython:: python
 
    @doctest float
    In [8]: renyi_entropy(d, np.inf)

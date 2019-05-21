@@ -31,7 +31,7 @@ For a quick tour, see the :ref:`Quickstart <quickstart>`. Otherwise, work
 your way through the various sections. Note that all code snippets in this
 documentation assume that the following lines of code have already been run:
 
-.. ipython::
+.. ipython:: python
 
    In [1]: from __future__ import division # true division for Python 2.7
 

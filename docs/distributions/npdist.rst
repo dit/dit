@@ -7,7 +7,7 @@ Numpy-based Distribution
 The primary method of constructing a distribution is by supplying both the
 outcomes and the probability mass function:
 
-.. ipython::
+.. ipython:: python
 
    In [1]: from dit import Distribution
 
@@ -35,7 +35,7 @@ outcomes and the probability mass function:
 Another way to construct a distribution is by supplying a dictionary mapping
 outcomes to probabilities:
 
-.. ipython::
+.. ipython:: python
 
    In [6]: outcomes_probs = {'000': 1/4, '011': 1/4, '101': 1/4, '110': 1/4}
 
@@ -58,7 +58,7 @@ outcomes to probabilities:
 
 Yet a third method is via an ndarray:
 
-.. ipython::
+.. ipython:: python
 
     In [9]: pmf = [[0.5, 0.25], [0.25, 0]]
 
@@ -83,7 +83,7 @@ Yet a third method is via an ndarray:
 To verify that these two distributions are the same, we can use the
 `is_approx_equal` method:
 
-.. ipython::
+.. ipython:: python
 
    @doctest
    In [12]: xor.is_approx_equal(xor2)

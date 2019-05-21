@@ -13,7 +13,7 @@ The Tononi-Sporns-Edelmans (TSE) complexity :cite:`Tononi1994` is a complexity m
 
 Two distributions which might be considered tightly coupled are the "giant bit" and the "parity" distributions:
 
-.. ipython::
+.. ipython:: python
 
    In [54]: from dit.multivariate import tse_complexity
 

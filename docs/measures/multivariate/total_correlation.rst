@@ -14,7 +14,7 @@ The total correlation :cite:`watanabe1960information`, denoted :math:`\T{}`, als
 
 Two nice features of the total correlation are that it is non-negative and that it is zero if and only if the random variables :math:`X_{0:n}` are all independent. Some baseline behavior is good to note also. First its behavior when applied to "giant bit" distributions:
 
-.. ipython::
+.. ipython:: python
 
    In [1]: from dit import Distribution as D
 
@@ -26,7 +26,7 @@ Two nice features of the total correlation are that it is non-negative and that 
 
 So we see that for giant bit distributions, the total correlation is equal to one less than the number of variables. The second type of distribution to consider is general parity distributions:
 
-.. ipython::
+.. ipython:: python
 
    In [4]: from dit.example_dists import n_mod_m
 
@@ -46,7 +46,7 @@ The total correlation follows a nice decomposition rule. Given two sets of (not 
 
    \T{A \cup B} = \T{A} + \T{B} + \I{A : B}
 
-.. ipython::
+.. ipython:: python
 
    In [18]: from dit.multivariate import coinformation as I
 

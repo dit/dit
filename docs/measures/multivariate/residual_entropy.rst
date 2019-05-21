@@ -16,7 +16,7 @@ The residual entropy was originally proposed in :cite:`Verdu2008` to quantify th
 
 If a joint distribution consists of independent random variables, the residual entropy is equal to the :doc:`entropy`:
 
-.. ipython::
+.. ipython:: python
 
    In [1]: from dit.multivariate import entropy, residual_entropy
 
@@ -28,7 +28,7 @@ If a joint distribution consists of independent random variables, the residual e
 
 Another simple example is a distribution where one random variable is independent of the others:
 
-.. ipython::
+.. ipython:: python
 
    In [1]: d = dit.uniform(['000', '001', '110', '111'])
 
@@ -38,7 +38,7 @@ Another simple example is a distribution where one random variable is independen
 
 If we ask for the residual entropy of only the latter two random variables, the middle one is now independent of the others and so the residual entropy grows:
 
-.. ipython::
+.. ipython:: python
 
    @doctest float
    In [4]: residual_entropy(d, [[1], [2]])

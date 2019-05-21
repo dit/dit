@@ -19,7 +19,7 @@ The entropy and the extropy satisify the following relationship:
 
 Unfortunately, the extropy does not yet have any intuitive interpretation.
 
-.. ipython::
+.. ipython:: python
 
    In [1]: from dit.other import extropy
 
