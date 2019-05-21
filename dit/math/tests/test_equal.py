@@ -4,6 +4,8 @@ Tests for dit.math.equal.
 
 from __future__ import division
 
+import warnings
+
 from numpy import inf, nan
 
 from dit.math.equal import allclose, close
@@ -12,58 +14,68 @@ from dit.math.equal import allclose, close
 def test_close1():
     x = 0
     y = 1
-    assert not close(x, y)
+    with warnings.catch_warnings():
+        assert not close(x, y)
 
 
 def test_close2():
     x = 0
     y = inf
-    assert not close(x, y)
+    with warnings.catch_warnings():
+        assert not close(x, y)
 
 
 def test_close3():
     x = -inf
     y = inf
-    assert not close(x, y)
+    with warnings.catch_warnings():
+        assert not close(x, y)
 
 
 def test_close4():
     x = inf
     y = nan
-    assert not close(x, y)
+    with warnings.catch_warnings():
+        assert not close(x, y)
 
 
 def test_close5():
     x = 0
     y = nan
-    assert not close(x, y)
+    with warnings.catch_warnings():
+        assert not close(x, y)
 
 
 def test_close6():
     x = 1
     y = 1
-    assert close(x, y)
+    with warnings.catch_warnings():
+        assert close(x, y)
 
 
 def test_close7():
     x = 0.33333333333333
     y = 1/3
-    assert close(x, y)
+    with warnings.catch_warnings():
+        assert close(x, y)
 
 
 def test_close8():
     x = inf
     y = inf
-    assert close(x, y)
+    with warnings.catch_warnings():
+        assert close(x, y)
 
 
 def test_allclose1():
     x = [0, 0, -inf, inf, 0]
     y = [1, inf, inf, nan, nan]
-    assert not allclose(x, y)
+    with warnings.catch_warnings():
+        assert not allclose(x, y)
 
 
 def test_allclose2():
     x = [1, 0.333333333333333, inf]
     y = [1, 1/3, inf]
-    assert allclose(x, y)
+    with warnings.catch_warnings():
+        assert allclose(x, y)

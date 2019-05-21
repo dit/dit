@@ -2,7 +2,7 @@
 Test various information theory inequalities.
 """
 
-from hypothesis import given, settings, unlimited, HealthCheck
+from hypothesis import given, settings
 
 import pytest
 
@@ -157,10 +157,7 @@ def test_data_processing_inequality_gk(dist):
 
 @pytest.mark.slow
 @given(dist=markov_chains(alphabets=(2,)*3))
-@settings(deadline=None,
-          timeout=unlimited,
-          max_examples=5,
-          suppress_health_check=[HealthCheck.hung_test])
+@settings(deadline=None, max_examples=5)
 def test_data_processing_inequality_wyner(dist):
     """
     given X - Y - Z:
@@ -173,10 +170,7 @@ def test_data_processing_inequality_wyner(dist):
 
 @pytest.mark.slow
 @given(dist=markov_chains(alphabets=(2,)*3))
-@settings(deadline=None,
-          timeout=unlimited,
-          max_examples=5,
-          suppress_health_check=[HealthCheck.hung_test])
+@settings(deadline=None, max_examples=5)
 def test_data_processing_inequality_exact(dist):
     """
     given X - Y - Z:
@@ -227,9 +221,7 @@ def test_chernoff_inequalities(dist1, dist2):
 
 @pytest.mark.slow
 @given(dist=markov_chains(alphabets=(2,)*3))
-@settings(deadline=None,
-          timeout=unlimited,
-          suppress_health_check=[HealthCheck.hung_test])
+@settings(deadline=None)
 def test_mi_hc(dist):
     """
     given U - X - Y:

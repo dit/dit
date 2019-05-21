@@ -6,7 +6,7 @@ from __future__ import division
 
 import pytest
 
-from hypothesis import given, settings, unlimited, HealthCheck
+from hypothesis import given, settings
 
 from dit import Distribution
 from dit.divergences import hypercontractivity_coefficient
@@ -48,11 +48,7 @@ def test_hypercontractivity_coefficient_failure(rvs):
 @pytest.mark.slow
 @given(dist1=distributions(alphabets=(2,)*2, nondegenerate=True),
        dist2=distributions(alphabets=(2,)*2, nondegenerate=True))
-@settings(deadline=None,
-          timeout=unlimited,
-          max_examples=5,
-          suppress_health_check=[HealthCheck.hung_test],
-          )
+@settings(deadline=None, max_examples=5
 def test_hypercontractivity_coefficient_tensorization(dist1, dist2):
     """
     Test tensorization:

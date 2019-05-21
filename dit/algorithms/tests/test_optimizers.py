@@ -7,6 +7,7 @@ from __future__ import division
 import pytest
 
 from itertools import product
+import warnings
 
 from dit.algorithms import maxent_dist, pid_broja
 from dit.algorithms.distribution_optimizers import (
@@ -95,7 +96,8 @@ def test_broja_1(dist, vals):
     """
     Test broja.
     """
-    pid = pid_broja(dist, [[0], [1]], [2])
+    with warnings.catch_warnings():
+        pid = pid_broja(dist, [[0], [1]], [2])
     assert pid == pytest.approx(vals, abs=1e-4)
 
 

@@ -3,7 +3,7 @@ Tests for dit.inference.knn_estimators.
 """
 from __future__ import division
 
-from hypothesis import given, settings, unlimited
+from hypothesis import given, settings
 from hypothesis.strategies import floats, lists
 
 import pytest
@@ -13,7 +13,7 @@ import numpy as np
 from dit.inference.knn_estimators import differential_entropy_knn, total_correlation_ksg
 
 
-@settings(deadline=None, timeout=unlimited, max_examples=25)
+@settings(deadline=None, max_examples=25)
 @given(mean=floats(min_value=-2.0, max_value=2.0),
        std=floats(min_value=0.1, max_value=2.0))
 def test_entropy_knn1(mean, std):
@@ -26,7 +26,7 @@ def test_entropy_knn1(mean, std):
     assert h == pytest.approx(np.log2(2*np.pi*np.e*std**2)/2, abs=1e-1)
 
 
-@settings(deadline=None, timeout=unlimited, max_examples=25)
+@settings(deadline=None, max_examples=25)
 @given(mean=floats(min_value=-2.0, max_value=2.0),
        std=floats(min_value=0.1, max_value=2.0))
 def test_entropy_knn2(mean, std):
