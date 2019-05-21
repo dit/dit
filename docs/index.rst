@@ -56,7 +56,6 @@ Contents:
    measures/pid
    stumbling
    zreferences
-   changelog
 
 .. todolist::
 

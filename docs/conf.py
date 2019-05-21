@@ -31,8 +31,7 @@ primary_domain = 'py'
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['releases',
-              'sphinx.ext.autodoc',
+extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.intersphinx',
               'sphinx.ext.coverage',
               'sphinx.ext.mathjax',
@@ -54,6 +53,7 @@ ipython_execlines = ['from __future__ import division, print_function',
                      'import dit',
                     ]
 ipython_savefig_dir = 'images/'
+ipython_warning_is_error = False
 
 # Use our local configuration for mathjax:
 mathjax_path = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML,http://docs.dit.io/en/latest/_static/dit_mathjax.js"

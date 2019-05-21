@@ -14,6 +14,5 @@ dependencies:
     - hypothesis
     - ipython[nbconvert]
     - python-ternary
-    - releases
     - sarge
     - sphinxcontrib-bibtex
