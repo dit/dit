@@ -88,7 +88,7 @@ The easiest way to install is:
 .. code-block:: bash
 
   pip install dit
-  
+
 If you want to install `dit` within a conda environment, you can simply do:
 
 .. code-block:: bash
@@ -320,10 +320,14 @@ If you'd like to get in contact about anything, you can reach us through our `sl
    :target: https://landscape.io/github/dit/dit/master
    :alt: Code Health
 
+.. |codacy| image:: https://api.codacy.com/project/badge/Grade/8c929cfda104428ea7a8f14583ca843e
+   :target: https://www.codacy.com/app/Autoplectic/dit?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dit/dit&amp;utm_campaign=Badge_Grade
+   :alt: Code Quality
+
 .. |deps| image:: https://requires.io/github/dit/dit/requirements.svg?branch=master
    :target: https://requires.io/github/dit/dit/requirements/?branch=master
    :alt: Requirements Status
-   
+
 .. |conda| image:: https://anaconda.org/conda-forge/dit/badges/installer/conda.svg
    :target: https://anaconda.org/conda-forge/dit
    :alt: Conda installation
