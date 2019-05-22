@@ -1,6 +1,6 @@
 ``dit`` is a Python package for information theory.
 
-|build| |build_windows| |codecov| |health| |deps|
+|build| |build_windows| |codecov| |codacy| |deps|
 
 |docs| |slack| |saythanks| |conda|
 
@@ -320,7 +320,7 @@ If you'd like to get in contact about anything, you can reach us through our `sl
    :target: https://landscape.io/github/dit/dit/master
    :alt: Code Health
 
-.. |codacy| image:: https://api.codacy.com/project/badge/Grade/8c929cfda104428ea7a8f14583ca843e
+.. |codacy| image:: https://api.codacy.com/project/badge/Grade/b1beeea8ada647d49f97648216fd9687
    :target: https://www.codacy.com/app/Autoplectic/dit?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dit/dit&amp;utm_campaign=Badge_Grade
    :alt: Code Quality
 
