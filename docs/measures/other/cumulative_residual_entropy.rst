@@ -15,7 +15,7 @@ The cumulative residual entropy :cite:`Rao2004` is an alternative to the differe
 
    \CRE{X} = -\int_{0}^{\infty} p(|X| > x) \log_{2} p(|X| > x) dx
 
-.. ipython:: python
+.. ipython::
 
    In [1]: from dit.other import cumulative_residual_entropy
 
@@ -40,7 +40,7 @@ The genearlized form of the cumulative residual entropy integrates over the inti
 
    \GCRE{X} = -\int_{-\infty}^{\infty} p(X > x) \log_{2} p(X > x) dx
 
-.. ipython:: python
+.. ipython::
 
    In [6]: from dit.other import generalized_cumulative_residual_entropy
 

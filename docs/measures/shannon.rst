@@ -19,7 +19,7 @@ The entropy measures how much information is in a random variable :math:`X`.
 
 What do we mean by "how much information"? Basically, we mean the average number of yes-no questions one would have to ask to determine an outcome from the distribution. In the simplest case, consider a sure thing:
 
-.. ipython:: python
+.. ipython::
 
    In [1]: d = dit.Distribution(['H'], [1])
 
@@ -29,7 +29,7 @@ What do we mean by "how much information"? Basically, we mean the average number
 
 So since we know that the outcome from our distribution will always be `H`, we have to ask zero questions to figure that out. If however we have a fair coin:
 
-.. ipython:: python
+.. ipython::
 
    In [3]: d = dit.Distribution(['H', 'T'], [1/2, 1/2])
 
@@ -39,7 +39,7 @@ So since we know that the outcome from our distribution will always be `H`, we h
 
 The entropy tells us that we must ask one question to determine whether an `H` or `T` was the outcome of the coin flip. Now what if there are three outcomes? Let's consider the following situation:
 
-.. ipython:: python
+.. ipython::
 
    In [5]: d = dit.Distribution(['A', 'B', 'C'], [1/2, 1/4, 1/4])
 
@@ -79,7 +79,7 @@ The conditional entropy is the amount of information in variable :math:`X` beyon
 
 As a simple example, consider two identical variables:
 
-.. ipython:: python
+.. ipython::
 
    In [7]: d = dit.Distribution(['HH', 'TT'], [1/2, 1/2])
 
@@ -89,7 +89,7 @@ As a simple example, consider two identical variables:
 
 We see that knowing the second variable tells us everything about the first, leaving zero entropy. On the other end of the spectrum, two independent variables:
 
-.. ipython:: python
+.. ipython::
 
    In [9]: d = dit.Distribution(['HH', 'HT', 'TH', 'TT'], [1/4]*4)
 

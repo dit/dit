@@ -7,7 +7,7 @@ Finding Examples
 
 What if you'd like to find a distribution that has a particular property? For example, what if I'd like to find a distribution with a :ref:`coinformation` less that :math:`-0.5`? This is where Hypothesis comes in:
 
-.. ipython:: python
+.. ipython::
 
    In [1]: from hypothesis import find
 

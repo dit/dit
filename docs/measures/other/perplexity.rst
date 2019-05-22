@@ -21,7 +21,7 @@ The conditional perplexity is defined in the natural way:
 
 We can see that the `xor` distribution is "4-way" perplexed:
 
-.. ipython:: python
+.. ipython::
 
    In [1]: from dit.other import perplexity
 

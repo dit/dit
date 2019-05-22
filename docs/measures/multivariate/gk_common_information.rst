@@ -26,7 +26,7 @@ Consider a joint distribution over :math:`X_0` and :math:`X_1`. Given any partic
 
 As a canonical example, consider the following:
 
-.. ipython:: python
+.. ipython::
 
    In [1]: from dit import Distribution as D
 
@@ -47,7 +47,7 @@ As a canonical example, consider the following:
 
 So, the Gács-Körner common information is 1.5 bits. But what is the common random variable?
 
-.. ipython:: python
+.. ipython::
 
    In [7]: from dit.algorithms import insert_meet
 
@@ -108,7 +108,7 @@ Which can be visualized as this:
 
 This quantity can be computed easily using dit:
 
-.. ipython:: python
+.. ipython::
 
    In [10]: from dit.example_dists import RdnXor
 
@@ -149,7 +149,7 @@ The multivariate common information follows a similar inequality as the two vari
 
 It is interesting to note that the Gács-Körner common information can be non-zero even when the :ref:`coinformation` is negative:
 
-.. ipython:: python
+.. ipython::
 
    In [16]: from dit.example_dists.miscellaneous import gk_pos_i_neg
 

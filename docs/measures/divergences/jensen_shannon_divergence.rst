@@ -17,7 +17,7 @@ That is, it is the entropy of the mixture minus the mixture of the entropy. This
 
    \JSD{X_{0:n}} = \H{\sum w_i X_i} - \sum \left( w_i \H{X_i} \right)
 
-.. ipython:: python
+.. ipython::
 
    In [1]: from dit.divergences import jensen_shannon_divergence
 

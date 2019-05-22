@@ -221,7 +221,7 @@ Examples
 
 Let us consider a few examples:
 
-.. ipython:: python
+.. ipython::
 
    In [1]: from dit.multivariate.secret_key_agreement import *
 
@@ -229,7 +229,7 @@ Let us consider a few examples:
 
 First, we consider the distribution ``intrinsic_1``:
 
-.. ipython:: python
+.. ipython::
 
    In [3]: print(intrinsic_1)
    Class:          Distribution
@@ -249,7 +249,7 @@ First, we consider the distribution ``intrinsic_1``:
 
 With upper bounds:
 
-.. ipython:: python
+.. ipython::
 
    @doctest float
    In [4]: upper_intrinsic_mutual_information(intrinsic_1, [[0], [1]], [2])
@@ -259,7 +259,7 @@ We see that the trivial upper bound is 0.5, because without conditioning on :mat
 
 The :py:func:`intrinsic_mutual_information`, however can detect this:
 
-.. ipython:: python
+.. ipython::
 
    @doctest float
    In [5]: intrinsic_mutual_information(intrinsic_1, [[0], [1]], [2])
@@ -267,7 +267,7 @@ The :py:func:`intrinsic_mutual_information`, however can detect this:
 
 Next, let's consider the distribution ``intrinsic_2``:
 
-.. ipython:: python
+.. ipython::
 
    In [7]: print(intrinsic_2)
    Class:          Distribution
@@ -287,7 +287,7 @@ Next, let's consider the distribution ``intrinsic_2``:
 
 In this case, :math:`Z` no longer can distinguish between the case where :math:`X` and :math:`Y` can agree on a secret bit, and when they can not, because she can not determine when they are in the :math:`01` regime or in the :math:`23` regime:
 
-.. ipython:: python
+.. ipython::
 
    @doctest float
    In [8]: intrinsic_mutual_information(intrinsic_2, [[0], [1]], [2])
@@ -295,7 +295,7 @@ In this case, :math:`Z` no longer can distinguish between the case where :math:`
 
 This seems to imply that :math:`X` and :math:`Y` can adopt a scheme such as: if they observe either a :math:`0` or a :math:`1`, write down :math:`0`, and if they observe either a :math:`2` or a :math:`3`, write that down. This has a weakness, however: what if :math:`Z` were able to distinguish the two regimes? This costs her :math:`1` bit, but reduces the secrecy of :math:`X` and :math:`Y` to nil. Thus, the secret key agreement rate is actually only :math:`1` bit:
 
-.. ipython:: python
+.. ipython::
 
    @doctest float
    In [9]: minimal_intrinsic_mutual_information(intrinsic_2, [[0], [1]], [2], bounds=(3,))

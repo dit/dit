@@ -14,7 +14,7 @@ The co-information :cite:`Bell2003` is one generalization of the :ref:`mutual_in
 
 It is clear that the co-information measures the "center-most" atom of the diagram only, which is the only atom to which every variable contributes. To exemplifying this, consider "giant bit" distributions:
 
-.. ipython:: python
+.. ipython::
 
    In [1]: from dit import Distribution as D
 
@@ -26,7 +26,7 @@ It is clear that the co-information measures the "center-most" atom of the diagr
 
 This verifies intuition that the entire one bit of the distribution's entropy is condensed in a single atom. One notable property of the co-information is that for :math:`n \geq 3` it can be negative. For example:
 
-.. ipython:: python
+.. ipython::
 
    In [4]: from dit.example_dists import Xor
 
@@ -38,7 +38,7 @@ This verifies intuition that the entire one bit of the distribution's entropy is
 
 Based on these two examples one might get the impression that the co-information is positive for "redundant" distributions and negative for "synergistic" distributions. This however is not true --- consider the four-variable parity distribution:
 
-.. ipython:: python
+.. ipython::
 
    In [7]: from dit.example_dists import n_mod_m
 

@@ -41,7 +41,7 @@ one must make a choice. Choosing the variable capturing as much of
 from :math:`X` we arrive as :math:`Z = X \mss Y`. Other choices are described
 in :ref:`Common Informations`.
 
-.. ipython:: python
+.. ipython::
 
    In [1]: d = Distribution(['00', '01', '10'], [1/3]*3)
 
@@ -96,7 +96,7 @@ in :ref:`Necessity of Common Informations` and so the analogy does not hold.
 Secondly, the inequality does not hold. The most simple counterexample is the
 ``xor`` distribution:
 
-.. ipython:: python
+.. ipython::
 
    In [5]: d = Distribution(['000', '011', '101', '110'], [1/4]*4)
 
@@ -143,7 +143,7 @@ solely pairwise (dyadic) interactions, while the second using three-way
 In spite of the fact that these two distributions are qualitatively quite
 distinct, their informational signatures are all identical:
 
-.. ipython:: python
+.. ipython::
 
    In [8]: from dit.example_dists import dyadic, triadic
 
@@ -189,7 +189,7 @@ It is commonly believed that a non-zero coinformation value is a signature of
 some sort of triadic interactions. Positive values indicate "redundancy", for
 example a giant bit:
 
-.. ipython:: python
+.. ipython::
 
    In [12]: d = Distribution(['000', '111'], [1/2]*2)
 
@@ -198,7 +198,7 @@ example a giant bit:
 
 Negative values indicate "synergy", for example the ``xor``:
 
-.. ipython:: python
+.. ipython::
 
    In [14]: d = Distribution(['000', '011', '101', '110'], [1/4]*4)
 
@@ -216,7 +216,7 @@ Insensitive to Structural Differences`. If we then allow each variable to be
 modified independent of the others while maximizing the coinformation, we
 arrive at the :ref:`DeWeese-like Measures <DeWeese coinformation>`:
 
-.. ipython:: python
+.. ipython::
 
    In [16]: from dit.multivariate import deweese_coinformation
 
@@ -236,7 +236,7 @@ some sort of triadic interaction. However, if we consider the family of
 distributions which match ``and`` on its pairwise marginals, this family
 consists of exactly one distribution: the ``and`` distribution!
 
-.. ipython:: python
+.. ipython::
 
    In [18]: d = Distribution(['000', '010', '100', '111'], [1/4]*4)
 

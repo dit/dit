@@ -11,7 +11,7 @@ The Tsallis entropy is a generalization of the Shannon (or Boltzmann-Gibbs) entr
 
     \TE{q}{X} = \frac{1}{q - 1} \left( 1 - \sum_{x \in \mathcal{X}} p(x)^q \right)
 
-.. ipython:: python
+.. ipython::
 
    In [1]: from dit.other import tsallis_entropy
 

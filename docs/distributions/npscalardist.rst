@@ -11,13 +11,13 @@ Playing with ScalarDistributions
 
 First we will enable two optional features: printing fractions by default, and using :func:`__str__` as :func:`__repr__`. Be careful using either of these options, they can incur significant performance hits on some distributions.
 
-.. ipython:: python
+.. ipython::
 
    In [1]: dit.ditParams['print.exact'] = dit.ditParams['repr.print'] = True
 
 We next construct a six-sided die:
 
-.. ipython:: python
+.. ipython::
 
    In [2]: from dit.example_dists import uniform
 
@@ -39,7 +39,7 @@ We next construct a six-sided die:
 
 We can perform standard mathematical operations with scalars, such as adding, subtracting from or by, multiplying, taking the modulo, or testing inequalities.
 
-.. ipython:: python
+.. ipython::
 
    @doctest
    In [5]: d6 + 3
@@ -113,7 +113,7 @@ We can perform standard mathematical operations with scalars, such as adding, su
 
 Furthermore, we can perform such operations with two distributions:
 
-.. ipython:: python
+.. ipython::
 
    @doctest
    In [11]: d6 + d6
@@ -173,7 +173,7 @@ Furthermore, we can perform such operations with two distributions:
 
 There are also statistical functions which can be applied to :class:`~dit.ScalarDistributions`:
 
-.. ipython:: python
+.. ipython::
 
    In [15]: from dit.algorithms.stats import *
 
