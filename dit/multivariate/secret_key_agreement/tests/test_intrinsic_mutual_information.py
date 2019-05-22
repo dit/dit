@@ -6,7 +6,7 @@ from __future__ import division
 
 import pytest
 
-from hypothesis import given, settings
+from hypothesis import given
 
 import numpy as np
 
@@ -196,7 +196,6 @@ def test_imi_fail():
 
 
 @pytest.mark.flaky(rerun=5)
-@settings(deadline=None)
 @given(dist=distributions(alphabets=((2, 4),)*3))
 def test_bounds(dist):
     """

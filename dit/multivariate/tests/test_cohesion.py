@@ -4,7 +4,7 @@ Tests for dit.multivariate.cohesion.
 
 import pytest
 
-from hypothesis import given, settings
+from hypothesis import given
 
 from dit.distconst import uniform
 from dit.multivariate import cohesion, dual_total_correlation, total_correlation
@@ -20,7 +20,6 @@ reed_solomon = uniform([
 
 
 @given(dist=distributions(alphabets=(2,)*4))
-@settings(deadline=None)
 def test_cohesion_1(dist):
     """
     Test that k=1 is the total correlation.
@@ -40,7 +39,6 @@ def test_cohesion_2():
 
 
 @given(dist=distributions(alphabets=(2,)*4))
-@settings(deadline=None)
 def test_cohesion_3(dist):
     """
     Test that k=n-1 is the dual total correlation.

@@ -17,7 +17,7 @@ from dit.multivariate.secret_key_agreement import (lower_intrinsic_mutual_inform
 eps = 1e-4
 
 
-@settings(deadline=None, max_examples=5)
+@settings(max_examples=5)
 @given(dist=distributions(alphabets=(2,)*3))
 def test_hierarchy(dist):
     """

@@ -22,7 +22,7 @@ epsilon = 1e-4
 
 @pytest.mark.slow
 @pytest.mark.flaky(reruns=5)
-@settings(deadline=None, max_examples=5)
+@settings(max_examples=5)
 @given(dist=distributions(alphabets=(2,)*2))
 def test_cis1(dist):
     """
@@ -45,7 +45,7 @@ def test_cis1(dist):
 
 @pytest.mark.slow
 @pytest.mark.flaky(reruns=5)
-@settings(deadline=None, max_examples=5)
+@settings(max_examples=5)
 @given(dist=distributions(alphabets=(2,)*3))
 def test_cis2(dist):
     """

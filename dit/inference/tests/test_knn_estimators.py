@@ -13,7 +13,7 @@ import numpy as np
 from dit.inference.knn_estimators import differential_entropy_knn, total_correlation_ksg
 
 
-@settings(deadline=None, max_examples=25)
+@settings(max_examples=25)
 @given(mean=floats(min_value=-2.0, max_value=2.0),
        std=floats(min_value=0.1, max_value=2.0))
 def test_entropy_knn1(mean, std):
@@ -26,7 +26,7 @@ def test_entropy_knn1(mean, std):
     assert h == pytest.approx(np.log2(2*np.pi*np.e*std**2)/2, abs=1e-1)
 
 
-@settings(deadline=None, max_examples=25)
+@settings(max_examples=25)
 @given(mean=floats(min_value=-2.0, max_value=2.0),
        std=floats(min_value=0.1, max_value=2.0))
 def test_entropy_knn2(mean, std):
@@ -39,7 +39,7 @@ def test_entropy_knn2(mean, std):
     assert h == pytest.approx(np.log2(2*np.pi*np.e*std**2)/2, abs=1e-1)
 
 
-@settings(deadline=None, max_examples=5)
+@settings(max_examples=5)
 @given(means=lists(floats(min_value=-2.0, max_value=2.0), min_size=2, max_size=2),
        stds=lists(floats(min_value=0.1, max_value=2.0), min_size=2, max_size=2),
        rho=floats(min_value=-0.9, max_value=0.9))
@@ -54,7 +54,7 @@ def test_mi_knn1(means, stds, rho):
     assert mi == pytest.approx(-np.log2(1-rho**2)/2, abs=1e-1)
 
 
-@settings(deadline=None, max_examples=1)
+@settings(max_examples=1)
 @given(means=lists(floats(min_value=-2.0, max_value=2.0), min_size=3, max_size=3),
        stds=lists(floats(min_value=0.1, max_value=2.0), min_size=3, max_size=3),
        rho=floats(min_value=-0.9, max_value=0.9))

@@ -109,7 +109,6 @@ def test_shannon_inequality(dist):
 
 
 @given(dist=distributions(alphabets=((2, 4),)*4))
-@settings(deadline=None)
 def test_zhang_yeung_inequality(dist):
     """
     2I(C:D) <= I(A:B)+I(A:CD)+3I(C:D|A)+I(C:D|B)
@@ -157,7 +156,7 @@ def test_data_processing_inequality_gk(dist):
 
 @pytest.mark.slow
 @given(dist=markov_chains(alphabets=(2,)*3))
-@settings(deadline=None, max_examples=5)
+@settings(max_examples=5)
 def test_data_processing_inequality_wyner(dist):
     """
     given X - Y - Z:
@@ -170,7 +169,7 @@ def test_data_processing_inequality_wyner(dist):
 
 @pytest.mark.slow
 @given(dist=markov_chains(alphabets=(2,)*3))
-@settings(deadline=None, max_examples=5)
+@settings(max_examples=5)
 def test_data_processing_inequality_exact(dist):
     """
     given X - Y - Z:
@@ -221,7 +220,6 @@ def test_chernoff_inequalities(dist1, dist2):
 
 @pytest.mark.slow
 @given(dist=markov_chains(alphabets=(2,)*3))
-@settings(deadline=None)
 def test_mi_hc(dist):
     """
     given U - X - Y:
