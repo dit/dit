@@ -4,4 +4,5 @@ Configuration for tests.
 
 from hypothesis import settings
 
-settings.default.deadline = None
+settings.register_profile("dit", deadline=None)
+settings.load_profile("dit")
