@@ -56,7 +56,7 @@ ipython_savefig_dir = 'images/'
 ipython_warning_is_error = False
 
 # Use our local configuration for mathjax:
-mathjax_path = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML,http://docs.dit.io/en/latest/_static/dit_mathjax.js"
+mathjax_path = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML,https://docs.dit.io/en/latest/_static/dit_mathjax.js"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
