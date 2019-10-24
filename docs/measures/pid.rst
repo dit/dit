@@ -5,7 +5,7 @@
 Partial Information Decomposition
 *********************************
 
-The *partial information decomposition* (PID), put forth by Williams & Beer :cite:`williams2010nonnegative`, is a framework for decomposing the information shared between a set of variables we will refer to as *inputs*, :math:`X_0, X_1, \ldots`, and another random variable we will refer to as the *output*, :math:`Y`. This decomposition seeks to partition the information :math:`\I{X_0,X_1,\ldots : Y}` among the antichains of the inputs.
+The *partial information decomposition* (PID), put forth by Williams & Beer :cite:`williams2010nonnegative`, is a framework for decomposing the information shared between a set of variables we will refer to as *inputs*, :math:`X_0, X_1, \ldots`, and another random variable we will refer to as the *output*, :math:`Y`. This decomposition seeks to partition the information :math:`\textrm{I}{X_0,X_1,\ldots : Y}` among the antichains of the inputs.
 
 Background
 ==========
