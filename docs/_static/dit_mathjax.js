@@ -85,6 +85,6 @@ MathJax.Hub.Config({
     }
 });
 
-MathJax.Ajax.loadComplete("http://dit.readthedocs.io/en/latest/_static/dit_mathjax.js");
 MathJax.Ajax.loadComplete("https://dit.readthedocs.io/en/latest/_static/dit_mathjax.js");
-MathJax.Ajax.loadComplete("http://docs.dit.io/en/latest/_static/dit_mathjax.js");
+MathJax.Ajax.loadComplete("https://dit.readthedocs.io/en/latest/_static/dit_mathjax.js");
+MathJax.Ajax.loadComplete("https://docs.dit.io/en/latest/_static/dit_mathjax.js");
