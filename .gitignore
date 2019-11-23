@@ -54,3 +54,4 @@ docs/images/*.png
 .vscode
 dit/inference/pycounts.c
 .mypy_cache
+dit.code-workspace
