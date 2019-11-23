@@ -82,7 +82,7 @@ Consider this distribution:
 
    In [4]: d = dit.Distribution(['00', '02', '12', '21', '22'], [1/5]*5)
 
-There are effectively three features that the fist index, :math:`X`, has regarding the second index, :math:`Y`. We can find them using the standard information bottleneck:
+There are effectively three features that the first index, :math:`X`, has regarding the second index, :math:`Y`. We can find them using the standard information bottleneck:
 
 .. ipython::
    :verbatim:
