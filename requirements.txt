@@ -1,6 +1,7 @@
 boltons
 contextlib2
 debtcollector
+lattices
 networkx
 numpy >= 1.11
 prettytable
