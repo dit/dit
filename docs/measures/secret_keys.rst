@@ -145,7 +145,7 @@ The secret key agreement rate is trivially upper bounded by:
 
 .. py:module:: dit.multivariate.secret_key_agreement.intrinsic_mutual_informations
 Intrinsic Mutual Information
-*******************&********
+****************************
 
 The :py:func:`intrinsic_mutual_information` :cite:`maurer1997intrinsic` is defined as:
 
