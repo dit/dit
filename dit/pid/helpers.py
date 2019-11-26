@@ -7,7 +7,7 @@ import prettytable
 import numpy as np
 
 from .. import ditParams
-from .lattice import sort_key
+from .pid import sort_key
 from . import __all_pids
 
 

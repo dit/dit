@@ -9,8 +9,9 @@ from __future__ import division
 import numpy as np
 from itertools import combinations
 
+from lattices.lattices import free_distributive_lattice
+
 from .pid import BasePID
-from .lattice import pid_lattice
 
 from .. import modify_outcomes
 from ..algorithms import maxent_dist
@@ -88,6 +89,6 @@ class PED_CS(BasePID):
         self._kwargs = kwargs
         self._inputs = tuple(map(tuple, inputs))
         self._output = None
-        self._lattice = pid_lattice(self._inputs)
+        self._lattice = free_distributive_lattice(self._inputs)
         self._total = entropy(self._dist, rvs=self._inputs)
         self._compute()

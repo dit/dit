@@ -17,8 +17,6 @@ import prettytable
 
 import numpy as np
 
-import networkx as nx
-
 from lattices.lattices import dependency_lattice, powerset_lattice
 
 from .. import ditParams
@@ -344,7 +342,7 @@ class DependencyDecomposition(object):
             An edge that adds the constraint.
         """
         for u, v in self._lattice._lattice.edges():
-            if set(constraint) <= set(u) - set(v) and nx.has_path(self._lattice._lattice, u, v):
+            if constraint <= u - v:
                 yield (u, v)
 
     def delta(self, edge, measure):

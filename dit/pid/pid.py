@@ -15,12 +15,53 @@ from itertools import product
 import networkx as nx
 import numpy as np
 
+from lattices.lattices import free_distributive_lattice
+
 import prettytable
 
-from .lattice import ascendants, descendants, least_upper_bound, pid_lattice, sort_key
 from .. import ditParams
 from ..multivariate import coinformation
 from ..utils import flatten, powerset
+
+
+def tuplify_lattice(lattice):
+    """
+    """
+    def tuplify(n):
+        return tuple([tuple(flatten(_)) for _ in n])
+
+    tupled_edges = [(tuplify(e[0]), tuplify(e[1])) for e in lattice._lattice.edges]
+
+    lattice._lattice = nx.DiGraph(tupled_edges)
+    lattice.top = tuplify(lattice.top)
+    lattice.bottom = tuplify(lattice.bottom)
+    lattice._ts = [tuplify(n) for n in lattice._ts]
+
+    return lattice
+
+
+def sort_key(lattice):
+    """
+    A key for sorting the nodes of a PID lattice.
+
+    Parameters
+    ----------
+    lattice : nx.DiGraph
+        The lattice to sort.
+
+    Returns
+    -------
+    key : function
+        A function on nodes which returns the properties from which the lattice should be ordered.
+    """
+    pls = nx.shortest_path_length(lattice._lattice, source=lattice.top)
+
+    def key(node):
+        depth = pls[node]
+        size = len(node)
+        return depth, -size, node
+
+    return key
 
 
 class BasePID(with_metaclass(ABCMeta, object)):
@@ -57,7 +98,9 @@ class BasePID(with_metaclass(ABCMeta, object)):
         self._inputs = tuple(map(tuple, inputs))
         self._output = tuple(output)
         self._kwargs = kwargs
-        self._lattice = pid_lattice(self._inputs)
+
+        self._lattice = tuplify_lattice(free_distributive_lattice(self._inputs))
+        self._inverse_lattice = self._lattice.inverse()
         self._total = coinformation(self._dist, [list(flatten(self._inputs)), self._output])
         self._compute(reds, pis)
 
@@ -180,8 +223,8 @@ class BasePID(with_metaclass(ABCMeta, object)):
 
         reds, pis = self._compute_mobius_inversion(reds=reds, pis=pis)
 
-        nx.set_node_attributes(self._lattice, name='red', values=reds)
-        nx.set_node_attributes(self._lattice, name='pi', values=pis)
+        self._lattice._set_attributes(attr_name='red', values=reds)
+        self._lattice._set_attributes(attr_name='pi', values=pis)
 
     def _compute_mobius_inversion(self, reds=None, pis=None):
         """
@@ -206,10 +249,10 @@ class BasePID(with_metaclass(ABCMeta, object)):
         if pis is None:  # pragma: no cover
             pis = {}
 
-        for node in reversed(list(nx.topological_sort(self._lattice))):
+        for node in reversed(list(self._lattice)):
             if node not in pis:
                 try:
-                    pis[node] = reds[node] - sum(pis[n] for n in descendants(self._lattice, node))
+                    pis[node] = reds[node] - sum(pis[n] for n in self._lattice.descendants(node))
                 except KeyError:
                     pass
 
@@ -229,7 +272,7 @@ class BasePID(with_metaclass(ABCMeta, object)):
         red : float
             The redundancy associated with `node`.
         """
-        return self._lattice.node[node]['red']
+        return self._lattice._get_attribute(node=node, attr_name='red')
 
     def get_partial(self, node):
         """
@@ -245,7 +288,7 @@ class BasePID(with_metaclass(ABCMeta, object)):
         pi : float
             The partial information associated with `node`.
         """
-        return self._lattice.node[node]['pi']
+        return self._lattice._get_attribute(node=node, attr_name='pi')
 
     def to_string(self, digits=4):
         """
@@ -339,7 +382,7 @@ class BasePID(with_metaclass(ABCMeta, object)):
         nonnegative : bool
             True if all pi values are non-negative, False otherwise.
         """
-        pis = nx.get_node_attributes(self._lattice, 'pi')
+        pis = self._lattice._get_attributes(attr_name='pi')
         nonnegative = all(pi >= -1e-6 for pi in pis.values() if not np.isnan(pi))
         return nonnegative
 
@@ -406,32 +449,32 @@ class BaseIncompletePID(BasePID):
             Updated partial information values.
         """
         # everything below a redundancy of 0 is a redundancy of 0
-        nodes = list(nx.topological_sort(self._lattice))
+        nodes = list(self._lattice)
         while nodes:
             node = nodes.pop(0)
             if node in reds and np.isclose(0, reds[node]):
-                for n in descendants(self._lattice, node):
+                for n in self._lattice.descendants(node):
                     if n not in reds:
                         reds[n] = 0
                         nodes.remove(n)
 
         # everything above a redundancy of I(inputs, output) is I(inputs, output)
-        nodes = list(reversed(list(nx.topological_sort(self._lattice))))
+        nodes = list(reversed(list(self._lattice)))
         while nodes:
             node = nodes.pop(0)
             if node in reds and np.isclose(reds[node], self._total):
-                for n in ascendants(self._lattice, node):
+                for n in self._lattice.ascendants(node):
                     if n not in reds:
                         reds[n] = self._total
                         nodes.remove(n)
 
         # if redundancy of A == redundancy of B, then for all A -> C -> B, redundancy of C = redundancy of A, B
-        tops = [node for node in self._lattice if node in reds and any((n not in reds) for n in self._lattice[node])]
+        tops = [node for node in self._lattice if node in reds and any((n not in reds) for n in self._lattice.covers(node))]
         bottoms = [node for node in self._lattice if
-                   node in reds and any((n not in reds) for n in self._lattice.reverse()[node])]
+                   node in reds and any((n not in reds) for n in self._inverse_lattice.covers(node))]
         for top, bottom in product(tops, bottoms):
             if np.isclose(reds[top], reds[bottom], atol=1e-5, rtol=1e-5):
-                for path in nx.all_simple_paths(self._lattice, top, bottom):
+                for path in nx.all_simple_paths(self._lattice._lattice, top, bottom):
                     for node in path[1:-1]:
                         if node not in reds:
                             reds[node] = reds[top]
@@ -439,8 +482,8 @@ class BaseIncompletePID(BasePID):
         # if redundancy of A is equal to the redundancy any of A's children, then pi(A) = 0
         for node in self._lattice:
             if node not in pis:
-                if node in reds and all(n in reds for n in self._lattice[node]) and self._lattice[node]:
-                    if any(np.isclose(reds[n], reds[node], atol=1e-5, rtol=1e-5) for n in self._lattice[node]):
+                if node in reds and all(n in reds for n in self._lattice.covers(node)) and self._lattice.covers(node):
+                    if any(np.isclose(reds[n], reds[node], atol=1e-5, rtol=1e-5) for n in self._lattice.covers(node)):
                         pis[node] = 0
 
         return reds, pis
@@ -469,20 +512,20 @@ class BaseIncompletePID(BasePID):
 
         def predicate(node, nodes):
             a = node in reds
-            b = all((n in pis or n in nodes) for n in descendants(self._lattice, node, self=True))
+            b = all((n in pis or n in nodes) for n in self._lattice.descendants(node, include=True))
             return a and b
 
         for vars in reversed(list(powerset(missing_vars))[1:]):
 
-            lub = least_upper_bound(self._lattice, vars, predicate)
+            lub = self._lattice.join(*vars, predicate=predicate)
 
             if lub is None:
                 continue
 
-            row = lambda node: [1 if (c in descendants(self._lattice, node, self=True)) else 0 for c in vars]
+            row = lambda node: [1 if (c in self._lattice.descendants(node, include=True)) else 0 for c in vars]
 
             A = np.array([row(node) for node in vars if node in reds] + [[1] * len(vars)])
-            b = np.array([reds[node] for node in vars if node in reds] + [reds[lub] - sum(pis[node] for node in descendants(self._lattice, lub, self=True) if node in pis)])
+            b = np.array([reds[node] for node in vars if node in reds] + [reds[lub] - sum(pis[node] for node in self._lattice.descendants(lub, include=True) if node in pis)])
             try:
                 new_pis = np.linalg.solve(A, b)
                 if np.all(new_pis > -1e-6):
@@ -492,7 +535,7 @@ class BaseIncompletePID(BasePID):
                     for node in self._lattice:
                         if node not in reds:
                             try:
-                                reds[node] = sum(pis[n] for n in descendants(self._lattice, node, self=True))
+                                reds[node] = sum(pis[n] for n in self._lattice.descendants(node, include=True))
                             except KeyError:  # pragma: no cover
                                 pass
 
@@ -522,11 +565,11 @@ class BaseIncompletePID(BasePID):
         pis : dict
             Updated partial information values.
         """
-        # if a node has only a single child, and you know both its redundancy and its partial
-        # then you know the redundancy of the child
+        # if a node has only a single child, and you know both its redundancy
+        # and its partial then you know the redundancy of the child
         for node in self._lattice:
-            if node in reds and node in pis and len(self._lattice[node]) == 1:
-                n = next(iter(self._lattice[node]))
+            if node in reds and node in pis and len(self._lattice.covers(node)) == 1:
+                n = next(iter(self._lattice.covers(node)))
                 if n not in reds:
                     reds[n] = reds[node] - pis[node]
 
@@ -605,8 +648,8 @@ class BaseIncompletePID(BasePID):
             if node not in pis:
                 pis[node] = np.nan
 
-        nx.set_node_attributes(self._lattice, name='red', values=reds)
-        nx.set_node_attributes(self._lattice, name='pi', values=pis)
+        self._lattice._set_attributes(attr_name='red', values=reds)
+        self._lattice._set_attributes(attr_name='pi', values=pis)
 
     @BasePID.consistent.getter
     def consistent(self):
@@ -618,8 +661,8 @@ class BaseIncompletePID(BasePID):
         valid : bool
             True if the lattice is self-consistent, False otherwise.
         """
-        reds = nx.get_node_attributes(self._lattice, 'red')
-        pis = nx.get_node_attributes(self._lattice, 'pi')
+        reds = self._lattice._get_attributes(attr_name='red')
+        pis = self._lattice._get_attributes(attr_name='pi')
 
         if self.SELF_REDUNDANCY:  # pragma: no branch
             for node in self._lattice:
@@ -632,7 +675,7 @@ class BaseIncompletePID(BasePID):
         # ensure that the mobius inversion holds
         for node in self._lattice:
             red = reds[node]
-            parts = sum(pis[n] for n in descendants(self._lattice, node, self=True))
+            parts = sum(pis[n] for n in self._lattice.descendants(node, include=True))
             if not np.isnan(red) and not np.isnan(parts):
                 if not np.isclose(red, parts, atol=1e-5, rtol=1e-5):
                     return False
@@ -649,7 +692,7 @@ class BaseIncompletePID(BasePID):
         valid : bool
             True if the lattice is self-consistant, False otherwise.
         """
-        pis = nx.get_node_attributes(self._lattice, 'pi')
+        pis = self._lattice._get_attributes(attr_name='pi')
         return not any(np.isnan(pi) for pi in pis.values())
 
 

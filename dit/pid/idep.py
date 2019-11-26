@@ -47,8 +47,8 @@ class PID_dep(BaseUniquePID):
         if len(inputs) == 2:
             dm = d.coalesce(inputs + (output,))
             dd = DependencyDecomposition(dm, measures=measure, maxiter=maxiter)
-            u_0 = min(dd.delta(edge, 'I') for edge in dd.edges(((0, 2),)))
-            u_1 = min(dd.delta(edge, 'I') for edge in dd.edges(((1, 2),)))
+            u_0 = min(dd.delta(edge, 'I') for edge in dd.edges(frozenset((frozenset((0, 2)),))))
+            u_1 = min(dd.delta(edge, 'I') for edge in dd.edges(frozenset((frozenset((1, 2)),))))
             uniques[inputs[0]] = u_0
             uniques[inputs[1]] = u_1
         else:
@@ -56,7 +56,7 @@ class PID_dep(BaseUniquePID):
                 others = sum([i for i in inputs if i != input_], ())
                 dm = d.coalesce([input_, others, output])
                 dd = DependencyDecomposition(dm, measures=measure, maxiter=maxiter)
-                u = min(dd.delta(edge, 'I') for edge in dd.edges(((0, 2),)))
+                u = min(dd.delta(edge, 'I') for edge in dd.edges(frozenset((frozenset((0, 2)),))))
                 uniques[input_] = u
 
         return uniques
@@ -91,11 +91,15 @@ class PID_RA(BaseUniquePID):
         """
         uniques = {}
         measure = {'I': lambda d: coinformation(d, [[0, 1], [2]])}
+        a = frozenset((0, 1))
+        b = frozenset((0, 2))
+        c = frozenset((1, 2))
+        top = frozenset((a, b, c))
         if len(inputs) == 2:
             dm = d.coalesce(inputs + (output,))
             dd = DependencyDecomposition(dm, measures=measure, maxiter=maxiter)
-            u_0 = dd.delta((((0, 1), (0, 2), (1, 2)), ((0, 1), (1, 2))), 'I')
-            u_1 = dd.delta((((0, 1), (0, 2), (1, 2)), ((0, 1), (0, 2))), 'I')
+            u_0 = dd.delta((top, frozenset((a, c))), 'I')
+            u_1 = dd.delta((top, frozenset((a, b))), 'I')
             uniques[inputs[0]] = u_0
             uniques[inputs[1]] = u_1
         else:
@@ -103,7 +107,7 @@ class PID_RA(BaseUniquePID):
                 others = sum([i for i in inputs if i != input_], ())
                 dm = d.coalesce([input_, others, output])
                 dd = DependencyDecomposition(dm, measures=measure, maxiter=maxiter)
-                u = dd.delta((((0, 1), (0, 2), (1, 2)), ((0, 1), (1, 2))), 'I')
+                u = dd.delta((top, frozenset((a, c))), 'I')
                 uniques[input_] = u
 
         return uniques
