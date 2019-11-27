@@ -8,7 +8,7 @@ from abc import ABCMeta, abstractmethod
 
 from six import with_metaclass
 
-from sys import version_info, stdout
+from copy import deepcopy
 
 from itertools import product
 
@@ -16,7 +16,6 @@ import networkx as nx
 import numpy as np
 
 from lattices.lattices import free_distributive_lattice
-from lattices.utils import transform
 
 import prettytable
 
@@ -47,6 +46,40 @@ def sort_key(lattice):
         return depth, -size, node
 
     return key
+
+
+def _transform(lattice):
+    """
+    Transform a free distributive lattice from being frozensets of frozensets
+    of tuples of integers to being tuples of tuples of integers.
+
+    Parameters
+    ----------
+    lattice : Lattice
+        The lattice to transform.
+
+    Returns
+    -------
+    tupled_lattice : Lattice
+        The lattice, but with tuples in place of frozensets.
+    """
+    def tuplefy(n):
+        return tuple(tuple(sum(_, tuple())) for _ in n)
+
+    def freeze(n):
+        return frozenset([frozenset([(__,) for __ in _]) for _ in n])
+
+    tuple_lattice = deepcopy(lattice)
+
+    tuple_edges = [(tuplefy(e[0]), tuplefy(e[1])) for e in lattice._lattice.edges]
+    tuple_lattice._lattice = nx.DiGraph(tuple_edges)
+
+    tuple_lattice._relationship = lambda a, b: lattice._relationship(freeze(a), freeze(b))
+    tuple_lattice.top = tuplefy(lattice.top)
+    tuple_lattice.bottom = tuplefy(lattice.bottom)
+    tuple_lattice._ts = [tuplefy(n) for n in lattice._ts]
+
+    return tuple_lattice
 
 
 class BasePID(with_metaclass(ABCMeta, object)):
@@ -84,7 +117,9 @@ class BasePID(with_metaclass(ABCMeta, object)):
         self._output = tuple(output)
         self._kwargs = kwargs
 
-        self._lattice = transform(free_distributive_lattice(self._inputs), cls=tuple)
+        print(self._inputs)
+
+        self._lattice = _transform(free_distributive_lattice(self._inputs))
         self._inverse_lattice = self._lattice.inverse()
         self._total = coinformation(self._dist, [list(flatten(self._inputs)), self._output])
 
@@ -473,8 +508,8 @@ class BaseIncompletePID(BasePID):
         if self.REDUCED_PID:  # pragma: no branch
             for node in self._lattice:
                 if node not in self._reds and len(node) < len(self._inputs):
+                    print(node)
                     sub_pid = self.__class__(self._dist.copy(), node, self._output)
-                    print(sub_pid._lattice._lattice.nodes)
                     self._reds[node] = sub_pid._reds[node]
 
         while True:
