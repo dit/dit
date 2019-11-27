@@ -11,6 +11,11 @@ from .pid import sort_key
 from .measures import __all_pids
 
 
+__all__ = [
+    'compare_measures',
+]
+
+
 def compare_measures(dist, pids=__all_pids, inputs=None, output=None, name='', digits=5):
     """
     Print the results of several partial information decompositions.

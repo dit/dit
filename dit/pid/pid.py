@@ -64,7 +64,7 @@ def _transform(lattice):
         The lattice, but with tuples in place of frozensets.
     """
     def tuplefy(n):
-        return tuple(tuple(sum(_, tuple())) for _ in n)
+        return tuple(sorted(tuple(sorted(sum(_, tuple()))) for _ in n))
 
     def freeze(n):
         return frozenset([frozenset([(__,) for __ in _]) for _ in n])
@@ -116,8 +116,6 @@ class BasePID(with_metaclass(ABCMeta, object)):
         self._inputs = tuple(map(tuple, inputs))
         self._output = tuple(output)
         self._kwargs = kwargs
-
-        print(self._inputs)
 
         self._lattice = _transform(free_distributive_lattice(self._inputs))
         self._inverse_lattice = self._lattice.inverse()
@@ -207,7 +205,7 @@ class BasePID(with_metaclass(ABCMeta, object)):
         """
         return float(self._pis[key])
 
-    def __repr__(self): # pragma: no cover
+    def __repr__(self):  # pragma: no cover
         """
         Returns a representation of the PID.
 
@@ -429,10 +427,9 @@ class BaseIncompletePID(BasePID):
 
         # if redundancy of A is equal to the redundancy any of A's children, then pi(A) = 0
         for node in self._lattice:
-            if node not in self._pis:
-                if node in self._reds and all(n in self._reds for n in self._lattice.covers(node)) and self._lattice.covers(node):
-                    if any(np.isclose(self._reds[n], self._reds[node], atol=1e-5, rtol=1e-5) for n in self._lattice.covers(node)):
-                        self._pis[node] = 0
+            if node not in self._pis and node in self._reds:
+                if any(np.isclose(self._reds[n], self._reds[node], atol=1e-5, rtol=1e-5) for n in self._lattice.covers(node) if n in self._reds):
+                    self._pis[node] = 0
 
     def _compute_attempt_linsolve(self):
         """
@@ -508,7 +505,6 @@ class BaseIncompletePID(BasePID):
         if self.REDUCED_PID:  # pragma: no branch
             for node in self._lattice:
                 if node not in self._reds and len(node) < len(self._inputs):
-                    print(node)
                     sub_pid = self.__class__(self._dist.copy(), node, self._output)
                     self._reds[node] = sub_pid._reds[node]
 
