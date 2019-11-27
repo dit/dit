@@ -229,7 +229,7 @@ class BasePID(with_metaclass(ABCMeta, object)):
         red : float
             The redundancy associated with `node`.
         """
-        return self._lattice.node[node]['red']
+        return self._lattice.nodes[node]['red']
 
     def get_partial(self, node):
         """
@@ -245,7 +245,7 @@ class BasePID(with_metaclass(ABCMeta, object)):
         pi : float
             The partial information associated with `node`.
         """
-        return self._lattice.node[node]['pi']
+        return self._lattice.nodes[node]['pi']
 
     def to_string(self, digits=4):
         """
