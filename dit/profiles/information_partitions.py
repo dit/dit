@@ -158,7 +158,7 @@ class BaseInformationPartition(with_metaclass(ABCMeta, object)):
         table = prettytable.PrettyTable(['measure', self.unit])  # pylint: disable=no-member
         if ditParams['text.font'] == 'linechar': # pragma: no cover
             try:
-                table.set_style(prettytable.BOX_CHARS)
+                table.set_style(prettytable.UNICODE_LINES)
             except AttributeError:
                 pass
         ### TODO: add some logic for the format string, so things look nice
@@ -374,7 +374,7 @@ class DependencyDecomposition(object):
         table = prettytable.PrettyTable(['dependency'] + measures)
         if ditParams['text.font'] == 'linechar':  # pragma: no cover
             try:
-                table.set_style(prettytable.BOX_CHARS)
+                table.set_style(prettytable.UNICODE_LINES)
             except AttributeError:
                 pass
         ### TODO: add some logic for the format string, so things look nice
