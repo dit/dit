@@ -6,7 +6,7 @@ from __future__ import division
 
 import numpy as np
 
-from .pid import BasePID
+from ..pid import BasePID
 
 
 def s_i(d, input_, output, output_value):

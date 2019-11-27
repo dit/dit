@@ -6,7 +6,7 @@ from __future__ import division
 
 import numpy as np
 
-from .pid import BasePID
+from ..pid import BasePID
 
 
 class PID_PM(BasePID):

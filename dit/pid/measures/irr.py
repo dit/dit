@@ -6,9 +6,9 @@ variables'' by Goodwell & Kumar.
 
 from __future__ import division
 
-from .pid import BaseBivariatePID
+from ..pid import BaseBivariatePID
 
-from ..multivariate import coinformation, entropy
+from ...multivariate import coinformation, entropy
 
 
 class PID_RR(BaseBivariatePID):

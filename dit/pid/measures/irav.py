@@ -4,11 +4,11 @@ The I_rav measure, defining a 'redundancy' auxiliary variable to capture the red
 
 from __future__ import division
 
-from .pid import BasePID
+from ..pid import BasePID
 
-from ..multivariate import coinformation
-from ..utils import partitions, extended_partition
-from ..distconst import RVFunctions, insert_rvf
+from ...multivariate import coinformation
+from ...utils import partitions, extended_partition
+from ...distconst import RVFunctions, insert_rvf
 
 
 class PID_RAV(BasePID):

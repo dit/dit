@@ -4,11 +4,11 @@ The I_wedge measure, as proposed by Griffith et al.
 
 from __future__ import division
 
-from .pid import BasePID
+from ..pid import BasePID
 
-from .. import Distribution
-from ..algorithms import insert_meet
-from ..multivariate import coinformation
+from ... import Distribution
+from ...algorithms import insert_meet
+from ...multivariate import coinformation
 
 
 class PID_GK(BasePID):

@@ -4,9 +4,9 @@ The I_mmi measure, briefly looked at by the BROJA team.
 
 from __future__ import division
 
-from .pid import BasePID
+from ..pid import BasePID
 
-from ..multivariate import coinformation
+from ...multivariate import coinformation
 
 
 class PID_MMI(BasePID):

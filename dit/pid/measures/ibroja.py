@@ -4,11 +4,11 @@ The I_BROJA unique measure, as proposed by the BROJA team.
 
 from __future__ import division
 
-from .pid import BaseUniquePID
+from ..pid import BaseUniquePID
 
-from ..algorithms import BaseConvexOptimizer
-from ..algorithms.distribution_optimizers import BaseDistOptimizer, BROJABivariateOptimizer
-from ..multivariate import coinformation
+from ...algorithms import BaseConvexOptimizer
+from ...algorithms.distribution_optimizers import BaseDistOptimizer, BROJABivariateOptimizer
+from ...multivariate import coinformation
 
 
 class BROJAOptimizer(BaseDistOptimizer, BaseConvexOptimizer):

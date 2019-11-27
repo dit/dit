@@ -10,15 +10,15 @@ from __future__ import division
 
 import numpy as np
 
-from .pid import BaseUniquePID
+from ..pid import BaseUniquePID
 
-from ..exceptions import ditException
-from ..multivariate.secret_key_agreement import (
+from ...exceptions import ditException
+from ...multivariate.secret_key_agreement import (
     no_communication_skar,
     one_way_skar,
     two_way_skar,
 )
-from ..utils import flatten
+from ...utils import flatten
 
 __all__ = [
     'PID_SKAR_nw',

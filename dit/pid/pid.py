@@ -8,7 +8,7 @@ from abc import ABCMeta, abstractmethod
 
 from six import with_metaclass
 
-from sys import version_info
+from sys import version_info, stdout
 
 from itertools import product
 
@@ -16,28 +16,13 @@ import networkx as nx
 import numpy as np
 
 from lattices.lattices import free_distributive_lattice
+from lattices.utils import transform
 
 import prettytable
 
 from .. import ditParams
 from ..multivariate import coinformation
 from ..utils import flatten, powerset
-
-
-def tuplify_lattice(lattice):
-    """
-    """
-    def tuplify(n):
-        return tuple([tuple(flatten(_)) for _ in n])
-
-    tupled_edges = [(tuplify(e[0]), tuplify(e[1])) for e in lattice._lattice.edges]
-
-    lattice._lattice = nx.DiGraph(tupled_edges)
-    lattice.top = tuplify(lattice.top)
-    lattice.bottom = tuplify(lattice.bottom)
-    lattice._ts = [tuplify(n) for n in lattice._ts]
-
-    return lattice
 
 
 def sort_key(lattice):
@@ -99,10 +84,14 @@ class BasePID(with_metaclass(ABCMeta, object)):
         self._output = tuple(output)
         self._kwargs = kwargs
 
-        self._lattice = tuplify_lattice(free_distributive_lattice(self._inputs))
+        self._lattice = transform(free_distributive_lattice(self._inputs), cls=tuple)
         self._inverse_lattice = self._lattice.inverse()
         self._total = coinformation(self._dist, [list(flatten(self._inputs)), self._output])
-        self._compute(reds, pis)
+
+        self._reds = {} if reds is None else reds
+        self._pis = {} if pis is None else pis
+
+        self._compute()
 
     @abstractmethod
     def _measure(self, node, output):
@@ -181,7 +170,7 @@ class BasePID(with_metaclass(ABCMeta, object)):
         pi : float
             The partial information associated with `key`.
         """
-        return float(self.get_partial(key))
+        return float(self._pis[key])
 
     def __repr__(self): # pragma: no cover
         """
@@ -208,87 +197,26 @@ class BasePID(with_metaclass(ABCMeta, object)):
         """
         return self.to_string()
 
-    def _compute(self, reds=None, pis=None):
+    def _compute(self):
         """
         Use the redundancy measure to populate the lattice.
         """
-        if reds is None:  # pragma: no cover
-            reds = {}
-        if pis is None:  # pragma: no cover
-            pis = {}
-
         for node in self._lattice:
-            if node not in reds:  # pragma: no branch
-                reds[node] = self._measure(self._dist, node, self._output, **self._kwargs)
+            if node not in self._reds:  # pragma: no branch
+                self._reds[node] = self._measure(self._dist, node, self._output, **self._kwargs)
 
-        reds, pis = self._compute_mobius_inversion(reds=reds, pis=pis)
+        self._compute_mobius_inversion()
 
-        self._lattice._set_attributes(attr_name='red', values=reds)
-        self._lattice._set_attributes(attr_name='pi', values=pis)
-
-    def _compute_mobius_inversion(self, reds=None, pis=None):
+    def _compute_mobius_inversion(self):
         """
         Perform as much of a Mobius inversion as possible.
-
-        Parameters
-        ----------
-        reds : dict
-            Currently known redundancy values.
-        pis : dict
-            Currently known partial information values.
-
-        Returns
-        -------
-        reds : dict
-            Updated redundancy values.
-        pis : dict
-            Updated partial information values.
         """
-        if reds is None:  # pragma: no cover
-            reds = {}
-        if pis is None:  # pragma: no cover
-            pis = {}
-
         for node in reversed(list(self._lattice)):
-            if node not in pis:
+            if node not in self._pis:
                 try:
-                    pis[node] = reds[node] - sum(pis[n] for n in self._lattice.descendants(node))
+                    self._pis[node] = self._reds[node] - sum(self._pis[n] for n in self._lattice.descendants(node))
                 except KeyError:
                     pass
-
-        return reds, pis
-
-    def get_redundancy(self, node):
-        """
-        Return the redundancy associated with `node`.
-
-        Parameters
-        ----------
-        node : tuple of tuples
-            The node to get the redundancy for.
-
-        Returns
-        -------
-        red : float
-            The redundancy associated with `node`.
-        """
-        return self._lattice._get_attribute(node=node, attr_name='red')
-
-    def get_partial(self, node):
-        """
-        Return the partial information associated with `node`.
-
-        Parameters
-        ----------
-        node : tuple of tuples
-            The node to get the partial information for.
-
-        Returns
-        -------
-        pi : float
-            The partial information associated with `node`.
-        """
-        return self._lattice._get_attribute(node=node, attr_name='pi')
 
     def to_string(self, digits=4):
         """
@@ -311,7 +239,7 @@ class BasePID(with_metaclass(ABCMeta, object)):
 
         if ditParams['text.font'] == 'linechar':  # pragma: no cover
             try:
-                table.set_style(prettytable.BOX_CHARS)
+                table.set_style(prettytable.UNICODE_LINES)
             except AttributeError:
                 pass
 
@@ -320,8 +248,8 @@ class BasePID(with_metaclass(ABCMeta, object)):
 
         for node in sorted(self._lattice, key=sort_key(self._lattice)):
             node_label = ''.join('{{{}}}'.format(':'.join(map(str, n))) for n in node)
-            red_value = self.get_redundancy(node)
-            pi_value = self.get_partial(node)
+            red_value = self._reds[node]
+            pi_value = self._pis[node]
             if np.isclose(0, red_value, atol=10 ** -(digits - 1), rtol=10 ** -(digits - 1)):  # pragma: no cover
                 red_value = 0.0
             if np.isclose(0, pi_value, atol=10 ** -(digits - 1), rtol=10 ** -(digits - 1)):  # pragma: no cover
@@ -382,8 +310,7 @@ class BasePID(with_metaclass(ABCMeta, object)):
         nonnegative : bool
             True if all pi values are non-negative, False otherwise.
         """
-        pis = self._lattice._get_attributes(attr_name='pi')
-        nonnegative = all(pi >= -1e-6 for pi in pis.values() if not np.isnan(pi))
+        nonnegative = all(pi >= -1e-6 for pi in self._pis.values() if not np.isnan(pi))
         return nonnegative
 
     @property
@@ -427,92 +354,62 @@ class BaseIncompletePID(BasePID):
             If `self` and `other` are the same partial information decomposition.
         """
         equal_pi = super(BaseIncompletePID, self).__eq__(other)
-        equal_red = (np.isclose(self.get_redundancy(node), other.get_redundancy(node), atol=1e-5, rtol=1e-5) for node in self._lattice)
+        equal_red = (np.isclose(self._reds[node], other._reds[node], atol=1e-5, rtol=1e-5) for node in self._lattice)
         return equal_pi and all(equal_red)
 
-    def _compute_lattice_monotonicity(self, reds, pis):
+    def _compute_lattice_monotonicity(self):
         """
         Infer the redundancy and partial information of lattice elements via lattice monotonicity.
-
-        Parameters
-        ----------
-        reds : dict
-            Currently known redundancy values.
-        pis : dict
-            Currently known partial information values.
-
-        Returns
-        -------
-        reds : dict
-            Updated redundancy values.
-        pis : dict
-            Updated partial information values.
         """
         # everything below a redundancy of 0 is a redundancy of 0
         nodes = list(self._lattice)
         while nodes:
             node = nodes.pop(0)
-            if node in reds and np.isclose(0, reds[node]):
+            if node in self._reds and np.isclose(0, self._reds[node]):
                 for n in self._lattice.descendants(node):
-                    if n not in reds:
-                        reds[n] = 0
+                    if n not in self._reds:
+                        self._reds[n] = 0
                         nodes.remove(n)
 
         # everything above a redundancy of I(inputs, output) is I(inputs, output)
         nodes = list(reversed(list(self._lattice)))
         while nodes:
             node = nodes.pop(0)
-            if node in reds and np.isclose(reds[node], self._total):
+            if node in self._reds and np.isclose(self._reds[node], self._total):
                 for n in self._lattice.ascendants(node):
-                    if n not in reds:
-                        reds[n] = self._total
+                    if n not in self._reds:
+                        self._reds[n] = self._total
                         nodes.remove(n)
 
         # if redundancy of A == redundancy of B, then for all A -> C -> B, redundancy of C = redundancy of A, B
-        tops = [node for node in self._lattice if node in reds and any((n not in reds) for n in self._lattice.covers(node))]
+        tops = [node for node in self._lattice if node in self._reds and any((n not in self._reds) for n in self._lattice.covers(node))]
         bottoms = [node for node in self._lattice if
-                   node in reds and any((n not in reds) for n in self._inverse_lattice.covers(node))]
+                   node in self._reds and any((n not in self._reds) for n in self._inverse_lattice.covers(node))]
         for top, bottom in product(tops, bottoms):
-            if np.isclose(reds[top], reds[bottom], atol=1e-5, rtol=1e-5):
+            if np.isclose(self._reds[top], self._reds[bottom], atol=1e-5, rtol=1e-5):
                 for path in nx.all_simple_paths(self._lattice._lattice, top, bottom):
                     for node in path[1:-1]:
-                        if node not in reds:
-                            reds[node] = reds[top]
+                        if node not in self._reds:
+                            self._reds[node] = self._reds[top]
 
         # if redundancy of A is equal to the redundancy any of A's children, then pi(A) = 0
         for node in self._lattice:
-            if node not in pis:
-                if node in reds and all(n in reds for n in self._lattice.covers(node)) and self._lattice.covers(node):
-                    if any(np.isclose(reds[n], reds[node], atol=1e-5, rtol=1e-5) for n in self._lattice.covers(node)):
-                        pis[node] = 0
+            if node not in self._pis:
+                if node in self._reds and all(n in self._reds for n in self._lattice.covers(node)) and self._lattice.covers(node):
+                    if any(np.isclose(self._reds[n], self._reds[node], atol=1e-5, rtol=1e-5) for n in self._lattice.covers(node)):
+                        self._pis[node] = 0
 
-        return reds, pis
-
-    def _compute_attempt_linsolve(self, reds, pis):
+    def _compute_attempt_linsolve(self):
         """
         Infer a linear constraint matrix from missing PI values and the mobius inversion.
-
-        Parameters
-        ----------
-        reds : dict
-            Currently known redundancy values.
-        pis : dict
-            Currently known partial information values.
-
-        Returns
-        -------
-        reds : dict
-            Updated redundancy values.
-        pis : dict
-            Updated partial information values.
         """
-        missing_vars = [node for node in self._lattice if node not in pis]
+        missing_vars = [node for node in self._lattice if node not in self._pis]
         if not missing_vars:
-            return reds, pis
+            return
 
         def predicate(node, nodes):
-            a = node in reds
-            b = all((n in pis or n in nodes) for n in self._lattice.descendants(node, include=True))
+            a = node in self._reds
+            b = all((n in self._pis or n in nodes) for n in self._lattice.descendants(node, include=True))
             return a and b
 
         for vars in reversed(list(powerset(missing_vars))[1:]):
@@ -524,18 +421,19 @@ class BaseIncompletePID(BasePID):
 
             row = lambda node: [1 if (c in self._lattice.descendants(node, include=True)) else 0 for c in vars]
 
-            A = np.array([row(node) for node in vars if node in reds] + [[1] * len(vars)])
-            b = np.array([reds[node] for node in vars if node in reds] + [reds[lub] - sum(pis[node] for node in self._lattice.descendants(lub, include=True) if node in pis)])
+            A = np.array([row(node) for node in vars if node in self._reds] + [[1] * len(vars)])
+            b = np.array([self._reds[node] for node in vars if node in self._reds] + \
+                         [self._reds[lub] - sum(self._pis[node] for node in self._lattice.descendants(lub, include=True) if node in self._pis)])
             try:
                 new_pis = np.linalg.solve(A, b)
                 if np.all(new_pis > -1e-6):
                     for node, pi in zip(vars, new_pis):
-                        pis[node] = pi
+                        self._pis[node] = pi
 
                     for node in self._lattice:
-                        if node not in reds:
+                        if node not in self._reds:
                             try:
-                                reds[node] = sum(pis[n] for n in self._lattice.descendants(node, include=True))
+                                self._reds[node] = sum(self._pis[n] for n in self._lattice.descendants(node, include=True))
                             except KeyError:  # pragma: no cover
                                 pass
 
@@ -544,112 +442,80 @@ class BaseIncompletePID(BasePID):
             except:
                 pass
 
-        return reds, pis
-
-    def _compute_single_child(self, reds, pis):
+    def _compute_single_child(self):
         """
         If a node has a single child, and both redundancies are known, then the PI of the node
         is the difference in the redundancies.
-
-        Parameters
-        ----------
-        reds : dict
-            Currently known redundancy values.
-        pis : dict
-            Currently known partial information values.
-
-        Returns
-        -------
-        reds : dict
-            Updated redundancy values.
-        pis : dict
-            Updated partial information values.
         """
         # if a node has only a single child, and you know both its redundancy
         # and its partial then you know the redundancy of the child
         for node in self._lattice:
-            if node in reds and node in pis and len(self._lattice.covers(node)) == 1:
+            if node in self._reds and node in self._pis and len(self._lattice.covers(node)) == 1:
                 n = next(iter(self._lattice.covers(node)))
-                if n not in reds:
-                    reds[n] = reds[node] - pis[node]
+                if n not in self._reds:
+                    self._reds[n] = self._reds[node] - self._pis[node]
 
-        return reds, pis
-
-    def _compute(self, reds=None, pis=None):
+    def _compute(self):
         """
         Use a variety of methods to fill out as much of the lattice as possible.
-
-        Parameters
-        ----------
-        reds : dict, None
-            Currently known redundancy values.
-        pis : dict, None
-            Currently known partial information values.
         """
-        if reds is None:
-            reds = {}
-        if pis is None:
-            pis = {}
-
         # set redundancies of single input sets to I(input, output) and
         # plug in computed unique values
         if self.SELF_REDUNDANCY:  # pragma: no branch
             for node in self._lattice:
                 if len(node) == 1:
-                    reds[node] = coinformation(self._dist, [node[0], self._output])
+                    self._reds[node] = coinformation(self._dist, [node[0], self._output])
 
         if self.LATTICE_MONOTONICITY:  # pragma: no branch
-            reds, pis = self._compute_lattice_monotonicity(reds, pis)
+            self._compute_lattice_monotonicity()
 
         # if a node exists in a smaller PID, use that to compute redundancy (if possible)
         if self.REDUCED_PID:  # pragma: no branch
             for node in self._lattice:
-                if node not in reds and len(node) < len(self._inputs):
+                if node not in self._reds and len(node) < len(self._inputs):
                     sub_pid = self.__class__(self._dist.copy(), node, self._output)
-                    reds[node] = sub_pid.get_redundancy(node)
+                    print(sub_pid._lattice._lattice.nodes)
+                    self._reds[node] = sub_pid._reds[node]
 
         while True:
-            num_reds = len(reds)
-            num_pis = len(pis)
+            num_reds = len(self._reds)
+            num_pis = len(self._pis)
 
             # if a node has a single child, their redundancies determine the node's partial information
-            reds, pis = self._compute_single_child(reds=reds, pis=pis)
+            self._compute_single_child()
 
             # if the lattice is monotonic, then everything below a zero is zero, and everything above a max is max
             if self.LATTICE_MONOTONICITY:  # pragma: no branch
-                reds, pis = self._compute_lattice_monotonicity(reds=reds, pis=pis)
+                self._compute_lattice_monotonicity()
 
             # do as much of the mobius inversion as possible
-            reds, pis = self._compute_mobius_inversion(reds=reds, pis=pis)
+            self._compute_mobius_inversion()
 
             # see if the remaining pis can be solved with linear constraints
-            reds, pis = self._compute_attempt_linsolve(reds=reds, pis=pis)
+            self._compute_attempt_linsolve()
 
-            if len(reds) == num_reds and len(pis) == num_pis:
+            if len(self._reds) == num_reds and len(self._pis) == num_pis:
                 break
 
         # if we know all but one partial, we know the last
         # note: this might be subsumed by _compute_attempt_linsolve
-        diff = set(self._lattice) - set(pis)
+        diff = set(self._lattice) - set(self._pis)
         if len(diff) == 1:  # pragma: no cover
-            pis[diff.pop()] = self._total - sum(pis.values())
+            self._pis[diff.pop()] = self._total - sum(self._pis.values())
 
         # if the sum of known PIs is I(inputs, output), all other PIs are zero
         # note: this might be subsumed by _compute_attempt_linsolve
-        if np.isclose(sum(pis.values()), self._total):
+        if np.isclose(sum(self._pis.values()), self._total):
             for node in self._lattice:
-                if node not in pis or np.isnan(pis[node]):  # pragma: no cover
-                    pis[node] = 0
+                if node not in self._pis or np.isnan(self._pis[node]):  # pragma: no cover
+                    self._pis[node] = 0
 
         # plug in nan for all unknown values
         for node in self._lattice:
-            if node not in reds:
-                reds[node] = np.nan
-            if node not in pis:
-                pis[node] = np.nan
-
-        self._lattice._set_attributes(attr_name='red', values=reds)
-        self._lattice._set_attributes(attr_name='pi', values=pis)
+            if node not in self._reds:
+                self._reds[node] = np.nan
+            if node not in self._pis:
+                self._pis[node] = np.nan
 
     @BasePID.consistent.getter
     def consistent(self):
@@ -661,21 +527,18 @@ class BaseIncompletePID(BasePID):
         valid : bool
             True if the lattice is self-consistent, False otherwise.
         """
-        reds = self._lattice._get_attributes(attr_name='red')
-        pis = self._lattice._get_attributes(attr_name='pi')
-
         if self.SELF_REDUNDANCY:  # pragma: no branch
             for node in self._lattice:
                 if len(node) == 1:
-                    red = reds[node]
+                    red = self._reds[node]
                     mi = coinformation(self._dist, [node[0], self._output])
                     if not np.isclose(red, mi, atol=1e-5, rtol=1e-5):  # pragma: no cover
                         return False
 
         # ensure that the mobius inversion holds
         for node in self._lattice:
-            red = reds[node]
-            parts = sum(pis[n] for n in self._lattice.descendants(node, include=True))
+            red = self._reds[node]
+            parts = sum(self._pis[n] for n in self._lattice.descendants(node, include=True))
             if not np.isnan(red) and not np.isnan(parts):
                 if not np.isclose(red, parts, atol=1e-5, rtol=1e-5):
                     return False
@@ -692,8 +555,7 @@ class BaseIncompletePID(BasePID):
         valid : bool
             True if the lattice is self-consistant, False otherwise.
         """
-        pis = self._lattice._get_attributes(attr_name='pi')
-        return not any(np.isnan(pi) for pi in pis.values())
+        return not any(np.isnan(pi) for pi in self._pis.values())
 
 
 class BaseUniquePID(BaseIncompletePID):
@@ -701,18 +563,16 @@ class BaseUniquePID(BaseIncompletePID):
     PID class for measures which define only unique informations.
     """
 
-    def _compute(self, reds=None, pis=None):
+    def _compute(self):
         """
         """
         uniques = self._measure(self._dist, self._inputs, self._output, **self._kwargs)
-        if pis is None:  # pragma: no branch
-            pis = {}
 
         for node in self._lattice:
-            if len(node) == 1 and node[0] in uniques and node not in pis:
-                pis[node] = uniques[node[0]]
+            if len(node) == 1 and node[0] in uniques and node not in self._pis:
+                self._pis[node] = uniques[node[0]]
 
-        super(BaseUniquePID, self)._compute(reds=reds, pis=pis)
+        super(BaseUniquePID, self)._compute()
 
 
 class BaseBivariatePID(BaseIncompletePID):
@@ -720,13 +580,11 @@ class BaseBivariatePID(BaseIncompletePID):
     PID class for measures which define only a bivariate measure of redundancy.
     """
 
-    def _compute(self, reds=None, pis=None):
+    def _compute(self):
         """
         """
-        if reds is None:  # pragma: no branch
-            reds = {}
         for node in self._lattice:
-            if len(node) == 2 and node not in reds:
-                reds[node] = self._measure(self._dist, node, self._output, **self._kwargs)
+            if len(node) == 2 and node not in self._reds:
+                self._reds[node] = self._measure(self._dist, node, self._output, **self._kwargs)
 
-        super(BaseBivariatePID, self)._compute(reds=reds, pis=pis)
+        super(BaseBivariatePID, self)._compute()

@@ -6,11 +6,11 @@ from __future__ import division
 
 import numpy as np
 
-from .pid import BasePID
+from ..pid import BasePID
 
-from .. import modify_outcomes
-from ..algorithms import maxent_dist
-from ..utils import flatten, powerset
+from ... import modify_outcomes
+from ...algorithms import maxent_dist
+from ...utils import flatten, powerset
 
 
 

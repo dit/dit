@@ -7,11 +7,11 @@ from __future__ import division
 import numpy as np
 from scipy.optimize import minimize
 
-from .pid import BaseBivariatePID
+from ..pid import BaseBivariatePID
 
-from .. import Distribution
-from ..divergences.pmf import relative_entropy
-from ..exceptions import ditException
+from ... import Distribution
+from ...divergences.pmf import relative_entropy
+from ...exceptions import ditException
 
 
 class MinDKLOptimizer(object):
