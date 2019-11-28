@@ -1414,7 +1414,7 @@ class Distribution(ScalarDistribution):
             ("Alphabet", alpha),
             ("Base", base),
             ("Outcome Class", outcome_class),
-            ("Outcome Lenght", self.outcome_length()),
+            ("Outcome Length", self.outcome_length()),
         ]
         infos = ''.join("<tr><th>{}:</th><td>{}</td></tr>".format(a, b) for a, b in info)
         header = '<table border="1">{}</table>'.format(infos)
