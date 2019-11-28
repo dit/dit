@@ -4,6 +4,6 @@ debtcollector
 lattices
 networkx
 numpy >= 1.11
-prettytable
+PLTable
 scipy >= 0.15.0
 six >= 1.4.0
