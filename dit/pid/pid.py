@@ -439,14 +439,16 @@ class BaseIncompletePID(BasePID):
         if not missing_vars:
             return
 
-        def predicate(node, nodes):
-            a = node in self._reds
-            b = all((n in self._pis or n in nodes) for n in self._lattice.descendants(node, include=True))
-            return a and b
+        def predicate(nodes):
+            def inner(node):
+                a = node in self._reds
+                b = all((n in self._pis or n in nodes) for n in self._lattice.descendants(node, include=True))
+                return a and b
+            return inner
 
         for vars in reversed(list(powerset(missing_vars))[1:]):
 
-            lub = self._lattice.join(*vars, predicate=predicate)
+            lub = self._lattice.join(*vars, predicate=predicate())
 
             if lub is None:
                 continue
