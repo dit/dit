@@ -59,7 +59,7 @@ https://anaconda.org/conda-forge/dit
 +-------------------------------------------------------------------+
 | Dependencies                                                      |
 +===================================================================+
-| * Python 2.7, 3.3, 3.4, 3.5, 3.6, or 3.7                          |
+| * Python 3.3+                                                     |
 | * `boltons <https://boltons.readthedocs.io>`_                     |
 | * `contextlib2 <https://contextlib2.readthedocs.io>`_             |
 | * `debtcollector <https://docs.openstack.org/debtcollector/>`_    |
