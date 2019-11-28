@@ -93,8 +93,8 @@ class PID_RA(BaseUniquePID):
         """
         uniques = {}
         measure = {'I': lambda d: coinformation(d, [[0, 1], [2]])}
-        input_0_output = frozenset((0, 2))
-        input_1_output = frozenset((1, 2))
+        input_0_output = frozenset([frozenset((0, 2))])
+        input_1_output = frozenset([frozenset((1, 2))])
         all_pairs = frozenset((frozenset((0, 1)), input_0_output, input_1_output))
         if len(inputs) == 2:
             dm = d.coalesce(inputs + (output,))
