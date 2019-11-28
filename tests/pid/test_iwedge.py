@@ -4,7 +4,7 @@ Tests for dit.pid.iwedge.
 
 import pytest
 
-from dit.pid.iwedge import PID_GK
+from dit.pid.measures.iwedge import PID_GK
 from dit.pid.distributions import bivariates, trivariates
 
 

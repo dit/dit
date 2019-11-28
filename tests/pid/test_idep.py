@@ -4,8 +4,8 @@ Tests for dit.pid.idep.
 
 import pytest
 
-from dit.pid.ibroja import PID_BROJA
-from dit.pid.idep import PID_dep, PID_RA
+from dit.pid.measures.ibroja import PID_BROJA
+from dit.pid.measures.idep import PID_dep, PID_RA
 from dit.pid.distributions import bivariates, trivariates
 
 

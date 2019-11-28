@@ -4,7 +4,7 @@ Tests for dit.pid.irav.
 
 import pytest
 
-from dit.pid.irav import PID_RAV
+from dit.pid.measures.irav import PID_RAV
 from dit.pid.distributions import bivariates, trivariates
 
 def test_pid_rav1():

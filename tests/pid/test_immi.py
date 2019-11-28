@@ -4,7 +4,7 @@ Tests for dit.pid.immi.
 
 import pytest
 
-from dit.pid.immi import PID_MMI
+from dit.pid.measures.immi import PID_MMI
 from dit.pid.distributions import bivariates, trivariates
 
 

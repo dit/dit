@@ -4,7 +4,7 @@ Tests for dit.pid.iproj.
 
 import pytest
 
-from dit.pid.iproj import PID_Proj
+from dit.pid.measures.iproj import PID_Proj
 from dit.pid.distributions import bivariates, trivariates
 
 

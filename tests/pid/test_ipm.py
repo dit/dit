@@ -4,7 +4,7 @@ Tests for dit.pid.ipm.
 
 import pytest
 
-from dit.pid.ipm import PID_PM
+from dit.pid.measures.ipm import PID_PM
 from dit.pid.distributions import bivariates
 
 

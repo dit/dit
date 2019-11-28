@@ -6,7 +6,7 @@ import pytest
 
 import sys
 
-from dit.pid.iccs import PID_CCS
+from dit.pid.measures.iccs import PID_CCS
 from dit.pid.distributions import bivariates, trivariates
 
 
