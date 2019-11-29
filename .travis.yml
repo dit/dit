@@ -8,6 +8,7 @@ python:
   - "3.5"
   - "3.6"
   - "3.7"
+  - "3.8"
   - "nightly"
 
 os:
@@ -124,34 +125,6 @@ script:
       fi;
     fi;
 
-  # - if ! [[ "$TRAVIS_PYTHON_VERSION" =~ pypy.* ]]; then
-  #     export DIT_INSTALL=`pip show dit | grep Location | awk '{print $2"/dit"}'`;
-  #   else
-  #     export DIT_INSTALL=`pypy -m pip show dit | grep Location | awk '{print $2"/dit"}'`;
-  #   fi
-  # - echo "DIT_INSTALL=$DIT_INSTALL"
-
-  # nose 1.3.0 does not tell coverage to only cover the requested
-  # package (except during the report).  So to restrict coverage, we must
-  # inform coverage through the .coveragerc file.
-  # - if ! [[ "$TRAVIS_PYTHON_VERSION" =~ pypy.* ]]; then
-  #     cp .coveragerc pytest.ini $DIT_INSTALL;
-  #     cp setup.cfg $DIT_INSTALL;
-  #   else
-  #     sudo cp .coveragerc pytest.ini $DIT_INSTALL;
-  #     sudo cp setup.cfg $DIT_INSTALL;
-  #   fi
-
-  # Move to new directory so that dit is not imported from repository.
-  # Why? Because we want the tests to make sure that dit was installed
-  # correctly. Example: setup.py might not have included some submodules.
-  # Testing from the git repository cannot catch a mistake like that.
-  #
-  # Export current directory for logs.
-  # - cd $DIT_INSTALL
-  # - cd ..
-  # - printenv PWD
-
   # Run pytest.
   - if [[ "$TRAVIS_PYTHON_VERSION" =~ pypy.* ]]; then
       if [ "${OPTIONAL_DEPS}" == "true" ]; then
@@ -168,8 +141,6 @@ script:
     fi
 
 after_success:
-  # - cp .coverage $TRAVIS_BUILD_DIR
-  # - cd $TRAVIS_BUILD_DIR
   - python fixcoverage.py ".*/dit/" "$TRAVIS_BUILD_DIR/dit/"
   - codecov
 
