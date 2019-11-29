@@ -13,9 +13,9 @@ def test_distribution_from_bayesnet_nonames():
     cdist, dists = d.condition_on([0, 1])
     x.add_edge(0, 2)
     x.add_edge(1, 2)
-    x.node[2]['dist'] = (cdist.outcomes, dists)
-    x.node[0]['dist'] = cdist.marginal([0])
-    x.node[1]['dist'] = cdist.marginal([1])
+    x.nodes[2]['dist'] = (cdist.outcomes, dists)
+    x.nodes[0]['dist'] = cdist.marginal([0])
+    x.nodes[1]['dist'] = cdist.marginal([1])
     d2 = dit.distribution_from_bayesnet(x)
     d3 = dit.distribution_from_bayesnet(x, [0, 1, 2])
     assert d.is_approx_equal(d2)
@@ -39,9 +39,9 @@ def test_distribution_from_bayesnet_names():
     cdist, dists = d.condition_on(['A', 'B'])
     x.add_edge('A', 'C')
     x.add_edge('B', 'C')
-    x.node['C']['dist'] = (cdist.outcomes, dists)
-    x.node['A']['dist'] = cdist.marginal(['A'])
-    x.node['B']['dist'] = cdist.marginal(['B'])
+    x.nodes['C']['dist'] = (cdist.outcomes, dists)
+    x.nodes['A']['dist'] = cdist.marginal(['A'])
+    x.nodes['B']['dist'] = cdist.marginal(['B'])
     d2 = dit.distribution_from_bayesnet(x)
     assert d.is_approx_equal(d2)
 
@@ -79,9 +79,9 @@ def test_distribution_from_bayesnet_func():
 
         return p
 
-    x.node['C']['dist'] = xor
-    x.node['A']['dist'] = uniform
-    x.node['B']['dist'] = uniform
+    x.nodes['C']['dist'] = xor
+    x.nodes['A']['dist'] = uniform
+    x.nodes['B']['dist'] = uniform
     # Samplespace is required when functions are callable.
     with pytest.raises(ValueError):
         dit.distribution_from_bayesnet(x)
@@ -115,9 +115,9 @@ def test_distribution_from_bayesnet_error():
     unif = dit.Distribution('01', [.5, .5])
     unif.set_rv_names('A')
 
-    x.node['C']['dist'] = uniform
-    x.node['A']['dist'] = unif
-    x.node['B']['dist'] = uniform
+    x.nodes['C']['dist'] = uniform
+    x.nodes['A']['dist'] = unif
+    x.nodes['B']['dist'] = uniform
 
     with pytest.raises(Exception):
         dit.distribution_from_bayesnet(x, sample_space=sample_space)
@@ -129,9 +129,9 @@ def test_bad_names1():
     cdist, dists = d.condition_on([0, 1])
     x.add_edge(0, 2)
     x.add_edge(1, 2)
-    x.node[2]['dist'] = (cdist.outcomes, dists)
-    x.node[0]['dist'] = cdist.marginal([0])
-    x.node[1]['dist'] = cdist.marginal([1])
+    x.nodes[2]['dist'] = (cdist.outcomes, dists)
+    x.nodes[0]['dist'] = cdist.marginal([0])
+    x.nodes[1]['dist'] = cdist.marginal([1])
     with pytest.raises(ValueError):
         dit.distribution_from_bayesnet(x, [0, 1])
     with pytest.raises(ValueError):
@@ -156,14 +156,14 @@ def test_bad_names2():
     # Node 2 should have more than one dist. If we pass just a distribution in,
     # as if it had no parents, then an exception should raise.
 
-    #x.node[2]['dist'] = (cdist.outcomes, dists)
-    x.node[2]['dist'] = cdist.marginal([0])
-    x.node[0]['dist'] = cdist.marginal([0])
-    x.node[1]['dist'] = cdist.marginal([1])
+    # x.node[2]['dist'] = (cdist.outcomes, dists)
+    x.nodes[2]['dist'] = cdist.marginal([0])
+    x.nodes[0]['dist'] = cdist.marginal([0])
+    x.nodes[1]['dist'] = cdist.marginal([1])
     with pytest.raises(Exception):
         dit.distribution_from_bayesnet(x)
 
     # If they don't have the same length, it's invalid too.
-    x.node[2]['dist'] = (cdist.outcomes, dists[:0])
+    x.nodes[2]['dist'] = (cdist.outcomes, dists[:0])
     with pytest.raises(Exception):
         dit.distribution_from_bayesnet(x)

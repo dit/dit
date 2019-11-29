@@ -448,7 +448,7 @@ class BaseIncompletePID(BasePID):
 
         for vars in reversed(list(powerset(missing_vars))[1:]):
 
-            lub = self._lattice.join(*vars, predicate=predicate())
+            lub = self._lattice.join(*vars, predicate=predicate(vars))
 
             if lub is None:
                 continue

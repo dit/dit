@@ -91,4 +91,6 @@ class PED_CS(BasePID):
         self._output = None
         self._lattice = free_distributive_lattice(self._inputs)
         self._total = entropy(self._dist, rvs=self._inputs)
+        self._reds = {}
+        self._pis = {}
         self._compute()

@@ -4,7 +4,7 @@ Tests for dit.pid.irr.
 
 import pytest
 
-from dit.pid.measuers.irr import PID_RR
+from dit.pid.measures.irr import PID_RR
 from dit.pid.distributions import bivariates, trivariates
 
 
