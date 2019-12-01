@@ -22,11 +22,11 @@ def test_distribution_from_bayesnet_nonames():
     assert d.is_approx_equal(d3)
 
     # Use a dictionary too
-    x.node[2]['dist'] = dict(zip(cdist.outcomes, dists))
+    x.nodes[2]['dist'] = dict(zip(cdist.outcomes, dists))
     d4 = dit.distribution_from_bayesnet(x)
     assert d.is_approx_equal(d4)
 
-    del x.node[1]['dist']
+    del x.nodes[1]['dist']
     with pytest.raises(ValueError):
         dit.distribution_from_bayesnet(x)
 
@@ -50,7 +50,7 @@ def test_distribution_from_bayesnet_names():
     assert d.is_approx_equal(d2)
 
     # Test with a non-Cartesian product distribution
-    dd = x.node['B']['dist']
+    dd = x.nodes['B']['dist']
     dd._sample_space = dit.SampleSpace(list(dd.sample_space()))
     d3 = dit.distribution_from_bayesnet(x)
     assert d.is_approx_equal(d3)
@@ -156,7 +156,7 @@ def test_bad_names2():
     # Node 2 should have more than one dist. If we pass just a distribution in,
     # as if it had no parents, then an exception should raise.
 
-    # x.node[2]['dist'] = (cdist.outcomes, dists)
+    # x.nodes[2]['dist'] = (cdist.outcomes, dists)
     x.nodes[2]['dist'] = cdist.marginal([0])
     x.nodes[0]['dist'] = cdist.marginal([0])
     x.nodes[1]['dist'] = cdist.marginal([1])

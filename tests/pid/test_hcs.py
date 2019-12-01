@@ -69,14 +69,15 @@ def test_ped_cs1():
     """
     d = bivariates['and']
     pid = PED_CS(d)
+    zero, one, two = [frozenset([i]) for i in range(3)]
     for atom in pid._lattice:
         if atom == ((0,), (1,), (2,)):
             assert pid[atom] == pytest.approx(0.10375937481971094)
-        elif atom == ((0,),(1,)):
+        elif atom == ((0,), (1,)):
             assert pid[atom] == pytest.approx(-0.10375937481971098)
-        elif atom in [((0,),(2,)), ((1,),(2,))]:
+        elif atom in [((0,), (2,)), ((1,), (2,))]:
             assert pid[atom] == pytest.approx(0.35375937481971098)
-        elif atom in [((0,),(1,2)), ((1,),(0,2))]:
+        elif atom in [((0,), (1, 2)), ((1,), (0, 2))]:
             assert pid[atom] == pytest.approx(0.14624062518028902)
         elif atom in [((0,),), ((1,),)]:
             assert pid[atom] == pytest.approx(0.5)
@@ -93,11 +94,11 @@ def test_ped_cs2():
     for atom in pid._lattice:
         if atom == ((0,), (1,), (2,)):
             assert pid[atom] == pytest.approx(0.10375937481971094)
-        elif atom == ((0,),(1,)):
+        elif atom == ((0,), (1,)):
             assert pid[atom] == pytest.approx(-0.10375937481971098)
-        elif atom in [((0,),(2,)), ((1,),(2,))]:
+        elif atom in [((0,), (2,)), ((1,), (2,))]:
             assert pid[atom] == pytest.approx(0.35375937481971098)
-        elif atom in [((0,),(1,2)), ((1,),(0,2))]:
+        elif atom in [((0,), (1, 2)), ((1,), (0, 2))]:
             assert pid[atom] == pytest.approx(0.14624062518028902)
         elif atom in [((0,),), ((1,),)]:
             assert pid[atom] == pytest.approx(0.5)
@@ -112,7 +113,7 @@ def test_ped_cs3():
     d = D(['000', '011', '101', '112'], [1/4.0]*4)
     pid = PED_CS(d)
     for atom in pid._lattice:
-        if atom in [((1,),(2,)), ((0,), (2,)), ((0,), (1, 2)), ((1,), (0, 2)), ((2,), (0, 1))]:
+        if atom in [((1,), (2,)), ((0,), (2,)), ((0,), (1, 2)), ((1,), (0, 2)), ((2,), (0, 1))]:
             assert pid[atom] == pytest.approx(0.5)
         elif atom == ((0, 1), (0, 2), (1, 2)):
             assert pid[atom] == pytest.approx(-0.5)
