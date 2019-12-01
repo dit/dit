@@ -9,7 +9,8 @@ from __future__ import absolute_import
 
 from debtcollector import removals
 
-from collections import Iterable, OrderedDict
+from collections import OrderedDict
+from collections.abc import Iterable
 from itertools import tee
 import os
 import sys
