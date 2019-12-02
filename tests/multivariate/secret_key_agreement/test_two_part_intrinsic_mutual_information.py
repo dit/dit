@@ -23,7 +23,7 @@ def test_tpitc1(dist, value):
     """
     """
     tpitc = two_part_intrinsic_total_correlation(dist, [[0], [1]], [2], bound_j=2, bound_u=2, bound_v=2)
-    assert tpitc == pytest.approx(value)
+    assert tpitc == pytest.approx(value, abs=1e-10)
 
 
 @pytest.mark.flaky(reruns=5)

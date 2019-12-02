@@ -23,7 +23,7 @@ def test_emd_pmf1(p, q, emd):
     Test known examples.
     """
     emd2 = earth_movers_distance_pmf(p, q)
-    assert emd2 == pytest.approx(emd)
+    assert emd2 == pytest.approx(emd, abs=1e-10)
 
 
 def test_emd1():
