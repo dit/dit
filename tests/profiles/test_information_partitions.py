@@ -7,7 +7,7 @@ from itertools import islice
 
 from dit.example_dists import n_mod_m
 from dit.multivariate import coinformation as I, dual_total_correlation as B
-from dit.profiles.information_partitions import *
+from dit.profiles.information_partitions import DependencyDecomposition, ExtropyPartition, ShannonPartition
 from dit.utils import partitions, powerset
 
 
@@ -124,7 +124,7 @@ def test_dd2():
     d = n_mod_m(3, 2)
     d.set_rv_names('XYZ')
     dd = DependencyDecomposition(d)
-    assert dd[(('X', 'Y', 'Z'),)]['H'] == pytest.approx(2.0)
+    assert dd[frozenset([frozenset(['X', 'Y', 'Z'])])]['H'] == pytest.approx(2.0)
 
 
 def test_dd3():
@@ -145,13 +145,16 @@ def test_dd4():
     d = n_mod_m(3, 2)
     dd = DependencyDecomposition(d)
     deps = dd.get_dependencies(string=False)
-    true_deps = {((0, 1, 2),),
-                 ((0, 1), (0, 2), (1, 2)),
-                 ((0, 1), (0, 2)),
-                 ((0, 1), (1, 2)),
-                 ((0, 2), (1, 2)),
-                 ((0, 1), (2,)),
-                 ((0, 2), (1,)),
-                 ((1, 2), (0,)),
-                 ((0,), (1,), (2,))}
+    a = frozenset([0])
+    b = frozenset([1])
+    c = frozenset([2])
+    true_deps = {frozenset([a | b | c]),
+                 frozenset([a | b, a | c, b | c]),
+                 frozenset([a | b, a | c]),
+                 frozenset([a | b, b | c]),
+                 frozenset([a | c, b | c]),
+                 frozenset([a | b, c]),
+                 frozenset([a | c, b]),
+                 frozenset([b | c, a]),
+                 frozenset([a, b, c])}
     assert deps == true_deps

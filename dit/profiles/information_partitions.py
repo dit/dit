@@ -257,7 +257,7 @@ class DependencyDecomposition(object):
         ----------
         dependency : tuple of tuples
         """
-        s = ':'.join(''.join(map(str, d)) for d in dependency)
+        s = ':'.join(''.join(map(str, sorted(d))) for d in sorted(dependency, key=lambda d: (-len(d), tuple(d))))
         return s
 
     def _partition(self, maxiter=None):
@@ -381,8 +381,9 @@ class DependencyDecomposition(object):
         # with arbitrary values
         for m in measures:
             table.float_format[m] = ' {}.{}'.format(digits+2, digits)
-        items = sorted(self.atoms.items(), key=lambda row: row[0])
-        items = sorted(items, key=lambda row: [len(d) for d in row[0]], reverse=True)
+        items = [(tuple(map(tuple, row[0])), row[1]) for row in self.atoms.items()]
+        items = sorted(items, key=lambda row: row[0])
+        items = sorted(items, key=lambda row: sorted([len(d) for d in row[0]], reverse=True), reverse=True)
         for dependency, values in items:
             # gets rid of pesky -0.0 display values
             for m, value in values.items():

@@ -64,7 +64,7 @@ def _transform(lattice):
         The lattice, but with tuples in place of frozensets.
     """
     def tuplefy(n):
-        return tuple(sorted(tuple(sorted(sum(_, tuple()))) for _ in n))
+        return tuple(sorted((tuple(sorted(sum(_, tuple()))) for _ in n), key=lambda tup: (len(tup), tup)))
 
     def freeze(n):
         return frozenset([frozenset([(__,) for __ in _]) for _ in n])

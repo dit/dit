@@ -36,13 +36,13 @@ def test_itc1():
     Test against standard result.
     """
     itc = IMI.intrinsic_total_correlation(dist1, [[0], [1]], [2])
-    assert itc == pytest.approx(0)
+    assert itc == pytest.approx(0, abs=1e-6)
     itc = IMI.intrinsic_total_correlation(dist1, [[0], [2]], [1])
-    assert itc == pytest.approx(0)
+    assert itc == pytest.approx(0, abs=1e-6)
     itc = IMI.intrinsic_total_correlation(dist1, [[1], [2]], [0])
-    assert itc == pytest.approx(0)
+    assert itc == pytest.approx(0, abs=1e-6)
     itc = IMI.intrinsic_total_correlation(dist3, [[0,1], [2]], [3, 4])
-    assert itc == pytest.approx(0)
+    assert itc == pytest.approx(0, abs=1e-6)
 
 
 @pytest.mark.flaky(reruns=5)
@@ -51,13 +51,13 @@ def test_itc2():
     Test against standard result, with rv names.
     """
     itc = IMI.intrinsic_total_correlation(dist2, ['X', 'Y'], 'Z')
-    assert itc == pytest.approx(0)
+    assert itc == pytest.approx(0, abs=1e-6)
     itc = IMI.intrinsic_total_correlation(dist2, ['X', 'Z'], 'Y')
-    assert itc == pytest.approx(0)
+    assert itc == pytest.approx(0, abs=1e-6)
     itc = IMI.intrinsic_total_correlation(dist2, ['Y', 'Z'], 'X')
-    assert itc == pytest.approx(0)
+    assert itc == pytest.approx(0, abs=1e-6)
     itc = IMI.intrinsic_total_correlation(dist4, ['VW', 'X'], 'YZ')
-    assert itc == pytest.approx(0)
+    assert itc == pytest.approx(0, abs=1e-6)
 
 
 @pytest.mark.flaky(reruns=5)
@@ -66,7 +66,7 @@ def test_itc3():
     Test multivariate
     """
     itc = IMI.intrinsic_total_correlation(dist5, [[0], [1], [2]], [3])
-    assert itc == pytest.approx(0)
+    assert itc == pytest.approx(0, abs=1e-6)
 
 
 @pytest.mark.flaky(reruns=5)
@@ -75,7 +75,7 @@ def test_itc4():
     Test multivariate, with rv names
     """
     itc = IMI.intrinsic_total_correlation(dist6, ['W', 'X', 'Y'], 'Z')
-    assert itc == pytest.approx(0)
+    assert itc == pytest.approx(0, abs=1e-6)
 
 
 @pytest.mark.flaky(reruns=5)
@@ -88,7 +88,7 @@ def test_itc5():
     d = itc.construct_distribution()
     print(d)
     val = total_correlation(d, [[0], [1]], [3])
-    assert val == pytest.approx(0)
+    assert val == pytest.approx(0, abs=1e-6)
 
 
 @pytest.mark.flaky(reruns=5)
@@ -97,13 +97,13 @@ def test_idtc1():
     Test against standard result.
     """
     idtc = IMI.intrinsic_dual_total_correlation(dist1, [[0], [1]], [2])
-    assert idtc == pytest.approx(0)
+    assert idtc == pytest.approx(0, abs=1e-6)
     idtc = IMI.intrinsic_dual_total_correlation(dist1, [[0], [2]], [1])
-    assert idtc == pytest.approx(0)
+    assert idtc == pytest.approx(0, abs=1e-6)
     idtc = IMI.intrinsic_dual_total_correlation(dist1, [[1], [2]], [0])
-    assert idtc == pytest.approx(0)
+    assert idtc == pytest.approx(0, abs=1e-6)
     idtc = IMI.intrinsic_dual_total_correlation(dist3, [[0,1], [2]], [3, 4])
-    assert idtc == pytest.approx(0)
+    assert idtc == pytest.approx(0, abs=1e-6)
 
 
 @pytest.mark.flaky(reruns=5)
@@ -112,13 +112,13 @@ def test_idtc2():
     Test against standard result, with rv names.
     """
     idtc = IMI.intrinsic_dual_total_correlation(dist2, ['X', 'Y'], 'Z')
-    assert idtc == pytest.approx(0)
+    assert idtc == pytest.approx(0, abs=1e-6)
     idtc = IMI.intrinsic_dual_total_correlation(dist2, ['X', 'Z'], 'Y')
-    assert idtc == pytest.approx(0)
+    assert idtc == pytest.approx(0, abs=1e-6)
     idtc = IMI.intrinsic_dual_total_correlation(dist2, ['Y', 'Z'], 'X')
-    assert idtc == pytest.approx(0)
+    assert idtc == pytest.approx(0, abs=1e-6)
     idtc = IMI.intrinsic_dual_total_correlation(dist4, ['VW', 'X'], 'YZ')
-    assert idtc == pytest.approx(0)
+    assert idtc == pytest.approx(0, abs=1e-6)
 
 
 @pytest.mark.flaky(reruns=5)
@@ -127,7 +127,7 @@ def test_idtc3():
     Test multivariate
     """
     idtc = IMI.intrinsic_dual_total_correlation(dist5, [[0], [1], [2]], [3])
-    assert idtc == pytest.approx(0)
+    assert idtc == pytest.approx(0, abs=1e-6)
 
 
 @pytest.mark.flaky(reruns=5)
@@ -136,7 +136,7 @@ def test_idtc4():
     Test multivariate, with rv names
     """
     idtc = IMI.intrinsic_dual_total_correlation(dist6, ['W', 'X', 'Y'], 'Z')
-    assert idtc == pytest.approx(0)
+    assert idtc == pytest.approx(0, abs=1e-6)
 
 
 @pytest.mark.flaky(reruns=5)
@@ -145,13 +145,13 @@ def test_icmi1():
     Test against standard result.
     """
     icmi = IMI.intrinsic_caekl_mutual_information(dist1, [[0], [1]], [2])
-    assert icmi == pytest.approx(0)
+    assert icmi == pytest.approx(0, abs=1e-6)
     icmi = IMI.intrinsic_caekl_mutual_information(dist1, [[0], [2]], [1])
-    assert icmi == pytest.approx(0)
+    assert icmi == pytest.approx(0, abs=1e-6)
     icmi = IMI.intrinsic_caekl_mutual_information(dist1, [[1], [2]], [0])
-    assert icmi == pytest.approx(0)
+    assert icmi == pytest.approx(0, abs=1e-6)
     icmi = IMI.intrinsic_caekl_mutual_information(dist3, [[0,1], [2]], [3, 4])
-    assert icmi == pytest.approx(0)
+    assert icmi == pytest.approx(0, abs=1e-6)
 
 
 @pytest.mark.flaky(reruns=5)
@@ -160,13 +160,13 @@ def test_icmi2():
     Test against standard result, with rv names.
     """
     icmi = IMI.intrinsic_caekl_mutual_information(dist2, ['X', 'Y'], 'Z')
-    assert icmi == pytest.approx(0)
+    assert icmi == pytest.approx(0, abs=1e-6)
     icmi = IMI.intrinsic_caekl_mutual_information(dist2, ['X', 'Z'], 'Y')
-    assert icmi == pytest.approx(0)
+    assert icmi == pytest.approx(0, abs=1e-6)
     icmi = IMI.intrinsic_caekl_mutual_information(dist2, ['Y', 'Z'], 'X')
-    assert icmi == pytest.approx(0)
+    assert icmi == pytest.approx(0, abs=1e-6)
     icmi = IMI.intrinsic_caekl_mutual_information(dist4, ['VW', 'X'], 'YZ')
-    assert icmi == pytest.approx(0)
+    assert icmi == pytest.approx(0, abs=1e-6)
 
 
 @pytest.mark.flaky(reruns=5)
@@ -175,7 +175,7 @@ def test_icmi3():
     Test multivariate
     """
     icmi = IMI.intrinsic_caekl_mutual_information(dist5, [[0], [1], [2]], [3])
-    assert icmi == pytest.approx(0)
+    assert icmi == pytest.approx(0, abs=1e-6)
 
 
 @pytest.mark.flaky(reruns=5)
@@ -184,7 +184,7 @@ def test_icmi4():
     Test multivariate, with rv names
     """
     icmi = IMI.intrinsic_caekl_mutual_information(dist6, ['W', 'X', 'Y'], 'Z')
-    assert icmi == pytest.approx(0)
+    assert icmi == pytest.approx(0, abs=1e-6)
 
 
 def test_imi_fail():
