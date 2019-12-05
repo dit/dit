@@ -18,18 +18,14 @@ matrix:
   fast_finish: true
 
   include:
-    # https://github.com/travis-ci/travis-ci/issues/9815
-    - python: "3.8"
-      dist: xenial
-      sudo: true
     - os: osx
       language: generic
       python: "3.8"
-      env: OPTIONAL_DEPS=true TRAVIS_PYTHON_VERSION="3.8"
+      env: OPTIONAL_DEPS=true TRAVIS_PYTHON_VERSION="3.8" SLOW=true
     - os: osx
       language: generic
       python: "3.8"
-      env: OPTIONAL_DEPS=false TRAVIS_PYTHON_VERSION="3.8"
+      env: OPTIONAL_DEPS=false TRAVIS_PYTHON_VERSION="3.8" SLOW=true
     - os: osx
       language: generic
       python: "pypy"
@@ -138,9 +134,17 @@ script:
       fi
     else
       if [ "${OPTIONAL_DEPS}" == "true" ]; then
-        pytest . --cov=dit;
+        if [ "${SLOW}" == "true" ]; then
+          pytest -m "not slow". --cov=dit;
+        else
+          pytest . --cov=dit;
+        fi
       else
-        pytest -m "not cython" --numprocesses=auto . --cov=dit;
+        if [ "${SLOW}" == "true" ]; then
+          pytest -m "not cython" -m "not slow" --numprocesses=auto . --cov=dit;
+        else
+          pytest -m "not cython" --numprocesses=auto . --cov=dit;
+        fi
       fi
     fi
 

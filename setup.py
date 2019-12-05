@@ -213,7 +213,7 @@ if __name__ == '__main__':
 
     v = sys.version_info[:2]
     if v < (3, 3):
-        msg = "dit requires Python version >= 2.7"
+        msg = "dit requires Python version >= 3.4"
         print(msg.format(v))
         sys.exit(-1)
 
