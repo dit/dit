@@ -141,7 +141,7 @@ script:
         fi
       else
         if [ "${SLOW}" == "true" ]; then
-          pytest -m "not cython" -m "not slow" --numprocesses=auto . --cov=dit;
+          pytest -m "not cython and not slow" --numprocesses=auto . --cov=dit;
         else
           pytest -m "not cython" --numprocesses=auto . --cov=dit;
         fi
