@@ -135,7 +135,7 @@ script:
     else
       if [ "${OPTIONAL_DEPS}" == "true" ]; then
         if [ "${SLOW}" == "true" ]; then
-          pytest -m "not slow". --cov=dit;
+          pytest -m "not slow" . --cov=dit;
         else
           pytest . --cov=dit;
         fi
