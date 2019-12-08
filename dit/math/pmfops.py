@@ -1,12 +1,11 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
+
 """
 A catch-all module for miscellaneous pmf-based operations.
 
 Eventually, we will need to reorganize.
 
 """
-
-from __future__ import division, print_function
 
 import dit
 from ..exceptions import ditException

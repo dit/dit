@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.math.sampling.
 """
-from __future__ import division
 
 import pytest
 

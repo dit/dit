@@ -1,4 +1,7 @@
+# -*- coding: utf-8 -*-
+
 """
+Two-way secret key agreement rate.
 """
 
 import numpy as np

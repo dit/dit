@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 The necessary conditional entropy is the entropy of the minimal sufficient
 statistic of X about Y, given Y.

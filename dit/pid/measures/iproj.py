@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 The I_proj measure as proposed by Harder et al.
 """
-
-from __future__ import division
 
 import numpy as np
 from scipy.optimize import minimize

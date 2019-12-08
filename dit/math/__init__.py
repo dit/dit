@@ -1,11 +1,8 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
 Mathematical tools for dit.
 """
-
-from __future__ import absolute_import
 
 # Global random number generator
 import numpy as np

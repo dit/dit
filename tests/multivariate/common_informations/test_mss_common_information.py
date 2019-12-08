@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.multivariate.joint_mss.
 """
-
-from __future__ import division
 
 import pytest
 

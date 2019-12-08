@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Renyi Entropy
 """
-
-from __future__ import division
 
 import numpy as np
 

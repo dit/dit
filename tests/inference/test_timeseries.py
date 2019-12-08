@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.inference.time_series.
 """
-from __future__ import division
 
 import pytest
 

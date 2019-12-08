@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.divergences.hypercontractivity_coefficient.
 """
-
-from __future__ import division
 
 import pytest
 

@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Base class for the calculation of reduced and minimal intrinsic informations.
 """
-
-from __future__ import division
 
 from abc import abstractmethod
 

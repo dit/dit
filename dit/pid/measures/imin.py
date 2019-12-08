@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 The I_min measure as proposed by Williams & Beer.
 """
-
-from __future__ import division
 
 import numpy as np
 

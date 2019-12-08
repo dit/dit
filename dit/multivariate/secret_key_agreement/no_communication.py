@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Secret Key Agreement Rate when communication is not permitted.
 """

@@ -1,6 +1,8 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
 
-from __future__ import division, print_function
+"""
+Tests for dit.math.pmfops
+"""
 
 import dit
 from dit.exceptions import ditException

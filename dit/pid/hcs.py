@@ -1,10 +1,10 @@
+# -*- coding: utf-8 -*-
+
 """
 Partial Entropy Decomposition with the Hcs measure from Ince (2017)
 
 https://arxiv.org/abs/1702.01591
 """
-
-from __future__ import division
 
 import numpy as np
 from itertools import combinations

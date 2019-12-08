@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Distortion measures for use with rate distortion theory.
 """
-
-from __future__ import division
 
 from collections import namedtuple
 
@@ -52,4 +52,3 @@ maximum_correlation = Distortion('Maximum Correlation', None, RateDistortionMaxi
 # Information Bottleneck-like distortions
 
 IBDistortion = namedtuple('IBDistortion', ['name', 'divergence', 'optimizer'])
-

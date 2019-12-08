@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.multivariate.secret_key_agreement.two_way_skar.py
 """
-from __future__ import division
 
 import pytest
 

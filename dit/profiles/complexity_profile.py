@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Implement the ``complexity profile'' from [Y. Bar-Yam. Multiscale
 complexity/entropy. Advances in Complex Systems, 7(01):47-63, 2004].

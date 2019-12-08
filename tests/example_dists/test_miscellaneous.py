@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests of dit.example_dists.miscellaneous
 """

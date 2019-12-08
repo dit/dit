@@ -1,9 +1,9 @@
+# -*- coding: utf-8 -*-
+
 """
 The (generalized) cumulative residual entropy and conditional (generalized)
 cumulative residual entropy.
 """
-
-from six.moves import range  # pylint: disable=redefined-builtin,import-error
 
 from boltons.iterutils import pairwise
 

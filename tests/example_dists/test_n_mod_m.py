@@ -1,8 +1,9 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.example_dists.n_mod_m.
 """
 
-from __future__ import division
 import pytest
 
 from numpy import log2

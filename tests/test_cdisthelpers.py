@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+
+"""
+Tests for dit.cdisthelpers.
+"""
 
 import pytest
 

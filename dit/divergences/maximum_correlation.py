@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Compute the maximum correlation:
     \rho(X:Y) = max_{f, g} E(f(X)g(Y))

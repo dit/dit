@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 The tightest known upper bound on two-way secret key agreement rate.
 """
-
-from __future__ import division
 
 from .base_skar_optimizers import BaseTwoPartIntrinsicMutualInformation
 from ... import Distribution

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 These are special interest implementations that should be used only in
 very particular situations.

@@ -1,10 +1,10 @@
+# -*- coding: utf-8 -*-
+
 """
 The I_RR measure, described in ``Temporal information partitioning:
 Characterizing synergy, uniqueness, and redundancy in interacting environmental
 variables'' by Goodwell & Kumar.
 """
-
-from __future__ import division
 
 from ..pid import BaseBivariatePID
 

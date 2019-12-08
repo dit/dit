@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Provides usable args and kwargs from inspect.getcallargs.
 
@@ -27,88 +29,10 @@ Also useful:
 
 """
 
-import sys
 import inspect
 
-from inspect import getcallargs
 
-
-try:
-    from inspect import getfullargspec
-except ImportError:
-    # Python 2.X
-    from collections import namedtuple
-    from inspect import getargspec
-
-    FullArgSpec = namedtuple('FullArgSpec',
-    'args, varargs, varkw, defaults, kwonlyargs, kwonlydefaults, annotations')
-
-    def getfullargspec(f):
-        args, varargs, varkw, defaults = getargspec(f)
-        kwonlyargs = []
-        kwonlydefaults = None
-        annotations = getattr(f, '__annotations__', {})
-        return FullArgSpec(args, varargs, varkw, defaults,
-                           kwonlyargs, kwonlydefaults, annotations)
-
-
-def bindcallargs_leq32(_fUnCtIoN_, *args, **kwargs):
-    """Binds arguments and keyword arguments to a function or method.
-
-    Returns a tuple (bargs, bkwargs) suitable for manipulation and passing
-    to the specified function.
-
-    `bargs` consists of the bound args, varargs, and kwonlyargs from
-    getfullargspec. `bkwargs` consists of the bound varkw from getfullargspec.
-    Both can be used in a call to the specified function.  Any default
-    parameter values are included in the output.
-
-    Examples
-    --------
-    >>> def func(a, b=3, *args, **kwargs):
-    ...    pass
-
-    >>> bindcallargs(func, 5)
-    ((5, 3), {})
-
-    >>> bindcallargs(func, 5, 4, 3, 2, 1, hello='there')
-    ((5, 4, 3, 2, 1), {'hello': 'there'})
-
-    >>> args, kwargs = bindcallargs(func, 5)
-    >>> kwargs['b'] = 5 # overwrite default value for b
-    >>> func(*args, **kwargs)
-
-    """
-    # It is necessary to choose an unlikely variable name for the function.
-    # The reason is that any kwarg by the same name will cause a TypeError
-    # due to multiple values being passed for that argument name.
-    func = _fUnCtIoN_
-
-    callargs = getcallargs(func, *args, **kwargs)
-    spec = getfullargspec(func)
-
-    # Construct all args and varargs and use them in bargs
-    bargs = [callargs[arg] for arg in spec.args]
-    if spec.varargs is not None:
-        bargs.extend(callargs[spec.varargs])
-    bargs = tuple(bargs)
-
-    # Start with kwonlyargs.
-    bkwargs = {kwonlyarg: callargs[kwonlyarg] for kwonlyarg in spec.kwonlyargs}
-    # Add in kwonlydefaults for unspecified kwonlyargs only.
-    # Since keyword only arguements aren't allowed in python2, and we
-    # don't support python 3.0, 3.1, 3.2, this should never be executed:
-    if spec.kwonlydefaults is not None:  # pragma: no cover
-        bkwargs.update({k: v for k, v in spec.kwonlydefaults.items()
-                             if k not in bkwargs})
-    # Add in varkw.
-    if spec.varkw is not None:
-        bkwargs.update(callargs[spec.varkw])
-
-    return bargs, bkwargs
-
-
-def bindcallargs_geq33(_fUnCtIoN_, *args, **kwargs):
+def bindcallargs(_fUnCtIoN_, *args, **kwargs):
     # Should match functionality of bindcallargs_32 for Python > 3.3.
     sig = inspect.signature(_fUnCtIoN_)
     ba = sig.bind(*args, **kwargs)
@@ -117,8 +41,3 @@ def bindcallargs_geq33(_fUnCtIoN_, *args, **kwargs):
         if param.name not in ba.arguments:
             ba.arguments[param.name] = param.default
     return ba.args, ba.kwargs
-
-if sys.version_info[0:2] < (3,3):
-    bindcallargs = bindcallargs_leq32
-else:
-    bindcallargs = bindcallargs_geq33

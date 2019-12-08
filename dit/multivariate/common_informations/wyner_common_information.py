@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 The Wyner common information.
 """

@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+
+"""
+More tests for dit.utils.bindars.
+"""
+
 from dit.utils.bindargs import bindcallargs
 
 import pytest

@@ -1,8 +1,9 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.multivariate.wyner_common_information
 """
 
-from __future__ import division
 import pytest
 
 from dit import Distribution as D

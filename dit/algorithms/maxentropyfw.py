@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Another way to do maxent without using the convex solver from CVXOPT.
 
@@ -6,7 +8,6 @@ This uses the Frank-Wolfe algorithm:
     http://en.wikipedia.org/wiki/Frank%E2%80%93Wolfe_algorithm
 
 """
-from __future__ import print_function
 
 from debtcollector import removals
 
@@ -133,7 +134,7 @@ def check_feasibility(dist, k, **kwargs):
     """
     Checks feasibility by solving the minimum residual problem:
 
-        minimize: max(abs(A x - b))
+        minimize: :math:`max(abs(A x - b))`
 
     If the value of the objective is close to zero, then we know that we
     can match the constraints, and so, the problem is feasible.
@@ -168,7 +169,7 @@ def check_feasibility(dist, k, **kwargs):
                  version='1.0.1')
 def negentropy(p):
     """
-    Entropy which operates on vectors of length N.
+    Entropy which operates on vectors of length `N`.
 
     """
     # This works fine even if p is a n-by-1 cvxopt.matrix.

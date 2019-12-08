@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Implementation of the Earth Mover's Distance.
 """
@@ -16,7 +18,7 @@ def categorical_distances(n):
     ----------
     n : int
         The size of the matrix.
-    
+
     Returns
     -------
     ds : np.ndarray
@@ -35,7 +37,7 @@ def numerical_distances(x_values, y_values):
         The real values on the x dimension.
     y_values : np.ndarray
         The real values on the y dimension.
-    
+
     Returns
     -------
     ds : np.ndarray

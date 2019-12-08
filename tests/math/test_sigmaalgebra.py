@@ -1,6 +1,9 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.math.sigmaalgebra.
 """
+
 import pytest
 
 import numpy as np
@@ -8,11 +11,11 @@ import numpy as np
 from dit.math.sigmaalgebra import sets2matrix, is_sigma_algebra, is_sigma_algebra__brute, atom_set
 
 
-sa = frozenset([frozenset([]), frozenset(['a']), frozenset(['b']), frozenset(['c']), 
+sa = frozenset([frozenset([]), frozenset(['a']), frozenset(['b']), frozenset(['c']),
                 frozenset(['a', 'b']), frozenset(['a', 'c']), frozenset(['b', 'c']),
                 frozenset(['a', 'b', 'c'])])
 not_sa1 = frozenset([frozenset([]), frozenset('c'), frozenset('b'), frozenset(['a', 'b'])])
-not_sa2 = frozenset([frozenset([]), frozenset(['a']), frozenset(['b']), frozenset(['c']), 
+not_sa2 = frozenset([frozenset([]), frozenset(['a']), frozenset(['b']), frozenset(['c']),
                 frozenset(['a', 'b']), frozenset(['a', 'c']), frozenset(['b', 'c'])])
 not_sa3 = frozenset([frozenset([]), frozenset('c'), frozenset(['a', 'b', 'c'])])
 
@@ -68,7 +71,7 @@ def test_isa2():
     """
     Test not SA.
     """
-    
+
     assert not is_sigma_algebra(not_sa1)
 
 
@@ -76,7 +79,7 @@ def test_isa3():
     """
     Test not SA.
     """
-    
+
     assert not is_sigma_algebra(not_sa2)
 
 

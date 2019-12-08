@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """
 Classes for representing sample spaces.
 
@@ -35,17 +36,14 @@ the whole sample space during marginalization. So this particular use case will
 experience the penalty discussed above.
 
 """
-try:
-    from collections.abc import Set
-except ImportError:
-    # Py 2.x and < 3.3
-    from collections import Set
+from collections.abc import Set
 
 import itertools
 
+from functools import reduce
+
 from operator import mul
 
-from six.moves import reduce # pylint: disable=redefined-builtin
 
 import numpy as np
 

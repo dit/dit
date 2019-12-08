@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.example_dists.nonsignalling_boxes.
 """
-
-from __future__ import division
 
 from itertools import product
 

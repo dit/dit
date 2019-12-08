@@ -1,12 +1,10 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.others.cumulative_residual_entropy.
 """
 
-from __future__ import division
-
 import pytest
-
-from six.moves import range # pylint: disable=redefined-builtin
 
 from itertools import combinations, product
 

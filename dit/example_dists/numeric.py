@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Some standard discrete distribution.
 """
-
-from __future__ import division
 
 from .. import ScalarDistribution
 from ..math.misc import combinations as C, is_integer, is_number

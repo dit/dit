@@ -2,8 +2,6 @@
 Tests for dit.multivariate.exact_common_information
 """
 
-from __future__ import division
-
 import pytest
 
 from dit import Distribution as D

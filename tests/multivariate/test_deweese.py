@@ -1,6 +1,9 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.multivariate.deweese.
 """
+
 import pytest
 
 from dit.example_dists import dyadic, triadic, Xor

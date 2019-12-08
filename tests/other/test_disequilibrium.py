@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.other.extropy.
 """
-
-from __future__ import division
 
 from itertools import combinations
 

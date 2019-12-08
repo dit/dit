@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Giant bit type distributions.
 """
-from __future__ import division
 
 from itertools import product
 

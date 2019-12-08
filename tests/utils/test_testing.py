@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.util.testing
 """
-from __future__ import division
 
 import pytest
 

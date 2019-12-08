@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Optimizers for computing information bottleneck points.
 """
-
-from __future__ import division
 
 import numpy as np
 

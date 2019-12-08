@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.profiles.MUIProfile. Known examples taken from http://arxiv.org/abs/1409.4708 .
 """
-
-from __future__ import division
 
 import pytest
 

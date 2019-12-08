@@ -1,15 +1,14 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.other.perplexity.
 """
-
-from __future__ import division
 
 import pytest
 
 from dit import (ScalarDistribution as SD,
                  Distribution as D)
 from dit.other import perplexity as P
-from six.moves import range # pylint: disable=redefined-builtin
 
 
 @pytest.mark.parametrize('i', range(2, 10))

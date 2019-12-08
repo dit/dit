@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 A variety of distribution optimizers using scipy.optimize's methods.
 """
-from __future__ import division
 
 from collections import namedtuple
 
@@ -107,7 +108,7 @@ class BaseDistOptimizer(BaseOptimizer):
 
     def optimize(self, x0=None, niter=None, maxiter=None, polish=1e-8, callback=False):
         """
-        Optimize this distribution w.r.t the objective.
+        Optimize this distribution w.r.t. the objective.
 
         Parameters
         ----------
@@ -325,7 +326,7 @@ class MaxCoInfoOptimizer(BaseDistOptimizer, BaseNonConvexOptimizer):
 
         def objective(self, x):
             """
-            Compute -I[rvs]
+            Compute :math:`-I[rvs]`.
 
             Parameters
             ----------
@@ -361,7 +362,7 @@ class MinCoInfoOptimizer(BaseDistOptimizer, BaseNonConvexOptimizer):
 
         def objective(self, x):
             """
-            Compute I[rvs]
+            Compute :math:`I[rvs]`.
 
             Parameters
             ----------
@@ -397,7 +398,7 @@ class MaxDualTotalCorrelationOptimizer(BaseDistOptimizer, BaseNonConvexOptimizer
 
         def objective(self, x):
             """
-            Compute -B[rvs]
+            Compute :math:`-B[rvs]`
 
             Parameters
             ----------
@@ -543,7 +544,7 @@ def marginal_maxent_dists(dist, k_max=None):
     -------
     dists : list
         A list of distributions, where the `i`th element is the maxent
-        distribution with the i-size marginals fixed.
+        distribution with the `i`-size marginals fixed.
     """
     dist = prepare_dist(dist)
 

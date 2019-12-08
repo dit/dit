@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.inference.knn_estimators.
 """
-from __future__ import division
 
 from hypothesis import given, settings
 from hypothesis.strategies import floats, lists

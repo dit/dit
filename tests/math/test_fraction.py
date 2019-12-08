@@ -1,4 +1,8 @@
-from __future__ import division
+# -*- coding: utf-8 -*-
+
+"""
+Tests for dit.math.fraction
+"""
 
 import pytest
 

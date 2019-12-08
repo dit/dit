@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 The I_downarrow unique measure, proposed by Griffith et al, and shown to be inconsistent.
 
@@ -5,8 +7,6 @@ The idea is to measure unique information as the intrinsic mutual information be
 and input and the output, given the other inputs. It turns out that these unique values
 are inconsistent, in that they produce differing redundancy values.
 """
-
-from __future__ import division
 
 import numpy as np
 

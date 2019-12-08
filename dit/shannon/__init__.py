@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 The basic forms of Shannon's information measures.
 """

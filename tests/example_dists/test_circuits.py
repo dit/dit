@@ -1,6 +1,9 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.example_dists.circuits.
 """
+
 import pytest
 
 from dit.example_dists import (Unq, Rdn, Xor, RdnXor, ImperfectRdn, Subtle, And,

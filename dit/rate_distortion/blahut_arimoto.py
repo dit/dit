@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 The Blahut-Arimoto algorithm for solving the rate-distortion problem.
 """
-
-from __future__ import division
 
 import numpy as np
 

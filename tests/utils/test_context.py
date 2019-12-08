@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.utils.context.
 """
-
-from __future__ import unicode_literals
 
 import sys
 

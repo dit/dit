@@ -1,17 +1,15 @@
+# -*- coding: utf-8 -*-
+
 """
 Information partitions, e.g. ways of dividing up the information in a joint
 distribution.
 """
-
-from __future__ import absolute_import
 
 from abc import ABCMeta, abstractmethod
 
 from collections import defaultdict
 
 from itertools import islice
-
-from six import with_metaclass
 
 import prettytable
 
@@ -31,7 +29,7 @@ __all__ = [
 ]
 
 
-class BaseInformationPartition(with_metaclass(ABCMeta, object)):
+class BaseInformationPartition(metaclass=ABCMeta):
     """
     Construct an I-Diagram-like partition from a given joint distribution.
     """

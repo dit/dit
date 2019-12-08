@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.divergences.copy_mutual_information
 """
-
-from __future__ import division
 
 import pytest
 

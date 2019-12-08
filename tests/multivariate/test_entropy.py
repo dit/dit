@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.multivariate.entropy.
 """
-
-from __future__ import division
 
 import pytest
 

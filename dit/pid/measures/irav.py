@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 The I_rav measure, defining a 'redundancy' auxiliary variable to capture the redundancy information between sources
 """
-
-from __future__ import division
 
 from ..pid import BasePID
 

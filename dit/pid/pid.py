@@ -1,12 +1,10 @@
+# -*- coding: utf-8 -*-
+
 """
 Classes implementing the partial information decomposition.
 """
 
-from __future__ import division
-
 from abc import ABCMeta, abstractmethod
-
-from six import with_metaclass
 
 from copy import deepcopy
 
@@ -82,7 +80,7 @@ def _transform(lattice):
     return tuple_lattice
 
 
-class BasePID(with_metaclass(ABCMeta, object)):
+class BasePID(metaclass=ABCMeta):
     """
     This implements the basic Williams & Beer Partial Information Decomposition.
     """

@@ -1,4 +1,8 @@
-from __future__ import division
+# -*- coding: utf-8 -*-
+
+"""
+Some specific examples of correlated dice.
+"""
 
 import itertools
 import dit

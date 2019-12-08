@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
@@ -6,10 +5,7 @@ Specialized distribution constructors.
 
 """
 
-from __future__ import division
-
 import numpy as np
-from six.moves import map, range, zip # pylint: disable=redefined-builtin
 
 from itertools import product
 from collections import defaultdict

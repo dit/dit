@@ -1,10 +1,10 @@
+# -*- coding: utf-8 -*-
+
 """
 The reduced intrinsic mutual information.
 
 Note: this code is nowhere near efficient enough to actually run. Don't try it.
 """
-
-from __future__ import division
 
 from abc import abstractmethod
 

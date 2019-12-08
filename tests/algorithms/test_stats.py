@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.algorithms.stats
 """
-
-from __future__ import division
 
 import pytest
 

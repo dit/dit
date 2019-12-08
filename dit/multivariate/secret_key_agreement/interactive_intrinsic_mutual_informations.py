@@ -1,12 +1,10 @@
+# -*- coding: utf-8 -*-
+
 """
 A lower bound on the two-way secret key agreement rate.
 """
 
-from __future__ import division
-
-from six.moves import zip_longest
-
-from itertools import chain
+from itertools import chain, zip_longest
 
 from ...algorithms.optimization import BaseAuxVarOptimizer
 from ...utils import unitful

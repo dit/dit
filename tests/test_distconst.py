@@ -1,14 +1,12 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.distconst.
 """
 
-from __future__ import division
-
 import pytest
 
 import itertools
-
-from six.moves import range # pylint: disable=redefined-builtin
 
 import numpy as np
 

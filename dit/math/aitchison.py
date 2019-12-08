@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Functions for manipulating compositions using the Aitchison geometry.
 
@@ -6,9 +8,6 @@ of the components is 1.
 
 http://www.springerlink.com/content/wx1166n56n685v82/
 """
-
-from __future__ import division
-from __future__ import absolute_import
 
 import math
 import numpy as np

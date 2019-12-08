@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 The total correlation, aka the multi-information or the integration.
 """

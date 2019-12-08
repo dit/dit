@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
@@ -68,7 +67,6 @@ from operator import itemgetter
 import itertools
 
 import numpy as np
-from six.moves import map, range, zip # pylint: disable=redefined-builtin
 
 from .npscalardist import ScalarDistribution
 
@@ -1469,7 +1467,7 @@ class Distribution(ScalarDistribution):
         """
         from .distribution import prepare_string
 
-        from six import StringIO
+        from io import StringIO
 
         if exact is None:
             exact = ditParams['print.exact']

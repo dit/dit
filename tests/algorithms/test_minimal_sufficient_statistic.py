@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.algorithms.minimal_sufficient_statistic.
 """
-
-from __future__ import division
 
 from dit import Distribution, ScalarDistribution, pruned_samplespace
 from dit.algorithms import insert_mss, mss, info_trim

@@ -1,5 +1,8 @@
+# -*- coding: utf-8 -*-
 
-from __future__ import division
+"""
+Tests for dit.math.aitchison
+"""
 
 import pytest
 

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Joint distributions from Bayesian graphical models, aka Bayesian networks.
 
@@ -12,7 +14,6 @@ There is no causal relationship between X_0 and S_1...they are jointly
 generated from S_0.
 
 """
-import six
 
 import numpy as np
 import dit
@@ -106,7 +107,7 @@ def build_samplespace(digraph, rv_names, attr):
             # Grab the first distribution.
             val = digraph.nodes[rv][attr]
             try:
-                dist = next(six.itervalues(val))
+                dist = next(iter(val))
             except AttributeError:
                 dist = val[1][0]
 

@@ -1,13 +1,12 @@
+# -*- coding: utf-8 -*-
+
 """
 The Jensen-Shannon Diverence.
 
 This is a reasonable measure of distinguishablity between distribution.
 """
 
-from __future__ import division
-
 import numpy as np
-from six.moves import zip  # pylint: disable=redefined-builtin,import-error
 
 import dit
 from ..exceptions import ditException
@@ -148,8 +147,8 @@ def jensen_divergence(func):
         weights : [float], None
             The weights, w_i, to give the distributions. If None, the weights are
             assumed to be uniform.
-        
-        *args : 
+
+        *args :
 
         Returns
         -------

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.utils.misc.
 """
@@ -7,7 +9,6 @@ import pytest
 from dit.utils.misc import flatten, is_string_like, partitions, partitions2, \
                            ordered_partitions, require_keys, partition_set, \
                            digits
-from six import u
 
 
 def test_flatten1():
@@ -20,7 +21,7 @@ def test_flatten1():
 
 
 def test_is_string_like1():
-    ys = ['', 'hi', "pants", '"test"', u('pants'), r'pants']
+    ys = ['', 'hi', "pants", '"test"', u'pants', r'pants']
     ns = [1, [], int, {}, ()]
     for y in ys:
         assert is_string_like(y)

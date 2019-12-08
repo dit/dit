@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 The two distributions studied in Multivariate Dependencies Beyond Shannon Information.
 """

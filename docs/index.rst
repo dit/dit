@@ -33,11 +33,9 @@ documentation assume that the following lines of code have already been run:
 
 .. ipython::
 
-   In [1]: from __future__ import division # true division for Python 2.7
+   In [1]: import dit
 
-   In [2]: import dit
-
-   In [3]: import numpy as np
+   In [2]: import numpy as np
 
 Contents:
 

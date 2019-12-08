@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 The I_BROJA unique measure, as proposed by the BROJA team.
 """
-
-from __future__ import division
 
 from ..pid import BaseUniquePID
 

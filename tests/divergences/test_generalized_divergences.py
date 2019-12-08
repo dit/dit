@@ -1,8 +1,9 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.divergences.kullback_leibler_divergence.
 """
 
-from __future__ import division
 from functools import partial
 
 from itertools import combinations, product

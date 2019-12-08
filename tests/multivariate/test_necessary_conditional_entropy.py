@@ -1,5 +1,7 @@
-"""
+# -*- coding: utf-8 -*-
 
+"""
+Tests for dit.multivariate.necessary_conditional_entropy.
 """
 
 import pytest

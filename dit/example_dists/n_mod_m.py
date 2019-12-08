@@ -1,13 +1,11 @@
+# -*- coding: utf-8 -*-
+
 """
 Construct generalizations of the xor process to have an alphabet of size m, and
 the i'th symbol be the sum mod m of the others.
 """
 
-from __future__ import division
-
 from itertools import product
-
-from six.moves import map, range # pylint: disable=redefined-builtin
 
 from ..npdist import Distribution
 from ..math.misc import is_integer

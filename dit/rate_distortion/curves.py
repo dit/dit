@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Objects to compute single rate-distortion curves.
 """
-
-from __future__ import division
 
 import numpy as np
 

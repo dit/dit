@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Distributions based on circuits with independent inputs.
 """
-
-from __future__ import division
 
 from dit import Distribution
 import dit

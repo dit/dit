@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.divergences._kl_nonmerge.
 """
-from __future__ import division
 
 import pytest
 

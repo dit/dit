@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 I_plus/minus, by Finn & Lizier
 """
-
-from __future__ import division
 
 import numpy as np
 

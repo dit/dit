@@ -1,5 +1,8 @@
-from __future__ import division
-from __future__ import print_function
+# -*- coding: utf-8 -*-
+
+"""
+Tests for dit.distribution.
+"""
 
 import pytest
 
@@ -141,7 +144,7 @@ x    p(x)
 
     # context manager?
     import sys
-    from six import StringIO
+    from io import StringIO
     sio = StringIO()
     try:
         old = sys.stdout

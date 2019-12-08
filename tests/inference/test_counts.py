@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.inference.pycounts
 """
-
-from __future__ import division
 
 from dit import Distribution
 from dit.inference import distribution_from_data

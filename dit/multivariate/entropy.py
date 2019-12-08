@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 A version of the entropy with signature common to the other multivariate
 measures.

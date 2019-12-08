@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.multivariate.secret_key_agreement.minimal_intrinsic_mutual_information
 """
-
-from __future__ import division
 
 import pytest
 

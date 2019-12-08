@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 The dependency-decomposition based unique measure partial information decomposition.
 """
-
-from __future__ import division
 
 from ..pid import BaseUniquePID
 

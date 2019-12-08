@@ -1,15 +1,10 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
 Tests for dit.npdist.
 """
 
-from __future__ import division
-
 import pytest
-
-from six.moves import map, zip # pylint: disable=redefined-builtin
 
 import numpy as np
 import scipy.stats as sps

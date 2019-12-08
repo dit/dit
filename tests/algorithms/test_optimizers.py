@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for dit.algorithms.matextropyfw.maxent_dist.
 """
-
-from __future__ import division
 
 import pytest
 

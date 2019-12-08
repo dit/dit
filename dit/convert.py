@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Helper functions to convert between Distribution and ScalarDistribution.
 

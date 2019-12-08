@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+
+"""
+Setting up a logger.
+"""
+
 import logging
 
 
