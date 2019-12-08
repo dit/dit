@@ -38,6 +38,7 @@ def binomial(n, p):
     """
     The binomial distribution:
 
+    .. math::
         f(k;n,p) = P(X = k) = nCk p^k (1-p)^(n-k)
 
     describes the number of successes in n i.i.d. draws each with probability
@@ -77,7 +78,8 @@ def hypergeometric(N, K, n):
     """
     The hypergeometric distribution:
 
-    f(k;N,K,n) = P(X = k) = KCk * (N-K)C(n-k) / NCn
+    .. math::
+        f(k;N,K,n) = P(X = k) = KCk * (N-K)C(n-k) / NCn
 
     Parameters
     ----------
@@ -115,7 +117,9 @@ def hypergeometric(N, K, n):
 def uniform(a, b=None):
     """
     The discrete uniform distribution:
-    P(x in a..b-1) = 1/(b-a)
+
+    .. math::
+        P(x in a..b-1) = 1/(b-a)
 
     Parameters
     ----------

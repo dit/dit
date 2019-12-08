@@ -19,7 +19,7 @@ __all__ = [
 @unitful
 def necessary_conditional_entropy(dist, rvs=None, crvs=None, rv_mode=None):
     """
-    Calculates the necessary conditional entropy :math:`\H[X \dagger Y]`.
+    Calculates the necessary conditional entropy :math:`\\H[X \\dagger Y]`.
     This is the entropy of the minimal sufficient statistic of X about Y, given
     Y.
 

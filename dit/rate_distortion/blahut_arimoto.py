@@ -41,21 +41,21 @@ def _blahut_arimoto(p_x, beta, q_y_x, distortion, max_iters=100):
     """
     def q_xy(q_y_x):
         """
-        q(x,y) = q(y|x)p(x)
+        :math:`q(x,y) = q(y|x)p(x)`
         """
         q_xy = p_x[:, np.newaxis] * q_y_x
         return q_xy
 
     def next_q_y(q_y_x):
         """
-        q(y) = \sum_x q(y|x)p(x)
+        :math:`q(y) = \\sum_x q(y|x)p(x)`
         """
         q_y = np.matmul(p_x, q_y_x)
         return q_y
 
     def next_q_y_x(q_y, q_y_x):
         """
-        q(y|x) = q(y) 2^{-\\beta * distortion}
+        :math:`q(y|x) = q(y) 2^{-\\beta * distortion}`
         """
         d = distortion(p_x, q_y_x)
         q_y_x = q_y * np.exp2(-beta * d)
@@ -64,7 +64,7 @@ def _blahut_arimoto(p_x, beta, q_y_x, distortion, max_iters=100):
 
     def av_dist(q_y_x, dist):
         """
-        <dist> = \sum_{x, t} q(x,t) * d(x,t)
+        :math:`<dist> = \\sum_{x, t} q(x,t) * d(x,t)`
         """
         d = np.matmul(p_x, (q_y_x * dist)).sum()
         return d
@@ -178,7 +178,7 @@ def blahut_arimoto_ib(p_xy, beta, divergence=relative_entropy, max_iters=100, re
 
     def next_q_y_t(q_t_x):
         """
-        q(y|t) = (\sum_x p(x, y) * q(t|x)) / q(t)
+        :math:`q(y|t) = (\\sum_x p(x, y) * q(t|x)) / q(t)`
         """
         q_xyt = q_t_x[:, np.newaxis, :] * p_xy[:, :, np.newaxis]
         q_ty = q_xyt.sum(axis=0).T
@@ -188,7 +188,7 @@ def blahut_arimoto_ib(p_xy, beta, divergence=relative_entropy, max_iters=100, re
 
     def distortion(p_x, q_t_x):
         """
-        d(x, t) = D[ p(Y|x) || q(Y|t) ]
+        :math:`d(x, t) = D[ p(Y|x) || q(Y|t) ]`
         """
         q_y_t = next_q_y_t(q_t_x)
         distortions = np.asarray([divergence(a, b) for a in p_y_x for b in q_y_t]).reshape(q_y_t.shape)

@@ -50,7 +50,7 @@ _entropies = [
 
 # mutual informations
 _mutual_informations = [
-    'I',    # the multivariate conditional mututal information
+    'I',    # the multivariate conditional mutual information
     'T',    # the conditional total correlation [multi-information/integration]
     'B',    # the conditional dual total correlation [binding information]
     'J',    # the CAEKL mutual information

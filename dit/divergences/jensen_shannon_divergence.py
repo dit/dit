@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-The Jensen-Shannon Diverence.
+The Jensen-Shannon Divergence.
 
 This is a reasonable measure of distinguishablity between distribution.
 """
@@ -21,7 +21,7 @@ __all__ = ('jensen_shannon_divergence',
 
 def jensen_shannon_divergence_pmf(pmfs, weights=None):
     """
-    The Jensen-Shannon Divergence: H(sum(w_i*P_i)) - sum(w_i*H(P_i)).
+    The Jensen-Shannon Divergence: :math:`H(sum(w_i*P_i)) - sum(w_i*H(P_i))`.
 
     The square root of the Jensen-Shannon divergence is a distance metric.
 
@@ -61,7 +61,7 @@ def jensen_shannon_divergence_pmf(pmfs, weights=None):
 @unitful
 def jensen_shannon_divergence(dists, weights=None):
     """
-    The Jensen-Shannon Divergence: H(sum(w_i*P_i)) - sum(w_i*H(P_i)).
+    The Jensen-Shannon Divergence: :math:`H(sum(w_i*P_i)) - sum(w_i*H(P_i))`.
 
     The square root of the Jensen-Shannon divergence is a distance metric.
 
@@ -106,8 +106,8 @@ def jensen_shannon_divergence(dists, weights=None):
 
 def jensen_divergence(func):
     """
-    Construct a Jensen-Shannon-like divergence measure from `func`. In order for this
-    resulting divergence to be non-negative, `func` must be convex.
+    Construct a Jensen-Shannon-like divergence measure from `func`. In order for
+    this resulting divergence to be non-negative, `func` must be convex.
 
     Parameters
     ----------
@@ -137,7 +137,8 @@ def jensen_divergence(func):
         return jbd
 
     docstring = """
-        The Jensen-{name} Divergence: {name}(sum(w_i*P_i)) - sum(w_i*{name}(P_i)).
+        The Jensen-{name} Divergence:
+        :math:`{name}(sum(w_i*P_i)) - sum(w_i*{name}(P_i))`.
 
         Parameters
         ----------

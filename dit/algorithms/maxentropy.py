@@ -269,7 +269,7 @@ def moment(f, pmf, center=0, n=1):
     """
     Return the nth moment of `f` about `center`, distributed by `pmf`.
 
-    Explicitly:   :math:`\sum_i (f(i) - center)**n p(i)`
+    Explicitly:   :math:`\\sum_i (f(i) - center)**n p(i)`
 
     Note, `pmf` is the joint distribution. So n=1 can be used even when
     calculating covariances such as <xx> and <xy>. The first would actually

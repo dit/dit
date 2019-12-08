@@ -73,8 +73,8 @@ class InteractiveSKAR(BaseAuxVarOptimizer):
     def _objective(self):
         """
         Maximize:
-            \sum I[U_i : Y | U_(0..i)] - I[U_i : Z | U_(0..i)] + (i even)
-            \sum I[U_i : X | U_(0..i)] - I[U_i : Z | U_(0..i)]   (i odd)
+            \\sum I[U_i : Y | U_(0..i)] - I[U_i : Z | U_(0..i)] + (i even)
+            \\sum I[U_i : X | U_(0..i)] - I[U_i : Z | U_(0..i)]   (i odd)
 
         Returns
         -------
@@ -91,8 +91,8 @@ class InteractiveSKAR(BaseAuxVarOptimizer):
         def objective(self, x):
             """
             Compute:
-                \sum I[U_i : Y | U_(0..i)] - I[U_i : Z | U_(0..i)] + (i even)
-                \sum I[U_i : X | U_(0..i)] - I[U_i : Z | U_(0..i)]   (i odd)
+                \\sum I[U_i : Y | U_(0..i)] - I[U_i : Z | U_(0..i)] + (i even)
+                \\sum I[U_i : X | U_(0..i)] - I[U_i : Z | U_(0..i)]   (i odd)
 
             Parameters
             ----------

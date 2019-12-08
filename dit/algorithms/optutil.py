@@ -31,16 +31,16 @@ def as_full_rank(A, b):
     that some of your constraint equations are not independent. Since CVXOPT
     requires that :math:`A` have full rank, we must isolate an equivalent system
     :math:`Bx = c` which does have full rank. We use SVD for this. So
-    :math:`A = U \Sigma V^*`, where :math:`U` is :math:`(p, p)`, :math:`\Sigma`
-    is :math:`(p, n)` and :math:`V^*` is :math:`(n, n)`. Then:
+    :math:`A = U \\Sigma V^*`, where :math:`U` is :math:`(p, p)`,
+    :math:`\\Sigma` is :math:`(p, n)` and :math:`V^*` is :math:`(n, n)`. Then:
 
     .. math::
-        \Sigma V^* x = U^{-1} b
+        \\Sigma V^* x = U^{-1} b
 
-    We take :math:`B = \Sigma V^*` and :math:`c = U^T b`, where we use
+    We take :math:`B = \\Sigma V^*` and :math:`c = U^T b`, where we use
     :math:`U^T` instead of :math:`U^{-1}` for computational efficiency (and
     since :math:`U` is orthogonal). But note, we take only the cols of :math:`U`
-    (which are rows in :math:`U^{-1}`) and rows of :math:`\Sigma` that have
+    (which are rows in :math:`U^{-1}`) and rows of :math:`\\Sigma` that have
     nonzero singular values.
 
     Parameters

@@ -352,7 +352,7 @@ class LinearOperations(Operations):
 
         Assumption: :math:`y >= 0`.
 
-        Operation: :math:`z = \sum_i x[i]`
+        Operation: :math:`z = \\sum_i x[i]`
 
         Returns
         -------

@@ -48,7 +48,7 @@ class PID_WB(BasePID):
     def _measure(d, inputs, output):
         """
         Compute I_min(inputs : output) =
-            \sum_{s \in output} p(s) min_{input_ \in inputs} I(input_ : output=s)
+            \\sum_{s \\in output} p(s) min_{input_ \\in inputs} I(input_ : output=s)
 
         Parameters
         ----------

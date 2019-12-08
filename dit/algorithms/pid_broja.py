@@ -185,12 +185,12 @@ def extra_constraints(dist, k):
        Now suppose that for every i, we had:
 
        .. math::
-          p(x_i | y) = \delta(x_i, f_i(y))
+          p(x_i | y) = \\delta(x_i, f_i(y))
 
        Then, it follows that:
 
        .. math::
-          q(x_i | y) = \delta(x_i, f_i(y))
+          q(x_i | y) = \\delta(x_i, f_i(y))
 
        as well since we match all `k`-way marginals with :math:`k >= 2`. E.g.,
        For `k = 4`, we have:
@@ -525,8 +525,8 @@ class MaximumConditionalEntropy(CVXOPT_Template):
             The gradient is:
 
             .. math::
-                (\grad f)_j = \log_b x_j / y_j  + 1 / \log_b
-                             - 1 / \log_b \sum_i x_i / y_i M_{ij}
+                (\\grad f)_j = \\log_b x_j / y_j  + 1 / \\log_b
+                             - 1 / \\log_b \\sum_i x_i / y_i M_{ij}
 
             Our task here is return the elements corresponding to the
             free indexes of the :math:`grad(x)`.
