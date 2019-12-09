@@ -15,6 +15,7 @@ def test_close1():
     x = 0
     y = 1
     with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
         assert not close(x, y)
 
 

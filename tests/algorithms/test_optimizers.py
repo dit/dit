@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Tests for dit.algorithms.matextropyfw.maxent_dist.
+Tests for dit.algorithms.optimizers
 """
 
 import pytest
@@ -97,6 +97,7 @@ def test_broja_1(dist, vals):
     Test broja.
     """
     with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
         pid = pid_broja(dist, [[0], [1]], [2])
     assert pid == pytest.approx(vals, abs=1e-4)
 
