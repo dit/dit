@@ -1,7 +1,7 @@
 boltons
 debtcollector
-lattices
-networkx
+lattices >= 0.3.3
+networkx >= 2.0
 numpy >= 1.11
 PLTable
 scipy >= 0.15.0
