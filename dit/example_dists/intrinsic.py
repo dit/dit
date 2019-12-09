@@ -1,8 +1,9 @@
-"""
-Distributions useful for illustrating the behavior of the various intrinsic measures.
-"""
+# -*- coding: utf-8 -*-
 
-from __future__ import division
+"""
+Distributions useful for illustrating the behavior of the various intrinsic
+measures.
+"""
 
 from .. import Distribution
 

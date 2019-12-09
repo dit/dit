@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Various bounds on secret key agreement rates.
 """

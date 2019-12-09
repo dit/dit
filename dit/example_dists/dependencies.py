@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Distributions illustrating three types of dependency among two variables.
 """
-
-from __future__ import division
 
 from .. import Distribution
 

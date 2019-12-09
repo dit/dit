@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Some basic Shannon information quantities.
 

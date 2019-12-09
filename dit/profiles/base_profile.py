@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
@@ -6,8 +5,6 @@ The base information profile.
 """
 
 from abc import ABCMeta, abstractmethod
-
-from six import with_metaclass
 
 import numpy as np
 
@@ -45,7 +42,7 @@ _compute
 """
 
 
-class BaseProfile(with_metaclass(ABCMeta, object)):
+class BaseProfile(metaclass=ABCMeta):
     """
     BaseProfile
 

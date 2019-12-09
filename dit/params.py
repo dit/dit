@@ -1,5 +1,7 @@
+# -*- coding: utf-8 -*-
+
 """
-    Defines `dit` configuration parameters.
+Defines `dit` configuration parameters.
 """
 
 import warnings

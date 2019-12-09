@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
+
 """
 Partial information decompositions
     and
-Maxent decompositions of I[sources : target]
+Maxent decompositions of :math:`I[sources : target]`
 """
-
-
-from __future__ import division, print_function
 
 from debtcollector import removals
 
@@ -82,17 +80,18 @@ def marginal_constraints(dist, k, normalization=True, source_marginal=False): # 
 
     This assumes the target random variable is the last one.
     All others are source random variables.
-    Each constraint involves (k-1) sources and the target random variable.
+    Each constraint involves `(k-1)` sources and the target random variable.
 
     Explicitly, we demand that:
 
+    .. math::
         p( source_{k-1}, target ) = q( source_{k-1}, target)
 
-    For each (k-1)-combination of the sources, the distribution involving those
+    For each `(k-1)`-combination of the sources, the distribution involving those
     sources and the target random variable must match the true distribution p
     for all possible candidate distributions.
 
-    For unique information, k=2 is used, but we allow more general constraints.
+    For unique information, `k = 2` is used, but we allow more general constraints.
 
     """
     assert dist.is_dense()
@@ -160,46 +159,54 @@ def extra_constraints(dist, k):
     """
     Builds a list of additional constraints using the specific properties
     of the random variables. The goal is to determine if there are any
-    (input, output) pairs such that p(input, output) = q(input, output)
-    for all q in the feasible set.
+    (input, output) pairs such that :math:`p(input, output) = q(input, output)`
+    for all :math:`q` in the feasible set.
 
     This can happen in a few ways:
 
     1. If any marginal probability is zero, then all joint probabilities which
        contributed to that marginal probability must also be zero.
 
-    2. Now suppose we want to find out when p({x_i}, y) = q({x_i}, y).
+    2. Now suppose we want to find out when :math:`p({x_i}, y) = q({x_i}, y)`.
 
-       For every (k-1)-subset, g_k(x), we have:
+       For every :math:`(k-1)`-subset, `g_k(x)`, we have:
 
+       .. math::
           p(g_k(x), y) = q(g_k(x), y)
 
        So we have:
 
+       .. math::
           p(y) = q(y)
           p(g_k(x) | y) = q(g_k(x) | y)    provided k > 1.
 
-       If k = 1, we cannot proceed.
+       If :math:`k = 1`, we cannot proceed.
 
        Now suppose that for every i, we had:
 
-          p(x_i | y) = \delta(x_i, f_i(y))
+       .. math::
+          p(x_i | y) = \\delta(x_i, f_i(y))
 
        Then, it follows that:
 
-          q(x_i | y) = \delta(x_i, f_i(y))
+       .. math::
+          q(x_i | y) = \\delta(x_i, f_i(y))
 
-       as well since we match all k-way marginals with k >= 2. E.g., For k=4,
-       we have: p( x_1, x_2, x_3, y ) = q( x_1, x_2, x_3, y ) which implies
-       that p( x_1 | y ) = q( x_1 | y). So generally, we have:
+       as well since we match all `k`-way marginals with :math:`k >= 2`. E.g.,
+       For `k = 4`, we have:
+       :math:`p( x_1, x_2, x_3, y ) = q( x_1, x_2, x_3, y )` which implies that
+       :math:`p( x_1 | y ) = q( x_1 | y)`. So generally, we have:
 
+       .. math::
           p({x_i} | y) = q({x_i} | y)
 
-       for each i. Then, since p(y) = q(y), we also have:
+       for each i. Then, since :math:`p(y) = q(y)`, we also have:
 
+       .. math::
           p({x_i}, y) = q({x_i}, y).
 
-       Note, we do not require that y be some function of the x_i.
+       Note, we do not require that :math:`y` be some function of the
+       :math:`x_i`.
 
     """
     assert dist.is_dense()
@@ -320,11 +327,12 @@ class MaximumConditionalEntropy(CVXOPT_Template):
     """
     An optimizer for the unique information.
 
-    Inputs are: X_0, X_1, ..., X_n
-    Output is: Y
+    Inputs are: `X_0`, `X_1`, ..., `X_n`
+    Output is: `Y`
 
     We find a distribution that matches all pairwise marginals for each input
-    with the output: P(X_i, Y), that maximizes the H[Y | X_1, ..., X_n].
+    with the output: :math:`P(X_i, Y)`, that maximizes the
+    :math:`H[Y | X_1, ..., X_n]`.
 
     This is based off:
 
@@ -449,7 +457,8 @@ class MaximumConditionalEntropy(CVXOPT_Template):
 
         def negH_YgXis(x_free):
             """
-            Calculates -H[Y | X_1, \ldots, X_n] using only the free variables.
+            Calculates :math:`-H[Y | X_1, \\ldots, X_n]` using only the free
+            variables.
 
             """
             # Convert back to a NumPy 1D array
@@ -515,11 +524,12 @@ class MaximumConditionalEntropy(CVXOPT_Template):
 
             The gradient is:
 
-                (\grad f)_j = \log_b x_j / y_j  + 1 / \log_b
-                             - 1 / \log_b \sum_i x_i / y_i M_{ij}
+            .. math::
+                (\\grad f)_j = \\log_b x_j / y_j  + 1 / \\log_b
+                             - 1 / \\log_b \\sum_i x_i / y_i M_{ij}
 
             Our task here is return the elements corresponding to the
-            free indexes of the grad(x).
+            free indexes of the :math:`grad(x)`.
 
             """
             # Convert back to a NumPy 1D array
@@ -750,13 +760,13 @@ def demo():
 def k_synergy(d, sources, target, k=2, rv_mode=None, extra_constraints=True,
               tol=None, prng=None, verbose=None): # pragma: no cover
     """
-    Returns the k-synergy.
+    Returns the `k`-synergy.
 
-    The k-synergy is the amount of I[sources : target] that is not captured by
-    matching the k-way marginals, which include the source, and the marginal
-    source distribution. When k=1, we only match p(target) and the source
-    marginal, p(source marginal). So the k-synergy will be equal to the mutual
-    information I[sources: target].
+    The `k`-synergy is the amount of :math:`I[sources : target]` that is not
+    captured by matching the `k`-way marginals, which include the source, and
+    the marginal source distribution. When `k = 1`, we only match p(target) and
+    the source marginal, :math:`p(source marginal)`. So the `k`-synergy will be
+    equal to the mutual information :math:`I[sources: target]`.
 
     Parameters
     ----------
@@ -827,7 +837,7 @@ def k_synergy(d, sources, target, k=2, rv_mode=None, extra_constraints=True,
 def k_informations(d, sources, target, rv_mode=None, extra_constraints=True,
                    tol=None, prng=None, verbose=None): # pragma: no cover
     """
-    Returns the amount of I[sources:target] captured by matching k-way
+    Returns the amount of :math:`I[sources:target]` captured by matching `k`-way
     marginals that include the target and the source marginal distribution.
 
     Parameters
@@ -841,7 +851,7 @@ def k_informations(d, sources, target, rv_mode=None, extra_constraints=True,
         The random variables in `dist` that define the target.
     k : int
         The size of the marginals that are constrained to equal marginals
-        from `dist`. For the calculation of unique information, we use k=2.
+        from `dist`. For the calculation of unique information, we use `k = 2`.
     rv_mode : str, None
         Specifies how to interpret the elements of each source and the
         target. Valid options are: {'indices', 'names'}. If equal to

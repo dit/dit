@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Helper functions related to partial information decompositions.
 """
@@ -7,8 +9,13 @@ import prettytable
 import numpy as np
 
 from .. import ditParams
-from .lattice import sort_key
-from . import __all_pids
+from .pid import sort_key
+from .measures import __all_pids
+
+
+__all__ = [
+    'compare_measures',
+]
 
 
 def compare_measures(dist, pids=__all_pids, inputs=None, output=None, name='', digits=5):
@@ -40,7 +47,7 @@ def compare_measures(dist, pids=__all_pids, inputs=None, output=None, name='', d
     table = prettytable.PrettyTable(field_names=([name] + names))
     if ditParams['text.font'] == 'linechar':
         try:
-            table.set_style(prettytable.BOX_CHARS)
+            table.set_style(prettytable.UNICODE_LINES)
         except:
             pass
     for name in names:
@@ -48,7 +55,7 @@ def compare_measures(dist, pids=__all_pids, inputs=None, output=None, name='', d
     nodes = sorted(pids[0]._lattice, key=sort_key(pids[0]._lattice))
     stringify = lambda node: ''.join('{{{}}}'.format(':'.join(map(str, n))) for n in node)
     for node in nodes:
-        vals = [pid.get_partial(node) for pid in pids]
+        vals = [pid[node] for pid in pids]
         vals = [0.0 if np.isclose(0, val, atol=1e-5, rtol=1e-5) else val for val in vals]
         table.add_row([stringify(node)] + vals)
     print(table.get_string())

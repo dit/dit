@@ -10,12 +10,6 @@ environment:
   #   CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\appveyor\\run_with_env.cmd"
 
   matrix:
-    - PY_MAJOR_VER: 2
-      PYTHON_ARCH: "x86"
-      CYTHON: 0
-    - PY_MAJOR_VER: 2
-      PYTHON_ARCH: "x86"
-      CYTHON: 1
     - PY_MAJOR_VER: 3
       PYTHON_ARCH: "x86_64"
       CYTHON: 0

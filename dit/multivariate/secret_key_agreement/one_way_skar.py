@@ -1,10 +1,10 @@
+# -*- coding: utf-8 -*-
+
 """
 One-way secret key agreement rate. This is the rate at which Alice and Bob can
 agree upon a secret key with Eve eavesdropping, if only Alice is permitted
 to publicly communicate.
 """
-
-from __future__ import division
 
 from abc import abstractmethod
 

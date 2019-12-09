@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
@@ -6,10 +5,7 @@ Specialized distribution constructors.
 
 """
 
-from __future__ import division
-
 import numpy as np
-from six.moves import map, range, zip # pylint: disable=redefined-builtin
 
 from itertools import product
 from collections import defaultdict
@@ -48,7 +44,7 @@ __all__ = [
 
 def mixture_distribution(dists, weights, merge=False):
     """
-    Create a mixture distribution: $\sum p_i d_i$
+    Create a mixture distribution: :math:`\\sum p_i d_i`
 
     Parameters
     ----------
@@ -106,7 +102,7 @@ def mixture_distribution(dists, weights, merge=False):
 
 def mixture_distribution2(dists, weights):
     """
-    Create a mixture distribution: $\sum p_i d_i$
+    Create a mixture distribution: :math:`\\sum p_i d_i`
 
     This version assumes that the pmf for each distribution is of the same
     form, and as a result, will be faster than `mixture_distribution`.

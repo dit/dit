@@ -1,9 +1,9 @@
+# -*- coding: utf-8 -*-
+
 """
 Compute the hypercontractivity coefficient:
     s*(X||Y) = max_{U - X - Y} I[U:Y]/I[U:X]
 """
-
-from __future__ import division
 
 import numpy as np
 
@@ -18,7 +18,8 @@ class HypercontractivityCoefficient(BaseAuxVarOptimizer):
     """
     Computes the hypercontractivity coefficient:
 
-        max_{U - X - Y} I[U:Y]/I[U:X]
+    .. math::
+        max_{U - X - Y} I[U:Y] / I[U:X]
     """
 
     _shotgun = 5
@@ -70,7 +71,7 @@ class HypercontractivityCoefficient(BaseAuxVarOptimizer):
 
         def objective(self, x):
             """
-            Compute I[U:Y]/I[U:X]
+            Compute :math:`I[U:Y] / I[U:X]`
 
             Parameters
             ----------
@@ -94,6 +95,7 @@ def hypercontractivity_coefficient(dist, rvs, bound=None, niter=None, rv_mode=No
     """
     Computes the hypercontractivity coefficient:
 
+    .. math::
         s*(X||Y) = max_{U - X - Y} I[U:Y]/I[U:X]
 
     Parameters
@@ -104,7 +106,7 @@ def hypercontractivity_coefficient(dist, rvs, bound=None, niter=None, rv_mode=No
         The variables to compute the hypercontractivity coefficient of.
         Order is important.
     bound : int, None
-        An external bound on the size of `U`. If None, |U| <= |X|+1.
+        An external bound on the size of `U`. If None, :math:`|U| <= |X|+1`.
     niter : int, None
         The number of basin-hopping steps to perform. If None, use the default.
     rv_mode : str, None

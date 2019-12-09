@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Canonical non-signalling boxes.
 """
-
-from __future__ import division
 
 from dit import Distribution
 
@@ -13,12 +13,14 @@ __all__ = ['pr_box']
 
 def pr_box(eta=1, name=False):
     """
-    The Popescu-Rohrlich box, or PR box, is the canonical non-signalling, non-local probability
-    distribution used in the study of superquantum correlations. It has two space-like seperated
-    inputs, X and Y, and two associated outputs, A and B.
+    The Popescu-Rohrlich box, or PR box, is the canonical non-signalling,
+    non-local probability distribution used in the study of superquantum
+    correlations. It has two space-like seperated inputs, X and Y, and two
+    associated outputs, A and B.
 
-    `eta` is the noise level of this correlation. For 0 <= eta <= 1/2 the box can be realized
-    classically. For 1/2 < eta <= 1/sqrt(2) the box can be realized quantum-mechanically.
+    `eta` is the noise level of this correlation. For 0 <= eta <= 1/2 the box
+    can be realized classically. For 1/2 < eta <= 1/sqrt(2) the box can be
+    realized quantum-mechanically.
 
     Parameters
     ----------

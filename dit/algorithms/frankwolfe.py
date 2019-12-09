@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Frank-Wolfe algorithm.
 
@@ -15,8 +17,6 @@ Frank-Wolfe algorithm.
 # >>> x / 3
 # TypeError: unsupported operand type(s) for /: 'cvxopt.base.matrix' and 'int'
 
-from __future__ import print_function
-
 from debtcollector import removals
 
 import logging
@@ -32,7 +32,7 @@ def frank_wolfe(objective, gradient, A, b, initial_x,
     """
     Uses the Frank--Wolfe algorithm to minimize the convex objective.
 
-    Minimization is subject to the linear equality constraint: A x = b.
+    Minimization is subject to the linear equality constraint: :math:`A x = b`.
 
     Assumes x should be nonnegative.
 

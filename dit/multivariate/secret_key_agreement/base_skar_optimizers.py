@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Base class for the calculation of reduced and minimal intrinsic informations.
 """
-
-from __future__ import division
 
 from abc import abstractmethod
 
@@ -25,6 +25,7 @@ class BaseOneWaySKAR(BaseAuxVarOptimizer):
     """
     Compute lower bounds on the secret key agreement rate of the form:
 
+    .. math::
         max_{V - U - X - YZ} objective()
     """
 
@@ -101,6 +102,7 @@ class BaseIntrinsicMutualInformation(BaseAuxVarOptimizer):
     """
     Compute a generalized intrinsic mutual information:
 
+    .. math::
         IMI[X:Y|Z] = min_{p(z_bar|z)} I[X:Y|Z]
     """
 
@@ -214,9 +216,10 @@ class BaseIntrinsicMutualInformation(BaseAuxVarOptimizer):
 
 class BaseMoreIntrinsicMutualInformation(BaseAuxVarOptimizer):
     """
-    Compute the reduced and minimal intrinsic mutual informations, upper bounds on the secret
-    key agreement rate:
+    Compute the reduced and minimal intrinsic mutual informations, upper bounds
+    on the secret key agreement rate:
 
+    .. math::
         I[X : Y \\downarrow\\downarrow\\downarrow Z] = min_U I[X:Y|U] + I[XY:U|Z]
     """
 
@@ -335,7 +338,8 @@ class BaseReducedIntrinsicMutualInformation(BaseMoreIntrinsicMutualInformation):
     Compute the reduced intrinsic mutual information, a lower bound on the secret
     key agreement rate:
 
-        I[X : Y \Downarrow Z] = min_U I[X : Y \downarrow ZU] + H[U]
+    .. math::
+        I[X : Y \\Downarrow Z] = min_U I[X : Y \\downarrow ZU] + H[U]
     """
 
     type = "reduced"
@@ -348,7 +352,7 @@ class BaseReducedIntrinsicMutualInformation(BaseMoreIntrinsicMutualInformation):
 
     def _objective(self, x):  # pragma: no cover
         """
-        Minimize I[X:Y \downarrow ZU] + H[U]
+        Minimize :math:`I[X:Y \\downarrow ZU] + H[U]`
 
         Parameters
         ----------
@@ -364,7 +368,7 @@ class BaseReducedIntrinsicMutualInformation(BaseMoreIntrinsicMutualInformation):
 
         def objective(self, x):
             """
-            Compute I[X:Y \downarrow ZU] + H[U]
+            Compute :math:`I[X:Y \\downarrow ZU] + H[U]`
 
             Parameters
             ----------
@@ -395,7 +399,8 @@ class BaseMinimalIntrinsicMutualInformation(BaseMoreIntrinsicMutualInformation):
     Compute the minimal intrinsic mutual information, a upper bound on the
     secret key agreement rate:
 
-        I[X : Y \downarrow\downarrow\downarrow Z] = min_U I[X:Y|U] + I[XY:U|Z]
+    .. math::
+        I[X : Y \\downarrow\\downarrow\\downarrow Z] = min_U I[X:Y|U] + I[XY:U|Z]
     """
 
     type = "minimal"
@@ -414,7 +419,7 @@ class BaseMinimalIntrinsicMutualInformation(BaseMoreIntrinsicMutualInformation):
 
         def objective(self, x):
             """
-            Compute I[X:Y|U] + I[XY:U|Z]
+            Compute :math:`I[X:Y|U] + I[XY:U|Z]`
 
             Parameters
             ----------
@@ -444,6 +449,7 @@ class InnerTwoPartIntrinsicMutualInformation(BaseAuxVarOptimizer):
     Compute the two-part intrinsic mutual informations, an upper bound on the
     secret key agreement rate:
 
+    .. math::
         I[X : Y \\downarrow\\downarrow\\downarrow\\downarrow Z] =
           inf_{J} min_{V - U - XY - ZJ} I[X:Y|J] + I[U:J|V] - I[U:Z|V]
     """
@@ -517,7 +523,7 @@ class InnerTwoPartIntrinsicMutualInformation(BaseAuxVarOptimizer):
 
         def objective(self, x):
             """
-            Compute I[X:Y|J] + I[U:J|V] - I[U:Z|V]
+            Compute :math:`I[X:Y|J] + I[U:J|V] - I[U:Z|V]`
 
             Parameters
             ----------
@@ -548,6 +554,7 @@ class BaseTwoPartIntrinsicMutualInformation(BaseAuxVarOptimizer):
     Compute the two-part intrinsic mutual informations, an upper bound on the
     secret key agreement rate:
 
+    .. math::
         I[X : Y \\downarrow\\downarrow\\downarrow\\downarrow Z] =
           inf_{J} min_{V - U - XY - ZJ} I[X:Y|J] + I[U:J|V] - I[U:Z|V]
     """
@@ -604,8 +611,8 @@ class BaseTwoPartIntrinsicMutualInformation(BaseAuxVarOptimizer):
 
     def _objective(self):
         """
-        Mimimize max(I[X:Y|J] + I[U:J|V] - I[U:Z|V]), or its multivariate
-        analog.
+        Mimimize :math:`max(I[X:Y|J] + I[U:J|V] - I[U:Z|V])`, or its
+        multivariate analog.
 
         Returns
         -------

@@ -1,5 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
-A variety of distributions exemplifying aspects of the partial information decomposition.
+A variety of distributions exemplifying aspects of the partial information
+decomposition.
 """
 
 from . import bivariate

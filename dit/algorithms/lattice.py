@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """
 Some algorithms related to lattices.
 
@@ -51,8 +52,6 @@ give the same results as [1].
 
 """
 from collections import defaultdict
-
-from six.moves import map, range, zip # pylint: disable=redefined-builtin
 
 import dit
 from ..helpers import parse_rvs, RV_MODES
@@ -134,7 +133,7 @@ def join_sigalg(dist, rvs, rv_mode=None):
         A list of lists.  Each list specifies a random variable to be
         joined with the other lists.  Each random variable can defined as a
         series of unique indexes.  Multiple random variables can use the same
-        index. For example, [[0,1],[1,2]].
+        index. For example, [[0, 1], [1, 2]].
     rv_mode : str, None
         Specifies how to interpret the elements of `rvs`. Valid options are:
         {'indices', 'names'}. If equal to 'indices', then the elements of
@@ -259,7 +258,7 @@ def join(dist, rvs, rv_mode=None, int_outcomes=True):
         A list of lists.  Each list specifies a random variable to be
         joined with the other lists.  Each random variable can defined as a
         series of unique indexes.  Multiple random variables can use the same
-        index. For example, [[0,1],[1,2]].
+        index. For example, [[0, 1], [1, 2]].
     rv_mode : str, None
         Specifies how to interpret the elements of `rvs`. Valid options are:
         {'indices', 'names'}. If equal to 'indices', then the elements of
@@ -293,7 +292,7 @@ def meet(dist, rvs, rv_mode=None, int_outcomes=True):
         A list of lists.  Each list specifies a random variable to be
         met with the other lists.  Each random variable can defined as a
         series of unique indexes.  Multiple random variables can use the same
-        index. For example, [[0,1],[1,2]].
+        index. For example, [[0, 1], [1, 2]].
     rv_mode : str, None
         Specifies how to interpret the elements of `rvs`. Valid options are:
         {'indices', 'names'}. If equal to 'indices', then the elements of
@@ -400,7 +399,7 @@ def insert_join(dist, idx, rvs, rv_mode=None):
         A list of lists.  Each list specifies a random variable to be
         met with the other lists.  Each random variable can defined as a
         series of unique indexes.  Multiple random variables can use the same
-        index. For example, [[0,1],[1,2]].
+        index. For example, [[0, 1], [1, 2]].
     rv_mode : str, None
         Specifies how to interpret the elements of `rvs`. Valid options are:
         {'indices', 'names'}. If equal to 'indices', then the elements of

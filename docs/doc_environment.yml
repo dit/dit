@@ -2,11 +2,9 @@ name: dit_env
 
 dependencies:
   - colorama
-  - contextlib2
   - matplotlib
   - numpy >= 1.6
   - scipy >= 0.15
-  - six >= 1.4
   - sphinx >= 1.3
   - pip:
     - boltons

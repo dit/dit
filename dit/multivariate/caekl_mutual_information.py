@@ -1,8 +1,10 @@
-"""
-The CAEKL mutual information, as define [Chan, Chung, et al. "Multivariate Mutual Information Inspired by Secret-Key Agreement." Proceedings of the IEEE 103.10 (2015): 1883-1913].
-"""
+# -*- coding: utf-8 -*-
 
-from __future__ import division
+"""
+The CAEKL mutual information, as define [Chan, Chung, et al. "Multivariate
+Mutual Information Inspired by Secret-Key Agreement." Proceedings of the IEEE
+103.10 (2015): 1883-1913].
+"""
 
 from ..helpers import normalize_rvs
 from ..utils import partitions, unitful

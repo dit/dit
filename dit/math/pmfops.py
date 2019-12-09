@@ -1,12 +1,11 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
+
 """
 A catch-all module for miscellaneous pmf-based operations.
 
 Eventually, we will need to reorganize.
 
 """
-
-from __future__ import division, print_function
 
 import dit
 from ..exceptions import ditException
@@ -112,13 +111,14 @@ def replace_zeros(pmf, delta, rand=True, prng=None):
     to the following formula [1]_, but optionally, with randomly determined
     replacement values:
 
-        x_i^\prime =
-            \begin{cases}
-                \delta_i & x_i = 0 \\
-                x_i (1 - \sum_i \delta_i) & x_i \neq 0
-            \end{cases}
+    .. math::
+        x_i^\\prime =
+            \\begin{cases}
+                \\delta_i & x_i = 0 \\
+                x_i (1 - \\sum_i \\delta_i) & x_i \\neq 0
+            \\end{cases}
 
-    where :math:`\delta_i` is the replacement value for each zero element.
+    where :math:`\\delta_i` is the replacement value for each zero element.
     This approach is preferred since it preserves the ratios of nonzero
     elements, an important feature of distributions. Simply adding some values
     to the zero elements and then renormalizing would not preserve the ratios.

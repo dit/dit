@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 An upper bound on the two-way secret key agreement rate.
 """
-
-from __future__ import division
 
 from .base_skar_optimizers import BaseMinimalIntrinsicMutualInformation
 from ... import Distribution

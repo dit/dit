@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Routines for plotting rate-distortion and information bottleneck curves.
 """
@@ -5,8 +7,6 @@ Routines for plotting rate-distortion and information bottleneck curves.
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 from operator import attrgetter
-
-from six import with_metaclass
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -52,7 +52,7 @@ def _rescale_axes(ax, xmin=None, xmax=None, ymin=None, ymax=None):
     ax.set_ylim(y_min, y_max)
 
 
-class BasePlotter(with_metaclass(ABCMeta, object)):
+class BasePlotter(metaclass=ABCMeta):
     """
     A plotter of rate-distortion-like curves.
     """

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Multivariate measures of information. Some are direct extensions of Shannon's
 measures and others are more distantly related.

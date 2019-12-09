@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+
+"""
+Fancy windowing.
+"""
+
 import warnings
 
 import numpy as np

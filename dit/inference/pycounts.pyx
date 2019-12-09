@@ -2,8 +2,6 @@
 # cython: profile=False
 # cython: embedsignature=True
 
-from __future__ import division
-
 import sys
 
 import cython
@@ -503,4 +501,3 @@ def distribution_from_data(d, L, trim=True, base=None):
     if base is not None:
         dist.set_base(base)
     return dist
-

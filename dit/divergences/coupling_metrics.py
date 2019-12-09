@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Metrics related to minimum entropy distributions with fixed marginals.
 """
-
-from __future__ import division
 
 from boltons.iterutils import pairwise
 

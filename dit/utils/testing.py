@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Utilities related to testing.
 """
-
-from __future__ import division
 
 from boltons.iterutils import pairwise
 

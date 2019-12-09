@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Various algorithms related to manipulating or measuring properties of
 distributions.
@@ -15,4 +17,4 @@ from .stats import mean, median, mode, standard_deviation, central_moment, \
                    standard_moment
 
 # Don't expose anything yet.
-from . import pid_broja
+# from . import pid_broja

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 The entropy triangle, from [Valverde-Albacete, Francisco Jose, and Carmen
 Pelaez-Moreno. "The Multivariate Entropy Triangle and Applications." Hybrid
@@ -5,8 +7,6 @@ Artificial Intelligent Systems. Springer International Publishing, 2016.
 647-658].
 """
 from abc import ABCMeta, abstractmethod
-
-from six import with_metaclass
 
 from ..distribution import BaseDistribution
 from ..distconst import product_distribution, uniform_like
@@ -19,7 +19,7 @@ __all__ = [
 ]
 
 
-class BaseEntropyTriangle(with_metaclass(ABCMeta, object)):
+class BaseEntropyTriangle(metaclass=ABCMeta):
     """
     BaseEntropyTriangle
 

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
@@ -13,7 +12,6 @@ import warnings
 
 # Other
 import numpy as np
-from six.moves import map, range, zip  # pylint: disable=redefined-builtin
 
 # dit
 from .exceptions import ditException, InvalidOutcome

@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Two lower bounds on the two-way secret key agreement rate.
 """
-
-from __future__ import division
 
 from .one_way_skar import one_way_skar
 from .secrecy_capacity import secrecy_capacity

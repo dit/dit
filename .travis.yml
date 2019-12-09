@@ -5,9 +5,10 @@ language: python
 
 python:
   # We don't actually use the Travis Python, but this keeps it organized.
-  - "2.7"
   - "3.5"
   - "3.6"
+  - "3.7"
+  - "3.8"
   - "nightly"
 
 os:
@@ -17,22 +18,14 @@ matrix:
   fast_finish: true
 
   include:
-    # https://github.com/travis-ci/travis-ci/issues/9815
-    - python: "3.7"
-      dist: xenial
-      sudo: true
     - os: osx
       language: generic
-      python: "2.7"
-      env: OPTIONAL_DEPS=true TRAVIS_PYTHON_VERSION="2.7"
+      python: "3.8"
+      env: OPTIONAL_DEPS=true TRAVIS_PYTHON_VERSION="3.8" SLOW=true
     - os: osx
       language: generic
-      python: "3.7"
-      env: OPTIONAL_DEPS=true TRAVIS_PYTHON_VERSION="3.7"
-    - os: osx
-      language: generic
-      python: "pypy"
-      env: OPTIONAL_DEPS=false TRAVIS_PYTHON_VERSION="pypy"
+      python: "3.8"
+      env: OPTIONAL_DEPS=false TRAVIS_PYTHON_VERSION="3.8" SLOW=true
     - os: osx
       language: generic
       python: "pypy3"
@@ -40,7 +33,6 @@ matrix:
 
   allow_failures:
     # pypy Wheels are not yet available.
-    - python: "pypy"
     - python: "pypy3"
     - python: "nightly"
 
@@ -67,22 +59,10 @@ before_install:
   # version is the same.
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
       echo "On linux";
-      if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-        echo "Python 2";
-        wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
-      elif [[ "$TRAVIS_PYTHON_VERSION" =~ 3\..* ]]; then
-        echo "python 3";
-        wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-      fi
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
     elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       echo "On OSX";
-      if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-        echo "Python 2";
-        wget https://repo.continuum.io/miniconda/Miniconda2-latest-MacOSX-x86_64.sh -O miniconda.sh;
-      elif [[ "$TRAVIS_PYTHON_VERSION" =~ 3\..* ]]; then
-        echo "Python 3";
-        wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
-      fi
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
     fi
   - if [[ "$TRAVIS_PYTHON_VERSION" =~ (2|3)\..* ]]; then
       bash miniconda.sh -b -p $HOME/miniconda;
@@ -140,52 +120,30 @@ script:
       fi;
     fi;
 
-  - if ! [[ "$TRAVIS_PYTHON_VERSION" =~ pypy.* ]]; then
-      export DIT_INSTALL=`pip show dit | grep Location | awk '{print $2"/dit"}'`;
-    else
-      export DIT_INSTALL=`pypy -m pip show dit | grep Location | awk '{print $2"/dit"}'`;
-    fi
-  - echo "DIT_INSTALL=$DIT_INSTALL"
-
-  # nose 1.3.0 does not tell coverage to only cover the requested
-  # package (except during the report).  So to restrict coverage, we must
-  # inform coverage through the .coveragerc file.
-  - if ! [[ "$TRAVIS_PYTHON_VERSION" =~ pypy.* ]]; then
-      cp .coveragerc pytest.ini $DIT_INSTALL;
-      cp setup.cfg $DIT_INSTALL;
-    else
-      sudo cp .coveragerc pytest.ini $DIT_INSTALL;
-      sudo cp setup.cfg $DIT_INSTALL;
-    fi
-
-  # Move to new directory so that dit is not imported from repository.
-  # Why? Because we want the tests to make sure that dit was installed
-  # correctly. Example: setup.py might not have included some submodules.
-  # Testing from the git repository cannot catch a mistake like that.
-  #
-  # Export current directory for logs.
-  - cd $DIT_INSTALL
-  - cd ..
-  - printenv PWD
-
   # Run pytest.
   - if [[ "$TRAVIS_PYTHON_VERSION" =~ pypy.* ]]; then
       if [ "${OPTIONAL_DEPS}" == "true" ]; then
-        sudo $TRAVIS_PYTHON_VERSION -m pytest dit;
+        sudo $TRAVIS_PYTHON_VERSION -m pytest .;
       else
-        sudo $TRAVIS_PYTHON_VERSION -m pytest -m "not cython" dit;
+        sudo $TRAVIS_PYTHON_VERSION -m pytest -m "not cython" .;
       fi
     else
       if [ "${OPTIONAL_DEPS}" == "true" ]; then
-        pytest --numprocesses=auto dit;
+        if [ "${SLOW}" == "true" ]; then
+          pytest -m "not slow" .;
+        else
+          pytest .;
+        fi
       else
-        pytest -m "not cython" --numprocesses=auto dit;
+        if [ "${SLOW}" == "true" ]; then
+          pytest -m "not cython and not slow" .;
+        else
+          pytest -m "not cython" .;
+        fi
       fi
     fi
 
 after_success:
-  - cp .coverage $TRAVIS_BUILD_DIR
-  - cd $TRAVIS_BUILD_DIR
   - python fixcoverage.py ".*/dit/" "$TRAVIS_BUILD_DIR/dit/"
   - codecov
 

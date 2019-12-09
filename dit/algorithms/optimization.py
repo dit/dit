@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Base class for optimization.
 """
-
-from __future__ import division
 
 from abc import ABCMeta, abstractmethod
 
@@ -15,8 +15,6 @@ from functools import reduce
 from string import ascii_letters, digits
 
 from types import MethodType
-
-from six import with_metaclass
 
 from boltons.iterutils import pairwise
 
@@ -47,7 +45,7 @@ __all__ = [
 
 svdvals = lambda m: np.linalg.svd(m, compute_uv=False)
 
-class BaseOptimizer(with_metaclass(ABCMeta, object)):
+class BaseOptimizer(metaclass=ABCMeta):
     """
     Base class for performing optimizations.
     """
@@ -206,7 +204,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
 
     def _entropy(self, rvs, crvs=None):
         """
-        Compute the conditional entropy, H[X|Y]
+        Compute the conditional entropy, :math`H[X|Y]`.
 
         Parameters
         ----------
@@ -253,7 +251,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
 
     def _mutual_information(self, rv_x, rv_y):
         """
-        Compute the mutual information, I[X:Y].
+        Compute the mutual information, :math:`I[X:Y]`.
 
         Parameters
         ----------
@@ -297,7 +295,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
 
     def _conditional_mutual_information(self, rv_x, rv_y, rv_z):
         """
-        Compute the conditional mutual information, I[X:Y|Z].
+        Compute the conditional mutual information, :math:`I[X:Y|Z]`.
 
         Parameters
         ----------
@@ -654,7 +652,7 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
 
     def _total_variation(self, rv_x, rv_y):
         """
-        Compute the total variation, TV[X||Y].
+        Compute the total variation, :math:`TV[X||Y]`.
 
         Parameters
         ----------
@@ -779,8 +777,9 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
 
     def _optimize_shotgun(self, x0, minimizer_kwargs, niter):
         """
-        Perform a non-convex optimization. This uses a "shotgun" approach, minimizing
-        several random initial conditions and selecting the minimal result.
+        Perform a non-convex optimization. This uses a "shotgun" approach,
+        minimizing several random initial conditions and selecting the minimal
+        result.
 
         Parameters
         ----------
@@ -794,7 +793,8 @@ class BaseOptimizer(with_metaclass(ABCMeta, object)):
         Returns
         -------
         result : OptimizeResult, None
-            The result of the optimization. Returns None if the optimization failed.
+            The result of the optimization. Returns None if the optimization
+            failed.
 
         TODO
         ----
@@ -969,7 +969,8 @@ class BaseNonConvexOptimizer(BaseOptimizer):
         Returns
         -------
         result : OptimizeResult, None
-            The result of the optimization. Returns None if the optimization failed.
+            The result of the optimization. Returns None if the optimization
+            failed.
         """
         if 'constraints' in minimizer_kwargs:
             msg = "Differential Evolution can only be used in unconstrained optimization."

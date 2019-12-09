@@ -7,7 +7,6 @@ This can be important when calculating meet and join random variables. It
 is also important for the calculations of various PID quantities.
 
 """
-from six.moves import map # pylint: disable=redefined-builtin
 
 from dit.samplespace import ScalarSampleSpace, SampleSpace, CartesianProduct
 
@@ -61,7 +60,7 @@ def expanded_samplespace(d, alphabets=None, union=True):
     Expand the sample space so that it is the Cartesian product of the
     alphabets for each random variable. Note, only the effective alphabet of
     each random variable is used. So if one index in an outcome only has the
-    value 1, then its alphabet is [1], and not [0,1] for example.
+    value 1, then its alphabet is `[1]`, and not `[0, 1]` for example.
 
     Parameters
     ----------

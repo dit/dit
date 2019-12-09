@@ -1,8 +1,8 @@
-"""
-Various utilities that can be helpful for optimization problems.
+# -*- coding: utf-8 -*-
 
 """
-from __future__ import division, print_function
+Various utilities that can be helpful for optimization problems.
+"""
 
 from debtcollector import removals
 
@@ -14,44 +14,50 @@ import dit
                  version='1.0.1')
 def as_full_rank(A, b):
     """
-    From a linear system Ax = b, return Bx = c such that B has full rank.
+    From a linear system :math:`Ax = b`, return :math:`Bx = c` such that
+    :math:`B` has full rank.
 
-    In CVXOPT, linear constraints are denoted as: Ax = b. A has shape (p, n)
-    and must have full rank. x has shape (n, 1), and so b has shape (p, 1).
-    Let's assume that we have:
+    In CVXOPT, linear constraints are denoted as: :math:`Ax = b`. :math:`A` has
+    shape :math:`(p, n)` and must have full rank. :math:`x` has shape
+    :math:`(n, 1)`, and so :math:`b` has shape :math:`(p, 1)`. Let's assume that
+    we have:
 
+    .. math::
         rank(A) = q <= n
 
     This is a typical situation if you are doing optimization, where you have
     an under-determined system and are using some criterion for selecting out
-    a particular solution. Now, it may happen that q < p, which means that some
-    of your constraint equations are not independent. Since CVXOPT requires
-    that A have full rank, we must isolate an equivalent system Bx = c which
-    does have full rank. We use SVD for this. So A = U \\Sigma V^*, where
-    U is (p, p), \\Sigma is (p, n) and V^* is (n, n). Then:
+    a particular solution. Now, it may happen that :math:`q < p`, which means
+    that some of your constraint equations are not independent. Since CVXOPT
+    requires that :math:`A` have full rank, we must isolate an equivalent system
+    :math:`Bx = c` which does have full rank. We use SVD for this. So
+    :math:`A = U \\Sigma V^*`, where :math:`U` is :math:`(p, p)`,
+    :math:`\\Sigma` is :math:`(p, n)` and :math:`V^*` is :math:`(n, n)`. Then:
 
+    .. math::
         \\Sigma V^* x = U^{-1} b
 
-    We take B = \\Sigma V^* and c = U^T b, where we use U^T instead of U^{-1}
-    for computational efficiency (and since U is orthogonal). But note, we
-    take only the cols of U (which are rows in U^{-1}) and rows of \\Sigma that
-    have nonzero singular values.
+    We take :math:`B = \\Sigma V^*` and :math:`c = U^T b`, where we use
+    :math:`U^T` instead of :math:`U^{-1}` for computational efficiency (and
+    since :math:`U` is orthogonal). But note, we take only the cols of :math:`U`
+    (which are rows in :math:`U^{-1}`) and rows of :math:`\\Sigma` that have
+    nonzero singular values.
 
     Parameters
     ----------
-    A : array-like, shape (p, n)
+    A : array-like, shape `(p, n)`
         The LHS for the linear constraints.
-    b : array-like, shape (p,) or (p, 1)
+    b : array-like, shape `(p,)` or `(p, 1)`
         The RHS for the linear constraints.
 
     Returns
     -------
-    B : array-like, shape (q, n)
+    B : array-like, shape `(q, n)`
         The LHS for the linear constraints.
-    c : array-like, shape (q,) or (q, 1)
+    c : array-like, shape `(q,)` or `(q, 1)`
         The RHS for the linear constraints.
     rank : int
-        The rank of B.
+        The rank of :math:`B`.
 
     """
     try:

@@ -1,12 +1,9 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
 Functions to test if two floats are equal to within relative and absolute
 tolerances. This dynamically chooses a cython implementation if available.
 """
-
-from __future__ import absolute_import
 
 from debtcollector import removals
 
@@ -98,4 +95,3 @@ def allclose(x, y, rtol=None, atol=None):
         atol = ditParams['atol']
 
     return _allclose(x, y, rtol=rtol, atol=atol)
-

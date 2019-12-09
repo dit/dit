@@ -1,8 +1,7 @@
 boltons
-contextlib2
 debtcollector
-networkx
+lattices >= 0.3.3
+networkx >= 2.0
 numpy >= 1.11
-prettytable
+PLTable
 scipy >= 0.15.0
-six >= 1.4.0
