@@ -28,16 +28,11 @@ matrix:
       env: OPTIONAL_DEPS=false TRAVIS_PYTHON_VERSION="3.8" SLOW=true
     - os: osx
       language: generic
-      python: "pypy"
-      env: OPTIONAL_DEPS=false TRAVIS_PYTHON_VERSION="pypy"
-    - os: osx
-      language: generic
       python: "pypy3"
       env: OPTIONAL_DEPS=false TRAVIS_PYTHON_VERSION="pypy3"
 
   allow_failures:
     # pypy Wheels are not yet available.
-    - python: "pypy"
     - python: "pypy3"
     - python: "nightly"
 
