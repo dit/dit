@@ -123,22 +123,22 @@ script:
   # Run pytest.
   - if [[ "$TRAVIS_PYTHON_VERSION" =~ pypy.* ]]; then
       if [ "${OPTIONAL_DEPS}" == "true" ]; then
-        sudo $TRAVIS_PYTHON_VERSION -m pytest . --cov=dit;
+        sudo $TRAVIS_PYTHON_VERSION -m pytest .;
       else
-        sudo $TRAVIS_PYTHON_VERSION -m pytest -m "not cython" . --cov=dit;
+        sudo $TRAVIS_PYTHON_VERSION -m pytest -m "not cython" .;
       fi
     else
       if [ "${OPTIONAL_DEPS}" == "true" ]; then
         if [ "${SLOW}" == "true" ]; then
-          pytest -m "not slow" . --cov=dit;
+          pytest -m "not slow" .;
         else
-          pytest . --cov=dit;
+          pytest .;
         fi
       else
         if [ "${SLOW}" == "true" ]; then
-          pytest -m "not cython and not slow" --numprocesses=auto . --cov=dit;
+          pytest -m "not cython and not slow" .;
         else
-          pytest -m "not cython" --numprocesses=auto . --cov=dit;
+          pytest -m "not cython" .;
         fi
       fi
     fi

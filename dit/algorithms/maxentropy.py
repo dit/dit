@@ -299,7 +299,7 @@ def moment_constraints(pmf, n_variables, m, symbol_map, with_replacement=True):
     where each element is distinct. So <xx> and <yy> would not be included if
     `n_variables = 2` and `m = 2`.
 
-    The function we take means of is:  :math:`f(x) = \prod_i x_i`
+    The function we take means of is:  :math:`f(x) = \\prod_i x_i`
 
     The resulting matrix :math:`A` is not guaranteed to have full rank.
 

@@ -124,7 +124,7 @@ class MinDKLOptimizer(object):
 
 def min_dkl(dist, domain):
     """
-    Given a distribution and a domain, find the minimum D(p||q) where
+    Given a distribution and a domain, find the minimum :math:`D(p||q)` where
     p is `dist` and q is in `domain`.
 
     Parameters
@@ -137,7 +137,7 @@ def min_dkl(dist, domain):
     Returns
     -------
     dkl : float
-        The minimum D(p||q) with q restricted to `domain`.
+        The minimum :math:`D(p||q)` with q restricted to `domain`.
     """
     dist = dist.copy()
     dist.make_dense()
@@ -148,7 +148,7 @@ def min_dkl(dist, domain):
 
 def projected_information(dist, X, Y, Z):
     """
-    I_Z^pi(X \searrow Y)
+    :math:`I_Z^pi(X \\searrow Y)`
 
     Paramters
     ---------
@@ -193,7 +193,10 @@ class PID_Proj(BaseBivariatePID):
     @staticmethod
     def _measure(d, inputs, output):
         """
-        Compute I_proj(inputs : output) = min{PI(X \searrow Y), PI(Y \searrow X)}
+        Compute
+
+        .. math::
+            I_proj(inputs : output) = min{PI(X \\searrow Y), PI(Y \\searrow X)}
 
         Parameters
         ----------

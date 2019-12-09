@@ -457,7 +457,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
 
         def negH_YgXis(x_free):
             """
-            Calculates :math:`-H[Y | X_1, \ldots, X_n]` using only the free
+            Calculates :math:`-H[Y | X_1, \\ldots, X_n]` using only the free
             variables.
 
             """

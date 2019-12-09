@@ -107,8 +107,9 @@ def build_samplespace(digraph, rv_names, attr):
             # Grab the first distribution.
             val = digraph.nodes[rv][attr]
             try:
-                dist = next(iter(val))
+                dist = next(iter(val.values()))
             except AttributeError:
+                print(val)
                 dist = val[1][0]
 
         # Since we are assuming each rv is completely alone and factored, we

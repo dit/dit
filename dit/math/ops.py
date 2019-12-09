@@ -407,7 +407,7 @@ class LinearOperations(Operations):
         """
         Performs an `multiplication' reduction on `x`.
 
-        Operation: :math:`z = \prod_i x[i]`
+        Operation: :math:`z = \\prod_i x[i]`
 
         Returns
         -------
