@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Abstract base classes
 """
-
-from __future__ import division
 
 from abc import abstractmethod
 

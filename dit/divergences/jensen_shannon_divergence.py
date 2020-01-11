@@ -1,13 +1,12 @@
+# -*- coding: utf-8 -*-
+
 """
-The Jensen-Shannon Diverence.
+The Jensen-Shannon Divergence.
 
 This is a reasonable measure of distinguishablity between distribution.
 """
 
-from __future__ import division
-
 import numpy as np
-from six.moves import zip  # pylint: disable=redefined-builtin,import-error
 
 import dit
 from ..exceptions import ditException
@@ -22,7 +21,7 @@ __all__ = ('jensen_shannon_divergence',
 
 def jensen_shannon_divergence_pmf(pmfs, weights=None):
     """
-    The Jensen-Shannon Divergence: H(sum(w_i*P_i)) - sum(w_i*H(P_i)).
+    The Jensen-Shannon Divergence: :math:`H(sum(w_i*P_i)) - sum(w_i*H(P_i))`.
 
     The square root of the Jensen-Shannon divergence is a distance metric.
 
@@ -62,7 +61,7 @@ def jensen_shannon_divergence_pmf(pmfs, weights=None):
 @unitful
 def jensen_shannon_divergence(dists, weights=None):
     """
-    The Jensen-Shannon Divergence: H(sum(w_i*P_i)) - sum(w_i*H(P_i)).
+    The Jensen-Shannon Divergence: :math:`H(sum(w_i*P_i)) - sum(w_i*H(P_i))`.
 
     The square root of the Jensen-Shannon divergence is a distance metric.
 
@@ -107,8 +106,8 @@ def jensen_shannon_divergence(dists, weights=None):
 
 def jensen_divergence(func):
     """
-    Construct a Jensen-Shannon-like divergence measure from `func`. In order for this
-    resulting divergence to be non-negative, `func` must be convex.
+    Construct a Jensen-Shannon-like divergence measure from `func`. In order for
+    this resulting divergence to be non-negative, `func` must be convex.
 
     Parameters
     ----------
@@ -138,7 +137,8 @@ def jensen_divergence(func):
         return jbd
 
     docstring = """
-        The Jensen-{name} Divergence: {name}(sum(w_i*P_i)) - sum(w_i*{name}(P_i)).
+        The Jensen-{name} Divergence:
+        :math:`{name}(sum(w_i*P_i)) - sum(w_i*{name}(P_i))`.
 
         Parameters
         ----------
@@ -148,8 +148,8 @@ def jensen_divergence(func):
         weights : [float], None
             The weights, w_i, to give the distributions. If None, the weights are
             assumed to be uniform.
-        
-        *args : 
+
+        *args :
 
         Returns
         -------

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
@@ -188,10 +187,11 @@ class Operations(object):
     is uncommon and their implementation would be slower as well.  For example,
     subtraction with log probabailities must go as:
 
+    .. math::
         log_2(x-y) = log_2(x) + log_2(1 - 2^[ log_2(y) - log_2(x) ])
 
-    Note that if y > x, then log(y) > log(x) and the inner term of the second
-    logarithm will be less than 0, yielding NaN.
+    Note that if :math:`y > x`, then :math:`log(y) > log(x)` and the inner term
+    of the second logarithm will be less than 0, yielding NaN.
 
     """
     ### Do we allow base == 'e' or should we convert to its numerical value?
@@ -306,9 +306,9 @@ class LinearOperations(Operations):
         """
         Add the arrays element-wise.  Neither x nor y will be modified.
 
-        Assumption: y >= 0.
+        Assumption: :math:`y >= 0`.
 
-        Operation:  z[i] = x[i] + y[i]
+        Operation:  :math:`z[i] = x[i] + y[i]`
 
         Parameters
         ----------
@@ -328,9 +328,9 @@ class LinearOperations(Operations):
         """
         Adds `y` to `x`, in-place.  `x` will be modified, but `y` will not.
 
-        Assumption: y >= 0.
+        Assumption: :math:`y >= 0`.
 
-        Operation: x[i] += y[i]
+        Operation: :math:`x[i] += y[i]`
 
         Parameters
         ----------
@@ -350,9 +350,9 @@ class LinearOperations(Operations):
         """
         Performs an `addition' reduction on `x`.
 
-        Assumption: y >= 0.
+        Assumption: :math:`y >= 0`.
 
-        Operation: z = \sum_i x[i]
+        Operation: :math:`z = \\sum_i x[i]`
 
         Returns
         -------
@@ -367,7 +367,7 @@ class LinearOperations(Operations):
         """
         Multiplies the arrays element-wise.  Neither x nor y will be modified.
 
-        Operation: z[i] = x[i] * y[i]
+        Operation: :math:`z[i] = x[i] * y[i]`
 
         Parameters
         ----------
@@ -387,7 +387,7 @@ class LinearOperations(Operations):
         """
         Multiplies `y` to `x`, in-place. `x` will be modified, but `y` will not.
 
-        Operation: x[i] *= y[i]
+        Operation: :math:`x[i] *= y[i]`
 
         Parameters
         ----------
@@ -407,7 +407,7 @@ class LinearOperations(Operations):
         """
         Performs an `multiplication' reduction on `x`.
 
-        Operation: z = \prod_i x[i]
+        Operation: :math:`z = \\prod_i x[i]`
 
         Returns
         -------
@@ -422,7 +422,7 @@ class LinearOperations(Operations):
         """
         Returns the element-wise multiplicative inverse of x.
 
-        Operation: z[i] = 1/x[i]
+        Operation: :math:`z[i] = 1/x[i]`
 
         Parameters
         ----------
@@ -442,7 +442,7 @@ class LinearOperations(Operations):
         """
         Returns a normalized version of x.
 
-        Operation: z[i] = x[i] / sum(x)
+        Operation: :math:`z[i] = x[i] / sum(x)`
 
         If x is 2D and axis is None, then normalization is over all elements.
         Use axis=-1 to normalize each row of x.
@@ -533,7 +533,7 @@ def set_add_inplace(ops):
     add_inplace.__doc__ = """
     Adds `y` to `x`, in-place.  `x` will be modified, but `y` will not.
 
-    Assumption: y <= 0.
+    Assumption: :math:`y <= 0`.
 
     Parameters
     ----------
@@ -592,7 +592,7 @@ def set_add_reduce(ops):
     add_reduce.__doc__ = """
     Performs an `addition' reduction on `x`.
 
-    Assumption: y <= 0.
+    Assumption: :math:`y <= 0`.
 
     Returns
     -------
@@ -647,7 +647,7 @@ class LogOperations(Operations):
 
     def mult(self, x, y):
         """
-        Multiplies the arrays element-wise.  Neither x nor y will be modified.
+        Multiplies the arrays element-wise.  Neither `x` nor `y` will be modified.
 
         Parameters
         ----------
@@ -699,7 +699,7 @@ class LogOperations(Operations):
 
     def invert(self, x):
         """
-        Returns the element-wise multiplicative inverse of x:  1/x.
+        Returns the element-wise multiplicative inverse of `x`:  :math:`1/x`.
 
         Parameters
         ----------
@@ -717,12 +717,12 @@ class LogOperations(Operations):
 
     def normalize(self, x, axis=None):
         """
-        Returns a normalized version of x.
+        Returns a normalized version of `x`.
 
-        Non-log equivalent operation: z[i] = x[i] / sum(x)
+        Non-log equivalent operation: :math:`z[i] = x[i] / sum(x)`
 
-        If x is 2D and axis is None, then normalization is over all elements.
-        Use axis=-1 to normalize each row of x.
+        If `x` is 2D and axis is None, then normalization is over all elements.
+        Use axis=-1 to normalize each row of `x`.
 
         Parameters
         ----------

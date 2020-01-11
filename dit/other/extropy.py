@@ -1,5 +1,7 @@
+# -*- coding: utf-8 -*-
+
 """
-The extropy
+The extropy.
 """
 
 from ..helpers import RV_MODES

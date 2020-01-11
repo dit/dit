@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Non-cython methods for getting counts and distributions from data.
 """

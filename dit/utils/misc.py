@@ -1,22 +1,17 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
-    Define miscellaneous utilities.
+Define miscellaneous utilities.
 """
-
-from __future__ import absolute_import
 
 from debtcollector import removals
 
-from collections import Iterable, OrderedDict
+from collections import OrderedDict
+from collections.abc import Iterable
 from itertools import tee
 import os
 import sys
 import subprocess
-
-import six
-from six.moves import range, zip # pylint: disable=redefined-builtin
 
 __all__ = (
     'default_opener',
@@ -69,7 +64,7 @@ def flatten(l):
         The non-iterable items in `l`.
     """
     for el in l:
-        if isinstance(el, Iterable) and not (isinstance(el, six.string_types) and len(el) == 1):
+        if isinstance(el, Iterable) and not (isinstance(el, str) and len(el) == 1):
             for sub in flatten(el):
                 yield sub
         else:

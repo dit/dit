@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 The dual total correlation and variation of information.
 """

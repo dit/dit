@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Maximum entropy with marginal distribution constraints.
 
@@ -20,8 +22,6 @@ This code for moment-based maximum entropy needs to be updated so that it can
 handle any Cartesian product sample space, rather than just homogeneous ones.
 
 """
-
-from __future__ import division, print_function
 
 from debtcollector import removals
 
@@ -97,8 +97,9 @@ def isolate_zeros(dist, k):
     Determines if there are any elements of the optimization vector that must
     be zero.
 
-    If p(marginal) = 0, then every component of the joint that contributes to
-    that marginal probability must be exactly zero for all feasible solutions.
+    If :math:`p(marginal) = 0`, then every component of the joint that
+    contributes to that marginal probability must be exactly zero for all
+    feasible solutions.
 
     """
     assert dist.is_dense()
@@ -133,9 +134,10 @@ def isolate_zeros(dist, k):
 def marginal_constraints_generic(dist, rvs, rv_mode=None,
                                  with_normalization=True):
     """
-    Returns `A` and `b` in `A x = b`, for a system of marginal constraints.
+    Returns :math:`A` and :math:`b` in :math:`A x = b`, for a system of marginal
+    constraints.
 
-    In general, the resulting matrix `A` will not have full rank.
+    In general, the resulting matrix :math:`A` will not have full rank.
 
     Parameters
     ----------
@@ -196,9 +198,10 @@ def marginal_constraints_generic(dist, rvs, rv_mode=None,
 
 def marginal_constraints(dist, m, with_normalization=True):
     """
-    Returns `A` and `b` in `A x = b`, for a system of marginal constraints.
+    Returns :math:`A` and :math:`b` in :math:`A x = b`, for a system of marginal
+    constraints.
 
-    The resulting matrix `A` is not guaranteed to have full rank.
+    The resulting matrix :math:`A` is not guaranteed to have full rank.
 
     Parameters
     ----------
@@ -218,9 +221,9 @@ def marginal_constraints(dist, m, with_normalization=True):
     A : array-like, shape (p, q)
         The matrix defining the marginal equality constraints and also the
         normalization constraint. The number of rows is:
-            p = C(n_variables, m) * n_symbols ** m + 1
+            :math:`p = C(n_variables, m) * n_symbols ** m + 1`
         where C() is the choose formula. The number of columns is:
-            q = n_symbols ** n_variables
+            :math:`q = n_symbols ** n_variables`
 
     b : array-like, (p,)
         The RHS of the linear equality constraints.
@@ -266,7 +269,7 @@ def moment(f, pmf, center=0, n=1):
     """
     Return the nth moment of `f` about `center`, distributed by `pmf`.
 
-    Explicitly:   \sum_i (f(i) - center)**n p(i)
+    Explicitly:   :math:`\\sum_i (f(i) - center)**n p(i)`
 
     Note, `pmf` is the joint distribution. So n=1 can be used even when
     calculating covariances such as <xx> and <xy>. The first would actually
@@ -289,15 +292,16 @@ def moment(f, pmf, center=0, n=1):
 
 def moment_constraints(pmf, n_variables, m, symbol_map, with_replacement=True):
     """
-    Returns `A` and `b` in `A x = b`, for an Ising-like system.
+    Returns :math:`A` and :math:`b` in :math:`A x = b`, for an Ising-like
+    system.
 
     If without replacement, we include only m-way first-moment constraints
     where each element is distinct. So <xx> and <yy> would not be included if
-    n_variables=2 and m=2.
+    `n_variables = 2` and `m = 2`.
 
-    The function we take means of is:  f(x) = \prod_i x_i
+    The function we take means of is:  :math:`f(x) = \\prod_i x_i`
 
-    The resulting matrix `A` is not guaranteed to have full rank.
+    The resulting matrix :math:`A` is not guaranteed to have full rank.
 
     Parameters
     ----------
@@ -308,14 +312,14 @@ def moment_constraints(pmf, n_variables, m, symbol_map, with_replacement=True):
     n_variables : int
         The number of random variables.
     m : int | list
-        The size of the moments to constrain. When `m=2`, pairwise means
-        are constrained to equal the pairwise means in `pmf`. When `m=3`,
+        The size of the moments to constrain. When `m = 2`, pairwise means
+        are constrained to equal the pairwise means in `pmf`. When `m = 3`,
         three-way means are constrained to equal those in `pmf.
         If m is a list, then include all m-way moments in the list.
     symbol_map : array-like
         A mapping from the ith symbol to a real number that is to be used in
-        the calculation of moments. For example, symbol_map=[-1, 1] corresponds
-        to the typical Ising model.
+        the calculation of moments. For example, `symbol_map=[-1, 1]`
+        corresponds to the typical Ising model.
     with_replacement : bool
         If `True`, variables are selected with replacement. The standard Ising
         does not select with replacement, and so terms like <xx>, <yy> do not
@@ -327,9 +331,9 @@ def moment_constraints(pmf, n_variables, m, symbol_map, with_replacement=True):
     A : array-like, shape (p, q)
         The matrix defining the marginal equality constraints and also the
         normalization constraint. The number of rows is:
-            p = C(n_variables, m) * n_symbols ** m + 1
+            :math:`p = C(n_variables, m) * n_symbols ** m + 1`
         where C() is the choose formula. The number of columns is:
-            q = n_symbols ** n_variables
+            :math:`q = n_symbols ** n_variables`
 
     b : array-like, (p,)
         The RHS of the linear equality constraints.
@@ -422,7 +426,7 @@ def ising_constraint_rank(dist, m, symbol_map=None, cumulative=True):
 
 def negentropy(p):
     """
-    Entropy which operates on vectors of length N.
+    Entropy which operates on vectors of length `N`.
 
     """
     negH = np.nansum(p * np.log2(p))
@@ -448,9 +452,9 @@ class MaximumEntropy(CVXOPT_Template):
                         version='1.0.1')
 class MarginalMaximumEntropy(MaximumEntropy):
     """
-    Find maximum entropy distribution subject to k-way marginal constraints.
+    Find maximum entropy distribution subject to `k`-way marginal constraints.
 
-    k=0 should reproduce the behavior of MaximumEntropy.
+    `k = 0` should reproduce the behavior of MaximumEntropy.
 
     """
     def __init__(self, dist, k, tol=None, prng=None):
@@ -534,9 +538,9 @@ class MarginalMaximumEntropy(MaximumEntropy):
 
 class MomentMaximumEntropy(MaximumEntropy):
     """
-    Find maximum entropy distribution subject to k-way marginal constraints.
+    Find maximum entropy distribution subject to `k`-way marginal constraints.
 
-    k=0 should reproduce the behavior of MaximumEntropy.
+    `k = 0` should reproduce the behavior of MaximumEntropy.
 
     """
     def __init__(self, dist, k, symbol_map, cumulative=True,

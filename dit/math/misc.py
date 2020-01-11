@@ -1,16 +1,14 @@
+# -*- coding: utf-8 -*-
+
 """
-miscellaneous math.
+Miscellaneous math.
 """
-try:
-    from functools import lru_cache
-except ImportError:
-    lru_cache = lambda maxsize: (lambda f: f)
+
+from functools import lru_cache, reduce
 from itertools import chain
 from operator import mul
 
 from numbers import Integral, Number
-
-from six.moves import reduce  # pylint: disable=redefined-builtin
 
 __all__ = ['is_number',
            'is_integer',

@@ -1,5 +1,7 @@
-"""
+# -*- coding: utf-8 -*-
 
+"""
+Some trivial bounds to the two-way secret key agreement problem.
 """
 
 from ..total_correlation import total_correlation

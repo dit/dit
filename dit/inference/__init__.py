@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Module for basic inference tools.
 

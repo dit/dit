@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 The variational distance.
 """
-
-from __future__ import division
 
 import numpy as np
 from scipy.optimize import minimize_scalar

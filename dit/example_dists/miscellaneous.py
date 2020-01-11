@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Miscellaneous distributions illustrating particular phenomena.
 """
-
-from __future__ import division
 
 from .. import Distribution
 

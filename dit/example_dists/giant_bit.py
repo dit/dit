@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Giant bit type distributions.
 """
-from __future__ import division
 
 from itertools import product
 
@@ -34,7 +35,8 @@ def giant_bit(n=3, k=2):
 
 def jeff(n):
     """
-    The JEFF distribution, where the conditional probability p(y|X) is linear in X.
+    The JEFF distribution, where the conditional probability :math:`p(y|X)` is
+    linear in X.
 
     Parameters
     ----------

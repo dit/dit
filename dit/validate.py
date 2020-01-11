@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
@@ -219,7 +218,7 @@ def validate_sequence(outcome):
         When the class of the outcome is not a sequence.
 
     """
-    from collections import Sequence
+    from collections.abc import Sequence
     if not isinstance(outcome, Sequence):
         raise ditException('Outcome class is not a sequence.')
     else:

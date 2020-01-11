@@ -1,4 +1,8 @@
-from __future__ import print_function
+# -*- coding: utf-8 -*-
+
+"""
+Example of using dit to compute maxent distributions.
+"""
 
 import dit
 import numpy as np
@@ -70,4 +74,3 @@ def example_C():
 
 if __name__ == '__main__':
     example_A()
-

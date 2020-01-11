@@ -59,15 +59,14 @@ https://anaconda.org/conda-forge/dit
 +-------------------------------------------------------------------+
 | Dependencies                                                      |
 +===================================================================+
-| * Python 2.7, 3.3, 3.4, 3.5, or 3.6                               |
+| * Python 3.3+                                                     |
 | * `boltons <https://boltons.readthedocs.io>`_                     |
-| * `contextlib2 <https://contextlib2.readthedocs.io>`_             |
 | * `debtcollector <https://docs.openstack.org/debtcollector/>`_    |
+| * `lattices <https://github.com/dit/lattices>`_                   |
 | * `networkx <https://networkx.github.io/>`_                       |
 | * `numpy <http://www.numpy.org/>`_                                |
-| * `prettytable <https://code.google.com/archive/p/prettytable/>`_ |
+| * `PLTable <https://github.com/platomav/PLTable>`_                |
 | * `scipy <https://www.scipy.org/>`_                               |
-| * `six <http://pythonhosted.org/six/>`_                           |
 +-------------------------------------------------------------------+
 
 Optional Dependencies

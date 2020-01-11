@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Various methods for binning real-valued data.
 """

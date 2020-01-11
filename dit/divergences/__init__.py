@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Divergences, measuring the distance between distributions. They are not
 necessarily true metrics, but some are.

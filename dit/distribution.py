@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
@@ -37,7 +36,6 @@ TODO: Examine thread-safety issues.  Most of the methods will not function
 properly if interrupted midway through (and the distribution is modified).
 
 """
-from __future__ import print_function, division
 
 import numpy as np
 
@@ -46,8 +44,6 @@ from .math import approximate_fraction
 from .exceptions import ditException
 
 from .params import ditParams
-
-from six.moves import map, zip # pylint: disable=redefined-builtin
 
 
 def prepare_string(dist, digits=None, exact=False, tol=1e-9,
@@ -695,7 +691,7 @@ class BaseDistribution(object):
             A string representation of the distribution.
 
         """
-        from six import StringIO
+        from io import StringIO
         s = StringIO()
 
         if exact is None:

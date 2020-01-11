@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
     Functions for generating sigma algebras on finite sets.
 

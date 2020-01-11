@@ -1,15 +1,13 @@
+# -*- coding: utf-8 -*-
+
 """
 Some estimators based on estimating local densities using k-nearest neighbors.
 """
-
-from __future__ import division
 
 import numpy as np
 
 from scipy.special import digamma
 from scipy.spatial import cKDTree
-
-from six.moves import zip  # pylint: disable=redefined-builtin
 
 from dit.utils import flatten
 

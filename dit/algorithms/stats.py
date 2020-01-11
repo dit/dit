@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Some basic statistics for distributions with numerical outcomes.
 """
-
-from __future__ import division
 
 import numpy as np
 
@@ -38,7 +38,7 @@ def mean(dist):
 
 def central_moment(dist, n):
     """
-    Computes the nth central moment of a distribution.
+    Computes the `n`th central moment of a distribution.
 
     Parameters
     ----------
@@ -68,7 +68,7 @@ def central_moment(dist, n):
 
 def standard_moment(dist, n):
     """
-    Computes the nth standard moment of a distribution.
+    Computes the `n`th standard moment of a distribution.
 
     Parameters
     ----------

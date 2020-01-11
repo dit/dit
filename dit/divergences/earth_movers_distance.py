@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Implementation of the Earth Mover's Distance.
 """
@@ -16,7 +18,7 @@ def categorical_distances(n):
     ----------
     n : int
         The size of the matrix.
-    
+
     Returns
     -------
     ds : np.ndarray
@@ -35,7 +37,7 @@ def numerical_distances(x_values, y_values):
         The real values on the x dimension.
     y_values : np.ndarray
         The real values on the y dimension.
-    
+
     Returns
     -------
     ds : np.ndarray
@@ -83,9 +85,9 @@ def earth_movers_distance_pmf(x, y, distances=None):
 
 def earth_movers_distance(dist1, dist2, distances=None):
     """
-    Compute the Earth Mover's Distance (EMD) between `dist1` and `dist2`. The EMD
-    is the least amount of "probability mass flow" that must occur to transform
-    `dist1` to `dist2`.
+    Compute the Earth Mover's Distance (EMD) between `dist1` and `dist2`. The
+    EMD is the least amount of "probability mass flow" that must occur to
+    transform `dist1` to `dist2`.
 
     Parameters
     ----------

@@ -1,12 +1,10 @@
+# -*- coding: utf-8 -*-
+
 """
 A lower bound on the two-way secret key agreement rate.
 """
 
-from __future__ import division
-
-from six.moves import zip_longest
-
-from itertools import chain
+from itertools import chain, zip_longest
 
 from ...algorithms.optimization import BaseAuxVarOptimizer
 from ...utils import unitful
@@ -75,8 +73,8 @@ class InteractiveSKAR(BaseAuxVarOptimizer):
     def _objective(self):
         """
         Maximize:
-            \sum I[U_i : Y | U_(0..i)] - I[U_i : Z | U_(0..i)] + (i even)
-            \sum I[U_i : X | U_(0..i)] - I[U_i : Z | U_(0..i)]   (i odd)
+            \\sum I[U_i : Y | U_(0..i)] - I[U_i : Z | U_(0..i)] + (i even)
+            \\sum I[U_i : X | U_(0..i)] - I[U_i : Z | U_(0..i)]   (i odd)
 
         Returns
         -------
@@ -93,8 +91,8 @@ class InteractiveSKAR(BaseAuxVarOptimizer):
         def objective(self, x):
             """
             Compute:
-                \sum I[U_i : Y | U_(0..i)] - I[U_i : Z | U_(0..i)] + (i even)
-                \sum I[U_i : X | U_(0..i)] - I[U_i : Z | U_(0..i)]   (i odd)
+                \\sum I[U_i : Y | U_(0..i)] - I[U_i : Z | U_(0..i)] + (i even)
+                \\sum I[U_i : X | U_(0..i)] - I[U_i : Z | U_(0..i)]   (i odd)
 
             Parameters
             ----------

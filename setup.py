@@ -5,8 +5,6 @@ Installation script for dit.
 
 """
 
-from __future__ import print_function
-
 import ast
 import re
 import sys
@@ -167,11 +165,7 @@ def main():
     with open('requirements.txt') as reqs:
         install_requires = reqs.read().splitlines()
 
-    if sys.version_info[:2] <= (3, 3):
-        with open('requirements_lt33.txt') as reqs:
-            install_requires.extend(reqs.read().splitlines())
-
-    python_requires = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, <4"
+    python_requires = "!=3.0.*, !=3.1.*, !=3.2.*, <4"
 
     packages = find_packages(exclude=['site', 'examples', 'docs', '*tests*'])
 
@@ -200,11 +194,11 @@ def main():
         classifiers=[
             "Intended Audience :: Science/Research",
             "License :: OSI Approved :: BSD License",
-            "Programming Language :: Python :: 2.7",
             "Programming Language :: Python :: 3.3",
             "Programming Language :: Python :: 3.4",
             "Programming Language :: Python :: 3.5",
             "Programming Language :: Python :: 3.6",
+            "Programming Language :: Python :: 3.7",
             "Topic :: Scientific/Engineering",
             "Topic :: Scientific/Engineering :: Mathematics",
             "Topic :: Scientific/Engineering :: Physics",
@@ -216,8 +210,8 @@ if __name__ == '__main__':
         print("To install, run 'python setup.py install'\n")
 
     v = sys.version_info[:2]
-    if v < (2, 7):
-        msg = "dit requires Python version >= 2.7"
+    if v < (3, 3):
+        msg = "dit requires Python version >= 3.4"
         print(msg.format(v))
         sys.exit(-1)
 

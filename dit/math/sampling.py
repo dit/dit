@@ -5,7 +5,6 @@
 Functions related to sampling from discrete distributions.
 
 """
-from __future__ import division
 
 import numpy as np
 

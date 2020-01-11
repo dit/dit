@@ -1,5 +1,7 @@
+# -*- coding: utf-8 -*-
+
 """
-The co-information aka the multivariate mututal information.
+The co-information aka the multivariate mutual information.
 """
 
 from ..helpers import normalize_rvs

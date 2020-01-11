@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 The copy mutual information, as defined by Kolchinsky & Corominas-Murtra.
 """
@@ -13,7 +15,7 @@ __all__ = [
 
 def binary_kullback_leibler_divergence(p, q):
     """
-    Compute the binary Killback Leibler divergence.
+    Compute the binary Killback-Leibler divergence.
 
     Parameters
     ----------
@@ -34,7 +36,7 @@ def binary_kullback_leibler_divergence(p, q):
 def specific_copy_mutual_information(p_Y_g_x, p_Y, x):
     """
     Compute the specific copy mutual information. Roughly it is the
-    portion of the specific mututal information which results from X = Y = x.
+    portion of the specific mutual information which results from X = Y = x.
 
     Parameters
     ----------
@@ -61,7 +63,7 @@ def specific_copy_mutual_information(p_Y_g_x, p_Y, x):
 def copy_mutual_information(dist, X, Y, rv_mode=None):
     """
     Computes the copy mutual information. Roughly, it is the
-    portion of the mutual information which results from X = Y.
+    portion of the mutual information which results from :math:`X = Y`.
 
     Parameters
     ----------

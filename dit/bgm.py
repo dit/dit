@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Joint distributions from Bayesian graphical models, aka Bayesian networks.
 
@@ -12,7 +14,6 @@ There is no causal relationship between X_0 and S_1...they are jointly
 generated from S_0.
 
 """
-import six
 
 import numpy as np
 import dit
@@ -32,7 +33,7 @@ def sanitize_inputs(digraph, nodes, attr):
         # Make sure we have dists for each node.
 
         try:
-            val = digraph.node[rv][attr]
+            val = digraph.nodes[rv][attr]
         except KeyError:
             msg = "Node {} is missing its distributions.".format(rv)
             raise ValueError(msg)
@@ -101,13 +102,14 @@ def build_samplespace(digraph, rv_names, attr):
     for rv in rv_names:
         if digraph.in_degree(rv) == 0:
             # No parents
-            dist = digraph.node[rv][attr]
+            dist = digraph.nodes[rv][attr]
         else:
             # Grab the first distribution.
-            val = digraph.node[rv][attr]
+            val = digraph.nodes[rv][attr]
             try:
-                dist = next(six.itervalues(val))
+                dist = next(iter(val.values()))
             except AttributeError:
+                print(val)
                 dist = val[1][0]
 
         # Since we are assuming each rv is completely alone and factored, we
@@ -144,7 +146,7 @@ def build_pfuncs(digraph, rv_names, attr, outcome_ctor):
         parents.sort(key=rv_index.__getitem__)
         parents_index[rv] = parents
 
-        val = digraph.node[rv][attr]
+        val = digraph.nodes[rv][attr]
         if callable(val):
             pfuncs[rv] = val
             continue
@@ -260,9 +262,9 @@ def distribution_from_bayesnet(digraph, nodes=None, sample_space=None, attr='dis
         ...         desired_output = '0'
         ...     return int(node_val == desired_output)
         ...
-        >>> g.node[0]['dist'] = uniform
-        >>> g.node[1]['dist'] = uniform
-        >>> g.node[2]['dist'] = xor
+        >>> g.nodes[0]['dist'] = uniform
+        >>> g.nodes[1]['dist'] = uniform
+        >>> g.nodes[2]['dist'] = xor
         >>> ss = ['000', '001', '010', '011', '100', '101', '110', '111']
         >>> d = dit.distribution_from_bayesnet(g, sample_space=ss)
 
@@ -274,16 +276,16 @@ def distribution_from_bayesnet(digraph, nodes=None, sample_space=None, attr='dis
         >>> zero = dit.Distribution(sample_space1, [1, 0])
         >>> sample_space2 = [(0, 0), (0, 1), (1, 0), (1, 1)]
         >>> xor = [ sample_space2, [zero, one, one, zero]]
-        >>> g.node[0]['dist'] = uniform
-        >>> g.node[1]['dist'] = uniform
-        >>> g.node[2]['dist'] = xor
+        >>> g.nodes[0]['dist'] = uniform
+        >>> g.nodes[1]['dist'] = uniform
+        >>> g.nodes[2]['dist'] = xor
         >>> d = dit.distribution_from_bayesnet(g)
 
     We can add noise whenever the output would normally be 1.
 
         >>> noisy = dit.Distribution(sample_space, [.1, .9])
         >>> dists = [zero, noisy, noisy, zero]
-        >>> g.node[2]['dist'][1] = dists
+        >>> g.nodes[2]['dist'][1] = dists
         >>> d = dit.distribution_from_bayesnet(g)
 
     """

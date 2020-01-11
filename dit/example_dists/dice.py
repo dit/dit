@@ -1,4 +1,8 @@
-from __future__ import division
+# -*- coding: utf-8 -*-
+
+"""
+Some specific examples of correlated dice.
+"""
 
 import itertools
 import dit
@@ -22,10 +26,12 @@ def summed_dice(a=1, b=1):
     """
     Two die X and Y are summed to form Z in the following way:
 
+    .. math::
         Z = X + b * Y
 
     X and Y are distributed as:
 
+    .. math::
         P(X=i, Y=j) = a / 36 + (1 - a) * delta_{ij} / 6
 
     Parameters
@@ -39,7 +45,7 @@ def summed_dice(a=1, b=1):
     Returns
     -------
     d : distribution
-        The joint distribution for P(X, Y, Z).
+        The joint distribution for :math:`P(X, Y, Z)`.
 
     References
     ----------

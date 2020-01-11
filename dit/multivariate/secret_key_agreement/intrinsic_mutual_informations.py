@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 """
 Intrinsic Mutual Informations
 """
-
-from __future__ import division
 
 from .base_skar_optimizers import BaseIntrinsicMutualInformation
 

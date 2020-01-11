@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 These are special interest implementations that should be used only in
 very particular situations.
@@ -68,7 +70,7 @@ DKL_pmf = relative_entropy_pmf
 
 def cross_entropy(d1, d2, pmf_only=True):
     """
-    Returns H(d1, d2)
+    Returns :math:`H(d1, d2)`
 
     """
     if pmf_only:

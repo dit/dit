@@ -45,8 +45,7 @@ extensions = ['sphinx.ext.autodoc',
              ]
 
 ipython_mplbackend = 'agg'
-ipython_execlines = ['from __future__ import division, print_function',
-                     'import numpy as np',
+ipython_execlines = ['import numpy as np',
                      'import matplotlib.pyplot as plt',
                      'plt.rcParams["figure.figsize"] = (8, 6)',
                      'plt.rcParams["savefig.facecolor"] = (1, 1, 1, 0)',

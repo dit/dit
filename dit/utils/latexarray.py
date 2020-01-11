@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Functions to convert pmfs to latex arrays.
 """
@@ -10,7 +12,6 @@ import tempfile
 import numpy as np
 import numpy.core.arrayprint as arrayprint
 
-from .exitstack import ExitStack
 from .context import cd, named_tempfile, tempdir
 from .misc import default_opener
 
@@ -235,7 +236,7 @@ def to_pdf(a, exact=False,
     fline = line.format(to_latex(a, exact=exact, decimals=decimals))
     latex = template.format(fline)
 
-    with ExitStack() as stack:  # pragma: no cover
+    with contextlib.ExitStack() as stack:  # pragma: no cover
         EC = stack.enter_context
         tmpdir = EC(tempdir())
         EC(cd(tmpdir))

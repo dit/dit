@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
@@ -18,7 +17,6 @@ But usually, we are interested in a fraction that matches within some tolerance
 and the max denominator that gives a particular tolerance is not obvious.
 
 """
-from __future__ import division
 
 from fractions import Fraction
 from math import modf
