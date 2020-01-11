@@ -4,17 +4,18 @@
 All the measures.
 """
 
-from .imin import PID_WB
-from .iproj import PID_Proj
-from .iwedge import PID_GK
-from .immi import PID_MMI
 from .ibroja import PID_BROJA
 from .iccs import PID_CCS
 from .idep import PID_dep, PID_RA
-from .iskar import PID_SKAR_owb
+from .imin import PID_WB
+from .immi import PID_MMI
 from .ipm import PID_PM
+from .ipreceq import PID_Preceq
+from .iproj import PID_Proj
 from .irav import PID_RAV
 from .irr import PID_RR
+from .iskar import PID_SKAR_owb
+from .iwedge import PID_GK
 
 
 __all_pids = [
@@ -30,4 +31,5 @@ __all_pids = [
     PID_RA,
     PID_RAV,
     PID_SKAR_owb,
+    PID_Preceq,
 ]
