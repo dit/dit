@@ -11,7 +11,7 @@ from dit.pid.measures.ipreceq import KolchinskiOptimizer, PID_Preceq
 from dit.pid.distributions import bivariates
 
 
-@pytest.mark.flaky(retry=5)
+@pytest.mark.flaky(reruns=5)
 def test_pid_preceq1():
     """
     Test ipreceq on a generic distribution.
@@ -24,7 +24,7 @@ def test_pid_preceq1():
     assert pid[((0, 1),)] == pytest.approx(0.5, abs=1e-4)
 
 
-@pytest.mark.flaky(retry=5)
+@pytest.mark.flaky(reruns=5)
 def test_pid_preceq2():
     """
     Test ipreceq on another generic distribution.
@@ -37,7 +37,7 @@ def test_pid_preceq2():
     assert pid[((0, 1),)] == pytest.approx(1.0, abs=1e-4)
 
 
-@pytest.mark.flaky(retry=5)
+@pytest.mark.flaky(reruns=5)
 def test_pid_preceq3():
     """
     Test ipreceq on a generic trivariate source distribution.
