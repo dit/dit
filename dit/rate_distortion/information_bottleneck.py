@@ -51,7 +51,7 @@ class InformationBottleneck(BaseAuxVarOptimizer):
             msg = "The information bottleneck is only defined for two variables."
             raise ditException(msg)
 
-        super(InformationBottleneck, self).__init__(dist=dist, rvs=rvs, crvs=crvs, rv_mode=rv_mode)
+        super().__init__(dist=dist, rvs=rvs, crvs=crvs, rv_mode=rv_mode)
         if not 0.0 <= alpha <= 1.0:
             msg = "alpha must be in [0.0, 1.0]."
             raise ditException(msg)
@@ -276,14 +276,14 @@ class InformationBottleneckDivergence(InformationBottleneck):
             consulted, which defaults to 'indices'.
         """
         self._divergence = divergence
-        super(InformationBottleneckDivergence, self).__init__(dist=dist,
-                                                              beta=beta,
-                                                              alpha=alpha,
-                                                              rvs=rvs,
-                                                              crvs=crvs,
-                                                              bound=bound,
-                                                              rv_mode=rv_mode,
-                                                              )
+        super().__init__(dist=dist,
+                         beta=beta,
+                         alpha=alpha,
+                         rvs=rvs,
+                         crvs=crvs,
+                         bound=bound,
+                         rv_mode=rv_mode,
+                         )
         self._default_hops *= 2
 
     def _distortion(self):

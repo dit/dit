@@ -83,7 +83,7 @@ class BaseProfile(metaclass=ABCMeta):
         dist : Distribution
             The distribution to compute the profile for.
         """
-        super(BaseProfile, self).__init__()
+        super().__init__()
         outcomes, pmf = zip(*dist.zipped(mode='atoms'))
         self.dist = Distribution(outcomes, pmf)
         self._compute()

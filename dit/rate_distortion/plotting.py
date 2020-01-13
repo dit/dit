@@ -213,7 +213,7 @@ class IBPlotter(BasePlotter):
         downsample : int
             Show markers every `downsample` points.
         """
-        ax = super(IBPlotter, self)._plot(ax, axis_1, axis_2, downsample)
+        ax = super()._plot(ax, axis_1, axis_2, downsample)
 
         if axis_1 is self._beta_axis:
             for curve in self.curves:

@@ -26,7 +26,7 @@ class KolchinskiOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
         Parameters
         ----------
         dist : Distribution
-            The distribution to compute the intrinsic mutual information of.
+            The distribution to compute the i_preceq of.
         sources : list, None
             A list of lists. Each inner list specifies the indexes of the random
             variables used to calculate the intrinsic mutual information. If None,
@@ -34,7 +34,7 @@ class KolchinskiOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
             to passing `rvs=dist.rvs`.
         target : list
             A single list of indexes specifying the random variables to
-            condition on.
+            treat as the target.
         bound : int, None
             Specifies a bound on the size of the auxiliary random variable. If None,
             then the theoretical bound is used.
@@ -46,7 +46,7 @@ class KolchinskiOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
             variable names. If `None`, then the value of `dist._rv_mode` is
             consulted, which defaults to 'indices'.
         """
-        super(KolchinskiOptimizer, self).__init__(dist, sources, target, rv_mode=rv_mode)
+        super().__init__(dist, sources, target, rv_mode=rv_mode)
 
         q_size = sum(self._shape[:-1]) - len(sources) + 1
         bound = min([bound, q_size]) if bound is not None else q_size
@@ -67,7 +67,7 @@ class KolchinskiOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
                                                 }
                                     }
 
-    def constraint_garbling(self, x, debug=False):
+    def constraint_garbling(self, x):
         """
         Constrane p(q | y) to be a garbling of each p(xi | y).
 
@@ -112,7 +112,7 @@ class KolchinskiOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
 
     def _objective(self):
         """
-        The entropy of the auxiliary random variable.
+        The mutual information between the target and the auxiliary variable.
 
         Returns
         -------

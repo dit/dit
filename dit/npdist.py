@@ -845,7 +845,7 @@ class Distribution(ScalarDistribution):
         """
         from .validate import validate_sequence
 
-        v = super(Distribution, self)._validate_outcomes()
+        v = super()._validate_outcomes()
         # If we survived, then all outcomes have the same class.
         # Now, we just need to make sure that class is a sequence.
         v &= validate_sequence(self.outcomes[0])

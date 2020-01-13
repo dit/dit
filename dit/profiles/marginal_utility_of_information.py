@@ -149,7 +149,7 @@ class MUIProfile(BaseProfile):
         self.widths = np.diff(list(sorted(self.profile.keys())) + [ent])
 
     def draw(self, ax=None): # pragma: no cover
-        ax = super(MUIProfile, self).draw(ax=ax)
+        ax = super().draw(ax=ax)
         pnts = np.arange(int(max(self.profile.keys()) + self.widths[-1]) + 1)
         ax.set_xticks(pnts)
         ax.set_xticklabels(pnts)

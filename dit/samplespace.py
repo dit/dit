@@ -120,7 +120,7 @@ class SampleSpace(ScalarSampleSpace):
     }
 
     def __init__(self, samplespace, product=None):
-        super(SampleSpace, self).__init__(samplespace)
+        super().__init__(samplespace)
 
         outcome = next(iter(samplespace))
         self._outcome_length = len(outcome)

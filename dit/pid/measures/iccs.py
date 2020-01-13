@@ -21,61 +21,61 @@ class PID_CCS(BasePID):
     _name = "I_ccs"
 
     @staticmethod
-    def _measure(d, inputs, output):
+    def _measure(d, sources, target):
         """
         Compute I_ccs, the average pointwise coinformation, where the average is taken over
-        events whose marginal pointwise input-output mutual information agree in sign with the
+        events whose marginal pointwise source-target mutual information agree in sign with the
         pointwise coinformation.
 
         Parameters
         ----------
         d : Distribution
             The distribution to compute i_ccs for.
-        inputs : iterable of iterables
-            The input variables.
-        output : iterable
-            The output variable.
+        sources : iterable of iterables
+            The source variables.
+        target : iterable
+            The target variable.
 
         Returns
         -------
         iccs : float
             The value of I_ccs.
         """
-        var_map = {var: i for i, var in enumerate(inputs + (output,))}
+        var_map = {var: i for i, var in enumerate(sources + (target,))}
         vars = list(sorted(var_map.values()))
-        d = d.coalesce(inputs + (output,))
+        d = d.coalesce(sources + (target,))
         marginals = [vars[:-1]] + [[i, vars[-1]] for i in vars[:-1]]
         d = maxent_dist(d, marginals)
         d = modify_outcomes(d, lambda o: tuple(o))
         sub_vars = [var for var in powerset(vars) if var]
         sub_dists = {var: d.marginal(var) for var in sub_vars}
 
-        def pmi(input_, output):
+        def pmi(source, target):
             """
             Compute the pointwise mutual information.
 
             Parameters
             ----------
-            input_ : iterable
-                The input variable.
-            output : iterable
-                The output variable.
+            source : iterable
+                The source variable.
+            target : iterable
+                The target variable.
 
             Returns
             -------
             pmi : dict
                 A dictionary mapping events to pointwise mutual information values.
             """
-            jdist = sub_dists[(input_, output)]
-            idist = sub_dists[(input_,)]
-            odist = sub_dists[(output,)]
+            jdist = sub_dists[(source, target)]
+            idist = sub_dists[(source,)]
+            odist = sub_dists[(target,)]
             return {e: np.log2(jdist[e] / (idist[(e[0],)] * odist[(e[1],)])) for e in jdist.outcomes}
 
         pmis = {tuple(marg): pmi(marg[0], marg[1]) for marg in marginals[1:]}
 
-        inputs_dist = sub_dists[tuple(vars[:-1])]
-        output_dist = sub_dists[(vars[-1],)]
-        joint_pmis = {e: np.log2(d[e]/(inputs_dist[e[:-1]]*output_dist[(e[-1],)])) for e in d.outcomes}
+        sources_dist = sub_dists[tuple(vars[:-1])]
+        target_dist = sub_dists[(vars[-1],)]
+        joint_pmis = {e: np.log2(d[e]/(sources_dist[e[:-1]]*target_dist[(e[-1],)])) for e in d.outcomes}
 
         coinfos = {e: np.log2(np.prod(
             [sub_dists[sub_var][tuple(e[i] for i in flatten(sub_var))] ** ((-1) ** len(sub_var)) for sub_var in sub_vars]))

@@ -57,7 +57,7 @@ class BaseOneWaySKAR(BaseAuxVarOptimizer):
             Specifies a bound on the size of the auxiliary random variable. If
             None, then the theoretical bound is used.
         """
-        super(BaseOneWaySKAR, self).__init__(dist, [rv_x, rv_y], rv_z, rv_mode=rv_mode)
+        super().__init__(dist, [rv_x, rv_y], rv_z, rv_mode=rv_mode)
 
         theoretical_bound_u = self._get_u_bound()
         bound_u = min(bound_u, theoretical_bound_u) if bound_u else theoretical_bound_u
@@ -139,7 +139,7 @@ class BaseIntrinsicMutualInformation(BaseAuxVarOptimizer):
             msg = "Intrinsic mutual informations require a conditional variable."
             raise ditException(msg)
 
-        super(BaseIntrinsicMutualInformation, self).__init__(dist, rvs, crvs, rv_mode=rv_mode)
+        super().__init__(dist, rvs, crvs, rv_mode=rv_mode)
 
         crv_index = len(self._shape) - 1
         crv_size = self._shape[crv_index]
@@ -160,7 +160,7 @@ class BaseIntrinsicMutualInformation(BaseAuxVarOptimizer):
             hop a number of times equal to the dimension of the conditioning
             variable(s).
         """
-        result = super(BaseIntrinsicMutualInformation, self).optimize(*args, **kwargs)
+        result = super().optimize(*args, **kwargs)
 
         # test against known upper bounds as well, in case space wasn't well sampled.
         options = [self.construct_constant_initial(),  # mutual information
@@ -256,7 +256,7 @@ class BaseMoreIntrinsicMutualInformation(BaseAuxVarOptimizer):
             msg = "Intrinsic mutual informations require a conditional variable."
             raise ditException(msg)
 
-        super(BaseMoreIntrinsicMutualInformation, self).__init__(dist, rvs, crvs, rv_mode=rv_mode)
+        super().__init__(dist, rvs, crvs, rv_mode=rv_mode)
 
         theoretical_bound = prod(self._shape)
         bound = min([bound, theoretical_bound]) if bound else theoretical_bound
@@ -493,7 +493,7 @@ class InnerTwoPartIntrinsicMutualInformation(BaseAuxVarOptimizer):
             msg = "Intrinsic mutual informations require a conditional variable."
             raise ditException(msg)
 
-        super(InnerTwoPartIntrinsicMutualInformation, self).__init__(dist, rvs + [j], crvs, rv_mode=rv_mode)
+        super().__init__(dist, rvs + [j], crvs, rv_mode=rv_mode)
 
         theoretical_bound_u = prod(self._shape[rv] for rv in self._rvs)
         bound_u = min([bound_u, theoretical_bound_u]) if bound_u else theoretical_bound_u
@@ -598,7 +598,7 @@ class BaseTwoPartIntrinsicMutualInformation(BaseAuxVarOptimizer):
             msg = "Intrinsic mutual informations require a conditional variable."
             raise ditException(msg)
 
-        super(BaseTwoPartIntrinsicMutualInformation, self).__init__(dist, rvs, crvs, rv_mode=rv_mode)
+        super().__init__(dist, rvs, crvs, rv_mode=rv_mode)
 
         theoretical_bound_j = prod(self._shape)
         bound_j = min([bound_j, theoretical_bound_j]) if bound_j else theoretical_bound_j

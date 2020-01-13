@@ -215,7 +215,7 @@ class BasePID(metaclass=ABCMeta):
         if ditParams['repr.print']:
             return self.to_string()
         else:
-            return super(BasePID, self).__repr__()
+            return super().__repr__()
 
     def __str__(self):
         """
@@ -384,7 +384,7 @@ class BaseIncompletePID(BasePID):
         eq : bool
             If `self` and `other` are the same partial information decomposition.
         """
-        equal_pi = super(BaseIncompletePID, self).__eq__(other)
+        equal_pi = super().__eq__(other)
         equal_red = (np.isclose(self._reds[node], other._reds[node], atol=1e-5, rtol=1e-5) for node in self._lattice)
         return equal_pi and all(equal_red)
 
@@ -603,7 +603,7 @@ class BaseUniquePID(BaseIncompletePID):
             if len(node) == 1 and node[0] in uniques and node not in self._pis:
                 self._pis[node] = uniques[node[0]]
 
-        super(BaseUniquePID, self)._compute()
+        super()._compute()
 
 
 class BaseBivariatePID(BaseIncompletePID):
@@ -618,4 +618,4 @@ class BaseBivariatePID(BaseIncompletePID):
             if len(node) == 2 and node not in self._reds:
                 self._reds[node] = self._measure(self._dist, node, self._output, **self._kwargs)
 
-        super(BaseBivariatePID, self)._compute()
+        super()._compute()

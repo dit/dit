@@ -47,7 +47,7 @@ class InteractiveSKAR(BaseAuxVarOptimizer):
             variable names. If `None`, then the value of `dist._rv_mode` is
             consulted, which defaults to 'indices'.
         """
-        super(InteractiveSKAR, self).__init__(dist, [rv_x, rv_y], rv_z, rv_mode=rv_mode)
+        super().__init__(dist, [rv_x, rv_y], rv_z, rv_mode=rv_mode)
 
         self._rounds = rounds
         if bound_func is None:

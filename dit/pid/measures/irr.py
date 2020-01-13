@@ -21,7 +21,7 @@ class PID_RR(BaseBivariatePID):
     _name = "I_rr"
 
     @staticmethod
-    def _measure(d, inputs, output):
+    def _measure(d, sources, target):
         """
         I_rr, the rescaled redundancy.
 
@@ -29,17 +29,17 @@ class PID_RR(BaseBivariatePID):
         ----------
         d : Distribution
             The distribution to compute i_mmi for.
-        inputs : iterable of iterables
-            The input variables.
-        output : iterable
-            The output variable.
+        sources : iterable of iterables
+            The source variables.
+        target : iterable
+            The target variable.
 
         Returns
         -------
         irr : float
             The value of I_rr.
         """
-        R_min = max([0, coinformation(d, inputs + (output,))])
-        R_mmi = min(coinformation(d, [input_, output]) for input_ in inputs)
-        I_s = coinformation(d, inputs)/min([entropy(d, input_) for input_ in inputs])
+        R_min = max([0, coinformation(d, sources + (target,))])
+        R_mmi = min(coinformation(d, [source, target]) for source in sources)
+        I_s = coinformation(d, sources)/min([entropy(d, source) for source in sources])
         return R_min + I_s * (R_mmi - R_min)

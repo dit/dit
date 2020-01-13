@@ -18,7 +18,7 @@ class BROJAOptimizer(BaseDistOptimizer, BaseConvexOptimizer):
     maximizing the coinformation.
     """
 
-    def __init__(self, dist, input, others, output, rv_mode=None):
+    def __init__(self, dist, source, others, target, rv_mode=None):
         """
         Initialize the optimizer.
 
@@ -26,25 +26,25 @@ class BROJAOptimizer(BaseDistOptimizer, BaseConvexOptimizer):
         ----------
         dist : Distribution
             The distribution to base the optimization on.
-        input : iterable
-            Variables to treat as inputs.
+        source : iterable
+            Variable to treat as the source.
         others : iterable of iterables
-            The other input variables.
-        output : iterable
-            The output variable.
+            The other source variables.
+        target : iterable
+            The target variable.
         rv_mode : bool
             Unused, provided for compatibility with parent class.
         """
-        dist = dist.coalesce((input,) + (sum(others, ()),) + (output,))
+        dist = dist.coalesce((source,) + (sum(others, ()),) + (target,))
         constraints = [[0, 2], [1, 2]]
-        super(BROJAOptimizer, self).__init__(dist, marginals=constraints, rv_mode=rv_mode)
-        self._input = {0}
+        super().__init__(dist, marginals=constraints, rv_mode=rv_mode)
+        self._source = {0}
         self._others = {1}
-        self._output = {2}
+        self._target = {2}
 
     def _objective(self):
         """
-        Minimize I(input:output|others).
+        Minimize I(source:target|others).
 
         Parameters
         ----------
@@ -56,11 +56,11 @@ class BROJAOptimizer(BaseDistOptimizer, BaseConvexOptimizer):
         obj : func
             The objective.
         """
-        cmi = self._conditional_mutual_information(self._input, self._output, self._others)
+        cmi = self._conditional_mutual_information(self._source, self._target, self._others)
 
         def objective(self, x):
             """
-            Compute I[input : output | others]
+            Compute I[source : target | others]
 
             Parameters
             ----------
@@ -84,45 +84,45 @@ class PID_BROJA(BaseUniquePID):
 
     Notes
     -----
-    This partial information decomposition, at least in the bivariate input case,
-    was independently suggested by Griffith.
+    This partial information decomposition, at least in the bivariate source
+    case, was independently suggested by Griffith.
     """
     _name = "I_broja"
 
     @staticmethod
-    def _measure(d, inputs, output, maxiter=1000):
+    def _measure(d, sources, target, maxiter=1000):
         """
-        This computes unique information as min{I(input : output | other_inputs)} over the space of distributions
-        which matches input-output marginals.
+        This computes unique information as min{I(source : target | other_sources)}
+        over the space of distributions which matches source-target marginals.
 
         Parameters
         ----------
         d : Distribution
             The distribution to compute i_broja for.
-        inputs : iterable of iterables
-            The input variables.
-        output : iterable
-            The output variable.
+        sources : iterable of iterables
+            The target variables.
+        target : iterable
+            The target variable.
 
         Returns
         -------
         ibroja : dict
-            The value of I_broja for each individual input.
+            The value of I_broja for each individual source.
         """
         uniques = {}
-        if len(inputs) == 2:
-            broja = BROJABivariateOptimizer(d, list(inputs), output)
+        if len(sources) == 2:
+            broja = BROJABivariateOptimizer(d, list(sources), target)
             broja.optimize(niter=1, maxiter=maxiter)
             opt_dist = broja.construct_dist()
-            uniques[inputs[0]] = coinformation(opt_dist, [[0], [2]], [1])
-            uniques[inputs[1]] = coinformation(opt_dist, [[1], [2]], [0])
+            uniques[sources[0]] = coinformation(opt_dist, [[0], [2]], [1])
+            uniques[sources[1]] = coinformation(opt_dist, [[1], [2]], [0])
         else:
-            for input_ in inputs:
-                others = sum([i for i in inputs if i != input_], ())
-                dm = d.coalesce([input_, others, output])
+            for source in sources:
+                others = sum([i for i in sources if i != source], ())
+                dm = d.coalesce([source, others, target])
                 broja = BROJAOptimizer(dm, (0,), ((1,),), (2,))
                 broja.optimize(niter=1, maxiter=maxiter)
                 d_opt = broja.construct_dist()
-                uniques[input_] = coinformation(d_opt, [[0], [2]], [1])
+                uniques[source] = coinformation(d_opt, [[0], [2]], [1])
 
         return uniques

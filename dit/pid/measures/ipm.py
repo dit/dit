@@ -16,16 +16,16 @@ class PID_PM(BasePID):
     _name = "I_pm"
 
     @staticmethod
-    def _measure(dist, inputs, output):
+    def _measure(dist, sources, target):
         """
         """
-        dist = dist.coalesce(inputs + (output,))
-        input_dists = [dist.marginal([i]) for i, _ in enumerate(inputs)]
-        inout_dists = [dist.marginal([i, len(inputs)]) for i, _ in enumerate(inputs)]
-        p_s_g_ts = [d.condition_on([1]) for d in inout_dists]
+        dist = dist.coalesce(sources + (target,))
+        source_dists = [dist.marginal([i]) for i, _ in enumerate(sources)]
+        source_target_dists = [dist.marginal([i, len(sources)]) for i, _ in enumerate(sources)]
+        p_s_g_ts = [d.condition_on([1]) for d in source_target_dists]
 
         def min_h_s(outcome):
-            return min(-np.log2(input_dists[i][(e,)]) for i, e in enumerate(outcome[:-1]))
+            return min(-np.log2(source_dists[i][(e,)]) for i, e in enumerate(outcome[:-1]))
 
         def min_h_s_g_t(outcome):
             t = outcome[-1]

@@ -312,7 +312,7 @@ class ScalarDistribution(BaseDistribution):
         See :meth:`validate` for a list of other potential exceptions.
 
         """
-        super(ScalarDistribution, self).__init__(prng)
+        super().__init__(prng)
 
         # Set *instance* attributes.
         self._meta['is_joint'] = False

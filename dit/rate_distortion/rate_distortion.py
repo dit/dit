@@ -57,7 +57,7 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
         except TypeError:
             pass
 
-        super(BaseRateDistortion, self).__init__(dist=dist, rvs=[rv], crvs=crvs, rv_mode=rv_mode)
+        super().__init__(dist=dist, rvs=[rv], crvs=crvs, rv_mode=rv_mode)
         self._alpha = alpha
         self._beta = beta
 
