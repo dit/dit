@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Routines for plotting rate-distortion and information bottleneck curves.
 """
@@ -8,16 +6,17 @@ from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 from operator import attrgetter
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
-from .curves import RDCurve, IBCurve
+from .curves import IBCurve, RDCurve
 
 
 __all__ = (
     'RDPlotter',
     'IBPlotter',
 )
+
 
 Axis = namedtuple('Axis', ['data', 'limit', 'label'])
 

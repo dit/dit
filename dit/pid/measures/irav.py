@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The I_rav measure, defining a 'redundancy' auxiliary variable to capture the
 redundant information between sources

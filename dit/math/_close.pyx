@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """
 Low level implementation of scalar `allclose`.
-
 """
 import sys
 

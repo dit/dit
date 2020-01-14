@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Classes to contextualize math operations in log vs linear space.
 

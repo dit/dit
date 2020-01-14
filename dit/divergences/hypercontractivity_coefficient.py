@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Compute the hypercontractivity coefficient:
     s*(X||Y) = max_{U - X - Y} I[U:Y]/I[U:X]

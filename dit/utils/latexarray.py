@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Functions to convert pmfs to latex arrays.
 """

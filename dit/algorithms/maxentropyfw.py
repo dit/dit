@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Another way to do maxent without using the convex solver from CVXOPT.
 

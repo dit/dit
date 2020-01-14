@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Some specific examples of correlated dice.
 """

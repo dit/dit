@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Implementation of the Earth Mover's Distance.
 """

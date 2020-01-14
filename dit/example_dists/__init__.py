@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 A selection of generic distributions which could be useful.
 """

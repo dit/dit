@@ -1,10 +1,7 @@
-# -*- coding: utf-8 -*-
-
 """
 A catch-all module for miscellaneous pmf-based operations.
 
 Eventually, we will need to reorganize.
-
 """
 
 import dit

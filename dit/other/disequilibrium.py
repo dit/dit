@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Disequilibrium, as measured by `Intensive entropic non-triviality measure` by
 P.W. Lamberti, M.T. Martin, A. Plastino, O.A. Rosso.

@@ -1,12 +1,9 @@
-# -*- coding: utf-8 -*-
-
 """
     Functions for generating sigma algebras on finite sets.
 
     Chetan Jhurani
     http://users.ices.utexas.edu/~chetan/Publications.html
     http://users.ices.utexas.edu/~chetan/reports/2009-03-ices-set_algebra_algorithms.pdf
-
 """
 
 from collections import defaultdict

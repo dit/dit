@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Construct generalizations of the xor process to have an alphabet of size m, and
 the i'th symbol be the sum mod m of the others.

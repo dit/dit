@@ -1,14 +1,11 @@
-# -*- coding: utf-8 -*-
-
 """
 The I_BROJA unique measure, as proposed by the BROJA team.
 """
 
-from ..pid import BaseUniquePID
-
 from ...algorithms import BaseConvexOptimizer
 from ...algorithms.distribution_optimizers import BaseDistOptimizer, BROJABivariateOptimizer
 from ...multivariate import coinformation
+from ..pid import BaseUniquePID
 
 
 class BROJAOptimizer(BaseDistOptimizer, BaseConvexOptimizer):

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The perplexity of a distribution.
 """

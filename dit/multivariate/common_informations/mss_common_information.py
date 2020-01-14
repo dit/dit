@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Compute the minimal sufficient statistic common information.
 """

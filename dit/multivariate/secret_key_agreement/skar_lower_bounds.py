@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Two lower bounds on the two-way secret key agreement rate.
 """
@@ -15,6 +13,7 @@ __all__ = [
 ]
 
 
+@unitful
 def secrecy_capacity_skar(dist, rvs=None, crvs=None, rv_mode=None, niter=None, bound_u=None):
     """
     The rate at which X and Y can agree upon a key with Z eavesdropping,
@@ -51,6 +50,7 @@ def secrecy_capacity_skar(dist, rvs=None, crvs=None, rv_mode=None, niter=None, b
     return max([a, b])
 
 
+@unitful
 def necessary_intrinsic_mutual_information(dist, rvs, crvs, rv_mode=None, niter=None, bound_u=None, bound_v=None):
     """
     Compute a non-trivial lower bound on secret key agreement rate.

@@ -1,19 +1,13 @@
-# -*- coding: utf-8 -*-
-
 """
 Helpful utilities for performing optimization.
 """
 
 from collections import defaultdict, namedtuple
-
 from functools import wraps
-
 from operator import itemgetter
-
 from string import digits, ascii_letters
 
 import numpy as np
-
 from scipy.optimize import OptimizeResult
 
 

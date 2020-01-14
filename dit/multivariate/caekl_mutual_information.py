@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The CAEKL mutual information, as define [Chan, Chung, et al. "Multivariate
 Mutual Information Inspired by Secret-Key Agreement." Proceedings of the IEEE

@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-
 """
 Module for basic inference tools.
-
 """
 from .binning import binned
 from .counts import get_counts, distribution_from_data

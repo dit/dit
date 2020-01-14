@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 A variety of distribution optimizers using scipy.optimize's methods.
 """

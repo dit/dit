@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.profiles.ConnectedInformations. Known examples taken from http://arxiv.org/abs/1409.4708 .
 """

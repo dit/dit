@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
-
 """
-Renyi Entropy
+Renyi Entropy.
 """
 
 import numpy as np
@@ -10,8 +8,10 @@ from ..helpers import normalize_rvs
 from ..utils import flatten
 from ..multivariate import entropy
 
-__all__ = ('renyi_entropy',
-          )
+
+__all__ = (
+    'renyi_entropy',
+)
 
 
 def renyi_entropy(dist, order, rvs=None, rv_mode=None):

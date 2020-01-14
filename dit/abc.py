@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Import several functions as shorthand.
 """

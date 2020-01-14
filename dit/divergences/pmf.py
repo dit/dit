@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-
 """
 Provide a common place to access pmf-based divergences.
-
 """
 
 from .earth_movers_distance import (

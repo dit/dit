@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """
 Low-level functions for sampling from discrete distributions.
@@ -94,4 +93,3 @@ def samples(np.ndarray[np.float_t, ndim=1] pmf,
                 break
 
     return out
-

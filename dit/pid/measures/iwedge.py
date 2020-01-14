@@ -1,11 +1,8 @@
-# -*- coding: utf-8 -*-
-
 """
 The I_wedge measure, as proposed by Griffith et al.
 """
 
 from ..pid import BasePID
-
 from ... import Distribution
 from ...algorithms import insert_meet
 from ...multivariate import coinformation

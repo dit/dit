@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-
 """
 Specialized distribution constructors.
-
 """
 
 import numpy as np

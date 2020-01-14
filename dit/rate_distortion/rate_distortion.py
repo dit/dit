@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Optimizers for computing rate-distortion points.
 """

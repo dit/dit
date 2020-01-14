@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Cohesion, a generalization bridging the total correlation and the dual total
 correlation.

@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
-
 """
-Abstract base classes
+Abstract base classes.
 """
 
 from abc import abstractmethod

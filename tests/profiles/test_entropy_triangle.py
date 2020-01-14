@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.profiles.entropy_triangle. Known examples taken from http://arxiv.org/abs/1409.4708 .
 """

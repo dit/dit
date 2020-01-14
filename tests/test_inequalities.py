@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Test various information theory inequalities.
 """

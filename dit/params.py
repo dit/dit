@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Defines `dit` configuration parameters.
 """
@@ -8,7 +6,11 @@ import warnings
 
 from .exceptions import InvalidBase
 
-__all__ = ['ditParams', 'reset_params']
+
+__all__ = [
+    'ditParams',
+    'reset_params'
+]
 
 
 def validate_boolean(b):

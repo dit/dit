@@ -1,12 +1,9 @@
-# -*- coding: utf-8 -*-
-
 """
 The dependency-decomposition based unique measure partial information decomposition.
 """
 
-from ..pid import BaseUniquePID
-
 from ...multivariate import coinformation
+from ..pid import BaseUniquePID
 from ...profiles import DependencyDecomposition
 
 

@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-
 """
 Simple implementation for channel capacity.
-
 """
 
 import numpy as np

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The lautum (mutual backwards) information, as defined by Palomar & Verdu.
 """

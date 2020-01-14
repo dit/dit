@@ -1,17 +1,15 @@
-# -*- coding: utf-8 -*-
-
 """
 Marginal Utility of Information, as defined here: http://arxiv.org/abs/1409.4708
 """
-
-from .base_profile import BaseProfile, profile_docstring
 
 from itertools import product
 
 import numpy as np
 
+from .base_profile import BaseProfile, profile_docstring
 from .information_partitions import ShannonPartition
 from ..utils import flatten, powerset
+
 
 __all__ = [
     'MUIProfile',

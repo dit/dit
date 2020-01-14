@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Function for calculating the simplest faction from a float.
 
@@ -15,7 +13,6 @@ An alternative approach is to use:
 
 But usually, we are interested in a fraction that matches within some tolerance
 and the max denominator that gives a particular tolerance is not obvious.
-
 """
 
 from fractions import Fraction

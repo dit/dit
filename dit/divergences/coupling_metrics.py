@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Metrics related to minimum entropy distributions with fixed marginals.
 """

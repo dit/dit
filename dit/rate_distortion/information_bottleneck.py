@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Optimizers for computing information bottleneck points.
 """
@@ -10,10 +8,12 @@ from ..algorithms import BaseAuxVarOptimizer
 from ..divergences.pmf import relative_entropy
 from ..exceptions import ditException
 
+
 class InformationBottleneck(BaseAuxVarOptimizer):
     """
     Base optimizer for information bottleneck type calculations.
     """
+
     _shotgun = 10
 
     def __init__(self, dist, beta, alpha=1.0, rvs=None, crvs=None, bound=None, rv_mode=None):

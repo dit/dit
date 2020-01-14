@@ -1,20 +1,14 @@
-# -*- coding: utf-8 -*-
-
 """
 Classes implementing the partial information decomposition.
 """
 
 from abc import ABCMeta, abstractmethod
-
 from copy import deepcopy
-
 from itertools import product
 
+from lattices.lattices import free_distributive_lattice
 import networkx as nx
 import numpy as np
-
-from lattices.lattices import free_distributive_lattice
-
 import prettytable
 
 from .. import ditParams

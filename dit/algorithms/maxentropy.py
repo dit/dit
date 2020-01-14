@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Maximum entropy with marginal distribution constraints.
 

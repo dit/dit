@@ -1,24 +1,20 @@
-# -*- coding: utf-8 -*-
-
 """
 The reduced intrinsic mutual information.
 
 Note: this code is nowhere near efficient enough to actually run. Don't try it.
 """
 
-from abc import abstractmethod
-
 from .base_skar_optimizers import BaseReducedIntrinsicMutualInformation
 from .intrinsic_mutual_informations import (intrinsic_total_correlation,
                                             intrinsic_dual_total_correlation,
                                             intrinsic_caekl_mutual_information,
                                             )
-from ... import Distribution
 
-__all__ = ['reduced_intrinsic_total_correlation',
-           'reduced_intrinsic_dual_total_correlation',
-           'reduced_intrinsic_CAEKL_mutual_information',
-          ]
+__all__ = [
+    'reduced_intrinsic_total_correlation',
+    'reduced_intrinsic_dual_total_correlation',
+    'reduced_intrinsic_CAEKL_mutual_information',
+]
 
 
 class ReducedIntrinsicTotalCorrelation(BaseReducedIntrinsicMutualInformation):

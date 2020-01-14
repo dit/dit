@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.multivariate.secret_key_agreement.two_part_intrinsic_mutual_information
 """

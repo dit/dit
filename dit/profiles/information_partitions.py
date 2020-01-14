@@ -1,20 +1,14 @@
-# -*- coding: utf-8 -*-
-
 """
 Information partitions, e.g. ways of dividing up the information in a joint
 distribution.
 """
 
 from abc import ABCMeta, abstractmethod
-
 from collections import defaultdict
-
 from itertools import islice
 
-import prettytable
-
 import numpy as np
-
+import prettytable
 from lattices.lattices import dependency_lattice, powerset_lattice
 
 from .. import ditParams

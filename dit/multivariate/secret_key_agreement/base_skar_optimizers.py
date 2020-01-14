@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Base class for the calculation of reduced and minimal intrinsic informations.
 """
@@ -13,6 +11,7 @@ from ...algorithms import BaseAuxVarOptimizer
 from ...exceptions import ditException
 from ...math import prod
 from ...utils import unitful
+
 
 __all__ = [
     'BaseIntrinsicMutualInformation',

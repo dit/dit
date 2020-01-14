@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The entropy triangle, from [Valverde-Albacete, Francisco Jose, and Carmen
 Pelaez-Moreno. "The Multivariate Entropy Triangle and Applications." Hybrid
@@ -12,6 +10,7 @@ from ..distribution import BaseDistribution
 from ..distconst import product_distribution, uniform_like
 from ..multivariate import (entropy, residual_entropy, dual_total_correlation,
                             total_correlation)
+
 
 __all__ = [
     'EntropyTriangle',

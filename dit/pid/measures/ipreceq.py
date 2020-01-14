@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Add the I_\preceq measure as defined by Kolchinski.
 """

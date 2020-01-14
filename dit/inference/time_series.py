@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Infer distributions from time series.
 """

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The I_ccs measure, as proposed by Ince.
 """

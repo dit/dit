@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Some estimators based on estimating local densities using k-nearest neighbors.
 """

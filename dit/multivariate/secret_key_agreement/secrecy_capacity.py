@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The secrecy capacity is the rate at which X and Y can agree upon a secret key
 while Z eavesdrops, and X controlls the channel p(YZ|X).

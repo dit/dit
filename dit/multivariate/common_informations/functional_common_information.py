@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The functional common information.
 """

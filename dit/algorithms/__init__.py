@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Various algorithms related to manipulating or measuring properties of
 distributions.

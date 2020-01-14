@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.algorithms.minimal_sufficient_statistic.
 """

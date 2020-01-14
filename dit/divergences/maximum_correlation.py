@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Compute the maximum correlation:
 .. math::

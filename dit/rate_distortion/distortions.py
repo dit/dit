@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Distortion measures for use with rate distortion theory.
 """
@@ -8,9 +6,6 @@ from collections import namedtuple
 
 import numpy as np
 
-from .information_bottleneck import (InformationBottleneck,
-                                     InformationBottleneckDivergence,
-                                     )
 from .rate_distortion import (RateDistortionHamming,
                               RateDistortionMaximumCorrelation,
                               RateDistortionResidualEntropy,

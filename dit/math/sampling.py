@@ -1,9 +1,5 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 """
 Functions related to sampling from discrete distributions.
-
 """
 
 import numpy as np

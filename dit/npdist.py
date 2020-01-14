@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Module defining NumPy array-based distribution classes.
 

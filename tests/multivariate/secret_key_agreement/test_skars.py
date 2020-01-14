@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Test the hierarchy of secret key agreement rates.
 """

@@ -1,11 +1,8 @@
-# -*- coding: utf-8 -*-
-
 """
 Functions for pruning or expanding the sample space of a distribution.
 
 This can be important when calculating meet and join random variables. It
 is also important for the calculations of various PID quantities.
-
 """
 
 from dit.samplespace import ScalarSampleSpace, SampleSpace, CartesianProduct

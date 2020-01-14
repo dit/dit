@@ -1,14 +1,11 @@
-# -*- coding: utf-8 -*-
-
 """
 Some basic Shannon information quantities.
-
 """
+
+import numpy as np
 
 from ..math import LogOperations
 from ..helpers import RV_MODES
-
-import numpy as np
 
 
 def entropy_pmf(pmf):

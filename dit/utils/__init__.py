@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-
 """
 Module providing miscellaneous functionality.
-
 """
 
 from .bindargs import bindcallargs

@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-
 """
 Helper non-public API functions for distributions.
-
 """
 
 # Standard library

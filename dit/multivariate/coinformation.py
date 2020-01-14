@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The co-information aka the multivariate mutual information.
 """

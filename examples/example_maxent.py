@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Example of using dit to compute maxent distributions.
 """
@@ -7,8 +5,7 @@ Example of using dit to compute maxent distributions.
 import dit
 import numpy as np
 
-try:
-    # The functions will import this for you...just make sure you have it.
+try:  # The functions will import this for you...just make sure you have it.
     import cvxopt
 except ImportError:
     print("Module cvxopt is required")

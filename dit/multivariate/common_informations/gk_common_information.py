@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Compute the Gacs-Korner common information
 """

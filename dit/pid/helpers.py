@@ -1,16 +1,13 @@
-# -*- coding: utf-8 -*-
-
 """
 Helper functions related to partial information decompositions.
 """
 
+import numpy as np
 import prettytable
 
-import numpy as np
-
-from .. import ditParams
 from .pid import sort_key
 from .measures import __all_pids
+from .. import ditParams
 
 
 __all__ = [

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Objects to compute single rate-distortion curves.
 """

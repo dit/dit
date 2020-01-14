@@ -1,16 +1,14 @@
-# -*- coding: utf-8 -*-
-
 """
 Centralized location to store validation functions.
-
 """
+
 import numpy as np
 
 from .exceptions import (
-    ditException,
     InvalidNormalization,
     InvalidOutcome,
     InvalidProbability,
+    ditException,
 )
 
 __all__ = [

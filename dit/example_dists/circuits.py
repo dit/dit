@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Distributions based on circuits with independent inputs.
 """

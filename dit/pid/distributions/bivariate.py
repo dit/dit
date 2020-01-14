@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Example bivariate distributions. The last index is designed to be the output.
 """
@@ -7,6 +5,7 @@ Example bivariate distributions. The last index is designed to be the output.
 from ... import Distribution
 from ...distconst import erasure, uniform
 from ...example_dists import jeff
+
 
 # three unrelated bit
 uni = uniform(['000', '001', '010', '011', '100', '101', '110', '111'])

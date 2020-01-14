@@ -1,11 +1,8 @@
-# -*- coding: utf-8 -*-
-
 """
 The I_mmi measure, briefly looked at by the BROJA team.
 """
 
 from ..pid import BasePID
-
 from ...multivariate import coinformation
 
 

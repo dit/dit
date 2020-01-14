@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The I_min measure as proposed by Williams & Beer.
 """

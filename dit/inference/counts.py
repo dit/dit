@@ -1,16 +1,14 @@
-# -*- coding: utf-8 -*-
-
 """
 Non-cython methods for getting counts and distributions from data.
 """
 
 import numpy as np
 
-try: # cython
+try:  # cython
 
     from .pycounts import counts_from_data, distribution_from_data
 
-except ImportError: # no cython
+except ImportError:  # no cython
 
     from boltons.iterutils import windowed_iter
     from collections import Counter, defaultdict

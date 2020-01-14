@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The copy mutual information, as defined by Kolchinsky & Corominas-Murtra.
 """

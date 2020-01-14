@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 This module contains various information ``profiles'', decomposing the total information into the information contained at different scales.
 """

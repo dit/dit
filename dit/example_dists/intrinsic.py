@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Distributions useful for illustrating the behavior of the various intrinsic
 measures.

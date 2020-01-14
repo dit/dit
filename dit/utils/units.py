@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Utilities for adding units to information values.
 """
@@ -12,7 +10,6 @@ from .. import ditParams
 
 
 try:
-
     import pint
 
     ureg = pint.UnitRegistry()

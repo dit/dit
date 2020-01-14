@@ -1,17 +1,15 @@
-# -*- coding: utf-8 -*-
-
 """
 Define miscellaneous utilities.
 """
 
-from debtcollector import removals
-
+import os
+import subprocess
+import sys
 from collections import OrderedDict
 from collections.abc import Iterable
 from itertools import tee
-import os
-import sys
-import subprocess
+
+from debtcollector import removals
 
 __all__ = (
     'default_opener',

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 I_plus/minus, by Finn & Lizier
 """

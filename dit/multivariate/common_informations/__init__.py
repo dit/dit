@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
-
 """
-Various common informations
+Various common informations.
 """
 
 from .exact_common_information import exact_common_information

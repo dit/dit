@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The Blahut-Arimoto algorithm for solving the rate-distortion problem.
 """

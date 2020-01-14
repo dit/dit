@@ -1,15 +1,12 @@
-# -*- coding: utf-8 -*-
-
 """
-Tests for dit.multivariate.secret_key_agreement.minimal_intrinsic_mutual_information
+Tests for dit.multivariate.secret_key_agreement.minimal_intrinsic_mutual_information.
 """
 
 import pytest
 
-from dit import Distribution
 from dit.example_dists.intrinsic import *
 from dit.exceptions import ditException
-from dit.multivariate import entropy, total_correlation
+from dit.multivariate import entropy
 from dit.multivariate.secret_key_agreement.minimal_intrinsic_mutual_informations import (
     minimal_intrinsic_total_correlation,
     minimal_intrinsic_dual_total_correlation,

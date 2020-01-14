@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
-
 """
 Information measures based on Mike DeWeese's multivariate mutual information.
 """
+
 from itertools import product
 
 from ..algorithms import BaseAuxVarOptimizer

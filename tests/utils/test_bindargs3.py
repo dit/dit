@@ -1,12 +1,10 @@
-# -*- coding: utf-8 -*-
-
 """
 More tests for dit.utils.bindars.
 """
 
-from dit.utils.bindargs import bindcallargs
-
 import pytest
+
+from dit.utils.bindargs import bindcallargs
 
 
 def F1(a, b, c=2, *, d, e, f=5, **kwargs):

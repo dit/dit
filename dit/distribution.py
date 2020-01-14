@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Module defining base distribution class.
 

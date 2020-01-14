@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Some basic statistics for distributions with numerical outcomes.
 """

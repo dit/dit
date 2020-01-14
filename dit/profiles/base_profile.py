@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The base information profile.
 """
@@ -95,7 +93,7 @@ class BaseProfile(metaclass=ABCMeta):
         """
         pass
 
-    def draw(self, ax=None): # pragma: no cover
+    def draw(self, ax=None):  # pragma: no cover
         """
         Draw the profile using matplotlib.
 

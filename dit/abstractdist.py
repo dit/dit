@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-
 """
 Abstract implementation of dense random vectors.
-
 """
 
 import itertools

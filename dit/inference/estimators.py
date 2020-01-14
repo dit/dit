@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Various methods for estimating information quantities from samples.
 """

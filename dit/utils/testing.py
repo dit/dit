@@ -1,19 +1,16 @@
-# -*- coding: utf-8 -*-
-
 """
 Utilities related to testing.
 """
 
-from boltons.iterutils import pairwise
-
 import numpy as np
-
+from boltons.iterutils import pairwise
 from hypothesis import assume
 from hypothesis.extra.numpy import arrays
 from hypothesis.strategies import composite, floats, integers, lists, tuples
 
-from .. import Distribution
 from .optimization import colon
+from .. import Distribution
+
 
 __all__ = ['distributions',
            'distribution_structures',

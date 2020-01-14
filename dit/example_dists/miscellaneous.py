@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Miscellaneous distributions illustrating particular phenomena.
 """

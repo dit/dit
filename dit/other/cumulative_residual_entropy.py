@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The (generalized) cumulative residual entropy and conditional (generalized)
 cumulative residual entropy.

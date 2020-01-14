@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The tightest known upper bound on two-way secret key agreement rate.
 """

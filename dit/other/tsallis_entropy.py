@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
-
 """
-Tsallis Entropy
+Tsallis Entropy.
 """
 
 import numpy as np
@@ -10,8 +8,10 @@ from ..helpers import normalize_rvs
 from ..utils import flatten
 from ..multivariate import entropy
 
-__all__ = ('tsallis_entropy',
-          )
+
+__all__ = (
+    'tsallis_entropy',
+)
 
 
 def tsallis_entropy(dist, order, rvs=None, rv_mode=None):

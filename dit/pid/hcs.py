@@ -1,18 +1,15 @@
-# -*- coding: utf-8 -*-
-
 """
 Partial Entropy Decomposition with the Hcs measure from Ince (2017)
 
 https://arxiv.org/abs/1702.01591
 """
 
-import numpy as np
 from itertools import combinations
 
+import numpy as np
 from lattices.lattices import free_distributive_lattice
 
 from .pid import BasePID, _transform
-
 from .. import modify_outcomes
 from ..algorithms import maxent_dist
 from ..multivariate import entropy

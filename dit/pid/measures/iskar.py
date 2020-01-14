@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The I_downarrow unique measure, proposed by Griffith et al, and shown to be inconsistent.
 
@@ -8,17 +6,14 @@ and source and the target, given the other sources. It turns out that these uniq
 are inconsistent, in that they produce differing redundancy values.
 """
 
-import numpy as np
-
 from ..pid import BaseUniquePID
-
-from ...exceptions import ditException
 from ...multivariate.secret_key_agreement import (
     no_communication_skar,
     one_way_skar,
     two_way_skar,
 )
 from ...utils import flatten
+
 
 __all__ = [
     'PID_SKAR_nw',

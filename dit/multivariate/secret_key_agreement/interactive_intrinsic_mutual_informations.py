@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 A lower bound on the two-way secret key agreement rate.
 """
