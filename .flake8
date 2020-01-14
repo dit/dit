@@ -1,0 +1,41 @@
+[flake8]
+exclude =
+    docs/conf.py
+    .git
+    __pycache__
+
+select = A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,B9
+enable_extensions =
+    H601    # Cohesion
+    I100    # Your import statements are in the wrong order.
+    I101    # The names in your from import are in the wrong order.
+    I201    # Missing newline between import groups.
+    I202    # Additional newline in a group of imports.
+ignore =
+    D200    # One line docstrings are fine.
+    D401    # Allow first line of docstring to be passive.
+    E501    # Prefer use of B950.
+    I002    # I don't use isort.
+    IF100   # x if bool else y is good.
+    RST301  # Allow directives in docstrings.
+per-file-ignores =
+    # Allow assert statements in tests:
+    test_*.py: S101
+    # Allow * imports in __init__.py files:
+    __init__.py: F401, F403
+    # allow unused imports, name issues:
+    dit/abc.py: N812, N814
+
+count = True
+max-line-length = 120
+show-source = True
+statistics = True
+
+radon-max-cc = 15
+
+docstring-convention = numpy
+
+import-order-style = pycharm
+application-import-names = dit
+
+no-accept-encodings = True

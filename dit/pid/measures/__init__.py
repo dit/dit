@@ -6,7 +6,8 @@ All the measures.
 
 from .ibroja import PID_BROJA
 from .iccs import PID_CCS
-from .idep import PID_dep, PID_RA
+from .idep import PID_RA, PID_dep
+from .igh import PID_GH
 from .imin import PID_WB
 from .immi import PID_MMI
 from .ipm import PID_PM
@@ -26,6 +27,7 @@ __all_pids = [
     PID_CCS,
     PID_PM,
     PID_Proj,
+    PID_GH,
     PID_BROJA,
     PID_dep,
     PID_RA,

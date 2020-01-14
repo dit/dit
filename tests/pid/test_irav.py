@@ -28,10 +28,10 @@ def test_pid_rav2():
     pid = PID_RAV(d, [[0], [1], [2]], [3])
     d_and = bivariates['and']
     pid_and = PID_RAV(d_and, [[0], [1]], [2])
-    assert pid[((0, 1), (1, 2))] == pytest.approx(pid_and[((0,1),)])
+    assert pid[((0, 1), (1, 2))] == pytest.approx(pid_and[((0, 1),)])
     assert pid[((0,), (2,))] == pytest.approx(pid_and[((0,),)])
     assert pid[((1,),)] == pytest.approx(pid_and[((1,),)])
-    assert pid[((0,), (1,), (2,))] == pytest.approx(pid_and[((0,),(1,))])
+    assert pid[((0,), (1,), (2,))] == pytest.approx(pid_and[((0,), (1,))])
     for atom in pid._lattice:
         if atom not in [((0, 1), (1, 2)), ((0,), (2,)), ((1,),), ((0,), (1,), (2,))]:
             assert pid[atom] == pytest.approx(0.0)
