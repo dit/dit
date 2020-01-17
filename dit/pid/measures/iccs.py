@@ -11,11 +11,11 @@ from ...algorithms import maxent_dist
 from ...utils import flatten, powerset
 
 
-
 class PID_CCS(BasePID):
     """
     The common change in surprisal partial information decomposition, as defined by Ince.
     """
+
     _name = "I_ccs"
 
     @staticmethod
@@ -73,7 +73,7 @@ class PID_CCS(BasePID):
 
         sources_dist = sub_dists[tuple(vars[:-1])]
         target_dist = sub_dists[(vars[-1],)]
-        joint_pmis = {e: np.log2(d[e]/(sources_dist[e[:-1]]*target_dist[(e[-1],)])) for e in d.outcomes}
+        joint_pmis = {e: np.log2(d[e] / (sources_dist[e[:-1]] * target_dist[(e[-1],)])) for e in d.outcomes}
 
         coinfos = {e: np.log2(np.prod(
             [sub_dists[sub_var][tuple(e[i] for i in flatten(sub_var))] ** ((-1) ** len(sub_var)) for sub_var in sub_vars]))

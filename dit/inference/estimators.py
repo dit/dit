@@ -29,7 +29,7 @@ def entropy_0(data, length=1):
     This returns the naive estimate of the entropy.
     """
     counts = get_counts(data, length)
-    probs = counts/counts.sum()
+    probs = counts / counts.sum()
     h0 = -np.nansum(probs * np.log2(probs))
     return h0
 
@@ -59,7 +59,7 @@ def entropy_1(data, length=1):
     total = counts.sum()
     digamma_N = digamma(total)
 
-    h1 = np.log2(np.e)*(counts/total*(digamma_N - digamma(counts))).sum()
+    h1 = np.log2(np.e) * (counts / total * (digamma_N - digamma(counts))).sum()
 
     return h1
 
@@ -91,8 +91,8 @@ def entropy_2(data, length=1):
     log2 = np.log(2)
     jss = [np.arange(1, count) for count in counts]
 
-    alt_terms = np.array([(((-1)**js)/js).sum() for js in jss])
+    alt_terms = np.array([(((-1)**js) / js).sum() for js in jss])
 
-    h2 = np.log2(np.e)*(counts/total*(digamma_N - digamma(counts) + log2 + alt_terms)).sum()
+    h2 = np.log2(np.e) * (counts / total * (digamma_N - digamma(counts) + log2 + alt_terms)).sum()
 
     return h2

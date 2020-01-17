@@ -53,12 +53,12 @@ def disequilibrium(dist, rvs=None, rv_mode=None):
     d.make_dense()
     pmf = d.pmf
 
-    Pe = np.ones_like(pmf)/pmf.size
+    Pe = np.ones_like(pmf) / pmf.size
     Pu = np.zeros_like(pmf); Pu[0] = 1
 
     J = JSD(np.vstack([pmf, Pe]))
     Q = JSD(np.vstack([Pe, Pu]))
-    D = J/Q
+    D = J / Q
 
     return D
 
@@ -90,5 +90,5 @@ def LMPR_complexity(dist, rvs=None, rv_mode=None):
     d = dist.copy()
     d.make_dense()
     D = disequilibrium(d, rvs, rv_mode)
-    H = entropy(d, rvs, rv_mode)/np.log2(len(d.outcomes))
-    return D*H
+    H = entropy(d, rvs, rv_mode) / np.log2(len(d.outcomes))
+    return D * H

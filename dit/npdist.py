@@ -321,8 +321,8 @@ class Distribution(ScalarDistribution):
     space. The order of the outcomes and probabilities will always match the
     order of the sample space, even though their length might not equal the
     length of the sample space.
-
     """
+
     ## Unadvertised attributes
     _sample_space = None
     _mask = None
@@ -419,7 +419,7 @@ class Distribution(ScalarDistribution):
         # And BaseDistribution is the parent of ScalarDistribution.
         # We do this because we want to init the prng AND ignore everything
         # that ScalarDistribution does.
-        super(ScalarDistribution, self).__init__(prng) # pylint: disable=bad-super-call
+        super(ScalarDistribution, self).__init__(prng)  # pylint: disable=bad-super-call
 
         # Set *instance* attributes
         self._meta['is_joint'] = True
@@ -482,7 +482,6 @@ class Distribution(ScalarDistribution):
 
         # Force the distribution to be numerical and a NumPy array.
         self.pmf = np.asarray(pmf, dtype=float)
-
 
         # Tuple outcomes, and an index.
         self.outcomes = tuple(outcomes)
@@ -1375,7 +1374,7 @@ class Distribution(ScalarDistribution):
             # Unsure if we should change this automatically.
             self._rv_mode = 'names'
 
-    def to_html(self, digits=None, exact=None, tol=1e-9): # pragma: no cover
+    def to_html(self, digits=None, exact=None, tol=1e-9):  # pragma: no cover
         """
         Construct an HTML representation of the distribution.
 
@@ -1523,7 +1522,7 @@ class Distribution(ScalarDistribution):
         # Info
         L = max(map(len, headers))
         for head, val in zip(headers, vals):
-            s.write("{0}{1}\n".format("{0}: ".format(head).ljust(L+2), val))
+            s.write("{0}{1}\n".format("{0}: ".format(head).ljust(L + 2), val))
         s.write("\n")
 
         # Distribution

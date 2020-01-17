@@ -14,17 +14,126 @@ enable_extensions =
 ignore =
     D200    # One line docstrings are fine.
     D401    # Allow first line of docstring to be passive.
+    E266    # We use multiple # for comment organization.
     E501    # Prefer use of B950.
     I002    # I don't use isort.
     IF100   # x if bool else y is good.
     RST301  # Allow directives in docstrings.
+
+    W605
+    W504
+    W191
+    T001
+    SF01
+    S607
+    S603
+    S602
+    S404
+    S311
+    S307
+    S110
+    S101
+    RST902
+    RST306
+    RST305
+    RST304
+    RST219
+    RST215
+    RST214
+    RST213
+    RST205
+    RST204
+    RST203
+    RST201
+    R701
+    R504
+    R503
+    PT006
+    PT001
+    N816
+    N814
+    N812
+    N807
+    N806
+    N804
+    N803
+    N802
+    N801
+    N400
+    I202
+    I201
+    I101
+    I100
+    H601
+    G010
+    G001
+    F405
+    F403
+    E800
+    E741
+    E731
+    E722
+    E702
+    E502
+    E402
+    E128
+    E127
+    E126
+    E124
+    E122
+    E117
+    E114
+    E111
+    E101
+    D414
+    D412
+    D409
+    D407
+    D405
+    D404
+    D403
+    D400
+    D301
+    D300
+    D210
+    D208
+    D207
+    D205
+    D105
+    D103
+    D102
+    D101
+    D100
+    C819
+    C815
+    C812
+    C416
+    C413
+    C408
+    C407
+    C405
+    C404
+    C403
+    C402
+    C401
+    C400
+    B950
+    B902
+    B007
+    B006
+    B001
+    A003
+    A002
+    A001
 per-file-ignores =
     # Allow assert statements in tests:
     test_*.py: S101
     # Allow * imports in __init__.py files:
     __init__.py: F401, F403
     # allow unused imports, name issues:
-    dit/abc.py: N812, N814
+    dit/abc.py: F401, N812, N814
+    # dit/divergences/pmf.py is like an __init__.py:
+    dit/divergences/pmf.py: F401
 
 count = True
 max-line-length = 120

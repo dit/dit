@@ -16,6 +16,7 @@ class PID_RR(BaseBivariatePID):
     This measure is known to be accurate for gaussian random variables. It was also
     briefly and tangentially studied by the BROJA team.
     """
+
     _name = "I_rr"
 
     @staticmethod
@@ -39,5 +40,5 @@ class PID_RR(BaseBivariatePID):
         """
         R_min = max([0, coinformation(d, sources + (target,))])
         R_mmi = min(coinformation(d, [source, target]) for source in sources)
-        I_s = coinformation(d, sources)/min([entropy(d, source) for source in sources])
+        I_s = coinformation(d, sources) / min([entropy(d, source) for source in sources])
         return R_min + I_s * (R_mmi - R_min)

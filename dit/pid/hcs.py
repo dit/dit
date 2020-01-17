@@ -32,7 +32,6 @@ def h_cs(d, inputs, output=None):
     hcs : float
         The value of H_cs.
     """
-
     var_map = {var: i for i, var in enumerate(inputs)}
     vars = list(sorted(var_map.values()))
     d = d.coalesce(inputs)
@@ -51,7 +50,7 @@ def h_cs(d, inputs, output=None):
         coinfos[e] = 0.0
         for sub_var in sub_vars:
             P = sub_dists[sub_var][tuple([e[i] for i in flatten(sub_var)])]
-            coinfos[e] = coinfos[e] + np.log2(P)*((-1) ** (len(sub_var)))
+            coinfos[e] = coinfos[e] + np.log2(P) * ((-1) ** (len(sub_var)))
 
     # sum positive pointwise terms
     hcs = sum(d[e] * coinfos[e] for e in d.outcomes if coinfos[e] > 0.0)
@@ -64,6 +63,7 @@ class PED_CS(BasePID):
 
     https://arxiv.org/abs/1702.01591
     """
+
     _name = "H_cs"
     _measure = staticmethod(h_cs)
     _red_string = "H_r"

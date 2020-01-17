@@ -40,6 +40,7 @@ class PID_WB(BasePID):
     """
     The Williams & Beer partial information decomposition.
     """
+
     _name = "I_min"
 
     @staticmethod

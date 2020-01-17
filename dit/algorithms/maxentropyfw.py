@@ -51,19 +51,19 @@ def initial_point_generic(dist, rvs, A=None, b=None, isolated=None, **kwargs):
 
         # Reduce the size of A so that only nonzero elements are searched.
         # Also make it full rank.
-        Asmall = A[:, variables.nonzero] # pylint: disable=no-member
+        Asmall = A[:, variables.nonzero]  # pylint: disable=no-member
         Asmall, b, _ = as_full_rank(Asmall, b)
         Asmall = matrix(Asmall)
         b = matrix(b)
     else:
         # Assume they are already CVXOPT matrices
-        if A.size[1] == len(variables.nonzero): # pylint: disable=no-member
+        if A.size[1] == len(variables.nonzero):  # pylint: disable=no-member
             Asmall = A
         else:
             msg = 'A must be the reduced equality constraint matrix.'
             raise Exception(msg)
 
-    n = len(variables.nonzero) # pylint: disable=no-member
+    n = len(variables.nonzero)  # pylint: disable=no-member
     x = variable(n)
     t = variable()
 
@@ -79,7 +79,7 @@ def initial_point_generic(dist, rvs, A=None, b=None, isolated=None, **kwargs):
 
         opt = op_runner(objective, constraints, **kwargs)
         if opt.status == 'optimal':
-            #print("Found initial point with tol={}".format(tol))
+            # print("Found initial point with tol={}".format(tol))
             break
     else:
         msg = 'Could not find valid initial point: {}'
@@ -99,8 +99,8 @@ def initial_point_generic(dist, rvs, A=None, b=None, isolated=None, **kwargs):
 
     # Do not build the full vector since this is input to the reduced
     # optimization problem.
-    #xx = np.zeros(len(dist.pmf))
-    #xx[variables.nonzero] = xopt
+    # xx = np.zeros(len(dist.pmf))
+    # xx[variables.nonzero] = xopt
 
     return xopt, opt
 
@@ -189,7 +189,7 @@ def marginal_maxent_generic(dist, rvs, **kwargs):
     # Reduce the size of A so that only nonzero elements are searched.
     # Also make it full rank.
     variables = isolate_zeros_generic(dist, rvs)
-    Asmall = A[:, variables.nonzero] # pylint: disable=no-member
+    Asmall = A[:, variables.nonzero]  # pylint: disable=no-member
     Asmall, b, rank = as_full_rank(Asmall, b)
     Asmall = matrix(Asmall)
     b = matrix(b)
@@ -211,8 +211,9 @@ def marginal_maxent_generic(dist, rvs, **kwargs):
 
     # For the gradient, we are going to keep the elements we know to be zero
     # at zero. Generally, the gradient is: log2(x_i) + 1 / ln(b)
-    nonzero = variables.nonzero # pylint: disable=no-member
+    nonzero = variables.nonzero  # pylint: disable=no-member
     ln2 = np.log(2)
+
     def gradient(x):
         # This operates only on nonzero elements.
 
@@ -234,7 +235,7 @@ def marginal_maxent_generic(dist, rvs, **kwargs):
     xfinal = np.zeros(A.shape[1])
     xfinal[nonzero] = x
 
-    return xfinal, obj#, Asmall, b, variables
+    return xfinal, obj  # , Asmall, b, variables
 
 
 @removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
@@ -290,7 +291,7 @@ def marginal_maxent_dists(dist, k_max=None, maxiters=1000, tol=1e-3, verbose=Fal
     # the full space. We also know the answer in these cases.
 
     # This is safe since the distribution must be dense.
-    k0 = dit.Distribution(outcomes, [1]*len(outcomes), base='linear', validate=False)
+    k0 = dit.Distribution(outcomes, [1] * len(outcomes), base='linear', validate=False)
     k0.normalize()
 
     k1 = dit.product_distribution(dist)

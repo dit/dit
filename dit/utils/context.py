@@ -43,7 +43,7 @@ def named_tempfile(*args, **kwargs):
     args = list(args)
     args[-1] = False
 
-    #mode = args[0]
+    # mode = args[0]
     ntf = tempfile.NamedTemporaryFile(*args, **kwargs)
     try:
         yield ntf

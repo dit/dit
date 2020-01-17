@@ -246,7 +246,7 @@ def atom_set(F, X=None, method=2):
             # elements...in addition to taking forever, we can't even store
             # that in memory.
             #
-            subsets = sorted(powerset(cet))[1:-1] # nonempty and proper
+            subsets = sorted(powerset(cet))[1:-1]  # nonempty and proper
             for subset in subsets:
                 if frozenset(subset) in F:
                     break

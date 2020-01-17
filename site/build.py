@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: ascii -*-
 
 """
 This script can be used to build the website.
@@ -7,7 +6,6 @@ This script can be used to build the website.
 It is also run on each commit to github.
 
 Example:  ./build public_html
-
 """
 
 import os
@@ -16,7 +14,9 @@ import subprocess
 import sys
 import time
 
+
 BUILD_DIR = 'build'
+
 
 def get_build_dir():
     try:
@@ -28,12 +28,14 @@ def get_build_dir():
     build_dir = os.path.join(basedir, build_dir)
     return build_dir
 
+
 def build(dest):
     source = os.path.split(os.path.abspath(__file__))[0]
     source = os.path.join(source, 'src')
 
     # We aren't doing anything fancy yet.
     shutil.copytree(source, dest)
+
 
 def update_gitrepo():
     source = os.path.split(os.path.abspath(__file__))[0]
@@ -43,6 +45,7 @@ def update_gitrepo():
         subprocess.call(['git', 'pull'])
     finally:
         os.chdir(initial)
+
 
 def main():
     try:
@@ -67,10 +70,11 @@ def main():
         # Then its a bad symlink.
         os.unlink(build_dir)
 
-    #update_gitrepo()
+    # update_gitrepo()
     build(build_dir)
     subprocess.call(['touch', build_dir])
     print("Done.\n")
+
 
 if __name__ == '__main__':
     main()

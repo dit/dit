@@ -84,6 +84,7 @@ class PID_BROJA(BaseUniquePID):
     This partial information decomposition, at least in the bivariate source
     case, was independently suggested by Griffith.
     """
+
     _name = "I_broja"
 
     @staticmethod

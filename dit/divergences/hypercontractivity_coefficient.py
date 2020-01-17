@@ -84,7 +84,7 @@ class HypercontractivityCoefficient(BaseAuxVarOptimizer):
             pmf = self.construct_joint(x)
             a = mi_a(pmf)
             b = mi_b(pmf)
-            return -(a/b) if not np.isclose(b, 0.0) else np.inf
+            return -(a / b) if not np.isclose(b, 0.0) else np.inf
 
         return objective
 

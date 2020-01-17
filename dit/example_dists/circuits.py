@@ -10,7 +10,7 @@ def Unq():
     """
     A distribution with unique information.
     """
-    pmf = [1/4] * 4
+    pmf = [1 / 4] * 4
     outcomes = [
         ('a', 'b', 'ab'),
         ('a', 'B', 'aB'),
@@ -26,7 +26,7 @@ def Rdn():
     """
     A distribution with redundant information.
     """
-    pmf = [1/2, 1/2]
+    pmf = [1 / 2] * 2
     outcomes = ['000', '111']
     d = Distribution(outcomes, pmf)
     return d
@@ -36,7 +36,7 @@ def Xor():
     """
     A distribution with synergistic information, [0] xor [1] = [2]
     """
-    pmf = [1/4] * 4
+    pmf = [1 / 4] * 4
     outcomes = ['000', '011', '101', '110']
     d = Distribution(outcomes, pmf)
     return d
@@ -67,7 +67,7 @@ def RdnXor():
     Concatenation of Rdn() and Xor(). Distribution has both redundant and
     synergistic information.
     """
-    pmf = [1/8] * 8
+    pmf = [1 / 8] * 8
     outcomes = [
         ('r0', 'r0', 'r0'),
         ('r0', 'r1', 'r1'),
@@ -97,7 +97,7 @@ def Subtle():
     """
     The Subtle distribution.
     """
-    pmf = [1/3] * 3
+    pmf = [1 / 3] * 3
     outcomes = [('0', '0', '00'), ('1', '1', '11'), ('0', '1', '01')]
     d = Distribution(outcomes, pmf)
     return d

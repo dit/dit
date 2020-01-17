@@ -32,15 +32,15 @@ def str_outcome_ctor(iterable):
 # See get_outcome_constructor() and get_produc_func() for more details.
 #
 constructor_map = {
-    str : str_outcome_ctor,
+    str: str_outcome_ctor,
 }
 
 
 class RV_Mode(object):
     """
     Class to manage how rvs and crvs are specified and interpreted.
-
     """
+
     INDICES = 0
     NAMES = 1
 

@@ -165,7 +165,7 @@ class Uniquifier(object):
     def __init__(self):
         """
         """
-        self.chars = digits+ascii_letters
+        self.chars = digits + ascii_letters
         self.mapping = {}
         self.inverse = {}
 

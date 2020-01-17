@@ -3,13 +3,12 @@ The I_rav measure, defining a 'redundancy' auxiliary variable to capture the
 redundant information between sources
 """
 
-from ..pid import BaseBivariatePID, BasePID
+from ..pid import BasePID
 
 from ...multivariate import (generalized_dual_total_correlation as B,
                              total_correlation as T, coinformation)
 from ...utils import partitions, extended_partition
 from ...distconst import RVFunctions, insert_rvf
-from dit.profiles import ShannonPartition
 
 __all__ = [
     'PID_RAV',
@@ -20,8 +19,8 @@ def corex_o_information(dist):
     """
     """
     n = dist.outcome_length()
-    rvs = [[i] for i in range(n-2)]
-    crvs = [n-2, n-1]
+    rvs = [[i] for i in range(n - 2)]
+    crvs = [n - 2, n - 1]
     lim = min(len(rvs) + 1, 3) + 1
     a = T(dist) - sum(B(dist, order=order) for order in range(2, lim))
     b = T(dist, rvs=rvs, crvs=crvs) - sum(B(dist, order=order, rvs=rvs, crvs=crvs) for order in range(2, lim))
@@ -32,6 +31,7 @@ class PID_RAV(BasePID):
     """
     The maximum coinformation auxiliary random variable method.
     """
+
     _name = "I_RAV"
 
     @staticmethod
@@ -72,7 +72,8 @@ class PID_RAV2(BasePID):
     """
     The maximum coinformation auxiliary random variable method.
     """
-    _name = "I_RAV"
+
+    _name = "I_RAV2"
 
     @staticmethod
     def _measure(d, sources, target):

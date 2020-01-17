@@ -13,6 +13,7 @@ class PID_MMI(BasePID):
     This measure is known to be accurate for gaussian random variables. It was also
     briefly and tangentially studied by the BROJA team.
     """
+
     _name = "I_mmi"
 
     @staticmethod

@@ -40,13 +40,12 @@ def unitsum_tuples(n, k, mn, mx):
     """
     # In order to add up to 1 properly...we must have:
     #   sum((mx, mn/(k-1), ... , mn/(k-1))) == 1
-    s = mx + (k-1) * mn
+    s = mx + (k - 1) * mn
     tol = 1e-9
     if not (abs(s - 1) <= tol):
         msg = "Specified min and max will not create unitsum tuples."
         e = Exception(msg)
         raise(e)
-
 
     # Now we convert from "number of increments/items" to "number of points"
     # The number of points behaviors similar to numpy.linspace(mn,mx,n)
@@ -61,7 +60,7 @@ def unitsum_tuples(n, k, mn, mx):
         t = tuple((seq[i] - seq[i + 1] - shift) for i in range(k))
         # This should be a unitsum tuple.
         s = float(sum(t))
-        assert( s > .001 )
+        assert(s > .001)
         yield tuple(t)
 
         for idx, val in enumerate(seq):  # pragma: no branch
@@ -110,7 +109,7 @@ def slots(n, k, normalized=False):
         while i:
             yield tuple((seq[i] - seq[i + 1]) / nf for i in range(k))
             i = seq.index(0) - 1
-            seq[i:k] = [seq[i] - 1] * (k-i)
+            seq[i:k] = [seq[i] - 1] * (k - i)
     else:
         while i:
             yield tuple((seq[i] - seq[i + 1]) for i in range(k))

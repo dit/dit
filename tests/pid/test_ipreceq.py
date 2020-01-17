@@ -41,7 +41,7 @@ def test_pid_preceq3():
     Test ipreceq on a generic trivariate source distribution.
     """
     events = ['0000', '0010', '0100', '0110', '1000', '1010', '1100', '1111']
-    d = Distribution(events, [1/8]*8)
+    d = Distribution(events, [1 / 8] * 8)
     ko = KolchinskiOptimizer(d, [[0], [1], [2]], [3])
     res = ko.optimize()
     assert -res.fun == pytest.approx(0.13795718192252743, abs=1e-3)

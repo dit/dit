@@ -154,6 +154,7 @@ def log_func(b):
             raise InvalidBase(b)
 
         Z = np.log(b)
+
         def log(x, func=np.log):
             """
             Return the log of `x`
@@ -192,6 +193,7 @@ class Operations(object):
     of the second logarithm will be less than 0, yielding NaN.
 
     """
+
     ### Do we allow base == 'e' or should we convert to its numerical value?
     ### Ans: We store whatever was specified but provide get_base() with an
     ###      option to return a numerical base.
@@ -433,7 +435,7 @@ class LinearOperations(Operations):
             The inverted array.
 
         """
-        z = 1/x
+        z = 1 / x
         return z
 
     def normalize(self, x, axis=None):
@@ -740,7 +742,7 @@ class LogOperations(Operations):
 
 
 cache = {
-    'linear' : LinearOperations(),
+    'linear': LinearOperations(),
     2: LogOperations(2),
     'e': LogOperations('e')
 }

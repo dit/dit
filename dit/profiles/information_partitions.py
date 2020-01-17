@@ -5,7 +5,6 @@ distribution.
 
 from abc import ABCMeta, abstractmethod
 from collections import defaultdict
-from itertools import islice
 
 import numpy as np
 import prettytable
@@ -94,7 +93,7 @@ class BaseInformationPartition(metaclass=ABCMeta):
 
         # Subset-sum type thing, basically co-information calculations.
         for node in self._lattice:
-            Is[node] = sum((-1)**(len(rv)+1)*Hs[rv] for rv in self._lattice.descendants(node, include=True))
+            Is[node] = sum((-1)**(len(rv) + 1) * Hs[rv] for rv in self._lattice.descendants(node, include=True))
 
         # Mobius inversion of the above, resulting in the Shannon atoms.
         for node in self._lattice:
@@ -148,7 +147,7 @@ class BaseInformationPartition(metaclass=ABCMeta):
         Use PrettyTable to create a nice table.
         """
         table = prettytable.PrettyTable(['measure', self.unit])  # pylint: disable=no-member
-        if ditParams['text.font'] == 'linechar': # pragma: no cover
+        if ditParams['text.font'] == 'linechar':  # pragma: no cover
             try:
                 table.set_style(prettytable.UNICODE_LINES)
             except AttributeError:
@@ -379,7 +378,7 @@ class DependencyDecomposition(object):
         ### TODO: add some logic for the format string, so things look nice
         # with arbitrary values
         for m in measures:
-            table.float_format[m] = ' {}.{}'.format(digits+2, digits)
+            table.float_format[m] = ' {}.{}'.format(digits + 2, digits)
         items = [(tuplefy(row[0]), row[1]) for row in self.atoms.items()]
         items = sorted(items, key=lambda row: row[0])
         items = sorted(items, key=lambda row: sorted([len(d) for d in row[0]], reverse=True), reverse=True)

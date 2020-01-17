@@ -19,7 +19,7 @@ def all_info_measures(vars):
         others = set(vars) - set(stuff)
         for part in partitions(stuff, tuples=True):
             for cond in powerset(others):
-                yield (part , cond)
+                yield (part, cond)
 
 
 @pytest.mark.parametrize('meas', all_info_measures(range(4)))

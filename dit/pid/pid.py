@@ -361,6 +361,7 @@ class BaseIncompletePID(BasePID):
     REDUCED_PID : bool
     SELF_REDUNDANCY : bool
     """
+
     LATTICE_MONOTONICITY = True
     REDUCED_PID = True
     SELF_REDUNDANCY = True

@@ -88,7 +88,6 @@ def _make_distribution(outcomes, pmf=None, sample_space=None,
     d.outcomes = tuple(outcomes)
     d._outcomes_index = dict(zip(outcomes, range(len(outcomes))))
 
-
     if isinstance(sample_space, BaseSampleSpace):
         if sample_space._meta['is_joint']:
             msg = '`sample_space` must be a scalar sample space.'
@@ -472,7 +471,7 @@ class ScalarDistribution(BaseDistribution):
             The new distribution.
 
         """
-        from .npdist import Distribution # pylint: disable=cyclic-import
+        from .npdist import Distribution  # pylint: disable=cyclic-import
         if isinstance(dist, Distribution):
             from .convert import DtoSD
             d = DtoSD(dist, extract)
@@ -888,7 +887,7 @@ class ScalarDistribution(BaseDistribution):
         5.0              1/36
         6.0              1/36
         """
-        op = lambda x, y: (1.0*x) / y
+        op = lambda x, y: (1.0 * x) / y
         msg = "Cannot divide types {0} by {1}"
         return self.__meta_magic(other, op, msg)
 
@@ -942,7 +941,7 @@ class ScalarDistribution(BaseDistribution):
         5.0              1/36
         6.0              1/36
         """
-        op = lambda x, y: (1.0*y) / x
+        op = lambda x, y: (1.0 * y) / x
         msg = "Cannot divide types {1} by {0}"
         return self.__meta_magic(other, op, msg)
 
@@ -1311,7 +1310,7 @@ class ScalarDistribution(BaseDistribution):
         (6, 6)   1/36
         """
         if isinstance(other, ScalarDistribution):
-            from .npdist import Distribution # pylint: disable=cyclic-import
+            from .npdist import Distribution  # pylint: disable=cyclic-import
             # Copy to make sure we don't lose precision when converting.
             d2 = other.copy(base=self.get_base())
 
@@ -1324,7 +1323,7 @@ class ScalarDistribution(BaseDistribution):
             msg = "Cannot construct a joint from types {0} and {1}"
             raise NotImplementedError(msg.format(type(self), type(other)))
 
-    def __rmatmul__(self, other): # pragma: no cover
+    def __rmatmul__(self, other):  # pragma: no cover
         return other.__matmul__(self)
 
     def __hash__(self):

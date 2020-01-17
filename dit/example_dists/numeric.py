@@ -66,8 +66,8 @@ def binomial(n, p):
         raise ValueError("{0} is not a positive integer.".format(n))
     if not is_number(p) or not 0 <= p <= 1:
         raise ValueError("{0} is not a valid probability.".format(p))
-    pp = lambda n, k: C(n, k) * p**k * (1-p)**(n-k)
-    outcomes = list(range(n+1))
+    pp = lambda n, k: C(n, k) * p**k * (1 - p)**(n - k)
+    outcomes = list(range(n + 1))
     pmf = [pp(n, k) for k in outcomes]
     return ScalarDistribution(outcomes, pmf)
 
@@ -107,8 +107,8 @@ def hypergeometric(N, K, n):
         raise ValueError("{0} is not a positive integer.".format(K))
     if not is_integer(n) or n < 0:
         raise ValueError("{0} is not a positive integer.".format(n))
-    outcomes = list(range(max(0, n+K-N), min(K, n)+1))
-    pmf = [C(K, k)*C(N-K, n-k)/C(N, n) for k in outcomes]
+    outcomes = list(range(max(0, n + K - N), min(K, n) + 1))
+    pmf = [C(K, k) * C(N - K, n - k) / C(N, n) for k in outcomes]
     return ScalarDistribution(outcomes, pmf)
 
 
@@ -152,5 +152,5 @@ def uniform(a, b=None):
             msg = "{0} is not an integer larger than {1}."
             raise ValueError(msg.format(a, b))
     outcomes = list(range(a, b))
-    pmf = [1/(b-a)]*(b-a)
+    pmf = [1 / (b - a)] * (b - a)
     return ScalarDistribution(outcomes, pmf)

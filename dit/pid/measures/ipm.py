@@ -11,6 +11,7 @@ class PID_PM(BasePID):
     """
     The Finn & Lizier partial information decomposition.
     """
+
     _name = "I_pm"
 
     @staticmethod
@@ -30,8 +31,8 @@ class PID_PM(BasePID):
             indexes = [p_s_g_t[0].outcomes.index((t,)) for p_s_g_t in p_s_g_ts]
             return min(-np.log2(p_s_g_ts[i][1][j][(e,)]) for i, (e, j) in enumerate(zip(outcome[:-1], indexes)))
 
-        r_plus = sum(dist[outcome]*min_h_s(outcome) for outcome in dist.outcomes)
+        r_plus = sum(dist[outcome] * min_h_s(outcome) for outcome in dist.outcomes)
 
-        r_minus = sum(dist[outcome]*min_h_s_g_t(outcome) for outcome in dist.outcomes)
+        r_minus = sum(dist[outcome] * min_h_s_g_t(outcome) for outcome in dist.outcomes)
 
         return r_plus - r_minus

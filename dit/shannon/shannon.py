@@ -62,15 +62,15 @@ def entropy(dist, rvs=None, rv_mode=None):
     else:
         # Assume linear probability for binary entropy.
         import dit
-        dist = dit.ScalarDistribution([dist, 1-dist])
+        dist = dit.ScalarDistribution([dist, 1 - dist])
 
     if dist.is_joint():
         if rvs is None:
             # Set to entropy of entire distribution
-            rvs = range(dist.outcome_length()) # pylint: disable=no-member
+            rvs = range(dist.outcome_length())  # pylint: disable=no-member
             rv_mode = RV_MODES.INDICES
 
-        d = dist.marginal(rvs, rv_mode=rv_mode) # pylint: disable=no-member
+        d = dist.marginal(rvs, rv_mode=rv_mode)  # pylint: disable=no-member
     else:
         d = dist
 

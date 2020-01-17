@@ -35,7 +35,7 @@ def dist_from_timeseries(observations, history_length=1, base='linear'):
 
     num_ts = len(observations[0])
 
-    d = distribution_from_data(observations, L=history_length+1, base=base)
+    d = distribution_from_data(observations, L=history_length + 1, base=base)
 
     def f(o):
         if history_length > 0:

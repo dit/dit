@@ -557,7 +557,7 @@ def marginal_maxent_dists(dist, k_max=None):
     # the full space. We also know the answer in these cases.
 
     # This is safe since the distribution must be dense.
-    k0 = Distribution(outcomes, [1]*len(outcomes), base='linear', validate=False)
+    k0 = Distribution(outcomes, [1] * len(outcomes), base='linear', validate=False)
     k0.normalize()
 
     k1 = product_distribution(dist)

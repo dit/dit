@@ -45,7 +45,7 @@ def _cumulative_residual_entropy(dist, generalized=False):
     terms = []
     for a, b in pairwise(events):
         pgx = cdf[a]
-        term = (b-a)*pgx*np.log2(pgx)
+        term = (b - a) * pgx * np.log2(pgx)
         terms.append(term)
     return -np.nansum(terms)
 

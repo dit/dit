@@ -32,6 +32,7 @@ class PID_SKAR_nw(BaseUniquePID):
     This method progressively utilizes better bounds on the SKAR, and if even when using
     the tightest bounds does not result in a singular SKAR, nan is returned.
     """
+
     _name = "I_>-<"
 
     @staticmethod
@@ -67,6 +68,7 @@ class PID_SKAR_owa(BaseUniquePID):
     The one-way secret key agreement rate partial information decomposition,
     source to target.
     """
+
     _name = "I_>->"
 
     @staticmethod
@@ -102,6 +104,7 @@ class PID_SKAR_owb(BaseUniquePID):
     The one-way secret key agreement rate partial information decomposition,
     target to source.
     """
+
     _name = "I_<-<"
 
     @staticmethod
@@ -141,6 +144,7 @@ class PID_SKAR_tw(BaseUniquePID):
     This method progressively utilizes better bounds on the SKAR, and if even when using
     the tightest bounds does not result in a singular SKAR, nan is returned.
     """
+
     _name = "I_<->"
 
     @staticmethod

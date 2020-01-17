@@ -53,7 +53,7 @@ class InteractiveSKAR(BaseAuxVarOptimizer):
 
         auxvars = []
         for i in range(rounds):
-            markov = {i%2} | set(range(len(self._shape), len(self._shape) + i))
+            markov = {i % 2} | set(range(len(self._shape), len(self._shape) + i))
             bound = bound_func(i, self._shape[0], self._shape[1])
             auxvars.append((markov, bound))
 
@@ -66,7 +66,7 @@ class InteractiveSKAR(BaseAuxVarOptimizer):
         """
         """
         i += 1
-        return x**(i//2 + i%2) * y**(i//2)
+        return x**(i // 2 + i % 2) * y**(i // 2)
 
     def _objective(self):
         """
@@ -79,11 +79,10 @@ class InteractiveSKAR(BaseAuxVarOptimizer):
         obj : func
             The objective function.
         """
-
         arvs = sorted(self._arvs)
 
         evens = [(self._conditional_mutual_information(self._y, {arvs[i]}, set(arvs[:i])), self._conditional_mutual_information(self._crvs, {arvs[i]}, set(arvs[:i]))) for i in range(0, self._rounds, 2)]
-        odds =  [(self._conditional_mutual_information(self._x, {arvs[i]}, set(arvs[:i])), self._conditional_mutual_information(self._crvs, {arvs[i]}, set(arvs[:i]))) for i in range(1, self._rounds, 2)]
+        odds = [(self._conditional_mutual_information(self._x, {arvs[i]}, set(arvs[:i])), self._conditional_mutual_information(self._crvs, {arvs[i]}, set(arvs[:i]))) for i in range(1, self._rounds, 2)]
         terms = [term for term in chain.from_iterable(zip_longest(evens, odds)) if term]
 
         def objective(self, x):
@@ -104,7 +103,7 @@ class InteractiveSKAR(BaseAuxVarOptimizer):
             """
             pmf = self.construct_joint(x)
 
-            values = [a(pmf)-b(pmf) for a, b in terms]
+            values = [a(pmf) - b(pmf) for a, b in terms]
 
             return -max([sum(values[i:]) for i in range(self._rounds)])
 

@@ -52,7 +52,7 @@ def functional_markov_chain_naive(dist, rvs=None, crvs=None, rv_mode=None):  # p
     f = [len(dist.rvs)]
     parts = partitions(outcomes)
     dists = [insert_rvf(dist, bf.from_partition(part)) for part in parts]
-    B = lambda d: dual_total_correlation(d, rvs, crvs+f, rv_mode)
+    B = lambda d: dual_total_correlation(d, rvs, crvs + f, rv_mode)
     dists = [d for d in dists if np.isclose(B(d), 0)]
     return min(dists, key=lambda d: entropy(d, rvs=f, rv_mode=rv_mode))
 
@@ -112,7 +112,7 @@ def functional_markov_chain(dist, rvs=None, crvs=None, rv_mode=None):
     W = (dist.outcome_length(),)
 
     H = lambda d: entropy(d, W, rv_mode=rv_mode)
-    B = lambda d: dual_total_correlation(d, rvs, crvs+W, rv_mode)
+    B = lambda d: dual_total_correlation(d, rvs, crvs + W, rv_mode)
 
     initial = insert_rvf(dist, bf.from_partition(part))
     optimal = (H(initial), initial)
@@ -139,8 +139,8 @@ def functional_markov_chain(dist, rvs=None, crvs=None, rv_mode=None):
                 break
 
             new_parts = [frozenset([p for p in part if p not in pair] +
-                                   [pair[0]|pair[1]])
-                         for pair in combinations(part, 2) ]
+                                   [pair[0] | pair[1]])
+                         for pair in combinations(part, 2)]
             new_parts = sorted([part for part in new_parts if part not in checked], key=lambda p: sorted(map(len, p)))
             queue.extendleft(new_parts)
 

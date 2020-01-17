@@ -163,6 +163,6 @@ def coinformation(dist, rvs=None, crvs=None, rv_mode=None):
         """
         return H(dist, set().union(*rvs), crvs, rv_mode=rv_mode)
 
-    I = sum((-1)**(len(Xs)+1) * entropy(Xs) for Xs in powerset(rvs))
+    I = sum((-1)**(len(Xs) + 1) * entropy(Xs) for Xs in powerset(rvs))
 
     return I

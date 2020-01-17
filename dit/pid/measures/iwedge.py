@@ -14,6 +14,7 @@ class PID_GK(BasePID):
 
     This PID is known to produce negative partial information values.
     """
+
     _name = "I_GK"
 
     @staticmethod
@@ -35,7 +36,7 @@ class PID_GK(BasePID):
         iwedge : float
             The value of I_wedge.
         """
-        d = d.coalesce(sources+(target,))
+        d = d.coalesce(sources + (target,))
         d = Distribution(d.outcomes, d.pmf, sample_space=d.outcomes)
         d = insert_meet(d, -1, d.rvs[:-1])
         return coinformation(d, [d.rvs[-2], d.rvs[-1]])

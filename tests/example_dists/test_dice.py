@@ -24,5 +24,5 @@ def test_wolf():
     Test against value from publication.
     """
     d = Wolfs_dice()
-    entropy = H(d, 'W')/np.log2(np.e)
+    entropy = H(d, 'W') / np.log2(np.e)
     assert entropy == pytest.approx(1.784990, abs=1e-6)

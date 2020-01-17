@@ -66,6 +66,6 @@ def renyi_entropy(dist, order, rvs=None, rv_mode=None):
     elif order == np.inf:
         H_a = -np.log2(pmf.max())
     else:
-        H_a = 1/(1-order) * np.log2((pmf**order).sum())
+        H_a = 1 / (1 - order) * np.log2((pmf**order).sum())
 
     return H_a

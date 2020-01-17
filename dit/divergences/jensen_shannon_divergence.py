@@ -87,7 +87,7 @@ def jensen_shannon_divergence(dists, weights=None):
         Raised if the weights are not valid probabilities.
     """
     if weights is None:
-        weights = np.array([1/len(dists)] * len(dists))
+        weights = np.array([1 / len(dists)] * len(dists))
     else:
         if hasattr(weights, 'pmf'):
             m = 'Likely user error. Second argument to JSD should be weights.'
@@ -97,7 +97,7 @@ def jensen_shannon_divergence(dists, weights=None):
     # so we don't need to worry about it for the second part.
     mixture = mixture_distribution(dists, weights, merge=True)
     one = H(mixture)
-    two = sum(w*H(d) for w, d in zip(weights, dists))
+    two = sum(w * H(d) for w, d in zip(weights, dists))
     jsd = one - two
     return jsd
 

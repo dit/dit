@@ -75,7 +75,7 @@ class BaseEntropyTriangle(metaclass=ABCMeta):
         """
         pass
 
-    def draw(self, ax=None, setup=True, marker='o', color='k'): # pragma: no cover
+    def draw(self, ax=None, setup=True, marker='o', color='k'):  # pragma: no cover
         """
         Plot the entropy triangle.
 
@@ -149,7 +149,7 @@ class EntropyTriangle(BaseEntropyTriangle):
         VI = residual_entropy(dist)
         M = H_P - VI
 
-        return (Delta/H_U, M/H_U, VI/H_U)
+        return (Delta / H_U, M / H_U, VI / H_U)
 
 
 class EntropyTriangle2(BaseEntropyTriangle):
@@ -174,10 +174,9 @@ class EntropyTriangle2(BaseEntropyTriangle):
         dist : Distribution
             The distribution to compute values for.
         """
-
         R = residual_entropy(dist)
         B = dual_total_correlation(dist)
         T = total_correlation(dist)
         total = R + B + T
 
-        return (R/total, T/total, B/total)
+        return (R / total, T / total, B / total)

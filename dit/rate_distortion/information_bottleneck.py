@@ -244,6 +244,7 @@ class InformationBottleneckDivergence(InformationBottleneck):
     A generalized information bottleneck which uses a distortion equal to
     D( p(Y|x) || q(Y|t) ) for an arbitrary divergence measure D.
     """
+
     def __init__(self, dist, beta, alpha=1.0, divergence=relative_entropy, rvs=None, crvs=None, bound=None, rv_mode=None):
         """
         Initialize the optimizer.
@@ -300,7 +301,6 @@ class InformationBottleneckDivergence(InformationBottleneck):
         distortion : func
             A function computing the average distortion.
         """
-
         if self._shape[2] > 1:
             idx_xyz = (3,)
             idx_yzt = (0,)

@@ -383,7 +383,7 @@ class BaseReducedIntrinsicMutualInformation(BaseMoreIntrinsicMutualInformation):
 
             # I[X:Y \downarrow ZU]
             d = Distribution.from_ndarray(pmf)
-            a = self.measure(dist=d, rvs=[[rv] for rv in self._rvs], crvs=self._crvs|self._arvs)
+            a = self.measure(dist=d, rvs=[[rv] for rv in self._rvs], crvs=self._crvs | self._arvs)
 
             # H[U]
             b = h(pmf)
@@ -506,7 +506,7 @@ class InnerTwoPartIntrinsicMutualInformation(BaseAuxVarOptimizer):
         idx = min(self._arvs)
         self._j = {max(self._rvs)}
         self._u = {idx}
-        self._v = {idx+1}
+        self._v = {idx + 1}
 
     def _objective(self):
         """
@@ -545,7 +545,6 @@ class InnerTwoPartIntrinsicMutualInformation(BaseAuxVarOptimizer):
             return -(b - c)
 
         return objective
-
 
 
 class BaseTwoPartIntrinsicMutualInformation(BaseAuxVarOptimizer):

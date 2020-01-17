@@ -22,7 +22,7 @@ _stacked_outcomes = [
     '554',
     '555',
 ]
-_stacked_pmf = [1/12]*4 + [1/6]*2 + [1/12]*4
+_stacked_pmf = [1 / 12] * 4 + [1 / 6] * 2 + [1 / 12] * 4
 stacked = Distribution(_stacked_outcomes, _stacked_pmf)
 
 
@@ -62,5 +62,5 @@ _mixed_outcomes = [
     '737',
     '773',
 ]
-_mixed_pmf = [1/32]*32
+_mixed_pmf = [1 / 32] * 32
 mixed = Distribution(_mixed_outcomes, _mixed_pmf)

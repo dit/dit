@@ -24,7 +24,7 @@ def close__cython(x, y, rtol=None, atol=None):  # pylint: disable=missing-docstr
 
 @removals.remove(message="Use numpy.isclose instead",
                  version='1.0.2')
-def close__python(x, y, rtol=None, atol=None): # pylint: disable=missing-docstring
+def close__python(x, y, rtol=None, atol=None):  # pylint: disable=missing-docstring
     if rtol is None:
         rtol = ditParams['rtol']
     if atol is None:
@@ -44,9 +44,10 @@ def close__python(x, y, rtol=None, atol=None): # pylint: disable=missing-docstri
             return False
     else:
         # Otherwise, make sure they are close.
-        return abs(x-y) <= atol + rtol * abs(y)
+        return abs(x - y) <= atol + rtol * abs(y)
 
     return True
+
 
 close_docstring = \
 """Returns True if the scalars x and y are close.

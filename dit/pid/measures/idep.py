@@ -17,6 +17,7 @@ class PID_dep(BaseUniquePID):
     """
     The dependency partial information decomposition, as defined by James at al.
     """
+
     _name = "I_dep"
 
     @staticmethod
@@ -66,6 +67,7 @@ class PID_RA(BaseUniquePID):
     The "reproducibility analysis" partial information decomposition, derived
     from the work of Zwick.
     """
+
     _name = "I_RA"
 
     @staticmethod
@@ -119,6 +121,7 @@ class PID_dep_a(BaseUniquePID):
     -----
     This alternative method behaves oddly with three or more sources.
     """
+
     _name = "I_dep_a"
 
     @staticmethod
@@ -141,7 +144,7 @@ class PID_dep_a(BaseUniquePID):
         idepa : dict
             The value of I_dep_a for each individual source.
         """
-        var_to_index = {var: i for i, var in enumerate(sources+(target,))}
+        var_to_index = {var: i for i, var in enumerate(sources + (target,))}
         d = d.coalesce(list(sorted(var_to_index.keys(), key=lambda k: var_to_index[k])))
         invars = [var_to_index[var] for var in sources]
         outvar = [var_to_index[(var,)] for var in target]
@@ -163,6 +166,7 @@ class PID_dep_b(BaseUniquePID):
     -----
     This decomposition is known to be inconsistent.
     """
+
     _name = "I_dep_b"
 
     @staticmethod
@@ -186,7 +190,7 @@ class PID_dep_b(BaseUniquePID):
         idepb : dict
             The value of I_dep_b for each individual source.
         """
-        var_to_index = {var: i for i, var in enumerate(sources+(target,))}
+        var_to_index = {var: i for i, var in enumerate(sources + (target,))}
         target_index = var_to_index[target]
         d = d.coalesce(list(sorted(var_to_index.keys(), key=lambda k: var_to_index[k])))
         invars = [var_to_index[var] for var in sources]
@@ -211,6 +215,7 @@ class PID_dep_c(BaseUniquePID):
     -----
     This decomposition can result in subadditive redundancy.
     """
+
     _name = "I_dep_c"
 
     @staticmethod
@@ -234,7 +239,7 @@ class PID_dep_c(BaseUniquePID):
         idepc : dict
             The value of I_dep_c for each individual source.
         """
-        var_to_index = {var: i for i, var in enumerate(sources+(target,))}
+        var_to_index = {var: i for i, var in enumerate(sources + (target,))}
         d = d.coalesce(list(sorted(var_to_index.keys(), key=lambda k: var_to_index[k])))
         invars = [var_to_index[var] for var in sources]
         outvar = [var_to_index[(var,)] for var in target]

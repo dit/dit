@@ -5,11 +5,13 @@ Example of using dit to compute maxent distributions.
 import dit
 import numpy as np
 
+
 try:  # The functions will import this for you...just make sure you have it.
-    import cvxopt
+    import cvxopt  # noqa: F401
 except ImportError:
     print("Module cvxopt is required")
     exit()
+
 
 def print_output(d, maxent_dists):
     # Calculate the entropy for each.
@@ -31,10 +33,10 @@ def print_output(d, maxent_dists):
     print("Total correlation: {0} (numerically)\t {1} (true)".format(total_corr, total_corr_true))
     print()
 
+
 def example_A():
     """
     Calculate network information using marginal maxentropy.
-
     """
     d = dit.example_dists.Xor()
 
@@ -45,10 +47,10 @@ def example_A():
 
     return maxent_dists
 
+
 def example_B():
     """
     Calculate network information using moment-based maxentropy.
-
     """
     d = dit.example_dists.Xor()
 
@@ -60,6 +62,7 @@ def example_B():
 
     return maxent_dists
 
+
 def example_C():
     # Giant bit, perfect correlation.
 
@@ -68,6 +71,7 @@ def example_C():
     d = dit.Distribution(outcomes, [.5, .5])
     maxent_dists = dit.algorithms.marginal_maxent_dists(d)
     print_output(d, maxent_dists)
+
 
 if __name__ == '__main__':
     example_A()

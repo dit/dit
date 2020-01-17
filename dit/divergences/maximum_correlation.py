@@ -29,10 +29,10 @@ def conditional_maximum_correlation_pmf(pmf):
     rho_max : float
         The conditional maximum correlation.
     """
-    pXYgZ = pmf / pmf.sum(axis=(0,1), keepdims=True)
+    pXYgZ = pmf / pmf.sum(axis=(0, 1), keepdims=True)
     pXgZ = pXYgZ.sum(axis=1, keepdims=True)
     pYgZ = pXYgZ.sum(axis=0, keepdims=True)
-    Q = np.where(pmf, pXYgZ / (np.sqrt(pXgZ)*np.sqrt(pYgZ)), 0)
+    Q = np.where(pmf, pXYgZ / (np.sqrt(pXgZ) * np.sqrt(pYgZ)), 0)
     Q[np.isnan(Q)] = 0
 
     rho_max = max([svdvals(np.squeeze(m))[1] for m in np.dsplit(Q, Q.shape[2])])
@@ -57,7 +57,7 @@ def maximum_correlation_pmf(pXY):
     """
     pX = pXY.sum(axis=1, keepdims=True)
     pY = pXY.sum(axis=0, keepdims=True)
-    Q = pXY / (np.sqrt(pX)*np.sqrt(pY))
+    Q = pXY / (np.sqrt(pX) * np.sqrt(pY))
     Q[np.isnan(Q)] = 0
 
     rho_max = svdvals(Q)[1]

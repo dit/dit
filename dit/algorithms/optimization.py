@@ -43,6 +43,7 @@ __all__ = [
 
 svdvals = lambda m: np.linalg.svd(m, compute_uv=False)
 
+
 class BaseOptimizer(metaclass=ABCMeta):
     """
     Base class for performing optimizations.
@@ -95,11 +96,11 @@ class BaseOptimizer(metaclass=ABCMeta):
         self._shape = self._pmf.shape
 
         self._full_vars = set(range(len(self._full_shape)))
-        self._all_vars = set(range(len(rvs)+1))
+        self._all_vars = set(range(len(rvs) + 1))
         self._rvs = set(range(len(rvs)))
         self._crvs = {len(rvs)}
 
-        self._proxy_vars = tuple(range(self._n, self._n+len(rvs)+1))
+        self._proxy_vars = tuple(range(self._n, self._n + len(rvs) + 1))
 
         self._additional_options = {}
 
@@ -198,7 +199,7 @@ class BaseOptimizer(metaclass=ABCMeta):
         h : float
             The entropy.
         """
-        return -np.nansum(p*np.log2(p))
+        return -np.nansum(p * np.log2(p))
 
     def _entropy(self, rvs, crvs=None):
         """
@@ -438,7 +439,7 @@ class BaseOptimizer(metaclass=ABCMeta):
             h_margs = sum(self._h(p.ravel()) for p in pmf_margs)
             h_joint = self._h(pmf_joint.ravel())
 
-            tc = h_margs - h_joint - n*h_crvs
+            tc = h_margs - h_joint - n * h_crvs
 
             return tc
 
@@ -489,7 +490,7 @@ class BaseOptimizer(metaclass=ABCMeta):
             h_joint = self._h(pmf_joint) - h_crvs
             h_margs = [self._h(marg) - h_crvs for marg in pmf_margs]
 
-            dtc = sum(h_margs) - n*h_joint
+            dtc = sum(h_margs) - n * h_joint
 
             return dtc
 
@@ -545,7 +546,7 @@ class BaseOptimizer(metaclass=ABCMeta):
             h_joint = self._h(pmf_joint) - h_crvs
 
             pairs = zip(parts, part_norms)
-            candidates = [(sum(self._h(pmf_parts[p]) - h_crvs for p in part) - h_joint)/norm for part, norm in pairs]
+            candidates = [(sum(self._h(pmf_parts[p]) - h_crvs for p in part) - h_joint) / norm for part, norm in pairs]
 
             caekl = min(candidates)
 
@@ -591,7 +592,7 @@ class BaseOptimizer(metaclass=ABCMeta):
             pmf_x = pmf.sum(axis=idx_x)[:, np.newaxis]
             pmf_y = pmf.sum(axis=idx_y)[np.newaxis, :]
 
-            Q = pmf_xy / (np.sqrt(pmf_x)*np.sqrt(pmf_y))
+            Q = pmf_xy / (np.sqrt(pmf_x) * np.sqrt(pmf_y))
             Q[np.isnan(Q)] = 0
 
             mc = svdvals(Q)[1]
@@ -690,7 +691,7 @@ class BaseOptimizer(metaclass=ABCMeta):
             pmf_x = pmf_xy.sum(axis=idx_x)
             pmf_y = pmf_xy.sum(axis=idx_y)
 
-            tv = abs(pmf_x - pmf_y).sum()/2
+            tv = abs(pmf_x - pmf_y).sum() / 2
 
             return tv
 
@@ -1264,7 +1265,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
             if len(unq.inverse) > 1:
                 n = d.outcome_length()
                 d = insert_rvf(d, lambda o: unq.inverse[o[i]])
-                mapping[i] = tuple(range(n, n+len(unq.inverse[0])))
+                mapping[i] = tuple(range(n, n + len(unq.inverse[0])))
 
         new_map = {}
         for rv, rvs in zip(sorted(self._rvs), self._true_rvs):

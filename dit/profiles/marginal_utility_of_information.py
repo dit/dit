@@ -79,13 +79,13 @@ def get_lp_form(dist, ents):
                          ents[([pa_V | pa_W], [])] -
                          ents[([pa_V & pa_W], [])])
 
-    A.append([1]*len(atoms))
-    b.append(0) # placeholder for y
+    A.append([1] * len(atoms))
+    b.append(0)  # placeholder for y
 
     A = np.array(A)
     b = np.array(b)
 
-    c = np.array([-len(atom) for atom in atoms]) # negative for minimization
+    c = np.array([-len(atom) for atom in atoms])  # negative for minimization
 
     bounds = [(min(0, val), max(0, val)) for _, val in sp if not np.isclose(val, 0)]
 
@@ -141,12 +141,12 @@ class MUIProfile(BaseProfile):
         pnts = [v for v in pnts if 0 <= v <= ent]
 
         maxui = [max_util_of_info(c, A, b, bounds, y) for y in pnts]
-        mui = np.round(np.diff(maxui)/np.diff(pnts), 7)
+        mui = np.round(np.diff(maxui) / np.diff(pnts), 7)
         vals = np.array(np.unique(mui, return_index=True))
         self.profile = dict((pnts[int(row[1])], row[0]) for row in vals.T)
         self.widths = np.diff(list(sorted(self.profile.keys())) + [ent])
 
-    def draw(self, ax=None): # pragma: no cover
+    def draw(self, ax=None):  # pragma: no cover
         ax = super().draw(ax=ax)
         pnts = np.arange(int(max(self.profile.keys()) + self.widths[-1]) + 1)
         ax.set_xticks(pnts)

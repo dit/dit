@@ -186,6 +186,7 @@ class PID_Proj(BaseBivariatePID):
     """
     The Harder et al partial information decomposition.
     """
+
     _name = "I_proj"
 
     @staticmethod

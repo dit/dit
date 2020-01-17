@@ -55,6 +55,7 @@ class BasePlotter(metaclass=ABCMeta):
     """
     A plotter of rate-distortion-like curves.
     """
+
     _beta_axis = Axis(attrgetter('betas'), lambda _: None, r"$\beta$")
     _rank_axis = Axis(attrgetter('ranks'), attrgetter('_max_rank'), r"rank")
     _alphabet_axis = Axis(attrgetter('alphabets'), attrgetter('_max_rank'), r"$|\mathcal{A}|$")
@@ -168,6 +169,7 @@ class RDPlotter(BasePlotter):
     """
     A plotter for rate-distortion curves.
     """
+
     _rate_axis = Axis(attrgetter('rates'), attrgetter('_max_rate'), "$I[X:\hat{X}]$")
 
     _curve_type = RDCurve
@@ -196,6 +198,7 @@ class IBPlotter(BasePlotter):
     """
     A plotter for information bottleneck curves.
     """
+
     _complexity_axis = Axis(attrgetter('complexities'), attrgetter('_max_complexity'), "$I[X:\hat{X}]$")
     _entropy_axis = Axis(attrgetter('entropies'), attrgetter('_max_complexity'), r"$H[\hat{X}]$")
     _relevance_axis = Axis(attrgetter('relevances'), attrgetter('_max_relevance'), r"$I[Y:\hat{X}]$")

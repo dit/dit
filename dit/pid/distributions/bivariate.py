@@ -18,7 +18,7 @@ rdn = uniform(['000', '111'])
 
 # inputs are completely redundant, but don't always determine output
 # problematic for i_dep_b
-simple = Distribution(['000', '110', '111'], [1/2, 1/4, 1/4])
+simple = Distribution(['000', '110', '111'], [1 / 2, 1 / 4, 1 / 4])
 
 # unique information from X1
 unq1 = uniform(['000', '011', '100', '111'])
@@ -39,13 +39,13 @@ f1 = uniform(['002', '010', '102', '111'])
 jeff_2 = jeff(2)
 
 # reduced or, from lizier by way of ince.
-reduced_or = Distribution(['000', '011', '101'], [1/2, 1/4, 1/4])
+reduced_or = Distribution(['000', '011', '101'], [1 / 2, 1 / 4, 1 / 4])
 
 # output is sum of inputs
 sum_ = uniform(['000', '011', '101', '112'])
 
 # output is a randomly chosen input
-rand = Distribution(['000', '010', '011', '100', '101', '111'], [1/4, 1/8, 1/8, 1/8, 1/8, 1/4])
+rand = Distribution(['000', '010', '011', '100', '101', '111'], [1 / 4, 1 / 8, 1 / 8, 1 / 8, 1 / 8, 1 / 4])
 
 # example 1 from williams & beer
 wb_1 = uniform(['000', '011', '102'])

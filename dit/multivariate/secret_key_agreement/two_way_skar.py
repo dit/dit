@@ -45,7 +45,7 @@ def _two_way_skar_bounds_iter(dist, rvs=None, crvs=None, rv_mode=None):
     upper : float
         The upper bound.
     """
-    bound_func = lambda i, x, y: [x, y][i%2]
+    bound_func = lambda i, x, y: [x, y][i % 2]
 
     lower = no_communication_skar(dist, rvs[0], rvs[1], crvs, rv_mode=rv_mode)
     upper = intrinsic_mutual_information(dist, rvs, crvs, rv_mode=rv_mode)

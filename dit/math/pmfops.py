@@ -87,7 +87,7 @@ def perturb_support(pmf, eps=.1, shape='ball', prng=None):
             raise ditException(msg)
         p2_ilr = p1_ilr + delta
         p2 = dit.math.aitchison.ilr_inv(p2_ilr)
-        out[i,idx] = p2
+        out[i, idx] = p2
 
     if len(pmf.shape) == 1:
         out = out[0]
@@ -328,13 +328,13 @@ def _downsample_componentL1(pmf, i, op, locs):
     locations = np.where(desired, upper, lower)
     pmf[i] = locs[locations]
     # Now renormalize the other components of the distribution...
-    temp = pmf.transpose() # View
-    prev_Z = temp[..., :i+1].sum(axis=-1)
+    temp = pmf.transpose()  # View
+    prev_Z = temp[..., :i + 1].sum(axis=-1)
     zeros = np.isclose(prev_Z, 1)
-    Z = (1 - prev_Z) / temp[..., i+1:].sum(axis=-1)
-    temp[..., i+1:] *= Z[..., np.newaxis]
+    Z = (1 - prev_Z) / temp[..., i + 1:].sum(axis=-1)
+    temp[..., i + 1:] *= Z[..., np.newaxis]
     # This assumes len(shape) == 2.
-    temp[zeros, i+1:] = 0
+    temp[zeros, i + 1:] = 0
     return locations
 
 
@@ -351,7 +351,7 @@ def downsample_componentL1(pmf, subdivisions):
     # Go through each component and move to closest component.
     op = np.argmin
     for i in range(out.shape[0] - 1):
-        locations = _downsample_componentL1(out, i, op, locs)
+        _downsample_componentL1(out, i, op, locs)
 
     out = out.transpose()
     if len(pmf.shape) == 1:
@@ -450,14 +450,15 @@ def projections(pmf, subdivisions, ops=None):
 
     # Go through each component and move to closest component.
     for i, op in zip(range(out.shape[0] - 1), ops):
-        locations = _downsample_componentL1(out, i, op, locs)
+        _downsample_componentL1(out, i, op, locs)
         projs.append(out.copy())
 
     projs = np.asarray(projs)
     projs = np.swapaxes(projs, 1, 2)
     if len(pmf.shape) == 1:
-        projs = projs[:,0,:]
+        projs = projs[:, 0, :]
     return projs
+
 
 _methods = {
     'componentL1': downsample_componentL1

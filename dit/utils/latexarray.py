@@ -21,8 +21,10 @@ from .misc import default_opener
 @contextlib.contextmanager
 def printoptions(strip_zeros=True, **kwargs):
     origcall = arrayprint.FloatFormat.__call__
+
     def __call__(self, x, strip_zeros=strip_zeros):
         return origcall.__call__(self, x, strip_zeros)
+
     arrayprint.FloatFormat.__call__ = __call__
     original = np.get_printoptions()
     np.set_printoptions(**kwargs)
@@ -74,7 +76,7 @@ def to_latex__numerical(a, decimals, tab):
         'precision': decimals,
         'suppress': True,
         'strip_zeros': False,
-        'threshold': nCols+1,
+        'threshold': nCols + 1,
     }
     with printoptions(**options):
         lines = []
@@ -83,7 +85,7 @@ def to_latex__numerical(a, decimals, tab):
             elements = row.__str__()[1:-1].replace('\n', '').split()
             # hack to fix trailing zeros, really the numpy stuff needs to be updated.
             try:
-                elements = [element + '0'*(decimals-len(element.split('.')[1])) for element in elements]
+                elements = [element + '0' * (decimals - len(element.split('.')[1])) for element in elements]
             except:
                 pass
             line = [tab, ' & '.join(elements), r' \\']

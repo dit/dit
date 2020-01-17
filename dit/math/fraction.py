@@ -24,9 +24,7 @@ __all__ = ['approximate_fraction']
 def simplest_fraction_in_interval(x, y):
     """
     Return the fraction with the lowest denominator in the interval [x, y].
-
     """
-
     # http://stackoverflow.com/questions/4266741/check-if-a-number-is-rational-in-python
 
     if x == y:

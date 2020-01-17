@@ -91,8 +91,8 @@ class KolchinskiOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
         delta = 0
 
         for i, (rv, arv) in enumerate(zip(rvs, arvs[1:])):
-            other_rvs = rvs[:i] + rvs[i+1:]
-            other_arvs = arvs[:i+1] + arvs[i+2:]
+            other_rvs = rvs[:i] + rvs[i + 1:]
+            other_arvs = arvs[:i + 1] + arvs[i + 2:]
 
             p_q_xi = joint.sum(axis=tuple(other_rvs + other_arvs + list(self._crvs))).T
             p_q_g_xi = p_q_xi / p_q_xi.sum(axis=0, keepdims=True)
@@ -179,5 +179,5 @@ class PID_Preceq(BasePID):
             except OptimizationException:
                 continue
         q = len(sources) + 1
-        od = ko.construct_distribution().marginal(range(q+1))
+        od = ko.construct_distribution().marginal(range(q + 1))
         return mutual_information(od, target, [q])

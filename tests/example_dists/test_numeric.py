@@ -12,16 +12,16 @@ from dit.example_dists import bernoulli, binomial, hypergeometric, uniform
 
 def test_bernoulli1():
     """ Test bernoulli distribution """
-    d = bernoulli(1/2)
+    d = bernoulli(1 / 2)
     assert d.outcomes == (0, 1)
     assert sum(d.pmf) == pytest.approx(1)
 
 
-@pytest.mark.parametrize('p', [i/10 for i in range(0, 11)])
+@pytest.mark.parametrize('p', [i / 10 for i in range(0, 11)])
 def test_bernoulli2(p):
     """ Test bernoulli distribution """
     d = bernoulli(p)
-    assert d[0] == pytest.approx(1-p)
+    assert d[0] == pytest.approx(1 - p)
     assert d[1] == pytest.approx(p)
 
 
@@ -35,8 +35,8 @@ def test_bernoulli3(p):
 @pytest.mark.parametrize('n', range(1, 10))
 def test_binomial1(n):
     """ Test binomial distribution """
-    d = binomial(n, 1/2)
-    assert d.outcomes == tuple(range(n+1))
+    d = binomial(n, 1 / 2)
+    assert d.outcomes == tuple(range(n + 1))
     assert sum(d.pmf) == pytest.approx(1)
 
 
@@ -44,7 +44,7 @@ def test_binomial1(n):
 def test_binomial2(n):
     """ Test binomial distribution failures """
     with pytest.raises(ValueError):
-        binomial(n, 1/2)
+        binomial(n, 1 / 2)
 
 
 def test_uniform1():
@@ -52,7 +52,7 @@ def test_uniform1():
     for n in range(2, 10):
         d = uniform(n)
         assert d.outcomes == tuple(range(n))
-        assert d[0] == pytest.approx(1/n)
+        assert d[0] == pytest.approx(1 / n)
         assert entropy(d) == pytest.approx(np.log2(n))
 
 
@@ -67,8 +67,8 @@ def test_uniform2(v):
 def test_uniform3(a, b):
     """ Test uniform distribution construction """
     d = uniform(a, b)
-    assert len(d.outcomes) == b-a
-    assert d[a] == pytest.approx(1/(b-a))
+    assert len(d.outcomes) == b - a
+    assert d[a] == pytest.approx(1 / (b - a))
 
 
 @pytest.mark.parametrize(('a', 'b'), [(2, 0), (0, [])])
