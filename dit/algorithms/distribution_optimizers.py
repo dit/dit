@@ -89,7 +89,7 @@ class BaseDistOptimizer(BaseOptimizer):
         self.dist = prepare_dist(dist)
         self._vpmf = self.dist.pmf.copy()
         self._A, self._b = marginal_constraints_generic(self.dist, marginals, rv_mode)
-        self._shape = list(map(len, self.dist.alphabet))
+        self._shape = [len(alpha) for alpha in self.dist.alphabet]
         self._free = infer_free_values(self._A, self._b)
         self.constraints = [{'type': 'eq',
                              'fun': self.constraint_match_marginals,

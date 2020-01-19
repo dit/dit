@@ -35,7 +35,7 @@ class ComplexityProfile(BaseProfile):  # noqa: D101
         profile = defaultdict(float)
         for atom in sp.get_atoms(string=False):
             profile[len(atom[0])] += sp[atom]
-        levels = sorted(profile, reverse=True)
+        levels = iter(sorted(profile, reverse=True))
         next(levels)  # skip the middle
         for level in levels:
             profile[level] += profile[level + 1]
