@@ -135,14 +135,14 @@ class BasePlotter(metaclass=ABCMeta):
         ax_min_2 = 0
 
         try:
-            ax_max_1 = max([axis_1.limit(c) for c in self.curves])
+            ax_max_1 = max(axis_1.limit(c) for c in self.curves)
             if ax_max_1 is None:
                 raise TypeError
         except TypeError:
-            ax_min_1 = min([c.betas[0] for c in self.curves])
-            ax_max_1 = max([c.betas[-1] for c in self.curves])
+            ax_min_1 = min(c.betas[0] for c in self.curves)
+            ax_max_1 = max(c.betas[-1] for c in self.curves)
 
-        ax_max_2 = max([axis_2.limit(c) for c in self.curves])
+        ax_max_2 = max(axis_2.limit(c) for c in self.curves)
         _rescale_axes(ax, xmin=ax_min_1, xmax=ax_max_1, ymin=ax_min_2, ymax=ax_max_2)
 
         return ax

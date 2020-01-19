@@ -48,7 +48,7 @@ def infer_free_values(A, b):
         # now find rows of A with only a single free value in them. those values must also be fixed.
         fixed = A[:, free].sum(axis=1) == 1
         new_fixed = [[i for i, n in enumerate(row) if n and (i in free)][0] for i, row in enumerate(A) if fixed[i]]
-        free = list(sorted(set(free) - set(new_fixed)))
+        free = sorted(set(free) - set(new_fixed))
         if not new_fixed:
             break
     return free
@@ -81,7 +81,7 @@ class BaseDistOptimizer(BaseOptimizer):
             variable names. If `None`, then the value of `dist._rv_mode` is
             consulted, which defaults to 'indices'.
         """
-        super(BaseDistOptimizer, self).__init__(dist, dist.rvs, crvs=[], rv_mode='indices')
+        super().__init__(dist, dist.rvs, crvs=[], rv_mode='indices')
 
         # todo: actually make this class support crvs?
         self._all_vars = self._rvs
@@ -487,7 +487,7 @@ class BROJABivariateOptimizer(MaxCoInfoOptimizer):
         super(BROJABivariateOptimizer, self).__init__(dist, [[0, 2], [1, 2]])
 
         extra_free = broja_extra_constraints(self.dist, 2).free
-        self._free = list(sorted(set(self._free) & set(extra_free)))
+        self._free = sorted(set(self._free) & set(extra_free))
         self._optvec_size = len(self._free)
 
 
@@ -570,8 +570,8 @@ def marginal_maxent_dists(dist, k_max=None):
         rv_mode = dist._rv_mode
 
         if rv_mode in [RV_MODES.NAMES, 'names']:
-            vars = dist.get_rv_names()
-            rvs = list(combinations(vars, k))
+            variables = dist.get_rv_names()
+            rvs = list(combinations(variables, k))
         else:
             rvs = list(combinations(range(n_variables), k))
 

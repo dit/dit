@@ -86,4 +86,4 @@ def copy_mutual_information(dist, X, Y, rv_mode=None):
     """
     p_Y = dist.marginal(Y, rv_mode=rv_mode)
     marg, cdists = dist.condition_on(X, rvs=Y, rv_mode=rv_mode)
-    return sum([marg[x] * specific_copy_mutual_information(cdist, p_Y, x) for x, cdist in zip(marg.outcomes, cdists)])
+    return sum(marg[x] * specific_copy_mutual_information(cdist, p_Y, x) for x, cdist in zip(marg.outcomes, cdists))

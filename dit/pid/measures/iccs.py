@@ -39,14 +39,14 @@ class PID_CCS(BasePID):
         iccs : float
             The value of I_ccs.
         """
-        var_map = {var: i for i, var in enumerate(sources + (target,))}
-        vars = list(sorted(var_map.values()))
+        rv_map = {rv: i for i, rv in enumerate(sources + (target,))}
+        rvs = sorted(rv_map.values())
         d = d.coalesce(sources + (target,))
-        marginals = [vars[:-1]] + [[i, vars[-1]] for i in vars[:-1]]
+        marginals = [rvs[:-1]] + [[i, rvs[-1]] for i in rvs[:-1]]
         d = maxent_dist(d, marginals)
         d = modify_outcomes(d, lambda o: tuple(o))
-        sub_vars = [var for var in powerset(vars) if var]
-        sub_dists = {var: d.marginal(var) for var in sub_vars}
+        sub_rvs = [rv for rv in powerset(rvs) if rv]
+        sub_dists = {rv: d.marginal(rv) for rv in sub_rvs}
 
         def pmi(source, target):
             """
@@ -71,12 +71,12 @@ class PID_CCS(BasePID):
 
         pmis = {tuple(marg): pmi(marg[0], marg[1]) for marg in marginals[1:]}
 
-        sources_dist = sub_dists[tuple(vars[:-1])]
-        target_dist = sub_dists[(vars[-1],)]
+        sources_dist = sub_dists[tuple(rvs[:-1])]
+        target_dist = sub_dists[(rvs[-1],)]
         joint_pmis = {e: np.log2(d[e] / (sources_dist[e[:-1]] * target_dist[(e[-1],)])) for e in d.outcomes}
 
         coinfos = {e: np.log2(np.prod(
-            [sub_dists[sub_var][tuple(e[i] for i in flatten(sub_var))] ** ((-1) ** len(sub_var)) for sub_var in sub_vars]))
+            [sub_dists[sub_rv][tuple(e[i] for i in flatten(sub_rv))] ** ((-1) ** len(sub_rv)) for sub_rv in sub_rvs]))
                 for e in d.outcomes}
 
         # fix the sign of things close to zero

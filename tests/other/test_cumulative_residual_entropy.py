@@ -111,7 +111,7 @@ def test_ccre_1(crvs):
     Test that independent RVs have CCRE = CRE.
     """
     d = miwin()
-    rv = (set([0, 1, 2]) - set(crvs)).pop()
+    rv = ({0, 1, 2} - set(crvs)).pop()
     ccre1 = CCRE(d, rv, crvs)
     ccre2 = CCRE(d, rv)
     assert CRE(d)[rv] == pytest.approx(mean(ccre1))
@@ -135,7 +135,7 @@ def test_ccre_3():
     """
     d = conditional_uniform2()
     ccre = CCRE(d, 1, [0])
-    uniforms = sorted([CRE(uniform(i - 2, 3)) for i in range(5)])
+    uniforms = sorted(CRE(uniform(i - 2, 3)) for i in range(5))
     assert np.allclose(ccre.outcomes, uniforms)
 
 
@@ -155,7 +155,7 @@ def test_cgcre_2(crvs):
     Test that independent RVs have CGCRE = GCRE.
     """
     d = miwin()
-    rv = (set([0, 1, 2]) - set(crvs)).pop()
+    rv = ({0, 1, 2} - set(crvs)).pop()
     ccre1 = CGCRE(d, rv, crvs)
     ccre2 = CGCRE(d, rv)
     assert GCRE(d)[rv] == pytest.approx(mean(ccre1))

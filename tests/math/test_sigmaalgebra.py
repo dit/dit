@@ -21,14 +21,14 @@ def test_s2m1():
     Test matrix construction.
     """
     m, _ = sets2matrix(sa)
-    true_m = set([(0, 1, 0),
-                  (0, 0, 1),
-                  (0, 0, 0),
-                  (1, 0, 1),
-                  (1, 0, 0),
-                  (1, 1, 1),
-                  (1, 1, 0),
-                  (0, 1, 1)])
+    true_m = {(0, 1, 0),
+              (0, 0, 1),
+              (0, 0, 0),
+              (1, 0, 1),
+              (1, 0, 0),
+              (1, 1, 1),
+              (1, 1, 0),
+              (0, 1, 1)}
     assert set(map(tuple, m.tolist())) == true_m
 
 
@@ -37,14 +37,14 @@ def test_s2m2():
     Test matrix construction.
     """
     m, _ = sets2matrix(sa, X=['a', 'b', 'c'])
-    true_m = set([(0, 1, 0),
-                  (0, 0, 1),
-                  (0, 0, 0),
-                  (1, 0, 1),
-                  (1, 0, 0),
-                  (1, 1, 1),
-                  (1, 1, 0),
-                  (0, 1, 1)])
+    true_m = {(0, 1, 0),
+              (0, 0, 1),
+              (0, 0, 0),
+              (1, 0, 1),
+              (1, 0, 0),
+              (1, 1, 1),
+              (1, 1, 0),
+              (0, 1, 1)}
     assert set(map(tuple, m.tolist())) == true_m
 
 

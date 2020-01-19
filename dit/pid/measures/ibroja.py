@@ -116,7 +116,7 @@ class PID_BROJA(BaseUniquePID):
             uniques[sources[1]] = coinformation(opt_dist, [[1], [2]], [0])
         else:
             for source in sources:
-                others = sum([i for i in sources if i != source], ())
+                others = sum((i for i in sources if i != source), ())
                 dm = d.coalesce([source, others, target])
                 broja = BROJAOptimizer(dm, (0,), ((1,),), (2,))
                 broja.optimize(niter=1, maxiter=maxiter)

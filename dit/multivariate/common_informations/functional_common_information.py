@@ -105,7 +105,7 @@ def functional_markov_chain(dist, rvs=None, crvs=None, rv_mode=None):
     rvs = [parse_rvs(dist, rv, rv_mode)[1] for rv in rvs]
     crvs = parse_rvs(dist, crvs, rv_mode)[1]
 
-    part = frozenset([frozenset([o]) for o in dist.outcomes])  # make copy
+    part = frozenset(frozenset([o]) for o in dist.outcomes)  # make copy
 
     bf = RVFunctions(dist)
 
@@ -141,7 +141,7 @@ def functional_markov_chain(dist, rvs=None, crvs=None, rv_mode=None):
             new_parts = [frozenset([p for p in part if p not in pair] +
                                    [pair[0] | pair[1]])
                          for pair in combinations(part, 2)]
-            new_parts = sorted([part for part in new_parts if part not in checked], key=lambda p: sorted(map(len, p)))
+            new_parts = sorted((part for part in new_parts if part not in checked), key=lambda p: sorted(map(len, p)))
             queue.extendleft(new_parts)
 
     return optimal[1]

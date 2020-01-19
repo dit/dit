@@ -727,7 +727,7 @@ class Distribution(ScalarDistribution):
         """
         rv_names = da.dims
         events, pmf = zip(*np.ndenumerate(da))
-        events = [tuple([da.coords[rv][_].values.flatten()[0] for _, rv in zip(e, rv_names)]) for e in events]
+        events = [tuple(da.coords[rv][_].values.flatten()[0] for _, rv in zip(e, rv_names)) for e in events]
         dist = Distribution(events, pmf, base=base, prng=prng)
         dist.set_rv_names(rv_names)
         return dist
@@ -810,7 +810,7 @@ class Distribution(ScalarDistribution):
             # 1. Add the new outcome and probability
             self.outcomes = self.outcomes + (outcome,)
             self._outcomes_index[outcome] = len(self.outcomes) - 1
-            pmf = [p for p in self.pmf] + [value]
+            pmf = self.pmf.tolist() + [value]
 
             # 2. Reorder  ### This call is different from Distribution
             outcomes, pmf, index = reorder(self.outcomes, pmf,
@@ -1184,7 +1184,7 @@ class Distribution(ScalarDistribution):
             rv_names = None
         else:
             # _rvs is a dict mapping random variable names to indexes.
-            rv_names = [x for x in self._rvs.items()]
+            rv_names = list(self._rvs.items())
             # Sort by index.
             rv_names.sort(key=itemgetter(1))
             # Keep only the sorted names.

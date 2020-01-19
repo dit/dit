@@ -65,7 +65,7 @@ class PID_RAV(BasePID):
 
         bf = RVFunctions(d)
         extended_dists = [insert_rvf(d, bf.from_partition(part)) for part in parts]
-        return max([coinformation(extended_dist) for extended_dist in extended_dists])
+        return max(coinformation(extended_dist) for extended_dist in extended_dists)
 
 
 class PID_RAV2(BasePID):
@@ -106,4 +106,4 @@ class PID_RAV2(BasePID):
 
         bf = RVFunctions(d)
         extended_dists = [insert_rvf(d, bf.from_partition(part)) for part in parts]
-        return max([corex_o_information(extended_dist) for extended_dist in extended_dists])
+        return max(corex_o_information(extended_dist) for extended_dist in extended_dists)

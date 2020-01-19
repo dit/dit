@@ -334,7 +334,7 @@ class CartesianProduct(SampleSpace):
         if len(item) != len(self._alphabet_sets):
             return False
 
-        return all([x in self._alphabet_sets[i] for i, x in iterator])
+        return all(x in self._alphabet_sets[i] for i, x in iterator)
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):

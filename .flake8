@@ -104,27 +104,10 @@ ignore =
     D102
     D101
     D100
-    C819
     C815
     C812
-    C416
-    C413
-    C408
-    C407
-    C405
-    C404
-    C403
-    C402
-    C401
-    C400
     B950
-    B902
-    B007
-    B006
     B001
-    A003
-    A002
-    A001
 per-file-ignores =
     # Allow assert statements in tests:
     test_*.py: S101

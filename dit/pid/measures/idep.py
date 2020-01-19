@@ -53,7 +53,7 @@ class PID_dep(BaseUniquePID):
             uniques[sources[1]] = u_1
         else:
             for source in sources:
-                others = sum([i for i in sources if i != source], ())
+                others = sum((i for i in sources if i != source), ())
                 dm = d.coalesce([source, others, target])
                 dd = DependencyDecomposition(dm, measures=measure, maxiter=maxiter)
                 u = min(dd.delta(edge, 'I') for edge in dd.edges(source_0_target))
@@ -104,7 +104,7 @@ class PID_RA(BaseUniquePID):
             uniques[sources[1]] = u_1
         else:
             for source in sources:
-                others = sum([i for i in sources if i != source], ())
+                others = sum((i for i in sources if i != source), ())
                 dm = d.coalesce([source, others, target])
                 dd = DependencyDecomposition(dm, measures=measure, maxiter=maxiter)
                 u = dd.delta((all_pairs, all_pairs - source_0_target), 'I')
@@ -145,7 +145,7 @@ class PID_dep_a(BaseUniquePID):
             The value of I_dep_a for each individual source.
         """
         var_to_index = {var: i for i, var in enumerate(sources + (target,))}
-        d = d.coalesce(list(sorted(var_to_index.keys(), key=lambda k: var_to_index[k])))
+        d = d.coalesce(sorted(var_to_index.keys(), key=lambda k: var_to_index[k]))
         invars = [var_to_index[var] for var in sources]
         outvar = [var_to_index[(var,)] for var in target]
         measure = {'I': lambda d: coinformation(d, [invars, outvar])}
@@ -192,7 +192,7 @@ class PID_dep_b(BaseUniquePID):
         """
         var_to_index = {var: i for i, var in enumerate(sources + (target,))}
         target_index = var_to_index[target]
-        d = d.coalesce(list(sorted(var_to_index.keys(), key=lambda k: var_to_index[k])))
+        d = d.coalesce(sorted(var_to_index.keys(), key=lambda k: var_to_index[k]))
         invars = [var_to_index[var] for var in sources]
         outvar = [var_to_index[(var,)] for var in target]
         measure = {'I': lambda d: coinformation(d, [invars, outvar])}
@@ -240,7 +240,7 @@ class PID_dep_c(BaseUniquePID):
             The value of I_dep_c for each individual source.
         """
         var_to_index = {var: i for i, var in enumerate(sources + (target,))}
-        d = d.coalesce(list(sorted(var_to_index.keys(), key=lambda k: var_to_index[k])))
+        d = d.coalesce(sorted(var_to_index.keys(), key=lambda k: var_to_index[k]))
         invars = [var_to_index[var] for var in sources]
         outvar = [var_to_index[(var,)] for var in target]
         measure = {'I': lambda d: coinformation(d, [invars, outvar])}

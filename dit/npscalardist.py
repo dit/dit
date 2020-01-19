@@ -341,7 +341,7 @@ class ScalarDistribution(BaseDistribution):
                 sample_space = outcomes
 
             if sort:
-                sample_space = list(sorted(sample_space))
+                sample_space = sorted(sample_space)
             self._sample_space = ScalarSampleSpace(sample_space)
 
         ## Question: Using sort=False seems very strange and supporting it
@@ -1391,7 +1391,7 @@ class ScalarDistribution(BaseDistribution):
             # Update the outcomes and the outcomes index.
             idx = outcomes_index[outcome]
             new_indexes = [i for i in range(len(outcomes)) if i != idx]
-            new_outcomes = tuple([outcomes[i] for i in new_indexes])
+            new_outcomes = tuple(outcomes[i] for i in new_indexes)
             self.outcomes = new_outcomes
             self._outcomes_index = dict(zip(new_outcomes,
                                         range(len(new_outcomes))))
@@ -1485,7 +1485,7 @@ class ScalarDistribution(BaseDistribution):
             # 1. Add the new outcome and probability
             self.outcomes = self.outcomes + (outcome,)
             self._outcomes_index[outcome] = len(self.outcomes) - 1
-            pmf = [p for p in self.pmf] + [value]
+            pmf = self.pmf.tolist() + [value]
 
             # 2. Reorder
             outcomes, pmf, index = reorder(self.outcomes, pmf,

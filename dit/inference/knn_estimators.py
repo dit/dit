@@ -141,7 +141,7 @@ def _total_correlation_ksg_scipy(data, rvs, crvs=None, k=4, noise=1e-10):
         h_all += digamma_N + sum(d_rvs) * (log_2 - log_epsilons).mean()
         h_crvs = 0
 
-    tc = sum([h_rv - h_crvs for h_rv in h_rvs]) - (h_all - h_crvs)
+    tc = sum(h_rv - h_crvs for h_rv in h_rvs) - (h_all - h_crvs)
 
     return tc / log_2
 
@@ -212,7 +212,7 @@ def _total_correlation_ksg_sklearn(data, rvs, crvs=None, k=4, noise=1e-10):
         h_all += digamma_N + sum(d_rvs) * (log_2 - log_epsilons).mean()
         h_crvs = 0
 
-    tc = sum([h_rv - h_crvs for h_rv in h_rvs]) - (h_all - h_crvs)
+    tc = sum(h_rv - h_crvs for h_rv in h_rvs) - (h_all - h_crvs)
 
     return tc / log_2
 

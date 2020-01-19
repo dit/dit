@@ -458,7 +458,7 @@ def extended_partition(outcomes, indices, part, ctr):
     partition : frozenset[frozenset]
         The expanded partition.
     """
-    return frozenset([frozenset([o for o in outcomes if ctr(o[i] for i in indices) in p]) for p in part])
+    return frozenset(frozenset(o for o in outcomes if ctr(o[i] for i in indices) in p) for p in part)
 
 
 def ordered_partitions(seq, tuples=False):

@@ -643,7 +643,7 @@ class BaseOptimizer(metaclass=ABCMeta):
 
             Q = np.where(p_xyz, p_xyz / (np.sqrt(p_xz * p_yz)), 0)
 
-            cmc = max([svdvals(np.squeeze(m))[1] for m in np.dsplit(Q, Q.shape[2])])
+            cmc = max(svdvals(np.squeeze(m))[1] for m in np.dsplit(Q, Q.shape[2]))
 
             return cmc
 
@@ -1023,7 +1023,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
 
         self._arvs = self._all_vars - (self._rvs | self._crvs)
         self._aux_bounds = [av.bound for av in self._aux_vars]
-        self._optvec_size = sum([av.size for av in self._aux_vars])
+        self._optvec_size = sum(av.size for av in self._aux_vars)
         self._default_hops = prod(self._aux_bounds)
         self._parts = list(pairwise(np.cumsum([0] + [av.size for av in self._aux_vars])))
         self._construct_slices()
@@ -1041,13 +1041,13 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
             relevant_vars = {self._n + b for b in auxvar.bases}
             index = sorted(self._full_vars) + [self._n + a for a in arvs[:i + 1]]
             var += self._n
-            self._full_slices.append(tuple([colon if i in relevant_vars | {var} else np.newaxis for i in index]))
+            self._full_slices.append(tuple(colon if i in relevant_vars | {var} else np.newaxis for i in index))
 
         self._slices = []
         for i, (auxvar, var) in enumerate(zip(self._aux_vars, arvs)):
             relevant_vars = auxvar.bases
             index = sorted(self._rvs | self._crvs | set(arvs[:i + 1]))
-            self._slices.append(tuple([colon if i in relevant_vars | {var} else np.newaxis for i in index]))
+            self._slices.append(tuple(colon if i in relevant_vars | {var} else np.newaxis for i in index))
 
     ###########################################################################
     # Constructing the joint distribution.

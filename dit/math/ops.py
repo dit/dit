@@ -15,7 +15,7 @@ __all__ = [
 ]
 
 # For 2.x, these are ascii strings. For 3.x these are unicode strings.
-acceptable_base_strings = set(['linear', 'e'])
+acceptable_base_strings = {'linear', 'e'}
 
 
 def get_ops(base):

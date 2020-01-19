@@ -49,7 +49,7 @@ def test_init5():
 
 
 def test_init6():
-    outcomes = set([0, 1])
+    outcomes = {0, 1}
     pmf = [1 / 2, 1 / 2]
     with pytest.raises(ditException):
         ScalarDistribution(outcomes, pmf)

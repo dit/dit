@@ -97,7 +97,7 @@ def expanded_samplespace(d, alphabets=None, union=True):
 
     if joint and union:
         alphabet = set.union(*map(set, alphabets))
-        alphabet = list(sorted(alphabet))
+        alphabet = sorted(alphabet)
         alphabets = [alphabet] * len(alphabets)
 
     if joint:

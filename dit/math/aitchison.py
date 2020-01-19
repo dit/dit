@@ -13,23 +13,25 @@ import numpy as np
 from dit.exceptions import ditException
 from dit.math import LogOperations
 
-__all__ = ('closure',
-           'subcomposition',
-           'perturbation',
-           'power',
-           'add',
-           'sub',
-           'inner',
-           'norm',
-           'dist',
-           'metric',
-           'clr',
-           'alr',
-           'ilr',
-           'basis',
-           'clr_inv',
-           'alr_inv',
-           'ilr_inv',)
+__all__ = (
+    'closure',
+    'subcomposition',
+    'perturbation',
+    'power',
+    'add',
+    'sub',
+    'inner',
+    'norm',
+    'dist',
+    'metric',
+    'clr',
+    'alr',
+    'ilr',
+    'basis',
+    'clr_inv',
+    'alr_inv',
+    'ilr_inv',
+)
 
 ops = LogOperations(2)
 exp2 = ops.exp

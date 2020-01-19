@@ -144,7 +144,7 @@ def mixture_distribution2(dists, weights):
     # general, NumPy should give a value error complaining that it cannot
     # broadcast the smaller array. But if a pmf has length 1, then it can
     # be broadcast. This would make it harder to detect errors.
-    shapes = set([dist.pmf.shape for dist in dists])
+    shapes = {dist.pmf.shape for dist in dists}
     if len(shapes) != 1:
         raise ValueError('All pmfs must have the same length.')
 

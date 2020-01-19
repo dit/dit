@@ -19,7 +19,7 @@ from dit.example_dists import Rdn, Unq, Xor
 from dit.multivariate import entropy as H, coinformation as I, dual_total_correlation as B
 
 
-@pytest.mark.parametrize('vars', [
+@pytest.mark.parametrize('rvs', [
     [[0], [1], [2]],
     [[0, 1], [2]],
     [[0, 2], [1]],
@@ -29,13 +29,13 @@ from dit.multivariate import entropy as H, coinformation as I, dual_total_correl
     [[0, 2], [1, 2]],
     [[0, 1], [0, 2], [1, 2]]
 ])
-def test_maxent_1(vars):
+def test_maxent_1(rvs):
     """
     Test xor only fixing individual marginals.
     """
     d1 = uniform(['000', '011', '101', '110'])
     d2 = uniform(['000', '001', '010', '011', '100', '101', '110', '111'])
-    d1_maxent = maxent_dist(d1, vars)
+    d1_maxent = maxent_dist(d1, rvs)
     assert d2.is_approx_equal(d1_maxent, rtol=1e-3, atol=1e-3)
 
 

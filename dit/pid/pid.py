@@ -56,10 +56,10 @@ def _transform(lattice):
         The lattice, but with tuples in place of frozensets.
     """
     def tuplefy(n):
-        return tuple(sorted((tuple(sorted(sum(_, tuple()))) for _ in n), key=lambda tup: (len(tup), tup)))
+        return tuple(sorted((tuple(sorted(sum(_, ()))) for _ in n), key=lambda tup: (len(tup), tup)))
 
     def freeze(n):
-        return frozenset([frozenset([(__,) for __ in _]) for _ in n])
+        return frozenset(frozenset((__,) for __ in _) for _ in n)
 
     tuple_lattice = deepcopy(lattice)
 
@@ -140,7 +140,7 @@ class BasePID(metaclass=ABCMeta):
     @property
     @classmethod
     @abstractmethod
-    def _name(self):
+    def _name(cls):
         """
         The name of the PID.
 
@@ -428,8 +428,8 @@ class BaseIncompletePID(BasePID):
         """
         Infer a linear constraint matrix from missing PI values and the mobius inversion.
         """
-        missing_vars = [node for node in self._lattice if node not in self._pis]
-        if not missing_vars:
+        missing_rvs = [node for node in self._lattice if node not in self._pis]
+        if not missing_rvs:
             return
 
         def predicate(nodes):
@@ -439,22 +439,22 @@ class BaseIncompletePID(BasePID):
                 return a and b
             return inner
 
-        for vars in reversed(list(powerset(missing_vars))[1:]):
+        for rvs in reversed(list(powerset(missing_rvs))[1:]):
 
             try:
-                lub = self._lattice.join(*vars, predicate=predicate(vars))
+                lub = self._lattice.join(*rvs, predicate=predicate(rvs))
             except ValueError:
                 continue
 
-            row = lambda node: [1 if (c in self._lattice.descendants(node, include=True)) else 0 for c in vars]
+            row = lambda node: [1 if (c in self._lattice.descendants(node, include=True)) else 0 for c in rvs]
 
-            A = np.array([row(node) for node in vars if node in self._reds] + [[1] * len(vars)])
-            b = np.array([self._reds[node] for node in vars if node in self._reds] + \
+            A = np.array([row(node) for node in rvs if node in self._reds] + [[1] * len(rvs)])
+            b = np.array([self._reds[node] for node in rvs if node in self._reds] + \
                          [self._reds[lub] - sum(self._pis[node] for node in self._lattice.descendants(lub, include=True) if node in self._pis)])
             try:
                 new_pis = np.linalg.solve(A, b)
                 if np.all(new_pis > -1e-6):
-                    for node, pi in zip(vars, new_pis):
+                    for node, pi in zip(rvs, new_pis):
                         self._pis[node] = pi
 
                     for node in self._lattice:

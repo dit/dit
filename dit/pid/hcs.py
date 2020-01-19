@@ -32,8 +32,8 @@ def h_cs(d, inputs, output=None):
     hcs : float
         The value of H_cs.
     """
-    var_map = {var: i for i, var in enumerate(inputs)}
-    vars = list(sorted(var_map.values()))
+    rv_map = {rv: i for i, rv in enumerate(inputs)}
+    rvs = sorted(rv_map.values())
     d = d.coalesce(inputs)
     n_variables = d.outcome_length()
     # pairwise marginal maxent
@@ -43,14 +43,14 @@ def h_cs(d, inputs, output=None):
     d = modify_outcomes(d, lambda o: tuple(o))
 
     # calculate pointwise co-information
-    sub_vars = [var for var in powerset(vars) if var]
-    sub_dists = {var: d.marginal(var) for var in sub_vars}
+    sub_rvs = [rv for rv in powerset(rvs) if rv]
+    sub_dists = {rv: d.marginal(rv) for rv in sub_rvs}
     coinfos = {}
     for e in d.outcomes:
         coinfos[e] = 0.0
-        for sub_var in sub_vars:
-            P = sub_dists[sub_var][tuple([e[i] for i in flatten(sub_var)])]
-            coinfos[e] = coinfos[e] + np.log2(P) * ((-1) ** (len(sub_var)))
+        for sub_rv in sub_rvs:
+            P = sub_dists[sub_rv][tuple(e[i] for i in flatten(sub_rv))]
+            coinfos[e] = coinfos[e] + np.log2(P) * ((-1) ** (len(sub_rv)))
 
     # sum positive pointwise terms
     hcs = sum(d[e] * coinfos[e] for e in d.outcomes if coinfos[e] > 0.0)

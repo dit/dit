@@ -219,7 +219,7 @@ def tuplefy(dependency):
     """
     """
     dependency = tuple(map(tuple, dependency))
-    return tuple([tuple(sorted(_)) for _ in sorted(dependency, key=lambda d: (-len(d), d))])
+    return tuple(tuple(sorted(_)) for _ in sorted(dependency, key=lambda d: (-len(d), d)))
 
 
 class DependencyDecomposition(object):
@@ -228,7 +228,7 @@ class DependencyDecomposition(object):
     distribution.
     """
 
-    def __init__(self, dist, rvs=None, measures={'H': entropy}, maxiter=None):
+    def __init__(self, dist, rvs=None, measures={'H': entropy}, maxiter=None):  # noqa: B006
         """
         Construct a Krippendorff-type partition of the information contained in
         `dist`.
@@ -381,7 +381,7 @@ class DependencyDecomposition(object):
             table.float_format[m] = ' {}.{}'.format(digits + 2, digits)
         items = [(tuplefy(row[0]), row[1]) for row in self.atoms.items()]
         items = sorted(items, key=lambda row: row[0])
-        items = sorted(items, key=lambda row: sorted([len(d) for d in row[0]], reverse=True), reverse=True)
+        items = sorted(items, key=lambda row: sorted((len(d) for d in row[0]), reverse=True), reverse=True)
         for dependency, values in items:
             # gets rid of pesky -0.0 display values
             for m, value in values.items():

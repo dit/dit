@@ -105,7 +105,7 @@ class InteractiveSKAR(BaseAuxVarOptimizer):
 
             values = [a(pmf) - b(pmf) for a, b in terms]
 
-            return -max([sum(values[i:]) for i in range(self._rounds)])
+            return -max(sum(values[i:]) for i in range(self._rounds))
 
         return objective
 

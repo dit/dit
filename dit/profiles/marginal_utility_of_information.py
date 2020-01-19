@@ -36,9 +36,9 @@ def get_lp_form(dist, ents):
     bounds : list of pairs
         The bounds on the individual elements of `x`
     """
-    pa = list(frozenset(s) for s in powerset(flatten(dist.rvs)))[1:]
+    pa = [frozenset(s) for s in powerset(flatten(dist.rvs))][1:]
     sp = sorted(ents.atoms.items())
-    atoms = list(frozenset(flatten(a[0])) for a, v in sp if not np.isclose(v, 0))
+    atoms = [frozenset(flatten(a[0])) for a, v in sp if not np.isclose(v, 0)]
 
     A = []
     b = []
@@ -143,8 +143,8 @@ class MUIProfile(BaseProfile):
         maxui = [max_util_of_info(c, A, b, bounds, y) for y in pnts]
         mui = np.round(np.diff(maxui) / np.diff(pnts), 7)
         vals = np.array(np.unique(mui, return_index=True))
-        self.profile = dict((pnts[int(row[1])], row[0]) for row in vals.T)
-        self.widths = np.diff(list(sorted(self.profile.keys())) + [ent])
+        self.profile = {pnts[int(row[1])]: row[0] for row in vals.T}
+        self.widths = np.diff(sorted(self.profile.keys()) + [ent])
 
     def draw(self, ax=None):  # pragma: no cover
         ax = super().draw(ax=ax)

@@ -30,7 +30,7 @@ def test_join_sigalg():
     outcomes = ['00', '01', '10', '11']
     pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
-    sigalg = frozenset([frozenset(_) for _ in powerset(outcomes)])
+    sigalg = frozenset(frozenset(_) for _ in powerset(outcomes))
     joined = join_sigalg(d, [[0], [1]])
     assert sigalg == joined
 

@@ -35,7 +35,7 @@ def conditional_maximum_correlation_pmf(pmf):
     Q = np.where(pmf, pXYgZ / (np.sqrt(pXgZ) * np.sqrt(pYgZ)), 0)
     Q[np.isnan(Q)] = 0
 
-    rho_max = max([svdvals(np.squeeze(m))[1] for m in np.dsplit(Q, Q.shape[2])])
+    rho_max = max(svdvals(np.squeeze(m))[1] for m in np.dsplit(Q, Q.shape[2]))
 
     return rho_max
 

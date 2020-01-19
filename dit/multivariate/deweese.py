@@ -84,7 +84,7 @@ def deweese_constructor(mmi):
                 A distribution with additional indices corresponding
                 to functions of those variables.
             """
-            partss = [partitions(set([(o[i],) for o in dist.outcomes])) for i, _ in enumerate(rvs)]
+            partss = [partitions({(o[i],) for o in dist.outcomes}) for i, _ in enumerate(rvs)]
             for parts in product(*partss):
                 d = dist.copy()
                 for i, part in enumerate(parts):

@@ -52,7 +52,7 @@ def test_init5():
 
 
 def test_init6():
-    outcomes = set(['0', '1', '2'])
+    outcomes = {'0', '1', '2'}
     pmf = [1 / 3] * 3
     with pytest.raises(ditException):
         Distribution(outcomes, pmf)

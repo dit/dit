@@ -87,8 +87,7 @@ class DITParams(dict):
 
     # A dictionary relating params to validators.
     def __init__(self, *args, **kwargs):
-        self.validate = dict([(key, converter) for key, (_, converter)
-                              in defaultParams.items()])
+        self.validate = {key: converter for key, (_, converter) in defaultParams.items()}
         dict.__init__(self, *args, **kwargs)
 
     def __setitem__(self, key, val):

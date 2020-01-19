@@ -237,8 +237,8 @@ def marginal_constraints(dist, m, with_normalization=True):
     rv_mode = dist._rv_mode
 
     if rv_mode in [RV_MODES.NAMES, 'names']:
-        vars = dist.get_rv_names()
-        rvs = list(itertools.combinations(vars, m))
+        variables = dist.get_rv_names()
+        rvs = list(itertools.combinations(variables, m))
     else:
         rvs = list(itertools.combinations(range(n_variables), m))
 

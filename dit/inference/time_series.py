@@ -42,7 +42,7 @@ def dist_from_timeseries(observations, history_length=1, base='linear'):
             pasts = tuple(tuple(_[i] for _ in o[:-1]) for i in range(num_ts))
             presents = tuple(o[-1])
         else:
-            pasts = tuple()
+            pasts = ()
             presents = o
         return pasts + presents
 

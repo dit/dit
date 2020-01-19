@@ -301,12 +301,12 @@ class BaseMoreIntrinsicMutualInformation(BaseAuxVarOptimizer):
 
         intrinsic.__doc__ = \
             """
-            Compute the {type} intrinsic {name}.
+            Compute the {style} intrinsic {name}.
 
             Parameters
             ----------
             dist : Distribution
-                The distribution to compute the {type} intrinsic {name} of.
+                The distribution to compute the {style} intrinsic {name} of.
             rvs : list, None
                 A list of lists. Each inner list specifies the indexes of the random
                 variables used to calculate the intrinsic {name}. If None,
@@ -327,7 +327,7 @@ class BaseMoreIntrinsicMutualInformation(BaseAuxVarOptimizer):
                 equal to 'names', the the elements are interpreted as random
                 variable names. If `None`, then the value of `dist._rv_mode` is
                 consulted, which defaults to 'indices'.
-            """.format(name=cls.name, type=cls.type)
+            """.format(name=cls.name, style=cls.style)
 
         return intrinsic
 
@@ -341,7 +341,7 @@ class BaseReducedIntrinsicMutualInformation(BaseMoreIntrinsicMutualInformation):
         I[X : Y \\Downarrow Z] = min_U I[X : Y \\downarrow ZU] + H[U]
     """
 
-    type = "reduced"
+    style = "reduced"
 
     @property
     @staticmethod
@@ -402,7 +402,7 @@ class BaseMinimalIntrinsicMutualInformation(BaseMoreIntrinsicMutualInformation):
         I[X : Y \\downarrow\\downarrow\\downarrow Z] = min_U I[X:Y|U] + I[XY:U|Z]
     """
 
-    type = "minimal"
+    style = "minimal"
 
     def _objective(self):
         """

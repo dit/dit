@@ -90,7 +90,7 @@ class KolchinskiOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
 
         delta = 0
 
-        for i, (rv, arv) in enumerate(zip(rvs, arvs[1:])):
+        for i in range(len(rvs)):
             other_rvs = rvs[:i] + rvs[i + 1:]
             other_arvs = arvs[:i + 1] + arvs[i + 2:]
 
