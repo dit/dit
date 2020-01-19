@@ -12,8 +12,8 @@ from dit.example_dists import Xor
 @pytest.mark.parametrize('i', range(2, 6))
 def test_ii1(i):
     """ Test II for giant bit distributions """
-    outcomes = ['0'*i, '1'*i]
-    pmf = [1/2, 1/2]
+    outcomes = ['0' * i, '1' * i]
+    pmf = [1 / 2] * 2
     d = D(outcomes, pmf)
     assert interaction_information(d) == pytest.approx((-1)**i)
 
@@ -21,8 +21,8 @@ def test_ii1(i):
 @pytest.mark.parametrize('i', range(2, 6))
 def test_ii2(i):
     """ Test II = -1^n * I for giant bit distributions """
-    outcomes = ['0'*i, '1'*i]
-    pmf = [1/2, 1/2]
+    outcomes = ['0' * i, '1' * i]
+    pmf = [1 / 2] * 2
     d = D(outcomes, pmf)
     ci = coinformation(d)
     ii = interaction_information(d)

@@ -12,11 +12,11 @@ from dit.exceptions import ditException
 from dit.multivariate import entropy
 
 
-d1 = Distribution(['0', '1'], [1/2, 1/2])
-d2 = Distribution(['0', '2'], [1/2, 1/2])
-d3 = Distribution(['0', '1', '2'], [1/3, 1/3, 1/3])
-d4 = Distribution(['00', '11'], [2/5, 3/5])
-d5 = Distribution(['00', '11'], [1/2, 1/2])
+d1 = Distribution(['0', '1'], [1 / 2, 1 / 2])
+d2 = Distribution(['0', '2'], [1 / 2, 1 / 2])
+d3 = Distribution(['0', '1', '2'], [1 / 3, 1 / 3, 1 / 3])
+d4 = Distribution(['00', '11'], [2 / 5, 3 / 5])
+d5 = Distribution(['00', '11'], [1 / 2, 1 / 2])
 
 
 @pytest.mark.parametrize(('args', 'expected'), [
@@ -37,7 +37,7 @@ def test_cross_entropy_1(args, expected):
     """
     Test against several known values.
     """
-    assert cross_entropy(*args) ==  pytest.approx(expected)
+    assert cross_entropy(*args) == pytest.approx(expected)
 
 
 @pytest.mark.parametrize('d', [d1, d2, d3, d4, d5])

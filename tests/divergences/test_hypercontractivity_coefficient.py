@@ -31,7 +31,7 @@ def test_hypercontractivity_coefficient2():
     """
     Test against a known value.
     """
-    d = Distribution(['00', '01', '10', '11'], [1/4]*4)
+    d = Distribution(['00', '01', '10', '11'], [1 / 4] * 4)
     hc = hypercontractivity_coefficient(d, [[0], [1]])
     assert hc == pytest.approx(0.0)
 
@@ -44,8 +44,8 @@ def test_hypercontractivity_coefficient_failure(rvs):
 
 
 @pytest.mark.slow
-@given(dist1=distributions(alphabets=(2,)*2, nondegenerate=True),
-       dist2=distributions(alphabets=(2,)*2, nondegenerate=True))
+@given(dist1=distributions(alphabets=(2,) * 2, nondegenerate=True),
+       dist2=distributions(alphabets=(2,) * 2, nondegenerate=True))
 @settings(max_examples=5)
 def test_hypercontractivity_coefficient_tensorization(dist1, dist2):
     """

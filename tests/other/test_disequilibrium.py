@@ -11,8 +11,9 @@ from dit.example_dists import uniform
 from dit.other import disequilibrium, LMPR_complexity
 from dit.utils import flatten
 
-d1 = Distribution(['000', '001', '110', '111'], [1/4]*4)
-d2 = Distribution(['000', '011', '101', '110'], [1/4]*4)
+
+d1 = Distribution(['000', '001', '110', '111'], [1 / 4] * 4)
+d2 = Distribution(['000', '011', '101', '110'], [1 / 4] * 4)
 
 
 def test_disequilibrium1():
@@ -59,7 +60,7 @@ def test_disequilibrium5(n):
     """
     Test that peaked ScalarDistributions have non-zero disequilibrium.
     """
-    d = ScalarDistribution([1] + [0]*(n-1))
+    d = ScalarDistribution([1] + [0] * (n - 1))
     assert disequilibrium(d) >= 0
 
 
@@ -68,7 +69,7 @@ def test_disequilibrium6(n):
     """
     Test that peaked Distributions have non-zero disequilibrium.
     """
-    d = ScalarDistribution([1] + [0]*(n-1))
+    d = ScalarDistribution([1] + [0] * (n - 1))
     d.make_dense()
     d = Distribution.from_distribution(d)
     assert disequilibrium(d) >= 0
@@ -108,7 +109,7 @@ def test_LMPR_complexity4(n):
     """
     Test that peaked ScalarDistributions have zero complexity.
     """
-    d = ScalarDistribution([1] + [0]*(n-1))
+    d = ScalarDistribution([1] + [0] * (n - 1))
     assert LMPR_complexity(d) == pytest.approx(0)
 
 
@@ -117,7 +118,7 @@ def test_LMPR_complexity5(n):
     """
     Test that peaked Distributions have zero complexity.
     """
-    d = ScalarDistribution([1] + [0]*(n-1))
+    d = ScalarDistribution([1] + [0] * (n - 1))
     d.make_dense()
     d = Distribution.from_distribution(d)
     assert LMPR_complexity(d) == pytest.approx(0)

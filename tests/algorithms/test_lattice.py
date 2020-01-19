@@ -28,7 +28,7 @@ def test_sigalg_sort():
 def test_join_sigalg():
     """ Test join_sigalg """
     outcomes = ['00', '01', '10', '11']
-    pmf = [1/4]*4
+    pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
     sigalg = frozenset([frozenset(_) for _ in powerset(outcomes)])
     joined = join_sigalg(d, [[0], [1]])
@@ -38,7 +38,7 @@ def test_join_sigalg():
 def test_meet_sigalg():
     """ Test meet_sigalg """
     outcomes = ['00', '01', '10', '11']
-    pmf = [1/4]*4
+    pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
     sigalg = frozenset([frozenset([]), frozenset(outcomes)])
     meeted = meet_sigalg(d, [[0], [1]])
@@ -48,7 +48,7 @@ def test_meet_sigalg():
 def test_dist_from_induced():
     """ Test dist_from_induced_sigalg """
     outcomes = [(0,), (1,), (2,)]
-    pmf = np.array([1/3] * 3)
+    pmf = np.array([1 / 3] * 3)
     d = ScalarDistribution(outcomes, pmf)
 
     sigalg = frozenset(map(frozenset, d.event_space()))
@@ -58,7 +58,7 @@ def test_dist_from_induced():
     sigalg = [(), ((0,),), ((1,), (2,)), ((0,), (1,), (2,))]
     sigalg = frozenset(map(frozenset, sigalg))
     d2 = dist_from_induced_sigalg(d, sigalg, int_outcomes=True)
-    pmf = np.array([1/3, 2/3])
+    pmf = np.array([1 / 3, 2 / 3])
     assert np.allclose(pmf, d2.pmf)
 
     d2 = dist_from_induced_sigalg(d, sigalg, int_outcomes=False)
@@ -69,7 +69,7 @@ def test_dist_from_induced():
 def test_join():
     """ Test join """
     outcomes = ['00', '01', '10', '11']
-    pmf = [1/4]*4
+    pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
     d2 = join(d, [[0], [1]])
     assert d2.outcomes == (0, 1, 2, 3)
@@ -79,7 +79,7 @@ def test_join():
 def test_meet():
     """ Test meet """
     outcomes = ['00', '01', '10', '11']
-    pmf = [1/4]*4
+    pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
     d2 = meet(d, [[0], [1]])
     assert d2.outcomes == (0,)
@@ -89,7 +89,7 @@ def test_meet():
 def test_insert_join():
     """ Test insert_join """
     outcomes = ['00', '01', '10', '11']
-    pmf = [1/4]*4
+    pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
     with pytest.raises(IndexError):
         insert_join(d, 5, [[0], [1]])

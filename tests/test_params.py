@@ -10,6 +10,7 @@ from dit.exceptions import InvalidBase
 from dit.params import (validate_boolean, validate_float, validate_base,
                         validate_choice, validate_text)
 
+
 def test_validate_boolean1():
     good = ['t', 'T', 'y', 'Y', 'yes', 'Yes', 'YES', 'on', 'On', 'ON', 'true',
             'True', 'TRUE', '1', 1, True]
@@ -36,7 +37,7 @@ def test_validate_float1():
     for value in good:
         val1 = validate_float(value)
         val2 = float(value)
-        if not val1 is val2:
+        if val1 is not val2:
             assert val1 == pytest.approx(val2)
 
 

@@ -127,7 +127,7 @@ class TestDigits():
 
     def test_bad_alphabet(self):
         with pytest.raises(ValueError):
-            digits(3, 2, alphabet=[1,2,3])
+            digits(3, 2, alphabet=[1, 2, 3])
 
     def test_with_alphabet(self):
         x = digits(3, 2, alphabet=[0, 1])

@@ -56,7 +56,7 @@ def test_maxent_3():
     """
     X00, X01, X02, Y01, Y02 = 'rR', 'aA', [0, 1], 'bB', [0, 1]
     inputs = product(X00, X01, X02, Y01, Y02)
-    events = [(x00+x01+str(x02), x00+y01+str(y02), x00+x01+y01+str(x02^y02)) for x00, x01, x02, y01, y02 in inputs]
+    events = [(x00 + x01 + str(x02), x00 + y01 + str(y02), x00 + x01 + y01 + str(x02 ^ y02)) for x00, x01, x02, y01, y02 in inputs]
     RdnUnqXor = uniform(events)
     d = maxent_dist(RdnUnqXor, [[0, 1], [0, 2], [1, 2]])
     assert H(d) == pytest.approx(6)

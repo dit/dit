@@ -11,11 +11,11 @@ from dit.divergences import kullback_leibler_divergence
 from dit.exceptions import ditException
 
 
-d1 = Distribution(['0', '1'], [1/2, 1/2])
-d2 = Distribution(['0', '2'], [1/2, 1/2])
-d3 = Distribution(['0', '1', '2'], [1/3, 1/3, 1/3])
-d4 = Distribution(['00', '11'], [2/5, 3/5])
-d5 = Distribution(['00', '11'], [1/2, 1/2])
+d1 = Distribution(['0', '1'], [1 / 2, 1 / 2])
+d2 = Distribution(['0', '2'], [1 / 2, 1 / 2])
+d3 = Distribution(['0', '1', '2'], [1 / 3, 1 / 3, 1 / 3])
+d4 = Distribution(['00', '11'], [2 / 5, 3 / 5])
+d5 = Distribution(['00', '11'], [1 / 2, 1 / 2])
 
 
 @pytest.mark.parametrize(('args', 'expected'), [

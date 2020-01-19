@@ -4,8 +4,6 @@ Tests for dit.math.sigmaalgebra.
 
 import pytest
 
-import numpy as np
-
 from dit.math.sigmaalgebra import sets2matrix, is_sigma_algebra, is_sigma_algebra__brute, atom_set
 
 
@@ -69,7 +67,6 @@ def test_isa2():
     """
     Test not SA.
     """
-
     assert not is_sigma_algebra(not_sa1)
 
 
@@ -77,7 +74,6 @@ def test_isa3():
     """
     Test not SA.
     """
-
     assert not is_sigma_algebra(not_sa2)
 
 
@@ -139,6 +135,7 @@ def test_atom_set4():
     """
     atoms = atom_set(sa, method=1)
     assert atoms == frozenset([frozenset('a'), frozenset('b'), frozenset('c')])
+
 
 def test_atom_set5():
     """

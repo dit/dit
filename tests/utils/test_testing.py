@@ -6,8 +6,6 @@ import pytest
 
 from hypothesis import find, given
 
-import numpy as np
-
 from dit.multivariate import coinformation
 from dit.utils.testing import distributions, distribution_structures, markov_chains
 
@@ -71,7 +69,7 @@ def test_distribution_structures4(dist):
 
 
 def predicate(d):
-    return coinformation(d) <= -1/2
+    return coinformation(d) <= -1 / 2
 
 
 @pytest.mark.flaky(reruns=5)
@@ -81,7 +79,7 @@ def test_distribution_structures5():
     """
     dists = distribution_structures(size=3, alphabet=2, uniform=False)
     example = find(dists, predicate)
-    assert coinformation(example) <= -1/2
+    assert coinformation(example) <= -1 / 2
 
 
 @pytest.mark.flaky(reruns=5)
@@ -91,7 +89,7 @@ def test_distribution_structures6():
     """
     dists = distribution_structures(size=3, alphabet=2, uniform=True)
     example = find(dists, predicate)
-    assert coinformation(example) <= -1/2
+    assert coinformation(example) <= -1 / 2
 
 
 @given(dist=markov_chains(alphabets=3))

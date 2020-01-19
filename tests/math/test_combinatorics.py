@@ -52,5 +52,5 @@ def test_slots1():
 
 def test_slots2():
     x = np.asarray(list(slots(3, 2, normalized=True)))
-    x_ = np.asarray([(0, 1), (1/3, 2/3), (2/3, 1/3), (1, 0)])
+    x_ = np.asarray([(0, 1), (1 / 3, 2 / 3), (2 / 3, 1 / 3), (1, 0)])
     assert np.allclose(x, x_)

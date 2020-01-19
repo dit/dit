@@ -11,7 +11,7 @@ from dit.other import lautum_information as L
 def test_lm1():
     """ Test L """
     outcomes = ['000', '001', '010', '011', '100', '101', '110', '111']
-    pmf = [3/16, 1/16, 1/16, 3/16, 1/16, 3/16, 3/16, 1/16]
+    pmf = [3 / 16, 1 / 16, 1 / 16, 3 / 16, 1 / 16, 3 / 16, 3 / 16, 1 / 16]
     d = D(outcomes, pmf)
     assert L(d) == pytest.approx(0.20751874963942196)
     assert L(d, [[0], [1]]) == pytest.approx(0)

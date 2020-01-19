@@ -65,7 +65,7 @@ def test_fanos_inequality(dist):
     eq_dist = dist1 == dist2
     P_e = eq_dist[False] if False in eq_dist else 0
 
-    hb = H(SD([P_e, 1-P_e]))
+    hb = H(SD([P_e, 1 - P_e]))
 
     assert ce <= hb + P_e * np.log2(X - 1) + epsilon
 
@@ -89,7 +89,7 @@ def test_gibbs_inequality(dist1, dist2):
     assert dkl >= 0 - epsilon
 
 
-@given(dist=distributions(alphabets=((2, 4),)*2))
+@given(dist=distributions(alphabets=((2, 4),) * 2))
 def test_conditional_entropy(dist):
     """
     H(X|Y) <= H(X)
@@ -99,7 +99,7 @@ def test_conditional_entropy(dist):
     assert ch <= h + epsilon
 
 
-@given(dist=distributions(alphabets=((2, 4),)*3))
+@given(dist=distributions(alphabets=((2, 4),) * 3))
 def test_shannon_inequality(dist):
     """
     I(X:Y|Z) >= 0
@@ -108,7 +108,7 @@ def test_shannon_inequality(dist):
     assert i >= 0 - epsilon
 
 
-@given(dist=distributions(alphabets=((2, 4),)*4))
+@given(dist=distributions(alphabets=((2, 4),) * 4))
 def test_zhang_yeung_inequality(dist):
     """
     2I(C:D) <= I(A:B)+I(A:CD)+3I(C:D|A)+I(C:D|B)
@@ -118,10 +118,10 @@ def test_zhang_yeung_inequality(dist):
     I_a_cd = I(dist, [[0], [2, 3]])
     I_c_d_g_a = I(dist, [[2], [3]], [0])
     I_c_d_g_b = I(dist, [[2], [3]], [1])
-    assert 2*I_c_d <= I_a_b + I_a_cd + 3*I_c_d_g_a + I_c_d_g_b + epsilon
+    assert 2 * I_c_d <= I_a_b + I_a_cd + 3 * I_c_d_g_a + I_c_d_g_b + epsilon
 
 
-@given(dist=markov_chains(alphabets=((2, 4),)*3))
+@given(dist=markov_chains(alphabets=((2, 4),) * 3))
 def test_data_processing_inequality(dist):
     """
     given X - Y - Z:
@@ -132,7 +132,7 @@ def test_data_processing_inequality(dist):
     assert i_xz <= i_xy + epsilon
 
 
-@given(dist=markov_chains(alphabets=((2, 4),)*3))
+@given(dist=markov_chains(alphabets=((2, 4),) * 3))
 def test_data_processing_inequality_mc(dist):
     """
     given X - Y - Z:
@@ -143,7 +143,7 @@ def test_data_processing_inequality_mc(dist):
     assert rho_xz <= rho_xy + epsilon
 
 
-@given(dist=markov_chains(alphabets=((2, 4),)*3))
+@given(dist=markov_chains(alphabets=((2, 4),) * 3))
 def test_data_processing_inequality_gk(dist):
     """
     given X - Y - Z:
@@ -155,7 +155,7 @@ def test_data_processing_inequality_gk(dist):
 
 
 @pytest.mark.slow
-@given(dist=markov_chains(alphabets=(2,)*3))
+@given(dist=markov_chains(alphabets=(2,) * 3))
 @settings(max_examples=5)
 def test_data_processing_inequality_wyner(dist):
     """
@@ -164,11 +164,11 @@ def test_data_processing_inequality_wyner(dist):
     """
     c_xy = C(dist, [[0], [1]])
     c_xz = C(dist, [[0], [2]])
-    assert c_xz <= c_xy + 10*epsilon
+    assert c_xz <= c_xy + 10 * epsilon
 
 
 @pytest.mark.slow
-@given(dist=markov_chains(alphabets=(2,)*3))
+@given(dist=markov_chains(alphabets=(2,) * 3))
 @settings(max_examples=5)
 def test_data_processing_inequality_exact(dist):
     """
@@ -177,10 +177,10 @@ def test_data_processing_inequality_exact(dist):
     """
     g_xy = G(dist, [[0], [1]])
     g_xz = G(dist, [[0], [2]])
-    assert g_xz <= g_xy + 10*epsilon
+    assert g_xz <= g_xy + 10 * epsilon
 
 
-@given(dist=distributions(alphabets=((2, 4),)*2))
+@given(dist=distributions(alphabets=((2, 4),) * 2))
 def test_max_correlation_mutual_information(dist):
     """
     (p_min * rho(X:Y))^2 <= (2 ln 2)I(X:Y)
@@ -188,7 +188,7 @@ def test_max_correlation_mutual_information(dist):
     p_min = dist.marginal([0]).pmf.min()
     rho = maximum_correlation(dist, [[0], [1]])
     i = I(dist, [[0], [1]])
-    assert (p_min*rho)**2 <= (2*np.log(2))*i + epsilon
+    assert (p_min * rho)**2 <= (2 * np.log(2)) * i + epsilon
 
 
 @given(dist1=distributions(alphabets=(10,)), dist2=distributions(alphabets=(10,)))
@@ -199,7 +199,7 @@ def test_hellinger_variational(dist1, dist2):
     h = hellinger_distance(dist1, dist2)
     v = variational_distance(dist1, dist2)
     assert h**2 <= v + epsilon
-    assert v <= np.sqrt(2)*h + epsilon
+    assert v <= np.sqrt(2) * h + epsilon
 
 
 @given(dist1=distributions(alphabets=(10,), nondegenerate=True),
@@ -212,14 +212,14 @@ def test_chernoff_inequalities(dist1, dist2):
     p, q = normalize_pmfs(dist1, dist2)
     pq = np.vstack([p, q])
     c = chernoff_information(dist1, dist2)
-    a = (p*((q-p)/pq.max(axis=0))**2).sum()/8
-    b = (p*((q-p)/pq.min(axis=0))**2).sum()/8
+    a = (p * ((q - p) / pq.max(axis=0))**2).sum() / 8
+    b = (p * ((q - p) / pq.min(axis=0))**2).sum() / 8
     assert a <= 1 - 2**(-c) + epsilon
     assert 1 - 2**(-c) <= b + epsilon
 
 
 @pytest.mark.slow
-@given(dist=markov_chains(alphabets=(2,)*3))
+@given(dist=markov_chains(alphabets=(2,) * 3))
 def test_mi_hc(dist):
     """
     given U - X - Y:
@@ -228,4 +228,4 @@ def test_mi_hc(dist):
     a = I(dist, [[0], [2]])
     b = hypercontractivity_coefficient(dist, [[1], [2]], niter=20)
     c = I(dist, [[0], [1]])
-    assert a <= b*c + epsilon
+    assert a <= b * c + epsilon

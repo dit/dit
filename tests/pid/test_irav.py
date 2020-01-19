@@ -7,6 +7,7 @@ import pytest
 from dit.pid.measures.irav import PID_RAV
 from dit.pid.distributions import bivariates, trivariates
 
+
 def test_pid_rav1():
     """
     Test irav on a generic distribution.
@@ -17,6 +18,7 @@ def test_pid_rav1():
     assert pid[((0,),)] == pytest.approx(0.18872187554086706)
     assert pid[((1,),)] == pytest.approx(0.18872187554086706)
     assert pid[((0, 1),)] == pytest.approx(0)
+
 
 def test_pid_rav2():
     """

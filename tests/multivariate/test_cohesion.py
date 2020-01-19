@@ -19,7 +19,7 @@ reed_solomon = uniform([
 ])
 
 
-@given(dist=distributions(alphabets=(2,)*4))
+@given(dist=distributions(alphabets=(2,) * 4))
 def test_cohesion_1(dist):
     """
     Test that k=1 is the total correlation.
@@ -38,7 +38,7 @@ def test_cohesion_2():
     assert c == pytest.approx(12)
 
 
-@given(dist=distributions(alphabets=(2,)*4))
+@given(dist=distributions(alphabets=(2,) * 4))
 def test_cohesion_3(dist):
     """
     Test that k=n-1 is the dual total correlation.

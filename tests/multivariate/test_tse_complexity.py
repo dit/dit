@@ -17,13 +17,13 @@ def test_tse1(i, j):
     d = n_mod_m(i, j)
     indices = [[k] for k in range(i)]
     tse = TSE(d)
-    x = 1/2 * sum(B(d, rv)/nCk(i, len(rv)) for rv in powerset(indices))
+    x = 1 / 2 * sum(B(d, rv) / nCk(i, len(rv)) for rv in powerset(indices))
     assert tse == pytest.approx(x)
 
 
 @pytest.mark.parametrize('n', range(2, 7))
 def test_tse2(n):
     """ Test TSE for giant bit distributions """
-    d = D(['0'*n, '1'*n], [1/2, 1/2])
+    d = D(['0' * n, '1' * n], [1 / 2] * 2)
     tse = TSE(d)
-    assert tse == pytest.approx((n-1)/2)
+    assert tse == pytest.approx((n - 1) / 2)
