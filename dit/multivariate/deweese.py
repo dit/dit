@@ -139,7 +139,7 @@ class BaseDeWeeseOptimizer(BaseAuxVarOptimizer):
             variable names. If `None`, then the value of `dist._rv_mode` is
             consulted, which defaults to 'indices'.
         """
-        super(BaseDeWeeseOptimizer, self).__init__(dist, rvs=rvs, crvs=crvs, rv_mode=rv_mode)
+        super().__init__(dist, rvs=rvs, crvs=crvs, rv_mode=rv_mode)
         self._construct_auxvars([({rv}, size) for rv, size in zip(self._rvs, self._shape)])
 
         if deterministic:

@@ -461,7 +461,7 @@ class MarginalMaximumEntropy(MaximumEntropy):
 
         """
         self.k = k
-        super(MarginalMaximumEntropy, self).__init__(dist, tol=tol, prng=prng)
+        super().__init__(dist, tol=tol, prng=prng)
 
     def prep(self):
 
@@ -563,7 +563,7 @@ class MomentMaximumEntropy(MaximumEntropy):
         self.symbol_map = symbol_map
         self.cumulative = cumulative
         self.with_replacement = with_replacement
-        super(MomentMaximumEntropy, self).__init__(dist, tol=tol, prng=prng)
+        super().__init__(dist, tol=tol, prng=prng)
 
     def build_linear_equality_constraints(self):
         from cvxopt import matrix

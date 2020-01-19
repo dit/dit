@@ -48,7 +48,7 @@ class HypercontractivityCoefficient(BaseAuxVarOptimizer):
         self._x = {0}
         self._y = {1}
         self._u = {3}
-        super(HypercontractivityCoefficient, self).__init__(dist, [rv_x, rv_y], [], rv_mode=rv_mode)
+        super().__init__(dist, [rv_x, rv_y], [], rv_mode=rv_mode)
 
         theoretical_bound = self._full_shape[self._proxy_vars[0]] + 1
         bound = min(bound, theoretical_bound) if bound else theoretical_bound

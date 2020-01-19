@@ -47,7 +47,7 @@ class MarkovVarOptimizer(BaseAuxVarOptimizer):
             variable names. If `None`, then the value of `dist._rv_mode` is
             consulted, which defaults to 'indices'.
         """
-        super(MarkovVarOptimizer, self).__init__(dist, rvs=rvs, crvs=crvs, rv_mode=rv_mode)
+        super().__init__(dist, rvs=rvs, crvs=crvs, rv_mode=rv_mode)
 
         theoretical_bound = self.compute_bound()
         bound = min(bound, theoretical_bound) if bound else theoretical_bound
@@ -122,7 +122,7 @@ class MarkovVarOptimizer(BaseAuxVarOptimizer):
             The joint distribution resulting from the distribution passed
             in and the optimization vector.
         """
-        joint = super(MarkovVarOptimizer, self).construct_joint(x)
+        joint = super().construct_joint(x)
         joint = np.moveaxis(joint, 1, -1)  # move crvs
         joint = np.moveaxis(joint, 1, -1)  # move W
 
@@ -143,7 +143,7 @@ class MarkovVarOptimizer(BaseAuxVarOptimizer):
             The joint distribution resulting from the distribution passed
             in and the optimization vector.
         """
-        joint = super(MarkovVarOptimizer, self).construct_full_joint(x)
+        joint = super().construct_full_joint(x)
         joint = np.moveaxis(joint, self._n + 1, -1)  # move crvs
         joint = np.moveaxis(joint, self._n + 1, -1)  # move W
         return joint
@@ -259,11 +259,11 @@ class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):  # pragma: no cover
             The number of basin hops to make during the minimization of the common variable.
         """
         # call the normal optimizer
-        super(MinimizingMarkovVarOptimizer, self).optimize(x0=x0,
-                                                           niter=niter,
-                                                           maxiter=maxiter,
-                                                           polish=False,
-                                                           callback=callback)
+        super().optimize(x0=x0,
+                         niter=niter,
+                         maxiter=maxiter,
+                         polish=False,
+                         callback=callback)
         if minimize:
             # minimize the entropy of W
             self._post_process(style='entropy', minmax='min', niter=min_niter, maxiter=maxiter)

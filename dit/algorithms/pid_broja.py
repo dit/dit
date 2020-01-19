@@ -400,7 +400,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
         self.source_marginal = source_marginal
         self.verbose = verbose
 
-        super(MaximumConditionalEntropy, self).__init__(self.dist, tol=tol, prng=prng)
+        super().__init__(self.dist, tol=tol, prng=prng)
 
     def prep(self):
         # We are going to remove all zero and fixed elements.

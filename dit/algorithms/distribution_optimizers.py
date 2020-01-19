@@ -136,11 +136,11 @@ class BaseDistOptimizer(BaseOptimizer):
                 # if a full pmf vector was passed in, restrict it to the free
                 # indices:
                 x0 = x0[self._free]
-            result = super(BaseDistOptimizer, self).optimize(x0=x0,
-                                                             niter=niter,
-                                                             maxiter=maxiter,
-                                                             polish=polish,
-                                                             callback=callback)
+            result = super().optimize(x0=x0,
+                                      niter=niter,
+                                      maxiter=maxiter,
+                                      polish=polish,
+                                      callback=callback)
             return result
 
     def construct_vector(self, x):
@@ -484,7 +484,7 @@ class BROJABivariateOptimizer(MaxCoInfoOptimizer):
             consulted, which defaults to 'indices'.
         """
         dist = broja_prepare_dist(dist, sources, target, rv_mode)
-        super(BROJABivariateOptimizer, self).__init__(dist, [[0, 2], [1, 2]])
+        super().__init__(dist, [[0, 2], [1, 2]])
 
         extra_free = broja_extra_constraints(self.dist, 2).free
         self._free = sorted(set(self._free) & set(extra_free))

@@ -320,7 +320,7 @@ class BaseDistribution(object):
         if ditParams['repr.print']:
             return self.to_string()
         else:
-            return super(BaseDistribution, self).__repr__()
+            return super().__repr__()
 
     def _repr_html_(self):
         """
