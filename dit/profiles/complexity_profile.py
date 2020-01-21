@@ -28,7 +28,7 @@ class ComplexityProfile(BaseProfile):  # noqa: D101
 
         Implementation Notes
         --------------------
-        This make use of the ShannonPartition. There may be more efficient
+        This makes use of the ShannonPartition. There may be more efficient
         methods.
         """
         sp = ShannonPartition(self.dist)
