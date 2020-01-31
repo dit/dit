@@ -17,7 +17,7 @@ from types import MethodType
 from boltons.iterutils import pairwise
 
 import numpy as np
-from scipy.optimize import basinhopping, differential_evolution, minimize
+from scipy.optimize import basinhopping, differential_evolution, minimize, shgo
 
 from .. import Distribution, insert_rvf, modify_outcomes
 from ..algorithms.channelcapacity import channel_capacity
@@ -986,6 +986,36 @@ class BaseNonConvexOptimizer(BaseOptimizer):
                                         )
 
         if result.success:
+            return result
+
+    def _optimization_shgo(self, x0, minimizer_kwargs, niter):
+        """
+        Perform a non-convex optimization. This uses scipy.optimize.basinhopping,
+        a simulated annealing-like algorithm.
+
+        Parameters
+        ----------
+        x0 : ndarray, None
+            Initial optimization vector. If None, use a random vector.
+        minimizer_kwargs : dict
+            A dictionary of keyword arguments to pass to the optimizer.
+        niter : int
+            If applicable, the number of iterations to make.
+
+        Returns
+        -------
+        result : OptimizeResult, None
+            The result of the optimization. Returns None if the optimization failed.
+        """
+        if niter is None:
+            niter = self._default_hops
+
+        result = shgo(func=self.objective,
+                      bounds=minimizer_kwargs['bounds'],
+                      constraints=minimizer_kwargs['constraints'],
+                      )
+
+        if result.success:  # pragma: no cover
             return result
 
     _optimization_backend = _optimization_basinhopping

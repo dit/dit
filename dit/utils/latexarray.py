@@ -7,6 +7,8 @@ import os
 import subprocess
 import tempfile
 
+from debtcollector import removals
+
 import numpy as np
 import numpy.core.arrayprint as arrayprint
 
@@ -18,19 +20,23 @@ from .misc import default_opener
 #
 # Includes hack to prevent NumPy from removing trailing zeros.
 #
+@removals.remove(message="Please use np.core.arrayprint.printoptions",
+                 version='1.2.3')
 @contextlib.contextmanager
 def printoptions(strip_zeros=True, **kwargs):
-    origcall = arrayprint.FloatFormat.__call__
+    if strip_zeros:
+        kwargs['trim'] = 'k'
+    origcall = arrayprint.FloatingFormat.__call__
 
-    def __call__(self, x, strip_zeros=strip_zeros):
-        return origcall.__call__(self, x, strip_zeros)
+    def __call__(self, x):
+        return origcall.__call__(self, x)
 
-    arrayprint.FloatFormat.__call__ = __call__
+    arrayprint.FloatingFormat.__call__ = __call__
     original = np.get_printoptions()
     np.set_printoptions(**kwargs)
     yield
     np.set_printoptions(**original)
-    arrayprint.FloatFormat.__call__ = origcall
+    arrayprint.FloatingFormat.__call__ = origcall
 
 
 def to_latex__numerical(a, decimals, tab):
