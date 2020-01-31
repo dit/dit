@@ -4,4 +4,4 @@ lattices >= 0.3.5
 networkx >= 2.0
 numpy >= 1.11
 PLTable
-scipy >= 0.15.0
+scipy >= 1.2.0
