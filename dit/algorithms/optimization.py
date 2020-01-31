@@ -990,8 +990,8 @@ class BaseNonConvexOptimizer(BaseOptimizer):
 
     def _optimization_shgo(self, x0, minimizer_kwargs, niter):
         """
-        Perform a non-convex optimization. This uses scipy.optimize.basinhopping,
-        a simulated annealing-like algorithm.
+        Perform a non-convex optimization. This uses the relatively new
+        scipy.optimize.shgo.
 
         Parameters
         ----------
@@ -1013,6 +1013,7 @@ class BaseNonConvexOptimizer(BaseOptimizer):
         result = shgo(func=self.objective,
                       bounds=minimizer_kwargs['bounds'],
                       constraints=minimizer_kwargs['constraints'],
+                      iters=niter,
                       )
 
         if result.success:  # pragma: no cover
