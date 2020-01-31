@@ -7,18 +7,20 @@ from ...algorithms.optimization import (BaseAuxVarOptimizer,
                                         BaseConvexOptimizer,
                                         OptimizationException)
 from ...math import prod
-from ...shannon import mutual_information
+from ...shannon import entropy, mutual_information
 
 
-__all__ = [
+__all__ = (
     'PID_GH',
-]
+)
 
 
 class GHOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
     """
     Optimizer for the Griffith & Ho redundancy.
     """
+
+    construct_initial = BaseAuxVarOptimizer.construct_copy_initial
 
     def __init__(self, dist, sources, target, bound=None, rv_mode=None):
         """
@@ -54,12 +56,16 @@ class GHOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
 
         self._construct_auxvars([(self._rvs | self._crvs, bound)])
 
-        self.constraints += [{'type': 'eq',
-                              'fun': self.constraint_markov_chains(),
-                              },
-                             ]
+        entropies = [entropy(dist, source + target) for source in sources]
+        mutual_informations = [mutual_information(dist, source, target) for source in sources]
+        trivial = all(abs(h - i) < 1e-6 for h, i in zip(entropies, mutual_informations))
+        if not trivial:
+            self.constraints += [{'type': 'eq',
+                                'fun': self.constraint_markov_chains(),
+                                },
+                                ]
 
-        self._additional_options = {'options': {'maxiter': 1000,
+        self._additional_options = {'options': {'maxiter': 2500,
                                                 'ftol': 1e-6,
                                                 'eps': 1.4901161193847656e-9,
                                                 }

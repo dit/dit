@@ -897,8 +897,8 @@ class BaseConvexOptimizer(BaseOptimizer):
             The result of the optimization. Returns None if the optimization failed.
         """
         if niter is None:
-            # even though this is convex, there might still be some optimization issues,
-            # so we use niter > 1.
+            # even though this is convex, there might still be some optimization
+            # issues, so we use niter > 1.
             niter = 2
         return self._optimize_shotgun(x0, minimizer_kwargs, niter=niter)
 

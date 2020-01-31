@@ -36,7 +36,7 @@ properly if interrupted midway through (and the distribution is modified).
 
 import numpy as np
 
-from .math import approximate_fraction
+from .math import approximate_fraction, prng as pseudo_random_number_generator
 
 from .exceptions import ditException
 
@@ -283,10 +283,7 @@ class BaseDistribution(object):
         # We set the prng to match the global dit.math prng.
         # Usually, this should be good enough.  If something more exotic
         # is desired, the user can change the prng manually.
-        if prng is None:
-            import dit.math
-            prng = dit.math.prng
-        self.prng = prng
+        self.prng = pseudo_random_number_generator if prng is None else prng
 
         self._meta = {
             'is_joint': None,
