@@ -59,12 +59,6 @@ class KolchinskiOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
                               },
                              ]
 
-        self._additional_options = {'options': {'maxiter': 1000,
-                                                'ftol': 1e-6,
-                                                'eps': 1.4901161193847656e-9,
-                                                }
-                                    }
-
     def constraint_garbling(self, x):
         """
         Constrane p(q | y) to be a garbling of each p(xi | y).
@@ -145,7 +139,7 @@ class PID_Preceq(BasePID):
     The I_\preceq measure defined by Kolchinski.
     """
 
-    _name = "I_preceq"
+    _name = "I_≼"
 
     @staticmethod
     def _measure(d, sources, target):
@@ -174,7 +168,7 @@ class PID_Preceq(BasePID):
         for bound in [None] + list(range(upper_bound, md.outcome_length(), -1)):
             try:
                 ko = KolchinskiOptimizer(d, sources, target, bound=bound)
-                ko.optimize()
+                ko.optimize(polish=1e-8)
                 break
             except OptimizationException:
                 continue

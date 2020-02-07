@@ -15,7 +15,7 @@ class PID_GK(BasePID):
     This PID is known to produce negative partial information values.
     """
 
-    _name = "I_GK"
+    _name = "I_∧"
 
     @staticmethod
     def _measure(d, sources, target):

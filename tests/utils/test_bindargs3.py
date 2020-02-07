@@ -1,5 +1,5 @@
 """
-More tests for dit.utils.bindars.
+More tests for dit.utils.bindargs.
 """
 
 import pytest

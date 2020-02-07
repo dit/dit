@@ -187,7 +187,7 @@ class PID_Proj(BaseBivariatePID):
     The Harder et al partial information decomposition.
     """
 
-    _name = "I_proj"
+    _name = "I_↘"
 
     @staticmethod
     def _measure(d, sources, target):

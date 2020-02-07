@@ -335,7 +335,7 @@ class BasePID(metaclass=ABCMeta):
         nonnegative : bool
             True if all pi values are non-negative, False otherwise.
         """
-        nonnegative = all(pi >= -1e-6 for pi in self._pis.values() if not np.isnan(pi))
+        nonnegative = all(np.round(pi, 4) >= 0 for pi in self._pis.values() if not np.isnan(pi))
         return nonnegative
 
     @property

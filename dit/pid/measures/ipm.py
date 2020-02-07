@@ -12,7 +12,7 @@ class PID_PM(BasePID):
     The Finn & Lizier partial information decomposition.
     """
 
-    _name = "I_pm"
+    _name = "I_±"
 
     @staticmethod
     def _measure(dist, sources, target):

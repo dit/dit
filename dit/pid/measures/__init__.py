@@ -4,6 +4,7 @@ All the measures.
 
 from .ibroja import PID_BROJA
 from .iccs import PID_CCS
+from .ict import PID_CT
 from .idep import PID_RA, PID_dep
 from .igh import PID_GH
 from .imes import PID_MES
@@ -15,7 +16,6 @@ from .iproj import PID_Proj
 from .irav import PID_RAV
 from .irr import PID_RR
 from .iskar import PID_SKAR_owb
-from .itriangle import PID_Triangle
 from .iwedge import PID_GK
 
 
@@ -35,5 +35,5 @@ __all_pids = [
     PID_RAV,
     PID_SKAR_owb,
     PID_Preceq,
-    PID_Triangle,
+    PID_CT,
 ]
