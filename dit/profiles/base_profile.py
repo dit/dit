@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The base information profile.
 """
@@ -83,7 +81,7 @@ class BaseProfile(metaclass=ABCMeta):
         dist : Distribution
             The distribution to compute the profile for.
         """
-        super(BaseProfile, self).__init__()
+        super().__init__()
         outcomes, pmf = zip(*dist.zipped(mode='atoms'))
         self.dist = Distribution(outcomes, pmf)
         self._compute()
@@ -95,7 +93,7 @@ class BaseProfile(metaclass=ABCMeta):
         """
         pass
 
-    def draw(self, ax=None): # pragma: no cover
+    def draw(self, ax=None):  # pragma: no cover
         """
         Draw the profile using matplotlib.
 

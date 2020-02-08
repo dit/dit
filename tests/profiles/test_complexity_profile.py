@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.profiles.ComplexityProfile. Known examples taken from http://arxiv.org/abs/1409.4708 .
 """
@@ -9,10 +7,11 @@ import pytest
 from dit import Distribution
 from dit.profiles import ComplexityProfile
 
-ex1 = Distribution(['000', '001', '010', '011', '100', '101', '110', '111'], [1/8]*8)
-ex2 = Distribution(['000', '111'], [1/2]*2)
-ex3 = Distribution(['000', '001', '110', '111'], [1/4]*4)
-ex4 = Distribution(['000', '011', '101', '110'], [1/4]*4)
+
+ex1 = Distribution(['000', '001', '010', '011', '100', '101', '110', '111'], [1 / 8] * 8)
+ex2 = Distribution(['000', '111'], [1 / 2] * 2)
+ex3 = Distribution(['000', '001', '110', '111'], [1 / 4] * 4)
+ex4 = Distribution(['000', '011', '101', '110'], [1 / 4] * 4)
 
 
 @pytest.mark.parametrize(('ex', 'prof'), [

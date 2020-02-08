@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Module defining base distribution class.
 
@@ -34,12 +32,11 @@ http://docs.python.org/3/library/collections.abc.html#collections-abstract-base-
 
 TODO: Examine thread-safety issues.  Most of the methods will not function
 properly if interrupted midway through (and the distribution is modified).
-
 """
 
 import numpy as np
 
-from .math import approximate_fraction
+from .math import approximate_fraction, prng as pseudo_random_number_generator
 
 from .exceptions import ditException
 
@@ -91,7 +88,6 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9,
     pstr : str
         A informative string representing the probability of an outcome.
         This will be 'p(x)' xor 'log p(x)'.
-
     """
     colsep = '   '
 
@@ -101,17 +97,17 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9,
             msg = '`show_mask` can be `True` only for joint distributions'
             raise ditException(msg)
 
-        if show_mask != True and show_mask != False:
+        if show_mask not in [True, False]:
             # The user is specifying what the mask should look like.
             wc = show_mask
         else:
             wc = '*'
 
         ctor = dist._outcome_ctor
+
         def outcome_wc(outcome):
             """
             Builds the wildcarded outcome.
-
             """
             i = 0
             e = []
@@ -270,8 +266,8 @@ class BaseDistribution(object):
     zipped
         Returns an iterator over (outcome, probability) tuples. The probability
         could be a log probability or a linear probability.
-
     """
+
     _meta = None
 
     # These should be set in the subclass's init function.
@@ -283,21 +279,16 @@ class BaseDistribution(object):
     def __init__(self, prng=None):
         """
         Common initialization for all distribution types.
-
         """
         # We set the prng to match the global dit.math prng.
         # Usually, this should be good enough.  If something more exotic
         # is desired, the user can change the prng manually.
-        if prng is None:
-            import dit.math
-            prng = dit.math.prng
-        self.prng = prng
+        self.prng = pseudo_random_number_generator if prng is None else prng
 
         self._meta = {
             'is_joint': None,
             'is_numerical': None,
         }
-
 
     def __contains__(self, outcome):
         raise NotImplementedError
@@ -311,14 +302,12 @@ class BaseDistribution(object):
     def __iter__(self):
         """
         Returns an iterator over the outcomes in the distribution.
-
         """
         return iter(self.outcomes)
 
     def __len__(self):
         """
         Returns the number of outcomes in the distribution.
-
         """
         return len(self.outcomes)
 
@@ -328,7 +317,7 @@ class BaseDistribution(object):
         if ditParams['repr.print']:
             return self.to_string()
         else:
-            return super(BaseDistribution, self).__repr__()
+            return super().__repr__()
 
     def _repr_html_(self):
         """
@@ -344,7 +333,6 @@ class BaseDistribution(object):
     def __reversed__(self):
         """
         Returns a reverse iterator over the outcomes.
-
         """
         return reversed(self.outcomes)
 
@@ -354,7 +342,6 @@ class BaseDistribution(object):
     def __str__(self):
         """
         Returns a string representation of the distribution.
-
         """
         return self.to_string()
 
@@ -371,12 +358,10 @@ class BaseDistribution(object):
         ------
         InvalidOutcome
             When an outcome is not in the sample space.
-
         """
         from .validate import validate_outcomes
         # Provide the actual sample space, not an iterator over it.
-        v = validate_outcomes(self.outcomes, self._sample_space) # pylint: disable=no-member
-        return v
+        return validate_outcomes(self.outcomes, self._sample_space)  # pylint: disable=no-member
 
     def _validate_normalization(self):
         """
@@ -391,7 +376,6 @@ class BaseDistribution(object):
         ------
         InvalidNormalization
             When the distribution is not properly normalized.
-
         """
         from .validate import validate_normalization
         v = validate_normalization(self.pmf, self.ops)
@@ -408,7 +392,6 @@ class BaseDistribution(object):
             probability according to the probability measure P. If `False`,
             then all atoms of the underlying measurable space are returned.
             In this case, its behavior is synonymous with `sample_space()`.
-
         """
         mode = 'atoms'
         if patoms:
@@ -420,10 +403,8 @@ class BaseDistribution(object):
     def copy(self):
         """
         Returns a deep copy of the distribution.
-
         """
         raise NotImplementedError
-
 
     def event_probability(self, event):
         """
@@ -438,7 +419,6 @@ class BaseDistribution(object):
         -------
         p : float
             The probability of the event.
-
         """
         pvals = np.array([self[o] for o in event], dtype=float)
         p = self.ops.add_reduce(pvals)
@@ -449,7 +429,6 @@ class BaseDistribution(object):
         Returns a generator over the event space.
 
         The event space is the powerset of the sample space.
-
         """
         from dit.utils import powerset
         return powerset(list(self.sample_space()))
@@ -466,14 +445,12 @@ class BaseDistribution(object):
         ----------
         numerical : bool
             If `True`, then if the base is 'e', it is returned as a float.
-
         """
         return self.ops.get_base(numerical=numerical)
 
     def has_outcome(self, outcome, null=True):
         """
         Returns `True` if `outcome` exists in the sample space).
-
         """
         raise NotImplementedError
 
@@ -489,35 +466,30 @@ class BaseDistribution(object):
         Notes
         -----
         The distributions need not have the same base or even same length.
-
         """
         raise NotImplementedError
 
     def is_joint(self):
         """
         Returns `True` if the distribution is a joint distribution.
-
         """
         return self._meta["is_joint"]
 
     def is_log(self):
         """
         Returns `True` if the distribution values are log probabilities.
-
         """
         return self.ops.base != 'linear'
 
     def is_numerical(self):
         """
         Returns `True` if the distribution values are numerical.
-
         """
         return self._meta['is_numerical']
 
     def normalize(self):
         """
         Normalizes the distribution.
-
         """
         raise NotImplementedError
 
@@ -547,7 +519,6 @@ class BaseDistribution(object):
         -------
         s : sample or list
             The sample(s) drawn from the distribution.
-
         """
         import dit.math
         s = dit.math.sample(self, size, rand, prng)
@@ -556,7 +527,6 @@ class BaseDistribution(object):
     def sample_space(self):
         """
         Returns an iterator over the ordered sample space.
-
         """
         raise NotImplementedError
 
@@ -593,14 +563,12 @@ class BaseDistribution(object):
         dist : distribution
             The distribution with the new base. If `inplace` was True, the
             same distribution is returned, just modified.
-
         """
         raise NotImplementedError
 
     def to_dict(self):
         """
         Returns the distribution as a standard Python dictionary.
-
         """
         return dict(self.zipped())
 
@@ -689,7 +657,6 @@ class BaseDistribution(object):
         -------
         s : str
             A string representation of the distribution.
-
         """
         from io import StringIO
         s = StringIO()
@@ -704,7 +671,7 @@ class BaseDistribution(object):
                    "Alphabet: ",
                    "Base: "]
         vals = [self.__class__.__name__,
-                self.alphabet, # pylint: disable=no-member
+                self.alphabet,  # pylint: disable=no-member
                 base]
 
         L = max(map(len, headers))
@@ -749,7 +716,6 @@ class BaseDistribution(object):
             Raised if an outcome is not in the outcome space.
         InvalidNormalization
             Raised if the distribution is improperly normalized.
-
         """
         mapping = {
             'outcomes': '_validate_outcomes',
@@ -779,7 +745,6 @@ class BaseDistribution(object):
             only on those atoms which are P-atoms, where P is the probability
             measure on the probability space. That is, only atoms such that
             P(atom) > 0 are yielded.
-
         """
         modes = ['pmf', 'atoms', 'patoms']
         if mode not in modes:
@@ -815,7 +780,6 @@ class BaseDistribution(object):
 
         The other distribution must have the same meta information and the
         same sample space.  If not, raise an exception.
-
         """
         raise NotImplementedError
 
@@ -825,7 +789,6 @@ class BaseDistribution(object):
 
         Note, we do not implement distribution-to-distribution multiplication.
         Perhaps we should?
-
         """
         raise NotImplementedError
 

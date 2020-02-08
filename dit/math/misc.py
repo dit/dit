@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Miscellaneous math.
 """
@@ -82,7 +80,7 @@ def factorial(n):
     if n == 0:
         return 1
     else:
-        return n * factorial(n-1)
+        return n * factorial(n - 1)
 
 
 def combinations(n, k):
@@ -112,8 +110,8 @@ def combinations(n, k):
     kf = factorial(k)
     if k > n:
         raise ValueError("{0} is larger than {1}.".format(k, n))
-    nmkf = factorial(n-k)
-    return nf/(kf*nmkf)
+    nmkf = factorial(n - k)
+    return nf / (kf * nmkf)
 
 
 def multinomial(n, ks):

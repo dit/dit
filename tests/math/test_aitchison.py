@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.math.aitchison
 """
@@ -30,7 +28,7 @@ def test_closure():
 
     # 2D with multiple rows
     x = np.array([[1.0, 1.0], [1.0, 2.0]])
-    y = np.array([[0.5, 0.5], [1/3.0, 2/3.0]])
+    y = np.array([[0.5, 0.5], [1 / 3, 2 / 3]])
     cl_x = closure(x)
     assert x.shape == cl_x.shape
     assert np.allclose(cl_x, y)
@@ -45,8 +43,8 @@ def test_closure():
 
 def test_closure_invariance():
     x = np.array([1, 2, 3, 4]) / 10
-    y = x*2
-    z = x*.5
+    y = x * 2
+    z = x * 0.5
     xcl = closure(x)
     ycl = closure(y)
     zcl = closure(z)
@@ -68,25 +66,25 @@ def test_closure_unnormalizable():
 
 def test_perturbation():
     # 1D
-    x = np.array([1/3.0, 2/3.0])
-    y = np.array([3/4.0, 1/4.0])
-    pxy_ = np.array([3/5.0, 2/5.0])
+    x = np.array([1 / 3, 2 / 3])
+    y = np.array([3 / 4, 1 / 4])
+    pxy_ = np.array([3 / 5, 2 / 5])
     pxy = perturbation(x, y)
     assert x.shape == pxy.shape
     assert np.allclose(pxy_, pxy)
 
     # 2D with multiple rows
-    x = np.array([[1/3.0, 2/3.0], [3/4.0, 1/4.0]])
-    y = np.array([[3/4.0, 1/4.0], [1/6.0, 5/6.0]])
-    pxy_ = np.array([[3/5.0, 2/5.0], [3/8.0, 5/8.0]])
+    x = np.array([[1 / 3, 2 / 3], [3 / 4, 1 / 4]])
+    y = np.array([[3 / 4, 1 / 4], [1 / 6, 5 / 6]])
+    pxy_ = np.array([[3 / 5, 2 / 5], [3 / 8, 5 / 8]])
     pxy = perturbation(x, y)
     assert x.shape == pxy.shape
     assert np.allclose(pxy_, pxy)
 
     # 2D with one row
-    x = np.array([[1/3.0, 2/3.0]])
-    y = np.array([[3/4.0, 1/4.0]])
-    pxy_ = np.array([[3/5.0, 2/5.0]])
+    x = np.array([[1 / 3, 2 / 3]])
+    y = np.array([[3 / 4, 1 / 4]])
+    pxy_ = np.array([[3 / 5, 2 / 5]])
     pxy = perturbation(x, y)
     assert x.shape == pxy.shape
     assert np.allclose(pxy_, pxy)
@@ -94,31 +92,31 @@ def test_perturbation():
 
 def test_power():
     # 1D
-    x = np.array([1/3.0, 2/3.0])
+    x = np.array([1 / 3, 2 / 3])
     y = 3
-    px_ = np.array([1/9.0, 8/9.0])
+    px_ = np.array([1 / 9, 8 / 9])
     px = power(x, y)
     assert px_.shape == px.shape
     assert np.allclose(px_, px)
-    x = np.array([1/4.0, 3/4.0])
+    x = np.array([1 / 4, 3 / 4])
     y = 3
-    px_ = np.array([1/28.0, 27/28.0])
+    px_ = np.array([1 / 28, 27 / 28])
     px = power(x, y)
     assert px_.shape == px.shape
     assert np.allclose(px_, px)
 
     # 2D with multiple rows
-    x = np.array([[1/3.0, 2/3.0], [1/4.0, 3/4.0]])
+    x = np.array([[1 / 3, 2 / 3], [1 / 4, 3 / 4]])
     y = [3, 3]
-    px_ = np.array([[1/9.0, 8/9.0], [1/28.0, 27/28.0]])
+    px_ = np.array([[1 / 9, 8 / 9], [1 / 28, 27 / 28]])
     px = power(x, y)
     assert px_.shape == px.shape
     assert np.allclose(px_, px)
 
     # 2D with one row
-    x = np.array([[1/3.0, 2/3.0]])
+    x = np.array([[1 / 3, 2 / 3]])
     y = [3]
-    px_ = np.array([[1/9.0, 8/9.0]])
+    px_ = np.array([[1 / 9, 8 / 9]])
     px = power(x, y)
     assert px_.shape == px.shape
     assert np.allclose(px_, px)
@@ -126,9 +124,9 @@ def test_power():
 
 def test_inner():
     # 1D
-    x = np.array([1/3.0, 2/3.0])
-    y = np.array([1/4.0, 3/4.0])
-    z = np.array([2/5.0, 3/5.0])
+    x = np.array([1 / 3, 2 / 3])
+    y = np.array([1 / 4, 3 / 4])
+    z = np.array([2 / 5, 3 / 5])
 
     xy_ = 0.79248125036057804
     xy = inner(x, y)
@@ -174,8 +172,8 @@ def test_inner():
 
 
 def test_clr():
-    x = np.array([1/3.0, 2/3.0])
-    y = np.array([1/4.0, 3/4.0])
+    x = np.array([1 / 3, 2 / 3])
+    y = np.array([1 / 4, 3 / 4])
 
     x_clr = [-0.5, 0.5]
     y_clr = [-0.79248125036057782, 0.79248125036057815]
@@ -195,8 +193,8 @@ def test_clr():
 
 
 def test_alr():
-    x = np.array([1/3.0, 2/3.0])
-    y = np.array([1/4.0, 3/4.0])
+    x = np.array([1 / 3, 2 / 3])
+    y = np.array([1 / 4, 3 / 4])
 
     x_alr = [-1]
     y_alr = [-1.5849625007211563]
@@ -218,10 +216,10 @@ def test_alr():
 def test_ilr():
     # 1D
     x = np.array([1, 2, 3, 4])
-    lg = log2([(x[0]              )**(1/1) / x[1],
-               (x[0] * x[1]       )**(1/2) / x[2],
-               (x[0] * x[1] * x[2])**(1/3) / x[3]])
-    coeff = np.sqrt([1/2, 2/3, 3/4])
+    lg = log2([(x[0])**(1) / x[1],
+               (x[0] * x[1])**(1 / 2) / x[2],
+               (x[0] * x[1] * x[2])**(1 / 3) / x[3]])
+    coeff = np.sqrt([1 / 2, 2 / 3, 3 / 4])
     ilrx_ = coeff * lg
     ilrx = ilr(x)
 
@@ -267,10 +265,10 @@ def test_equiv_inner2():
     clry = clr(y)
     D = len(x)
     M = -1 * np.ones((D, D))
-    M.flat[::D+1] = D - 1
+    M.flat[::D + 1] = D - 1
 
     z1 = inner(x, y)
-    z2 = 1/D * np.dot(np.dot(clrx, M), clry[:, np.newaxis])
+    z2 = 1 / D * np.dot(np.dot(clrx, M), clry[:, np.newaxis])
     assert z1 == pytest.approx(z2[0])
 
 
@@ -285,7 +283,7 @@ def test_equiv_dist():
     x = np.array([1, 2, 3, 4])
     y = np.array([3, 5, 1, 1])
     aitchison_dist = dist(x, y)
-    euclidean_dist = np.linalg.norm(ilr(x)-ilr(y))
+    euclidean_dist = np.linalg.norm(ilr(x) - ilr(y))
     assert aitchison_dist == pytest.approx(euclidean_dist)
 
 
@@ -301,11 +299,11 @@ def test_clr_prop():
 
 
 def test_basis():
-    b = np.array([[1/1.,   -1,    0,    0,  0],
-                  [1/2., 1/2.,   -1,    0,  0],
-                  [1/3., 1/3., 1/3.,   -1,  0],
-                  [1/4., 1/4., 1/4., 1/4., -1]])
-    b *= np.sqrt([i/(i+1) for i in range(1, 5)])[:, np.newaxis]
+    b = np.array([[1 / 1, -1, 0, 0, 0],
+                  [1 / 2, 1 / 2, -1, 0, 0],
+                  [1 / 3, 1 / 3, 1 / 3, -1, 0],
+                  [1 / 4, 1 / 4, 1 / 4, 1 / 4, -1]])
+    b *= np.sqrt([i / (i + 1) for i in range(1, 5)])[:, np.newaxis]
     b = closure(exp2(b))
     b_ = basis(4)
     assert b.shape == b_.shape
@@ -318,7 +316,7 @@ def test_basis2():
     for i in range(len(b)):
         ii = inner(b[i], b[i])
         assert ii == pytest.approx(1.0)
-        for j in range(i+1, len(b)):
+        for j in range(i + 1, len(b)):
             ij = inner(b[i], b[j])
             assert ij == pytest.approx(0.0)
 

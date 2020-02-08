@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The I_proj measure as proposed by Harder et al.
 """
@@ -188,34 +186,35 @@ class PID_Proj(BaseBivariatePID):
     """
     The Harder et al partial information decomposition.
     """
-    _name = "I_proj"
+
+    _name = "I_↘"
 
     @staticmethod
-    def _measure(d, inputs, output):
+    def _measure(d, sources, target):
         """
         Compute
 
         .. math::
-            I_proj(inputs : output) = min{PI(X \\searrow Y), PI(Y \\searrow X)}
+            I_proj(sources : target) = min{PI(X \\searrow Y), PI(Y \\searrow X)}
 
         Parameters
         ----------
         d : Distribution
             The distribution to compute i_proj for.
-        inputs : iterable of iterables, len(inputs) == 2
-            The input variables.
-        output : iterable
-            The output variable.
+        sources : iterable of iterables, len(sources) == 2
+            The source variables.
+        target : iterable
+            The target variable.
 
         Returns
         -------
         iproj : float
             The value of I_proj.
         """
-        if len(inputs) != 2:  # pragma: no cover
-            msg = "This method needs exact two inputs, {} given.".format(len(inputs))
+        if len(sources) != 2:  # pragma: no cover
+            msg = "This method needs exact two sources, {} given.".format(len(sources))
             raise ditException(msg)
 
-        pi_0 = projected_information(d, inputs[0], inputs[1], output)
-        pi_1 = projected_information(d, inputs[1], inputs[0], output)
+        pi_0 = projected_information(d, sources[0], sources[1], target)
+        pi_1 = projected_information(d, sources[1], sources[0], target)
         return min(pi_0, pi_1)

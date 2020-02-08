@@ -1,11 +1,8 @@
-# -*- coding: utf-8 -*-
-
 """
 The I_mmi measure, briefly looked at by the BROJA team.
 """
 
 from ..pid import BasePID
-
 from ...multivariate import coinformation
 
 
@@ -16,25 +13,26 @@ class PID_MMI(BasePID):
     This measure is known to be accurate for gaussian random variables. It was also
     briefly and tangentially studied by the BROJA team.
     """
+
     _name = "I_mmi"
 
     @staticmethod
-    def _measure(d, inputs, output):
+    def _measure(d, sources, target):
         """
-        I_mmi is the minimum mutual information between any input and the output.
+        I_mmi is the minimum mutual information between any source and the target.
 
         Parameters
         ----------
         d : Distribution
             The distribution to compute i_mmi for.
-        inputs : iterable of iterables
-            The input variables.
-        output : iterable
-            The output variable.
+        sources : iterable of iterables
+            The source variables.
+        target : iterable
+            The target variable.
 
         Returns
         -------
         immi : float
             The value of I_mmi.
         """
-        return min(coinformation(d, [input_, output]) for input_ in inputs)
+        return min(coinformation(d, [source, target]) for source in sources)

@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-
 """
 Abstract implementation of dense random vectors.
-
 """
 
 import itertools
@@ -68,8 +65,8 @@ class AbstractDenseDistribution(object):
 
         A = [[0,1,-1,0],    b = [[0],
              [0,-1,1,0]]         [0]]
-
     """
+
     def __init__(self, n_variables, n_symbols):
         """
         Initialize the abstract distribution.
@@ -80,7 +77,6 @@ class AbstractDenseDistribution(object):
             The number of random variables.
         n_symbols : int
             The number of symbols in sample space of every random variable.
-
         """
         self.n_variables = n_variables
         self.n_symbols = n_symbols
@@ -93,7 +89,6 @@ class AbstractDenseDistribution(object):
         Populates the singleton marginal distribution matrices.
 
             P(X_i)  for i = 0, ..., L-1
-
         """
         # For each X_t, we have an array of shape ( |A|, |A|^(L-1) )
         # giving a total of |A|^L elements. The columns break into |A|^t
@@ -143,7 +138,6 @@ class AbstractDenseDistribution(object):
             of the original distribution. The number of rows, m, is equal to:
                 m = self.n_symbols ** len(indexes)
                 n = self.n_symbols ** (self.n_variables - len(indexes))
-
         """
         if cache is None:
             # Then we use an internal cache for this call only.
@@ -161,7 +155,6 @@ class AbstractDenseDistribution(object):
         def calculate(indexes):
             """
             Internal function which calculates parameter arrays.
-
             """
             # The singleton random variables have already been computed.
             if len(indexes) == 1:
@@ -170,7 +163,7 @@ class AbstractDenseDistribution(object):
 
             # If indexes are consecutive from zero, then we can do these easily.
             elif (indexes[0] == 0) and (np.all(np.diff(indexes) == 1)):
-                p = np.arange( self.n_symbols**self.n_variables )
+                p = np.arange(self.n_symbols**self.n_variables)
                 shape = (self.n_symbols**len(indexes),
                          self.n_symbols**(self.n_variables - len(indexes)))
                 p = p.reshape(shape)
@@ -223,7 +216,6 @@ class AbstractDenseDistribution(object):
         -------
         d : AbstractDenseDistribution
             The new abstract representation of the marignal distribution.
-
        """
         indexes = set(indexes)
         if min(indexes) < 0 or max(indexes) >= self.n_variables:
@@ -301,7 +293,6 @@ def brute_marginal_array(d, rvs, rv_mode=None):
     product sample space, however.
 
     TODO: Expand this to construct arrays for coalescings as well.
-
     """
     from dit.helpers import parse_rvs, RV_MODES
 
@@ -337,7 +328,6 @@ def get_abstract_dist(dist):
 
     For now, it hacks in a way to deal with non-homogeneous Cartesian product
     sample spaces.
-
     """
     if dist.is_homogeneous():
         n_variables = dist.outcome_length()
@@ -347,6 +337,7 @@ def get_abstract_dist(dist):
         class D(object):
             n_variables = dist.outcome_length()
             n_elements = np.prod(list(map(len, dist.alphabet)))
+
             def parameter_array(self, indexes, cache=None):
                 return brute_marginal_array(dist, indexes, rv_mode='indexes')
         d = D()

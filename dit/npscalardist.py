@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Module defining NumPy array-based distribution classes.
 
@@ -89,7 +87,6 @@ def _make_distribution(outcomes, pmf=None, sample_space=None,
     # Tuple outcomes, and an index.
     d.outcomes = tuple(outcomes)
     d._outcomes_index = dict(zip(outcomes, range(len(outcomes))))
-
 
     if isinstance(sample_space, BaseSampleSpace):
         if sample_space._meta['is_joint']:
@@ -312,7 +309,7 @@ class ScalarDistribution(BaseDistribution):
         See :meth:`validate` for a list of other potential exceptions.
 
         """
-        super(ScalarDistribution, self).__init__(prng)
+        super().__init__(prng)
 
         # Set *instance* attributes.
         self._meta['is_joint'] = False
@@ -344,7 +341,7 @@ class ScalarDistribution(BaseDistribution):
                 sample_space = outcomes
 
             if sort:
-                sample_space = list(sorted(sample_space))
+                sample_space = sorted(sample_space)
             self._sample_space = ScalarSampleSpace(sample_space)
 
         ## Question: Using sort=False seems very strange and supporting it
@@ -474,7 +471,7 @@ class ScalarDistribution(BaseDistribution):
             The new distribution.
 
         """
-        from .npdist import Distribution # pylint: disable=cyclic-import
+        from .npdist import Distribution  # pylint: disable=cyclic-import
         if isinstance(dist, Distribution):
             from .convert import DtoSD
             d = DtoSD(dist, extract)
@@ -890,7 +887,7 @@ class ScalarDistribution(BaseDistribution):
         5.0              1/36
         6.0              1/36
         """
-        op = lambda x, y: (1.0*x) / y
+        op = lambda x, y: (1.0 * x) / y
         msg = "Cannot divide types {0} by {1}"
         return self.__meta_magic(other, op, msg)
 
@@ -944,7 +941,7 @@ class ScalarDistribution(BaseDistribution):
         5.0              1/36
         6.0              1/36
         """
-        op = lambda x, y: (1.0*y) / x
+        op = lambda x, y: (1.0 * y) / x
         msg = "Cannot divide types {1} by {0}"
         return self.__meta_magic(other, op, msg)
 
@@ -1313,7 +1310,7 @@ class ScalarDistribution(BaseDistribution):
         (6, 6)   1/36
         """
         if isinstance(other, ScalarDistribution):
-            from .npdist import Distribution # pylint: disable=cyclic-import
+            from .npdist import Distribution  # pylint: disable=cyclic-import
             # Copy to make sure we don't lose precision when converting.
             d2 = other.copy(base=self.get_base())
 
@@ -1326,7 +1323,7 @@ class ScalarDistribution(BaseDistribution):
             msg = "Cannot construct a joint from types {0} and {1}"
             raise NotImplementedError(msg.format(type(self), type(other)))
 
-    def __rmatmul__(self, other): # pragma: no cover
+    def __rmatmul__(self, other):  # pragma: no cover
         return other.__matmul__(self)
 
     def __hash__(self):
@@ -1394,7 +1391,7 @@ class ScalarDistribution(BaseDistribution):
             # Update the outcomes and the outcomes index.
             idx = outcomes_index[outcome]
             new_indexes = [i for i in range(len(outcomes)) if i != idx]
-            new_outcomes = tuple([outcomes[i] for i in new_indexes])
+            new_outcomes = tuple(outcomes[i] for i in new_indexes)
             self.outcomes = new_outcomes
             self._outcomes_index = dict(zip(new_outcomes,
                                         range(len(new_outcomes))))
@@ -1488,7 +1485,7 @@ class ScalarDistribution(BaseDistribution):
             # 1. Add the new outcome and probability
             self.outcomes = self.outcomes + (outcome,)
             self._outcomes_index[outcome] = len(self.outcomes) - 1
-            pmf = [p for p in self.pmf] + [value]
+            pmf = self.pmf.tolist() + [value]
 
             # 2. Reorder
             outcomes, pmf, index = reorder(self.outcomes, pmf,

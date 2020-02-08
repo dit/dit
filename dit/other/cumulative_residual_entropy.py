@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The (generalized) cumulative residual entropy and conditional (generalized)
 cumulative residual entropy.
@@ -43,11 +41,11 @@ def _cumulative_residual_entropy(dist, generalized=False):
     numerical_test(dist)
     eps = ((e if generalized else abs(e), p) for e, p in dist.zipped())
     events, probs = zip(*sorted(eps))
-    cdf = dict((a, p) for a, p in zip(events, np.cumsum(probs)))
+    cdf = {a: p for a, p in zip(events, np.cumsum(probs))}
     terms = []
     for a, b in pairwise(events):
         pgx = cdf[a]
-        term = (b-a)*pgx*np.log2(pgx)
+        term = (b - a) * pgx * np.log2(pgx)
         terms.append(term)
     return -np.nansum(terms)
 

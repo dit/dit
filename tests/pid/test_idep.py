@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.pid.idep.
 """
@@ -60,6 +58,7 @@ def test_pid_dep4():
     assert pid.nonnegative
     assert pid.consistent
 
+
 def test_pid_ra1():
     """
     """
@@ -69,6 +68,7 @@ def test_pid_ra1():
     assert pid[((0,),)] == pytest.approx(0.5, abs=1e-4)
     assert pid[((1,),)] == pytest.approx(0.5, abs=1e-4)
     assert pid[((0, 1),)] == pytest.approx(0.0, abs=1e-4)
+
 
 def test_pid_ra2():
     """

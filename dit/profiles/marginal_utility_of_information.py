@@ -1,17 +1,15 @@
-# -*- coding: utf-8 -*-
-
 """
 Marginal Utility of Information, as defined here: http://arxiv.org/abs/1409.4708
 """
-
-from .base_profile import BaseProfile, profile_docstring
 
 from itertools import product
 
 import numpy as np
 
+from .base_profile import BaseProfile, profile_docstring
 from .information_partitions import ShannonPartition
 from ..utils import flatten, powerset
+
 
 __all__ = [
     'MUIProfile',
@@ -38,9 +36,9 @@ def get_lp_form(dist, ents):
     bounds : list of pairs
         The bounds on the individual elements of `x`
     """
-    pa = list(frozenset(s) for s in powerset(flatten(dist.rvs)))[1:]
+    pa = [frozenset(s) for s in powerset(flatten(dist.rvs))][1:]
     sp = sorted(ents.atoms.items())
-    atoms = list(frozenset(flatten(a[0])) for a, v in sp if not np.isclose(v, 0))
+    atoms = [frozenset(flatten(a[0])) for a, v in sp if not np.isclose(v, 0)]
 
     A = []
     b = []
@@ -81,13 +79,13 @@ def get_lp_form(dist, ents):
                          ents[([pa_V | pa_W], [])] -
                          ents[([pa_V & pa_W], [])])
 
-    A.append([1]*len(atoms))
-    b.append(0) # placeholder for y
+    A.append([1] * len(atoms))
+    b.append(0)  # placeholder for y
 
     A = np.array(A)
     b = np.array(b)
 
-    c = np.array([-len(atom) for atom in atoms]) # negative for minimization
+    c = np.array([-len(atom) for atom in atoms])  # negative for minimization
 
     bounds = [(min(0, val), max(0, val)) for _, val in sp if not np.isclose(val, 0)]
 
@@ -143,13 +141,13 @@ class MUIProfile(BaseProfile):
         pnts = [v for v in pnts if 0 <= v <= ent]
 
         maxui = [max_util_of_info(c, A, b, bounds, y) for y in pnts]
-        mui = np.round(np.diff(maxui)/np.diff(pnts), 7)
+        mui = np.round(np.diff(maxui) / np.diff(pnts), 7)
         vals = np.array(np.unique(mui, return_index=True))
-        self.profile = dict((pnts[int(row[1])], row[0]) for row in vals.T)
-        self.widths = np.diff(list(sorted(self.profile.keys())) + [ent])
+        self.profile = {pnts[int(row[1])]: row[0] for row in vals.T}
+        self.widths = np.diff(sorted(self.profile.keys()) + [ent])
 
-    def draw(self, ax=None): # pragma: no cover
-        ax = super(MUIProfile, self).draw(ax=ax)
+    def draw(self, ax=None):  # pragma: no cover
+        ax = super().draw(ax=ax)
         pnts = np.arange(int(max(self.profile.keys()) + self.widths[-1]) + 1)
         ax.set_xticks(pnts)
         ax.set_xticklabels(pnts)

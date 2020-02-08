@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.multivariate.wyner_common_information
 """
@@ -13,11 +11,11 @@ from dit.shannon import entropy
 
 
 outcomes = ['0000', '0001', '0110', '0111', '1010', '1011', '1100', '1101']
-pmf = [1/8]*8
+pmf = [1 / 8] * 8
 xor = D(outcomes, pmf)
 
-sbec = lambda p: D(['00', '0e', '1e', '11'], [(1-p)/2, p/2, p/2, (1-p)/2])
-C_sbec = lambda p: 1 if p < 1/2 else entropy(p)
+sbec = lambda p: D(['00', '0e', '1e', '11'], [(1 - p) / 2, p / 2, p / 2, (1 - p) / 2])
+C_sbec = lambda p: 1 if p < 1 / 2 else entropy(p)
 
 
 @pytest.mark.slow
@@ -42,19 +40,19 @@ def test_wci2():
     """
     Test the golden mean.
     """
-    gm = D([(0,0), (0,1), (1,0)], [1/3]*3)
+    gm = D([(0, 0), (0, 1), (1, 0)], [1 / 3] * 3)
     wci = WynerCommonInformation(gm, bound=2)
     wci.optimize()
     d = wci.construct_distribution(cutoff=1e-2)
-    d_opt1 = D([(0, 0, 0), (0, 0, 1), (0, 1, 1), (1, 0, 0)], [1/6, 1/6, 1/3, 1/3])
-    d_opt2 = D([(0, 0, 1), (0, 0, 0), (0, 1, 1), (1, 0, 0)], [1/6, 1/6, 1/3, 1/3])
-    d_opt3 = D([(0, 0, 0), (0, 0, 1), (0, 1, 0), (1, 0, 1)], [1/6, 1/6, 1/3, 1/3])
-    d_opt4 = D([(0, 0, 1), (0, 0, 0), (0, 1, 0), (1, 0, 1)], [1/6, 1/6, 1/3, 1/3])
+    d_opt1 = D([(0, 0, 0), (0, 0, 1), (0, 1, 1), (1, 0, 0)], [1 / 6, 1 / 6, 1 / 3, 1 / 3])
+    d_opt2 = D([(0, 0, 1), (0, 0, 0), (0, 1, 1), (1, 0, 0)], [1 / 6, 1 / 6, 1 / 3, 1 / 3])
+    d_opt3 = D([(0, 0, 0), (0, 0, 1), (0, 1, 0), (1, 0, 1)], [1 / 6, 1 / 6, 1 / 3, 1 / 3])
+    d_opt4 = D([(0, 0, 1), (0, 0, 0), (0, 1, 0), (1, 0, 1)], [1 / 6, 1 / 6, 1 / 3, 1 / 3])
     d_opts = [d_opt1, d_opt2, d_opt3, d_opt4]
     equal = lambda d1, d2: d1.is_approx_equal(d2, rtol=1e-2, atol=1e-2)
     c = wci.objective(wci._optima)
     assert any(equal(d, d_opt) for d_opt in d_opts)
-    assert float(c) == pytest.approx(2/3, abs=1e-3)
+    assert float(c) == pytest.approx(2 / 3, abs=1e-3)
 
 
 @pytest.mark.slow
@@ -65,13 +63,13 @@ def test_wci3():
     """
     pytest.importorskip("numdifftools")
 
-    d = D([(0, 0), (1, 1)], [2/3, 1/3])
+    d = D([(0, 0), (1, 1)], [2 / 3, 1 / 3])
     wci = WynerCommonInformation(d, bound=2)
     wci._jacobian = True
     wci.optimize()
     d = wci.construct_distribution()
-    d_opt1 = D([(0, 0, 0), (1, 1, 1)], [2/3, 1/3])
-    d_opt2 = D([(0, 0, 1), (1, 1, 0)], [2/3, 1/3])
+    d_opt1 = D([(0, 0, 0), (1, 1, 1)], [2 / 3, 1 / 3])
+    d_opt2 = D([(0, 0, 1), (1, 1, 0)], [2 / 3, 1 / 3])
     d_opts = [d_opt1, d_opt2]
     assert any(d_opt.is_approx_equal(d, rtol=1e-4, atol=1e-4) for d_opt in d_opts)
 
@@ -88,7 +86,7 @@ def test_wci4(i, x0):
     """
     Test the binary symmetric erasure channel.
     """
-    p = i/10
+    p = i / 10
     wci = WynerCommonInformation(sbec(p))
     wci.optimize(x0=x0['x0'])
     x0['x0'] = wci._optima.copy()

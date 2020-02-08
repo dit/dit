@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Provides usable args and kwargs from inspect.getcallargs.
 

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.math.ops.
 """
@@ -66,14 +64,14 @@ class TestLinear(object):
 
     def test_invert(self):
         X = np.array([1, 2, -1, 10], dtype=float)
-        Y = np.array([1, 1/2, -1, 1/10])
+        Y = np.array([1, 1 / 2, -1, 1 / 10])
         for x, y in zip(X, Y):
             assert self.ops.invert(x) == pytest.approx(y)
 
     def test_mult_reduce(self):
         prods = [1, 2, 6, 24, 120]
         for i, p in enumerate(prods):
-            assert self.ops.mult_reduce(np.arange(1, i+2)) == pytest.approx(p)
+            assert self.ops.mult_reduce(np.arange(1, i + 2)) == pytest.approx(p)
 
     def test_normalize(self):
         X = np.ones(3)
@@ -125,17 +123,17 @@ class TestLog2(object):
 
     def test_invert(self):
         X = self.ops.log(np.array([1, 2, 0.5, 10], dtype=float))
-        Y = self.ops.log(np.array([1, 1/2, 2, 1/10]))
+        Y = self.ops.log(np.array([1, 1 / 2, 2, 1 / 10]))
         for x, y in zip(X, Y):
             assert np.allclose(self.ops.invert(x), y)
 
     def test_mult_reduce(self):
-        nums = np.arange(1, 5+1)
+        nums = np.arange(1, 5 + 1)
         prods = np.cumprod(nums)
         prods = self.ops.log(prods)
         nums = self.ops.log(nums)
         for i, p in enumerate(prods):
-            assert np.allclose(self.ops.mult_reduce(nums[:i+1]), p)
+            assert np.allclose(self.ops.mult_reduce(nums[:i + 1]), p)
         assert np.allclose(self.ops.mult_reduce(np.array([])), self.ops.one)
 
     def test_normalize(self):

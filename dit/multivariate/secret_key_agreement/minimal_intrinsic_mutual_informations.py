@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 An upper bound on the two-way secret key agreement rate.
 """
@@ -19,6 +17,7 @@ class MinimalIntrinsicTotalCorrelation(BaseMinimalIntrinsicMutualInformation):
     """
     Compute the minimal intrinsic total correlation.
     """
+
     name = 'total correlation'
 
     def measure(self, rvs, crvs):
@@ -47,6 +46,7 @@ class MinimalIntrinsicDualTotalCorrelation(BaseMinimalIntrinsicMutualInformation
     """
     Compute the minimal intrinsic dual total correlation.
     """
+
     name = 'dual total correlation'
 
     def measure(self, rvs, crvs):
@@ -75,6 +75,7 @@ class MinimalIntrinsicCAEKLMutualInformation(BaseMinimalIntrinsicMutualInformati
     """
     Compute the minimal intrinsic CAEKL mutual information.
     """
+
     name = 'CAEKL mutual information'
 
     def measure(self, rvs, crvs):

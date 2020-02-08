@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.pid.hcs.
 """
@@ -33,7 +31,7 @@ def test_iccs3():
     """
     Test hcs on two redundant bits.
     """
-    d = D(['00', '11'], [0.5]*2)
+    d = D(['00', '11'], [1 / 2] * 2)
     red = h_cs(d, ((0,), (1,)))
     assert red == pytest.approx(1)
 
@@ -42,7 +40,7 @@ def test_iccs4():
     """
     Test hcs on two independent bits
     """
-    d = D(['00', '01', '10', '11'], [0.25]*4)
+    d = D(['00', '01', '10', '11'], [1 / 4] * 4)
     red = h_cs(d, ((0,), (1,)))
     assert red == pytest.approx(0)
 
@@ -60,7 +58,7 @@ def test_iccs6():
     """
     Test hcs on triadic (required maxent)
     """
-    triadic = D(['000', '111', '022', '133', '202', '313', '220', '331'], [1/8.0]*8)
+    triadic = D(['000', '111', '022', '133', '202', '313', '220', '331'], [1 / 8] * 8)
     red = h_cs(triadic, ((0,), (1,), (2,)))
     assert red == pytest.approx(1)
 
@@ -112,7 +110,7 @@ def test_ped_cs3():
     """
     Test iccs on SUM.
     """
-    d = D(['000', '011', '101', '112'], [1/4.0]*4)
+    d = D(['000', '011', '101', '112'], [1 / 4] * 4)
     pid = PED_CS(d)
     for atom in pid._lattice:
         if atom in [((1,), (2,)), ((0,), (2,)), ((0,), (1, 2)), ((1,), (0, 2)), ((2,), (0, 1))]:

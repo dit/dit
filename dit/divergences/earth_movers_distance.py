@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Implementation of the Earth Mover's Distance.
 """
@@ -73,7 +71,7 @@ def earth_movers_distance_pmf(x, y, distances=None):
         distances = categorical_distances(n)
 
     eye = np.eye(n)
-    A = np.vstack([np.dstack([eye]*n).reshape(n, n**2), np.tile(eye, n)])
+    A = np.vstack([np.dstack([eye] * n).reshape(n, n**2), np.tile(eye, n)])
 
     b = np.concatenate([x, y], axis=0)
 
@@ -82,6 +80,7 @@ def earth_movers_distance_pmf(x, y, distances=None):
     res = linprog(c, A_eq=A, b_eq=b, bounds=[0, None])
 
     return res.fun
+
 
 def earth_movers_distance(dist1, dist2, distances=None):
     """

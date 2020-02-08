@@ -150,17 +150,18 @@ though it is not in the literature, the multivariate conditional exact common in
 |                                          |                                         | * Channel Capacity                |
 | * Gacs-Korner Common Information         | * :math:`I_{min}`                       | * Complexity Profile              |
 | * Wyner Common Information               | * :math:`I_{\wedge}`                    | * Connected Informations          |
-| * Exact Common Information               | * :math:`I_{\downarrow}`                | * Cumulative Residual Entropy     |
-| * Functional Common Information          | * :math:`I_{proj}`                      | * Extropy                         |
-| * MSS Common Information                 | * :math:`I_{BROJA}`                     | * Hypercontractivity Coefficient  |
-+------------------------------------------+ * :math:`I_{ccs}`                       | * Information Bottleneck          |
-| Secret Key Agreement Bounds              | * :math:`I_{\pm}`                       | * Information Diagrams            |
-|                                          | * :math:`I_{dep}`                       | * Information Trimming            |
+| * Exact Common Information               | * :math:`I_{RR}`                        | * Copy Mutual Information         |
+| * Functional Common Information          | * :math:`I_{\downarrow}`                | * Cumulative Residual Entropy     |
+| * MSS Common Information                 | * :math:`I_{proj}`                      | * Extropy                         |
++------------------------------------------+ * :math:`I_{BROJA}`                     | * Hypercontractivity Coefficient  |
+| Secret Key Agreement Bounds              | * :math:`I_{ccs}`                       | * Information Bottleneck          |
+|                                          | * :math:`I_{\pm}`                       | * Information Diagrams            |
+| * Secrecy Capacity                       | * :math:`I_{dep}`                       | * Information Trimming            |
 | * Intrinsic Mutual Information           | * :math:`I_{RAV}`                       | * Lautum Information              |
-| * Reduced Intrinsic Mutual Information   |                                         | * LMPR Complexity                 |
-| * Minimal Intrinsic Mutual Information   |                                         | * Marginal Utility of Information |
-| * Necessary Intrinsic Mutual Information |                                         | * Maximum Correlation             |
-| * Secrecy Capacity                       |                                         | * Maximum Entropy Distributions   |
+| * Reduced Intrinsic Mutual Information   | * :math:`I_{mmi}`                       | * LMPR Complexity                 |
+| * Minimal Intrinsic Mutual Information   | * :math:`I_{\preceq}`                   | * Marginal Utility of Information |
+| * Necessary Intrinsic Mutual Information | * :math:`I_{RA}`                        | * Maximum Correlation             |
+| * Two-Part Intrinsic Mutual Information  | * :math:`I_{SKAR}`                      | * Maximum Entropy Distributions   |
 |                                          |                                         | * Perplexity                      |
 |                                          |                                         | * Rate-Distortion Theory          |
 |                                          |                                         | * TSE Complexity                  |

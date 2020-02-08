@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 These are special interest implementations that should be used only in
 very particular situations.
@@ -22,7 +20,6 @@ DKL
     These functions should be used only if the sample spaces of the passed in
     distributions are identical (so both the same size and the same order).
     The two distributions can have pmfs in different bases.
-
 """
 
 import dit

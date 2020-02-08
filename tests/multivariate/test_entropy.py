@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.multivariate.entropy.
 """
@@ -8,20 +6,20 @@ import pytest
 
 import numpy as np
 
-from dit import Distribution as D, ScalarDistribution as SD
+from dit import Distribution as D
 from dit.example_dists import uniform
 from dit.multivariate import entropy as H
 
 
 def test_H1():
     """ Test H of a fair coin """
-    d = D(['H', 'T'], [1/2, 1/2])
+    d = D(['H', 'T'], [1 / 2] * 2)
     assert H(d) == pytest.approx(1)
 
 
 def test_H2():
     """ Test the various entropies of two independent events """
-    d = D(['00', '01', '10', '11'], [1/4]*4)
+    d = D(['00', '01', '10', '11'], [1 / 4] * 4)
     assert H(d) == pytest.approx(2)
     assert H(d, [0]) == pytest.approx(1)
     assert H(d, [1]) == pytest.approx(1)
@@ -33,7 +31,7 @@ def test_H2():
 
 def test_H3():
     """ Test the various entropies of two independent events with names """
-    d = D(['00', '01', '10', '11'], [1/4]*4)
+    d = D(['00', '01', '10', '11'], [1 / 4] * 4)
     d.set_rv_names('XY')
     assert H(d) == pytest.approx(2)
     assert H(d, ['X']) == pytest.approx(1)

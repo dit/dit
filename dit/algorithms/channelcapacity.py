@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-
 """
 Simple implementation for channel capacity.
-
 """
 
 import numpy as np
@@ -111,7 +108,7 @@ def channel_capacity(cdists, marginal=None, rtol=None, atol=None):
 
 
 @unitful
-def channel_capacity_joint(dist, input, output, marginal=False, rv_mode=None):
+def channel_capacity_joint(dist, input_, output, marginal=False, rv_mode=None):
     """
     Compute the channel capacity from ``rvs1`` to ``rvs2``.
 
@@ -119,7 +116,7 @@ def channel_capacity_joint(dist, input, output, marginal=False, rv_mode=None):
     ----------
     dist : Distribution
         The distribution to find a channel capacity within.
-    input : iterable
+    input_ : iterable
         The random variables that are the input of the channel.
     output : iterable
         The random variables that are the output of the channel.
@@ -141,7 +138,7 @@ def channel_capacity_joint(dist, input, output, marginal=False, rv_mode=None):
         The marginal distribution that achieves the channel capacity.
         Only returned if `marginal` is True.
     """
-    marg, cdists = dist.condition_on(crvs=input, rvs=output, rv_mode=rv_mode)
+    marg, cdists = dist.condition_on(crvs=input_, rvs=output, rv_mode=rv_mode)
     cc, marg_opt = channel_capacity(cdists)
     if marginal:
         marg.pmf = marg_opt

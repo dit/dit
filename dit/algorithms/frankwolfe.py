@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-
 """
 Frank-Wolfe algorithm.
-
 """
 # 2015-04-15
 #

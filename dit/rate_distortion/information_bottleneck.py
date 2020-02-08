@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Optimizers for computing information bottleneck points.
 """
@@ -10,10 +8,12 @@ from ..algorithms import BaseAuxVarOptimizer
 from ..divergences.pmf import relative_entropy
 from ..exceptions import ditException
 
+
 class InformationBottleneck(BaseAuxVarOptimizer):
     """
     Base optimizer for information bottleneck type calculations.
     """
+
     _shotgun = 10
 
     def __init__(self, dist, beta, alpha=1.0, rvs=None, crvs=None, bound=None, rv_mode=None):
@@ -51,7 +51,7 @@ class InformationBottleneck(BaseAuxVarOptimizer):
             msg = "The information bottleneck is only defined for two variables."
             raise ditException(msg)
 
-        super(InformationBottleneck, self).__init__(dist=dist, rvs=rvs, crvs=crvs, rv_mode=rv_mode)
+        super().__init__(dist=dist, rvs=rvs, crvs=crvs, rv_mode=rv_mode)
         if not 0.0 <= alpha <= 1.0:
             msg = "alpha must be in [0.0, 1.0]."
             raise ditException(msg)
@@ -244,6 +244,7 @@ class InformationBottleneckDivergence(InformationBottleneck):
     A generalized information bottleneck which uses a distortion equal to
     D( p(Y|x) || q(Y|t) ) for an arbitrary divergence measure D.
     """
+
     def __init__(self, dist, beta, alpha=1.0, divergence=relative_entropy, rvs=None, crvs=None, bound=None, rv_mode=None):
         """
         Initialize the optimizer.
@@ -276,14 +277,14 @@ class InformationBottleneckDivergence(InformationBottleneck):
             consulted, which defaults to 'indices'.
         """
         self._divergence = divergence
-        super(InformationBottleneckDivergence, self).__init__(dist=dist,
-                                                              beta=beta,
-                                                              alpha=alpha,
-                                                              rvs=rvs,
-                                                              crvs=crvs,
-                                                              bound=bound,
-                                                              rv_mode=rv_mode,
-                                                              )
+        super().__init__(dist=dist,
+                         beta=beta,
+                         alpha=alpha,
+                         rvs=rvs,
+                         crvs=crvs,
+                         bound=bound,
+                         rv_mode=rv_mode,
+                         )
         self._default_hops *= 2
 
     def _distortion(self):
@@ -300,7 +301,6 @@ class InformationBottleneckDivergence(InformationBottleneck):
         distortion : func
             A function computing the average distortion.
         """
-
         if self._shape[2] > 1:
             idx_xyz = (3,)
             idx_yzt = (0,)

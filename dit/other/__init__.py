@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Esoteric measures of information, typically fairly divorced from Shannon's
 measures.

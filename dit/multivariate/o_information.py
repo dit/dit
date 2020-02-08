@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The O-information, as defined by Rosas et al.
 """

@@ -2,6 +2,7 @@ import coverage
 import re
 import sys
 
+
 def main(argv):
     source = argv[1]
     dest = argv[2]
@@ -18,6 +19,7 @@ def main(argv):
             coverage_data._lines[new_filename] = coverage_data._lines.pop(filename)
 
     coverage_data.write_file('.coverage')
+
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))

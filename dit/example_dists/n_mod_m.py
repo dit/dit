@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Construct generalizations of the xor process to have an alphabet of size m, and
 the i'th symbol be the sum mod m of the others.
@@ -37,10 +35,10 @@ def n_mod_m(n, m):
         raise ValueError("{0} is not a positive integer.".format(n))
     if not (is_integer(m) and m > 0):
         raise ValueError("{0} is not a positive integer.".format(m))
-    size = m**(n-1)
+    size = m**(n - 1)
     alpha = range(m)
-    subwords = product(alpha, repeat=n-1)
-    outcomes = [''.join(map(str, w)) + str(sum(w)%m) for w in subwords]
-    pmf = [1/size]*size
+    subwords = product(alpha, repeat=n - 1)
+    outcomes = [''.join(map(str, w)) + str(sum(w) % m) for w in subwords]
+    pmf = [1 / size] * size
     d = Distribution(outcomes, pmf)
     return d

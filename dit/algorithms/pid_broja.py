@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Partial information decompositions
     and
@@ -74,7 +72,7 @@ def prepare_dist(dist, sources, target, rv_mode=None):
     return d
 
 
-def marginal_constraints(dist, k, normalization=True, source_marginal=False): # pragma: no cover
+def marginal_constraints(dist, k, normalization=True, source_marginal=False):  # pragma: no cover
     """
     Builds the k-way marginal constraints.
 
@@ -128,7 +126,7 @@ def marginal_constraints(dist, k, normalization=True, source_marginal=False): # 
     assert k >= 1
     marginal_size = k
     submarginal_size = marginal_size - 1
-    #assert submarginal_size >= 1
+    # assert submarginal_size >= 1
 
     # p( source_{k-1}, target ) = q( source_{k-1}, target )
     cache = {}
@@ -229,7 +227,7 @@ def extra_constraints(dist, k):
     marginal_size = k
     assert k >= 1
     submarginal_size = marginal_size - 1
-    #assert submarginal_size >= 1
+    # assert submarginal_size >= 1
 
     ### Find values that are fixed at zero
 
@@ -338,8 +336,8 @@ class MaximumConditionalEntropy(CVXOPT_Template):
 
         Bertschinger, N.; Rauh, J.; Olbrich, E.; Jost, J.; Ay, N.
         Quantifying Unique Information. Entropy 2014, 16, 2161-2183.
-
     """
+
     def __init__(self, dist, sources, target, k=2, rv_mode=None,
                  extra_constraints=True, source_marginal=False, tol=None,
                  prng=None, verbose=None):
@@ -402,7 +400,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
         self.source_marginal = source_marginal
         self.verbose = verbose
 
-        super(MaximumConditionalEntropy, self).__init__(self.dist, tol=tol, prng=prng)
+        super().__init__(self.dist, tol=tol, prng=prng)
 
     def prep(self):
         # We are going to remove all zero and fixed elements.
@@ -419,8 +417,8 @@ class MaximumConditionalEntropy(CVXOPT_Template):
 
             # Update the effective number of parameters
             # This will carryover and fix the inequality constraints.
-            self.n = len(self.vartypes.free) # pylint: disable=no-member
-            fnz = self.vartypes.fixed_nonzeros # pylint: disable=no-member
+            self.n = len(self.vartypes.free)  # pylint: disable=no-member
+            fnz = self.vartypes.fixed_nonzeros  # pylint: disable=no-member
             self.normalization = 1 - self.pmf_copy[fnz].sum()
         else:
             warn = "This might not work if there are too many "
@@ -449,8 +447,8 @@ class MaximumConditionalEntropy(CVXOPT_Template):
         self.M = M = block_diag(*blocks)
 
         # Construct submatrices used for free and fixed nonzero parameters.
-        M_col_free = M[:, self.vartypes.free] # pylint: disable=no-member
-        fnz = self.vartypes.fixed_nonzeros # pylint: disable=no-member
+        M_col_free = M[:, self.vartypes.free]  # pylint: disable=no-member
+        fnz = self.vartypes.fixed_nonzeros  # pylint: disable=no-member
         M_col_fnz = M[:, fnz]
         x_fnz = self.pmf[fnz]
         self.y_partial_fnz = y_partial_fnz = np.dot(M_col_fnz, x_fnz)
@@ -471,9 +469,9 @@ class MaximumConditionalEntropy(CVXOPT_Template):
             y_partial_free = np.dot(M_col_free, x_free)
             # y_partial_zero == 0, so no need to calculate or add it.
             y = y_partial_free + y_partial_fnz
-            nonzeros = self.vartypes.nonzeros # pylint: disable=no-member
+            nonzeros = self.vartypes.nonzeros  # pylint: disable=no-member
             y_nonzero = y[nonzeros]
-            self.pmf_copy[self.vartypes.free] = x_free # pylint: disable=no-member
+            self.pmf_copy[self.vartypes.free] = x_free  # pylint: disable=no-member
             x_nonzero = self.pmf_copy[nonzeros]
             terms = x_nonzero * np.log2(x_nonzero / y_nonzero)
             return np.nansum(terms)
@@ -490,9 +488,9 @@ class MaximumConditionalEntropy(CVXOPT_Template):
 
         # Reduce the size of the constraint matrix
         if self.extra_constraints:
-            Asmall = A[:, self.vartypes.free] # pylint: disable=no-member
+            Asmall = A[:, self.vartypes.free]  # pylint: disable=no-member
             # The shape of b is unchanged, but fixed nonzero values modify it.
-            fnz = self.vartypes.fixed_nonzeros # pylint: disable=no-member
+            fnz = self.vartypes.fixed_nonzeros  # pylint: disable=no-member
             b = b - np.dot(A[:, fnz], self.pmf[fnz])
         else:
             Asmall = A
@@ -502,9 +500,9 @@ class MaximumConditionalEntropy(CVXOPT_Template):
             Asmall = None
             b = None
         else:
-            #print(Asmall[0], b[0])
+            # print(Asmall[0], b[0])
             Asmall, b, rank = as_full_rank(Asmall, b)
-            #print(Asmall[0], b[0])
+            # print(Asmall[0], b[0])
             if rank > Asmall.shape[1]:
                 msg = 'More independent constraints than free parameters.'
                 raise ValueError(msg)
@@ -535,17 +533,17 @@ class MaximumConditionalEntropy(CVXOPT_Template):
             # Convert back to a NumPy 1D array
             x_free = np.asarray(x_free).transpose()[0]
 
-            nonzeros = self.vartypes.nonzeros # pylint: disable=no-member
-            free = self.vartypes.free # pylint: disable=no-member
+            nonzeros = self.vartypes.nonzeros  # pylint: disable=no-member
+            free = self.vartypes.free  # pylint: disable=no-member
 
             # First, we need to obtain y_nonzero.
-            M_col_free = self.M[:, self.vartypes.free] # pylint: disable=no-member
+            M_col_free = self.M[:, self.vartypes.free]  # pylint: disable=no-member
             y_partial_free = np.dot(M_col_free, x_free)
             y = y_partial_free + self.y_partial_fnz
             y_nonzero = y[nonzeros]
 
             # We also need x_nonzero
-            self.pmf_copy[self.vartypes.free] = x_free # pylint: disable=no-member
+            self.pmf_copy[self.vartypes.free] = x_free  # pylint: disable=no-member
             x_nonzero = self.pmf_copy[nonzeros]
 
             # The last term:
@@ -557,8 +555,8 @@ class MaximumConditionalEntropy(CVXOPT_Template):
             last_free = 1 / np.log(2) * last[free]
 
             # Indirectly:
-            #grad = x / y + 1/np.log(2) - 1/np.log(2) * last
-            #grad_free = grad[free]
+            # grad = x / y + 1/np.log(2) - 1/np.log(2) * last
+            # grad_free = grad[free]
 
             # Directly:
             grad_free = x_free / y[free] + 1 / np.log(2) - last_free
@@ -645,11 +643,11 @@ class MaximumConditionalEntropy(CVXOPT_Template):
 
         if self.A is None:
             # No free constraints.
-            assert (len(self.vartypes.fixed) == len(self.pmf)) # pylint: disable=no-member
+            assert (len(self.vartypes.fixed) == len(self.pmf))  # pylint: disable=no-member
             self.logger.info("No free parameters. Optimization unnecessary.")
-            self.pmf_copy[self.vartypes.fixed] = self.vartypes.fixed_values # pylint: disable=no-member
+            self.pmf_copy[self.vartypes.fixed] = self.vartypes.fixed_values  # pylint: disable=no-member
             xfinal = self.pmf_copy.copy()
-            xfinal_free = xfinal[self.vartypes.free] # pylint: disable=no-member
+            xfinal_free = xfinal[self.vartypes.free]  # pylint: disable=no-member
             opt = self.func(matrix(xfinal_free))
             return xfinal, opt
 
@@ -678,7 +676,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
         self.xfinal = x
 
         # Rebuild the full distribution as a NumPy array
-        self.pmf_copy[self.vartypes.free] = x # pylint: disable=no-member
+        self.pmf_copy[self.vartypes.free] = x  # pylint: disable=no-member
         xfinal_full = self.pmf_copy.copy()
 
         return xfinal_full, obj
@@ -689,7 +687,6 @@ def pi_decomp(d, d_opt):
     u0 = dit.multivariate.coinformation(d_opt, [[2], [0]], [1])
     u1 = dit.multivariate.coinformation(d_opt, [[2], [1]], [0])
     mi0 = dit.shannon.mutual_information(d_opt, [0], [2])
-    mi0_test = dit.shannon.mutual_information(d, [0], [2])
     rdn = mi0 - u0
     mi = dit.shannon.mutual_information(d, [0, 1], [2])
     syn = mi - mi0 - u1
@@ -758,7 +755,7 @@ def demo():
 
 @removals.remove(message="Please see dit.pid.PID_BROJA.", version='1.0.1')
 def k_synergy(d, sources, target, k=2, rv_mode=None, extra_constraints=True,
-              tol=None, prng=None, verbose=None): # pragma: no cover
+              tol=None, prng=None, verbose=None):  # pragma: no cover
     """
     Returns the `k`-synergy.
 
@@ -835,7 +832,7 @@ def k_synergy(d, sources, target, k=2, rv_mode=None, extra_constraints=True,
 
 @removals.remove(message="Please see dit.pid.PID_BROJA.", version='1.0.1')
 def k_informations(d, sources, target, rv_mode=None, extra_constraints=True,
-                   tol=None, prng=None, verbose=None): # pragma: no cover
+                   tol=None, prng=None, verbose=None):  # pragma: no cover
     """
     Returns the amount of :math:`I[sources:target]` captured by matching `k`-way
     marginals that include the target and the source marginal distribution.
@@ -912,7 +909,7 @@ def k_informations(d, sources, target, rv_mode=None, extra_constraints=True,
 @removals.remove(message="Please see dit.pid.PID_BROJA.", version='1.0.1')
 def unique_informations(d, sources, target, k=2, rv_mode=None,
                         extra_constraints=True, tol=None, prng=None,
-                        verbose=None): # pragma: no cover
+                        verbose=None):  # pragma: no cover
     """
     Returns the unique information each source has about the target.
 
@@ -981,12 +978,12 @@ def unique_informations(d, sources, target, k=2, rv_mode=None,
     d_opt.pmf[:] = pmf
     n = d_opt.outcome_length()
     uis = []
-    for rv in range(n-1):
-        others = list(range(rv)) + list(range(rv+1, n-1))
-        ui = dit.multivariate.coinformation(d_opt, [[rv], [n-1]], others)
+    for rv in range(n - 1):
+        others = list(range(rv)) + list(range(rv + 1, n - 1))
+        ui = dit.multivariate.coinformation(d_opt, [[rv], [n - 1]], others)
         uis.append(ui)
-    mi_opt = dit.multivariate.coinformation(d_opt, [[n-1], list(range(n-1))])
-    mi_orig = dit.multivariate.coinformation(d_orig, [[n-1], list(range(n-1))])
+    mi_opt = dit.multivariate.coinformation(d_opt, [[n - 1], list(range(n - 1))])
+    mi_orig = dit.multivariate.coinformation(d_orig, [[n - 1], list(range(n - 1))])
     rdn = dit.multivariate.coinformation(d_opt, [[i] for i in range(n)])
     syn = mi_orig - mi_opt
     return np.array(uis), rdn, syn, mi_orig, mi_opt

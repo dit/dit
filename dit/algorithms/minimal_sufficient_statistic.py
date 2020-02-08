@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Functions for computing minimal sufficient statistics.
 """
@@ -38,7 +36,7 @@ def partial_match(first, second, places):
         Whether `first` and `second` match or not.
 
     """
-    return tuple([first[i] for i in places]) == tuple(second)
+    return tuple(first[i] for i in places) == tuple(second)
 
 
 def mss_sigalg(dist, rvs, about=None, rv_mode=None):
@@ -225,10 +223,10 @@ def insert_joint_mss(dist, idx, rvs=None, rv_mode=None):
     d = dist.copy()
     l1 = d.outcome_length()
 
-    rvs = set( tuple(rv) for rv in rvs )
+    rvs = {tuple(rv) for rv in rvs}
 
     for rv in rvs:
-        about = list(flatten(rvs-set([rv])))
+        about = list(flatten(rvs - {rv}))
         d = insert_mss(d, -1, rvs=list(rv), about=about, rv_mode=rv_mode)
 
     l2 = d.outcome_length()
@@ -270,10 +268,10 @@ def info_trim(dist, rvs=None, rv_mode=None):
 
     d = dist.copy()
 
-    rvs2 = set( tuple(rv) for rv in rvs )
+    rvs2 = {tuple(rv) for rv in rvs}
 
     for rv in rvs:
-        about = list(flatten(rvs2-{tuple(rv)}))
+        about = list(flatten(rvs2 - {tuple(rv)}))
         d = insert_mss(d, -1, rvs=tuple(rv), about=about, rv_mode=rv_mode)
 
     d = pruned_samplespace(d.marginalize(list(flatten(rvs))))

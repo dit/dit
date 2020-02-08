@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Test the hierarchy of secret key agreement rates.
 """
@@ -20,7 +18,7 @@ eps = 1e-4
 
 
 @settings(max_examples=5)
-@given(dist=distributions(alphabets=(2,)*3))
+@given(dist=distributions(alphabets=(2,) * 3))
 def test_hierarchy(dist):
     """
     Test that the bounds are ordered correctly.

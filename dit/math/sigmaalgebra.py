@@ -1,12 +1,9 @@
-# -*- coding: utf-8 -*-
-
 """
     Functions for generating sigma algebras on finite sets.
 
     Chetan Jhurani
     http://users.ices.utexas.edu/~chetan/Publications.html
     http://users.ices.utexas.edu/~chetan/reports/2009-03-ices-set_algebra_algorithms.pdf
-
 """
 
 from collections import defaultdict
@@ -39,7 +36,7 @@ def sets2matrix(C, X=None):
 
     """
     # make sure C consists of frozensets and that X is frozen
-    C = set([frozenset(c) for c in C])
+    C = {frozenset(c) for c in C}
     if X is None:
         Xset = frozenset().union(*C)
     else:
@@ -121,7 +118,7 @@ def sigma_algebra(C, X=None):
     # The total number of elements is given by the powerset on all unique
     # indexes. That is, we just generate all binary strings. Then, for each
     # binary string, we construct the subset in the sigma algebra.
-    sC = set([])
+    sC = set()
     for word in product([0, 1], repeat=len(unique_cols)):
         subset = [x for i, x in enumerate(X) if word[lookups[i]] == 1]
         sC.add(frozenset(subset))
@@ -249,7 +246,7 @@ def atom_set(F, X=None, method=2):
             # elements...in addition to taking forever, we can't even store
             # that in memory.
             #
-            subsets = sorted(powerset(cet))[1:-1] # nonempty and proper
+            subsets = sorted(powerset(cet))[1:-1]  # nonempty and proper
             for subset in subsets:
                 if frozenset(subset) in F:
                     break

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The tightest known upper bound on two-way secret key agreement rate.
 """
@@ -19,6 +17,7 @@ class TwoPartIntrinsicTotalCorrelation(BaseTwoPartIntrinsicMutualInformation):
     """
     Compute the two part intrinsic total correlation.
     """
+
     name = 'total correlation'
 
     def measure(self, rvs, crvs):
@@ -47,6 +46,7 @@ class TwoPartIntrinsicDualTotalCorrelation(BaseTwoPartIntrinsicMutualInformation
     """
     Compute the two part intrinsic dual total correlation.
     """
+
     name = 'dual total correlation'
 
     def measure(self, rvs, crvs):
@@ -75,6 +75,7 @@ class TwoPartIntrinsicCAEKLMutualInformation(BaseTwoPartIntrinsicMutualInformati
     """
     Compute the two part intrinsic CAEKL mutual information.
     """
+
     name = 'CAEKL mutual information'
 
     def measure(self, rvs, crvs):
@@ -136,7 +137,7 @@ def two_part_intrinsic_mutual_information_constructor(func):  # pragma: no cover
             d = Distribution.from_ndarray(pmf)
             mi = func(d, rvs=[[rv] for rv in self._rvs], crvs=self._j)
             cmi1 = self._conditional_mutual_information(self._u, self._j, self._v)(pmf)
-            cmi1 = self._conditional_mutual_information(self._u, self._crvs, self._v)(pmf)
+            cmi2 = self._conditional_mutual_information(self._u, self._crvs, self._v)(pmf)
             return mi + cmi1 - cmi2
 
     TwoPartIntrinsicMutualInformation.__doc__ = \

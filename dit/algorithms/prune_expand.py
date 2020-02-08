@@ -1,11 +1,8 @@
-# -*- coding: utf-8 -*-
-
 """
 Functions for pruning or expanding the sample space of a distribution.
 
 This can be important when calculating meet and join random variables. It
 is also important for the calculations of various PID quantities.
-
 """
 
 from dit.samplespace import ScalarSampleSpace, SampleSpace, CartesianProduct
@@ -100,7 +97,7 @@ def expanded_samplespace(d, alphabets=None, union=True):
 
     if joint and union:
         alphabet = set.union(*map(set, alphabets))
-        alphabet = list(sorted(alphabet))
+        alphabet = sorted(alphabet)
         alphabets = [alphabet] * len(alphabets)
 
     if joint:

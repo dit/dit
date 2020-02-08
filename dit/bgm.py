@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Joint distributions from Bayesian graphical models, aka Bayesian networks.
 
@@ -12,7 +10,6 @@ not be the case that this corresponds to how it is causally generated.
 An example of this is an edge-emitting hidden Markov model: P(X_0, S_1 | S_0).
 There is no causal relationship between X_0 and S_1...they are jointly
 generated from S_0.
-
 """
 
 import numpy as np

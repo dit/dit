@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Functions to test if two floats are equal to within relative and absolute
 tolerances. This dynamically chooses a cython implementation if available.
@@ -16,7 +14,7 @@ __all__ = ['close', 'allclose']
 
 @removals.remove(message="Use numpy.isclose instead",
                  version='1.0.2')
-def close__cython(x, y, rtol=None, atol=None): # pylint: disable=missing-docstring
+def close__cython(x, y, rtol=None, atol=None):  # pylint: disable=missing-docstring
     if rtol is None:
         rtol = ditParams['rtol']
     if atol is None:
@@ -26,7 +24,7 @@ def close__cython(x, y, rtol=None, atol=None): # pylint: disable=missing-docstri
 
 @removals.remove(message="Use numpy.isclose instead",
                  version='1.0.2')
-def close__python(x, y, rtol=None, atol=None): # pylint: disable=missing-docstring
+def close__python(x, y, rtol=None, atol=None):  # pylint: disable=missing-docstring
     if rtol is None:
         rtol = ditParams['rtol']
     if atol is None:
@@ -46,9 +44,10 @@ def close__python(x, y, rtol=None, atol=None): # pylint: disable=missing-docstri
             return False
     else:
         # Otherwise, make sure they are close.
-        return abs(x-y) <= atol + rtol * abs(y)
+        return abs(x - y) <= atol + rtol * abs(y)
 
     return True
+
 
 close_docstring = \
 """Returns True if the scalars x and y are close.

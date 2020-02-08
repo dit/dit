@@ -1,16 +1,13 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.distconst.
 """
 
-import pytest
-
 import itertools
+import pytest
 
 import numpy as np
 
-from dit.exceptions import ditException, InvalidOutcome
+from dit.exceptions import ditException
 import dit
 
 
@@ -157,16 +154,16 @@ def test_random_distribution():
 def test_simplex_grid1():
     # Test with tuple
     dists = np.asarray(list(dit.simplex_grid(2, 2**2, using=tuple)))
-    dists_ = np.asarray([(0.0, 1.0), (0.25, 0.75), (0.5, 0.5),
-                         (0.75, 0.25), (1.0, 0.0)])
+    dists_ = np.asarray([(0, 1), (0.25, 0.75), (0.5, 0.5),
+                         (0.75, 0.25), (1, 0)])
     assert np.allclose(dists, dists_)
 
 
 def test_simplex_grid2():
     # Test with ScalarDistribution
     dists = np.asarray([d.pmf for d in dit.simplex_grid(2, 2**2)])
-    dists_ = np.asarray([(0.0, 1.0), (0.25, 0.75), (0.5, 0.5),
-                         (0.75, 0.25), (1.0, 0.0)])
+    dists_ = np.asarray([(0, 1), (0.25, 0.75), (0.5, 0.5),
+                         (0.75, 0.25), (1, 0)])
     assert np.allclose(dists, dists_)
 
 
@@ -174,8 +171,8 @@ def test_simplex_grid3():
     # Test with Distribution
     d = dit.random_distribution(1, 2)
     dists = np.asarray([x.pmf for x in dit.simplex_grid(2, 2**2, using=d)])
-    dists_ = np.asarray([(0.0, 1.0), (0.25, 0.75), (0.5, 0.5),
-                         (0.75, 0.25), (1.0, 0.0)])
+    dists_ = np.asarray([(0, 1), (0.25, 0.75), (0.5, 0.5),
+                         (0.75, 0.25), (1, 0)])
     assert np.allclose(dists, dists_)
 
 
@@ -191,23 +188,23 @@ def test_simplex_grid5():
     # Test with ScalarDistribution with inplace=True
     # All final dists should be the same.
     dists = np.asarray([d.pmf for d in dit.simplex_grid(2, 2**2, inplace=True)])
-    dists_ = np.asarray([(1.0, 0.0)]*5)
+    dists_ = np.asarray([(1, 0)] * 5)
     assert np.allclose(dists, dists_)
 
 
 def test_simplex_grid6():
     # Test using NumPy arrays and a base of 3.
     d_ = np.array([
-        [ 0.        ,  0.        ,  1.        ],
-        [ 0.        ,  0.33333333,  0.66666667],
-        [ 0.        ,  0.66666667,  0.33333333],
-        [ 0.        ,  1.        ,  0.        ],
-        [ 0.33333333,  0.        ,  0.66666667],
-        [ 0.33333333,  0.33333333,  0.33333333],
-        [ 0.33333333,  0.66666667,  0.        ],
-        [ 0.66666667,  0.        ,  0.33333333],
-        [ 0.66666667,  0.33333333,  0.        ],
-        [ 1.        ,  0.        ,  0.        ]
+        [0, 0, 1],
+        [0, 0.33333333, 0.66666667],
+        [0, 0.66666667, 0.33333333],
+        [0, 1, 0],
+        [0.33333333, 0, 0.66666667],
+        [0.33333333, 0.33333333, 0.33333333],
+        [0.33333333, 0.66666667, 0],
+        [0.66666667, 0, 0.33333333],
+        [0.66666667, 0.33333333, 0],
+        [1, 0, 0]
     ])
     d = np.array(list(dit.simplex_grid(3, 3, using=np.array)))
     assert np.allclose(d, d_)
@@ -227,7 +224,7 @@ def test_simplex_grid_bad_subdivisions():
 
 # These can be simple smoke test, since the random* tests hit all the branches.
 def test_uniform_scalar_distribution():
-    pmf = np.array([1/3] * 3)
+    pmf = np.array([1 / 3] * 3)
     outcomes = (0, 1, 2)
     dit.math.prng.seed(1)
     d = dit.uniform_scalar_distribution(len(outcomes))
@@ -241,7 +238,7 @@ def test_uniform_scalar_distribution():
 
 
 def test_uniform_distribution():
-    pmf = np.array([1/4] * 4)
+    pmf = np.array([1 / 4] * 4)
     dit.math.prng.seed(1)
     d = dit.uniform_distribution(2, 2)
     assert d.outcomes == ((0, 0), (0, 1), (1, 0), (1, 1))
@@ -250,26 +247,26 @@ def test_uniform_distribution():
 
 def test_rvfunctions1():
     # Smoke test with strings
-    d = dit.Distribution(['00', '01', '10', '11'], [1/4]*4)
+    d = dit.Distribution(['00', '01', '10', '11'], [1 / 4] * 4)
     bf = dit.RVFunctions(d)
-    d = dit.insert_rvf(d, bf.xor([0,1]))
-    d = dit.insert_rvf(d, bf.xor([1,2]))
+    d = dit.insert_rvf(d, bf.xor([0, 1]))
+    d = dit.insert_rvf(d, bf.xor([1, 2]))
     assert d.outcomes == ('0000', '0110', '1011', '1101')
 
 
 def test_rvfunctions2():
     # Smoke test with int tuples
-    d = dit.Distribution([(0,0), (0,1), (1,0), (1,1)], [1/4]*4)
+    d = dit.Distribution([(0, 0), (0, 1), (1, 0), (1, 1)], [1 / 4] * 4)
     bf = dit.RVFunctions(d)
-    d = dit.insert_rvf(d, bf.xor([0,1]))
-    d = dit.insert_rvf(d, bf.xor([1,2]))
-    assert d.outcomes == ((0,0,0,0), (0,1,1,0), (1,0,1,1), (1,1,0,1))
+    d = dit.insert_rvf(d, bf.xor([0, 1]))
+    d = dit.insert_rvf(d, bf.xor([1, 2]))
+    assert d.outcomes == ((0, 0, 0, 0), (0, 1, 1, 0), (1, 0, 1, 1), (1, 1, 0, 1))
 
 
 def test_rvfunctions3():
     # Smoke test strings with from_hexes
     outcomes = ['000', '001', '010', '011', '100', '101', '110', '111']
-    pmf = [1/8] * 8
+    pmf = [1 / 8] * 8
     d = dit.Distribution(outcomes, pmf)
     bf = dit.RVFunctions(d)
     d = dit.insert_rvf(d, bf.from_hexes('27'))
@@ -281,7 +278,7 @@ def test_rvfunctions4():
     # Smoke test int tuples from_hexes
     outcomes = ['000', '001', '010', '011', '100', '101', '110', '111']
     outcomes = [tuple(map(int, o)) for o in outcomes]
-    pmf = [1/8] * 8
+    pmf = [1 / 8] * 8
     d = dit.Distribution(outcomes, pmf)
     bf = dit.RVFunctions(d)
     d = dit.insert_rvf(d, bf.from_hexes('27'))
@@ -291,7 +288,7 @@ def test_rvfunctions4():
 
 
 def test_rvfunctions_scalardist():
-    d = dit.ScalarDistribution(range(5), [1/5] * 5)
+    d = dit.ScalarDistribution(range(5), [1 / 5] * 5)
     with pytest.raises(ditException):
         dit.RVFunctions(d)
 
@@ -302,7 +299,7 @@ def test_rvfunctions_ints():
     partition = [(d.outcomes[i],) for i in range(len(d))]
     mapping = rvf.from_partition(partition)
     d2 = dit.insert_rvf(d, mapping)
-    outcomes = ((0,0,0), (0,1,1), (1,0,2), (1,1,3))
+    outcomes = ((0, 0, 0), (0, 1, 1), (1, 0, 2), (1, 1, 3))
     assert d2.outcomes == outcomes
 
 
@@ -310,7 +307,7 @@ def test_rvfunctions_toolarge():
     letters = 'abcd'
     outcomes = itertools.product(letters, repeat=3)
     outcomes = list(map(''.join, outcomes))
-    d = dit.Distribution(outcomes, [1/64]*64, validate=False)
+    d = dit.Distribution(outcomes, [1 / 64] * 64, validate=False)
     rvf = dit.RVFunctions(d)
     partition = [(d.outcomes[i],) for i in range(len(d))]
     with pytest.raises(NotImplementedError):
@@ -320,10 +317,11 @@ def test_rvfunctions_toolarge():
 def test_insert_rvf1():
     # Test multiple insertion.
     d = dit.uniform_distribution(2, 2)
+
     def xor(outcome):
         o = int(outcome[0] != outcome[1])
         # Here we are returning 2 random variables
-        return (o,o)
+        return (o, o)
     # We are also inserting two times simultaneously.
     d2 = dit.insert_rvf(d, [xor, xor])
     outcomes = (
@@ -339,10 +337,11 @@ def test_insert_rvf2():
     # Test multiple insertion.
     d = dit.uniform_distribution(2, 2)
     d = dit.modify_outcomes(d, lambda x: ''.join(map(str, x)))
+
     def xor(outcome):
         o = str(int(outcome[0] != outcome[1]))
         # Here we are returning 2 random variables
-        return o*2
+        return o * 2
     # We are also inserting two times simultaneously.
     d2 = dit.insert_rvf(d, [xor, xor])
     outcomes = ('000000', '011111', '101111', '110000')
@@ -350,7 +349,7 @@ def test_insert_rvf2():
 
 
 def test_RVFunctions_from_mapping1():
-    d = dit.Distribution(['00', '01', '10', '11'], [1/4]*4)
+    d = dit.Distribution(['00', '01', '10', '11'], [1 / 4] * 4)
     bf = dit.RVFunctions(d)
     mapping = {'00': '0', '01': '1', '10': '1', '11': '0'}
     d = dit.insert_rvf(d, bf.from_mapping(mapping))
@@ -359,18 +358,18 @@ def test_RVFunctions_from_mapping1():
 
 
 def test_RVFunctions_from_mapping2():
-    d = dit.Distribution([(0,0), (0,1), (1,0), (1,1)], [1/4]*4)
+    d = dit.Distribution([(0, 0), (0, 1), (1, 0), (1, 1)], [1 / 4] * 4)
     bf = dit.RVFunctions(d)
-    mapping = {(0,0): 0, (0,1): 1, (1,0): 1, (1,1): 0}
+    mapping = {(0, 0): 0, (0, 1): 1, (1, 0): 1, (1, 1): 0}
     d = dit.insert_rvf(d, bf.from_mapping(mapping, force=True))
     outcomes = ((0, 0, 0), (0, 1, 1), (1, 0, 1), (1, 1, 0))
     assert d.outcomes == outcomes
 
 
 def test_RVFunctions_from_partition():
-    d = dit.Distribution(['00', '01', '10', '11'], [1/4]*4)
+    d = dit.Distribution(['00', '01', '10', '11'], [1 / 4] * 4)
     bf = dit.RVFunctions(d)
-    partition = (('00','11'), ('01', '10'))
+    partition = (('00', '11'), ('01', '10'))
     d = dit.insert_rvf(d, bf.from_partition(partition))
     outcomes = ('000', '011', '101', '110')
     assert d.outcomes == outcomes
@@ -379,7 +378,6 @@ def test_RVFunctions_from_partition():
 def test_product():
     """
     Smoke test for product_distribution().
-
     """
     d = dit.example_dists.Xor()
     d_iid = dit.product_distribution(d)
@@ -391,7 +389,6 @@ def test_product():
 def test_product_nonjoint():
     """
     Test product_distribution() from a ScalarDistribution.
-
     """
     d = dit.ScalarDistribution([.5, .5])
     with pytest.raises(Exception):
@@ -401,10 +398,9 @@ def test_product_nonjoint():
 def test_product_with_rvs1():
     """
     Test product_distribution() with an rvs specification.
-
     """
     d = dit.example_dists.Xor()
-    d_iid = dit.product_distribution(d, [[0,1], [2]])
+    d_iid = dit.product_distribution(d, [[0, 1], [2]])
     d_truth = dit.uniform_distribution(3, ['01'])
     d_truth = dit.modify_outcomes(d_truth, lambda x: ''.join(x))
     assert d_truth.is_approx_equal(d_iid)
@@ -413,10 +409,9 @@ def test_product_with_rvs1():
 def test_product_with_rvs2():
     """
     Test product_distribution() with an rvs specification.
-
     """
     d = dit.example_dists.Xor()
-    d_iid = dit.product_distribution(d, [[0,1]])
+    d_iid = dit.product_distribution(d, [[0, 1]])
     d_truth = dit.uniform_distribution(2, ['01'])
     d_truth = dit.modify_outcomes(d_truth, lambda x: ''.join(x))
     assert d_truth.is_approx_equal(d_iid)
@@ -425,28 +420,25 @@ def test_product_with_rvs2():
 def test_product_with_badrvs():
     """
     Test product_distribution() with overlapping rvs specification.
-
     """
     d = dit.example_dists.Xor()
     with pytest.raises(Exception):
-        dit.product_distribution(d, [[0,1], [0]])
+        dit.product_distribution(d, [[0, 1], [0]])
 
 
 @pytest.mark.parametrize(('n', 'k'), [(2, 2), (2, 3), (3, 2)])
 def test_all_dist_structures(n, k):
     """
     Test all_dist_structures().
-
     """
     num_dists = len(list(dit.all_dist_structures(n, k)))
-    assert num_dists == 2**(k**n)-1
+    assert num_dists == 2**(k**n) - 1
 
 
-@pytest.mark.parametrize('d', [ dit.random_dist_structure(3, 3) for _ in range(10) ])
+@pytest.mark.parametrize('d', [dit.random_dist_structure(3, 3) for _ in range(10)])
 def test_random_dist_structure(d):
     """
     Test random_dist_structure()
-
     """
     words = {''.join(word) for word in itertools.product('012', repeat=3)}
     diff = set(d.outcomes) - words
@@ -458,7 +450,7 @@ def test_coarsegrain():
     d = dit.example_dists.Xor()
     d2 = dit.modify_outcomes(d, lambda x: '1' if '1' in x else '0')
     assert d2.outcomes == ('0', '1')
-    assert np.allclose(d2.pmf, [.25, .75])
+    assert np.allclose(d2.pmf, [0.25, 0.75])
 
 
 def test_noisy():
@@ -468,5 +460,5 @@ def test_noisy():
     d = dit.example_dists.giant_bit(2, 2)
     d2 = dit.noisy(d, noise=0.5)
     print(d2)
-    d3 = dit.Distribution(['00', '01', '10', '11'], [3/8, 1/8, 1/8, 3/8])
+    d3 = dit.Distribution(['00', '01', '10', '11'], [3 / 8, 1 / 8, 1 / 8, 3 / 8])
     assert d2.is_approx_equal(d3)

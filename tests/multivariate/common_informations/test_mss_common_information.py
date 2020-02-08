@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.multivariate.joint_mss.
 """
@@ -27,8 +25,9 @@ def test_M1():
                 '110',
                 'b10',
                 '11c',
-                'b1c',]
-    pmf = [1/16]*16
+                'b1c',
+                ]
+    pmf = [1 / 16] * 16
     d = Distribution(outcomes, pmf)
     assert M(d) == pytest.approx(2.0)
 
@@ -50,8 +49,9 @@ def test_M2():
                 '110',
                 'b10',
                 '11c',
-                'b1c',]
-    pmf = [1/16]*16
+                'b1c',
+                ]
+    pmf = [1 / 16] * 16
     d = Distribution(outcomes, pmf)
     d.set_rv_names('XYZ')
     assert M(d) == pytest.approx(2.0)

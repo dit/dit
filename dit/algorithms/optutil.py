@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Various utilities that can be helpful for optimization problems.
 """
@@ -89,8 +87,8 @@ def as_full_rank(A, b):
 class CVXOPT_Template(object):
     """
     Template for convex minimization on probability distributions.
-
     """
+
     def __init__(self, dist, tol=None, prng=None):
         """
         Initialize optimizer.
@@ -123,9 +121,7 @@ class CVXOPT_Template(object):
 
         self.init()
 
-
     def init(self):
-
         # Dimension of optimization variable
         self.n = len(self.pmf)
 
@@ -145,14 +141,11 @@ class CVXOPT_Template(object):
     def build_function(self):
         self.func = lambda x: x.sum()
 
-
     def build_gradient_hessian(self):
-
         import numdifftools
 
         self.gradient = numdifftools.Gradient(self.func)
         self.hessian = numdifftools.Hessian(self.func)
-
 
     def build_linear_inequality_constraints(self):
         from cvxopt import matrix
@@ -166,11 +159,10 @@ class CVXOPT_Template(object):
         # So, K = l where l is the dimension of the nonnegative orthant. Thus,
         # we have l = n.
         G = matrix(-1 * np.eye(n))   # G should have shape: (K,n) = (n,n)
-        h = matrix(np.zeros((n,1)))  # h should have shape: (K,1) = (n,1)
+        h = matrix(np.zeros((n, 1)))  # h should have shape: (K,1) = (n,1)
 
         self.G = G
         self.h = h
-
 
     def build_linear_equality_constraints(self):
         from cvxopt import matrix
@@ -185,10 +177,8 @@ class CVXOPT_Template(object):
         self.A = matrix(A)
         self.b = matrix(b)  # now a column vector
 
-
     def initial_dist(self):
         return self.prng.dirichlet([1] * self.n)
-
 
     def build_F(self):
         from cvxopt import matrix
@@ -229,7 +219,6 @@ class CVXOPT_Template(object):
 
         self.F = F
 
-
     def optimize(self, **kwargs):
         """
         Options:
@@ -254,7 +243,7 @@ class CVXOPT_Template(object):
                 result = cp(F=self.F,
                             G=self.G,
                             h=self.h,
-                            dims={'l':self.G.size[0], 'q':[], 's':[]},
+                            dims={'l': self.G.size[0], 'q': [], 's': []},
                             A=self.A,
                             b=self.b)
         except:
@@ -274,7 +263,6 @@ class CVXOPT_Template(object):
 class Bunch:
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
-
 
 
 def prepare_dist(dist):

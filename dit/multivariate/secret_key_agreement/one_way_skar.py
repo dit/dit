@@ -1,15 +1,10 @@
-# -*- coding: utf-8 -*-
-
 """
 One-way secret key agreement rate. This is the rate at which Alice and Bob can
 agree upon a secret key with Eve eavesdropping, if only Alice is permitted
 to publicly communicate.
 """
 
-from abc import abstractmethod
-
 from .base_skar_optimizers import BaseOneWaySKAR
-from ...algorithms import BaseAuxVarOptimizer
 from ...utils import unitful
 
 

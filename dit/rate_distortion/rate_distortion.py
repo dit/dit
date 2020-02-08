@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Optimizers for computing rate-distortion points.
 """
@@ -21,6 +19,7 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
     """
     Base optimizer for rate distortion type calculations.
     """
+
     _shotgun = 10
 
     def __init__(self, dist, beta, alpha=1.0, rv=None, crvs=None, bound=None, rv_mode=None):
@@ -57,7 +56,7 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
         except TypeError:
             pass
 
-        super(BaseRateDistortion, self).__init__(dist=dist, rvs=[rv], crvs=crvs, rv_mode=rv_mode)
+        super().__init__(dist=dist, rvs=[rv], crvs=crvs, rv_mode=rv_mode)
         self._alpha = alpha
         self._beta = beta
 
@@ -202,6 +201,7 @@ class RateDistortionHamming(BaseRateDistortion):
     """
     Rate distortion optimizer based around the Hamming distortion.
     """
+
     _optimization_backend = BaseRateDistortion._optimize_shotgun
 
     def _distortion(self):
@@ -241,6 +241,7 @@ class RateDistortionResidualEntropy(BaseRateDistortion):
     """
     Rate distortion optimizer based around the residual entropy distortion.
     """
+
     def _distortion(self):
         """
         Construct the distortion function.
@@ -276,6 +277,7 @@ class RateDistortionMaximumCorrelation(BaseRateDistortion):
     """
     Rate distortion optimizer based around the maximum correlation distortion.
     """
+
     def _distortion(self):
         """
         Construct the distortion function.

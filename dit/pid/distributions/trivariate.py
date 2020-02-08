@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Example trivariate distributions. The last index is designed to be the output.
 """

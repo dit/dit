@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Routines for plotting rate-distortion and information bottleneck curves.
 """
@@ -8,16 +6,17 @@ from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 from operator import attrgetter
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
-from .curves import RDCurve, IBCurve
+from .curves import IBCurve, RDCurve
 
 
 __all__ = (
     'RDPlotter',
     'IBPlotter',
 )
+
 
 Axis = namedtuple('Axis', ['data', 'limit', 'label'])
 
@@ -56,6 +55,7 @@ class BasePlotter(metaclass=ABCMeta):
     """
     A plotter of rate-distortion-like curves.
     """
+
     _beta_axis = Axis(attrgetter('betas'), lambda _: None, r"$\beta$")
     _rank_axis = Axis(attrgetter('ranks'), attrgetter('_max_rank'), r"rank")
     _alphabet_axis = Axis(attrgetter('alphabets'), attrgetter('_max_rank'), r"$|\mathcal{A}|$")
@@ -135,14 +135,14 @@ class BasePlotter(metaclass=ABCMeta):
         ax_min_2 = 0
 
         try:
-            ax_max_1 = max([axis_1.limit(c) for c in self.curves])
+            ax_max_1 = max(axis_1.limit(c) for c in self.curves)
             if ax_max_1 is None:
                 raise TypeError
         except TypeError:
-            ax_min_1 = min([c.betas[0] for c in self.curves])
-            ax_max_1 = max([c.betas[-1] for c in self.curves])
+            ax_min_1 = min(c.betas[0] for c in self.curves)
+            ax_max_1 = max(c.betas[-1] for c in self.curves)
 
-        ax_max_2 = max([axis_2.limit(c) for c in self.curves])
+        ax_max_2 = max(axis_2.limit(c) for c in self.curves)
         _rescale_axes(ax, xmin=ax_min_1, xmax=ax_max_1, ymin=ax_min_2, ymax=ax_max_2)
 
         return ax
@@ -169,6 +169,7 @@ class RDPlotter(BasePlotter):
     """
     A plotter for rate-distortion curves.
     """
+
     _rate_axis = Axis(attrgetter('rates'), attrgetter('_max_rate'), "$I[X:\hat{X}]$")
 
     _curve_type = RDCurve
@@ -197,6 +198,7 @@ class IBPlotter(BasePlotter):
     """
     A plotter for information bottleneck curves.
     """
+
     _complexity_axis = Axis(attrgetter('complexities'), attrgetter('_max_complexity'), "$I[X:\hat{X}]$")
     _entropy_axis = Axis(attrgetter('entropies'), attrgetter('_max_complexity'), r"$H[\hat{X}]$")
     _relevance_axis = Axis(attrgetter('relevances'), attrgetter('_max_relevance'), r"$I[Y:\hat{X}]$")
@@ -213,7 +215,7 @@ class IBPlotter(BasePlotter):
         downsample : int
             Show markers every `downsample` points.
         """
-        ax = super(IBPlotter, self)._plot(ax, axis_1, axis_2, downsample)
+        ax = super()._plot(ax, axis_1, axis_2, downsample)
 
         if axis_1 is self._beta_axis:
             for curve in self.curves:

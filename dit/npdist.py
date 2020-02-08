@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Module defining NumPy array-based distribution classes.
 
@@ -323,8 +321,8 @@ class Distribution(ScalarDistribution):
     space. The order of the outcomes and probabilities will always match the
     order of the sample space, even though their length might not equal the
     length of the sample space.
-
     """
+
     ## Unadvertised attributes
     _sample_space = None
     _mask = None
@@ -421,7 +419,7 @@ class Distribution(ScalarDistribution):
         # And BaseDistribution is the parent of ScalarDistribution.
         # We do this because we want to init the prng AND ignore everything
         # that ScalarDistribution does.
-        super(ScalarDistribution, self).__init__(prng) # pylint: disable=bad-super-call
+        super(ScalarDistribution, self).__init__(prng)  # pylint: disable=bad-super-call
 
         # Set *instance* attributes
         self._meta['is_joint'] = True
@@ -484,7 +482,6 @@ class Distribution(ScalarDistribution):
 
         # Force the distribution to be numerical and a NumPy array.
         self.pmf = np.asarray(pmf, dtype=float)
-
 
         # Tuple outcomes, and an index.
         self.outcomes = tuple(outcomes)
@@ -730,7 +727,7 @@ class Distribution(ScalarDistribution):
         """
         rv_names = da.dims
         events, pmf = zip(*np.ndenumerate(da))
-        events = [tuple([da.coords[rv][_].values.flatten()[0] for _, rv in zip(e, rv_names)]) for e in events]
+        events = [tuple(da.coords[rv][_].values.flatten()[0] for _, rv in zip(e, rv_names)) for e in events]
         dist = Distribution(events, pmf, base=base, prng=prng)
         dist.set_rv_names(rv_names)
         return dist
@@ -813,7 +810,7 @@ class Distribution(ScalarDistribution):
             # 1. Add the new outcome and probability
             self.outcomes = self.outcomes + (outcome,)
             self._outcomes_index[outcome] = len(self.outcomes) - 1
-            pmf = [p for p in self.pmf] + [value]
+            pmf = self.pmf.tolist() + [value]
 
             # 2. Reorder  ### This call is different from Distribution
             outcomes, pmf, index = reorder(self.outcomes, pmf,
@@ -845,7 +842,7 @@ class Distribution(ScalarDistribution):
         """
         from .validate import validate_sequence
 
-        v = super(Distribution, self)._validate_outcomes()
+        v = super()._validate_outcomes()
         # If we survived, then all outcomes have the same class.
         # Now, we just need to make sure that class is a sequence.
         v &= validate_sequence(self.outcomes[0])
@@ -1187,7 +1184,7 @@ class Distribution(ScalarDistribution):
             rv_names = None
         else:
             # _rvs is a dict mapping random variable names to indexes.
-            rv_names = [x for x in self._rvs.items()]
+            rv_names = list(self._rvs.items())
             # Sort by index.
             rv_names.sort(key=itemgetter(1))
             # Keep only the sorted names.
@@ -1377,7 +1374,7 @@ class Distribution(ScalarDistribution):
             # Unsure if we should change this automatically.
             self._rv_mode = 'names'
 
-    def to_html(self, digits=None, exact=None, tol=1e-9): # pragma: no cover
+    def to_html(self, digits=None, exact=None, tol=1e-9):  # pragma: no cover
         """
         Construct an HTML representation of the distribution.
 
@@ -1525,7 +1522,7 @@ class Distribution(ScalarDistribution):
         # Info
         L = max(map(len, headers))
         for head, val in zip(headers, vals):
-            s.write("{0}{1}\n".format("{0}: ".format(head).ljust(L+2), val))
+            s.write("{0}{1}\n".format("{0}: ".format(head).ljust(L + 2), val))
         s.write("\n")
 
         # Distribution

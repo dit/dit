@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The extropy.
 """
@@ -47,7 +45,7 @@ def extropy(dist, rvs=None, rv_mode=None):
     else:
         # Assume linear probability for binary extropy.
         import dit
-        dist = dit.ScalarDistribution([dist, 1-dist])
+        dist = dit.ScalarDistribution([dist, 1 - dist])
         rvs = None
         rv_mode = RV_MODES.INDICES
 
@@ -64,7 +62,7 @@ def extropy(dist, rvs=None, rv_mode=None):
     pmf = d.pmf
     if d.is_log():
         base = d.get_base(numerical=True)
-        npmf = d.ops.log(1-d.ops.exp(pmf))
+        npmf = d.ops.log(1 - d.ops.exp(pmf))
         terms = -base**npmf * npmf
     else:
         # Calculate entropy in bits.

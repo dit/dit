@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.multivariate.total_correlation.
 """
@@ -63,7 +61,7 @@ def test_tc6():
 def test_tc7():
     """ Test T = I with two variables """
     outcomes = ['00', '01', '11']
-    pmf = [1/3] * 3
+    pmf = [1 / 3] * 3
     d = D(outcomes, pmf)
     assert T(d) == pytest.approx(I(d, [0], [1]))
     d.set_rv_names("XY")
@@ -72,6 +70,6 @@ def test_tc7():
 
 def test_tc8():
     """ Test that T fails on SDs """
-    d = SD([1/3]*3)
+    d = SD([1 / 3] * 3)
     with pytest.raises(ditException):
         T(d)

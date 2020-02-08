@@ -1,12 +1,8 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.pid.iccs.
 """
 
 import pytest
-
-import sys
 
 from dit.pid.measures.iccs import PID_CCS
 from dit.pid.distributions import bivariates, trivariates

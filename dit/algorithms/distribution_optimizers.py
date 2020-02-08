@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 A variety of distribution optimizers using scipy.optimize's methods.
 """
@@ -50,7 +48,7 @@ def infer_free_values(A, b):
         # now find rows of A with only a single free value in them. those values must also be fixed.
         fixed = A[:, free].sum(axis=1) == 1
         new_fixed = [[i for i, n in enumerate(row) if n and (i in free)][0] for i, row in enumerate(A) if fixed[i]]
-        free = list(sorted(set(free) - set(new_fixed)))
+        free = sorted(set(free) - set(new_fixed))
         if not new_fixed:
             break
     return free
@@ -83,7 +81,7 @@ class BaseDistOptimizer(BaseOptimizer):
             variable names. If `None`, then the value of `dist._rv_mode` is
             consulted, which defaults to 'indices'.
         """
-        super(BaseDistOptimizer, self).__init__(dist, dist.rvs, crvs=[], rv_mode='indices')
+        super().__init__(dist, dist.rvs, crvs=[], rv_mode='indices')
 
         # todo: actually make this class support crvs?
         self._all_vars = self._rvs
@@ -91,7 +89,7 @@ class BaseDistOptimizer(BaseOptimizer):
         self.dist = prepare_dist(dist)
         self._vpmf = self.dist.pmf.copy()
         self._A, self._b = marginal_constraints_generic(self.dist, marginals, rv_mode)
-        self._shape = list(map(len, self.dist.alphabet))
+        self._shape = [len(alpha) for alpha in self.dist.alphabet]
         self._free = infer_free_values(self._A, self._b)
         self.constraints = [{'type': 'eq',
                              'fun': self.constraint_match_marginals,
@@ -138,11 +136,11 @@ class BaseDistOptimizer(BaseOptimizer):
                 # if a full pmf vector was passed in, restrict it to the free
                 # indices:
                 x0 = x0[self._free]
-            result = super(BaseDistOptimizer, self).optimize(x0=x0,
-                                                             niter=niter,
-                                                             maxiter=maxiter,
-                                                             polish=polish,
-                                                             callback=callback)
+            result = super().optimize(x0=x0,
+                                      niter=niter,
+                                      maxiter=maxiter,
+                                      polish=polish,
+                                      callback=callback)
             return result
 
     def construct_vector(self, x):
@@ -486,10 +484,10 @@ class BROJABivariateOptimizer(MaxCoInfoOptimizer):
             consulted, which defaults to 'indices'.
         """
         dist = broja_prepare_dist(dist, sources, target, rv_mode)
-        super(BROJABivariateOptimizer, self).__init__(dist, [[0, 2], [1, 2]])
+        super().__init__(dist, [[0, 2], [1, 2]])
 
         extra_free = broja_extra_constraints(self.dist, 2).free
-        self._free = list(sorted(set(self._free) & set(extra_free)))
+        self._free = sorted(set(self._free) & set(extra_free))
         self._optvec_size = len(self._free)
 
 
@@ -559,7 +557,7 @@ def marginal_maxent_dists(dist, k_max=None):
     # the full space. We also know the answer in these cases.
 
     # This is safe since the distribution must be dense.
-    k0 = Distribution(outcomes, [1]*len(outcomes), base='linear', validate=False)
+    k0 = Distribution(outcomes, [1] * len(outcomes), base='linear', validate=False)
     k0.normalize()
 
     k1 = product_distribution(dist)
@@ -572,8 +570,8 @@ def marginal_maxent_dists(dist, k_max=None):
         rv_mode = dist._rv_mode
 
         if rv_mode in [RV_MODES.NAMES, 'names']:
-            vars = dist.get_rv_names()
-            rvs = list(combinations(vars, k))
+            variables = dist.get_rv_names()
+            rvs = list(combinations(variables, k))
         else:
             rvs = list(combinations(range(n_variables), k))
 

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The Blahut-Arimoto algorithm for solving the rate-distortion problem.
 """
@@ -140,7 +138,7 @@ def blahut_arimoto(p_x, beta, distortion=hamming_distortion, max_iters=100, rest
                                  )
         candidates.append(result)
 
-    rd = min(candidates, key=lambda result: result[0].rate + beta*result[0].distortion)
+    rd = min(candidates, key=lambda result: result[0].rate + beta * result[0].distortion)
     return rd
 
 

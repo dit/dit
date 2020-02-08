@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Information Theory Exceptions
 =============================
@@ -7,22 +5,24 @@ Information Theory Exceptions
 Exceptions related to information theory.
 """
 
-__all__ = ['ditException',
-           'IncompatibleDistribution',
-           'InvalidBase',
-           'InvalidDistribution',
-           'InvalidNormalization',
-           'InvalidOutcome',
-           'InvalidProbability',
-           'OptimizationException',
-           ]
+
+__all__ = [
+    'ditException',
+    'IncompatibleDistribution',
+    'InvalidBase',
+    'InvalidDistribution',
+    'InvalidNormalization',
+    'InvalidOutcome',
+    'InvalidProbability',
+    'OptimizationException',
+]
 
 
 class ditException(Exception):
     """
     Base class for all `dit` exceptions.
-
     """
+
     def __init__(self, *args, **kwargs):
         if 'msg' in kwargs:
             # Override the message in the first argument.
@@ -44,23 +44,22 @@ class ditException(Exception):
 class IncompatibleDistribution(ditException):
     """
     Exception for an incompatible distribution.
-
     """
+
     def __init__(self, *args, **kwargs):
         """
         Initialize the exception.
-
         """
         msg = "The distribution is not compatible."
         args = (msg,) + args
-        super(IncompatibleDistribution, self).__init__(self, *args, **kwargs)
+        super().__init__(self, *args, **kwargs)
 
 
 class InvalidBase(ditException):
     """
     Exception for an invalid logarithm base.
-
     """
+
     def __init__(self, *args, **kwargs):
         """
         Initialize the exception.
@@ -69,27 +68,24 @@ class InvalidBase(ditException):
         ----------
         base : float
             The invalid base.
-
         """
         if args:
             msg = "{0} is not a valid logarithm base.".format(args[0])
             args = (msg,) + args
-        super(InvalidBase, self).__init__(self, *args, **kwargs)
+        super().__init__(self, *args, **kwargs)
 
 
 class InvalidDistribution(ditException):
     """
     Exception thrown for an invalid distribution.
-
     """
-    pass
 
 
 class InvalidOutcome(ditException):
     """
     Exception for an invalid outcome.
-
     """
+
     def __init__(self, *args, **kwargs):
         """
         Initialize the exception.
@@ -117,14 +113,14 @@ class InvalidOutcome(ditException):
             else:
                 msg = "Outcomes {0} are not in the sample space.".format(bad)
         args = (msg,) + args
-        super(InvalidOutcome, self).__init__(self, *args, **kwargs)
+        super().__init__(self, *args, **kwargs)
 
 
 class InvalidNormalization(ditException):
     """
     Exception thrown when a distribution is not normalized.
-
     """
+
     def __init__(self, *args, **kwargs):
         """
         Initializes the exception.
@@ -135,14 +131,14 @@ class InvalidNormalization(ditException):
         msg = "Bad normalization: {0!r}".format(args[0])
         self.summation = args[0]
         args = (msg,) + args
-        super(InvalidNormalization, self).__init__(self, *args, **kwargs)
+        super().__init__(self, *args, **kwargs)
 
 
 class InvalidProbability(ditException):
     """
     Exception thrown when a probability is not in [0,1].
-
     """
+
     def __init__(self, *args, **kwargs):
         """
         Initialize the exception.
@@ -165,11 +161,12 @@ class InvalidProbability(ditException):
             msg = "Probabilities {0} are not in {1} (base: {2!r})."
         msg = msg.format(prob, bounds, ops.base)
         args = (msg,) + args
-        super(InvalidProbability, self).__init__(self, *args, **kwargs)
+        super().__init__(self, *args, **kwargs)
 
 
 class OptimizationException(ditException):
     """
     Exception representing a failure of optimization.
     """
+
     pass

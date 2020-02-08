@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Canonical non-signalling boxes.
 """
@@ -36,7 +34,7 @@ def pr_box(eta=1, name=False):
         The PR box distribution.
     """
     outcomes = list(product([0, 1], repeat=4))
-    pmf = [ ((1+eta)/16 if (x*y == a^b) else (1-eta)/16) for x, y, a, b in outcomes ]
+    pmf = [((1 + eta) / 16 if (x * y == a ^ b) else (1 - eta) / 16) for x, y, a, b in outcomes]
     pr = Distribution(outcomes, pmf)
 
     if name:

@@ -1,20 +1,13 @@
-# -*- coding: utf-8 -*-
-
 """
 Information partitions, e.g. ways of dividing up the information in a joint
 distribution.
 """
 
 from abc import ABCMeta, abstractmethod
-
 from collections import defaultdict
 
-from itertools import islice
-
-import prettytable
-
 import numpy as np
-
+import prettytable
 from lattices.lattices import dependency_lattice, powerset_lattice
 
 from .. import ditParams
@@ -100,7 +93,7 @@ class BaseInformationPartition(metaclass=ABCMeta):
 
         # Subset-sum type thing, basically co-information calculations.
         for node in self._lattice:
-            Is[node] = sum((-1)**(len(rv)+1)*Hs[rv] for rv in self._lattice.descendants(node, include=True))
+            Is[node] = sum((-1)**(len(rv) + 1) * Hs[rv] for rv in self._lattice.descendants(node, include=True))
 
         # Mobius inversion of the above, resulting in the Shannon atoms.
         for node in self._lattice:
@@ -141,7 +134,7 @@ class BaseInformationPartition(metaclass=ABCMeta):
         if ditParams['repr.print']:
             return self.to_string()
         else:
-            return super(BaseInformationPartition, self).__repr__()
+            return super().__repr__()
 
     def __str__(self):
         """
@@ -154,7 +147,7 @@ class BaseInformationPartition(metaclass=ABCMeta):
         Use PrettyTable to create a nice table.
         """
         table = prettytable.PrettyTable(['measure', self.unit])  # pylint: disable=no-member
-        if ditParams['text.font'] == 'linechar': # pragma: no cover
+        if ditParams['text.font'] == 'linechar':  # pragma: no cover
             try:
                 table.set_style(prettytable.UNICODE_LINES)
             except AttributeError:
@@ -226,7 +219,7 @@ def tuplefy(dependency):
     """
     """
     dependency = tuple(map(tuple, dependency))
-    return tuple([tuple(sorted(_)) for _ in sorted(dependency, key=lambda d: (-len(d), d))])
+    return tuple(tuple(sorted(_)) for _ in sorted(dependency, key=lambda d: (-len(d), d)))
 
 
 class DependencyDecomposition(object):
@@ -235,7 +228,7 @@ class DependencyDecomposition(object):
     distribution.
     """
 
-    def __init__(self, dist, rvs=None, measures={'H': entropy}, maxiter=None):
+    def __init__(self, dist, rvs=None, measures={'H': entropy}, maxiter=None):  # noqa: B006
         """
         Construct a Krippendorff-type partition of the information contained in
         `dist`.
@@ -308,7 +301,7 @@ class DependencyDecomposition(object):
         if ditParams['repr.print']:
             return self.to_string()
         else:
-            return super(DependencyDecomposition, self).__repr__()
+            return super().__repr__()
 
     def __str__(self):
         """
@@ -385,10 +378,10 @@ class DependencyDecomposition(object):
         ### TODO: add some logic for the format string, so things look nice
         # with arbitrary values
         for m in measures:
-            table.float_format[m] = ' {}.{}'.format(digits+2, digits)
+            table.float_format[m] = ' {}.{}'.format(digits + 2, digits)
         items = [(tuplefy(row[0]), row[1]) for row in self.atoms.items()]
         items = sorted(items, key=lambda row: row[0])
-        items = sorted(items, key=lambda row: sorted([len(d) for d in row[0]], reverse=True), reverse=True)
+        items = sorted(items, key=lambda row: sorted((len(d) for d in row[0]), reverse=True), reverse=True)
         for dependency, values in items:
             # gets rid of pesky -0.0 display values
             for m, value in values.items():

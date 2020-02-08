@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.util.information_partitions.
 """
@@ -14,14 +12,14 @@ from dit.profiles.information_partitions import DependencyDecomposition, Extropy
 from dit.utils import partitions, powerset
 
 
-def all_info_measures(vars):
+def all_info_measures(rvs):
     """
     """
-    for stuff in islice(powerset(vars), 1, None):
-        others = set(vars) - set(stuff)
+    for stuff in islice(powerset(rvs), 1, None):
+        others = set(rvs) - set(stuff)
         for part in partitions(stuff, tuples=True):
             for cond in powerset(others):
-                yield (part , cond)
+                yield (part, cond)
 
 
 @pytest.mark.parametrize('meas', all_info_measures(range(4)))

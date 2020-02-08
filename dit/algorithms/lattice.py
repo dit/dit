@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Some algorithms related to lattices.
 

@@ -1,12 +1,9 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.cdisthelpers.
 """
 
 import pytest
 
-import numpy as np
 import dit
 
 
@@ -52,11 +49,11 @@ def test_bad_marginal():
     # Compatible marginal that is not trim.
     pY = dit.Distribution(['0', '1', '2'], [.25, .75, 0])
     pY.make_dense()
-    pYXZ = dit.joint_from_factors(pY, pXZgY, strict=False)
+    dit.joint_from_factors(pY, pXZgY, strict=False)
 
     # Compatible marginal that is not trim.
     # Note here that we have created a completely different distribution
     # where the outcomes for X are '0' and '2' now.
     pY = dit.Distribution(['0', '1', '2'], [.25, 0, .75])
     pY.make_dense()
-    pYXZ = dit.joint_from_factors(pY, pXZgY, strict=False)
+    dit.joint_from_factors(pY, pXZgY, strict=False)

@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
-
 """
-Tsallis Entropy
+Tsallis Entropy.
 """
 
 import numpy as np
@@ -10,8 +8,10 @@ from ..helpers import normalize_rvs
 from ..utils import flatten
 from ..multivariate import entropy
 
-__all__ = ('tsallis_entropy',
-          )
+
+__all__ = (
+    'tsallis_entropy',
+)
 
 
 def tsallis_entropy(dist, order, rvs=None, rv_mode=None):
@@ -56,8 +56,8 @@ def tsallis_entropy(dist, order, rvs=None, rv_mode=None):
     pmf = dist.pmf
 
     if order == 1:
-        S_q = entropy(dist)/np.log2(np.e)
+        S_q = entropy(dist) / np.log2(np.e)
     else:
-        S_q = 1/(order - 1) * (1 - (pmf**order).sum())
+        S_q = 1 / (order - 1) * (1 - (pmf**order).sum())
 
     return S_q

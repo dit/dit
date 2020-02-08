@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The TSE Complexity.
 """
@@ -66,6 +64,6 @@ def tse_complexity(dist, rvs=None, crvs=None, rv_mode=None):
         subH /= nCk(N, k)
         return subH
 
-    TSE = sum(sub_entropies(k) - k/N * joint for k in range(1, N))
+    TSE = sum(sub_entropies(k) - k / N * joint for k in range(1, N))
 
     return TSE

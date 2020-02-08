@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The perplexity of a distribution.
 """
@@ -33,7 +31,6 @@ def perplexity(dist, rvs=None, crvs=None, rv_mode=None):
     P : float
         The perplexity.
     """
-
     base = dist.get_base(numerical=True) if dist.is_log() else 2
 
     if dist.is_joint():

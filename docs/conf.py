@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # dit documentation build configuration file, created by
 # sphinx-quickstart on Thu Oct 31 02:07:43 2013.
 #
@@ -11,7 +9,8 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os
+import os
+import sys
 
 # environment variable to know if the docs are being built on rtd.
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'

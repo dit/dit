@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.inference.binning.
 """
@@ -32,6 +30,6 @@ def test_uniform_binning():
     Test maxent binning.
     """
     data = np.random.random(10)
-    bins = np.array([0]*8 + [1]*2)
-    bd = binned(data+(2*bins), style='uniform')
+    bins = np.array([0] * 8 + [1] * 2)
+    bd = binned(data + (2 * bins), style='uniform')
     assert np.all(bd == bins)

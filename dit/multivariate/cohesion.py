@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Cohesion, a generalization bridging the total correlation and the dual total
 correlation.
@@ -58,7 +56,7 @@ def cohesion(dist, k, rvs=None, crvs=None, rv_mode=None):
     """
     rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
 
-    one = sum([H(dist, set().union(*rv_), crvs, rv_mode=rv_mode) for rv_ in combinations(rvs, k)])
+    one = sum(H(dist, set().union(*rv_), crvs, rv_mode=rv_mode) for rv_ in combinations(rvs, k))
     two = H(dist, set().union(*rvs), crvs, rv_mode=rv_mode)
     C = one - multinomial(len(rvs) - 1, [k - 1, len(rvs) - k]) * two
 

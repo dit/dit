@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Maximum entropy with marginal distribution constraints.
 
@@ -42,7 +40,7 @@ __all__ = [
     # 'MarginalMaximumEntropy',
     'MomentMaximumEntropy',
     # Use version provided by maxentropyfw.py
-    #'marginal_maxent_dists',
+    # 'marginal_maxent_dists',
     'moment_maxent_dists',
 ]
 
@@ -65,7 +63,6 @@ def isolate_zeros_generic(dist, rvs):
     rvs = [[indexes[rvs_.index(rv)] for rv in subrv] for subrv in rvs]
 
     d = get_abstract_dist(dist)
-    n_variables = d.n_variables
     n_elements = d.n_elements
 
     zero_elements = np.zeros(n_elements, dtype=int)
@@ -131,6 +128,7 @@ def isolate_zeros(dist, k):
 
     return variables
 
+
 def marginal_constraints_generic(dist, rvs, rv_mode=None,
                                  with_normalization=True):
     """
@@ -157,7 +155,6 @@ def marginal_constraints_generic(dist, rvs, rv_mode=None,
         of `rvs` are interpreted as random variable indices. If equal to
         'names', the the elements are interpreted as random variable names.
         If `None`, then the value of `dist._rv_mode` is consulted.
-
     """
     assert dist.is_dense()
     assert dist.get_base() == 'linear'
@@ -240,8 +237,8 @@ def marginal_constraints(dist, m, with_normalization=True):
     rv_mode = dist._rv_mode
 
     if rv_mode in [RV_MODES.NAMES, 'names']:
-        vars = dist.get_rv_names()
-        rvs = list(itertools.combinations(vars, m))
+        variables = dist.get_rv_names()
+        rvs = list(itertools.combinations(variables, m))
     else:
         rvs = list(itertools.combinations(range(n_variables), m))
 
@@ -256,9 +253,6 @@ def marginal_constraint_rank(dist, m):
 
     """
     dist = prepare_dist(dist)
-    n_variables = dist.outcome_length()
-    n_symbols = len(dist.alphabet[0])
-    pmf = dist.pmf
 
     A, b = marginal_constraints(dist, m)
     _, _, rank = as_full_rank(A, b)
@@ -350,7 +344,6 @@ def moment_constraints(pmf, n_variables, m, symbol_map, with_replacement=True):
     A = [np.ones(d.n_elements)]
     b = [1]
 
-
     try:
         m[0]
     except TypeError:
@@ -391,13 +384,11 @@ def moment_constraint_rank(dist, m, symbol_map=None,
                            cumulative=True, with_replacement=True):
     """
     Returns the rank of the moment constraint matrix.
-
     """
     if cumulative:
         mvals = range(m + 1)
     else:
         mvals = [m]
-
 
     dist = prepare_dist(dist)
     n_variables = dist.outcome_length()
@@ -440,8 +431,8 @@ def negentropy(p):
 class MaximumEntropy(CVXOPT_Template):
     """
     Find maximum entropy distribution.
-
     """
+
     def build_function(self):
         self.func = negentropy
 
@@ -455,8 +446,8 @@ class MarginalMaximumEntropy(MaximumEntropy):
     Find maximum entropy distribution subject to `k`-way marginal constraints.
 
     `k = 0` should reproduce the behavior of MaximumEntropy.
-
     """
+
     def __init__(self, dist, k, tol=None, prng=None):
         """
         Initialize optimizer.
@@ -470,7 +461,7 @@ class MarginalMaximumEntropy(MaximumEntropy):
 
         """
         self.k = k
-        super(MarginalMaximumEntropy, self).__init__(dist, tol=tol, prng=prng)
+        super().__init__(dist, tol=tol, prng=prng)
 
     def prep(self):
 
@@ -481,7 +472,7 @@ class MarginalMaximumEntropy(MaximumEntropy):
 
         # Make self.n reflect only the size of the nonzero elements. This
         # automatically adjusts the size of G for the inequality constraint.
-        self.n = len(self.variables.nonzero) # pylint: disable=no-member
+        self.n = len(self.variables.nonzero)  # pylint: disable=no-member
 
     def build_linear_equality_constraints(self):
         from cvxopt import matrix
@@ -493,7 +484,7 @@ class MarginalMaximumEntropy(MaximumEntropy):
         # the constraint equations are unchanged. E.g. the normalization is
         # still that the nonzero values should add to 1.
 
-        Asmall = A[:, self.variables.nonzero] # pylint: disable=no-member
+        Asmall = A[:, self.variables.nonzero]  # pylint: disable=no-member
         Asmall, b, rank = as_full_rank(Asmall, b)
         if rank > Asmall.shape[1]:
             raise ValueError('More independent constraints than free parameters.')
@@ -512,8 +503,8 @@ class MarginalMaximumEntropy(MaximumEntropy):
         return initial_x
 
     def build_gradient_hessian(self):
-
         ln2 = np.log(2)
+
         def gradient(xarr):
             # This operates only on nonzero elements.
 
@@ -541,8 +532,8 @@ class MomentMaximumEntropy(MaximumEntropy):
     Find maximum entropy distribution subject to `k`-way marginal constraints.
 
     `k = 0` should reproduce the behavior of MaximumEntropy.
-
     """
+
     def __init__(self, dist, k, symbol_map, cumulative=True,
                  with_replacement=True, tol=None, prng=None):
         """
@@ -572,8 +563,7 @@ class MomentMaximumEntropy(MaximumEntropy):
         self.symbol_map = symbol_map
         self.cumulative = cumulative
         self.with_replacement = with_replacement
-        super(MomentMaximumEntropy, self).__init__(dist, tol=tol, prng=prng)
-
+        super().__init__(dist, tol=tol, prng=prng)
 
     def build_linear_equality_constraints(self):
         from cvxopt import matrix
@@ -627,7 +617,6 @@ def marginal_maxent_dists(dist, k_max=None, jitter=True, show_progress=True):
         dist.pmf = dit.math.pmfops.jittered(dist.pmf)
 
     n_variables = dist.outcome_length()
-    symbols = dist.alphabet[0]
 
     if k_max is None:
         k_max = n_variables
@@ -643,7 +632,7 @@ def marginal_maxent_dists(dist, k_max=None, jitter=True, show_progress=True):
         pmf_opt = opt.optimize(show_progress=show_progress)
         pmf_opt = pmf_opt.reshape(pmf_opt.shape[0])
         pmf = np.zeros(len(dist.pmf))
-        pmf[opt.variables.nonzero] = pmf_opt # pylint: disable=no-member
+        pmf[opt.variables.nonzero] = pmf_opt  # pylint: disable=no-member
         d = dit.Distribution(outcomes, pmf)
         dists.append(d)
 

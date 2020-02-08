@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.math.misc.
 """
@@ -16,7 +14,7 @@ def test_number1(n):
 
 @pytest.mark.parametrize('n', range(-10, 10))
 def test_number2(n):
-    assert is_number(n/10)
+    assert is_number(n / 10)
 
 
 @pytest.mark.parametrize('n', ['a', int, []])
@@ -31,7 +29,7 @@ def test_integer1(n):
 
 @pytest.mark.parametrize('n', range(-10, 10))
 def test_integer2(n):
-    assert not is_integer(n/10)
+    assert not is_integer(n / 10)
 
 
 @pytest.mark.parametrize('n', ['a', int, []])
@@ -51,7 +49,7 @@ def test_factorial1(n, expected):
     assert factorial(n) == expected
 
 
-@pytest.mark.parametrize('n', [-1, 0.5, 1+2j])
+@pytest.mark.parametrize('n', [-1, 0.5, 1 + 2j])
 def test_factorial2(n):
     with pytest.raises(ValueError):
         factorial(n)

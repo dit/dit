@@ -1,8 +1,6 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Installation script for dit.
-
 """
 
 import ast
@@ -27,6 +25,7 @@ with open('dit/__init__.py', 'rb') as f:
 
 DESCRIPTION = "Python package for information theory."
 
+
 class my_install_data(install_data.install_data):
     # A custom install_data command, which will install it's files
     # into the standard directories (normally lib/site-packages).
@@ -37,20 +36,23 @@ class my_install_data(install_data.install_data):
         print('Installing data files to {0}'.format(self.install_dir))
         install_data.install_data.finalize_options(self)
 
+
 def has_cython():
     """Returns True if Cython is found on the system."""
     try:
-        import Cython
+        import Cython  # noqa: F401
         return True
     except ImportError:
         return False
+
 
 def check_opt(name):
     x = eval('has_{0}()'.format(name.lower()))
     msg = "%(name)s not found. %(name)s extensions will not be built."
     if not x:
-        warnings.warn(msg % {'name':name})
+        warnings.warn(msg % {'name': name})
     return x
+
 
 def hack_distutils(debug=False, fast_link=True):
     # hack distutils.sysconfig to eliminate debug flags
@@ -88,6 +90,7 @@ def hack_distutils(debug=False, fast_link=True):
                     ldsharedflags = remove_prefixes(ldsharedflags.split(),
                             ['-Wl,-O'])
                     cvars[varname] = str.join(' ', ldsharedflags)
+
 
 def main():
     ## Probably, we don't need this anymore?
@@ -171,7 +174,7 @@ def main():
 
     # Tests
     # This includes for bdist only. sdist uses MANIFEST.in
-    package_data = dict(zip(packages, [['tests/*.py']]*len(packages)))
+    package_data = dict(zip(packages, [['tests/*.py']] * len(packages)))
 
     setup(
         name=NAME,
@@ -204,6 +207,7 @@ def main():
             "Topic :: Scientific/Engineering :: Physics",
         ],
     )
+
 
 if __name__ == '__main__':
     if sys.argv[-1] == 'setup.py':

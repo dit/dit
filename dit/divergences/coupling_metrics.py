@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Metrics related to minimum entropy distributions with fixed marginals.
 """
@@ -60,7 +58,7 @@ def residual_entropy(dist, rvs=None, crvs=None, p=1.0, rv_mode=None):
     others = lambda rv, rvs: set(set().union(*rvs)) - set(rv)
 
     R = sum(H(dist, rv, others(rv, rvs).union(crvs), rv_mode=rv_mode)**p
-            for rv in rvs)**(1/p)
+            for rv in rvs)**(1 / p)
 
     return R
 

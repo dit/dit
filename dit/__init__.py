@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 dit is a Python package for information theory on discrete random variables.
 

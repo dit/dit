@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Intrinsic Mutual Informations
 """
@@ -17,6 +15,7 @@ class IntrinsicTotalCorrelation(BaseIntrinsicMutualInformation):
     """
     Compute the intrinsic total correlation.
     """
+
     name = 'total correlation'
 
     def _objective(self):
@@ -57,6 +56,7 @@ class IntrinsicDualTotalCorrelation(BaseIntrinsicMutualInformation):
     """
     Compute the intrinsic dual total correlation.
     """
+
     name = 'dual total correlation'
 
     def _objective(self):
@@ -97,6 +97,7 @@ class IntrinsicCAEKLMutualInformation(BaseIntrinsicMutualInformation):
     """
     Compute the intrinsic CAEKL mutual information.
     """
+
     name = 'CAEKL mutual information'
 
     def _objective(self):

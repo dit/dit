@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
-
 """
 Information measures based on Mike DeWeese's multivariate mutual information.
 """
+
 from itertools import product
 
 from ..algorithms import BaseAuxVarOptimizer
@@ -85,7 +84,7 @@ def deweese_constructor(mmi):
                 A distribution with additional indices corresponding
                 to functions of those variables.
             """
-            partss = [partitions(set([(o[i],) for o in dist.outcomes])) for i, _ in enumerate(rvs)]
+            partss = [partitions({(o[i],) for o in dist.outcomes}) for i, _ in enumerate(rvs)]
             for parts in product(*partss):
                 d = dist.copy()
                 for i, part in enumerate(parts):
@@ -111,10 +110,10 @@ class BaseDeWeeseOptimizer(BaseAuxVarOptimizer):
     """
     An optimizer for DeWeese-style multivariate mutual informations.
     """
+
     construct_initial = BaseAuxVarOptimizer.construct_copy_initial
 
     _sign = -1
-
     _shotgun = 5
 
     def __init__(self, dist, rvs=None, crvs=None, deterministic=False, rv_mode=None):
@@ -140,7 +139,7 @@ class BaseDeWeeseOptimizer(BaseAuxVarOptimizer):
             variable names. If `None`, then the value of `dist._rv_mode` is
             consulted, which defaults to 'indices'.
         """
-        super(BaseDeWeeseOptimizer, self).__init__(dist, rvs=rvs, crvs=crvs, rv_mode=rv_mode)
+        super().__init__(dist, rvs=rvs, crvs=crvs, rv_mode=rv_mode)
         self._construct_auxvars([({rv}, size) for rv, size in zip(self._rvs, self._shape)])
 
         if deterministic:

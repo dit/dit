@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Functions to convert pmfs to latex arrays.
 """
@@ -8,6 +6,8 @@ import contextlib
 import os
 import subprocess
 import tempfile
+
+from debtcollector import removals
 
 import numpy as np
 import numpy.core.arrayprint as arrayprint
@@ -20,17 +20,23 @@ from .misc import default_opener
 #
 # Includes hack to prevent NumPy from removing trailing zeros.
 #
+@removals.remove(message="Please use np.core.arrayprint.printoptions",
+                 version='1.2.3')
 @contextlib.contextmanager
 def printoptions(strip_zeros=True, **kwargs):
-    origcall = arrayprint.FloatFormat.__call__
-    def __call__(self, x, strip_zeros=strip_zeros):
-        return origcall.__call__(self, x, strip_zeros)
-    arrayprint.FloatFormat.__call__ = __call__
+    if strip_zeros:
+        kwargs['trim'] = 'k'
+    origcall = arrayprint.FloatingFormat.__call__
+
+    def __call__(self, x):
+        return origcall.__call__(self, x)
+
+    arrayprint.FloatingFormat.__call__ = __call__
     original = np.get_printoptions()
     np.set_printoptions(**kwargs)
     yield
     np.set_printoptions(**original)
-    arrayprint.FloatFormat.__call__ = origcall
+    arrayprint.FloatingFormat.__call__ = origcall
 
 
 def to_latex__numerical(a, decimals, tab):
@@ -76,7 +82,7 @@ def to_latex__numerical(a, decimals, tab):
         'precision': decimals,
         'suppress': True,
         'strip_zeros': False,
-        'threshold': nCols+1,
+        'threshold': nCols + 1,
     }
     with printoptions(**options):
         lines = []
@@ -85,7 +91,7 @@ def to_latex__numerical(a, decimals, tab):
             elements = row.__str__()[1:-1].replace('\n', '').split()
             # hack to fix trailing zeros, really the numpy stuff needs to be updated.
             try:
-                elements = [element + '0'*(decimals-len(element.split('.')[1])) for element in elements]
+                elements = [element + '0' * (decimals - len(element.split('.')[1])) for element in elements]
             except:
                 pass
             line = [tab, ' & '.join(elements), r' \\']

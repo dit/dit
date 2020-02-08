@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Functions for manipulating compositions using the Aitchison geometry.
 
@@ -15,23 +13,25 @@ import numpy as np
 from dit.exceptions import ditException
 from dit.math import LogOperations
 
-__all__ = ('closure',
-           'subcomposition',
-           'perturbation',
-           'power',
-           'add',
-           'sub',
-           'inner',
-           'norm',
-           'dist',
-           'metric',
-           'clr',
-           'alr',
-           'ilr',
-           'basis',
-           'clr_inv',
-           'alr_inv',
-           'ilr_inv',)
+__all__ = (
+    'closure',
+    'subcomposition',
+    'perturbation',
+    'power',
+    'add',
+    'sub',
+    'inner',
+    'norm',
+    'dist',
+    'metric',
+    'clr',
+    'alr',
+    'ilr',
+    'basis',
+    'clr_inv',
+    'alr_inv',
+    'ilr_inv',
+)
 
 ops = LogOperations(2)
 exp2 = ops.exp
@@ -53,7 +53,7 @@ def _gm(x):
 
     """
     last_axis = -1
-    x_gm = x.prod(axis=last_axis) ** (1/x.shape[last_axis])
+    x_gm = x.prod(axis=last_axis) ** (1 / x.shape[last_axis])
 
     return x_gm
 
@@ -195,7 +195,7 @@ def sub(x, y):
         The result of y subtracted from x.
 
     """
-    z = perturbation(x, power(y, -1.0)) # 1.0 and not 1 forces coercion
+    z = perturbation(x, power(y, -1.0))  # 1.0 and not 1 forces coercion
     return z
 
 
@@ -383,10 +383,10 @@ def ilr(x):
     x = np.atleast_2d(x)
 
     rng = np.arange(1, x.shape[1])
-    #gm = (x.cumprod(axis=1)[:, :-1])**(1/rng)
+    # gm = (x.cumprod(axis=1)[:, :-1])**(1/rng)
     loggm = 1 / rng * log2(x).cumsum(axis=1)[:, :-1]
     y = loggm - log2(x[:, 1:])
-    y *= np.sqrt([i/(i+1) for i in rng]) # same coefficient for each column
+    y *= np.sqrt([i / (i + 1) for i in rng])  # same coefficient for each column
 
     if single:
         y = y[0]
@@ -417,17 +417,17 @@ def ubasis(n):
 
     """
     # Upper triangle above main diagonal is zero. Everything else is 1.
-    u = np.tri(N=n, M=n+1, k=1)
+    u = np.tri(N=n, M=n + 1, k=1)
 
     # Set the lower triangle to 1/i for each row and apply coefficent
-    rng = np.arange(1, n+1)
-    u *= np.array([1/i for i in rng])[:, np.newaxis]
+    rng = np.arange(1, n + 1)
+    u *= np.array([1 / i for i in rng])[:, np.newaxis]
 
     # the 1st diag is set to -1
-    u.flat[1::n+2] = -1
+    u.flat[1::n + 2] = -1
 
     # scale everything
-    u *= np.array([math.sqrt(i/(i+1)) for i in rng])[:, np.newaxis]
+    u *= np.array([math.sqrt(i / (i + 1)) for i in rng])[:, np.newaxis]
 
     return u
 
@@ -504,18 +504,14 @@ def alr_inv(xalr):
 
     ### Now we can exactly solve for the last element, and
     ### then we can unscale each of the other components.
-    #x[:, -1] = 1 / (1 + x[:, :-1].sum(axis=1))
-    #x[:, :-1] *= x[:, -1][:, np.newaxis]
+    # x[:, -1] = 1 / (1 + x[:, :-1].sum(axis=1))
+    # x[:, :-1] *= x[:, -1][:, np.newaxis]
 
     ### Or we can set the last element equal to 1 and apply closure.
     ### This is quicker so we do that.
     x[:, -1] = 1
     x = closure(x)
-
-    if single:
-        x = x[0]
-
-    return x
+    return x[0] if single else x
 
 
 def ilr_inv(xilr):

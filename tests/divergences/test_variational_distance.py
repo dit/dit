@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.divergences.variational_distance
 """
@@ -12,9 +10,9 @@ from dit.divergences import (bhattacharyya_coefficient,
                              )
 
 
-d1 = Distribution(['0', '1'], [1/2, 1/2])
-d2 = Distribution(['0', '1'], [1/4, 3/4])
-d3 = Distribution(['1', '2'], [1/4, 3/4])
+d1 = Distribution(['0', '1'], [1 / 2, 1 / 2])
+d2 = Distribution(['0', '1'], [1 / 4, 3 / 4])
+d3 = Distribution(['1', '2'], [1 / 4, 3 / 4])
 
 
 def test_vd1():

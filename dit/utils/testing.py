@@ -1,19 +1,16 @@
-# -*- coding: utf-8 -*-
-
 """
 Utilities related to testing.
 """
 
-from boltons.iterutils import pairwise
-
 import numpy as np
-
+from boltons.iterutils import pairwise
 from hypothesis import assume
 from hypothesis.extra.numpy import arrays
 from hypothesis.strategies import composite, floats, integers, lists, tuples
 
-from .. import Distribution
 from .optimization import colon
+from .. import Distribution
+
 
 __all__ = ['distributions',
            'distribution_structures',
@@ -47,7 +44,7 @@ def distributions(draw, alphabets=(2, 2, 2), nondegenerate=False):
         except TypeError:
             alphabets = tuple((alpha, alpha) for alpha in alphabets)
     except TypeError:
-        alphabets = ((2, 2),)*alphabets
+        alphabets = ((2, 2),) * alphabets
 
     alphabets = [int(draw(integers(*alpha))) for alpha in alphabets]
 
@@ -58,7 +55,7 @@ def distributions(draw, alphabets=(2, 2, 2), nondegenerate=False):
     if nondegenerate:
         axes = set(range(len(alphabets)))
         for axis, _ in enumerate(alphabets):
-            assume(np.all(pmf.sum(axis=tuple(axes-set([axis]))) > 1e-6))
+            assume(np.all(pmf.sum(axis=tuple(axes - {axis})) > 1e-6))
 
     pmf /= pmf.sum()
 
@@ -115,7 +112,7 @@ def distribution_structures(draw, size=(2, 4), alphabet=(2, 4), uniform=False, m
         total = sum(probs)
         probs = [p / total for p in probs]
 
-    dist =  Distribution(events, probs)
+    dist = Distribution(events, probs)
     dist.normalize()
     return dist
 
@@ -146,7 +143,7 @@ def markov_chains(draw, alphabets=((2, 4), (2, 4), (2, 4))):
         except TypeError:
             alphabets = tuple((alpha, alpha) for alpha in alphabets)
     except TypeError:
-        alphabets = ((2, 2),)*alphabets
+        alphabets = ((2, 2),) * alphabets
 
     alphabets = [int(draw(integers(*alpha))) for alpha in alphabets]
 
@@ -164,7 +161,7 @@ def markov_chains(draw, alphabets=((2, 4), (2, 4), (2, 4))):
     # construct dist
     for cd in cds:
         cd /= cd.sum(axis=1, keepdims=True)
-        slc = (np.newaxis,)*(len(px.shape)-1) + (colon, colon)
+        slc = (np.newaxis,) * (len(px.shape) - 1) + (colon, colon)
         px = px[..., np.newaxis] * cd[slc]
 
     dist = Distribution.from_ndarray(px)

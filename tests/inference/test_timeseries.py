@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.inference.time_series.
 """
@@ -32,7 +30,7 @@ def test_dfts1():
     gm = golden_mean()
     ts = [next(gm) for _ in range(1000000)]
     d1 = dist_from_timeseries(ts)
-    d2 = Distribution([((0,), 0), ((0,), 1), ((1,), 0)], [1/3, 1/3, 1/3])
+    d2 = Distribution([((0,), 0), ((0,), 1), ((1,), 0)], [1 / 3, 1 / 3, 1 / 3])
     assert d1.is_approx_equal(d2, atol=1e-3)
 
 
@@ -44,7 +42,7 @@ def test_dfts2():
     gm = golden_mean()
     ts = [next(gm) for _ in range(1000000)]
     d1 = dist_from_timeseries(ts, base=None)
-    d2 = Distribution([((0,), 0), ((0,), 1), ((1,), 0)], [np.log2(1/3)]*3, base=2)
+    d2 = Distribution([((0,), 0), ((0,), 1), ((1,), 0)], [np.log2(1 / 3)] * 3, base=2)
     assert d1.is_approx_equal(d2, atol=1e-2)
 
 
@@ -56,7 +54,7 @@ def test_dfts3():
     gm = golden_mean()
     ts = [next(gm) for _ in range(1000000)]
     d1 = dist_from_timeseries(ts, history_length=0)
-    d2 = Distribution([(0,), (1,)], [2/3, 1/3])
+    d2 = Distribution([(0,), (1,)], [2 / 3, 1 / 3])
     assert d1.is_approx_equal(d2, atol=1e-3)
 
 
@@ -68,5 +66,5 @@ def test_dfts4():
     gm = golden_mean()
     ts = np.array([next(gm) for _ in range(1000000)]).reshape(1000000, 1)
     d1 = dist_from_timeseries(ts)
-    d2 = Distribution([((0,), 0), ((0,), 1), ((1,), 0)], [1/3, 1/3, 1/3])
+    d2 = Distribution([((0,), 0), ((0,), 1), ((1,), 0)], [1 / 3, 1 / 3, 1 / 3])
     assert d1.is_approx_equal(d2, atol=1e-3)

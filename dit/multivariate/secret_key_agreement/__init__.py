@@ -1,9 +1,6 @@
-# -*- coding: utf-8 -*-
-
 """
 Various bounds on secret key agreement rates.
 """
-
 
 # no communication
 from .no_communication import no_communication_skar

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.utils.units.
 """
@@ -21,7 +19,7 @@ def test_bit():
     """
     Test known bit values.
     """
-    d = Distribution(['0', '1'], [1/2, 1/2])
+    d = Distribution(['0', '1'], [1 / 2, 1 / 2])
     ditParams['units'] = True
     h = entropy(d)
     reset_params()
@@ -33,7 +31,7 @@ def test_nat():
     """
     Test known bit values.
     """
-    d = Distribution(['0', '1'], [1/2, 1/2])
+    d = Distribution(['0', '1'], [1 / 2, 1 / 2])
     ditParams['units'] = True
     h = entropy(d)
     reset_params()
@@ -45,7 +43,7 @@ def test_dit():
     """
     Test known bit values.
     """
-    d = Distribution(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'], [1/10]*10)
+    d = Distribution(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'], [1 / 10] * 10)
     ditParams['units'] = True
     h = entropy(d)
     reset_params()
@@ -57,7 +55,7 @@ def test_cc():
     """
     Test against a known value.
     """
-    gm = Distribution(['00', '01', '10'], [1/3]*3)
+    gm = Distribution(['00', '01', '10'], [1 / 3] * 3)
     ditParams['units'] = True
     cc, _ = channel_capacity_joint(gm, [0], [1], marginal=True)
     reset_params()

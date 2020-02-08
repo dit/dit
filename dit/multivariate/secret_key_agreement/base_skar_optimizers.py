@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Base class for the calculation of reduced and minimal intrinsic informations.
 """
@@ -13,6 +11,7 @@ from ...algorithms import BaseAuxVarOptimizer
 from ...exceptions import ditException
 from ...math import prod
 from ...utils import unitful
+
 
 __all__ = [
     'BaseIntrinsicMutualInformation',
@@ -57,7 +56,7 @@ class BaseOneWaySKAR(BaseAuxVarOptimizer):
             Specifies a bound on the size of the auxiliary random variable. If
             None, then the theoretical bound is used.
         """
-        super(BaseOneWaySKAR, self).__init__(dist, [rv_x, rv_y], rv_z, rv_mode=rv_mode)
+        super().__init__(dist, [rv_x, rv_y], rv_z, rv_mode=rv_mode)
 
         theoretical_bound_u = self._get_u_bound()
         bound_u = min(bound_u, theoretical_bound_u) if bound_u else theoretical_bound_u
@@ -139,7 +138,7 @@ class BaseIntrinsicMutualInformation(BaseAuxVarOptimizer):
             msg = "Intrinsic mutual informations require a conditional variable."
             raise ditException(msg)
 
-        super(BaseIntrinsicMutualInformation, self).__init__(dist, rvs, crvs, rv_mode=rv_mode)
+        super().__init__(dist, rvs, crvs, rv_mode=rv_mode)
 
         crv_index = len(self._shape) - 1
         crv_size = self._shape[crv_index]
@@ -160,7 +159,7 @@ class BaseIntrinsicMutualInformation(BaseAuxVarOptimizer):
             hop a number of times equal to the dimension of the conditioning
             variable(s).
         """
-        result = super(BaseIntrinsicMutualInformation, self).optimize(*args, **kwargs)
+        result = super().optimize(*args, **kwargs)
 
         # test against known upper bounds as well, in case space wasn't well sampled.
         options = [self.construct_constant_initial(),  # mutual information
@@ -256,7 +255,7 @@ class BaseMoreIntrinsicMutualInformation(BaseAuxVarOptimizer):
             msg = "Intrinsic mutual informations require a conditional variable."
             raise ditException(msg)
 
-        super(BaseMoreIntrinsicMutualInformation, self).__init__(dist, rvs, crvs, rv_mode=rv_mode)
+        super().__init__(dist, rvs, crvs, rv_mode=rv_mode)
 
         theoretical_bound = prod(self._shape)
         bound = min([bound, theoretical_bound]) if bound else theoretical_bound
@@ -302,12 +301,12 @@ class BaseMoreIntrinsicMutualInformation(BaseAuxVarOptimizer):
 
         intrinsic.__doc__ = \
             """
-            Compute the {type} intrinsic {name}.
+            Compute the {style} intrinsic {name}.
 
             Parameters
             ----------
             dist : Distribution
-                The distribution to compute the {type} intrinsic {name} of.
+                The distribution to compute the {style} intrinsic {name} of.
             rvs : list, None
                 A list of lists. Each inner list specifies the indexes of the random
                 variables used to calculate the intrinsic {name}. If None,
@@ -328,7 +327,7 @@ class BaseMoreIntrinsicMutualInformation(BaseAuxVarOptimizer):
                 equal to 'names', the the elements are interpreted as random
                 variable names. If `None`, then the value of `dist._rv_mode` is
                 consulted, which defaults to 'indices'.
-            """.format(name=cls.name, type=cls.type)
+            """.format(name=cls.name, style=cls.style)
 
         return intrinsic
 
@@ -342,7 +341,7 @@ class BaseReducedIntrinsicMutualInformation(BaseMoreIntrinsicMutualInformation):
         I[X : Y \\Downarrow Z] = min_U I[X : Y \\downarrow ZU] + H[U]
     """
 
-    type = "reduced"
+    style = "reduced"
 
     @property
     @staticmethod
@@ -384,7 +383,7 @@ class BaseReducedIntrinsicMutualInformation(BaseMoreIntrinsicMutualInformation):
 
             # I[X:Y \downarrow ZU]
             d = Distribution.from_ndarray(pmf)
-            a = self.measure(dist=d, rvs=[[rv] for rv in self._rvs], crvs=self._crvs|self._arvs)
+            a = self.measure(dist=d, rvs=[[rv] for rv in self._rvs], crvs=self._crvs | self._arvs)
 
             # H[U]
             b = h(pmf)
@@ -403,7 +402,7 @@ class BaseMinimalIntrinsicMutualInformation(BaseMoreIntrinsicMutualInformation):
         I[X : Y \\downarrow\\downarrow\\downarrow Z] = min_U I[X:Y|U] + I[XY:U|Z]
     """
 
-    type = "minimal"
+    style = "minimal"
 
     def _objective(self):
         """
@@ -493,7 +492,7 @@ class InnerTwoPartIntrinsicMutualInformation(BaseAuxVarOptimizer):
             msg = "Intrinsic mutual informations require a conditional variable."
             raise ditException(msg)
 
-        super(InnerTwoPartIntrinsicMutualInformation, self).__init__(dist, rvs + [j], crvs, rv_mode=rv_mode)
+        super().__init__(dist, rvs + [j], crvs, rv_mode=rv_mode)
 
         theoretical_bound_u = prod(self._shape[rv] for rv in self._rvs)
         bound_u = min([bound_u, theoretical_bound_u]) if bound_u else theoretical_bound_u
@@ -507,7 +506,7 @@ class InnerTwoPartIntrinsicMutualInformation(BaseAuxVarOptimizer):
         idx = min(self._arvs)
         self._j = {max(self._rvs)}
         self._u = {idx}
-        self._v = {idx+1}
+        self._v = {idx + 1}
 
     def _objective(self):
         """
@@ -546,7 +545,6 @@ class InnerTwoPartIntrinsicMutualInformation(BaseAuxVarOptimizer):
             return -(b - c)
 
         return objective
-
 
 
 class BaseTwoPartIntrinsicMutualInformation(BaseAuxVarOptimizer):
@@ -598,7 +596,7 @@ class BaseTwoPartIntrinsicMutualInformation(BaseAuxVarOptimizer):
             msg = "Intrinsic mutual informations require a conditional variable."
             raise ditException(msg)
 
-        super(BaseTwoPartIntrinsicMutualInformation, self).__init__(dist, rvs, crvs, rv_mode=rv_mode)
+        super().__init__(dist, rvs, crvs, rv_mode=rv_mode)
 
         theoretical_bound_j = prod(self._shape)
         bound_j = min([bound_j, theoretical_bound_j]) if bound_j else theoretical_bound_j

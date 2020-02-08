@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests of dit.example_dists.miscellaneous
 """
@@ -7,7 +5,7 @@ Tests of dit.example_dists.miscellaneous
 import pytest
 
 from dit.example_dists.miscellaneous import gk_pos_i_neg
-from dit.multivariate import gk_common_information, coinformation, entropy
+from dit.multivariate import gk_common_information, coinformation
 
 
 def test_gk_pos_i_neg1():

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.algorithms.channelcapacity
 """
@@ -24,7 +22,7 @@ def BEC_joint(epsilon):
         The noise level at which the input is erased.
 
     """
-    pX = Distribution(['0', '1'], [1/2, 1/2])
+    pX = Distribution(['0', '1'], [1 / 2, 1 / 2])
     pYgX0 = Distribution(['0', '1', 'e'], [1 - epsilon, 0, epsilon])
     pYgX1 = Distribution(['0', '1', 'e'], [0, 1 - epsilon, epsilon])
     pYgX = [pYgX0, pYgX1]
@@ -110,7 +108,7 @@ def test_channel_capacity_joint1():
     """
     Test against a known value.
     """
-    gm = Distribution(['00', '01', '10'], [1/3]*3)
+    gm = Distribution(['00', '01', '10'], [1 / 3] * 3)
     cc = channel_capacity_joint(gm, [0], [1])
     assert cc == pytest.approx(0.3219280796196524)
 
@@ -119,7 +117,7 @@ def test_channel_capacity_joint2():
     """
     Test against a known value.
     """
-    gm = Distribution(['00', '01', '10'], [1/3]*3)
-    m = Distribution(['0', '1'], [2/5, 3/5])
+    gm = Distribution(['00', '01', '10'], [1 / 3] * 3)
+    m = Distribution(['0', '1'], [2 / 5, 3 / 5])
     _, marg = channel_capacity_joint(gm, [0], [1], marginal=True)
     assert marg.is_approx_equal(m, atol=1e-3)

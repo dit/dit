@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Miscellaneous distributions illustrating particular phenomena.
 """
@@ -12,4 +10,4 @@ __all__ = [
 
 
 # has K(d) > 0 while I(d) < 0
-gk_pos_i_neg = Distribution(['000', '011', '101', '110', '222'], [7/32]*4 + [1/8])
+gk_pos_i_neg = Distribution(['000', '011', '101', '110', '222'], [7 / 32] * 4 + [1 / 8])

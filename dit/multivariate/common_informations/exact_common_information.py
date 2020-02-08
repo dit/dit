@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The exact common information.
 """
@@ -10,6 +8,7 @@ import numpy as np
 
 from .base_markov_optimizer import MarkovVarOptimizer
 
+
 __all__ = ['exact_common_information']
 
 
@@ -18,6 +17,7 @@ class ExactCommonInformation(MarkovVarOptimizer):
     Compute the Exact common information, min H[V], taken over all V which
     render the X_i conditionally independent.
     """
+
     name = 'exact'
     description = 'min H[V] where V renders all `rvs` independent'
 
@@ -36,7 +36,7 @@ class ExactCommonInformation(MarkovVarOptimizer):
         bound_1 = np.prod(self._shape[:-1])
 
         # from number of support-distinct conditional distributions
-        combos = combinations(self._shape[:-1], len(self._shape[:-1])-1)
+        combos = combinations(self._shape[:-1], len(self._shape[:-1]) - 1)
         bound_2 = 2**min(np.prod(combo) for combo in combos) - 1
 
         return min([bound_1, bound_2])

@@ -1,16 +1,14 @@
-# -*- coding: utf-8 -*-
-
 """
 Non-cython methods for getting counts and distributions from data.
 """
 
 import numpy as np
 
-try: # cython
+try:  # cython
 
     from .pycounts import counts_from_data, distribution_from_data
 
-except ImportError: # no cython
+except ImportError:  # no cython
 
     from boltons.iterutils import windowed_iter
     from collections import Counter, defaultdict
@@ -18,7 +16,6 @@ except ImportError: # no cython
 
     from .. import modify_outcomes
     from ..exceptions import ditException
-
 
     def counts_from_data(data, hLength, fLength, marginals=True, alphabet=None, standardize=True):
         """
@@ -85,7 +82,7 @@ except ImportError: # no cython
             data = list(map(tuple, data))
         except TypeError:
             pass
-        counts = Counter(windowed_iter(data, hLength+fLength))
+        counts = Counter(windowed_iter(data, hLength + fLength))
         cond_counts = defaultdict(lambda: defaultdict(int))
         for word, count in counts.items():
             cond_counts[word[:hLength]][word[hLength:]] += count
@@ -102,7 +99,6 @@ except ImportError: # no cython
         hCounts = cCounts.sum(axis=1)
 
         return histories, cCounts, hCounts, alphabet
-
 
     def distribution_from_data(d, L, trim=True, base=None):
         """
@@ -144,7 +140,7 @@ except ImportError: # no cython
         words, _, counts, _ = counts_from_data(d, L, 0)
 
         # We turn the counts to probabilities
-        pmf = counts/counts.sum()
+        pmf = counts / counts.sum()
 
         dist = Distribution(words, pmf, trim=trim)
 

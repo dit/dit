@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The cross entropy.
 """
@@ -110,7 +108,7 @@ def cross_entropy(dist1, dist2, rvs=None, crvs=None, rv_mode=None):
     rvs, crvs = list(flatten(rvs)), list(flatten(crvs))
     normalize_rvs(dist2, rvs, crvs, rv_mode)
 
-    p1s, q1s = get_pmfs_like(dist1, dist2, rvs+crvs, rv_mode)
+    p1s, q1s = get_pmfs_like(dist1, dist2, rvs + crvs, rv_mode)
     xh = -np.nansum(p1s * np.log2(q1s))
 
     if crvs:

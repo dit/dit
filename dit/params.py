@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Defines `dit` configuration parameters.
 """
@@ -8,11 +6,17 @@ import warnings
 
 from .exceptions import InvalidBase
 
-__all__ = ['ditParams', 'reset_params']
+
+__all__ = [
+    'ditParams',
+    'reset_params'
+]
 
 
 def validate_boolean(b):
-    """Convert b to a boolean or raise a ValueError."""
+    """
+    Convert b to a boolean or raise a ValueError.
+    """
     try:
         b = b.lower()
     except AttributeError:
@@ -26,7 +30,9 @@ def validate_boolean(b):
 
 
 def validate_float(s):
-    """Convert s to float or raise a ValueError."""
+    """
+    Convert s to float or raise a ValueError.
+    """
     try:
         return float(s)
     except TypeError:
@@ -34,14 +40,15 @@ def validate_float(s):
 
 
 def validate_base(b):
-    """Convert s to a valid base or raise InvalidBase."""
-
+    """
+    Convert s to a valid base or raise InvalidBase.
+    """
     # String bases.
     if b == 'e' or b == 'linear':
         return b
     else:
         try:
-            b + '' # pylint disable=pointless-statement
+            b + ''  # pylint disable=pointless-statement
             raise InvalidBase(b)
         except TypeError:
             pass
@@ -54,6 +61,8 @@ def validate_base(b):
 
 
 def validate_choice(s, choices):
+    """
+    """
     try:
         s = s.lower()
     except AttributeError:
@@ -65,6 +74,8 @@ def validate_choice(s, choices):
 
 
 def validate_text(s):
+    """
+    """
     choices = ['ascii', 'linechar']
     return validate_choice(s, choices)
 
@@ -72,12 +83,11 @@ def validate_text(s):
 class DITParams(dict):
     """
     A dictionary including validation, representing dit parameters.
-
     """
+
     # A dictionary relating params to validators.
     def __init__(self, *args, **kwargs):
-        self.validate = dict([(key, converter) for key, (_, converter)
-                              in defaultParams.items()])
+        self.validate = {key: converter for key, (_, converter) in defaultParams.items()}
         dict.__init__(self, *args, **kwargs)
 
     def __setitem__(self, key, val):
@@ -107,12 +117,16 @@ class DITParams(dict):
 
 
 def reset_params():
-    """Restore rcParams to defaults from when dit was originally imported."""
+    """
+    Restore rcParams to defaults from when dit was originally imported.
+    """
     ditParams.update(ditParamsDefault)
 
 
 def set_params():
-    """Return the default params, after updating from the .ditrc file."""
+    """
+    Return the default params, after updating from the .ditrc file.
+    """
     ## Currently, we don't support a .ditrc file.
     ## So we just return the default parameters.
     ret = DITParams([(key, tup[0]) for key, tup in defaultParams.items()])

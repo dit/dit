@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Some basic statistics for distributions with numerical outcomes.
 """
@@ -61,7 +59,7 @@ def central_moment(dist, n):
     outcomes, pmf = zip(*dist.zipped(mode='patoms'))
     outcomes = np.asarray(outcomes)
     pmf = np.asarray(pmf)
-    terms = np.asarray([(np.asarray(o)-mu)**n for o in outcomes])
+    terms = np.asarray([(np.asarray(o) - mu)**n for o in outcomes])
     terms[np.isnan(terms)] = 0
     return np.average(terms, axis=0, weights=pmf)
 
@@ -87,7 +85,7 @@ def standard_moment(dist, n):
     TypeError
         If the outcomes of the `dist` are not numerical.
     """
-    return central_moment(dist, n)/standard_deviation(dist)**n
+    return central_moment(dist, n) / standard_deviation(dist)**n
 
 
 def standard_deviation(dist):
@@ -135,7 +133,7 @@ def median(dist):
 
     g = np.asarray(dist.outcomes[(dist.pmf.cumsum() > 0.5).argmax()])
     ge = np.asarray(dist.outcomes[(dist.pmf.cumsum() >= 0.5).argmax()])
-    return (g+ge)/2
+    return (g + ge) / 2
 
 
 def mode(dist):

@@ -1,12 +1,9 @@
-# -*- coding: utf-8 -*-
-
 """
 The dependency-decomposition based unique measure partial information decomposition.
 """
 
-from ..pid import BaseUniquePID
-
 from ...multivariate import coinformation
+from ..pid import BaseUniquePID
 from ...profiles import DependencyDecomposition
 
 
@@ -20,46 +17,47 @@ class PID_dep(BaseUniquePID):
     """
     The dependency partial information decomposition, as defined by James at al.
     """
+
     _name = "I_dep"
 
     @staticmethod
-    def _measure(d, inputs, output, maxiter=None):
+    def _measure(d, sources, target, maxiter=None):
         """
-        This computes unique information as min(delta(I(inputs : output))) where delta
+        This computes unique information as min(delta(I(sources : target))) where delta
         is taken over the dependency decomposition.
 
         Parameters
         ----------
         d : Distribution
             The distribution to compute i_dep for.
-        inputs : iterable of iterables
-            The input variables.
-        output : iterable
-            The output variable.
+        sources : iterable of iterables
+            The source variables.
+        target : iterable
+            The target variable.
 
         Returns
         -------
         idep : dict
-            The value of I_dep for each individual input.
+            The value of I_dep for each individual source.
         """
         uniques = {}
         measure = {'I': lambda d: coinformation(d, [[0, 1], [2]])}
-        input_0_output = frozenset((frozenset((0, 2)),))
-        input_1_output = frozenset((frozenset((1, 2)),))
-        if len(inputs) == 2:
-            dm = d.coalesce(inputs + (output,))  # put it into [0, 1], [2] order
+        source_0_target = frozenset((frozenset((0, 2)),))
+        source_1_target = frozenset((frozenset((1, 2)),))
+        if len(sources) == 2:
+            dm = d.coalesce(sources + (target,))  # put it into [0, 1], [2] order
             dd = DependencyDecomposition(dm, measures=measure, maxiter=maxiter)
-            u_0 = min(dd.delta(edge, 'I') for edge in dd.edges(input_0_output))
-            u_1 = min(dd.delta(edge, 'I') for edge in dd.edges(input_1_output))
-            uniques[inputs[0]] = u_0
-            uniques[inputs[1]] = u_1
+            u_0 = min(dd.delta(edge, 'I') for edge in dd.edges(source_0_target))
+            u_1 = min(dd.delta(edge, 'I') for edge in dd.edges(source_1_target))
+            uniques[sources[0]] = u_0
+            uniques[sources[1]] = u_1
         else:
-            for input_ in inputs:
-                others = sum([i for i in inputs if i != input_], ())
-                dm = d.coalesce([input_, others, output])
+            for source in sources:
+                others = sum((i for i in sources if i != source), ())
+                dm = d.coalesce([source, others, target])
                 dd = DependencyDecomposition(dm, measures=measure, maxiter=maxiter)
-                u = min(dd.delta(edge, 'I') for edge in dd.edges(input_0_output))
-                uniques[input_] = u
+                u = min(dd.delta(edge, 'I') for edge in dd.edges(source_0_target))
+                uniques[source] = u
 
         return uniques
 
@@ -69,47 +67,48 @@ class PID_RA(BaseUniquePID):
     The "reproducibility analysis" partial information decomposition, derived
     from the work of Zwick.
     """
+
     _name = "I_RA"
 
     @staticmethod
-    def _measure(d, inputs, output, maxiter=None):
+    def _measure(d, sources, target, maxiter=None):
         """
-        This computes unique information as the change in I[inputs : output]
-        when adding the input-output constraint.
+        This computes unique information as the change in I[sources : target]
+        when adding the source-target constraint.
 
         Parameters
         ----------
         d : Distribution
             The distribution to compute i_RA for.
-        inputs : iterable of iterables
-            The input variables.
-        output : iterable
-            The output variable.
+        sources : iterable of iterables
+            The source variables.
+        target : iterable
+            The target variable.
 
         Returns
         -------
         ira : dict
-            The value of I_RA for each individual input.
+            The value of I_RA for each individual source.
         """
         uniques = {}
         measure = {'I': lambda d: coinformation(d, [[0, 1], [2]])}
-        input_0_output = frozenset([frozenset((0, 2))])
-        input_1_output = frozenset([frozenset((1, 2))])
-        all_pairs = frozenset([frozenset((0, 1))]) | input_0_output | input_1_output
-        if len(inputs) == 2:
-            dm = d.coalesce(inputs + (output,))
+        source_0_target = frozenset([frozenset((0, 2))])
+        source_1_target = frozenset([frozenset((1, 2))])
+        all_pairs = frozenset([frozenset((0, 1))]) | source_0_target | source_1_target
+        if len(sources) == 2:
+            dm = d.coalesce(sources + (target,))
             dd = DependencyDecomposition(dm, measures=measure, maxiter=maxiter)
-            u_0 = dd.delta((all_pairs, all_pairs - input_0_output), 'I')
-            u_1 = dd.delta((all_pairs, all_pairs - input_1_output), 'I')
-            uniques[inputs[0]] = u_0
-            uniques[inputs[1]] = u_1
+            u_0 = dd.delta((all_pairs, all_pairs - source_0_target), 'I')
+            u_1 = dd.delta((all_pairs, all_pairs - source_1_target), 'I')
+            uniques[sources[0]] = u_0
+            uniques[sources[1]] = u_1
         else:
-            for input_ in inputs:
-                others = sum([i for i in inputs if i != input_], ())
-                dm = d.coalesce([input_, others, output])
+            for source in sources:
+                others = sum((i for i in sources if i != source), ())
+                dm = d.coalesce([source, others, target])
                 dd = DependencyDecomposition(dm, measures=measure, maxiter=maxiter)
-                u = dd.delta((all_pairs, all_pairs - input_0_output), 'I')
-                uniques[input_] = u
+                u = dd.delta((all_pairs, all_pairs - source_0_target), 'I')
+                uniques[source] = u
 
         return uniques
 
@@ -120,41 +119,42 @@ class PID_dep_a(BaseUniquePID):
 
     Notes
     -----
-    This alternative method behaves oddly with three or more inputs.
+    This alternative method behaves oddly with three or more sources.
     """
+
     _name = "I_dep_a"
 
     @staticmethod
-    def _measure(d, inputs, output):  # pragma: no cover
+    def _measure(d, sources, target):  # pragma: no cover
         """
-        This computes unique information as min(delta(I(inputs : output))) where delta
+        This computes unique information as min(delta(I(sources : target))) where delta
         is taken over the dependency decomposition.
 
         Parameters
         ----------
         d : Distribution
             The distribution to compute i_dep_a for.
-        inputs : iterable of iterables
-            The input variables.
-        output : iterable
-            The output variable.
+        sources : iterable of iterables
+            The source variables.
+        target : iterable
+            The target variable.
 
         Returns
         -------
         idepa : dict
-            The value of I_dep_a for each individual input.
+            The value of I_dep_a for each individual source.
         """
-        var_to_index = {var: i for i, var in enumerate(inputs+(output,))}
-        d = d.coalesce(list(sorted(var_to_index.keys(), key=lambda k: var_to_index[k])))
-        invars = [var_to_index[var] for var in inputs]
-        outvar = [var_to_index[(var,)] for var in output]
+        var_to_index = {var: i for i, var in enumerate(sources + (target,))}
+        d = d.coalesce(sorted(var_to_index.keys(), key=lambda k: var_to_index[k]))
+        invars = [var_to_index[var] for var in sources]
+        outvar = [var_to_index[(var,)] for var in target]
         measure = {'I': lambda d: coinformation(d, [invars, outvar])}
         dd = DependencyDecomposition(d, list(var_to_index.values()), measures=measure)
         uniques = {}
-        for input_ in inputs:
-            constraint = frozenset((frozenset((var_to_index[input_], var_to_index[output])),))
+        for source in sources:
+            constraint = frozenset((frozenset((var_to_index[source], var_to_index[target])),))
             u = min(dd.delta(edge, 'I') for edge in dd.edges(constraint))
-            uniques[input_] = u
+            uniques[source] = u
         return uniques
 
 
@@ -166,43 +166,44 @@ class PID_dep_b(BaseUniquePID):
     -----
     This decomposition is known to be inconsistent.
     """
+
     _name = "I_dep_b"
 
     @staticmethod
-    def _measure(d, inputs, output):  # pragma: no cover
+    def _measure(d, sources, target):  # pragma: no cover
         """
-        This computes unique information as min(delta(I(inputs : output))) where delta
+        This computes unique information as min(delta(I(sources : target))) where delta
         is taken over a restricted dependency decomposition which never constrains dependencies
-        among the inputs.
+        among the sources.
 
         Parameters
         ----------
         d : Distribution
             The distribution to compute i_dep_b for.
-        inputs : iterable of iterables
-            The input variables.
-        output : iterable
-            The output variable.
+        sources : iterable of iterables
+            The source variables.
+        target : iterable
+            The target variable.
 
         Returns
         -------
         idepb : dict
-            The value of I_dep_b for each individual input.
+            The value of I_dep_b for each individual source.
         """
-        var_to_index = {var: i for i, var in enumerate(inputs+(output,))}
-        output_index = var_to_index[output]
-        d = d.coalesce(list(sorted(var_to_index.keys(), key=lambda k: var_to_index[k])))
-        invars = [var_to_index[var] for var in inputs]
-        outvar = [var_to_index[(var,)] for var in output]
+        var_to_index = {var: i for i, var in enumerate(sources + (target,))}
+        target_index = var_to_index[target]
+        d = d.coalesce(sorted(var_to_index.keys(), key=lambda k: var_to_index[k]))
+        invars = [var_to_index[var] for var in sources]
+        outvar = [var_to_index[(var,)] for var in target]
         measure = {'I': lambda d: coinformation(d, [invars, outvar])}
         dd = DependencyDecomposition(d, list(var_to_index.values()), measures=measure)
         uniques = {}
-        for input_ in inputs:
-            constraint = frozenset((frozenset((var_to_index[input_], output_index)),))
-            broja_style = lambda edge: all({output_index} < set(_) for _ in edge[0] if len(_) > 1)
+        for source in sources:
+            constraint = frozenset((frozenset((var_to_index[source], target_index)),))
+            broja_style = lambda edge: all({target_index} < set(_) for _ in edge[0] if len(_) > 1)
             edge_set = (edge for edge in dd.edges(constraint) if broja_style(edge))
             u = min(dd.delta(edge, 'I') for edge in edge_set)
-            uniques[input_] = u
+            uniques[source] = u
         return uniques
 
 
@@ -214,39 +215,40 @@ class PID_dep_c(BaseUniquePID):
     -----
     This decomposition can result in subadditive redundancy.
     """
+
     _name = "I_dep_c"
 
     @staticmethod
-    def _measure(d, inputs, output):  # pragma: no cover
+    def _measure(d, sources, target):  # pragma: no cover
         """
-        This computes unique information as min(delta(I(inputs : output))) where delta
+        This computes unique information as min(delta(I(sources : target))) where delta
         is taken over a restricted dependency decomposition which never constrains dependencies
-        among the inputs.
+        among the sources.
 
         Parameters
         ----------
         d : Distribution
             The distribution to compute i_dep_c for.
-        inputs : iterable of iterables
-            The input variables.
-        output : iterable
-            The output variable.
+        sources : iterable of iterables
+            The source variables.
+        target : iterable
+            The target variable.
 
         Returns
         -------
         idepc : dict
-            The value of I_dep_c for each individual input.
+            The value of I_dep_c for each individual source.
         """
-        var_to_index = {var: i for i, var in enumerate(inputs+(output,))}
-        d = d.coalesce(list(sorted(var_to_index.keys(), key=lambda k: var_to_index[k])))
-        invars = [var_to_index[var] for var in inputs]
-        outvar = [var_to_index[(var,)] for var in output]
+        var_to_index = {var: i for i, var in enumerate(sources + (target,))}
+        d = d.coalesce(sorted(var_to_index.keys(), key=lambda k: var_to_index[k]))
+        invars = [var_to_index[var] for var in sources]
+        outvar = [var_to_index[(var,)] for var in target]
         measure = {'I': lambda d: coinformation(d, [invars, outvar])}
         dd = DependencyDecomposition(d, list(var_to_index.values()), measures=measure)
         uniques = {}
-        for input_ in inputs:
-            constraint = frozenset((frozenset((var_to_index[input_], var_to_index[output])),))
+        for source in sources:
+            constraint = frozenset((frozenset((var_to_index[source], var_to_index[target])),))
             edge_set = (edge for edge in dd.edges(constraint) if tuple(invars) in edge[0])
             u = min(dd.delta(edge, 'I') for edge in edge_set)
-            uniques[input_] = u
+            uniques[source] = u
         return uniques

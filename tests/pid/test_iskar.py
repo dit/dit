@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.pid.iskar.
 """
@@ -11,7 +9,7 @@ from dit.pid.measures.iskar import (PID_SKAR_nw,
                                     PID_SKAR_owb,
                                     PID_SKAR_tw,
                                     )
-from dit.pid.distributions import bivariates, trivariates
+from dit.pid.distributions import bivariates
 
 
 def test_pid_nw1():

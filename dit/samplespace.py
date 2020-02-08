@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Classes for representing sample spaces.
 
@@ -60,9 +58,10 @@ class BaseSampleSpace(Set):
     An abstract representation of a sample space.
 
     A sized, iterable, container.
-
     """
+
     _meta = {}
+
     def __init__(self, samplespace):
         self._samplespace = list(samplespace)
         self._length = len(samplespace)
@@ -113,14 +112,14 @@ class SampleSpace(ScalarSampleSpace):
     An abstract representation of a sample space.
 
     A sized, iterable, container.
-
     """
+
     _meta = {
         'is_joint': True,
     }
 
     def __init__(self, samplespace, product=None):
-        super(SampleSpace, self).__init__(samplespace)
+        super().__init__(samplespace)
 
         outcome = next(iter(samplespace))
         self._outcome_length = len(outcome)
@@ -268,8 +267,8 @@ class SampleSpace(ScalarSampleSpace):
 class CartesianProduct(SampleSpace):
     """
     An abstract representation of a Cartesian product sample space.
-
     """
+
     def __init__(self, alphabets, product=None):
         self.alphabets = tuple(alphabet if isinstance(alphabet, SampleSpace)
                               else tuple(alphabet) for alphabet in alphabets)
@@ -335,7 +334,7 @@ class CartesianProduct(SampleSpace):
         if len(item) != len(self._alphabet_sets):
             return False
 
-        return all([x in self._alphabet_sets[i] for i, x in iterator])
+        return all(x in self._alphabet_sets[i] for i, x in iterator)
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):

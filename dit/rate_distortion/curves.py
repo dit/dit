@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Objects to compute single rate-distortion curves.
 """
@@ -151,7 +149,7 @@ class RDCurve(object):
         rate = 0
 
         while not np.isclose(rate, self._max_rate, atol=1e-5, rtol=1e-5):
-            beta_max = 1.5*beta_max
+            beta_max = 1.5 * beta_max
             rate, _, _, _ = self._get_rd(beta=beta_max)
 
         return beta_max
@@ -483,7 +481,7 @@ class IBCurve(object):
         relevance = 0.0
 
         while not np.isclose(relevance, self._max_relevance, atol=1e-5, rtol=1e-5):
-            beta_max = 1.5*beta_max
+            beta_max = 1.5 * beta_max
             q, _ = self._get_opt_sp(beta=beta_max)
             relevance = self._bn.relevance(q)
 
@@ -500,7 +498,7 @@ class IBCurve(object):
         """
         diff = np.diff(self.ranks)
         jumps = np.arange(len(diff))[diff > 0]
-        kinks = np.asarray([jump for jump in jumps if diff[jump-1] == 0])
+        kinks = np.asarray([jump for jump in jumps if diff[jump - 1] == 0])
         return self.betas[kinks]
 
     def plot(self, downsample=5):  # pragma: no cover

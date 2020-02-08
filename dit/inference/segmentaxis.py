@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Fancy windowing.
 """
@@ -11,8 +9,9 @@ from numpy.lib.stride_tricks import as_strided
 
 
 def segment_axis(a, length, overlap=0, axis=None, end='cut', endvalue=0):
-    """Generate a new array that chops the given array along the given axis
-    into overlapping frames.
+    """
+    Generate a new array that chops the given array along the given axis into
+    overlapping frames.
 
     Parameters
     ----------
@@ -51,11 +50,9 @@ def segment_axis(a, length, overlap=0, axis=None, end='cut', endvalue=0):
     'pad' or 'wrap').
 
     use as_strided
-
     """
-
     if axis is None:
-        a = np.ravel(a) # may copy
+        a = np.ravel(a)  # may copy
         axis = 0
 
     l = a.shape[axis]
@@ -110,7 +107,7 @@ def segment_axis(a, length, overlap=0, axis=None, end='cut', endvalue=0):
     s = a.strides[axis]
     newshape = a.shape[:axis] + (n, length) + a.shape[axis + 1:]
     newstrides = a.strides[:axis] + ((length - overlap) * s, s) + \
-                 a.strides[axis+1:]
+                 a.strides[axis + 1:]
 
     try:
         return as_strided(a, strides=newstrides, shape=newshape)
@@ -119,5 +116,5 @@ def segment_axis(a, length, overlap=0, axis=None, end='cut', endvalue=0):
         a = a.copy()
         # Shape doesn't change but strides does
         newstrides = a.strides[:axis] + ((length - overlap) * s, s) + \
-                     a.strides[axis+1:]
+                     a.strides[axis + 1:]
         return as_strided(a, strides=newstrides, shape=newshape)

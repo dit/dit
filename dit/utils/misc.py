@@ -1,17 +1,15 @@
-# -*- coding: utf-8 -*-
-
 """
 Define miscellaneous utilities.
 """
 
-from debtcollector import removals
-
+import os
+import subprocess
+import sys
 from collections import OrderedDict
 from collections.abc import Iterable
 from itertools import tee
-import os
-import sys
-import subprocess
+
+from debtcollector import removals
 
 __all__ = (
     'default_opener',
@@ -34,13 +32,13 @@ __all__ = (
 
 
 def default_opener(filename):  # pragma: no cover
-    """Opens `filename` using system's default program.
+    """
+    Opens `filename` using system's default program.
 
     Parameters
     ----------
     filename : str
         The path of the file to be opened.
-
     """
     cmds = {'darwin': ['open'],
             'linux2': ['xdg-open'],  # Python 2.x
@@ -51,7 +49,8 @@ def default_opener(filename):  # pragma: no cover
 
 
 def flatten(l):
-    """Flatten an irregular list of lists.
+    """
+    Flatten an irregular list of lists.
 
     Parameters
     ----------
@@ -72,7 +71,8 @@ def flatten(l):
 
 
 def get_fobj(fname, mode='w+'):  # pragma: no cover
-    """Obtain a proper file object.
+    """
+    Obtain a proper file object.
 
     Parameters
     ----------
@@ -92,7 +92,6 @@ def get_fobj(fname, mode='w+'):  # pragma: no cover
         to signify that the file object should be closed. Otherwise, *close*
         will be *False* signifying that the user has opened the file object and
         that we should not close it.
-
     """
     if is_string_like(fname):
         fobj = open(fname, mode)
@@ -109,7 +108,9 @@ def get_fobj(fname, mode='w+'):  # pragma: no cover
 
 
 def is_string_like(obj):
-    """Returns *True* if *obj* is string-like, and *False* otherwise."""
+    """
+    Returns *True* if *obj* is string-like, and *False* otherwise.
+    """
     try:
         obj + ''
     except (TypeError, ValueError):
@@ -118,7 +119,8 @@ def is_string_like(obj):
 
 
 def quasilexico_key(x):
-    """Returns a key suitable for a quasi-lexicographic sort [1]_.
+    """
+    Returns a key suitable for a quasi-lexicographic sort [1]_.
 
     Objects are sorted by length first, then lexicographically.
 
@@ -133,14 +135,14 @@ def quasilexico_key(x):
     .. [1] Calude, Cristian (1994). Information and randomness. An algorithmic
            perspective. EATCS Monographs on Theoretical Computer Science.
            Springer-Verlag. p. 1.
-
     """
     return (len(x), x)
 
 
 def partition_set(elements, relation=None, innerset=False, reflexive=False,
                   transitive=False):
-    """Returns the equivlence classes from `elements`.
+    """
+    Returns the equivlence classes from `elements`.
 
     Given `relation`, we test each element in `elements` against the other
     elements and form the equivalence classes induced by `relation`.  By
@@ -184,7 +186,6 @@ def partition_set(elements, relation=None, innerset=False, reflexive=False,
     lookup : list
         A list relating where lookup[i] contains the index of the eqclass
         that elements[i] was mapped to in `eqclasses`.
-
     """
     if relation is None:
         from operator import eq
@@ -203,7 +204,6 @@ def partition_set(elements, relation=None, innerset=False, reflexive=False,
             else:
                 lookup.append(len(eqclasses))
                 eqclasses.append((element, [element]))
-
 
         eqclasses = [c for _, c in eqclasses]
 
@@ -238,7 +238,6 @@ def partition_set(elements, relation=None, innerset=False, reflexive=False,
                 lookup.append(len(eqclasses))
                 eqclasses.append([element])
 
-
     if innerset:
         eqclasses = [frozenset(c) for c in eqclasses]
     else:
@@ -250,11 +249,11 @@ def partition_set(elements, relation=None, innerset=False, reflexive=False,
 def powerset(iterable):
     """
     powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)
-
     """
     from itertools import chain, combinations
+
     s = list(iterable)
-    return chain.from_iterable(combinations(s, r) for r in range(len(s)+1))
+    return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
 
 
 def product_maker(func):
@@ -275,12 +274,13 @@ def product_maker(func):
     -------
     _product : callable
         A customized itertools.product function.
-
     """
     from itertools import product
+
     def _product(*args, **kwargs):
         for prod in product(*args, **kwargs):
             yield func(prod)
+
     return _product
 
 
@@ -288,7 +288,8 @@ str_product = product_maker(''.join)
 
 
 def require_keys(keys, dikt):
-    """Verifies that keys appear in the specified dictionary.
+    """
+    Verifies that keys appear in the specified dictionary.
 
     Parameters
     ----------
@@ -306,12 +307,11 @@ def require_keys(keys, dikt):
     ------
     Exception
         Raised when a required key is not present.
-
     """
     dikt_keys = set(dikt)
     for key in keys:
         if key not in dikt_keys:
-            msg = "'%s' is required." % (key,)
+            msg = "'{}' is required.".format(key)
             raise Exception(msg)
 
 
@@ -322,7 +322,6 @@ def partitions1(set_):
     For set_ = range(12), this finishes in 52.37 seconds.
 
     Yields tuple of sets.
-
     """
     # Thomas Dybdahl Ahle (https://github.com/thomasahle)
     # Source:
@@ -330,10 +329,10 @@ def partitions1(set_):
     if not set_:
         yield ()
         return
-    for i in range(2**len(set_) // 2): # 2**() is even, so using // is safe.
+    for i in range(2**len(set_) // 2):  # 2**() is even, so using // is safe.
         parts = [set(), set()]
         for item in set_:
-            parts[i&1].add(item)
+            parts[i & 1].add(item)
             i >>= 1
         for b in partitions1(parts[1]):
             yield (parts[0],) + b
@@ -344,7 +343,6 @@ def partitions2(n):
     Generates all partitions of {1,...,n}.
 
     For n=12, this finishes in 4.48 seconds.
-
     """
     # Original source: George Hutchinson [CACM 6 (1963), 613--614]
     #
@@ -366,7 +364,7 @@ def partitions2(n):
     elif n == 1:
         yield [[0]]
     else:
-        a = [0] * (n+1)
+        a = [0] * (n + 1)
         b = [1] * (n)
         m = 1
 
@@ -387,7 +385,7 @@ def partitions2(n):
 
                 # H6 [Zero out $a_{j+1} \ldots a_n$]
                 m = b[j]
-                if a[j] == b[j]: # Iverson braket
+                if a[j] == b[j]:  # Iverson braket
                     m += 1
                 j += 1
                 while j < n:
@@ -460,7 +458,7 @@ def extended_partition(outcomes, indices, part, ctr):
     partition : frozenset[frozenset]
         The expanded partition.
     """
-    return frozenset([frozenset([o for o in outcomes if ctr(o[i] for i in indices) in p]) for p in part])
+    return frozenset(frozenset(o for o in outcomes if ctr(o[i] for i in indices) in p) for p in part)
 
 
 def ordered_partitions(seq, tuples=False):

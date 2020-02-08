@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
-
 """
-Tests for dit.multivariate.secret_key_agreement.lower_intrinsic_mutual_information
+Tests for dit.multivariate.secret_key_agreement.lower_intrinsic_mutual_information.
 """
 
 import pytest

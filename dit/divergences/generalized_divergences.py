@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The Kullback-Leibler divergence.
 """
@@ -62,9 +60,7 @@ def double_power_sum(dist1, dist2, exp1=1, exp2=1, rvs=None, rv_mode=None):
     ditException
         Raised if either `dist1` or `dist2` doesn't have `rvs` or, if `rvs` is
         None, if `dist2` has an outcome length different than `dist1`.
-
     """
-
     rvs, _, rv_mode = normalize_rvs(dist1, rvs, None, rv_mode)
     rvs = list(flatten(rvs))
     normalize_rvs(dist2, rvs, None, rv_mode)
@@ -109,10 +105,8 @@ def hellinger_sum(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
     ditException
         Raised if either `dist1` or `dist2` doesn't have `rvs` or, if `rvs` is
         None, if `dist2` has an outcome length different than `dist1`.
-
     """
-
-    return double_power_sum(dist1, dist2, alpha, 1.0-alpha, rvs=rvs, rv_mode=rv_mode)
+    return double_power_sum(dist1, dist2, alpha, 1 - alpha, rvs=rvs, rv_mode=rv_mode)
 
 
 def hellinger_divergence(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
@@ -150,13 +144,11 @@ def hellinger_divergence(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
     ditException
         Raised if either `dist1` or `dist2` doesn't have `rvs` or, if `rvs` is
         None, if `dist2` has an outcome length different than `dist1`.
-
     """
-
     if alpha == 1:
         return kullback_leibler_divergence(dist1, dist2, rvs=rvs, rv_mode=rv_mode)
     s = hellinger_sum(dist1, dist2, rvs=rvs, alpha=alpha, rv_mode=rv_mode)
-    return (s-1.0)/(alpha-1.0)
+    return (s - 1) / (alpha - 1)
 
 
 def tsallis_divergence(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
@@ -193,19 +185,17 @@ def tsallis_divergence(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
     ditException
         Raised if either `dist1` or `dist2` doesn't have `rvs` or, if `rvs` is
         None, if `dist2` has an outcome length different than `dist1`.
-
     """
-
     # D_T = (D_alpha -1) / (alpha-1)
     if alpha == 1:
         div = kullback_leibler_divergence(dist1, dist2, rvs=rvs, rv_mode=rv_mode)
     else:
         s = hellinger_sum(dist1, dist2, rvs=rvs, alpha=alpha, rv_mode=rv_mode)
-        div = (s - 1.0) /(alpha - 1.0)
+        div = (s - 1) / (alpha - 1)
     return div
 
 
-def renyi_divergence(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
+def renyi_divergence(dist1, dist2, alpha=1, rvs=None, rv_mode=None):
     """
     The Renyi divergence of `dist1` and `dist2`.
 
@@ -239,9 +229,7 @@ def renyi_divergence(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
     ditException
         Raised if either `dist1` or `dist2` doesn't have `rvs` or, if `rvs` is
         None, if `dist2` has an outcome length different than `dist1`.
-
     """
-
     # D_R = log D_alpha / (alpha-1)
     if alpha == 1:
         div = kullback_leibler_divergence(dist1, dist2, rvs=rvs, rv_mode=rv_mode)
@@ -288,15 +276,13 @@ def alpha_divergence(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
     ditException
         Raised if either `dist1` or `dist2` doesn't have `rvs` or, if `rvs` is
         None, if `dist2` has an outcome length different than `dist1`.
-
     """
-
-    if alpha == 1.0:
+    if alpha == 1:
         return kullback_leibler_divergence(dist1, dist2, rvs=rvs, rv_mode=rv_mode)
-    if alpha == -1.0:
+    if alpha == -1:
         return kullback_leibler_divergence(dist2, dist1, rvs=rvs, rv_mode=rv_mode)
-    s = double_power_sum(dist1, dist2, (1.0-alpha)/2, (1.0+alpha)/2, rvs=rvs, rv_mode=rv_mode)
-    return 4*(1.0-s)/(1.0-alpha*alpha)
+    s = double_power_sum(dist1, dist2, (1 - alpha) / 2, (1 + alpha) / 2, rvs=rvs, rv_mode=rv_mode)
+    return 4 * (1 - s) / (1 - alpha * alpha)
 
 
 def f_divergence(dist1, dist2, f, rvs=None, rv_mode=None):
@@ -335,9 +321,7 @@ def f_divergence(dist1, dist2, f, rvs=None, rv_mode=None):
     ditException
         Raised if either `dist1` or `dist2` doesn't have `rvs` or, if `rvs` is
         None, if `dist2` has an outcome length different than `dist1`.
-
     """
-
     rvs, _, rv_mode = normalize_rvs(dist1, rvs, None, rv_mode)
     rvs = list(flatten(rvs))
     normalize_rvs(dist2, rvs, None, rv_mode)

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Some trivial bounds to the two-way secret key agreement problem.
 """
@@ -46,7 +44,7 @@ def lower_intrinsic_mutual_information_directed(dist, X, Y, Z, rv_mode=None):
     """
     a = total_correlation(dist, [X, Y], rv_mode=rv_mode)
     b = total_correlation(dist, [X, Z], rv_mode=rv_mode)
-    return max(0.0, a-b)
+    return max(0.0, a - b)
 
 
 def lower_intrinsic_mutual_information(dist, rvs, crvs, rv_mode=None):

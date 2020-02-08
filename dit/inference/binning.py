@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Various methods for binning real-valued data.
 """
@@ -38,7 +36,7 @@ def binned(ts, bins=2, style='maxent'):
         method = maxent_binning
     elif style == 'uniform':
         method = uniform_binning
-    else: # pragma: no cover
+    else:  # pragma: no cover
         msg = "The style {} is not understood.".format(style)
         raise ValueError(msg)
 
@@ -60,6 +58,7 @@ def binned(ts, bins=2, style='maxent'):
 
     return ts
 
+
 def uniform_binning(ts, bins):
     """
     Discretizes the time-series in to equal-width bins.
@@ -76,7 +75,7 @@ def uniform_binning(ts, bins):
     symb : ndarray
         The discretized time-series.
     """
-    symb = np.asarray(bins*(ts - ts.min())/(ts.max() - ts.min() + 1e-12), dtype=int)
+    symb = np.asarray(bins * (ts - ts.min()) / (ts.max() - ts.min() + 1e-12), dtype=int)
     return symb
 
 
@@ -97,7 +96,7 @@ def maxent_binning(ts, bins):
     """
     symb = np.full_like(ts, np.nan)
 
-    percentiles = np.percentile(ts, [100*i/bins for i in range(bins+1)])
+    percentiles = np.percentile(ts, [100 * i / bins for i in range(bins + 1)])
 
     # Sometimes with large magnetude values things get weird. This helps:
     percentiles[0] = -np.inf

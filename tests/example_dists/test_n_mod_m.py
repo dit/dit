@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.example_dists.n_mod_m.
 """
@@ -27,13 +25,13 @@ def test_n_mod_m2():
 def test_n_mod_m3():
     """ Test that noninteger n failes """
     with pytest.raises(ValueError):
-        n_mod_m(3/2, 1)
+        n_mod_m(3 / 2, 1)
 
 
 def test_n_mod_m4():
     """ Test that noninteger m fails """
     with pytest.raises(ValueError):
-        n_mod_m(1, 3/2)
+        n_mod_m(1, 3 / 2)
 
 
 @pytest.mark.parametrize('n', range(3, 6))

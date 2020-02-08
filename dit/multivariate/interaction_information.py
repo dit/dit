@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The interaction information is a form of multivariate information.
 """

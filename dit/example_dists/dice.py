@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Some specific examples of correlated dice.
 """
@@ -80,7 +78,7 @@ def Wolfs_dice():
            551, 562, 499, 506, 658, 672,
            563, 598, 519, 487, 609, 646,
           ]
-    pmf = [ p/20000 for p in pmf]
+    pmf = [p / 20000 for p in pmf]
     d = dit.Distribution(outcomes, pmf)
     d.set_rv_names(('R', 'W'))
     return d

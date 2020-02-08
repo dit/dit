@@ -1,12 +1,8 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.math.sigmaalgebra.
 """
 
 import pytest
-
-import numpy as np
 
 from dit.math.sigmaalgebra import sets2matrix, is_sigma_algebra, is_sigma_algebra__brute, atom_set
 
@@ -25,14 +21,14 @@ def test_s2m1():
     Test matrix construction.
     """
     m, _ = sets2matrix(sa)
-    true_m = set([(0, 1, 0),
-                  (0, 0, 1),
-                  (0, 0, 0),
-                  (1, 0, 1),
-                  (1, 0, 0),
-                  (1, 1, 1),
-                  (1, 1, 0),
-                  (0, 1, 1)])
+    true_m = {(0, 1, 0),
+              (0, 0, 1),
+              (0, 0, 0),
+              (1, 0, 1),
+              (1, 0, 0),
+              (1, 1, 1),
+              (1, 1, 0),
+              (0, 1, 1)}
     assert set(map(tuple, m.tolist())) == true_m
 
 
@@ -41,14 +37,14 @@ def test_s2m2():
     Test matrix construction.
     """
     m, _ = sets2matrix(sa, X=['a', 'b', 'c'])
-    true_m = set([(0, 1, 0),
-                  (0, 0, 1),
-                  (0, 0, 0),
-                  (1, 0, 1),
-                  (1, 0, 0),
-                  (1, 1, 1),
-                  (1, 1, 0),
-                  (0, 1, 1)])
+    true_m = {(0, 1, 0),
+              (0, 0, 1),
+              (0, 0, 0),
+              (1, 0, 1),
+              (1, 0, 0),
+              (1, 1, 1),
+              (1, 1, 0),
+              (0, 1, 1)}
     assert set(map(tuple, m.tolist())) == true_m
 
 
@@ -71,7 +67,6 @@ def test_isa2():
     """
     Test not SA.
     """
-
     assert not is_sigma_algebra(not_sa1)
 
 
@@ -79,7 +74,6 @@ def test_isa3():
     """
     Test not SA.
     """
-
     assert not is_sigma_algebra(not_sa2)
 
 
@@ -141,6 +135,7 @@ def test_atom_set4():
     """
     atoms = atom_set(sa, method=1)
     assert atoms == frozenset([frozenset('a'), frozenset('b'), frozenset('c')])
+
 
 def test_atom_set5():
     """

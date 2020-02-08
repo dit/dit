@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.multivariate.intrinsic_mutual_information
 """
@@ -19,14 +17,14 @@ from dit.multivariate.secret_key_agreement import intrinsic_mutual_informations 
 
 from dit.utils.testing import distributions
 
-dist1 = Distribution([(0,0,0), (0,1,1), (1,0,1), (1,1,0), (2,2,2), (3,3,3)], [1/8]*4+[1/4]*2)
-dist2 = Distribution(['000', '011', '101', '110', '222', '333'], [1/8]*4+[1/4]*2)
+dist1 = Distribution([(0, 0, 0), (0, 1, 1), (1, 0, 1), (1, 1, 0), (2, 2, 2), (3, 3, 3)], [1 / 8] * 4 + [1 / 4] * 2)
+dist2 = Distribution(['000', '011', '101', '110', '222', '333'], [1 / 8] * 4 + [1 / 4] * 2)
 dist2.set_rv_names('XYZ')
-dist3 = Distribution(['00000', '00101', '11001', '11100', '22220', '33330'], [1/8]*4+[1/4]*2)
-dist4 = Distribution(['00000', '00101', '11001', '11100', '22220', '33330'], [1/8]*4+[1/4]*2)
+dist3 = Distribution(['00000', '00101', '11001', '11100', '22220', '33330'], [1 / 8] * 4 + [1 / 4] * 2)
+dist4 = Distribution(['00000', '00101', '11001', '11100', '22220', '33330'], [1 / 8] * 4 + [1 / 4] * 2)
 dist4.set_rv_names('VWXYZ')
-dist5 = Distribution(['0000', '0011', '0101', '0110', '1001', '1010', '1100', '1111'], [1/8]*8)
-dist6 = Distribution(['0000', '0011', '0101', '0110', '1001', '1010', '1100', '1111'], [1/8]*8)
+dist5 = Distribution(['0000', '0011', '0101', '0110', '1001', '1010', '1100', '1111'], [1 / 8] * 8)
+dist6 = Distribution(['0000', '0011', '0101', '0110', '1001', '1010', '1100', '1111'], [1 / 8] * 8)
 dist6.set_rv_names('WXYZ')
 
 
@@ -41,7 +39,7 @@ def test_itc1():
     assert itc == pytest.approx(0, abs=1e-6)
     itc = IMI.intrinsic_total_correlation(dist1, [[1], [2]], [0])
     assert itc == pytest.approx(0, abs=1e-6)
-    itc = IMI.intrinsic_total_correlation(dist3, [[0,1], [2]], [3, 4])
+    itc = IMI.intrinsic_total_correlation(dist3, [[0, 1], [2]], [3, 4])
     assert itc == pytest.approx(0, abs=1e-6)
 
 
@@ -102,7 +100,7 @@ def test_idtc1():
     assert idtc == pytest.approx(0, abs=1e-6)
     idtc = IMI.intrinsic_dual_total_correlation(dist1, [[1], [2]], [0])
     assert idtc == pytest.approx(0, abs=1e-6)
-    idtc = IMI.intrinsic_dual_total_correlation(dist3, [[0,1], [2]], [3, 4])
+    idtc = IMI.intrinsic_dual_total_correlation(dist3, [[0, 1], [2]], [3, 4])
     assert idtc == pytest.approx(0, abs=1e-6)
 
 
@@ -150,7 +148,7 @@ def test_icmi1():
     assert icmi == pytest.approx(0, abs=1e-6)
     icmi = IMI.intrinsic_caekl_mutual_information(dist1, [[1], [2]], [0])
     assert icmi == pytest.approx(0, abs=1e-6)
-    icmi = IMI.intrinsic_caekl_mutual_information(dist3, [[0,1], [2]], [3, 4])
+    icmi = IMI.intrinsic_caekl_mutual_information(dist3, [[0, 1], [2]], [3, 4])
     assert icmi == pytest.approx(0, abs=1e-6)
 
 
@@ -196,7 +194,7 @@ def test_imi_fail():
 
 
 @pytest.mark.flaky(rerun=5)
-@given(dist=distributions(alphabets=((2, 4),)*3))
+@given(dist=distributions(alphabets=((2, 4),) * 3))
 def test_bounds(dist):
     """
     I[X:Y v Z] <= I[X:Y]

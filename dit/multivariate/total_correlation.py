@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The total correlation, aka the multi-information or the integration.
 """
@@ -61,7 +59,7 @@ def total_correlation(dist, rvs=None, crvs=None, rv_mode=None):
     """
     rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
 
-    one = sum([H(dist, rv, crvs, rv_mode=rv_mode) for rv in rvs])
+    one = sum(H(dist, rv, crvs, rv_mode=rv_mode) for rv in rvs)
     two = H(dist, set().union(*rvs), crvs, rv_mode=rv_mode)
     T = one - two
 

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.utils.latexarray.
 """
@@ -75,4 +73,4 @@ def test_to_pdf():
 
     x = 0.1
     # This generates a temporary file...
-    y = la.to_pdf(x, show=False)
+    la.to_pdf(x, show=False)

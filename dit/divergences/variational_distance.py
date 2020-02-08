@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The variational distance.
 """
@@ -31,7 +29,7 @@ def variational_distance_pmf(p, q):
     -----
     `p` and `q` are assumed to be 1-to-1 with regards to events.
     """
-    return abs(p-q).sum()/2
+    return abs(p - q).sum() / 2
 
 
 def variational_distance(dist1, dist2):
@@ -71,7 +69,7 @@ def bhattacharyya_coefficient_pmf(p, q):
     bc : float
         The Bhattacharyya coefficient.
     """
-    return np.sqrt(p*q).sum()
+    return np.sqrt(p * q).sum()
 
 
 def bhattacharyya_coefficient(dist1, dist2):
@@ -155,7 +153,7 @@ def chernoff_information_pmf(p, q):
         The Chernoff information.
     """
     def func(alpha):
-        return np.log2((p**alpha * q**(1-alpha)).sum())
+        return np.log2((p**alpha * q**(1 - alpha)).sum())
 
     res = minimize_scalar(fun=func, bounds=(0, 1), method='bounded')
 

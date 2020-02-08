@@ -1,20 +1,14 @@
-# -*- coding: utf-8 -*-
-
 """
 Classes implementing the partial information decomposition.
 """
 
 from abc import ABCMeta, abstractmethod
-
 from copy import deepcopy
-
 from itertools import product
 
+from lattices.lattices import free_distributive_lattice
 import networkx as nx
 import numpy as np
-
-from lattices.lattices import free_distributive_lattice
-
 import prettytable
 
 from .. import ditParams
@@ -62,10 +56,10 @@ def _transform(lattice):
         The lattice, but with tuples in place of frozensets.
     """
     def tuplefy(n):
-        return tuple(sorted((tuple(sorted(sum(_, tuple()))) for _ in n), key=lambda tup: (len(tup), tup)))
+        return tuple(sorted((tuple(sorted(sum(_, ()))) for _ in n), key=lambda tup: (len(tup), tup)))
 
     def freeze(n):
-        return frozenset([frozenset([(__,) for __ in _]) for _ in n])
+        return frozenset(frozenset((__,) for __ in _) for _ in n)
 
     tuple_lattice = deepcopy(lattice)
 
@@ -146,7 +140,7 @@ class BasePID(metaclass=ABCMeta):
     @property
     @classmethod
     @abstractmethod
-    def _name(self):
+    def _name(cls):
         """
         The name of the PID.
 
@@ -215,7 +209,7 @@ class BasePID(metaclass=ABCMeta):
         if ditParams['repr.print']:
             return self.to_string()
         else:
-            return super(BasePID, self).__repr__()
+            return super().__repr__()
 
     def __str__(self):
         """
@@ -341,7 +335,7 @@ class BasePID(metaclass=ABCMeta):
         nonnegative : bool
             True if all pi values are non-negative, False otherwise.
         """
-        nonnegative = all(pi >= -1e-6 for pi in self._pis.values() if not np.isnan(pi))
+        nonnegative = all(np.round(pi, 4) >= 0 for pi in self._pis.values() if not np.isnan(pi))
         return nonnegative
 
     @property
@@ -367,6 +361,7 @@ class BaseIncompletePID(BasePID):
     REDUCED_PID : bool
     SELF_REDUNDANCY : bool
     """
+
     LATTICE_MONOTONICITY = True
     REDUCED_PID = True
     SELF_REDUNDANCY = True
@@ -384,7 +379,7 @@ class BaseIncompletePID(BasePID):
         eq : bool
             If `self` and `other` are the same partial information decomposition.
         """
-        equal_pi = super(BaseIncompletePID, self).__eq__(other)
+        equal_pi = super().__eq__(other)
         equal_red = (np.isclose(self._reds[node], other._reds[node], atol=1e-5, rtol=1e-5) for node in self._lattice)
         return equal_pi and all(equal_red)
 
@@ -433,8 +428,8 @@ class BaseIncompletePID(BasePID):
         """
         Infer a linear constraint matrix from missing PI values and the mobius inversion.
         """
-        missing_vars = [node for node in self._lattice if node not in self._pis]
-        if not missing_vars:
+        missing_rvs = [node for node in self._lattice if node not in self._pis]
+        if not missing_rvs:
             return
 
         def predicate(nodes):
@@ -444,22 +439,22 @@ class BaseIncompletePID(BasePID):
                 return a and b
             return inner
 
-        for vars in reversed(list(powerset(missing_vars))[1:]):
+        for rvs in reversed(list(powerset(missing_rvs))[1:]):
 
-            lub = self._lattice.join(*vars, predicate=predicate(vars))
-
-            if lub is None:
+            try:
+                lub = self._lattice.join(*rvs, predicate=predicate(rvs))
+            except ValueError:
                 continue
 
-            row = lambda node: [1 if (c in self._lattice.descendants(node, include=True)) else 0 for c in vars]
+            row = lambda node: [1 if (c in self._lattice.descendants(node, include=True)) else 0 for c in rvs]
 
-            A = np.array([row(node) for node in vars if node in self._reds] + [[1] * len(vars)])
-            b = np.array([self._reds[node] for node in vars if node in self._reds] + \
+            A = np.array([row(node) for node in rvs if node in self._reds] + [[1] * len(rvs)])
+            b = np.array([self._reds[node] for node in rvs if node in self._reds] + \
                          [self._reds[lub] - sum(self._pis[node] for node in self._lattice.descendants(lub, include=True) if node in self._pis)])
             try:
                 new_pis = np.linalg.solve(A, b)
                 if np.all(new_pis > -1e-6):
-                    for node, pi in zip(vars, new_pis):
+                    for node, pi in zip(rvs, new_pis):
                         self._pis[node] = pi
 
                     for node in self._lattice:
@@ -603,7 +598,7 @@ class BaseUniquePID(BaseIncompletePID):
             if len(node) == 1 and node[0] in uniques and node not in self._pis:
                 self._pis[node] = uniques[node[0]]
 
-        super(BaseUniquePID, self)._compute()
+        super()._compute()
 
 
 class BaseBivariatePID(BaseIncompletePID):
@@ -618,4 +613,4 @@ class BaseBivariatePID(BaseIncompletePID):
             if len(node) == 2 and node not in self._reds:
                 self._reds[node] = self._measure(self._dist, node, self._output, **self._kwargs)
 
-        super(BaseBivariatePID, self)._compute()
+        super()._compute()

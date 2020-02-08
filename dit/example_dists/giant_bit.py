@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Giant bit type distributions.
 """
@@ -27,8 +25,8 @@ def giant_bit(n=3, k=2):
     """
     alpha = list(map(str, range(k)))
 
-    outcomes = [a*n for a in alpha]
-    pmf = [1/k]*k
+    outcomes = [a * n for a in alpha]
+    pmf = [1 / k] * k
 
     return Distribution(outcomes, pmf)
 
@@ -49,6 +47,6 @@ def jeff(n):
         The JEFF distribution with `n` inputs.
     """
     xs = list(product((0, 1), repeat=n))
-    prob = lambda x, y: ((1-y) + ((-1)**(1+y))*sum(x)/n) / 2**n
+    prob = lambda x, y: ((1 - y) + ((-1)**(1 + y)) * sum(x) / n) / 2**n
     dist = {''.join(map(str, x + (y,))): prob(x, y) for x, y in product(xs, (0, 1))}
     return Distribution(dist)

@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-
 """
 Specialized distribution constructors.
-
 """
 
 import numpy as np
@@ -147,7 +144,7 @@ def mixture_distribution2(dists, weights):
     # general, NumPy should give a value error complaining that it cannot
     # broadcast the smaller array. But if a pmf has length 1, then it can
     # be broadcast. This would make it harder to detect errors.
-    shapes = set([dist.pmf.shape for dist in dists])
+    shapes = {dist.pmf.shape for dist in dists}
     if len(shapes) != 1:
         raise ValueError('All pmfs must have the same length.')
 
@@ -161,7 +158,7 @@ def mixture_distribution2(dists, weights):
     return mix
 
 
-def noisy(dist, noise=1/2):
+def noisy(dist, noise=1 / 2):
     """
     Construct a noisy version of `dist`.
 
@@ -180,11 +177,11 @@ def noisy(dist, noise=1/2):
     fuzz = uniform(list(product(*dist.alphabet)))
     if isinstance(dist.outcomes[0], str):
         fuzz = modify_outcomes(fuzz, lambda o: ''.join(o))
-    fuzzy = mixture_distribution([dist, fuzz], [1-noise, noise], merge=True)
+    fuzzy = mixture_distribution([dist, fuzz], [1 - noise, noise], merge=True)
     return fuzzy
 
 
-def erasure(dist, epsilon=1/2):
+def erasure(dist, epsilon=1 / 2):
     """
     Construct a version of `dist` where each variable has been passed through
     an erasure channel.
@@ -206,9 +203,9 @@ def erasure(dist, epsilon=1/2):
     n = dist.outcome_length()
 
     for outcome, prob in dist.zipped():
-        for o in product(*zip(outcome, '_'*n)):
+        for o in product(*zip(outcome, '_' * n)):
             count = o.count('_')
-            outcomes[ctor(o)] += prob * epsilon**count * (1-epsilon)**(n - count)
+            outcomes[ctor(o)] += prob * epsilon**count * (1 - epsilon)**(n - count)
 
     return Distribution(outcomes)
 
@@ -457,7 +454,7 @@ def uniform_scalar_distribution(n, base=None):
         nOutcomes = n
         outcomes = tuple(range(n))
 
-    pmf = [1/nOutcomes] * nOutcomes
+    pmf = [1 / nOutcomes] * nOutcomes
     d = ScalarDistribution(outcomes, pmf, base='linear')
 
     # Maybe we should use ditParams['base'] when base is None?
@@ -530,7 +527,7 @@ def uniform_distribution(outcome_length, alphabet_size, base=None):
     except TypeError:
         raise TypeError("alphabet_size must be an int or list of lists.")
 
-    pmf = [1/Z] * Z
+    pmf = [1 / Z] * Z
     outcomes = tuple(product(*alphabet))
     d = Distribution(outcomes, pmf, base='linear')
 
@@ -582,7 +579,7 @@ def uniform(outcomes, base=None):
     """
     outcomes = list(outcomes)
     length = len(outcomes)
-    pmf = [1/length]*length
+    pmf = [1 / length] * length
     d = Distribution(outcomes, pmf)
 
     # Maybe we should use ditParams['base'] when base is None?
@@ -665,8 +662,8 @@ class RVFunctions(object):
     Some methods may make assumptions about the sample space. For example, the
     :meth:`xor` method assumes the sample space consists of 0-like and 1-like
     outcomes.
-
     """
+
     def __init__(self, d):
         """
         Initialize the random variable function creator.
@@ -684,7 +681,6 @@ class RVFunctions(object):
         >>> d = dit.insert_rvf(d, bf.xor([1,2]))
         >>> d.outcomes
         ('0000', '0110', '1011', '1101')
-
         """
         if not isinstance(d, Distribution):
             raise ditException('`d` must be a Distribution instance.')
@@ -725,7 +721,6 @@ class RVFunctions(object):
         >>> d = dit.insert_rvf(d, bf.xor([0,1]))
         >>> d.outcomes
         ('000', '011', '101', '110')
-
         """
         if self.is_int:
             def func(outcome):
@@ -786,7 +781,6 @@ class RVFunctions(object):
         See Also
         --------
         dit.modify_outcomes
-
         """
         ctor = self.ctor
         if force:
@@ -835,8 +829,6 @@ class RVFunctions(object):
         >>> d = dit.insert_rvf(d, bf.from_partition(partition))
         >>> d.outcomes
         ('000', '011', '101', '110')
-
-
         """
         # Practically, we support the str class. This is bytes in Python
         # versions <3 and unicode >3.
@@ -899,7 +891,6 @@ class RVFunctions(object):
         >>> d = dit.insert_rvf(d, bf.from_hexes('27'))
         >>> d.outcomes
         ('0000', '0010', '0101', '0110', '1000', '1010', '1100', '1111')
-
         """
         base = 16
         template = "{0:0{1}b}"
@@ -955,7 +946,6 @@ def product_distribution(dist, rvs=None, rv_mode=None, base=None):
     --------
     >>> d = dit.example_dists.Xor()
     >>> pd = product_distribution(d, [(0,), (1,), (2,)])
-
     """
     if not dist.is_joint():
         raise Exception("A joint distribution is required.")
@@ -1023,7 +1013,7 @@ def all_dist_structures(outcome_length, alphabet_size):
     alphabet = ''.join(str(i) for i in range(alphabet_size))
     words = product(alphabet, repeat=outcome_length)
     topologies = powerset(words)
-    next(topologies) # the first element is the null set
+    next(topologies)  # the first element is the null set
     for t in topologies:
         outcomes = [''.join(_) for _ in t]
         yield uniform(outcomes)
@@ -1051,7 +1041,7 @@ def _int_to_dist(number, outcome_length, alphabet_size):
     alphabet = ''.join(str(i) for i in range(alphabet_size))
     words = [''.join(word) for word in product(alphabet, repeat=outcome_length)]
     events = digits(number, 2, pad=alphabet_size**outcome_length, big_endian=False)
-    pmf = [p/sum(events) for p in events]
+    pmf = [p / sum(events) for p in events]
     return Distribution(words, pmf)
 
 
@@ -1073,7 +1063,7 @@ def random_dist_structure(outcome_length, alphabet_size):
         A uniform distribution over a random subset of joint events.
     """
     bound = 2**(alphabet_size**outcome_length)
-    return _int_to_dist(randint(1, bound-1), outcome_length, alphabet_size)
+    return _int_to_dist(randint(1, bound - 1), outcome_length, alphabet_size)
 
 
 def _combine_scalar_dists(d1, d2, op):

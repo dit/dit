@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Tests for dit.divergences.maximum_correlation.
 """
@@ -31,8 +29,8 @@ def test_maximum_correlation_failure(rvs):
         maximum_correlation(dyadic, rvs)
 
 
-@given(dist1=distributions(alphabets=((2, 4),)*2, nondegenerate=True),
-       dist2=distributions(alphabets=((2, 4),)*2, nondegenerate=True))
+@given(dist1=distributions(alphabets=((2, 4),) * 2, nondegenerate=True),
+       dist2=distributions(alphabets=((2, 4),) * 2, nondegenerate=True))
 def test_maximum_correlation_tensorization(dist1, dist2):
     """
     Test tensorization:
