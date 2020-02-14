@@ -1,5 +1,5 @@
 """
-Add the I_\preceq measure as defined by Kolchinski.
+Add the I_\preceq measure as defined by Kolchinsky.
 """
 
 import numpy as np
@@ -11,7 +11,7 @@ from ...shannon import mutual_information
 from ..pid import BasePID
 
 
-class KolchinskiOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
+class KolchinskyOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
     """
     An optimizer to find the greatest I[Q:Y] such that p(q|y) is a garbling
     of each p(xi|y).
@@ -136,7 +136,7 @@ class KolchinskiOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
 
 class PID_Preceq(BasePID):
     """
-    The I_\preceq measure defined by Kolchinski.
+    The I_\preceq measure defined by Kolchinsky.
     """
 
     _name = "I_≼"
@@ -167,7 +167,7 @@ class PID_Preceq(BasePID):
         upper_bound = sum(len(a) for a in md.alphabet) - md.outcome_length() + 1
         for bound in [None] + list(range(upper_bound, md.outcome_length(), -1)):
             try:
-                ko = KolchinskiOptimizer(d, sources, target, bound=bound)
+                ko = KolchinskyOptimizer(d, sources, target, bound=bound)
                 ko.optimize(polish=1e-8)
                 break
             except OptimizationException:
