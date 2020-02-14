@@ -140,11 +140,15 @@ class MUIProfile(BaseProfile):
         pnts = np.unique(np.round([sum(ss) for ss in ps], 7))
         pnts = [v for v in pnts if 0 <= v <= ent]
 
-        maxui = [max_util_of_info(c, A, b, bounds, y) for y in pnts]
-        mui = np.round(np.diff(maxui) / np.diff(pnts), 7)
-        vals = np.array(np.unique(mui, return_index=True))
-        self.profile = {pnts[int(row[1])]: row[0] for row in vals.T}
-        self.widths = np.diff(sorted(self.profile.keys()) + [ent])
+        if len(c):
+            maxui = [max_util_of_info(c, A, b, bounds, y) for y in pnts]
+            mui = np.round(np.diff(maxui) / np.diff(pnts), 7)
+            vals = np.array(np.unique(mui, return_index=True))
+            self.profile = {pnts[int(row[1])]: row[0] for row in vals.T}
+            self.widths = np.diff(sorted(self.profile.keys()) + [ent])
+        else:
+            self.profile = {0.0: 0.0}
+            self.widths = np.asarray([0.0])
 
     def draw(self, ax=None):  # pragma: no cover
         ax = super().draw(ax=ax)
