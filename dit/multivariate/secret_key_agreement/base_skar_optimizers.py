@@ -13,11 +13,11 @@ from ...math import prod
 from ...utils import unitful
 
 
-__all__ = [
+__all__ = (
     'BaseIntrinsicMutualInformation',
     'BaseMoreIntrinsicMutualInformation',
     'BaseOneWaySKAR',
-]
+)
 
 
 class BaseOneWaySKAR(BaseAuxVarOptimizer):

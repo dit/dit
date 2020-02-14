@@ -8,6 +8,24 @@ from ...distconst import uniform
 from ...example_dists import jeff
 
 
+__all__ = (
+    'anddup',
+    'cat',
+    'dblxor',
+    'giant_xor',
+    'jeff_3',
+    'null',
+    'rdn',
+    'shared_xor',
+    'sum_',
+    'syn',
+    'uni',
+    'xor_cat',
+    'xor_giant',
+    'xor_shared',
+)
+
+
 # independent bits
 uni = uniform(''.join(_) for _ in product('01', repeat=4))
 

@@ -12,6 +12,15 @@ from ..exceptions import ditException
 from ..utils import flatten
 
 
+__all__ = (
+    'BaseRateDistortion',
+    'RateDistortionHamming',
+    'RateDistortionMaximumCorrelation',
+    'RateDistortionResidualEntropy',
+    'RateDistortionResult',
+)
+
+
 RateDistortionResult = namedtuple('RateDistortionResult', ['rate', 'distortion'])
 
 

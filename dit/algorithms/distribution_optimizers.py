@@ -20,10 +20,10 @@ from ..helpers import RV_MODES
 from ..multivariate import coinformation as I
 from ..utils import flatten
 
-__all__ = [
+__all__ = (
     'maxent_dist',
     'marginal_maxent_dists',
-]
+)
 
 
 def infer_free_values(A, b):

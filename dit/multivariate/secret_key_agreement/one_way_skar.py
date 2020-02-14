@@ -8,9 +8,9 @@ from .base_skar_optimizers import BaseOneWaySKAR
 from ...utils import unitful
 
 
-__all__ = [
+__all__ = (
     'one_way_skar',
-]
+)
 
 
 class OneWaySKAR(BaseOneWaySKAR):

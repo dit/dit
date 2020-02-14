@@ -8,9 +8,9 @@ from ...algorithms.optimization import BaseAuxVarOptimizer
 from ...utils import unitful
 
 
-__all__ = [
+__all__ = (
     'interactive_intrinsic_mutual_information',
-]
+)
 
 
 class InteractiveSKAR(BaseAuxVarOptimizer):

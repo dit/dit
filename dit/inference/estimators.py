@@ -8,6 +8,13 @@ from scipy.special import digamma
 from .counts import get_counts
 
 
+__all__ = (
+    'entropy_0',
+    'entropy_1',
+    'entropy_2',
+)
+
+
 def entropy_0(data, length=1):
     """
     Estimate the entropy of length `length` subsequences in `data`.

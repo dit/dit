@@ -10,9 +10,9 @@ from .measures import __all_pids
 from .. import ditParams
 
 
-__all__ = [
+__all__ = (
     'compare_measures',
-]
+)
 
 
 def compare_measures(dist, pids=__all_pids, inputs=None, output=None, name='', digits=5):

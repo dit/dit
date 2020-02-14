@@ -8,6 +8,15 @@ import numpy as np
 import dit
 
 
+__all__ = (
+    'Bunch',
+    'CVSOPT_Template',
+    'as_full_rank',
+    'op_runner',
+    'prepare_dist',
+)
+
+
 @removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
                  version='1.0.1')
 def as_full_rank(A, b):
@@ -56,7 +65,6 @@ def as_full_rank(A, b):
         The RHS for the linear constraints.
     rank : int
         The rank of :math:`B`.
-
     """
     try:
         from scipy.linalg import svd

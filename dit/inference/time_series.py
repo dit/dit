@@ -8,6 +8,11 @@ from .. import modify_outcomes
 from .counts import distribution_from_data
 
 
+__all__ = (
+    'dist_from_timeseries',
+)
+
+
 def dist_from_timeseries(observations, history_length=1, base='linear'):
     """
     Infer a distribution from time series observations. For each variable, infer a

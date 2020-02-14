@@ -10,13 +10,14 @@ from ..utils import flatten
 
 from .kullback_leibler_divergence import kullback_leibler_divergence
 
-__all__ = ('double_power_sum',
-           'hellinger_sum',
-           'alpha_divergence',
-           'hellinger_divergence',
-           'renyi_divergence',
-           'tsallis_divergence',
-          )
+__all__ = (
+    'double_power_sum',
+    'hellinger_sum',
+    'alpha_divergence',
+    'hellinger_divergence',
+    'renyi_divergence',
+    'tsallis_divergence',
+)
 
 ### References for Divergence Formulas ###
 ## http://arxiv.org/pdf/1105.3259v1.pdf

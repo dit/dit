@@ -11,9 +11,9 @@ from .one_way_skar import OneWaySKAR
 from ...utils import unitful
 
 
-__all__ = [
+__all__ = (
     'secrecy_capacity',
-]
+)
 
 
 class SecrecyCapacity(OneWaySKAR):

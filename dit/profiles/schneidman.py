@@ -15,11 +15,11 @@ from ..multivariate import dual_total_correlation as B
 from ..shannon import entropy as H
 
 
-__all__ = [
+__all__ = (
     'ConnectedInformations',
     'ConnectedDualInformations',
     'SchneidmanProfile',
-]
+)
 
 
 class ConnectedInformations(BaseProfile):  # noqa: D101

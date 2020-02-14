@@ -26,9 +26,9 @@ from .maxentropy import (
     marginal_constraints, marginal_constraints_generic, isolate_zeros_generic
 )
 
-__all__ = [
+__all__ = (
     # 'marginal_maxent_dists',
-]
+)
 
 
 @removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",

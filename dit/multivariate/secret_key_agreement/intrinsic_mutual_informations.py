@@ -4,11 +4,12 @@ Intrinsic Mutual Informations
 
 from .base_skar_optimizers import BaseIntrinsicMutualInformation
 
-__all__ = [
+
+__all__ = (
     'intrinsic_total_correlation',
     'intrinsic_dual_total_correlation',
     'intrinsic_caekl_mutual_information',
-]
+)
 
 
 class IntrinsicTotalCorrelation(BaseIntrinsicMutualInformation):

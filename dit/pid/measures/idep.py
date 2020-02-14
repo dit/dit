@@ -7,10 +7,10 @@ from ..pid import BaseUniquePID
 from ...profiles import DependencyDecomposition
 
 
-__all__ = [
+__all__ = (
     'PID_dep',
     'PID_RA',
-]
+)
 
 
 class PID_dep(BaseUniquePID):

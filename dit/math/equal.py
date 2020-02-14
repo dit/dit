@@ -9,7 +9,10 @@ from numpy import allclose as _allclose, isinf
 
 from dit import ditParams
 
-__all__ = ['close', 'allclose']
+__all__ = (
+    'close',
+    'allclose',
+)
 
 
 @removals.remove(message="Use numpy.isclose instead",

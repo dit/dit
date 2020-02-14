@@ -10,9 +10,9 @@ from ..cdisthelpers import cdist_array
 from ..utils import unitful
 
 
-__all__ = [
+__all__ = (
     'channel_capacity',
-]
+)
 
 
 def channel_capacity(cdists, marginal=None, rtol=None, atol=None):

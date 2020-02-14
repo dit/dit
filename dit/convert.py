@@ -4,10 +4,11 @@ Helper functions to convert between Distribution and ScalarDistribution.
 
 import dit
 
-__all__ = [
+
+__all__ = (
     'DtoSD',
     'SDtoD'
-]
+)
 
 
 def DtoSD(dist, extract):

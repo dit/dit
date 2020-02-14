@@ -4,9 +4,9 @@ Miscellaneous distributions illustrating particular phenomena.
 
 from .. import Distribution
 
-__all__ = [
+__all__ = (
     'gk_pos_i_neg',
-]
+)
 
 
 # has K(d) > 0 while I(d) < 0

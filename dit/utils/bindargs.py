@@ -24,10 +24,14 @@ For example, to override a parameter of some function:
 Also useful:
 
     http://www.python.org/dev/peps/pep-3102/
-
 """
 
 import inspect
+
+
+__all__ = (
+    'bindcallargs',
+)
 
 
 def bindcallargs(_fUnCtIoN_, *args, **kwargs):

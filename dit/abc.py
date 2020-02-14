@@ -35,50 +35,50 @@ from dit.multivariate import (caekl_mutual_information as J,
                              )
 
 # distribution types
-_dists = [
+_dists = (
     'D',     # a joint distribution
     'SD',    # a scalar distribution
-]
+)
 
 # measures directly computed from i-diagrams
-_entropies = [
+_entropies = (
     'H',     # the joint conditional entropy
     'R',     # the conditional residual entropy [erasure entropy]
-]
+)
 
 # mutual informations
-_mutual_informations = [
+_mutual_informations = (
     'I',     # the multivariate conditional mutual information
     'T',     # the conditional total correlation [multi-information/integration]
     'B',     # the conditional dual total correlation [binding information]
     'J',     # the CAEKL mutual information
     'II',    # the interaction information
-]
+)
 
 # common informations
-_common_informations = [
+_common_informations = (
     'K',     # the Gacs-Korner common information [meet entropy]
     'C',     # the wyner common information
     'G',     # the exact common information
     'F',     # the functional common information
     'M',     # the joint minimal sufficient statistic entropy
-]
+)
 
 # measures of distance between distriutions
-_divergences = [
+_divergences = (
     'xH',    # the cross entropy
     'DKL',   # the Kullback-Leibler divergence
     'JSD',   # the Jensen-Shannon divergence
-]
+)
 
 # other measures
-_others = [
+_others = (
     'CC',    # the channel capacity
     'P',     # the perplexity
     'X',     # the extropy
     'TSE',   # the TSE complexity
     'CRE',   # the cumulative residual entropy
     'GCRE',  # the generalized cumulative residual entropy
-]
+)
 
 __all__ = _dists + _entropies + _mutual_informations + _common_informations + _divergences + _others

@@ -22,8 +22,17 @@ DKL
     The two distributions can have pmfs in different bases.
 """
 
-import dit
 import numpy as np
+
+import dit
+
+
+__all__ = (
+    'cross_entropy',
+    'cross_entropy_pmf',
+    'relative_entropy',
+    'relative_entropy_pmf',
+)
 
 
 def cross_entropy_pmf(p, q=None):

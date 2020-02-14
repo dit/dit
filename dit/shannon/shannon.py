@@ -8,6 +8,14 @@ from ..math import LogOperations
 from ..helpers import RV_MODES
 
 
+__all__ = (
+    'conditional_entropy',
+    'entropy',
+    'entropy_pmf',
+    'mutual_information',
+)
+
+
 def entropy_pmf(pmf):
     """
     Returns the entropy of the probability mass function.

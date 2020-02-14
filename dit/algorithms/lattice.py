@@ -57,6 +57,20 @@ from ..math import sigma_algebra, atom_set
 from ..utils import quasilexico_key
 
 
+__all__ = (
+    'dist_from_induced_sigalg',
+    'induced_sigalg',
+    'insert_join',
+    'insert_meet',
+    'insert_rv',
+    'join',
+    'join_sigalg',
+    'meet',
+    'meet_sigalg',
+    'sigma_algebra_sort',
+)
+
+
 def sigma_algebra_sort(sigalg):
     """
     Put the sigma algebra in quasi-lexicographical order.

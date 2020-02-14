@@ -9,6 +9,11 @@ import numpy as np
 from .. import Distribution
 
 
+__all__ = (
+    'BaseProfile',
+)
+
+
 profile_docstring = """
 {name}
 

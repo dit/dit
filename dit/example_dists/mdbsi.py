@@ -5,7 +5,11 @@ Information.
 
 from ..distconst import uniform
 
-__all__ = ['dyadic', 'triadic']
+
+__all__ = (
+    'dyadic',
+    'triadic',
+)
 
 
 dyadic = uniform(['000', '021', '102', '123', '210', '231', '312', '333'])

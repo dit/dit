@@ -60,14 +60,15 @@ This has to do with sorting the alphabets. Probably this can be relaxed.
 
 """
 
+import itertools
 from collections import defaultdict
 from operator import itemgetter
-import itertools
 
 import numpy as np
 
-from .npscalardist import ScalarDistribution
-
+from .exceptions import (
+    InvalidDistribution, InvalidOutcome, ditException
+)
 from .helpers import (
     construct_alphabets,
     get_outcome_ctor,
@@ -76,14 +77,15 @@ from .helpers import (
     reorder,
     RV_MODES,
 )
-
+from .math import get_ops, LinearOperations
+from .npscalardist import ScalarDistribution
+from .params import ditParams
 from .samplespace import SampleSpace, CartesianProduct
 
-from .exceptions import (
-    InvalidDistribution, InvalidOutcome, ditException
+
+__all__ = (
+    'Distribution',
 )
-from .math import get_ops, LinearOperations
-from .params import ditParams
 
 
 def _make_distribution(outcomes, pmf, base,

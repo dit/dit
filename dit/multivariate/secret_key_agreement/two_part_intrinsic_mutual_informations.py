@@ -6,11 +6,11 @@ from .base_skar_optimizers import BaseTwoPartIntrinsicMutualInformation
 from ... import Distribution
 
 
-__all__ = [
+__all__ = (
     'two_part_intrinsic_total_correlation',
     'two_part_intrinsic_dual_total_correlation',
     'two_part_intrinsic_CAEKL_mutual_information',
-]
+)
 
 
 class TwoPartIntrinsicTotalCorrelation(BaseTwoPartIntrinsicMutualInformation):

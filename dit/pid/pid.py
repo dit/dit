@@ -16,6 +16,15 @@ from ..multivariate import coinformation
 from ..utils import flatten, powerset
 
 
+__all__ = (
+    'BaseBivariatePID',
+    'BaseIncompletePID',
+    'BasePID',
+    'BaseUniquePID',
+    'sort_key',
+)
+
+
 def sort_key(lattice):
     """
     A key for sorting the nodes of a PID lattice.

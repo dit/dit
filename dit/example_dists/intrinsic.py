@@ -5,11 +5,11 @@ measures.
 
 from .. import Distribution
 
-__all__ = [
+__all__ = (
     'intrinsic_1',
     'intrinsic_2',
     'intrinsic_3',
-]
+)
 
 
 # from the intrinsic information paper

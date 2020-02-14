@@ -12,7 +12,12 @@ import numpy as np
 
 from dit.utils import powerset
 
-__all__ = ['is_sigma_algebra', 'sigma_algebra', 'atom_set']
+
+__all__ = (
+    'is_sigma_algebra',
+    'sigma_algebra',
+    'atom_set',
+)
 
 
 def sets2matrix(C, X=None):

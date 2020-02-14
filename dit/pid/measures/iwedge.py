@@ -8,6 +8,11 @@ from ...algorithms import insert_meet
 from ...multivariate import coinformation
 
 
+__all__ = (
+    'PID_GK',
+)
+
+
 class PID_GK(BasePID):
     """
     The Griffith et al partial information decomposition.

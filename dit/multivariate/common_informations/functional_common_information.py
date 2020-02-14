@@ -14,7 +14,10 @@ from ...utils import partitions, unitful
 from ..entropy import entropy
 from ..dual_total_correlation import dual_total_correlation
 
-__all__ = ['functional_common_information']
+
+__all__ = (
+    'functional_common_information',
+)
 
 
 def functional_markov_chain_naive(dist, rvs=None, crvs=None, rv_mode=None):  # pragma: no cover

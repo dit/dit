@@ -16,6 +16,13 @@ from .context import cd, named_tempfile, tempdir
 from .misc import default_opener
 
 
+__all__ = (
+    'printoptions',
+    'to_latex',
+    'to_pdf',
+)
+
+
 # http://stackoverflow.com/questions/2891790/pretty-printing-of-numpy-array
 #
 # Includes hack to prevent NumPy from removing trailing zeros.

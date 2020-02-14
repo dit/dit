@@ -6,9 +6,9 @@ from .pmf import relative_entropy
 from ..utils import unitful
 
 
-__all__ = [
+__all__ = (
     'copy_mutual_information',
-]
+)
 
 
 def binary_kullback_leibler_divergence(p, q):

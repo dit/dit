@@ -9,6 +9,18 @@ from ..exceptions import OptimizationException
 from ..helpers import normalize_pmfs
 
 
+__all__ = (
+    'bhattacharyya_coefficient',
+    'bhattacharyya_coefficient_pmf',
+    'chernoff_information',
+    'chernoff_information_pmf',
+    'hellinger_distance',
+    'hellinger_distance_pmf',
+    'variational_distance',
+    'variational_distance_pmf',
+)
+
+
 def variational_distance_pmf(p, q):
     """
     Compute the variational distance.

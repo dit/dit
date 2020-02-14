@@ -8,11 +8,13 @@ import numpy as np
 
 from ..exceptions import InvalidBase
 
-__all__ = [
+
+__all__ = (
     'get_ops',
     'LinearOperations',
-    'LogOperations'
-]
+    'LogOperations',
+)
+
 
 # For 2.x, these are ascii strings. For 3.x these are unicode strings.
 acceptable_base_strings = {'linear', 'e'}

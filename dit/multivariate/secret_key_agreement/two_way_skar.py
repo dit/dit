@@ -12,10 +12,10 @@ from .skar_lower_bounds import necessary_intrinsic_mutual_information
 from .two_part_intrinsic_mutual_informations import two_part_intrinsic_total_correlation as two_part_intrinsic_mutual_information
 
 
-__all__ = [
+__all__ = (
     'two_way_skar',
     'two_way_skar_bounds',
-]
+)
 
 
 def _two_way_skar_bounds_iter(dist, rvs=None, crvs=None, rv_mode=None):

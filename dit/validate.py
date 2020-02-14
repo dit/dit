@@ -11,17 +11,17 @@ from .exceptions import (
     ditException,
 )
 
-__all__ = [
+
+__all__ = (
     'is_pmf',
     'validate_normalization',
     'validate_outcomes',
+    'validate_outcome_class',
+    'validate_outcome_length',
     'validate_pmf',
     'validate_probabilities',
     'validate_sequence',
-    #
-    'validate_outcome_class',
-    'validate_outcome_length',
-]
+)
 
 
 def is_pmf(pmf, ops):

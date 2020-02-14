@@ -14,6 +14,12 @@ from ..multivariate import entropy, total_correlation
 from ..utils import flatten
 
 
+__all__ = (
+    'IBCurve',
+    'RDCurve',
+)
+
+
 class RDCurve(object):
     """
     Compute a rate-distortion curve.

@@ -7,6 +7,11 @@ import numpy as np
 from ..pid import BasePID
 
 
+__all__ = (
+    'PID_WB',
+)
+
+
 def s_i(d, source, target, target_value):
     """
     Compute the specific mutual information I(source : target=target_value)

@@ -18,7 +18,7 @@ from .utils import digits, powerset
 from .validate import validate_pmf
 
 
-__all__ = [
+__all__ = (
     'mixture_distribution',
     'mixture_distribution2',
     'noisy',
@@ -36,7 +36,7 @@ __all__ = [
     'uniform_like',
     'all_dist_structures',
     'random_dist_structure',
-]
+)
 
 
 def mixture_distribution(dists, weights, merge=False):

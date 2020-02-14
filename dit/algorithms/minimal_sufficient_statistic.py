@@ -10,11 +10,12 @@ from ..helpers import flatten, parse_rvs, normalize_rvs
 from ..math import sigma_algebra
 from ..samplespace import CartesianProduct
 
-__all__ = ['info_trim',
-           'insert_mss',
-           'mss',
-           'mss_sigalg',
-          ]
+__all__ = (
+    'info_trim',
+    'insert_mss',
+    'mss',
+    'mss_sigalg',
+)
 
 
 def partial_match(first, second, places):

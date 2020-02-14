@@ -7,10 +7,10 @@ import warnings
 from .exceptions import InvalidBase
 
 
-__all__ = [
+__all__ = (
     'ditParams',
-    'reset_params'
-]
+    'reset_params',
+)
 
 
 def validate_boolean(b):

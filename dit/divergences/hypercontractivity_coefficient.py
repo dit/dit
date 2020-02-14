@@ -12,6 +12,12 @@ from ..multivariate.entropy import entropy
 from ..multivariate.total_correlation import total_correlation
 
 
+__all__ = (
+    'HypercontractivityCoefficient',
+    'hypercontractivity_coefficient',
+)
+
+
 class HypercontractivityCoefficient(BaseAuxVarOptimizer):
     """
     Computes the hypercontractivity coefficient:

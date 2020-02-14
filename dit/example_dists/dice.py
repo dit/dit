@@ -6,10 +6,16 @@ import itertools
 import dit
 
 
+__all__ = (
+    'iid_sum',
+    'summed_dice',
+    'Wolfs_dice',
+)
+
+
 def iid_sum(n, k=2):
     """
     Returns a distribution relating n iid uniform draws to their sum.
-
     """
     alphabet = range(k)
     outcomes = list(itertools.product(alphabet, repeat=n))

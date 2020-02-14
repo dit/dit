@@ -12,6 +12,11 @@ from ...divergences.pmf import relative_entropy
 from ...exceptions import ditException
 
 
+__all__ = (
+    'PID_Proj',
+)
+
+
 class MinDKLOptimizer(object):
     """
     An optimizer to find the minimum D_KL(p||q) given p and a

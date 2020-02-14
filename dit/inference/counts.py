@@ -4,6 +4,14 @@ Non-cython methods for getting counts and distributions from data.
 
 import numpy as np
 
+
+__all__ = (
+    'counts_from_data',
+    'distribution_from_data',
+    'get_counts',
+)
+
+
 try:  # cython
 
     from .pycounts import counts_from_data, distribution_from_data

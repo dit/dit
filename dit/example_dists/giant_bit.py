@@ -7,6 +7,12 @@ from itertools import product
 from .. import Distribution
 
 
+__all__ = (
+    'giant_bit',
+    'jeff',
+)
+
+
 def giant_bit(n=3, k=2):
     """
     Return a 'giant bit' distribution of size `n` and alphabet size `k`.

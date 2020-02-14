@@ -6,6 +6,11 @@ from ..pid import BasePID
 from ...multivariate import coinformation
 
 
+__all__ = (
+    'PID_MMI',
+)
+
+
 class PID_MMI(BasePID):
     """
     The minimum mutual information partial information decomposition.

@@ -11,9 +11,9 @@ from .base_profile import BaseProfile, profile_docstring
 from .information_partitions import ShannonPartition
 
 
-__all__ = [
+__all__ = (
     'ComplexityProfile',
-]
+)
 
 
 class ComplexityProfile(BaseProfile):  # noqa: D101

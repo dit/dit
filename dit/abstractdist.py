@@ -5,12 +5,13 @@ Abstract implementation of dense random vectors.
 import itertools
 import numpy as np
 
-__all__ = [
+
+__all__ = (
     'AbstractDenseDistribution',
     'distribution_constraint',
     'brute_marginal_array',
     'get_abstract_dist',
-]
+)
 
 
 class AbstractDenseDistribution(object):

@@ -7,6 +7,11 @@ from ..shannon import conditional_entropy, entropy
 from ..utils.misc import flatten
 
 
+__all__ = (
+    'perplexity',
+)
+
+
 def perplexity(dist, rvs=None, crvs=None, rv_mode=None):
     """
     Parameters

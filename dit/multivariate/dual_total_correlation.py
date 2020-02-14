@@ -6,14 +6,14 @@ from ..helpers import normalize_rvs
 from ..shannon import conditional_entropy as H
 from ..utils import unitful
 
-__all__ = [
+__all__ = (
     'binding_information',
     'dual_total_correlation',
     'generalized_dual_total_correlation',
     'independent_information',
     'residual_entropy',
     'variation_of_information',
-]
+)
 
 
 @unitful

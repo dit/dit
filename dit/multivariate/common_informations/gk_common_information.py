@@ -9,6 +9,11 @@ from ...shannon import conditional_entropy as H
 from ...utils import unitful
 
 
+__all__ = (
+    'gk_common_information',
+)
+
+
 @unitful
 def gk_common_information(dist, rvs=None, crvs=None, rv_mode=None):
     """

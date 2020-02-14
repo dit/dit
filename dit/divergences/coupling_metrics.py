@@ -11,9 +11,10 @@ from ..helpers import normalize_rvs
 from ..multivariate import entropy as H
 from ..utils import unitful
 
-__all__ = [
+
+__all__ = (
     'coupling_metric',
-]
+)
 
 
 @unitful

@@ -10,9 +10,10 @@ from scipy.spatial import cKDTree
 from dit.utils import flatten
 
 
-__all__ = ['differential_entropy_knn',
-           'total_correlation_ksg',
-          ]
+__all__ = (
+    'differential_entropy_knn',
+    'total_correlation_ksg',
+)
 
 
 def _fuzz(data, noise):

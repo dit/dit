@@ -33,12 +33,12 @@ from ..utils.optimization import (BasinHoppingCallBack,
                                   colon,
                                   )
 
-__all__ = [
+__all__ = (
     'BaseOptimizer',
     'BaseConvexOptimizer',
     'BaseNonConvexOptimizer',
     'BaseAuxVarOptimizer',
-]
+)
 
 
 svdvals = lambda m: np.linalg.svd(m, compute_uv=False)

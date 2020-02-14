@@ -8,13 +8,15 @@ from operator import mul
 
 from numbers import Integral, Number
 
-__all__ = ['is_number',
-           'is_integer',
-           'factorial',
-           'combinations',
-           'multinomial',
-           'prod',
-           ]
+
+__all__ = (
+    'is_number',
+    'is_integer',
+    'factorial',
+    'combinations',
+    'multinomial',
+    'prod',
+)
 
 
 def is_number(x):

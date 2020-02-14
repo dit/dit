@@ -15,11 +15,11 @@ from ..algorithms import maxent_dist
 from ..other import extropy
 from ..shannon import entropy
 
-__all__ = [
+__all__ = (
     'ShannonPartition',
     'ExtropyPartition',
     'DependencyDecomposition',
-]
+)
 
 
 class BaseInformationPartition(metaclass=ABCMeta):

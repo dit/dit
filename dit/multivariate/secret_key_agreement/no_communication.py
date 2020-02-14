@@ -6,9 +6,9 @@ from .. import gk_common_information
 from ...utils import unitful
 
 
-__all__ = [
+__all__ = (
     'no_communication_skar',
-]
+)
 
 
 @unitful

@@ -8,6 +8,12 @@ is also important for the calculations of various PID quantities.
 from dit.samplespace import ScalarSampleSpace, SampleSpace, CartesianProduct
 
 
+__all__ = (
+    'expanded_samplespace',
+    'pruned_samplespace',
+)
+
+
 def pruned_samplespace(d, sample_space=None):
     """
     Returns a new distribution with pruned sample space.

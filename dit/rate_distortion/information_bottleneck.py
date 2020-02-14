@@ -9,6 +9,12 @@ from ..divergences.pmf import relative_entropy
 from ..exceptions import ditException
 
 
+__all__ = (
+    'InformationBottleneck',
+    'InformationBottleneckDivergence',
+)
+
+
 class InformationBottleneck(BaseAuxVarOptimizer):
     """
     Base optimizer for information bottleneck type calculations.

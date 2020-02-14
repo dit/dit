@@ -9,9 +9,9 @@ from ..helpers import normalize_rvs
 from ..utils import flatten, unitful
 
 
-__all__ = [
+__all__ = (
     'necessary_conditional_entropy',
-]
+)
 
 
 @unitful

@@ -13,8 +13,8 @@ from .curves import IBCurve, RDCurve
 
 
 __all__ = (
-    'RDPlotter',
     'IBPlotter',
+    'RDPlotter',
 )
 
 

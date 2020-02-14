@@ -6,7 +6,7 @@ Exceptions related to information theory.
 """
 
 
-__all__ = [
+__all__ = (
     'ditException',
     'IncompatibleDistribution',
     'InvalidBase',
@@ -15,7 +15,7 @@ __all__ = [
     'InvalidOutcome',
     'InvalidProbability',
     'OptimizationException',
-]
+)
 
 
 class ditException(Exception):

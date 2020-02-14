@@ -7,9 +7,9 @@ from ..shannon import conditional_entropy as H
 from ..utils import powerset, unitful
 
 
-__all__ = [
+__all__ = (
     'coinformation',
-]
+)
 
 
 @unitful

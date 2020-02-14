@@ -15,7 +15,10 @@ generated from S_0.
 import numpy as np
 import dit
 
-__all__ = ['distribution_from_bayesnet']
+
+__all__ = (
+    'distribution_from_bayesnet',
+)
 
 
 def sanitize_inputs(digraph, nodes, attr):

@@ -7,6 +7,16 @@ import numpy as np
 from ..helpers import numerical_test
 
 
+__all__ = (
+    'central_moment',
+    'mean',
+    'median',
+    'mode',
+    'standard_deviation',
+    'standard_moment',
+)
+
+
 def mean(dist):
     """
     Computes the mean of the distribution.

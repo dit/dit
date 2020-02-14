@@ -12,10 +12,10 @@ from ..multivariate import (entropy, residual_entropy, dual_total_correlation,
                             total_correlation)
 
 
-__all__ = [
+__all__ = (
     'EntropyTriangle',
     'EntropyTriangle2',
-]
+)
 
 
 class BaseEntropyTriangle(metaclass=ABCMeta):

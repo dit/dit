@@ -10,6 +10,13 @@ from ..exceptions import ditException
 from ..helpers import normalize_rvs
 
 
+__all__ = (
+    'conditional_maximum_correlation_pmf',
+    'maximum_correlation',
+    'maximum_correlation_pmf',
+)
+
+
 svdvals = lambda m: np.linalg.svd(m, compute_uv=False)
 
 

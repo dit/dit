@@ -6,6 +6,14 @@ from .. import ScalarDistribution
 from ..math.misc import combinations as C, is_integer, is_number
 
 
+__all__ = (
+    'bernoulli',
+    'binomial',
+    'hypergeometric',
+    'uniform',
+)
+
+
 def bernoulli(p):
     """
     The Bernoulli distribution:

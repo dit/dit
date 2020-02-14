@@ -15,12 +15,12 @@ from ...multivariate.secret_key_agreement import (
 from ...utils import flatten
 
 
-__all__ = [
+__all__ = (
     'PID_SKAR_nw',
     'PID_SKAR_owa',
     'PID_SKAR_owb',
     'PID_SKAR_tw',
-]
+)
 
 
 class PID_SKAR_nw(BaseUniquePID):

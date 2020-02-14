@@ -10,9 +10,9 @@ from ..math.misc import combinations as nCk
 from ..utils import unitful
 
 
-__all__ = [
+__all__ = (
     'tse_complexity',
-]
+)
 
 
 @unitful

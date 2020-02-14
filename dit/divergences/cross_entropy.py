@@ -8,8 +8,10 @@ from ..exceptions import InvalidOutcome
 from ..helpers import normalize_rvs
 from ..utils import flatten, unitful
 
-__all__ = ('cross_entropy',
-          )
+
+__all__ = (
+    'cross_entropy',
+)
 
 
 def get_prob(d, o):

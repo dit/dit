@@ -9,9 +9,11 @@ from ..divergences.pmf import jensen_shannon_divergence as JSD
 from ..helpers import RV_MODES
 from ..shannon import entropy
 
-__all__ = ['disequilibrium',
-           'LMPR_complexity',
-          ]
+
+__all__ = (
+    'disequilibrium',
+    'LMPR_complexity',
+)
 
 
 def disequilibrium(dist, rvs=None, rv_mode=None):

@@ -6,7 +6,10 @@ from boltons.iterutils import pairwise
 
 import numpy as np
 
-__all__ = ['binned']
+
+__all__ = (
+    'binned',
+)
 
 
 def binned(ts, bins=2, style='maxent'):

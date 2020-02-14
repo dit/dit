@@ -32,25 +32,27 @@ us desirable behavior when marginalizing, etc. If the user does pass in a
 custom sample space, then we use it, but this requires that we iterate through
 the whole sample space during marginalization. So this particular use case will
 experience the penalty discussed above.
-
 """
-from collections.abc import Set
 
 import itertools
-
+from collections.abc import Set
 from functools import reduce
-
 from operator import mul
-
 
 import numpy as np
 
-from .helpers import (
-    parse_rvs, get_outcome_ctor, construct_alphabets, get_product_func,
-    RV_MODES,
-)
-from .utils import OrderedDict
 from .exceptions import InvalidOutcome
+from .helpers import (parse_rvs, get_outcome_ctor, construct_alphabets,
+                      get_product_func, RV_MODES)
+from .utils import OrderedDict
+
+
+__all__ = (
+    'BaseSampleSpace',
+    'CartesianProduct',
+    'SampleSpace',
+    'ScalarSampleSpace',
+)
 
 
 class BaseSampleSpace(Set):

@@ -21,11 +21,13 @@ For scalar distributions, the sample space is the alphabet and the alphabet
 is a single set. For (joint) distributions, the sample space is provided
 at initialization and the alphabet is a tuple of alphabets for each random
 variable. The alphabet for each random variable is a set.
-
 """
+
 import numbers
 from collections import defaultdict
 from itertools import product
+
+import numpy as np
 
 from .distribution import BaseDistribution
 from .exceptions import (
@@ -33,13 +35,15 @@ from .exceptions import (
     InvalidDistribution,
     InvalidOutcome,
 )
-
+from .helpers import flatten, reorder
 from .math import get_ops, LinearOperations
 from .params import ditParams
-from .helpers import flatten, reorder
 from .samplespace import BaseSampleSpace, ScalarSampleSpace
 
-import numpy as np
+
+__all__ = (
+    'ScalarDistribution',
+)
 
 
 def _make_distribution(outcomes, pmf=None, sample_space=None,

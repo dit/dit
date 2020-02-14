@@ -4,7 +4,10 @@ Distributions illustrating three types of dependency among two variables.
 
 from .. import Distribution
 
-__all__ = ['stacked', 'mixed']
+__all__ = (
+    'stacked',
+    'mixed',
+)
 
 
 # the first four outcomes are conditional dependence

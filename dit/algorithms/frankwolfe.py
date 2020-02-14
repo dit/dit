@@ -22,6 +22,11 @@ import numpy as np
 from dit.utils import basic_logger
 
 
+__all__ = (
+    'frank_wolfe',
+)
+
+
 @removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
                  version='1.0.1')
 def frank_wolfe(objective, gradient, A, b, initial_x,

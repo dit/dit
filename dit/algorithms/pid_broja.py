@@ -19,7 +19,11 @@ from .frankwolfe import frank_wolfe
 from .optutil import CVXOPT_Template, as_full_rank, Bunch, op_runner
 from ..exceptions import ditException
 
-__all__ = ['unique_informations', 'k_informations', 'k_synergy']
+__all__ = (
+    'unique_informations',
+    'k_informations',
+    'k_synergy',
+)
 
 
 def prepare_dist(dist, sources, target, rv_mode=None):
@@ -55,7 +59,6 @@ def prepare_dist(dist, sources, target, rv_mode=None):
     d : dit distribution
         A reduced distribution where the first n random variables specify
         the n sources and the last random variable specifies the target.
-
     """
     if not dist.is_joint():
         msg = "The information measure requires a joint distribution."
@@ -90,7 +93,6 @@ def marginal_constraints(dist, k, normalization=True, source_marginal=False):  #
     for all possible candidate distributions.
 
     For unique information, `k = 2` is used, but we allow more general constraints.
-
     """
     assert dist.is_dense()
     assert dist.get_base() == 'linear'
@@ -205,7 +207,6 @@ def extra_constraints(dist, k):
 
        Note, we do not require that :math:`y` be some function of the
        :math:`x_i`.
-
     """
     assert dist.is_dense()
     assert dist.get_base() == 'linear'
@@ -528,7 +529,6 @@ class MaximumConditionalEntropy(CVXOPT_Template):
 
             Our task here is return the elements corresponding to the
             free indexes of the :math:`grad(x)`.
-
             """
             # Convert back to a NumPy 1D array
             x_free = np.asarray(x_free).transpose()[0]
@@ -573,7 +573,6 @@ class MaximumConditionalEntropy(CVXOPT_Template):
     def initial_dist(self):
         """
         Find an initial point in the interior of the feasible set.
-
         """
         from cvxopt.modeling import variable
 
@@ -815,7 +814,6 @@ def k_synergy(d, sources, target, k=2, rv_mode=None, extra_constraints=True,
     mi_opt : float
         The total mutual information between the sources and the target for
         the optimized distribution.
-
     """
     x = MaximumConditionalEntropy(d, sources, target, k=k, rv_mode=rv_mode,
                                   extra_constraints=extra_constraints,
@@ -881,7 +879,6 @@ def k_informations(d, sources, target, rv_mode=None, extra_constraints=True,
         marginals (plus the source marginals). So infos[0] is how much
         you gain about I[sources:target] in moving from 1-way to 2-way
         marginals (with source) and source marginals.
-
     """
     nonkinfos = []
     x = MaximumConditionalEntropy(d, sources, target, k=1, rv_mode=rv_mode,
@@ -967,7 +964,6 @@ def unique_informations(d, sources, target, k=2, rv_mode=None,
     Notes
     -----
     The nonunique information would be `mi_orig - ui.sum()`.
-
     """
     x = MaximumConditionalEntropy(d, sources, target, k=k, rv_mode=rv_mode,
                                   extra_constraints=extra_constraints, tol=tol,

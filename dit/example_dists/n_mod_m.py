@@ -9,6 +9,11 @@ from ..npdist import Distribution
 from ..math.misc import is_integer
 
 
+__all__ = (
+    'n_mod_m',
+)
+
+
 def n_mod_m(n, m):
     """
     Constructs a generalized form of the XOR distribution, having an arbitrary

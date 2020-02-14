@@ -8,6 +8,11 @@ from ...multivariate import coinformation
 from ..pid import BaseUniquePID
 
 
+__all__ = (
+    'PID_BROJA',
+)
+
+
 class BROJAOptimizer(BaseDistOptimizer, BaseConvexOptimizer):
     """
     Optimizer for computing the max mutual information between

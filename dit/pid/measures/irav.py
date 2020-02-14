@@ -10,9 +10,10 @@ from ...multivariate import (generalized_dual_total_correlation as B,
 from ...utils import partitions, extended_partition
 from ...distconst import RVFunctions, insert_rvf
 
-__all__ = [
+
+__all__ = (
     'PID_RAV',
-]
+)
 
 
 def corex_o_information(dist):

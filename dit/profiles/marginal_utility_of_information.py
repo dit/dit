@@ -11,9 +11,9 @@ from .information_partitions import ShannonPartition
 from ..utils import flatten, powerset
 
 
-__all__ = [
+__all__ = (
     'MUIProfile',
-]
+)
 
 
 def get_lp_form(dist, ents):

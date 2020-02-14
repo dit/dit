@@ -6,11 +6,11 @@ from .base_skar_optimizers import BaseMinimalIntrinsicMutualInformation
 from ... import Distribution
 
 
-__all__ = [
+__all__ = (
     'minimal_intrinsic_total_correlation',
     'minimal_intrinsic_dual_total_correlation',
     'minimal_intrinsic_CAEKL_mutual_information',
-]
+)
 
 
 class MinimalIntrinsicTotalCorrelation(BaseMinimalIntrinsicMutualInformation):

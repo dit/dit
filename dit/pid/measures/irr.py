@@ -9,6 +9,11 @@ from ..pid import BaseBivariatePID
 from ...multivariate import coinformation, entropy
 
 
+__all__ = (
+    'PID_RR',
+)
+
+
 class PID_RR(BaseBivariatePID):
     """
     The minimum mutual information partial information decomposition.

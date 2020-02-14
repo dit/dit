@@ -7,6 +7,37 @@ from ...distconst import erasure, uniform
 from ...example_dists import jeff
 
 
+__all__ = (
+    'and_',
+    'boom',
+    'cat',
+    'diff',
+    'dup',
+    'erase',
+    'f1',
+    'gband',
+    'imperfect_rdn',
+    'jeff_2',
+    'not_two',
+    'null',
+    'prob_1',
+    'prob_2',
+    'pwu',
+    'rand',
+    'rdn',
+    'rdn_xor',
+    'reduced_or',
+    'simple',
+    'sum_',
+    'syn',
+    'uni',
+    'unq1',
+    'wb_1',
+    'wb_2',
+    'wb_3',
+)
+
+
 # three unrelated bit
 uni = uniform(['000', '001', '010', '011', '100', '101', '110', '111'])
 

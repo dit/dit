@@ -5,9 +5,11 @@ The Kullback-Leibler divergence.
 from .cross_entropy import cross_entropy
 from ..multivariate import entropy
 
-__all__ = ('kullback_leibler_divergence',
-           'relative_entropy',
-          )
+
+__all__ = (
+    'kullback_leibler_divergence',
+    'relative_entropy',
+)
 
 
 def kullback_leibler_divergence(dist1, dist2, rvs=None, crvs=None, rv_mode=None):

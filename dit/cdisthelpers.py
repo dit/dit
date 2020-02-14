@@ -4,14 +4,14 @@ Helper functions related to conditional distributions.
 
 import numpy as np
 
+import dit
 from .exceptions import ditException
 from .helpers import copypmf
 
-import dit
 
-__all__ = [
+__all__ = (
     'joint_from_factors',
-]
+)
 
 
 def cdist_array(cdists, base='linear', mode='asis'):

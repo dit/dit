@@ -12,10 +12,11 @@ from .optimization import colon
 from .. import Distribution
 
 
-__all__ = ['distributions',
-           'distribution_structures',
-           'markov_chains',
-          ]
+__all__ = (
+    'distributions',
+    'distribution_structures',
+    'markov_chains',
+)
 
 
 @composite

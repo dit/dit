@@ -6,12 +6,12 @@ from ..total_correlation import total_correlation
 from ..dual_total_correlation import dual_total_correlation
 from ..caekl_mutual_information import caekl_mutual_information
 
-__all__ = [
+__all__ = (
     'lower_intrinsic_mutual_information',
     'upper_intrinsic_total_correlation',
     'upper_intrinsic_dual_total_correlation',
     'upper_intrinsic_caekl_mutual_information',
-]
+)
 
 
 def lower_intrinsic_mutual_information_directed(dist, X, Y, Z, rv_mode=None):

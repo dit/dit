@@ -12,6 +12,12 @@ from ..dual_total_correlation import dual_total_correlation
 from ..entropy import entropy
 
 
+__all__ = (
+    'MarkovVarOptimizer',
+    'MinimizingMarkovVarOptimizer',
+)
+
+
 class MarkovVarOptimizer(BaseAuxVarOptimizer):
     """
     Abstract base class for constructing auxiliary variables which render a set

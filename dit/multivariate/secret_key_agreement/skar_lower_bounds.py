@@ -7,10 +7,10 @@ from .secrecy_capacity import secrecy_capacity
 from ...utils import unitful
 
 
-__all__ = [
+__all__ = (
     'necessary_intrinsic_mutual_information',
     'secrecy_capacity_skar',
-]
+)
 
 
 @unitful

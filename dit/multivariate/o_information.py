@@ -6,9 +6,9 @@ from .total_correlation import total_correlation
 from .dual_total_correlation import dual_total_correlation
 
 
-__all__ = [
+__all__ = (
     'o_information',
-]
+)
 
 
 def o_information(dist, rvs=None, crvs=None, rv_mode=None):

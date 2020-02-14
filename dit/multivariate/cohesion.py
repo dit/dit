@@ -11,9 +11,9 @@ from ..shannon import conditional_entropy as H
 from ..utils import unitful
 
 
-__all__ = [
+__all__ = (
     'cohesion',
-]
+)
 
 
 @unitful

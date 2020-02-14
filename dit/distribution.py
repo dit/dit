@@ -43,6 +43,11 @@ from .exceptions import ditException
 from .params import ditParams
 
 
+__all__ = (
+    'BaseDistribution',
+)
+
+
 def prepare_string(dist, digits=None, exact=False, tol=1e-9,
                    show_mask=False, str_outcomes=False):
     """

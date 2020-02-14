@@ -10,12 +10,12 @@ from ..helpers import normalize_rvs
 from ..utils import extended_partition, partitions, unitful
 
 
-__all__ = [
+__all__ = (
     'deweese_coinformation',
     'deweese_total_correlation',
     'deweese_dual_total_correlation',
     'deweese_caekl_mutual_information',
-]
+)
 
 
 def deweese_constructor(mmi):

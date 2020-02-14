@@ -16,6 +16,12 @@ from ..multivariate import entropy
 from ..utils import flatten, powerset
 
 
+__all__ = (
+    'PED_CS',
+    'h_cs',
+)
+
+
 def h_cs(d, inputs, output=None):
     """
     Compute H_cs, the average of positive pointwise co-information values

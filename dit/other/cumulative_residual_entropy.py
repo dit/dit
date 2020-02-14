@@ -10,11 +10,13 @@ import numpy as np
 from .. import Distribution as D, ScalarDistribution as SD
 from ..helpers import numerical_test
 
-__all__ = ['cumulative_residual_entropy',
-           'generalized_cumulative_residual_entropy',
-           'conditional_cumulative_residual_entropy',
-           'conditional_generalized_cumulative_residual_entropy',
-          ]
+
+__all__ = (
+    'cumulative_residual_entropy',
+    'generalized_cumulative_residual_entropy',
+    'conditional_cumulative_residual_entropy',
+    'conditional_generalized_cumulative_residual_entropy',
+)
 
 
 def _cumulative_residual_entropy(dist, generalized=False):

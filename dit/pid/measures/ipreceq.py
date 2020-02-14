@@ -11,6 +11,11 @@ from ...shannon import mutual_information
 from ..pid import BasePID
 
 
+__all__ = (
+    'PID_Preceq',
+)
+
+
 class KolchinskyOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
     """
     An optimizer to find the greatest I[Q:Y] such that p(q|y) is a garbling

@@ -10,6 +10,12 @@ from ..divergences.pmf import relative_entropy
 from ..math.sampling import sample_simplex
 
 
+__all__ = (
+    'blahut_arimoto',
+    'blahut_arimoto_ib',
+)
+
+
 ###############################################################################
 # Rate-Distortion
 

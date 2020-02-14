@@ -13,6 +13,11 @@ from ..dual_total_correlation import dual_total_correlation
 from ..entropy import entropy
 
 
+__all__ = (
+    'mss_common_information',
+)
+
+
 @unitful
 def mss_common_information(dist, rvs=None, crvs=None, rv_mode=None):
     """

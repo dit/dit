@@ -12,9 +12,11 @@ from ..distconst import mixture_distribution
 from ..shannon import entropy as H, entropy_pmf as H_pmf
 from ..utils import unitful
 
-__all__ = ('jensen_shannon_divergence',
-           'jensen_shannon_divergence_pmf',
-          )
+
+__all__ = (
+    'jensen_shannon_divergence',
+    'jensen_shannon_divergence_pmf',
+)
 
 
 def jensen_shannon_divergence_pmf(pmfs, weights=None):

@@ -11,7 +11,7 @@ import numpy as np
 from scipy.optimize import OptimizeResult
 
 
-__all__ = [
+__all__ = (
     'BasinHoppingCallBack',
     'BasinHoppingInnerCallBack',
     'Uniquifier',
@@ -19,7 +19,7 @@ __all__ = [
     'basinhop_status',
     'colon',
     'memoize_optvec',
-]
+)
 
 
 colon = slice(None, None, None)

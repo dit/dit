@@ -11,6 +11,7 @@ from itertools import tee
 
 from debtcollector import removals
 
+
 __all__ = (
     'default_opener',
     'flatten',

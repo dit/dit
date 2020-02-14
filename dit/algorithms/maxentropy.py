@@ -36,13 +36,13 @@ from .optutil import as_full_rank, CVXOPT_Template, prepare_dist, Bunch
 from ..utils import flatten
 # from ..utils import powerset
 
-__all__ = [
+__all__ = (
     # 'MarginalMaximumEntropy',
     'MomentMaximumEntropy',
     # Use version provided by maxentropyfw.py
     # 'marginal_maxent_dists',
     'moment_maxent_dists',
-]
+)
 
 
 @removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
@@ -54,7 +54,6 @@ def isolate_zeros_generic(dist, rvs):
 
     If p(marginal) = 0, then every component of the joint that contributes to
     that marginal probability must be exactly zero for all feasible solutions.
-
     """
     assert dist.is_dense()
     assert dist.get_base() == 'linear'
@@ -97,7 +96,6 @@ def isolate_zeros(dist, k):
     If :math:`p(marginal) = 0`, then every component of the joint that
     contributes to that marginal probability must be exactly zero for all
     feasible solutions.
-
     """
     assert dist.is_dense()
     assert dist.get_base() == 'linear'
@@ -224,7 +222,6 @@ def marginal_constraints(dist, m, with_normalization=True):
 
     b : array-like, (p,)
         The RHS of the linear equality constraints.
-
     """
     n_variables = dist.outcome_length()
 
@@ -250,7 +247,6 @@ def marginal_constraints(dist, m, with_normalization=True):
 def marginal_constraint_rank(dist, m):
     """
     Returns the rank of the marginal constraint matrix.
-
     """
     dist = prepare_dist(dist)
 
@@ -279,7 +275,6 @@ def moment(f, pmf, center=0, n=1):
         Calculate a centered moment.
     n : int
         The moment to calculate.
-
     """
     return ((f - center)**n * pmf).sum()
 
@@ -331,7 +326,6 @@ def moment_constraints(pmf, n_variables, m, symbol_map, with_replacement=True):
 
     b : array-like, (p,)
         The RHS of the linear equality constraints.
-
     """
     n_symbols = len(symbol_map)
     d = AbstractDenseDistribution(n_variables, n_symbols)
@@ -409,7 +403,6 @@ def moment_constraint_rank(dist, m, symbol_map=None,
 def ising_constraint_rank(dist, m, symbol_map=None, cumulative=True):
     """
     Returns the rank of the Ising constraint matrix.
-
     """
     return moment_constraint_rank(dist, m, symbol_map, cumulative,
                                   with_replacement=False)
@@ -418,7 +411,6 @@ def ising_constraint_rank(dist, m, symbol_map=None, cumulative=True):
 def negentropy(p):
     """
     Entropy which operates on vectors of length `N`.
-
     """
     negH = np.nansum(p * np.log2(p))
     return negH

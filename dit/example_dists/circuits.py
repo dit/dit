@@ -6,6 +6,18 @@ from dit import Distribution
 import dit
 
 
+__all__ = (
+    'And',
+    'ImperfectRdn',
+    'Or',
+    'Rdn',
+    'RdnXor',
+    'Subtle',
+    'Unq',
+    'Xor',
+)
+
+
 def Unq():
     """
     A distribution with unique information.

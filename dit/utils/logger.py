@@ -5,6 +5,11 @@ Setting up a logger.
 import logging
 
 
+__all__ = (
+    'basic_logger',
+)
+
+
 def basic_logger(name, level):
     """
     Returns a basic logger, with no special string formatting.

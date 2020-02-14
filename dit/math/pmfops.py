@@ -8,13 +8,14 @@ import dit
 from ..exceptions import ditException
 import numpy as np
 
-__all__ = [
+
+__all__ = (
     'convex_combination',
     'downsample',
     'jittered',
     'perturb_support',
     'replace_zeros',
-]
+)
 
 
 def perturb_support(pmf, eps=.1, shape='ball', prng=None):

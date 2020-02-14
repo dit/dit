@@ -11,6 +11,11 @@ from ...algorithms import maxent_dist
 from ...utils import flatten, powerset
 
 
+__all__ = (
+    'PID_CCS',
+)
+
+
 class PID_CCS(BasePID):
     """
     The common change in surprisal partial information decomposition, as defined by Ince.
