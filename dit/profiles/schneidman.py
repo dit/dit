@@ -28,6 +28,8 @@ class ConnectedInformations(BaseProfile):  # noqa: D101
                                        attributes='',
                                        methods='')
 
+    _name = "Connected Informations"
+
     def _compute(self):
         """
         Compute the connected information decomposition.
@@ -47,6 +49,8 @@ class ConnectedDualInformations(BaseProfile):  # noqa: D101
                                        static_attributes='',
                                        attributes='',
                                        methods='')
+
+    _name = "Connected Dual Informations"
 
     def _compute(self):
         """

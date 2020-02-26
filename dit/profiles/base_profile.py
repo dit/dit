@@ -7,6 +7,7 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 
 from .. import Distribution
+from ..utils import build_table
 
 
 __all__ = (
@@ -76,6 +77,7 @@ class BaseProfile(metaclass=ABCMeta):
     xlabel = 'scale'
     ylabel = 'information [bits]'
     align = 'center'
+    unit = 'bits'
 
     def __init__(self, dist):
         """
@@ -133,3 +135,31 @@ class BaseProfile(metaclass=ABCMeta):
         ax.set_ylim((low, high))
 
         return ax
+
+    def __repr__(self):
+        """
+        Represent using the str().
+        """
+        if ditParams['repr.print']:
+            return self.to_string()
+        else:
+            return super().__repr__()
+
+    def __str__(self):
+        """
+        Use PrettyTable to create a nice table.
+        """
+        return self.to_string()
+
+    def to_string(self, digits=3):
+        """
+        Use PrettyTable to create a nice table.
+        """
+        table = build_table(field_names=['measure', self.unit], title=self._name)
+        table.float_format[self.unit] = ' 5.{0}'.format(digits)  # pylint: disable=no-member
+        for level, value in sorted(self.profile.items(), reverse=True):
+            # gets rid of pesky -0.0 display values
+            if np.isclose(value, 0.0):
+                value = 0.0
+            table.add_row([level, value])
+        return table.get_string()

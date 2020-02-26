@@ -3,11 +3,10 @@ Helper functions related to partial information decompositions.
 """
 
 import numpy as np
-import prettytable
 
 from .pid import sort_key
 from .measures import __all_pids
-from .. import ditParams
+from ..utils import build_table
 
 
 __all__ = (
@@ -41,12 +40,7 @@ def compare_measures(dist, pids=__all_pids, inputs=None, output=None, name='', d
     """
     pids = [pid(dist.copy(), inputs, output) for pid in pids]
     names = [pid.name for pid in pids]
-    table = prettytable.PrettyTable(field_names=([name] + names))
-    if ditParams['text.font'] == 'linechar':
-        try:
-            table.set_style(prettytable.UNICODE_LINES)
-        except:
-            pass
+    table = build_table(field_names=([name] + names), title=getattr(dist, 'name', ''))
     for name in names:
         table.float_format[name] = ' {0}.{1}'.format(digits + 2, digits)
     nodes = sorted(pids[0]._lattice, key=sort_key(pids[0]._lattice))

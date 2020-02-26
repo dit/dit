@@ -2,9 +2,12 @@
 Marginal Utility of Information, as defined here: http://arxiv.org/abs/1409.4708
 """
 
+import warnings
 from itertools import product
 
 import numpy as np
+from scipy.linalg import LinAlgWarning
+from scipy.optimize import OptimizeWarning
 
 from .base_profile import BaseProfile, profile_docstring
 from .information_partitions import ShannonPartition
@@ -112,7 +115,12 @@ def max_util_of_info(c, A, b, bounds, y):
     from scipy.optimize import linprog
 
     b[-1] = y
-    solution = linprog(c, A, b, bounds=bounds)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", LinAlgWarning)
+        warnings.simplefilter("ignore", OptimizeWarning)
+        solution = linprog(c, A, b, bounds=bounds)
+
     maximum_utility_of_information = -solution.fun
     return maximum_utility_of_information
 
@@ -126,6 +134,7 @@ class MUIProfile(BaseProfile):
     xlabel = "scale [bits]"
     ylabel = "marginal utility of information"
     align = 'edge'
+    _name = "Marginal Utility of Info."
 
     def _compute(self):
         """

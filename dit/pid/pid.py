@@ -9,11 +9,9 @@ from itertools import product
 from lattices.lattices import free_distributive_lattice
 import networkx as nx
 import numpy as np
-import prettytable
 
-from .. import ditParams
 from ..multivariate import coinformation
-from ..utils import flatten, powerset
+from ..utils import build_table, flatten, powerset
 
 
 __all__ = (
@@ -269,13 +267,7 @@ class BasePID(metaclass=ABCMeta):
         red_string = self._red_string
         pi_string = self._pi_string
 
-        table = prettytable.PrettyTable([self.name, red_string, pi_string], title=getattr(self._dist, 'name', ''))
-
-        if ditParams['text.font'] == 'linechar':  # pragma: no cover
-            try:
-                table.set_style(prettytable.UNICODE_LINES)
-            except AttributeError:
-                pass
+        table = build_table([self.name, red_string, pi_string], title=getattr(self._dist, 'name', ''))
 
         table.float_format[red_string] = '{}.{}'.format(digits + 2, digits)
         table.float_format[pi_string] = '{}.{}'.format(digits + 2, digits)

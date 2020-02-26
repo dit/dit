@@ -7,13 +7,12 @@ from abc import ABCMeta, abstractmethod
 from collections import defaultdict
 
 import numpy as np
-import prettytable
 from lattices.lattices import dependency_lattice, powerset_lattice
 
-from .. import ditParams
 from ..algorithms import maxent_dist
 from ..other import extropy
 from ..shannon import entropy
+from ..utils import build_table
 
 __all__ = (
     'ShannonPartition',
@@ -146,12 +145,7 @@ class BaseInformationPartition(metaclass=ABCMeta):
         """
         Use PrettyTable to create a nice table.
         """
-        table = prettytable.PrettyTable(['measure', self.unit])  # pylint: disable=no-member
-        if ditParams['text.font'] == 'linechar':  # pragma: no cover
-            try:
-                table.set_style(prettytable.UNICODE_LINES)
-            except AttributeError:
-                pass
+        table = build_table(['measure', self.unit], title=self._name)  # pylint: disable=no-member
         ### TODO: add some logic for the format string, so things look nice
         #         with arbitrary values
         table.float_format[self.unit] = ' 5.{0}'.format(digits)  # pylint: disable=no-member
@@ -187,6 +181,7 @@ class ShannonPartition(BaseInformationPartition):
     """
 
     _measure = staticmethod(entropy)
+    _name = "Shannon Partition"
     unit = 'bits'
 
     @staticmethod
@@ -205,6 +200,7 @@ class ExtropyPartition(BaseInformationPartition):
     """
 
     _measure = staticmethod(extropy)
+    _name = "Extropy Partition"
     unit = 'exits'
 
     @staticmethod
@@ -369,12 +365,7 @@ class DependencyDecomposition(object):
         Use PrettyTable to create a nice table.
         """
         measures = list(self.measures.keys())
-        table = prettytable.PrettyTable(['dependency'] + measures)
-        if ditParams['text.font'] == 'linechar':  # pragma: no cover
-            try:
-                table.set_style(prettytable.UNICODE_LINES)
-            except AttributeError:
-                pass
+        table = build_table(field_names=['dependency'] + measures, title="Dependency Decomposition")
         ### TODO: add some logic for the format string, so things look nice
         # with arbitrary values
         for m in measures:

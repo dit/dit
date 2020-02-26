@@ -12,7 +12,7 @@ Dependencies:
    * `debtcollector <https://docs.openstack.org/debtcollector/>`_
    * `networkx <https://networkx.github.io/>`_
    * `numpy <http://www.numpy.org/>`_
-   * `prettytable <https://code.google.com/archive/p/prettytable/>`_
+   * `PLTable <https://github.com/platomav/PLTable>`_
    * `scipy <https://www.scipy.org/>`_
 
 
