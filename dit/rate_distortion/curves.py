@@ -467,6 +467,7 @@ class IBCurve(object):
             ranks.append(np.linalg.matrix_rank(q_x_t, tol=1e-4))
             alphabets.append((q_xt.sum(axis=0) > 1e-6).sum())
 
+        self.distributions = self.distributions[::-1]
         self.complexities = np.asarray(complexities)[::-1]
         self.entropies = np.asarray(entropies)[::-1]
         self.relevances = np.asarray(relevances)[::-1]
