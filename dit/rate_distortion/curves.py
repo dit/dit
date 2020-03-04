@@ -437,6 +437,7 @@ class IBCurve(object):
                    'sp': self._get_opt_sp,
                    }[method]
 
+        self.distributions = []
         complexities = []
         entropies = []
         relevances = []
@@ -452,6 +453,7 @@ class IBCurve(object):
         for beta in self.betas[::-1]:
             q_xyzt, x0 = get_opt(beta, x0)
             d = Distribution.from_ndarray(q_xyzt)
+            self.distributions.append(d)
             complexities.append(total_correlation(d, [x, t], z))
             entropies.append(entropy(d, x, z))
             relevances.append(total_correlation(d, [y, t], z))
