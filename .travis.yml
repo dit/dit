@@ -35,6 +35,7 @@ matrix:
     # pypy Wheels are not yet available.
     - python: "pypy3"
     - python: "nightly"
+    - env: OPTIONAL_DEPS=false TRAVIS_PYTHON_VERSION="pypy3"
 
 env:
   matrix:
