@@ -78,7 +78,7 @@ class InformationBottleneck(BaseAuxVarOptimizer):
         # tbound = int(np.ceil(perplexity(dist, rvs[0])))
         bound = min([bound, tbound]) if bound is not None else tbound
 
-        self._construct_auxvars([(self._x | self._z, tbound)])
+        self._construct_auxvars([(self._x | self._z, bound)])
 
         self.complexity = self._conditional_mutual_information(self._x, self._t, self._z)
         self.entropy = self._entropy(self._t, self._z)
