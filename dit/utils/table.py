@@ -1,7 +1,10 @@
 """
 """
 
-from prettytable import UNICODE_LINES, PrettyTable
+try:
+    from prettytable import UNICODE_LINES, PrettyTable
+except ImportError:
+    from pltable import UNICODE_LINES, PrettyTable
 
 from ..import ditParams
 
