@@ -9,6 +9,7 @@ from collections import defaultdict
 import numpy as np
 from lattices.lattices import dependency_lattice, powerset_lattice
 
+from .. import ditParams
 from ..algorithms import maxent_dist
 from ..other import extropy
 from ..shannon import entropy
