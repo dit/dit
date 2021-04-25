@@ -5,7 +5,7 @@
 Co-Information
 **************
 
-The co-information :cite:`Bell2003` is one generalization of the :ref:`mutual_information` to multiple variables. The co-information quantifies the amount of infomration that *all* variables participate in. It is defined via an inclusion/exclusion sum:
+The co-information :cite:`Bell2003` is one generalization of the :ref:`mutual_information` to multiple variables. The co-information quantifies the amount of information that *all* variables participate in. It is defined via an inclusion/exclusion sum:
 
 .. math::
 
