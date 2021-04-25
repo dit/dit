@@ -17,7 +17,7 @@ from types import MethodType
 from boltons.iterutils import pairwise
 
 import numpy as np
-from scipy.optimize import basinhopping, differential_evolution, minimize, shgo
+from scipy.optimize import Bounds, basinhopping, differential_evolution, minimize, shgo
 
 from .. import Distribution, insert_rvf, modify_outcomes
 from ..algorithms.channelcapacity import channel_capacity
@@ -843,12 +843,17 @@ class BaseOptimizer(metaclass=ABCMeta):
         x0 = self._optima.copy()
         count = (x0 < cutoff).sum()
         x0[x0 < cutoff] = 0
+        x0[x0 > 1 - cutoff] = 1
 
-        minimizer_kwargs = {'bounds': [(0, 0) if np.isclose(x, 0) else (0, 1) for x in x0],
-                            'tol': None,
-                            'callback': None,
-                            'constraints': self.constraints,
-                            }
+        lb = np.array([1 if np.isclose(x, 1) else 0 for x in x0])
+        ub = np.array([0 if np.isclose(x, 0) else 1 for x in x0])
+
+        minimizer_kwargs = {
+            'bounds': Bounds(lb, ub),
+            'tol': None,
+            'callback': None,
+            'constraints': self.constraints,
+        }
 
         try:  # pragma: no cover
             if callable(self._jacobian):
@@ -861,10 +866,11 @@ class BaseOptimizer(metaclass=ABCMeta):
         except AttributeError:
             pass
 
-        res = minimize(fun=self.objective,
-                       x0=x0,
-                       **minimizer_kwargs
-                       )
+        res = minimize(
+            fun=self.objective,
+            x0=x0,
+            **minimizer_kwargs
+        )
 
         if res.success:
             self._optima = res.x.copy()
@@ -1124,7 +1130,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
         """
         joint = self._pmf
 
-        channels = self._construct_channels(x)
+        channels = self._construct_channels(x.copy())
 
         for channel, slc in zip(channels, self._slices):
             joint = joint[..., np.newaxis] * channel[slc]

@@ -11,6 +11,7 @@ import networkx as nx
 import numpy as np
 
 from ..multivariate import coinformation
+from ..params import ditParams
 from ..utils import build_table, flatten, powerset
 
 
