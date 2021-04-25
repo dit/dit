@@ -1153,7 +1153,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
             in and the optimization vector.
         """
         _, _, shape, mask, _ = self._aux_vars[0]
-        channel = x.reshape(shape)
+        channel = x.copy().reshape(shape)
         channel /= channel.sum(axis=-1, keepdims=True)
         channel[np.isnan(channel)] = mask[np.isnan(channel)]
 
@@ -1178,7 +1178,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
         """
         joint = self._full_pmf
 
-        channels = self._construct_channels(x)
+        channels = self._construct_channels(x.copy())
 
         for channel, slc in zip(channels, self._full_slices):
             joint = joint[..., np.newaxis] * channel[slc]
