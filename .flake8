@@ -126,6 +126,7 @@ statistics = True
 radon-max-cc = 15
 
 docstring-convention = numpy
+docstring_style = numpy
 
 import-order-style = pycharm
 application-import-names = dit
