@@ -29,6 +29,44 @@ requires = [
 	"PLTable",
 	"scipy >= 0.15.0",
 ]
+test = [
+    "codecov",
+	"hypothesis",
+	"hypothesis[numpy]"
+    "pytest >= 4.4.0",
+    "pytest-cov",
+]
+doc = [
+    "ipython[nbconvert]",
+    "sphinx",
+]
+dev = [
+    "codecov",
+    'coverage[toml]',
+    'darglint',
+    'flake8',
+    'flake8-awesome',
+    'flake8-bandit',
+    'flake8-broken-line',
+    'flake8-bugbear',
+    'flake8-coding',
+    'flake8-commas',
+    'flake8-docstrings',
+    'flake8-import-order',
+    'flake8-rst',
+    'flake8-rst-docstrings',
+    'flake8-self',
+    'flake8-todos',
+	"hypothesis",
+	"hypothesis[numpy]"
+    "ipython[nbconvert]",
+    "nxpd",
+    "pytest >= 4.4.0",
+    "pytest-cov",
+    "pytest-xdist",
+    'radon',
+    "sphinx",
+]
 
 [tool.poetry]
 name = "dit"
