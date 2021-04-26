@@ -10,33 +10,35 @@ home-page = "http://dit.io"
 requires-python = ">=3.6"
 description-file = "README.rst"
 classifiers = [
-	"Intended Audience :: Science/Research",
-	"License :: OSI Approved :: BSD License",
-	"Programming Language :: Python :: 3.6",
-	"Programming Language :: Python :: 3.7",
-	"Programming Language :: Python :: 3.8",
-	"Programming Language :: Python :: 3.9",
-	"Topic :: Scientific/Engineering",
-	"Topic :: Scientific/Engineering :: Mathematics",
-	"Topic :: Scientific/Engineering :: Physics",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Physics",
 ]
 requires = [
-	"boltons",
-	"debtcollector",
-	"lattices >= 0.3.3",
-	"networkx",
-	"numpy >= 1.11",
-	"PLTable",
-	"scipy >= 0.15.0",
+    "boltons",
+    "debtcollector",
+    "lattices >= 0.3.3",
+    "networkx",
+    "numpy >= 1.11",
+    "PLTable",
+    "scipy >= 0.15.0",
 ]
 
 [tool.flit.metadata.requires-extra]
 test = [
     "codecov",
-	"hypothesis",
-	"hypothesis[numpy]",
+    "hypothesis >= 3.56.2",
+    "hypothesis[numpy]",
     "pytest >= 4.4.0",
     "pytest-cov",
+    "pytest-rerunfailures",
+    "pytest-xdist",
 ]
 doc = [
     "ipython[nbconvert]",
@@ -59,12 +61,13 @@ dev = [
     'flake8-rst-docstrings',
     'flake8-self',
     'flake8-todos',
-	"hypothesis",
-	"hypothesis[numpy]",
+    "hypothesis >= 3.56.2",
+    "hypothesis[numpy]",
     "ipython[nbconvert]",
     "nxpd",
     "pytest >= 4.4.0",
     "pytest-cov",
+    "pytest-rerunfailures",
     "pytest-xdist",
     'radon',
     "sphinx",
@@ -75,8 +78,8 @@ name = "dit"
 version = "1.2.3"
 description = ""
 authors = [
-	"chebee7i <admin@dit.io>",
-	"Ryan G. James <rgjames@ucdavis.edu>",
+    "chebee7i <admin@dit.io>",
+    "Ryan G. James <rgjames@ucdavis.edu>",
 ]
 
 [tool.poetry.dependencies]
