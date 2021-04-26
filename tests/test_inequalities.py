@@ -157,6 +157,7 @@ def test_data_processing_inequality_gk(dist):
 @pytest.mark.slow
 @given(dist=markov_chains(alphabets=(2,) * 3))
 @settings(max_examples=5)
+@pytest.mark.flaky(reruns=5)
 def test_data_processing_inequality_wyner(dist):
     """
     given X - Y - Z:
@@ -170,6 +171,7 @@ def test_data_processing_inequality_wyner(dist):
 @pytest.mark.slow
 @given(dist=markov_chains(alphabets=(2,) * 3))
 @settings(max_examples=5)
+@pytest.mark.flaky(reruns=5)
 def test_data_processing_inequality_exact(dist):
     """
     given X - Y - Z:

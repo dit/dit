@@ -28,6 +28,8 @@ class BaseOneWaySKAR(BaseAuxVarOptimizer):
         max_{V - U - X - YZ} objective()
     """
 
+    construct_initial = BaseAuxVarOptimizer.construct_copy_initial
+
     def __init__(self, dist, rv_x=None, rv_y=None, rv_z=None, rv_mode=None, bound_u=None, bound_v=None):
         """
         Initialize the optimizer.
