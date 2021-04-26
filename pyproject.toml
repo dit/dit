@@ -29,6 +29,8 @@ requires = [
 	"PLTable",
 	"scipy >= 0.15.0",
 ]
+
+[tool.flit.metadata.requires-extra]
 test = [
     "codecov",
 	"hypothesis",
