@@ -14,9 +14,9 @@ jobs:
         python-version: [3.6, 3.7, 3.8, 3.9]
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2.3.4
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2.2.2
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
@@ -41,7 +41,7 @@ jobs:
         pip install pytest
         pytest
     - name: Codecov
-      uses: codecov/codecov-action@v1.0.5
+      uses: codecov/codecov-action@v1.4.1
       with:
         # Repository upload token - get it from codecov.io
         token: ${{ secrets.CODECOV_TOKEN }}
