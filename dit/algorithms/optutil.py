@@ -10,7 +10,7 @@ import dit
 
 __all__ = (
     'Bunch',
-    'CVSOPT_Template',
+    'CVXOPT_Template',
     'as_full_rank',
     'op_runner',
     'prepare_dist',
