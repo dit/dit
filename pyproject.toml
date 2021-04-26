@@ -32,7 +32,7 @@ requires = [
 test = [
     "codecov",
 	"hypothesis",
-	"hypothesis[numpy]"
+	"hypothesis[numpy]",
     "pytest >= 4.4.0",
     "pytest-cov",
 ]
@@ -58,7 +58,7 @@ dev = [
     'flake8-self',
     'flake8-todos',
 	"hypothesis",
-	"hypothesis[numpy]"
+	"hypothesis[numpy]",
     "ipython[nbconvert]",
     "nxpd",
     "pytest >= 4.4.0",
