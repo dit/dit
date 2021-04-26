@@ -16,10 +16,10 @@ def test_pid_preceq1():
     """
     d = bivariates['and']
     pid = PID_Preceq(d, ((0,), (1,)), (2,))
-    assert pid[((0,), (1,))] == pytest.approx(0.31127812445913294, abs=1e-4)
-    assert pid[((0,),)] == pytest.approx(0.0, abs=1e-4)
-    assert pid[((1,),)] == pytest.approx(0.0, abs=1e-4)
-    assert pid[((0, 1),)] == pytest.approx(0.5, abs=1e-4)
+    assert pid[((0,), (1,))] == pytest.approx(0.31127812445913294, abs=1e-3)
+    assert pid[((0,),)] == pytest.approx(0.0, abs=1e-3)
+    assert pid[((1,),)] == pytest.approx(0.0, abs=1e-3)
+    assert pid[((0, 1),)] == pytest.approx(0.5, abs=1e-3)
 
 
 @pytest.mark.flaky(reruns=5)
@@ -29,10 +29,10 @@ def test_pid_preceq2():
     """
     d = bivariates['sum']
     pid = PID_Preceq(d, [[0], [1]], [2])
-    assert pid[((0,), (1,))] == pytest.approx(0.5, abs=1e-4)
-    assert pid[((0,),)] == pytest.approx(0.0, abs=1e-4)
-    assert pid[((1,),)] == pytest.approx(0.0, abs=1e-4)
-    assert pid[((0, 1),)] == pytest.approx(1.0, abs=1e-4)
+    assert pid[((0,), (1,))] == pytest.approx(0.5, abs=1e-3)
+    assert pid[((0,),)] == pytest.approx(0.0, abs=1e-3)
+    assert pid[((1,),)] == pytest.approx(0.0, abs=1e-3)
+    assert pid[((0, 1),)] == pytest.approx(1.0, abs=1e-3)
 
 
 @pytest.mark.flaky(reruns=5)

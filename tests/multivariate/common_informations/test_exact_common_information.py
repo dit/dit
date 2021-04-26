@@ -30,7 +30,7 @@ def test_eci1(rvs, crvs, val):
     """
     Test against known values.
     """
-    assert G(xor, rvs, crvs) == pytest.approx(val, abs=1e-4)
+    assert G(xor, rvs, crvs) == pytest.approx(val, abs=1e-3)
 
 
 @pytest.fixture
@@ -49,4 +49,4 @@ def test_eci2(i, x0):
     eci = ExactCommonInformation(sbec(p))
     eci.optimize(x0=x0['x0'])
     x0['x0'] = eci._optima
-    assert eci.objective(eci._optima) == pytest.approx(G_sbec(p), abs=1e-4)
+    assert eci.objective(eci._optima) == pytest.approx(G_sbec(p), abs=1e-3)
