@@ -83,7 +83,7 @@ class BaseDistOptimizer(BaseOptimizer):
         """
         super().__init__(dist, dist.rvs, crvs=[], rv_mode='indices')
 
-        # todo: actually make this class support crvs?
+        # TODO: actually make this class support crvs?
         self._all_vars = self._rvs
 
         self.dist = prepare_dist(dist)

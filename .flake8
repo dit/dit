@@ -108,13 +108,34 @@ ignore =
     C812
     B950
     B001
+    T002
+    T003
+    DAR000
+    DAR001
+    DAR002
+    DAR003
+    DAR004
+    DAR005
+    DAR101
+    DAR102
+    DAR103
+    DAR104
+    DAR105
+    DAR201
+    DAR202
+    DAR203
+    DAR301
+    DAR302
+    DAR401
+    DAR402
+    DAR501
 per-file-ignores =
     # Allow assert statements in tests:
-    test_*.py: S101
+    test_*.py: N817, S101
     # Allow * imports in __init__.py files:
     __init__.py: F401, F403
     # allow unused imports, name issues:
-    dit/abc.py: F401, N812, N814
+    dit/abc.py: F401, N812, N814, N817
     # dit/divergences/pmf.py is like an __init__.py:
     dit/divergences/pmf.py: F401
 

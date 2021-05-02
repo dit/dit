@@ -264,6 +264,7 @@ def marginal_maxent(dist, k, **kwargs):
 
     return marginal_maxent_generic(dist, rvs, **kwargs)
 
+
 @removals.remove(message="Please use the version in dit.algorithms.scipy_optmizers instead.",
                  version="1.0.0.dev8")
 def marginal_maxent_dists(dist, k_max=None, maxiters=1000, tol=1e-3, verbose=False):

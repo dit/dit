@@ -1332,7 +1332,7 @@ class ScalarDistribution(BaseDistribution):
 
     def __hash__(self):
         """
-        ToDo
+        TODO
         ----
         Create a real hash function here.
         """

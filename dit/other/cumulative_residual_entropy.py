@@ -7,7 +7,7 @@ from boltons.iterutils import pairwise
 
 import numpy as np
 
-from .. import Distribution as D, ScalarDistribution as SD
+from .. import Distribution, ScalarDistribution
 from ..helpers import numerical_test
 
 
@@ -82,7 +82,7 @@ def generalized_cumulative_residual_entropy(dist, extract=False):
     if not dist.is_joint():
         return _cumulative_residual_entropy(dist, generalized=True)
     length = dist.outcome_length()
-    margs = [SD.from_distribution(dist.marginal([i])) for i in range(length)]
+    margs = [ScalarDistribution.from_distribution(dist.marginal([i])) for i in range(length)]
     cres = np.array([_cumulative_residual_entropy(m, generalized=True) for m in margs])
     if len(cres) == 1 and extract:
         cres = cres[0]
@@ -121,7 +121,7 @@ def cumulative_residual_entropy(dist, extract=False):
     if not dist.is_joint():
         return _cumulative_residual_entropy(dist, generalized=False)
     es, ps = zip(*[(tuple(abs(ei) for ei in e), p) for e, p in dist.zipped()])
-    abs_dist = D(es, ps)
+    abs_dist = Distribution(es, ps)
     return generalized_cumulative_residual_entropy(abs_dist, extract)
 
 
@@ -176,7 +176,7 @@ def conditional_cumulative_residual_entropy(dist, rv, crvs=None, rv_mode=None):
         crvs = []
     mdist, cdists = dist.condition_on(crvs=crvs, rvs=[rv], rv_mode=rv_mode)
     cres = [cumulative_residual_entropy(cd, extract=True) for cd in cdists]
-    ccre = SD(cres, mdist.pmf)
+    ccre = ScalarDistribution(cres, mdist.pmf)
     return ccre
 
 
@@ -231,5 +231,5 @@ def conditional_generalized_cumulative_residual_entropy(dist, rv, crvs=None, rv_
         crvs = []
     mdist, cdists = dist.condition_on(crvs=crvs, rvs=[rv], rv_mode=rv_mode)
     cres = [generalized_cumulative_residual_entropy(cd, extract=True) for cd in cdists]
-    ccre = SD(cres, mdist.pmf)
+    ccre = ScalarDistribution(cres, mdist.pmf)
     return ccre

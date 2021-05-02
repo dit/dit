@@ -635,7 +635,7 @@ class BaseTwoPartIntrinsicMutualInformation(BaseAuxVarOptimizer):
             obj : float
                 The value of the objective.
 
-            Todo
+            TODO
             ----
             Save the optimal inner, so that full achieving joint can be constructed.
             """

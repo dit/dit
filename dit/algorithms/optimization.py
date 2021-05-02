@@ -1358,7 +1358,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
         return constraint
 
     ###########################################################################
-    # todo
+    # TODO: make these works
 
     def _channel_capacity(self, x):  # pragma: no cover
         """
