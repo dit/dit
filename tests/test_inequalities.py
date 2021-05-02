@@ -155,30 +155,30 @@ def test_data_processing_inequality_gk(dist):
 
 
 @pytest.mark.slow
+@pytest.mark.flaky(reruns=5)
 @given(dist=markov_chains(alphabets=(2,) * 3))
 @settings(max_examples=5)
-@pytest.mark.flaky(reruns=5)
 def test_data_processing_inequality_wyner(dist):
     """
     given X - Y - Z:
         C(X:Z) <= C(X:Y)
     """
-    c_xy = C(dist, [[0], [1]])
-    c_xz = C(dist, [[0], [2]])
+    c_xy = C(dist, [[0], [1]], niter=100)
+    c_xz = C(dist, [[0], [2]], niter=100)
     assert c_xz <= c_xy + 10 * epsilon
 
 
 @pytest.mark.slow
+@pytest.mark.flaky(reruns=5)
 @given(dist=markov_chains(alphabets=(2,) * 3))
 @settings(max_examples=5)
-@pytest.mark.flaky(reruns=5)
 def test_data_processing_inequality_exact(dist):
     """
     given X - Y - Z:
         G(X:Z) <= G(X:Y)
     """
-    g_xy = G(dist, [[0], [1]])
-    g_xz = G(dist, [[0], [2]])
+    g_xy = G(dist, [[0], [1]], niter=100)
+    g_xz = G(dist, [[0], [2]], niter=100)
     assert g_xz <= g_xy + 10 * epsilon
 
 
