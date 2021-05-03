@@ -41,7 +41,7 @@ def test_3(dist):
     """
     Test against known values.
     """
-    mimi = minimal_intrinsic_CAEKL_mutual_information(dist, [[0], [1]], [2], bounds=(3,))
+    mimi = minimal_intrinsic_CAEKL_mutual_information(dist, [[0], [1]], [2], bounds=(3,), niter=100)
     assert mimi == pytest.approx(dist.secret_rate, abs=1e-2)
 
 
