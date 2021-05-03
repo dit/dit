@@ -12,8 +12,8 @@ from dit.multivariate import (caekl_mutual_information as J,
                              )
 
 
-@pytest.mark.parametrize('d', list(all_dist_structures(2, 3)) +
-                              [random_distribution(2, 3, alpha=(0.5,) * 9) for _ in range(10)])
+@pytest.mark.parametrize('d', list(all_dist_structures(2, 3))
+                              + [random_distribution(2, 3, alpha=(0.5,) * 9) for _ in range(10)])
 def test_caekl_1(d):
     """
     Ensure that it reduces to the mutual information for bivariate
@@ -22,8 +22,8 @@ def test_caekl_1(d):
     assert I(d) == pytest.approx(J(d))
 
 
-@pytest.mark.parametrize('d', list(all_dist_structures(3, 2)) +
-                              [random_distribution(3, 2, alpha=(0.5,) * 8) for _ in range(10)])
+@pytest.mark.parametrize('d', list(all_dist_structures(3, 2))
+                              + [random_distribution(3, 2, alpha=(0.5,) * 8) for _ in range(10)])
 def test_caekl_2(d):
     """
     Ensure that it reduces to the mutual information for bivariate

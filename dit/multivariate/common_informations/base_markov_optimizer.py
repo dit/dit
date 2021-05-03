@@ -76,8 +76,8 @@ class MarkovVarOptimizer(BaseAuxVarOptimizer):
         self.__rvs, self._rvs = self._rvs, {0}
         self.__crvs, self._crvs = self._crvs, {1}
 
-        self._construct_auxvars([({0, 1}, bound)] +
-                                [({1, 2}, s) for s in rv_bounds])
+        self._construct_auxvars([({0, 1}, bound)]
+                                + [({1, 2}, s) for s in rv_bounds])
 
         # put rvs, crvs back:
         self._rvs = self.__rvs

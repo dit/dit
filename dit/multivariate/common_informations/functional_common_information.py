@@ -141,8 +141,8 @@ def functional_markov_chain(dist, rvs=None, crvs=None, rv_mode=None):
             if np.isclose(h, optimal_b):
                 break
 
-            new_parts = [frozenset([p for p in part if p not in pair] +
-                                   [pair[0] | pair[1]])
+            new_parts = [frozenset([p for p in part if p not in pair]
+                                   + [pair[0] | pair[1]])
                          for pair in combinations(part, 2)]
             new_parts = sorted((part for part in new_parts if part not in checked), key=lambda p: sorted(map(len, p)))
             queue.extendleft(new_parts)
