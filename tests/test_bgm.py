@@ -137,7 +137,7 @@ def test_bad_names1():
     x.nodes[1]['dist'] = cdist.marginal([1])
     with pytest.raises(ValueError, match="`nodes` is missing required nodes:"):
         dit.distribution_from_bayesnet(x, [0, 1])
-    with pytest.raises(ValueError, match="`set\(nodes\)` does not contain all required nodes."):
+    with pytest.raises(ValueError, match="`set\(nodes\)` does not contain all required nodes."):  # noqa: W605
         dit.distribution_from_bayesnet(x, [0, 1, 1])
     with pytest.raises(ValueError, match="`nodes` is missing required nodes:"):
         dit.distribution_from_bayesnet(x, [0, 1, 2, 3])

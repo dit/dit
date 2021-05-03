@@ -19,6 +19,7 @@ ignore =
     I002    # I don't use isort.
     IF100   # x if bool else y is good.
     RST301  # Allow directives in docstrings.
+    W503    # This rule is deprecated now.
     ; W605    # Escape sequencies not actually invalid.
 
     W191

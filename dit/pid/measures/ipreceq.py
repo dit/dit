@@ -141,7 +141,7 @@ class KolchinskyOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
 
 class PID_Preceq(BasePID):
     """
-    The I_\preceq measure defined by Kolchinsky.
+    The I_\\preceq measure defined by Kolchinsky.
     """
 
     _name = "I_≼"
@@ -150,7 +150,7 @@ class PID_Preceq(BasePID):
     def _measure(d, sources, target):
         """
         Compute I_preceq(inputs : output) =
-            \\max I[Q : output] such that p(q|y) \preceq p(xi|y)
+            \\max I[Q : output] such that p(q|y) \\preceq p(xi|y)
 
         Parameters
         ----------

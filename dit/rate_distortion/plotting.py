@@ -170,7 +170,7 @@ class RDPlotter(BasePlotter):
     A plotter for rate-distortion curves.
     """
 
-    _rate_axis = Axis(attrgetter('rates'), attrgetter('_max_rate'), "$I[X:\hat{X}]$")
+    _rate_axis = Axis(attrgetter('rates'), attrgetter('_max_rate'), r"$I[X:\hat{X}]$")
 
     _curve_type = RDCurve
 
@@ -199,7 +199,7 @@ class IBPlotter(BasePlotter):
     A plotter for information bottleneck curves.
     """
 
-    _complexity_axis = Axis(attrgetter('complexities'), attrgetter('_max_complexity'), "$I[X:\hat{X}]$")
+    _complexity_axis = Axis(attrgetter('complexities'), attrgetter('_max_complexity'), r"$I[X:\hat{X}]$")
     _entropy_axis = Axis(attrgetter('entropies'), attrgetter('_max_complexity'), r"$H[\hat{X}]$")
     _relevance_axis = Axis(attrgetter('relevances'), attrgetter('_max_relevance'), r"$I[Y:\hat{X}]$")
     _error_axis = Axis(attrgetter('errors'), attrgetter('_max_relevance'), r"$I[X:Y|\hat{X}]$")
