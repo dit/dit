@@ -74,7 +74,7 @@ def test_uniform3(a, b):
 @pytest.mark.parametrize(('a', 'b'), [(2, 0), (0, [])])
 def test_uniform4(a, b):
     """ Test uniform distribution failures """
-    with pytest.raises(ValueError, match="is not an integer or None"):
+    with pytest.raises(ValueError, match="is not an integer"):
         uniform(a, b)
 
 

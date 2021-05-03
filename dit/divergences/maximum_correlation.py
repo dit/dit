@@ -3,7 +3,7 @@ Compute the maximum correlation:
 
 .. math::
 
-    \\rho(X:Y) = \max_{f, g} E(f(X)g(Y))
+    \\rho(X:Y) = \\max_{f, g} E(f(X)g(Y))
 """
 
 import numpy as np
@@ -80,7 +80,7 @@ def maximum_correlation(dist, rvs=None, crvs=None, rv_mode=None):
 
     .. math::
 
-        \\rho^{*} = \max_{f, g} \\rho(f(X,Z), g(Y,Z) | Z)
+        \\rho^{*} = \\max_{f, g} \\rho(f(X,Z), g(Y,Z) | Z)
 
     Parameters
     ----------
