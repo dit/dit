@@ -49,7 +49,7 @@ def distributions(draw, alphabets=(2, 2, 2), nondegenerate=False):
 
     alphabets = [int(draw(integers(*alpha))) for alpha in alphabets]
 
-    pmf = draw(arrays(np.float, shape=alphabets, elements=floats(0, 1)))
+    pmf = draw(arrays(np.float64, shape=alphabets, elements=floats(0, 1)))
 
     assume(pmf.sum() > 0)
 
@@ -148,8 +148,8 @@ def markov_chains(draw, alphabets=((2, 4), (2, 4), (2, 4))):
 
     alphabets = [int(draw(integers(*alpha))) for alpha in alphabets]
 
-    px = draw(arrays(np.float, shape=alphabets[0], elements=floats(0, 1)))
-    cds = [draw(arrays(np.float, shape=(a, b), elements=floats(0, 1))) for a, b in pairwise(alphabets)]
+    px = draw(arrays(np.float64, shape=alphabets[0], elements=floats(0, 1)))
+    cds = [draw(arrays(np.float64, shape=(a, b), elements=floats(0, 1))) for a, b in pairwise(alphabets)]
 
     # assume things
     assume(px.sum() > 0)

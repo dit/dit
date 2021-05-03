@@ -38,5 +38,5 @@ def test_renyi_entropy_3(alpha):
     Test that negative orders raise ValueErrors.
     """
     d = uniform(8)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="`order` must be a non-negative real number"):
         renyi_entropy(d, alpha)

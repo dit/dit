@@ -105,7 +105,7 @@ class TestCartesianProduct(object):
         outcomes = ['00', '11']
         ss = CartesianProduct.from_outcomes(outcomes)
         assert list(ss) == ['00', '01', '10', '11']
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="is not in the sample space"):
             ss.index('22')
 
 

@@ -38,5 +38,5 @@ def test_fraction_zero():
 
 
 def test_fraction_emptyinterval():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Equal arguments"):
         approximate_fraction(0.1, 0)

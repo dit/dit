@@ -28,7 +28,7 @@ def test_bernoulli2(p):
 @pytest.mark.parametrize('p', [-1, 1.5, 'a', int, []])
 def test_bernoulli3(p):
     """ Test bernoulli distribution failures """
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="is not a valid probability."):
         bernoulli(p)
 
 
@@ -43,7 +43,7 @@ def test_binomial1(n):
 @pytest.mark.parametrize('n', [-1, 1.5, 'a', int, []])
 def test_binomial2(n):
     """ Test binomial distribution failures """
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="is not a positive integer"):
         binomial(n, 1 / 2)
 
 
@@ -59,7 +59,7 @@ def test_uniform1():
 @pytest.mark.parametrize('v', [-1, 1.5, 'a', int, []])
 def test_uniform2(v):
     """ Test uniform distribution failures """
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="is not a"):
         uniform(v)
 
 
@@ -74,7 +74,7 @@ def test_uniform3(a, b):
 @pytest.mark.parametrize(('a', 'b'), [(2, 0), (0, [])])
 def test_uniform4(a, b):
     """ Test uniform distribution failures """
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="is not an integer or None"):
         uniform(a, b)
 
 
@@ -104,5 +104,5 @@ def test_hypergeometric1():
 ])
 def test_hypergeometric2(vals):
     """ Test hypergeometric distribution failures """
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="is not a positive integer"):
         hypergeometric(*vals)

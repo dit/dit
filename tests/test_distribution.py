@@ -373,5 +373,5 @@ def test_multivariate_lookup():
     assert d['000'] == 1 / 4
     assert d['0', '0', '0'] == 1 / 4
 
-    with pytest.raises(Exception):
+    with pytest.raises(Exception):  # noqa: PT011
         d['0', '0', 'A']  # should raise exception

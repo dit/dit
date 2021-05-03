@@ -21,7 +21,7 @@ def test_cd_bad_oldcwd():
     # Test attempting to go back to a directory that no longer exists.
     name = tempfile.mkdtemp()
     with cd(name):
-        assert os.getcwd() == os.path.realpath(name)
+        assert os.path.realpath(os.getcwd()) == os.path.realpath(name)
         with cd(root):
             assert os.getcwd() == root
             os.rmdir(name)

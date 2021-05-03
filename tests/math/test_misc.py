@@ -51,13 +51,13 @@ def test_factorial1(n, expected):
 
 @pytest.mark.parametrize('n', [-1, 0.5, 1 + 2j])
 def test_factorial2(n):
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="is not a positive integer."):
         factorial(n)
 
 
 @pytest.mark.parametrize('n', ['a', int, []])
 def test_factorial3(n):
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="is not a number."):
         factorial(n)
 
 
@@ -73,5 +73,5 @@ def test_combinations1(k, c):
 
 
 def test_combinations2():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="is larger than"):
         combinations(5, 7)

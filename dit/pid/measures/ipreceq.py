@@ -1,5 +1,5 @@
 """
-Add the I_\preceq measure as defined by Kolchinsky.
+Add the I_\\preceq measure as defined by Kolchinsky.
 """
 
 import numpy as np

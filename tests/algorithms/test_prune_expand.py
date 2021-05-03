@@ -86,7 +86,7 @@ def test_expanded_samplespace_bad():
     alphabets = ['01']
     assert d.outcome_length() == 2
     # This fails because we need to specify two alphabets, not one.
-    with pytest.raises(Exception):
+    with pytest.raises(Exception, match="You need to provide 1 alphabets"):
         dit.algorithms.expanded_samplespace(d, alphabets)
 
 

@@ -28,7 +28,7 @@ def test_validate_boolean2():
 def test_validate_boolean3():
     not_valid = ['maybe', 2, 0.5]
     for value in not_valid:
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Could not convert"):
             validate_boolean(value)
 
 
@@ -44,7 +44,7 @@ def test_validate_float1():
 def test_validate_float2():
     bad = ['pants', float, []]
     for value in bad:
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="(c|C)ould not convert"):
             validate_float(value)
 
 
@@ -57,7 +57,7 @@ def test_validate_base1():
 def test_validate_base2():
     bad = ['nope', -0.5, 0, 1]
     for value in bad:
-        with pytest.raises(InvalidBase):
+        with pytest.raises(InvalidBase):  # noqa: PT011
             validate_base(value)
 
 
@@ -71,7 +71,7 @@ def test_validate_choice2():
     choices = [0, 1, 2]
     bads = ['0', '1', '2']
     for choice in bads:
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="is an invalid specification."):
             validate_choice(choice, choices)
 
 
@@ -82,5 +82,5 @@ def test_validate_text1():
 
 def test_validate_text2():
     for s in ['no', 3]:
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="is an invalid specification."):
             validate_text(s)

@@ -38,10 +38,10 @@ def test_unitsum_tuples2():
 
 
 def test_unitsum_tuples3():
-     # Violate: 1 = mx + (k-1) * mn
-     g = unitsum_tuples(3, 3, 1, 0)
-     with pytest.raises(Exception):
-         next(g)
+    # Violate: 1 = mx + (k-1) * mn
+    g = unitsum_tuples(3, 3, 1, 0)
+    with pytest.raises(Exception, match="Specified min and max will not create unitsum tuples."):
+        next(g)
 
 
 def test_slots1():

@@ -32,7 +32,7 @@ def _fuzz(data, noise):
     data : np.ndarray
         The fuzzed data.
     """
-    data = data.astype(np.float)
+    data = data.astype(np.float64)
     data += np.random.normal(0.0, noise, size=data.shape)
     return data
 

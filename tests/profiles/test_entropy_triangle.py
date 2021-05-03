@@ -27,7 +27,12 @@ def test_et_1(d, val):
     assert EntropyTriangle(d).points[0] == val
 
 
-@pytest.mark.parametrize('val', [(0, 0, 1), (0, 1, 0), (0, 2 / 3, 1 / 3), (0, 1, 0)])
+@pytest.mark.parametrize('val', [  # noqa: PT014
+    (0, 0, 1),
+    (0, 1, 0),
+    (0, 2 / 3, 1 / 3),
+    (0, 1, 0)
+])
 def test_et_2(val):
     """
     Test EntropyTriangle against known values.
@@ -49,7 +54,12 @@ def test_et2_1(d, val):
     assert EntropyTriangle2(d).points[0] == val
 
 
-@pytest.mark.parametrize('val', [(1, 0, 0), (0, 2 / 3, 1 / 3), (1 / 3, 1 / 3, 1 / 3), (0, 1 / 3, 2 / 3)])
+@pytest.mark.parametrize('val', [
+    (1, 0, 0),
+    (0, 2 / 3, 1 / 3),
+    (1 / 3, 1 / 3, 1 / 3),
+    (0, 1 / 3, 2 / 3)
+])
 def test_et2_2(val):
     """
     Test EntropyTriangle against known values.

@@ -52,7 +52,7 @@ def test_s2m3():
     """
     Test matrix construction.
     """
-    with pytest.raises(Exception):
+    with pytest.raises(Exception, match="is not a subset of frozenset"):
         sets2matrix(sa, X=['a'])
 
 
@@ -141,5 +141,5 @@ def test_atom_set5():
     """
     Test failure.
     """
-    with pytest.raises(Exception):
+    with pytest.raises(Exception, match="Input to `atom_set` must contain frozensets."):
         atom_set('pants')

@@ -48,7 +48,7 @@ def test_mixture_distribution2():
     d2 = dit.Distribution(['A', 'B'], [1, 0], sort=True, trim=True)
 
     # Fails when it checks that all pmfs have the same length.
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="All pmfs must have the same length."):
         dit.mixture_distribution2([d, d2], [0.5, 0.5])
 
 
@@ -75,7 +75,7 @@ def test_mixture_distribution4():
 
     d3 = dit.mixture_distribution([d, d2], [0.5, 0.5])
     assert np.allclose(pmf, d3.pmf)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="All pmfs must have the same length."):
         dit.mixture_distribution2([d, d2], [0.5, 0.5])
 
 
@@ -180,7 +180,7 @@ def test_simplex_grid4():
     # Test with Distribution but with wrong length specified.
     d = dit.random_distribution(2, 2)
     g = dit.simplex_grid(5, 2**2, using=d)
-    with pytest.raises(Exception):
+    with pytest.raises(Exception, match="`length` must match the length of pmf"):
         next(g)
 
 
@@ -391,7 +391,7 @@ def test_product_nonjoint():
     Test product_distribution() from a ScalarDistribution.
     """
     d = dit.ScalarDistribution([.5, .5])
-    with pytest.raises(Exception):
+    with pytest.raises(Exception, match="A joint distribution is required."):
         dit.product_distribution(d)
 
 
@@ -422,7 +422,7 @@ def test_product_with_badrvs():
     Test product_distribution() with overlapping rvs specification.
     """
     d = dit.example_dists.Xor()
-    with pytest.raises(Exception):
+    with pytest.raises(Exception, match="The elements of `rvs` have nonzero intersection."):
         dit.product_distribution(d, [[0, 1], [0]])
 
 

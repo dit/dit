@@ -66,7 +66,7 @@ def test_sa5():
     Test bad wrapping.
     """
     a = np.arange(5)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Not enough data points to segment array in 'cut' mode; try 'pad' or 'wrap'"):
         segment_axis(a, 10, 0, end='cut')
 
 
@@ -75,7 +75,7 @@ def test_sa6():
     Test exceptions.
     """
     a = np.arange(5)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="frames cannot overlap by more than 100%"):
         segment_axis(a, 2, 3, end='wrap')
 
 
@@ -84,7 +84,7 @@ def test_sa7():
     Test exceptions.
     """
     a = np.arange(5)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="overlap must be nonnegative and length must be positive"):
         segment_axis(a, 2, -1, end='wrap')
 
 
@@ -93,5 +93,5 @@ def test_sa8():
     Test exceptions.
     """
     a = np.arange(5)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="is not recognized"):
         segment_axis(a, 7, 0, end='pants')

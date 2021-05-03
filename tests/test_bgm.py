@@ -30,7 +30,7 @@ def test_distribution_from_bayesnet_nonames():
     assert d.is_approx_equal(d4)
 
     del x.nodes[1]['dist']
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Node 1 is missing its distributions."):
         dit.distribution_from_bayesnet(x)
 
 
@@ -86,7 +86,7 @@ def test_distribution_from_bayesnet_func():
     x.nodes['A']['dist'] = uniform
     x.nodes['B']['dist'] = uniform
     # Samplespace is required when functions are callable.
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="sample_space must be specified since the distributions were callable."):
         dit.distribution_from_bayesnet(x)
 
     d2 = dit.distribution_from_bayesnet(x, sample_space=sample_space)
@@ -122,7 +122,7 @@ def test_distribution_from_bayesnet_error():
     x.nodes['A']['dist'] = unif
     x.nodes['B']['dist'] = uniform
 
-    with pytest.raises(Exception):
+    with pytest.raises(Exception, match="All distributions must be callable if any are."):
         dit.distribution_from_bayesnet(x, sample_space=sample_space)
 
 
@@ -135,13 +135,13 @@ def test_bad_names1():
     x.nodes[2]['dist'] = (cdist.outcomes, dists)
     x.nodes[0]['dist'] = cdist.marginal([0])
     x.nodes[1]['dist'] = cdist.marginal([1])
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="`nodes` is missing required nodes:"):
         dit.distribution_from_bayesnet(x, [0, 1])
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="`set\(nodes\)` does not contain all required nodes."):
         dit.distribution_from_bayesnet(x, [0, 1, 1])
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="`nodes` is missing required nodes:"):
         dit.distribution_from_bayesnet(x, [0, 1, 2, 3])
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="`nodes` is missing required nodes:"):
         dit.distribution_from_bayesnet(x, [0, 1, 2, 2])
 
 
@@ -163,10 +163,10 @@ def test_bad_names2():
     x.nodes[2]['dist'] = cdist.marginal([0])
     x.nodes[0]['dist'] = cdist.marginal([0])
     x.nodes[1]['dist'] = cdist.marginal([1])
-    with pytest.raises(Exception):
+    with pytest.raises(Exception, match="Node 2 has an invalid dist specification."):
         dit.distribution_from_bayesnet(x)
 
     # If they don't have the same length, it's invalid too.
     x.nodes[2]['dist'] = (cdist.outcomes, dists[:0])
-    with pytest.raises(Exception):
+    with pytest.raises(Exception, match="Node 2 has an invalid dist specification."):
         dit.distribution_from_bayesnet(x)

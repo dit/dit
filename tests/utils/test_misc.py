@@ -71,7 +71,7 @@ def test_require_keys1():
 def test_require_keys2():
     d = {0: '', '0': '', 'pants': ''}
     required = [0, '0', 'jeans']
-    with pytest.raises(Exception):
+    with pytest.raises(Exception, match="'jeans' is required."):
         require_keys(required, d)
 
 
@@ -118,15 +118,15 @@ def test_partition_set6():
 
 class TestDigits():
     def test_bad_base(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="`base` must be an integer greater than 2"):
             digits(3, 1)
 
     def test_nonint_base(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="`base` must be an integer greater than 2"):
             digits(3, 3.2)
 
     def test_bad_alphabet(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Length of `alphabet` must equal `base`."):
             digits(3, 2, alphabet=[1, 2, 3])
 
     def test_with_alphabet(self):

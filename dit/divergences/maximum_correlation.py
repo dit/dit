@@ -1,6 +1,8 @@
 """
 Compute the maximum correlation:
+
 .. math::
+
     \rho(X:Y) = \max_{f, g} E(f(X)g(Y))
 """
 
@@ -77,6 +79,7 @@ def maximum_correlation(dist, rvs=None, crvs=None, rv_mode=None):
     Compute the (conditional) maximum or Renyi correlation between two variables:
 
     .. math::
+
         \rho^{*} = \max_{f, g} \rho(f(X,Z), g(Y,Z) | Z)
 
     Parameters
