@@ -57,7 +57,7 @@ def test_factorial2(n):
 
 @pytest.mark.parametrize('n', ['a', int, []])
 def test_factorial3(n):
-    with pytest.raises(TypeError, match="is not a number."):
+    with pytest.raises(TypeError, match="(is not a number.|unhashable type)"):
         factorial(n)
 
 
