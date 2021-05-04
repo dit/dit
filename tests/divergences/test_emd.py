@@ -2,6 +2,8 @@
 Tests for dit.divergences.earth_mover_distance.
 """
 
+Import warnings
+
 import pytest
 
 import numpy as np
@@ -47,8 +49,10 @@ def test_emd3():
     """
     d1 = Distribution(['a', 'b'], [2 / 3, 1 / 3])
     d2 = Distribution(['c', 'd'], [0, 1], trim=False)
-    emd1 = earth_movers_distance(d1, d2)
-    assert emd1 == pytest.approx(1.0)
     distances = np.asarray([[0, 1], [1, 0]])
-    emd2 = earth_movers_distance(d1, d2, distances=distances)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        emd1 = earth_movers_distance(d1, d2)
+        emd2 = earth_movers_distance(d1, d2, distances=distances)
+    assert emd1 == pytest.approx(1.0)
     assert emd2 == pytest.approx(2 / 3)
