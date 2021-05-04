@@ -2,7 +2,7 @@
 Tests for dit.divergences.earth_mover_distance.
 """
 
-Import warnings
+import warnings
 
 import pytest
 
