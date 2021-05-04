@@ -70,7 +70,7 @@ def test_minent_1():
     meo = MinEntOptimizer(d, [[0], [1], [2]])
     meo.optimize()
     dp = meo.construct_dist()
-    assert H(dp) == pytest.approx(1)
+    assert H(dp) == pytest.approx(1, abs=1e-4)
 
 
 def test_mincoinfo_1():
@@ -81,7 +81,7 @@ def test_mincoinfo_1():
     mcio = MinCoInfoOptimizer(d, [[0], [1], [2]])
     mcio.optimize()
     dp = mcio.construct_dist()
-    assert I(dp) == pytest.approx(-1)
+    assert I(dp) == pytest.approx(-1, abs=1e-4)
 
 
 @pytest.mark.skip(reason="This method if deprecated.")
