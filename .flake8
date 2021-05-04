@@ -22,8 +22,7 @@ ignore =
     RST301  # Allow directives in docstrings.
     W503    # This rule is deprecated now.
 
-    S602
-    S404
+    ; S404
     S311
     S307
     S110
