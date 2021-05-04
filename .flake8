@@ -3,6 +3,7 @@ exclude =
     docs/conf.py
     .git
     __pycache__
+    site
 
 select = A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,B9
 enable_extensions =
@@ -20,13 +21,7 @@ ignore =
     IF100   # x if bool else y is good.
     RST301  # Allow directives in docstrings.
     W503    # This rule is deprecated now.
-    ; W605    # Escape sequencies not actually invalid.
 
-    W191
-    T001
-    SF01
-    S607
-    S603
     S602
     S404
     S311
@@ -130,6 +125,7 @@ ignore =
     DAR401
     DAR402
     DAR501
+    SF01
 per-file-ignores =
     # Allow assert statements in tests:
     test_*.py: N817, S101

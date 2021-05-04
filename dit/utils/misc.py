@@ -46,7 +46,7 @@ def default_opener(filename):  # pragma: no cover
             'linux': ['xdg-open'],   # Python 3.x
             'win32': ['cmd.exe', '/c', 'start', '']}
     cmd = cmds[sys.platform] + [filename]
-    subprocess.call(cmd)
+    subprocess.call(cmd)  # noqa: S603
 
 
 def flatten(l):

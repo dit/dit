@@ -262,8 +262,8 @@ def to_pdf(a, exact=False,
         # Compile to PDF
         args = ['pdflatex', '-interaction=batchmode', latexfobj.name]
         with open(os.devnull, 'w') as fp:
-            subprocess.call(args, stdout=fp, stderr=fp)
-            subprocess.call(args, stdout=fp, stderr=fp)
+            subprocess.call(args, stdout=fp, stderr=fp)  # noqa: S603
+            subprocess.call(args, stdout=fp, stderr=fp)  # noqa: S603
 
         # Create another tempfile which will not be deleted.
         pdffobj = tempfile.NamedTemporaryFile(suffix='_pmf.pdf', delete=False)
