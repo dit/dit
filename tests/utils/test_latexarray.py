@@ -68,8 +68,8 @@ def test_to_latex_exact2():
 def test_to_pdf():
     import subprocess
     with open(os.devnull, 'w') as fp:
-        error = subprocess.call('pdflatex --help', shell=True, stdout=fp, stderr=fp)  # noqa: S607
-        error |= subprocess.call('pdfcrop --help', shell=True, stdout=fp, stderr=fp)  # noqa: S607
+        error = subprocess.call('pdflatex --help', stdout=fp, stderr=fp)  # noqa: S607
+        error |= subprocess.call('pdfcrop --help', stdout=fp, stderr=fp)  # noqa: S607
 
     x = 0.1
     # This generates a temporary file...

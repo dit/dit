@@ -278,7 +278,7 @@ def to_pdf(a, exact=False,
         # to call it with.
         cmd = r'pdfcrop --debug {} {}'.format(pdfpath, pdffobj.name)
         with open(os.devnull, 'w') as fp:
-            subprocess.call(cmd, shell=True, stdout=fp)
+            subprocess.call(cmd, stdout=fp)
 
         # Open the PDF
         if show:
