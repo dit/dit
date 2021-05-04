@@ -21,7 +21,7 @@ def test_1(dist):
     """
     Test against known values.
     """
-    mimi = minimal_intrinsic_total_correlation(dist, [[0], [1]], [2], bounds=(3,))
+    mimi = minimal_intrinsic_total_correlation(dist, [[0], [1]], [2], bounds=(3,), niter=100)
     assert mimi == pytest.approx(dist.secret_rate, abs=1e-2)
 
 
@@ -31,7 +31,7 @@ def test_2(dist):
     """
     Test against known values.
     """
-    mimi = minimal_intrinsic_dual_total_correlation(dist, [[0], [1]], [2], bounds=(3,))
+    mimi = minimal_intrinsic_dual_total_correlation(dist, [[0], [1]], [2], bounds=(3,), niter=100)
     assert mimi == pytest.approx(dist.secret_rate, abs=1e-2)
 
 
