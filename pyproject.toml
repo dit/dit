@@ -40,6 +40,17 @@ test = [
     "pytest-rerunfailures",
     "pytest-xdist",
 ]
+optional = [
+    "colorama",
+    "cython",
+    "hypothesis >= 3.56.2",
+    "hypothesis[numpy]",
+    "matplotlib",
+    "numdifftools",
+    "pint",
+    "python-ternary",
+    "scikit-learn",
+]
 doc = [
     "ipython[nbconvert]",
     "sphinx",

@@ -23,7 +23,6 @@ ignore =
     W503    # This rule is deprecated now.
     S311    # We don't need cryptographically strong random number generators.
 
-    S110
     S101
     RST902
     RST306

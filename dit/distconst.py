@@ -522,7 +522,7 @@ def uniform_distribution(outcome_length, alphabet_size, base=None):
             # for some reason numpypy.prod returns a list, and pypy can't handle
             #   multiplying a list by a numpy float.
             Z = int(Z[0])
-        except:
+        except:  # noqa: S110
             pass
     except TypeError:
         raise TypeError("alphabet_size must be an int or list of lists.")

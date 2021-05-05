@@ -34,6 +34,6 @@ def build_table(field_names=None, title=None):
     if ditParams['text.font'] == 'linechar':
         try:
             table.set_style(UNICODE_LINES)
-        except Exception:
+        except Exception:  # noqa; S110
             pass
     return table

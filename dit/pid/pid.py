@@ -468,7 +468,7 @@ class BaseIncompletePID(BasePID):
 
                     break
 
-            except:
+            except:  # noqa; S110
                 pass
 
     def _compute_single_child(self):

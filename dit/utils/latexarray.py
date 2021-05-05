@@ -99,7 +99,7 @@ def to_latex__numerical(a, decimals, tab):
             # hack to fix trailing zeros, really the numpy stuff needs to be updated.
             try:
                 elements = [element + '0' * (decimals - len(element.split('.')[1])) for element in elements]
-            except:
+            except:  # noqa; S110
                 pass
             line = [tab, ' & '.join(elements), r' \\']
             lines.append(''.join(line))
