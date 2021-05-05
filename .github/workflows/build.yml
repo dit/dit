@@ -27,7 +27,7 @@ jobs:
     - name: Install package w/ cython
       if: matrix.cython
       run: |
-        flit install --deps=develop,optional
+        flit install --deps=all
         pip install .
     - name: Install package w/o cython
       if: ${{ !matrix.cython }}
