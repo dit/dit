@@ -25,12 +25,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install flit
     - name: Install package w/ cython
-      if: matrix.options
+      if: matrix.cython
       run: |
         flit install --deps=develop,optional
         pip install .
     - name: Install package w/o cython
-      if: !matrix.optionals
+      if: !matrix.cython
       env:
         FLIT_ALLOW_INVALID: "1"
       run: |
