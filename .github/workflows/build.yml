@@ -30,7 +30,7 @@ jobs:
         flit install --deps=develop,optional
         pip install .
     - name: Install package w/o cython
-    if: !matrix.optionals
+      if: !matrix.optionals
       env:
         FLIT_ALLOW_INVALID: "1"
       run: |
