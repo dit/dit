@@ -47,7 +47,7 @@ def has_cython():
 
 
 def check_opt(name):
-    x = eval('has_{0}()'.format(name.lower()))
+    x = eval('has_{0}()'.format(name.lower()))  # noqa: S307
     msg = "%(name)s not found. %(name)s extensions will not be built."
     if not x:
         warnings.warn(msg % {'name': name})

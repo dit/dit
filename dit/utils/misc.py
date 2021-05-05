@@ -3,7 +3,7 @@ Define miscellaneous utilities.
 """
 
 import os
-import subprocess
+import subprocess  # noqa: S404
 import sys
 from collections import OrderedDict
 from collections.abc import Iterable

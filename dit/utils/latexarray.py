@@ -4,7 +4,7 @@ Functions to convert pmfs to latex arrays.
 
 import contextlib
 import os
-import subprocess
+import subprocess  # noqa: S404
 import tempfile
 
 from debtcollector import removals
@@ -278,7 +278,7 @@ def to_pdf(a, exact=False,
         # to call it with.
         cmd = r'pdfcrop --debug {} {}'.format(pdfpath, pdffobj.name)
         with open(os.devnull, 'w') as fp:
-            subprocess.call(cmd, stdout=fp)
+            subprocess.call(cmd, stdout=fp)  # noqa: S603
 
         # Open the PDF
         if show:

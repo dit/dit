@@ -66,10 +66,10 @@ def test_to_latex_exact2():
 
 @pytest.mark.xfail
 def test_to_pdf():
-    import subprocess
+    import subprocess  # noqa: S404
     with open(os.devnull, 'w') as fp:
-        error = subprocess.call('pdflatex --help', stdout=fp, stderr=fp)  # noqa: S607
-        error |= subprocess.call('pdfcrop --help', stdout=fp, stderr=fp)  # noqa: S607
+        error = subprocess.call('pdflatex --help', stdout=fp, stderr=fp)  # noqa: S603, S607
+        error |= subprocess.call('pdfcrop --help', stdout=fp, stderr=fp)  # noqa: S603, S607
 
     x = 0.1
     # This generates a temporary file...
