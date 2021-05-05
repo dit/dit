@@ -26,6 +26,8 @@ jobs:
         pip install flit
     - name: Install package w/ cython
       if: matrix.cython
+      env:
+        FLIT_ALLOW_INVALID: "1"
       run: |
         flit install --deps=all
         pip install .
