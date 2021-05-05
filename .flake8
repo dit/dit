@@ -21,10 +21,8 @@ ignore =
     IF100   # x if bool else y is good.
     RST301  # Allow directives in docstrings.
     W503    # This rule is deprecated now.
+    S311    # We don't need cryptographically strong random number generators.
 
-    ; S404
-    S311
-    S307
     S110
     S101
     RST902
