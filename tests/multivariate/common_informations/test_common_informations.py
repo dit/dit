@@ -31,8 +31,8 @@ def test_cis1(dist):
     k = K(dist)
     j = J(dist)
     b = B(dist)
-    c = C(dist)
-    g = G(dist)
+    c = C(dist, niter=100)
+    g = G(dist, niter=100)
     f = F(dist)
     m = M(dist)
     assert k <= j + epsilon
@@ -54,8 +54,8 @@ def test_cis2(dist):
     k = K(dist)
     j = J(dist)
     b = B(dist)
-    c = C(dist)
-    g = G(dist)
+    c = C(dist, niter=100)
+    g = G(dist, niter=100)
     f = F(dist)
     m = M(dist)
     assert k <= j + epsilon
