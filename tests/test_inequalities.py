@@ -70,7 +70,7 @@ def test_fanos_inequality(dist):
     assert ce <= hb + P_e * np.log2(X - 1) + epsilon
 
 
-@given(dist=distributions(alphabets=(4, 4, 4, 4)))
+@given(dist=distributions(alphabets=((2, 4),) * 4))
 def test_entropy_subadditivity(dist):
     """
     H(X1, ...) <= sum(H(X_i))
