@@ -189,21 +189,21 @@ class BasePID(metaclass=ABCMeta):
         """
         return not (self == other)
 
-    def __getitem__(self, key):
+    def __getitem__(self, node):
         """
-        Get the partial information value associated with `key`.
+        Get the partial information value associated with `node`.
 
         Parameters
         ----------
-        key : iterable of iterables
+        node : iterable of iterables
             The node to get the partial information of.
 
         Returns
         -------
         pi : float
-            The partial information associated with `key`.
+            The partial information associated with `node`.
         """
-        return float(self._pis[key])
+        return self.get_pi(node)
 
     def __repr__(self):  # pragma: no cover
         """
@@ -232,24 +232,54 @@ class BasePID(metaclass=ABCMeta):
 
     def _compute(self):
         """
-        Use the redundancy measure to populate the lattice.
+        Method for precomputing elements of partial information lattice,
+        if this is necessary.
         """
-        for node in self._lattice:
-            if node not in self._reds:  # pragma: no branch
-                self._reds[node] = self._measure(self._dist, node, self._output, **self._kwargs)
+        pass
 
-        self._compute_mobius_inversion()
+    def get_red(self, node):
+        """
+        Get the redundancy value associated with `node`.
 
-    def _compute_mobius_inversion(self):
+        Parameters
+        ----------
+        node : iterable of iterables
+            The node to get the partial information of.
+
+        Returns
+        -------
+        pi : float
+            The partial information associated with `node`.
         """
-        Perform as much of a Mobius inversion as possible.
+        if node not in self._reds:
+            if node not in self._lattice: 
+                raise Exception('Cannot get redundancy associated with node "%s" because it is in the lattice'
+                                % str(node) )
+            self._reds[node] = float(self._measure(self._dist, node, self._output, **self._kwargs))
+
+        return self._reds[node]
+
+    def get_pi(self, node):
         """
-        for node in reversed(list(self._lattice)):
-            if node not in self._pis:
-                try:
-                    self._pis[node] = self._reds[node] - sum(self._pis[n] for n in self._lattice.descendants(node))
-                except KeyError:
-                    pass
+        Get the partial information value associated with `node`.
+
+        Parameters
+        ----------
+        node : iterable of iterables
+            The node to get the partial information of.
+
+        Returns
+        -------
+        pi : float
+            The partial information associated with `node`.
+        """
+        if node not in self._pis:
+            if node not in self._lattice:
+                raise Exception('Cannot get partial information associated with node "%s" because it is in the lattice'
+                                % str(node) )
+            self._pis[node] = float(self.get_red(node) - sum(self.get_pi(n) for n in self._lattice.descendants(node)))
+
+        return self._pis[node]
 
     def to_string(self, digits=4):
         """
@@ -275,8 +305,8 @@ class BasePID(metaclass=ABCMeta):
 
         for node in sorted(self._lattice, key=sort_key(self._lattice)):
             node_label = ''.join('{{{}}}'.format(':'.join(map(str, n))) for n in node)
-            red_value = self._reds[node]
-            pi_value = self._pis[node]
+            red_value = self.get_red(node)
+            pi_value = self.get_pi(node)
             if np.isclose(0, red_value, atol=10 ** -(digits - 1), rtol=10 ** -(digits - 1)):  # pragma: no cover
                 red_value = 0.0
             if np.isclose(0, pi_value, atol=10 ** -(digits - 1), rtol=10 ** -(digits - 1)):  # pragma: no cover
@@ -356,6 +386,7 @@ class BasePID(metaclass=ABCMeta):
 class BaseIncompletePID(BasePID):
     """
     A special PID class for measures which do not compute the redundancy of an arbitrary antichain.
+    Here we use various techniques to extend computed redundancy values to the rest of the lattice.
 
     Properties
     ----------
@@ -382,8 +413,19 @@ class BaseIncompletePID(BasePID):
             If `self` and `other` are the same partial information decomposition.
         """
         equal_pi = super().__eq__(other)
-        equal_red = (np.isclose(self._reds[node], other._reds[node], atol=1e-5, rtol=1e-5) for node in self._lattice)
+        equal_red = (np.isclose(self.get_red(node), other.get_red(node), atol=1e-5, rtol=1e-5) for node in self._lattice)
         return equal_pi and all(equal_red)
+
+    def _compute_mobius_inversion(self):
+        """
+        Perform as much of a Mobius inversion as possible.
+        """
+        for node in reversed(list(self._lattice)):
+            if node not in self._pis:
+                try:
+                    self._pis[node] = self._reds[node] - sum(self._pis[n] for n in self._lattice.descendants(node))
+                except KeyError:
+                    pass        
 
     def _compute_lattice_monotonicity(self):
         """
@@ -486,6 +528,7 @@ class BaseIncompletePID(BasePID):
 
     def _compute(self):
         """
+        Precompute the lattice of partial information values.
         Use a variety of methods to fill out as much of the lattice as possible.
         """
         # set redundancies of single input sets to I(input, output) and
