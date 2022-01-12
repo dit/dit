@@ -5,6 +5,9 @@ distribution.
 
 from abc import ABCMeta, abstractmethod
 from collections import defaultdict
+from functools import lru_cache
+
+from boltons.iterutils import pairwise_iter
 
 import numpy as np
 from lattices.lattices import dependency_lattice, powerset_lattice
@@ -225,7 +228,7 @@ class DependencyDecomposition(object):
     distribution.
     """
 
-    def __init__(self, dist, rvs=None, measures={'H': entropy}, maxiter=None):  # noqa: B006
+    def __init__(self, dist, rvs=None, measures={'H': entropy}, cover=True, maxiter=None):  # noqa: B006
         """
         Construct a Krippendorff-type partition of the information contained in
         `dist`.
@@ -236,12 +239,15 @@ class DependencyDecomposition(object):
             The distribution to partition.
         rvs : iterable
         measures : dict
+        cover : bool
         maxiter : int
         """
         self.dist = dist
         self.rvs = sum(dist.rvs, []) if rvs is None else rvs
         self.measures = measures
+        self.cover = cover
         self._partition(maxiter=maxiter)
+        self._measure_of_interest = self.atoms
 
     @staticmethod
     def _stringify(dependency):
@@ -270,7 +276,7 @@ class DependencyDecomposition(object):
         else:
             rvs = self.rvs
 
-        self._lattice = dependency_lattice(rvs)
+        self._lattice = dependency_lattice(rvs, cover=self.cover)
         dists = {}
 
         # Entropies
@@ -340,6 +346,7 @@ class DependencyDecomposition(object):
             if constraint <= u - v:
                 yield (u, v)
 
+    @lru_cache(maxsize=None)
     def delta(self, edge, measure):
         """
         Return the difference in `measure` along `edge`.
@@ -366,12 +373,12 @@ class DependencyDecomposition(object):
         Use PrettyTable to create a nice table.
         """
         measures = list(self.measures.keys())
-        table = build_table(field_names=['dependency'] + measures, title="Dependency Decomposition")
+        table = build_table(field_names=['dependency'] + measures, title=re.sub(r'(?<!^)(?=[A-Z])', ' ', self.__class__.__name__))
         ### TODO: add some logic for the format string, so things look nice
         # with arbitrary values
         for m in measures:
             table.float_format[m] = ' {}.{}'.format(digits + 2, digits)
-        items = [(tuplefy(row[0]), row[1]) for row in self.atoms.items()]
+        items = [(tuplefy(row[0]), row[1]) for row in self._measure_of_interest.items() if row[0]]
         items = sorted(items, key=lambda row: row[0])
         items = sorted(items, key=lambda row: sorted((len(d) for d in row[0]), reverse=True), reverse=True)
         for dependency, values in items:
@@ -398,3 +405,26 @@ class DependencyDecomposition(object):
             f = lambda d: d
 
         return set(map(f, self.atoms.keys()))
+
+
+class ShapleyDecomposition(DependencyDecomposition):
+    """
+    """
+    def __init__(self, dist, rvs=None, measures={'H': entropy}, cover=False, maxiter=None, agg_func=np.mean):
+        """
+        """
+        super().__init__(dist, rvs=rvs, measures=measures, cover=cover, maxiter=maxiter)
+        self._func = agg_func
+        self._shapley_values()
+        self._measure_of_interest = self._shapleys
+
+    def _shapley_values(self):
+        """
+        """
+        info_diffs = defaultdict(lambda: defaultdict(list))
+        for chain in self._lattice.chains():
+            for a, b in pairwise_iter(chain):
+                dep = b - a
+                for measure in self.measures:
+                    info_diffs[dep][measure].append(self.delta((b, a), measure))
+        self._shapleys = {atom: {measure: self._func(v) for measure, v in d.items()} for atom, d in info_diffs.items()}
