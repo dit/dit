@@ -1,142 +1,38 @@
 """
-Add the I_\\preceq measure as defined by Kolchinsky.
+Add the I_\\preceq measure as defined in 
+
+A Kolchinsky, A novel approach to multivariate redundancy and synergy
+https://arxiv.org/abs/1908.08642
+
+Given a joint distribution p_{Y,X_1,X_2}, this redundancy measure is 
+given by the solution to the following optimization problem:
+
+R = min_{s_{Q|Y}} I_s(Y;Q) 
+             s.t. s_{Q|Y} ⪯ p_{X_i|Y} ∀i
+
+This can in turn be re-written as:
+ R = min_{s_{Q|Y},s_{Q|X_1}, .., s_{Q|X_n}} I_s(Y;Q)
+     s.t. ∀i,q,y : Σ_{x_i} s(q|x_i) p(x_i,y) = s(q|y)p(y)
+
+Note that this is optimization problem involes a maximization of 
+a convex function subject to a system of linear constraints.  This 
+system of linear constraints defines a convex polytope, and the maximum 
+of the function will lie at one of the vertices of the polytope.  We 
+proceed by finding these vertices, iterating over them, and finding 
+the vertex with the largest value of I(Y;Q).
 """
 
 import numpy as np
 
-from ...algorithms.optimization import (BaseAuxVarOptimizer,
-                                        BaseConvexOptimizer,
-                                        OptimizationException)
-from ...shannon import mutual_information
+from ...algorithms.convex_maximization import maximize_convex_function
 from ..pid import BasePID
+from ...shannon import mutual_information, entropy
 
 
 __all__ = (
     'PID_Preceq',
 )
 
-
-class KolchinskyOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
-    """
-    An optimizer to find the greatest I[Q:Y] such that p(q|y) is a garbling
-    of each p(xi|y).
-    """
-
-    def __init__(self, dist, sources, target, bound=None, rv_mode=None):
-        """
-        Initialize the optimizer.
-
-        Parameters
-        ----------
-        dist : Distribution
-            The distribution to compute the i_preceq of.
-        sources : list, None
-            A list of lists. Each inner list specifies the indexes of the random
-            variables used to calculate the intrinsic mutual information. If None,
-            then it is calculated over all random variables, which is equivalent
-            to passing `rvs=dist.rvs`.
-        target : list
-            A single list of indexes specifying the random variables to
-            treat as the target.
-        bound : int, None
-            Specifies a bound on the size of the auxiliary random variable. If None,
-            then the theoretical bound is used.
-        rv_mode : str, None
-            Specifies how to interpret `rvs` and `crvs`. Valid options are:
-            {'indices', 'names'}. If equal to 'indices', then the elements of
-            `crvs` and `rvs` are interpreted as random variable indices. If
-            equal to 'names', the the elements are interpreted as random
-            variable names. If `None`, then the value of `dist._rv_mode` is
-            consulted, which defaults to 'indices'.
-        """
-        super().__init__(dist, sources, target, rv_mode=rv_mode)
-
-        q_size = sum(self._shape[:-1]) - len(sources) + 1
-        bound = min([bound, q_size]) if bound is not None else q_size
-
-        auxvars = [(self._crvs, bound)]
-        for rv in sorted(self._rvs):
-            auxvars.append(({rv}, bound))
-        self._construct_auxvars(auxvars)
-
-        self.constraints += [{'type': 'eq',
-                              'fun': self.constraint_garbling,
-                              },
-                             ]
-
-    def constraint_garbling(self, x):
-        """
-        Constrane p(q | y) to be a garbling of each p(xi | y).
-
-        Parameters
-        ----------
-        x : np.ndarray
-            An optimization vector.
-
-        Returns
-        -------
-        delta : float >= 0
-            The deviation from Blackwell ordering.
-        """
-        rvs = sorted(self._rvs)
-        arvs = sorted(self._arvs)
-
-        joint = self.construct_joint(x)
-
-        p_q_y = joint.sum(axis=tuple(rvs + arvs[1:])).T
-        p_q_g_y = p_q_y / p_q_y.sum(axis=0, keepdims=True)
-        p_q_g_y /= p_q_g_y.sum(axis=0, keepdims=True)
-
-        delta = 0
-
-        for i in range(len(rvs)):
-            other_rvs = rvs[:i] + rvs[i + 1:]
-            other_arvs = arvs[:i + 1] + arvs[i + 2:]
-
-            p_q_xi = joint.sum(axis=tuple(other_rvs + other_arvs + list(self._crvs))).T
-            p_q_g_xi = p_q_xi / p_q_xi.sum(axis=0, keepdims=True)
-            p_q_g_xi /= p_q_g_xi.sum(axis=0, keepdims=True)
-
-            p_xi_y = joint.sum(axis=tuple(other_rvs + arvs))
-            p_xi_g_y = p_xi_y / p_xi_y.sum(axis=0, keepdims=True)
-            p_xi_g_y /= p_xi_g_y.sum(axis=0, keepdims=True)
-
-            s_q_g_y = (p_q_g_xi[:, :, np.newaxis] * p_xi_g_y[np.newaxis, :, :]).sum(axis=1)
-
-            delta += abs(s_q_g_y - p_q_g_y).sum()**2
-
-        return delta
-
-    def _objective(self):
-        """
-        The mutual information between the target and the auxiliary variable.
-
-        Returns
-        -------
-        obj : func
-            The objective function.
-        """
-        q = {sorted(self._arvs)[0]}
-        mi = self._mutual_information(q, self._crvs)
-
-        def objective(self, x):
-            """
-            Compute I[Q : Y]
-
-            Parameters
-            ----------
-            x : np.ndarray
-                An optimization vector.
-
-            Returns
-            -------
-            obj : float
-                The value of the objective.
-            """
-            pmf = self.construct_joint(x)
-            return -mi(pmf)
-
-        return objective
 
 
 class PID_Preceq(BasePID):
@@ -147,10 +43,11 @@ class PID_Preceq(BasePID):
     _name = "I_≼"
 
     @staticmethod
-    def _measure(d, sources, target):
+    def get_solution_information(d, sources, target, eps=1e-8):
         """
         Compute I_preceq(inputs : output) =
-            \\max I[Q : output] such that p(q|y) \\preceq p(xi|y)
+            \\max I[Q : output] such that Q \\preceq X_i
+        and return information about value and optimal Q
 
         Parameters
         ----------
@@ -160,23 +57,158 @@ class PID_Preceq(BasePID):
             The source variables.
         target : iterable
             The target variable.
+        eps : float
+            Rounding error. We must round our conditional probability distributions
+            to rationals (the library ppl requires rationals)
 
-        Returns
+        Returns 
         -------
         ipreceq : float
             The value of I_preceq.
+        sol : dict
+            Dictionary containing solution information
+
+        Returns
+        -------
+        """
+        pjoint      = d.coalesce(list(sources) + [target,])
+        target_rvndx = len(pjoint.rvs) - 1
+        pY           = pjoint.marginal([target_rvndx,], rv_mode='indices')
+        probs_y      = np.array([pY[y] for y in pjoint.alphabet[target_rvndx]])
+        n_y          = len(pY)
+        
+        if n_y <= 1:
+            # Trivial case where target has a single outcome, redundancy has to be 0
+            return 0, {}
+        
+        # variablesQgiven holds ppl variables that represent conditional probability
+        # values of s(Q=q|X_i=x_i) for different sources i, as well as s(Q=q|Y=y)
+        # for the target Y (recall that Q is our redundancy random variable)
+        variablesQgiven = {} 
+
+        var_ix        = 0  # counter for tracking how many variables we've created
+        
+
+        # Calculate the maximum number of outcomes we will require for Q
+        n_q = sum([len(alphabet)-1 for rvndx, alphabet in enumerate(pjoint.alphabet)
+                                 if rvndx != target_rvndx]) + 1
+                                 
+        # Iterate over all the random variables (R.V.s): i.e., all the sources + the target 
+        for rvndx, rv in enumerate(pjoint.rvs):
+            variablesQgiven[rvndx] = {}
+
+            mP = pjoint.marginal([rvndx,]) # the marginal distribution over the current R.V.
+            if len(mP._outcomes_index) != len(pjoint.alphabet[rvndx]):
+                raise Exception('All marginals should have full support ' +
+                                '(to proceed, drop outcomes with 0 probability)')
+
+            # Iterate over outcomes of current R.V.
+            for v_ix, v in enumerate(pjoint.alphabet[rvndx]):
+                sum_to_one = 0 
+                for q in range(n_q):
+                    # represents s(Q=q|X_rvndx=v) if rvndx != target_rvndx
+                    #        and s(Q=q|Y=v)       if rvndx == target_rvndx
+                    variablesQgiven[rvndx][(q, v_ix)] = var_ix 
+                    var_ix += 1
+        
+        num_vars = var_ix 
+
+        A_eq  , b_eq   = [], []  # linear constraints Ax =b
+        A_ineq, b_ineq = [], []  # linear constraints Ax<=b
+
+        for rvndx, rv in enumerate(pjoint.rvs):
+            for v_ix, v in enumerate(pjoint.alphabet[rvndx]):
+                sum_to_one = np.zeros(num_vars, dtype='int')
+                for q in range(n_q):
+                    var_ix = variablesQgiven[rvndx][(q, v_ix)]
+
+                    # Non-negative constraint on each variable
+                    z = np.zeros(num_vars)
+                    z[var_ix] = -1
+                    A_ineq.append(z) 
+                    b_ineq.append(0)
+
+                    sum_to_one[var_ix] = 1
+
+                if rvndx != target_rvndx:
+                    # Linear constraint that enforces Σ_q s(Q=q|X_rvndx=v) = 1
+                    A_eq.append(sum_to_one)
+                    b_eq.append(1)
+
+        # Now we add the constraint:
+        #    ∀i,q,y : Σ_{x_i} s(q|x_i) p(x_i,y) = s(q|y)p(y)
+        for rvndx, rv in enumerate(pjoint.rvs):
+            if rvndx == target_rvndx:
+                continue
+
+            # Compute joint marginal of target Y and source X_rvndx
+            pYSource = pjoint.marginal([rvndx,target_rvndx,], rv_mode='indices')
+            for q in range(n_q):
+                for y_ix, y in enumerate(pjoint.alphabet[target_rvndx]):
+                    z = np.zeros(num_vars, dtype='int')
+                    cur_mult   = 0.  # multiplier to make everything rational, and make rounded values add up to 1
+                    for x_ix, x in enumerate(pjoint.alphabet[rvndx]):
+                        # We divide by eps and round, and then multiply by cur_mult,
+                        # to make everything rational
+                        pXY        = int( pYSource[pYSource._outcome_ctor((x,y))] / eps )
+                        cur_mult   += pXY
+                        z[variablesQgiven[rvndx][(q, x_ix)]] = pXY 
+                    z[variablesQgiven[target_rvndx][(q, y_ix)]] = -cur_mult
+                    A_eq.append(z)
+                    b_eq.append(0)
+
+        # Define a matrix sol_mx that allows for fast mapping from solution vector 
+        # returned by ppl (i.e., a particular extreme point of our polytope) to a 
+        # joint distribution over Q and Y
+        mul_mx = np.zeros((num_vars, n_q*n_y))
+        for (q,y_ix), k in variablesQgiven[target_rvndx].items():
+            mul_mx[k, q*n_y + y_ix] += probs_y[y_ix]
+
+        def entr(x):
+            x = x + 1e-18
+            return -x*np.log2(x)
+
+        H_Y = entr(probs_y).sum()            
+
+        def objective(x):  # efficient calculation of mutual information
+            # Map solution vector x to joint distribution over Q and Y
+            pQY     = x.dot(mul_mx).reshape((n_q,n_y))
+            probs_q = pQY.sum(axis=1) + 1e-18
+            H_YgQ   = entr(pQY/probs_q[:,None]).sum(axis=1).dot(probs_q)
+            return H_Y-H_YgQ
+
+        # The following uses ppl to turn our system of linear inequalities into a 
+        # set of extreme points of the corresponding polytope. It then calls 
+        # get_solution_val on each extreme point
+        x_opt, v_opt = maximize_convex_function(
+            f=objective,
+            A_eq=np.array(A_eq, dtype='int'), 
+            b_eq=np.array(b_eq, dtype='int'), 
+            A_ineq=np.array(A_ineq, dtype='int'), 
+            b_ineq=np.array(b_ineq, dtype='int'))
+
+        # Return mutual information I(Q;Y) and solution information
+        sol = {}
+        sol['p(Q,Y)'] = x_opt.dot(mul_mx).reshape((n_q,n_y))
+
+        # Compute conditional distributions of Q given each source X_i
+        for rvndx in range(len(pjoint.rvs)-1):
+            pX = pjoint.marginal([rvndx,])
+            cK = 'p(Q|X%d)'%rvndx
+            sol[cK] = np.zeros( (n_q, len(pX.alphabet[0]) ) )
+            for (q,v_ix), k in variablesQgiven[rvndx].items():
+                sol[cK][q,v_ix] = x_opt[k]
+
+        return v_opt, sol
+
+    @classmethod
+    def _measure(cls, d, sources, target, eps=1e-8):
+        """
+        See information for get_solution_information method. 
         """
         if len(sources) == 1:
             return mutual_information(d, sources[0], target)
-        md = d.coalesce(sources)
-        upper_bound = sum(len(a) for a in md.alphabet) - md.outcome_length() + 1
-        for bound in [None] + list(range(upper_bound, md.outcome_length(), -1)):
-            try:
-                ko = KolchinskyOptimizer(d, sources, target, bound=bound)
-                ko.optimize(polish=1e-8)
-                break
-            except OptimizationException:
-                continue
-        q = len(sources) + 1
-        od = ko.construct_distribution().marginal(range(q + 1))
-        return mutual_information(od, target, [q])
+        v_opt, sol = cls.get_solution_information(d, sources, target, eps=eps)
+        return v_opt
+
+

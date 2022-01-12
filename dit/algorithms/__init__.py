@@ -4,6 +4,7 @@ distributions.
 """
 
 from .channelcapacity import channel_capacity, channel_capacity_joint
+from .convex_maximization import *
 from .lattice import insert_join, insert_meet
 from .maxentropy import *
 from .maxentropyfw import *
