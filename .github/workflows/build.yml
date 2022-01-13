@@ -33,7 +33,10 @@ jobs:
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip
-          mamba install cython flit numpy numdifftools pplpy scikit-learn scipy
+          mamba install cython flit numpy numdifftools scikit-learn scipy
+      - name: Install pplpy dependency
+        if: ${{ matrix.os != 'windows-latest' }}
+        run: mamba install pplpy
       - name: Install package
         env:
           FLIT_ALLOW_INVALID: "1"
