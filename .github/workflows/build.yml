@@ -30,11 +30,6 @@ jobs:
           conda info -s
       - name: Conda list
         run: conda list
-      - name: Where am I?
-        run: |
-          pwd
-          echo $PATH
-          ls -al
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip
