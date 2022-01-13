@@ -12,7 +12,6 @@ jobs:
       matrix:
         os: [ubuntu-latest, macOS-latest, windows-latest]
         python-version: [3.6, 3.7, 3.8, 3.9, 3.10]
-        cython: [true, false]
 
     steps:
       - uses: conda-incubator/setup-miniconda@v2
@@ -29,21 +28,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install flit
           conda install numpy scipy cython numdifftools pplpy
-      - name: Install package w/ cython
-        if: matrix.cython
+      - name: Install package
         env:
           FLIT_ALLOW_INVALID: "1"
         run: |
           flit install --deps=all
           pip install . --force-reinstall
-      - name: Install package w/o cython
-        if: ${{ !matrix.cython }}
-        env:
-          FLIT_ALLOW_INVALID: "1"
-        run: |
-          flit install --deps=develop
       - name: Lint with flake8
-        if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == 3.6 && matrix.cython }}
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == 3.6 }}
         run: |
           pip install flake8
           # stop the build if there are Python syntax errors or undefined names:
