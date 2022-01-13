@@ -116,9 +116,9 @@ def sibson_mutual_information_pmf(p_xy, order):
     if order == 1:
         I_a = p_xy * np.log(p_xy / (p_x * p_y))
     elif order == np.inf:
-        H_a = -np.log2(pmf.max())
+        H_a = -np.log2(p_xy.max())
     else:
-        H_a = 1 / (1 - order) * np.log2((pmf**order).sum())
+        H_a = 1 / (1 - order) * np.log2((p_xy**order).sum())
 
     return H_a
 
