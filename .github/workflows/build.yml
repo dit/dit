@@ -55,7 +55,7 @@ jobs:
           mamba install pytest
           conda run pytest
       - name: Codecov
-        uses: codecov/codecov-action@v1.4.1
+        uses: codecov/codecov-action@v2
         with:
           # Repository upload token - get it from codecov.io
           token: ${{ secrets.CODECOV_TOKEN }}
