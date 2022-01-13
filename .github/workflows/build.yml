@@ -25,6 +25,8 @@ jobs:
         run: conda info
       - name: Conda list
         run: conda list
+      - name: Where am I?
+        run: pwd
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip
