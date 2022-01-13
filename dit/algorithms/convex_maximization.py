@@ -2,10 +2,10 @@
 Code for maximizing a convex function over a polytope, as defined
 by a set of linear equalities and inequalities.
 
-This uses the fact that the maximum of a convex function over a 
+This uses the fact that the maximum of a convex function over a
 polytope will be achieved at one of the extreme points of the polytope.
 
-Thus, the maximization is done by taking a system of linear inequalities, 
+Thus, the maximization is done by taking a system of linear inequalities,
 using the Parma Polyhedral Library (pplpy) to create a list of extreme
 points, and then evaluating the objective function on each point.
 """
@@ -21,25 +21,25 @@ __all__ = (
 def polytope_extremepoint_iterator(A_ineq, b_ineq, A_eq=None, b_eq=None):
     """
     Iterator over extreme points of polytope defined by linear equalities
-    and inequalities, A_ineq x <= b_ineq, A_eq x = b_eq. 
+    and inequalities, A_ineq x <= b_ineq, A_eq x = b_eq.
 
     This uses the Parma Polyhedral Library (PPL). Because PPL expects all
-    data to be rational, we enforce that inequalities and equalities are 
+    data to be rational, we enforce that inequalities and equalities are
     specified by integer-valued matrices.
 
     Parameters
     ----------
     A_ineq : np.array
-        Inequalities matrix. Data type should be int, 
+        Inequalities matrix. Data type should be int,
         shape should be (num_inequalities x num_variables)
     b_ineq : np.array
-        Inequalities values. Data type should be int, 
+        Inequalities values. Data type should be int,
         shape should be (num_inequalities)
     A_eq : np.array
-        Equalities matrix. Data type should be int, 
+        Equalities matrix. Data type should be int,
         shape should be (num_equalities x num_variables)
     b_eq : np.array
-        Equalities values. Data type should be int, 
+        Equalities values. Data type should be int,
         shape should be (num_equalities)
     """
 
@@ -47,20 +47,20 @@ def polytope_extremepoint_iterator(A_ineq, b_ineq, A_eq=None, b_eq=None):
         import ppl
     except ImportError:
         raise Exception("""
-Convex maximization code requires the Parma Polyhedra Library (PPL) to 
+Convex maximization code requires the Parma Polyhedra Library (PPL) to
 be installed. Normally, this can be done with
-   pip install pplpy cysignals gmpy2 
+   pip install pplpy cysignals gmpy2
 Please see https://gitlab.com/videlec/pplpy for more information.
 """)
 
     def get_num_cons(A, b):
-        # Check data for validity and return number of constraints 
+        # Check data for validity and return number of constraints
         if A is None:
             assert(b is None or len(b) == 0)
             num_cons = 0
         else:
-            assert(isinstance(A,np.ndarray))
-            assert(isinstance(b,np.ndarray))
+            assert(isinstance(A, np.ndarray))
+            assert(isinstance(b, np.ndarray))
             assert(np.issubdtype(A.dtype, np.integer))
             assert(np.issubdtype(b.dtype, np.integer))
             num_cons = A.shape[0]
@@ -68,7 +68,7 @@ Please see https://gitlab.com/videlec/pplpy for more information.
         return num_cons
 
     num_ineq_cons = get_num_cons(A_ineq, b_ineq)
-    num_eq_cons   = get_num_cons(A_eq  , b_eq)
+    num_eq_cons   = get_num_cons(A_eq, b_eq)
 
     if num_eq_cons == 0 and num_ineq_cons == 0:
         raise Exception("Must specify at least one inequality or equality constrants")
@@ -83,25 +83,25 @@ Please see https://gitlab.com/videlec/pplpy for more information.
     cs = ppl.Constraint_System()
     for rowndx in range(num_ineq_cons):
         if np.all(A_ineq[rowndx] == 0):
-            if b_ineq[rowndx]<0:
-                raise Exception('Inequality constraint %d involves no variables and is unsatisfiable' % rowndx)
+            if b_ineq[rowndx] < 0:
+                raise Exception('Inequality constraint {} involves no variables and is unsatisfiable'.format(rowndx))
             else:
                 continue # trivial constraint
-                
+
         lhs = sum([coef*ppl_vars[i]
                    for i, coef in enumerate(A_ineq[rowndx]) if coef != 0])
-        cs.insert(lhs <= b_ineq[rowndx] )
+        cs.insert(lhs <= b_ineq[rowndx])
 
     for rowndx in range(num_eq_cons):
         if np.all(A_eq[rowndx] == 0):
-            if b_eq[rowndx]!=0:
-                raise Exception('Equality constraint %d involves no variables and is unsatisfiable' % rowndx)
+            if b_eq[rowndx] != 0:
+                raise Exception('Equality constraint {} involves no variables and is unsatisfiable'.format(rowndx))
             else:
                 continue # trivial constraint
 
-        lhs = sum([coef*ppl_vars[i]
+        lhs = sum([coef * ppl_vars[i]
                    for i, coef in enumerate(A_eq[rowndx]) if coef != 0])
-        cs.insert(lhs == b_eq[rowndx] )
+        cs.insert(lhs == b_eq[rowndx])
 
     # convert linear inequalities into a list of extreme points
     poly_from_constraints = ppl.C_Polyhedron(cs)
@@ -109,12 +109,12 @@ Please see https://gitlab.com/videlec/pplpy for more information.
 
     for p in all_generators:
         if not p.is_point():
-            raise Exception('Returned solution not a point: %s. '%p + 
+            raise Exception('Returned solution not a point: {}. '.format(p) +
                 'Typically this means that linear constraints specify a cone, not a polytope')
-            
+
         # Convert a solution vector in ppl format to a numpy array
         x = np.fromiter(p.coefficients(), dtype='double')
-        x = x/float(p.divisor())
+        x = x / float(p.divisor())
         yield x
 
 
@@ -130,7 +130,7 @@ def maximize_convex_function(f, A_ineq, b_ineq, A_eq=None, b_eq=None):
         Specifies inequalities matrix, should be num_inequalities x num_variables
     b_ineq : array
         Specifies inequalities vector, should be num_inequalities long
-    A_eq : matrix 
+    A_eq : matrix
         Specifies equalities matrix, should be num_equalities x num_variables
     b_eq : array
         Specifies equalities vector, should be num_equalities long
@@ -148,9 +148,8 @@ def maximize_convex_function(f, A_ineq, b_ineq, A_eq=None, b_eq=None):
         val = f(x)
         if val > best_val:
             best_x, best_val = x, val
-            
+
     if best_x is None:
         raise Exception('No extreme points found!')
 
     return best_x, best_val
-
