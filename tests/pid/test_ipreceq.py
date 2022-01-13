@@ -2,11 +2,16 @@
 Tests for dit.pid.measures.ipreceq.
 """
 
+import sys
 import pytest
 
 from dit import Distribution
 from dit.pid.measures.ipreceq import PID_Preceq
 from dit.pid.distributions import bivariates
+
+
+if sys.platform.startswith("win"):
+    pytest.skip("Skipping I_preceq tests as they require ppl which is not available on windows.", allow_module_level=True)
 
 
 def test_pid_preceq1():
