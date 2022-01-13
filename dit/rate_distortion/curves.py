@@ -508,7 +508,7 @@ class IBCurve(object):
         diff = np.diff(self.ranks)
         jumps = np.arange(len(diff))[diff > 0]
         kinks = np.asarray([jump for jump in jumps if diff[jump - 1] == 0])
-        return self.betas[kinks]
+        return self.betas[kinks] if len(kinks) else []
 
     def plot(self, downsample=5):  # pragma: no cover
         """

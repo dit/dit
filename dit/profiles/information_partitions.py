@@ -3,6 +3,7 @@ Information partitions, e.g. ways of dividing up the information in a joint
 distribution.
 """
 
+import re
 from abc import ABCMeta, abstractmethod
 from collections import defaultdict
 from functools import lru_cache

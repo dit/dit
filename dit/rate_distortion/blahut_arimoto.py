@@ -205,7 +205,10 @@ def blahut_arimoto_ib(p_xy, beta, divergence=relative_entropy, max_iters=100, re
                               restarts=restarts
                               )
 
-    q_t_x = q_xt / q_xt.sum(axis=1, keepdims=True)
+    sums = q_xt.sum(axis=1, keepdims=True)
+    q_t_x = q_xt / sums
+    q_t_x[np.isnan(q_t_x)] = 1 / np.array(q_t_x.shape)[sums.flatten() == 0]
+
     q_xyt = p_xy[:, :, np.newaxis] * q_t_x[:, np.newaxis, :]
 
     return rd, q_xyt
