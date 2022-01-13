@@ -22,7 +22,9 @@ jobs:
           mamba-version: "*"
           python-version: ${{ matrix.python-version }}
       - name: Conda info
-        run: conda info
+        run: |
+          conda info
+          conda info -s
       - name: Conda list
         run: conda list
       - name: Where am I?
