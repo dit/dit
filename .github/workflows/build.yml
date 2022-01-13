@@ -17,7 +17,9 @@ jobs:
       - uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: true
-          channels: conda-forge
+          channels: conda-forge,defaults
+          channel-priority: true
+          mamba-version: "*"
           python-version: ${{ matrix.python-version }}
       - name: Conda info
         run: conda info
@@ -27,13 +29,12 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip
           pip3 install flit
-          conda install numpy scipy cython numdifftools pplpy
+          mamba install numpy scipy cython numdifftools pplpy
       - name: Install package
         env:
           FLIT_ALLOW_INVALID: "1"
         run: |
           flit install --deps=all
-          pip3 install . --force-reinstall
       - name: Lint with flake8
         if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == 3.6 }}
         run: |
