@@ -26,7 +26,9 @@ jobs:
       - name: Conda list
         run: conda list
       - name: Where am I?
-        run: pwd
+        run: |
+          pwd
+          echo $PATH
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip
