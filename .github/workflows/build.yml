@@ -22,7 +22,7 @@ jobs:
           auto-update-conda: true
           channels: conda-forge,defaults
           channel-priority: true
-          mamba-version: "*"
+          use-mamba: true
           python-version: ${{ matrix.python-version }}
       - name: Conda info
         run: |
