@@ -37,7 +37,6 @@ jobs:
           ls -al
       - name: Install dependencies
         run: |
-          export PATH=$CONDA_PREFIX/bin:$PATH
           python3 -m pip install --upgrade pip
           mamba install cython flit numpy numdifftools pplpy scikit-learn scipy
       - name: Install package
@@ -55,8 +54,8 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --statistics
       - name: Test with pytest
         run: |
-          pip3 install pytest
-          pytest
+          mamba install pytest
+          conda run pytest
       - name: Codecov
         uses: codecov/codecov-action@v1.4.1
         with:
