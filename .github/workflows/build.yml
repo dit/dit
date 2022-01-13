@@ -31,7 +31,7 @@ jobs:
         run: |
           pwd
           echo $PATH
-          ls
+          ls -al
       - name: Install dependencies
         run: |
           export PATH=$CONDA_PREFIX/bin:$PATH
