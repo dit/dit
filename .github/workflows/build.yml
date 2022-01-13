@@ -40,7 +40,7 @@ jobs:
         env:
           FLIT_ALLOW_INVALID: "1"
         run: |
-          $CONDA_PREFIX/bin/flit install --deps=all
+          conda run flit install --deps=all
       - name: Lint with flake8
         if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == 3.6 }}
         run: |
