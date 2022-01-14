@@ -1,6 +1,6 @@
 ``dit`` is a Python package for information theory.
 
-|build| |build_windows| |codecov| |codacy| |deps|
+|build| |codecov| |codacy| |deps|
 
 |docs| |slack| |saythanks| |conda|
 
@@ -296,13 +296,9 @@ If you'd like to get in contact about anything, you can reach us through our `sl
 
 .. badges:
 
-.. |build| image:: https://travis-ci.org/dit/dit.png?branch=master
-   :target: https://travis-ci.org/dit/dit
+.. |build| image:: https://github.com/dit/dit/actions/workflows/build.yml/badge.svg
+   :target: https://github.com/dit/dit/actions/workflows/build.yml
    :alt: Continuous Integration Status
-
-.. |build_windows| image:: https://ci.appveyor.com/api/projects/status/idb5hc5gm59whf8m?svg=true
-   :target: https://ci.appveyor.com/project/Autoplectic/dit
-   :alt: Continuous Integration Status (windows)
 
 .. |codecov| image:: https://codecov.io/gh/dit/dit/branch/master/graph/badge.svg
   :target: https://codecov.io/gh/dit/dit
