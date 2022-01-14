@@ -241,6 +241,7 @@ class RDCurve(object):
             distortions.append(d)
 
             q_x_xhat = q / q.sum(axis=0, keepdims=True)
+            q_x_xhat[np.isnan(q_x_xhat)] = 0
 
             ranks.append(np.linalg.matrix_rank(q_x_xhat, tol=1e-5))
             alphabets.append((q.sum(axis=0) > 1e-6).sum())
