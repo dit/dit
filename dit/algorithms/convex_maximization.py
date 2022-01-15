@@ -12,7 +12,6 @@ points, and then evaluating the objective function on each point.
 
 import numpy as np
 import scipy
-import pypoman
 
 __all__ = (
     'maximize_convex_function',
@@ -70,6 +69,7 @@ def maximize_convex_function(f, A_ineq, b_ineq, A_eq=None, b_eq=None):
     else:
         transform = lambda x: x
 
+    import pypoman
     extreme_points = pypoman.compute_polytope_vertices(A_ineq, b_ineq)
 
     for v in extreme_points:
