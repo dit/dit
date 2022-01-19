@@ -176,7 +176,7 @@ class PID_Preceq(BasePID):
 
         # The following uses ppl to turn our system of linear inequalities into a
         # set of extreme points of the corresponding polytope. It then calls
-        # get_solution_val on each extreme point
+        # objective on each extreme point
         x_opt, v_opt = maximize_convex_function(f=objective,
             A_eq=np.array(A_eq)    , b_eq=np.array(b_eq), 
             A_ineq=np.array(A_ineq), b_ineq=np.array(b_ineq))
