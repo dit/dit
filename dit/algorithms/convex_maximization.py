@@ -1,13 +1,6 @@
 """
 Code for maximizing a convex function over a polytope, as defined
 by a set of linear equalities and inequalities.
-
-This uses the fact that the maximum of a convex function over a
-polytope will be achieved at one of the extreme points of the polytope.
-
-Thus, the maximization is done by taking a system of linear inequalities,
-using the Parma Polyhedral Library (pplpy) to create a list of extreme
-points, and then evaluating the objective function on each point.
 """
 
 import numpy as np
@@ -19,7 +12,13 @@ __all__ = (
 
 def maximize_convex_function(f, A_ineq, b_ineq, A_eq=None, b_eq=None):
     """
-    Maximize a convex function over a polytope.
+Maximize a convex function over a polytope. This function uses the fact that 
+the maximum of a convex function over a polytope will be achieved at one of
+the extreme points of the polytope.
+
+The maximization is done by taking a system of linear inequalities, using the
+pypoman library to create a list of extreme points, and then evaluating the 
+objective function on each point.
 
     Parameters
     ----------
