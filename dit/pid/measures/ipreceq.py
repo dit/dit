@@ -24,9 +24,11 @@ the vertex with the largest value of I(Y;Q).
 
 import numpy as np
 
+from scipy.special import entr
+
 from ...algorithms.convex_maximization import maximize_convex_function
 from ..pid import BasePID
-from ...shannon import mutual_information, entropy
+from ...shannon import mutual_information
 
 
 __all__ = (
@@ -43,7 +45,7 @@ class PID_Preceq(BasePID):
     _name = "I_≼"
 
     @staticmethod
-    def get_solution_information(d, sources, target, eps=1e-8):
+    def get_solution_information(d, sources, target):
         """
         Compute I_preceq(inputs : output) =
             \\max I[Q : output] such that Q \\preceq X_i
@@ -57,9 +59,6 @@ class PID_Preceq(BasePID):
             The source variables.
         target : iterable
             The target variable.
-        eps : float
-            Rounding error. We must round our conditional probability distributions
-            to rationals (the library ppl requires rationals)
 
         Returns
         -------
@@ -117,7 +116,7 @@ class PID_Preceq(BasePID):
 
         for rvndx, rv in enumerate(pjoint.rvs):
             for v_ix, v in enumerate(pjoint.alphabet[rvndx]):
-                sum_to_one = np.zeros(num_vars, dtype='int')
+                sum_to_one = np.zeros(num_vars)
                 for q in range(n_q):
                     var_ix = variablesQgiven[rvndx][(q, v_ix)]
 
@@ -144,15 +143,13 @@ class PID_Preceq(BasePID):
             pYSource = pjoint.marginal([rvndx,target_rvndx,], rv_mode='indices')
             for q in range(n_q):
                 for y_ix, y in enumerate(pjoint.alphabet[target_rvndx]):
-                    z = np.zeros(num_vars, dtype='int')
-                    cur_mult = 0.  # multiplier to make everything rational, and make rounded values add up to 1
+                    z = np.zeros(num_vars)
+                    cur_marg = 0. 
                     for x_ix, x in enumerate(pjoint.alphabet[rvndx]):
-                        # We divide by eps and round, and then multiply by cur_mult,
-                        # to make everything rational
-                        pXY = int( pYSource[pYSource._outcome_ctor((x,y))] / eps )
-                        cur_mult += pXY
+                        pXY = pYSource[pYSource._outcome_ctor((x,y))]
+                        cur_marg += pXY
                         z[variablesQgiven[rvndx][(q, x_ix)]] = pXY
-                    z[variablesQgiven[target_rvndx][(q, y_ix)]] = -cur_mult
+                    z[variablesQgiven[target_rvndx][(q, y_ix)]] = -cur_marg
                     A_eq.append(z)
                     b_eq.append(0)
 
@@ -163,28 +160,26 @@ class PID_Preceq(BasePID):
         for (q, y_ix), k in variablesQgiven[target_rvndx].items():
             mul_mx[k, q * n_y + y_ix] += probs_y[y_ix]
 
-        def entr(x):
-            x = x + 1e-18
-            return -x * np.log2(x)
-
         H_Y = entr(probs_y).sum()
+        ln2 = np.log(2)
 
         def objective(x):  # efficient calculation of mutual information
             # Map solution vector x to joint distribution over Q and Y
-            pQY = x.dot(mul_mx).reshape((n_q,n_y))
-            probs_q = pQY.sum(axis=1) + 1e-18
+            pQY  = x.dot(mul_mx).reshape((n_q,n_y))
+            pQY += 1e-12   # Remove small negative values that may appear due to numerical issues 
+            probs_q = pQY.sum(axis=1)
             H_YgQ = entr(pQY / probs_q[:, None]).sum(axis=1).dot(probs_q)
-            return H_Y - H_YgQ
+            v = (H_Y - H_YgQ)/ln2
+            if np.isclose(v, 0):
+                v = 0
+            return v
 
         # The following uses ppl to turn our system of linear inequalities into a
         # set of extreme points of the corresponding polytope. It then calls
-        # get_solution_val on each extreme point
-        x_opt, v_opt = maximize_convex_function(
-            f=objective,
-            A_eq=np.array(A_eq, dtype='int'),
-            b_eq=np.array(b_eq, dtype='int'),
-            A_ineq=np.array(A_ineq, dtype='int'),
-            b_ineq=np.array(b_ineq, dtype='int'))
+        # objective on each extreme point
+        x_opt, v_opt = maximize_convex_function(f=objective,
+            A_eq=np.array(A_eq)    , b_eq=np.array(b_eq), 
+            A_ineq=np.array(A_ineq), b_ineq=np.array(b_ineq))
 
         # Return mutual information I(Q;Y) and solution information
         sol = {}
@@ -201,13 +196,13 @@ class PID_Preceq(BasePID):
         return v_opt, sol
 
     @classmethod
-    def _measure(cls, d, sources, target, eps=1e-8):
+    def _measure(cls, d, sources, target):
         """
         See information for get_solution_information method.
         """
         if len(sources) == 1:
             return mutual_information(d, sources[0], target)
-        v_opt, sol = cls.get_solution_information(d, sources, target, eps=eps)
+        v_opt, sol = cls.get_solution_information(d, sources, target)
         return v_opt
 
 
