@@ -48,7 +48,7 @@ optional = [
     "matplotlib",
     "numdifftools",
     "pint",
-    "pplpy; sys_platform != 'win32'",
+    "pypoman",
     "python-ternary",
     "scikit-learn",
 ]
