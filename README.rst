@@ -159,7 +159,7 @@ though it is not in the literature, the multivariate conditional exact common in
 | * Secrecy Capacity                       | * :math:`I_{dep}`                       | * Information Trimming            |
 | * Intrinsic Mutual Information           | * :math:`I_{RAV}`                       | * Lautum Information              |
 | * Reduced Intrinsic Mutual Information   | * :math:`I_{mmi}`                       | * LMPR Complexity                 |
-| * Minimal Intrinsic Mutual Information   | * :math:`I_{\preceq}`                   | * Marginal Utility of Information |
+| * Minimal Intrinsic Mutual Information   | * :math:`I_{\prec}`                     | * Marginal Utility of Information |
 | * Necessary Intrinsic Mutual Information | * :math:`I_{RA}`                        | * Maximum Correlation             |
 | * Two-Part Intrinsic Mutual Information  | * :math:`I_{SKAR}`                      | * Maximum Entropy Distributions   |
 |                                          |                                         | * Perplexity                      |

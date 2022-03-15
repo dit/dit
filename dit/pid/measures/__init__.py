@@ -34,6 +34,6 @@ __all_pids = [
     PID_RA,
     PID_RAV,
     PID_SKAR_owb,
-    PID_Preceq,
+    PID_Prec,
     PID_CT,
 ]

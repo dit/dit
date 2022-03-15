@@ -143,7 +143,7 @@ class PID_GH(BasePID):
 
         Returns
         -------
-        ipreceq : float
+        igh : float
             The value of I_GH.
         """
         if len(sources) == 1:
