@@ -1,7 +1,7 @@
 """
-Add the I_\\preceq measure as defined in
+Add the I_\\prec measure as defined in
 
-A Kolchinsky, A novel approach to multivariate redundancy and synergy
+A Kolchinsky, A Novel Approach to the Partial Information Decomposition, Entropy, 2022.
 https://arxiv.org/abs/1908.08642
 
 Given a joint distribution p_{Y,X_1,X_2}, this redundancy measure is
@@ -32,23 +32,23 @@ from ...shannon import mutual_information
 
 
 __all__ = (
-    'PID_Preceq',
+    'PID_Prec',
 )
 
 
 
-class PID_Preceq(BasePID):
+class PID_Prec(BasePID):
     """
-    The I_\\preceq measure defined by Kolchinsky.
+    The I_\\prec measure defined by Kolchinsky.
     """
 
-    _name = "I_≼"
+    _name = "I_≺"
 
     @staticmethod
     def get_solution_information(d, sources, target):
         """
-        Compute I_preceq(inputs : output) =
-            \\max I[Q : output] such that Q \\preceq X_i
+        Compute I_prec(inputs : output) =
+            \\max I[Q : output] such that Q \\prec X_i
         and return information about value and optimal Q
 
         Parameters
@@ -62,8 +62,8 @@ class PID_Preceq(BasePID):
 
         Returns
         -------
-        ipreceq : float
-            The value of I_preceq.
+        iprec : float
+            The value of I_prec.
         sol : dict
             Dictionary containing solution information
 
