@@ -845,11 +845,12 @@ class BaseOptimizer(metaclass=ABCMeta):
         x0[x0 < cutoff] = 0
         x0[x0 > 1 - cutoff] = 1
 
-        lb = np.array([1 if np.isclose(x, 1) else 0 for x in x0])
-        ub = np.array([0 if np.isclose(x, 0) else 1 for x in x0])
+        lb = np.array([1.0 if np.isclose(x, 1) else 0.0 for x in x0])
+        ub = np.array([0.0 if np.isclose(x, 0) else 1.0 for x in x0])
+        feasible = np.array([True for _ in x0])
 
         minimizer_kwargs = {
-            'bounds': Bounds(lb, ub),
+            'bounds': Bounds(lb, ub, feasible),
             'tol': None,
             'callback': None,
             'constraints': self.constraints,
@@ -865,6 +866,10 @@ class BaseOptimizer(metaclass=ABCMeta):
                     const['jac'] = ndt.Jacobian(const['fun'])
         except AttributeError:
             pass
+
+        if np.allclose(lb, ub):
+            self._optima = x0
+            return
 
         res = minimize(
             fun=self.objective,
