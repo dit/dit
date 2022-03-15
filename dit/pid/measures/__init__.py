@@ -11,7 +11,7 @@ from .imes import PID_MES
 from .imin import PID_WB
 from .immi import PID_MMI
 from .ipm import PID_PM
-from .ipreceq import PID_Preceq
+from .iprec import PID_Prec
 from .iproj import PID_Proj
 from .irav import PID_RAV
 from .irr import PID_RR
