@@ -192,7 +192,8 @@ def main():
         author=AUTHOR,
         author_email=EMAIL,
         description=DESCRIPTION,
-        long_description=open("README.rst").read(),
+        long_description=re.sub("(?i):math:`(.*)`", "\g<1>        ", open("README.rst").read()),
+        long_description_content_type="text/x-rst",
         license="BSD",
         classifiers=[
             "Intended Audience :: Science/Research",
