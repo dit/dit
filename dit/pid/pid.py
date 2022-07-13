@@ -256,7 +256,7 @@ class BasePID(metaclass=ABCMeta):
             if node not in self._pis:
                 try:
                     self.get_pi(node)
-                except KeyError:
+                except TypeError:
                     pass
 
     def get_red(self, node):
