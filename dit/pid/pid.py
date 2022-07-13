@@ -241,7 +241,20 @@ class BasePID(metaclass=ABCMeta):
         """
         for node in self._lattice:
             if node not in self._reds:  # pragma: no branch
-                self.get_pi(node)
+                self.get_red(node)
+
+        self._compute_mobius_inversion()
+
+    def _compute_mobius_inversion(self):
+        """
+        Perform as much of a Mobius inversion as possible.
+        """
+        for node in reversed(list(self._lattice)):
+            if node not in self._pis:
+                try:
+                    self.get_pi(node)
+                except KeyError:
+                    pass
 
     def get_red(self, node):
         """
@@ -259,8 +272,7 @@ class BasePID(metaclass=ABCMeta):
         """
         if node not in self._reds:
             if node not in self._lattice:
-                raise Exception('Cannot get redundancy associated with node "%s" because it is in the lattice'
-                                % str(node) )
+                raise Exception(f'Cannot get redundancy associated with node "{node}" because it is in the lattice')
             self._reds[node] = float(self._measure(self._dist, node, self._output, **self._kwargs))
 
         return self._reds[node]
@@ -281,9 +293,8 @@ class BasePID(metaclass=ABCMeta):
         """
         if node not in self._pis:
             if node not in self._lattice:
-                raise Exception('Cannot get partial information associated with node "%s" because it is in the lattice'
-                                % str(node) )
-            self._pis[node] = float(self._reds[node] - sum(self._pis[n] for n in self._lattice.descendants(node)))
+                raise Exception(f'Cannot get partial information associated with node "{node}" because it is in the lattice')
+            self._pis[node] = float(self.get_red(node) - sum(self.get_pi(n) for n in self._lattice.descendants(node)))
 
         return self._pis[node]
 
@@ -423,17 +434,6 @@ class BaseIncompletePID(BasePID):
         equal_pi = super().__eq__(other)
         equal_red = (np.isclose(self.get_red(node), other.get_red(node), atol=1e-5, rtol=1e-5) for node in self._lattice)
         return equal_pi and all(equal_red)
-
-    def _compute_mobius_inversion(self):
-        """
-        Perform as much of a Mobius inversion as possible.
-        """
-        for node in reversed(list(self._lattice)):
-            if node not in self._pis:
-                try:
-                    self._pis[node] = self._reds[node] - sum(self._pis[n] for n in self._lattice.descendants(node))
-                except KeyError:
-                    pass
 
     def _compute_lattice_monotonicity(self):
         """
