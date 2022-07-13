@@ -241,7 +241,10 @@ class BasePID(metaclass=ABCMeta):
         """
         for node in self._lattice:
             if node not in self._reds:  # pragma: no branch
-                self.get_red(node)
+                try:
+                    self.get_red(node)
+                except TypeError:
+                    pass
 
         self._compute_mobius_inversion()
 
