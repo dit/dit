@@ -277,7 +277,7 @@ class BasePID(metaclass=ABCMeta):
             if node not in self._lattice:
                 raise Exception('Cannot get partial information associated with node "%s" because it is in the lattice'
                                 % str(node) )
-            self._pis[node] = float(self.get_red(node) - sum(self.get_pi(n) for n in self._lattice.descendants(node)))
+            self._pis[node] = float(self._reds[node] - sum(self._pis[n] for n in self._lattice.descendants(node)))
 
         return self._pis[node]
 
