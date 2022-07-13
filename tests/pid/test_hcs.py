@@ -69,7 +69,6 @@ def test_ped_cs1():
     """
     d = bivariates['and']
     pid = PED_CS(d)
-    zero, one, two = [frozenset([i]) for i in range(3)]
     for atom in pid._lattice:
         if atom == ((0,), (1,), (2,)):
             assert pid[atom] == pytest.approx(0.10375937481971094)

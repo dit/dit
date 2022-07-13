@@ -90,7 +90,7 @@ class BasePID(metaclass=ABCMeta):
     _red_string = "I_r"
     _pi_string = "pi"
 
-    def __init__(self, dist, inputs=None, output=None, reds=None, pis=None, **kwargs):
+    def __init__(self, dist, inputs=None, output=None, reds=None, pis=None, compute=True, **kwargs):
         """
         Parameters
         ----------
@@ -105,6 +105,9 @@ class BasePID(metaclass=ABCMeta):
             Redundancy values pre-assessed.
         pis : dict, None
             Partial information values pre-assessed.
+        compute : bool
+            If the all the partial information values should be automatically
+            computed.
         """
         self._dist = dist
 
@@ -123,6 +126,9 @@ class BasePID(metaclass=ABCMeta):
 
         self._reds = {} if reds is None else reds
         self._pis = {} if pis is None else pis
+
+        if compute:
+            self._compute()
 
     @abstractmethod
     def _measure(self, node, output):
