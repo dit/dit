@@ -59,6 +59,8 @@ def distributions(draw, alphabets=(2, 2, 2), nondegenerate=False):
             axes_to_sum = tuple(axes - {axis})
             if axes_to_sum:
                 assume(np.all(pmf.sum(axis=tuple(axes - {axis})) > 1e-6))
+            else:
+                assume(np.all(pmf) > 1e-6)
 
     pmf /= pmf.sum()
 
