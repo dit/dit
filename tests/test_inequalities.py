@@ -165,7 +165,7 @@ def test_data_processing_inequality_wyner(dist):
     """
     c_xy = C(dist, [[0], [1]], niter=100)
     c_xz = C(dist, [[0], [2]], niter=100)
-    assert c_xz <= c_xy + 10 * epsilon
+    assert c_xz <= c_xy + 100 * epsilon
 
 
 @pytest.mark.slow
@@ -179,7 +179,7 @@ def test_data_processing_inequality_exact(dist):
     """
     g_xy = G(dist, [[0], [1]], niter=100)
     g_xz = G(dist, [[0], [2]], niter=100)
-    assert g_xz <= g_xy + 10 * epsilon
+    assert g_xz <= g_xy + 100 * epsilon
 
 
 @given(dist=distributions(alphabets=((2, 4),) * 2))
