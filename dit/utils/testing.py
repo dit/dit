@@ -49,7 +49,9 @@ def distributions(draw, alphabets=(2, 2, 2), nondegenerate=False):
 
     alphabets = [int(draw(integers(*alpha))) for alpha in alphabets]
 
-    pmf = draw(arrays(np.float64, shape=alphabets, elements=floats(0, 1)))
+    lower = 1e-6 if (nondegenerate and len(alphabets) == 1) else 0.0
+
+    pmf = draw(arrays(np.float64, shape=alphabets, elements=floats(lower, 1)))
 
     assume(pmf.sum() > 0)
 
