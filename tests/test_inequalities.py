@@ -140,7 +140,7 @@ def test_data_processing_inequality_mc(dist):
     """
     rho_xy = maximum_correlation(dist, [[0], [1]])
     rho_xz = maximum_correlation(dist, [[0], [2]])
-    assert rho_xz <= rho_xy + epsilon
+    assert rho_xz <= rho_xy + 10 * epsilon
 
 
 @given(dist=markov_chains(alphabets=((2, 4),) * 3))
