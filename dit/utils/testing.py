@@ -20,7 +20,7 @@ __all__ = (
 
 
 @composite
-def distributions(draw, alphabets=(2, 2, 2), nondegenerate=False):
+def distributions(draw, alphabets=(2, 2, 2), nondegenerate=False, zeros=True):
     """
     Generate distributions for use with hypothesis.
 
@@ -49,11 +49,14 @@ def distributions(draw, alphabets=(2, 2, 2), nondegenerate=False):
 
     alphabets = [int(draw(integers(*alpha))) for alpha in alphabets]
 
-    lower = 1e-6 if (nondegenerate and len(alphabets) == 1) else 0.0
+    lower = 1e-6 if not zeros else 0.0
 
     pmf = draw(arrays(np.float64, shape=alphabets, elements=floats(lower, 1)))
 
     assume(pmf.sum() > 0)
+
+    if not zeros:
+        assume(pmf.min() > 0)
 
     if nondegenerate:
         axes = set(range(len(alphabets)))
@@ -61,8 +64,6 @@ def distributions(draw, alphabets=(2, 2, 2), nondegenerate=False):
             axes_to_sum = tuple(axes - {axis})
             if axes_to_sum:
                 assume(np.all(pmf.sum(axis=tuple(axes - {axis})) > 1e-6))
-            else:
-                assume(np.all(pmf > 1e-6))
 
     pmf /= pmf.sum()
 

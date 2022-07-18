@@ -204,8 +204,8 @@ def test_hellinger_variational(dist1, dist2):
     assert v <= np.sqrt(2) * h + epsilon
 
 
-@given(dist1=distributions(alphabets=(10,), nondegenerate=True),
-       dist2=distributions(alphabets=(10,), nondegenerate=True))
+@given(dist1=distributions(alphabets=(10,), zeros=False),
+       dist2=distributions(alphabets=(10,), zeros=False))
 def test_chernoff_inequalities(dist1, dist2):
     """
     1/8 sum p_i ((q_i - p_i)/max(p_i, q_i))^2 <= 1 - 2^(-C)
