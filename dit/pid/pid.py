@@ -10,6 +10,7 @@ from lattices.lattices import free_distributive_lattice
 import networkx as nx
 import numpy as np
 
+from ..exceptions import ditException
 from ..multivariate import coinformation
 from ..params import ditParams
 from ..utils import build_table, flatten, powerset
@@ -90,7 +91,7 @@ class BasePID(metaclass=ABCMeta):
     _red_string = "I_r"
     _pi_string = "pi"
 
-    def __init__(self, dist, inputs=None, output=None, reds=None, pis=None, **kwargs):
+    def __init__(self, dist, inputs=None, output=None, reds=None, pis=None, compute=True, **kwargs):
         """
         Parameters
         ----------
@@ -105,6 +106,9 @@ class BasePID(metaclass=ABCMeta):
             Redundancy values pre-assessed.
         pis : dict, None
             Partial information values pre-assessed.
+        compute : bool
+            If the all the partial information values should be automatically
+            computed.
         """
         self._dist = dist
 
@@ -124,7 +128,8 @@ class BasePID(metaclass=ABCMeta):
         self._reds = {} if reds is None else reds
         self._pis = {} if pis is None else pis
 
-        self._compute()
+        if compute:
+            self._compute()
 
     @abstractmethod
     def _measure(self, node, output):
@@ -235,7 +240,25 @@ class BasePID(metaclass=ABCMeta):
         Method for precomputing elements of partial information lattice,
         if this is necessary.
         """
-        pass
+        for node in self._lattice:
+            if node not in self._reds:  # pragma: no branch
+                try:
+                    self.get_red(node)
+                except TypeError:
+                    pass
+
+        self._compute_mobius_inversion()
+
+    def _compute_mobius_inversion(self):
+        """
+        Perform as much of a Mobius inversion as possible.
+        """
+        for node in reversed(list(self._lattice)):
+            if node not in self._pis:
+                try:
+                    self.get_pi(node)
+                except (TypeError, ditException):
+                    pass
 
     def get_red(self, node):
         """
@@ -252,9 +275,8 @@ class BasePID(metaclass=ABCMeta):
             The partial information associated with `node`.
         """
         if node not in self._reds:
-            if node not in self._lattice: 
-                raise Exception('Cannot get redundancy associated with node "%s" because it is in the lattice'
-                                % str(node) )
+            if node not in self._lattice:
+                raise Exception(f'Cannot get redundancy associated with node "{node}" because it is in the lattice')
             self._reds[node] = float(self._measure(self._dist, node, self._output, **self._kwargs))
 
         return self._reds[node]
@@ -275,8 +297,7 @@ class BasePID(metaclass=ABCMeta):
         """
         if node not in self._pis:
             if node not in self._lattice:
-                raise Exception('Cannot get partial information associated with node "%s" because it is in the lattice'
-                                % str(node) )
+                raise Exception(f'Cannot get partial information associated with node "{node}" because it is in the lattice')
             self._pis[node] = float(self.get_red(node) - sum(self.get_pi(n) for n in self._lattice.descendants(node)))
 
         return self._pis[node]
@@ -367,6 +388,8 @@ class BasePID(metaclass=ABCMeta):
         nonnegative : bool
             True if all pi values are non-negative, False otherwise.
         """
+        self._compute()
+
         nonnegative = all(np.round(pi, 4) >= 0 for pi in self._pis.values() if not np.isnan(pi))
         return nonnegative
 
@@ -415,17 +438,6 @@ class BaseIncompletePID(BasePID):
         equal_pi = super().__eq__(other)
         equal_red = (np.isclose(self.get_red(node), other.get_red(node), atol=1e-5, rtol=1e-5) for node in self._lattice)
         return equal_pi and all(equal_red)
-
-    def _compute_mobius_inversion(self):
-        """
-        Perform as much of a Mobius inversion as possible.
-        """
-        for node in reversed(list(self._lattice)):
-            if node not in self._pis:
-                try:
-                    self._pis[node] = self._reds[node] - sum(self._pis[n] for n in self._lattice.descendants(node))
-                except KeyError:
-                    pass        
 
     def _compute_lattice_monotonicity(self):
         """
@@ -598,18 +610,20 @@ class BaseIncompletePID(BasePID):
         valid : bool
             True if the lattice is self-consistent, False otherwise.
         """
+        self._compute()
+
         if self.SELF_REDUNDANCY:  # pragma: no branch
             for node in self._lattice:
                 if len(node) == 1:
-                    red = self._reds[node]
+                    red = self.get_red(node)
                     mi = coinformation(self._dist, [node[0], self._output])
                     if not np.isclose(red, mi, atol=1e-5, rtol=1e-5):  # pragma: no cover
                         return False
 
         # ensure that the mobius inversion holds
         for node in self._lattice:
-            red = self._reds[node]
-            parts = sum(self._pis[n] for n in self._lattice.descendants(node, include=True))
+            red = self.get_red(node)
+            parts = sum(self.get_pi(n) for n in self._lattice.descendants(node, include=True))
             if not np.isnan(red) and not np.isnan(parts):
                 if not np.isclose(red, parts, atol=1e-5, rtol=1e-5):
                     return False
@@ -626,6 +640,8 @@ class BaseIncompletePID(BasePID):
         valid : bool
             True if the lattice is self-consistant, False otherwise.
         """
+        self._compute()
+
         return not any(np.isnan(pi) for pi in self._pis.values())
 
 

@@ -162,7 +162,7 @@ though it is not in the literature, the multivariate conditional exact common in
 | * Minimal Intrinsic Mutual Information   | * :math:`I_{\prec}`                     | * Marginal Utility of Information |
 | * Necessary Intrinsic Mutual Information | * :math:`I_{RA}`                        | * Maximum Correlation             |
 | * Two-Part Intrinsic Mutual Information  | * :math:`I_{SKAR}`                      | * Maximum Entropy Distributions   |
-|                                          |                                         | * Perplexity                      |
+|                                          | * :math:`I_{IG}`                        | * Perplexity                      |
 |                                          |                                         | * Rate-Distortion Theory          |
 |                                          |                                         | * TSE Complexity                  |
 +------------------------------------------+-----------------------------------------+-----------------------------------+

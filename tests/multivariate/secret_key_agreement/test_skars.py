@@ -14,7 +14,7 @@ from dit.multivariate.secret_key_agreement import (lower_intrinsic_mutual_inform
                                                    intrinsic_mutual_information,
                                                    upper_intrinsic_mutual_information)
 
-eps = 1e-4
+eps = 1e-3
 
 
 @settings(max_examples=5)

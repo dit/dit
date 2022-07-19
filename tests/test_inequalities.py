@@ -140,7 +140,7 @@ def test_data_processing_inequality_mc(dist):
     """
     rho_xy = maximum_correlation(dist, [[0], [1]])
     rho_xz = maximum_correlation(dist, [[0], [2]])
-    assert rho_xz <= rho_xy + epsilon
+    assert rho_xz <= rho_xy + 10 * epsilon
 
 
 @given(dist=markov_chains(alphabets=((2, 4),) * 3))
@@ -165,7 +165,7 @@ def test_data_processing_inequality_wyner(dist):
     """
     c_xy = C(dist, [[0], [1]], niter=100)
     c_xz = C(dist, [[0], [2]], niter=100)
-    assert c_xz <= c_xy + 10 * epsilon
+    assert c_xz <= c_xy + 100 * epsilon
 
 
 @pytest.mark.slow
@@ -179,7 +179,7 @@ def test_data_processing_inequality_exact(dist):
     """
     g_xy = G(dist, [[0], [1]], niter=100)
     g_xz = G(dist, [[0], [2]], niter=100)
-    assert g_xz <= g_xy + 10 * epsilon
+    assert g_xz <= g_xy + 100 * epsilon
 
 
 @given(dist=distributions(alphabets=((2, 4),) * 2))
@@ -204,8 +204,8 @@ def test_hellinger_variational(dist1, dist2):
     assert v <= np.sqrt(2) * h + epsilon
 
 
-@given(dist1=distributions(alphabets=(10,), nondegenerate=True),
-       dist2=distributions(alphabets=(10,), nondegenerate=True))
+@given(dist1=distributions(alphabets=(10,), zeros=False),
+       dist2=distributions(alphabets=(10,), zeros=False))
 def test_chernoff_inequalities(dist1, dist2):
     """
     1/8 sum p_i ((q_i - p_i)/max(p_i, q_i))^2 <= 1 - 2^(-C)

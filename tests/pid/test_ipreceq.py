@@ -40,7 +40,7 @@ def test_pid_prec3():
     """
     events = ['0000', '0010', '0100', '0110', '1000', '1010', '1100', '1111']
     d = Distribution(events, [1 / 8] * 8)
-    pid = PID_Prec(d, [[0], [1], [2]], [3])
+    pid = PID_Prec(d, [[0], [1], [2]], [3], compute=False)
     assert pid[((0,), (1,), (2,))] == pytest.approx(0.13795718192252743, abs=1e-3)
 
 
@@ -49,6 +49,6 @@ def test_pid_prec4():
     Test iprec on unique gate X1,X2 -> X1, which should have redundancy equal to I(X1;X2)
     """
     d = Distribution(['000', '011', '100', '111'], [.35, .15, .15, .35])
-    pid = PID_Prec(d, [[0], [1],], [2])
+    pid = PID_Prec(d, [[0], [1],], [2], compute=False)
     assert pid[((0,), (1,),)] == pytest.approx(0.119, abs=1e-2)
 

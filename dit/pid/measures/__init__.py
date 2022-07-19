@@ -7,6 +7,7 @@ from .iccs import PID_CCS
 from .ict import PID_CT
 from .idep import PID_RA, PID_dep
 from .igh import PID_GH
+from .iig import PID_IG
 from .imes import PID_MES
 from .imin import PID_WB
 from .immi import PID_MMI
@@ -36,4 +37,5 @@ __all_pids = [
     PID_SKAR_owb,
     PID_Prec,
     PID_CT,
+    PID_IG,
 ]

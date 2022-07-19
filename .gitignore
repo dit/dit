@@ -55,3 +55,4 @@ docs/images/*.png
 dit/inference/pycounts.c
 .mypy_cache
 dit.code-workspace
+newrelic_agent.log

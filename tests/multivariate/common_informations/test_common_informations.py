@@ -17,7 +17,7 @@ from dit.multivariate import (gk_common_information as K,
 
 from dit.utils.testing import distributions
 
-epsilon = 1e-4
+epsilon = 1e-2
 
 
 @pytest.mark.slow
