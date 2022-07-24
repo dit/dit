@@ -91,17 +91,17 @@ class BasePID(metaclass=ABCMeta):
     _red_string = "I_r"
     _pi_string = "pi"
 
-    def __init__(self, dist, inputs=None, output=None, reds=None, pis=None, compute=True, **kwargs):
+    def __init__(self, dist, sources=None, target=None, reds=None, pis=None, compute=True, **kwargs):
         """
         Parameters
         ----------
         dist : Distribution
             The distribution to compute the decomposition on.
-        inputs : iter of iters, None
+        sources : iter of iters, None
             The set of input variables. If None, `dist.rvs` less indices
-            in `output` is used.
-        output : iter, None
-            The output variable. If None, `dist.rvs[-1]` is used.
+            in `target` is used.
+        target : iter, None
+            The target variable. If None, `dist.rvs[-1]` is used.
         reds : dict, None
             Redundancy values pre-assessed.
         pis : dict, None
@@ -112,18 +112,18 @@ class BasePID(metaclass=ABCMeta):
         """
         self._dist = dist
 
-        if output is None:
-            output = dist.rvs[-1]
-        if inputs is None:
-            inputs = [var for var in dist.rvs if var[0] not in output]
+        if target is None:
+            target = dist.rvs[-1]
+        if sources is None:
+            sources = [var for var in dist.rvs if var[0] not in target]
 
-        self._inputs = tuple(map(tuple, inputs))
-        self._output = tuple(output)
+        self._sources = tuple(map(tuple, sources))
+        self._target = tuple(target)
         self._kwargs = kwargs
 
-        self._lattice = _transform(free_distributive_lattice(self._inputs))
+        self._lattice = _transform(free_distributive_lattice(self._sources))
         self._inverse_lattice = self._lattice.inverse()
-        self._total = coinformation(self._dist, [list(flatten(self._inputs)), self._output])
+        self._total = coinformation(self._dist, [list(flatten(self._sources)), self._target])
 
         self._reds = {} if reds is None else reds
         self._pis = {} if pis is None else pis
@@ -132,7 +132,7 @@ class BasePID(metaclass=ABCMeta):
             self._compute()
 
     @abstractmethod
-    def _measure(self, node, output):
+    def _measure(self, node, target):
         """
         Compute a redundancy value for `node`.
 
@@ -140,8 +140,8 @@ class BasePID(metaclass=ABCMeta):
         ----------
         node : tuple(tuples)
             The lattice node to compute the redundancy of.
-        output : iterable
-            The indices to consider the target/output of the PID.
+        target : iterable
+            The indices to consider the target/target of the PID.
 
         Returns
         -------
@@ -277,7 +277,7 @@ class BasePID(metaclass=ABCMeta):
         if node not in self._reds:
             if node not in self._lattice:
                 raise Exception(f'Cannot get redundancy associated with node "{node}" because it is in the lattice')
-            self._reds[node] = float(self._measure(self._dist, node, self._output, **self._kwargs))
+            self._reds[node] = float(self._measure(self._dist, node, self._target, **self._kwargs))
 
         return self._reds[node]
 
@@ -453,7 +453,7 @@ class BaseIncompletePID(BasePID):
                         self._reds[n] = 0
                         nodes.remove(n)
 
-        # everything above a redundancy of I(inputs, output) is I(inputs, output)
+        # everything above a redundancy of I(sources, target) is I(sources, target)
         nodes = list(reversed(list(self._lattice)))
         while nodes:
             node = nodes.pop(0)
@@ -543,12 +543,12 @@ class BaseIncompletePID(BasePID):
         Precompute the lattice of partial information values.
         Use a variety of methods to fill out as much of the lattice as possible.
         """
-        # set redundancies of single input sets to I(input, output) and
+        # set redundancies of single input sets to I(input, target) and
         # plug in computed unique values
         if self.SELF_REDUNDANCY:  # pragma: no branch
             for node in self._lattice:
                 if len(node) == 1:
-                    self._reds[node] = coinformation(self._dist, [node[0], self._output])
+                    self._reds[node] = coinformation(self._dist, [node[0], self._target])
 
         if self.LATTICE_MONOTONICITY:  # pragma: no branch
             self._compute_lattice_monotonicity()
@@ -556,8 +556,8 @@ class BaseIncompletePID(BasePID):
         # if a node exists in a smaller PID, use that to compute redundancy (if possible)
         if self.REDUCED_PID:  # pragma: no branch
             for node in self._lattice:
-                if node not in self._reds and len(node) < len(self._inputs):
-                    sub_pid = self.__class__(self._dist.copy(), node, self._output)
+                if node not in self._reds and len(node) < len(self._sources):
+                    sub_pid = self.__class__(self._dist.copy(), node, self._target)
                     self._reds[node] = sub_pid._reds[node]
 
         while True:
@@ -586,7 +586,7 @@ class BaseIncompletePID(BasePID):
         if len(diff) == 1:  # pragma: no cover
             self._pis[diff.pop()] = self._total - sum(self._pis.values())
 
-        # if the sum of known PIs is I(inputs, output), all other PIs are zero
+        # if the sum of known PIs is I(sources, target), all other PIs are zero
         # note: this might be subsumed by _compute_attempt_linsolve
         if np.isclose(sum(self._pis.values()), self._total):
             for node in self._lattice:
@@ -616,7 +616,7 @@ class BaseIncompletePID(BasePID):
             for node in self._lattice:
                 if len(node) == 1:
                     red = self.get_red(node)
-                    mi = coinformation(self._dist, [node[0], self._output])
+                    mi = coinformation(self._dist, [node[0], self._target])
                     if not np.isclose(red, mi, atol=1e-5, rtol=1e-5):  # pragma: no cover
                         return False
 
@@ -653,7 +653,7 @@ class BaseUniquePID(BaseIncompletePID):
     def _compute(self):
         """
         """
-        uniques = self._measure(self._dist, self._inputs, self._output, **self._kwargs)
+        uniques = self._measure(self._dist, self._sources, self._target, **self._kwargs)
 
         for node in self._lattice:
             if len(node) == 1 and node[0] in uniques and node not in self._pis:
@@ -672,6 +672,6 @@ class BaseBivariatePID(BaseIncompletePID):
         """
         for node in self._lattice:
             if len(node) == 2 and node not in self._reds:
-                self._reds[node] = self._measure(self._dist, node, self._output, **self._kwargs)
+                self._reds[node] = self._measure(self._dist, node, self._target, **self._kwargs)
 
         super()._compute()

@@ -87,7 +87,7 @@ def ig_synergy(dist, sources, target, fuzz=1e-100):
                    )
 
     if not res.success:  # pragma: no cover
-        msg = "Optimization failed: {}".format(res.message)
+        msg = f"Optimization failed: {res.message}"
         raise ditException(msg)
 
     return objective(res.x)
