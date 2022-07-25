@@ -22,7 +22,7 @@ __all__ = (
 )
 
 
-def h_cs(d, inputs, output=None):
+def h_cs(d, sources, target=None):
     """
     Compute H_cs, the average of positive pointwise co-information values
 
@@ -30,7 +30,7 @@ def h_cs(d, inputs, output=None):
     ----------
     d : Distribution
         The distribution to compute i_ccs for.
-    inputs : iterable of iterables
+    sources : iterable of iterables
         The input variables.
 
     Returns
@@ -38,9 +38,9 @@ def h_cs(d, inputs, output=None):
     hcs : float
         The value of H_cs.
     """
-    rv_map = {rv: i for i, rv in enumerate(inputs)}
+    rv_map = {rv: i for i, rv in enumerate(sources)}
     rvs = sorted(rv_map.values())
-    d = d.coalesce(inputs)
+    d = d.coalesce(sources)
     n_variables = d.outcome_length()
     # pairwise marginal maxent
     if n_variables > 2:
@@ -75,25 +75,25 @@ class PED_CS(BasePID):
     _red_string = "H_r"
     _pi_string = "H_d"
 
-    def __init__(self, dist, inputs=None, **kwargs):
+    def __init__(self, dist, sources=None, **kwargs):
         """
         Parameters
         ----------
         dist : Distribution
             The distribution to compute the decomposition on.
-        inputs : iter of iters, None
+        sources : iter of iters, None
             The set of variables to include. If None, `dist.rvs` is used.
         """
         self._dist = dist
 
-        if inputs is None:
-            inputs = dist.rvs
+        if sources is None:
+            sources = dist.rvs
 
         self._kwargs = kwargs
-        self._inputs = tuple(map(tuple, inputs))
-        self._output = None
-        self._lattice = _transform(free_distributive_lattice(self._inputs))
-        self._total = entropy(self._dist, rvs=self._inputs)
+        self._sources = tuple(map(tuple, sources))
+        self._target = None
+        self._lattice = _transform(free_distributive_lattice(self._sources))
+        self._total = entropy(self._dist, rvs=self._sources)
         self._reds = {}
         self._pis = {}
         self._compute()
