@@ -89,7 +89,7 @@ def test_ped_cs2():
     Test iccs on AND.
     """
     d = bivariates['and']
-    pid = PED_CS(d, inputs=((0,), (1,), (2,)))
+    pid = PED_CS(d, sources=((0,), (1,), (2,)))
     for atom in pid._lattice:
         if atom == ((0,), (1,), (2,)):
             assert pid[atom] == pytest.approx(0.10375937481971094)
