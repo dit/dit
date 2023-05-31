@@ -35,7 +35,7 @@ def total_loss(dist, events, log_base = 2):
         raise TypeError("'events' must be a list.")
     elif not isinstance(dist, Distribution):
         raise TypeError("'dist' must be a dit distribution.")
-    elif not (isinstance(log_base, (int, float))):
+    elif not isinstance(log_base, (int, float)):
         raise TypeError("'log_base' must be a float.")
     # Get the total probability of all of the events.
     new_probability = dist.event_probability(events)
@@ -80,11 +80,10 @@ def interior_loss(dist, events, log_base = 2):
         raise TypeError("'events' must be a list.")
     elif not isinstance(dist, Distribution):
         raise TypeError("'dist' must be a dit distribution.")
-    elif not (isinstance(log_base, (int, float))):
+    elif not isinstance(log_base, (int, float)):
         raise TypeError("'log_base' must be a float.")
-    # Get the total number of encoded events.
-    event_count = len(events)
     # Compute the interior loss.
-    interior_loss = sum([(-1)**len(x) * total_loss(dist, list(x)) for x in more_itertools.powerset(events)])
+    interior_loss = sum([(-1)**len(x) * total_loss(dist, list(x))
+                          for x in more_itertools.powerset(events)])
     # Return the result.
     return interior_loss
