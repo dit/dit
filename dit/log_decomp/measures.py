@@ -2,9 +2,10 @@
 Methods for calculating the measures relating to the logarithmic decomposition (LD).
 """
 
-# Import numpy.
+# Import numpy and itertools.
 import numpy as np
-
+import more_itertools
+from ..npdist import Distribution
 
 # Specify all functions defined in this module.
 __all__=[
@@ -19,16 +20,23 @@ def total_loss(dist, events, log_base = 2):
 
     Parameters
     ----------
-    dist : dit.distribution
+    dist : dit.Distribution
         The distribution to be analysed.
     events : list
         A list of events over which the entropy loss will be calculated when merged.
 
     Returns
     -------
-    entropy : float
+    entropy_loss : float
         The entropy lost when merging each of the events in the distribution.
     """
+    # Check that the inputs are correct.
+    if not isinstance(events, list):
+        raise TypeError("'events' must be a list.")
+    elif not isinstance(dist, Distribution):
+        raise TypeError("'dist' must be a dit distribution.")
+    elif not (isinstance(log_base, (int, float))):
+        raise TypeError("'log_base' must be a float.")
     # Get the total probability of all of the events.
     new_probability = dist.event_probability(events)
     # Calculate the new entropy of this event.
@@ -38,4 +46,45 @@ def total_loss(dist, events, log_base = 2):
                        [dist.event_probability([event]) for event in events] ])
     # Calculate the entropy lost.
     entropy_loss = old_entropy - new_entropy
+    # If the events was empty, then set the loss to zero.
+    if events == []:
+        entropy_loss = 0
+    # Return the entropy loss.
     return entropy_loss
+
+def interior_loss(dist, events, log_base = 2):
+    """
+    Compute the interior entropy loss (Down and Mediano 2023), L^o, associated
+    to the logarithmic decomposition atom given by 'events' inside of the distribution 'dist'.
+
+    Parameters
+    ----------
+    dist : dit.Distribution
+        The distribution to be analysed.
+    events : list
+        A list of events specifying the logarithmic decomposition atom to be computed.
+
+    Returns
+    -------
+    interior_loss : float
+        The interior entropy loss associated with the logarithmic decomposition atom
+        specified by 'events'.
+
+    Notes
+    -----
+    More detail on the interior entropy loss can be found on the arxiv preprint:
+    https://arxiv.org/abs/2305.07554
+    """
+    # Check the inputs are the correct types.
+    if not isinstance(events, list):
+        raise TypeError("'events' must be a list.")
+    elif not isinstance(dist, Distribution):
+        raise TypeError("'dist' must be a dit distribution.")
+    elif not (isinstance(log_base, (int, float))):
+        raise TypeError("'log_base' must be a float.")
+    # Get the total number of encoded events.
+    event_count = len(events)
+    # Compute the interior loss.
+    interior_loss = sum([(-1)**len(x) * total_loss(dist, list(x)) for x in more_itertools.powerset(events)])
+    # Return the result.
+    return interior_loss

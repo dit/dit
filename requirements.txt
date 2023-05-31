@@ -6,3 +6,4 @@ numpy >= 1.11
 PLTable
 scipy >= 1.2.0
 pypoman
+more-itertools
