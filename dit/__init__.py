@@ -34,3 +34,4 @@ import dit.pid
 import dit.profiles
 import dit.multivariate
 import dit.shannon
+import dit.log_decomp
