@@ -6,6 +6,7 @@ https://arxiv.org/abs/2305.07554
 # Import some things.
 import more_itertools
 from .measures import interior_loss
+from ..npdist import Distribution
 
 # Specify all functions defined in this module.
 __all__=[
@@ -33,6 +34,11 @@ def content(dist, rvs):
     For more information, see the logarithmic decomposition preprint:
     https://arxiv.org/abs/2305.07554
     """
+    # Check some instance types.
+    if not isinstance(dist, Distribution):
+        raise TypeError("'dist' must be a dit distribution.")
+    elif not isinstance(rvs, list):
+        raise TypeError("'rvs' must be a list of random variables.")
     # Get the list of all outcomes.
     outcomes = dist.outcomes
     # Create a tuple from the named rvs.
