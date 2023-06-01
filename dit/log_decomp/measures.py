@@ -61,12 +61,14 @@ def interior_loss(dist, events, log_base = 2):
     ----------
     dist : dit.Distribution
         The distribution to be analysed.
-    events : list
+    events : list, tuple
         A list of events specifying the logarithmic decomposition atom to be computed.
+    log_base : int, float
+        The base of the logarithm used for computing the measure.
 
     Returns
     -------
-    interior_loss : float
+    interior_loss_measure : float
         The interior entropy loss associated with the logarithmic decomposition atom
         specified by 'events'.
 
@@ -74,16 +76,18 @@ def interior_loss(dist, events, log_base = 2):
     -----
     More detail on the interior entropy loss can be found on the arxiv preprint:
     https://arxiv.org/abs/2305.07554
+
+    If 1-outcome atom is required, add a trailing comma in the tuple.
     """
     # Check the inputs are the correct types.
-    if not isinstance(events, list):
-        raise TypeError("'events' must be a list.")
+    if not isinstance(events, (list, tuple)):
+        raise TypeError("'events' must be a list or tuple. Got type " + str(type(events)) + ".")
     elif not isinstance(dist, Distribution):
         raise TypeError("'dist' must be a dit distribution.")
     elif not isinstance(log_base, (int, float)):
         raise TypeError("'log_base' must be a float.")
     # Compute the interior loss.
-    interior_loss = sum([(-1)**len(x) * total_loss(dist, list(x))
+    interior_loss_measure = sum([(-1)**len(x) * total_loss(dist, list(x), log_base)
                           for x in more_itertools.powerset(events)])
     # Return the result.
-    return interior_loss
+    return interior_loss_measure

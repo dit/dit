@@ -10,7 +10,9 @@ from ..npdist import Distribution
 
 # Specify all functions defined in this module.
 __all__=[
-    'content'
+    'content',
+    'get_measures',
+    'measure'
 ]
 
 def content(dist, rvs):
@@ -34,11 +36,17 @@ def content(dist, rvs):
     For more information, see the logarithmic decomposition preprint:
     https://arxiv.org/abs/2305.07554
     """
+    # Check that the variables have been names.
+    if dist._rvs is None:
+        raise ValueError("Variables in dist do not have names. Please assign names and try again.")
     # Check some instance types.
     if not isinstance(dist, Distribution):
         raise TypeError("'dist' must be a dit distribution.")
-    elif not isinstance(rvs, list):
-        raise TypeError("'rvs' must be a list of random variables.")
+    elif not (rvs is None or isinstance(rvs, list)):
+        raise TypeError("'rvs' must be a list of random variables or empty.")
+    # If no rvs are specified, set the list of rvs to be *all* of the rvs.
+    if rvs is None:
+        rvs = list(dist._rvs.keys())
     # Get the list of all outcomes.
     outcomes = dist.outcomes
     # Create a tuple from the named rvs.
@@ -59,3 +67,78 @@ def content(dist, rvs):
                     # Then add it to the content.
                     variable_content.add(outcome_tuple)
     return variable_content
+
+def get_measures(dist, atoms, log_base = 2):
+    """
+    Create a dictionary containing the associated entropy for a collection of given atoms.
+
+    Parameters
+    ----------
+    dist : dit.Distribution
+        The distribution to be analysed.
+    atoms : set, list, tuple
+        A set or list of atoms to measure (which are given as tuples of strings), or
+        a single tuple representing an atom to be measured.
+
+    Returns
+    -------
+    atom_measures : dict
+        A dictionary returning the entropy associated to each atom given.
+
+    Notes
+    -----
+    For more information, see the logarithmic decomposition preprint:
+    https://arxiv.org/abs/2305.07554
+    """
+    # Check some instance types.
+    if not isinstance(dist, Distribution):
+        raise TypeError("'dist' must be a dit distribution.")
+    elif not isinstance(atoms, (set, list, tuple)):
+        raise TypeError("'atoms' must be a set or list of atoms, or a tuple for a single atom.")
+    # Initialise an empty dictionary.
+    atom_measures = {}
+    # Check the type. If a list or set, then add several to the dictionary.
+    if isinstance(atoms, (set, list)):
+        # For each atom,
+        for atom in atoms:
+            # Compute the measure and save it.
+            atom_measures[atom] = interior_loss(dist, atom, log_base)
+    # If it's just a tuple,
+    elif isinstance(atoms, tuple):
+        # Then just record the one entry.
+        atom_measures[atoms] = interior_loss(dist, atoms, log_base)
+    else:
+        raise TypeError("""Could not parse atoms. Expected set, list or tuple,
+          received type """ + str(type(atoms)) + ".")
+
+    return atom_measures
+
+def measure(dist, atoms, log_base = 2):
+    """
+    Gives the total measure of a collection of atoms 'atoms' in a distribution 'dist'.
+
+    Parameters
+    ----------
+    dist : dit.Distribution
+        The distribution being analysed.
+    atoms : set, list
+        A collection of atoms to measure.
+    log_base : int, float
+        The base of the logarithm in the entropy calculation.
+
+    Returns
+    -------
+    atomic_entropy : float
+        The total entropy associated to all of the atoms in 'atoms'.
+
+    Notes
+    -----
+    More detail on the interior entropy loss can be found on the arxiv preprint:
+    https://arxiv.org/abs/2305.07554
+    """
+    # Get the measures of all of the atoms.
+    measure_dictionary = get_measures(dist, atoms, log_base)
+    # Sum up the values.
+    atomic_entropy = sum(measure_dictionary.values())
+
+    return atomic_entropy
