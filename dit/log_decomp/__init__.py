@@ -10,3 +10,4 @@ from .content import get_measures
 from .content import measure
 from .combinatorics import upper_set
 from .combinatorics import get_n_atoms
+from .intersection import shared

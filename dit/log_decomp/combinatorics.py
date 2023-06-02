@@ -80,8 +80,9 @@ def get_n_atoms(atoms, n = 2):
     ----------
     atoms : set, list
         A set or list of atoms (tuples) to extract from.
-    n : int
+    n : int, string
         The size of atoms to extract.
+        If 'even', then extracts all even atoms. Likewise for 'odd'.
     
     Returns
     -------
@@ -96,9 +97,17 @@ def get_n_atoms(atoms, n = 2):
     # Check the inputs are the correct types.
     if not isinstance(atoms, (set, list)):
         raise TypeError("'atoms' must be a set or a list.")
-    if not isinstance(n, int):
-        raise TypeError("'n' must be an integer.")
+    if not isinstance(n, (int, str)):
+        raise TypeError("'n' must be an integer, 'even' or 'odd'.")
+    if isinstance(n, str):
+        if n not in ["even", "odd"]:
+            raise ValueError("'n' must be either an integer, 'even' or 'odd'.")
     # Create the set to output.
-    n_atoms = {atom for atom in atoms if len(atom) == n}
+    if isinstance(n, int):
+        n_atoms = {atom for atom in atoms if len(atom) == n}
+    elif n == "even":
+        n_atoms = {atom for atom in atoms if len(atom) % 2 == 0}
+    elif n == "odd":
+        n_atoms = {atom for atom in atoms if len(atom) % 2 == 1}
     # Return this.
     return n_atoms
