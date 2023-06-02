@@ -87,7 +87,8 @@ def interior_loss(dist, events, log_base = 2):
     elif not isinstance(log_base, (int, float)):
         raise TypeError("'log_base' must be a float.")
     # Compute the interior loss.
-    interior_loss_measure = sum([(-1)**len(x) * total_loss(dist, list(x), log_base)
-                          for x in more_itertools.powerset(events)])
+    interior_loss_measure = (-1)**len(events) * sum(
+                            [(-1)**len(x) * total_loss(dist, list(x), log_base)
+                            for x in more_itertools.powerset(events)])
     # Return the result.
     return interior_loss_measure
