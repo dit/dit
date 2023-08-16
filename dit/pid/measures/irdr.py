@@ -73,15 +73,14 @@ def cv_hull(p_S1_g_Tt,p_S2_g_Tt):
     # check dimensionality > 1 (causes issues in ConvexHull function)
     if len({x[0]/x[1] if x[1] != 0 else np.inf for x in (channel1 + channel2)}) > 1:
         # generate zonotopes and their convex hull
-        acc = lambda p,v: p+[(p[-1][0]+v[0], p[-1][1]+v[1])]
-        points1 = [(0.0,0.0)] + reduce(acc, channel1[1:], [channel1[0]])
-        points2 = [(0.0,0.0)] + reduce(acc, channel2[1:], [channel2[0]])
-        hull = ConvexHull([(b,a) for a,b in (points1 + points2)])
+        points1 = reduce(lambda p,v: p+[(p[-1][0]+v[0],p[-1][1]+v[1])], channel1[1:], [channel1[0]])
+        points2 = reduce(lambda p,v: p+[(p[-1][0]+v[0],p[-1][1]+v[1])], channel2[1:], [channel2[0]])
+        hull = ConvexHull([(b,a) for a,b in ([(0.0,0.0)] + points1 + points2)])
         hull_points = [(a,b) for b,a in hull.points[hull.vertices].tolist()]
         # generate resulting channel from vertices
         hull_points = sorted([x for x in hull_points if x not in ((0, 0), (0.0, 0.0))])
         diff_list = zip([(0.0,0.0)] + hull_points[:-1], hull_points)
-        return [(r_prec(n[0]-l[0]),r_prec(n[1]-l[1])) for l,n in diff_list]
+        return [(r_prec(n[0]-m[0]),r_prec(n[1]-m[1])) for m,n in diff_list]
     return [(1,1)]
 
 def i_pw(p_Tt, p_Sx_g_Tt):
@@ -143,14 +142,14 @@ class PID_RDR(BasePID):
         p_Sx_g_Tt = [] # p_Sx_g_Tt structure: [(p_t[t1], [p_S1_g_Tt1, p_S2_g_Tt1, ...]), ...]
         for t in p_t.outcomes:
             p_SxTt = [] # pointwise joint distributions
-            for dist in p_SxT:
+            for p_ST in p_SxT:
                 # convert target to binary variable
-                dist_t = [((key[0],key[1] == t), val) for key, val in dist.to_dict().items()]
+                p_STt = [((key[0],key[1] == t), val) for key, val in p_ST.to_dict().items()]
                 # aggregate identical states
-                dist_t = reduce(lambda d,x: d.update({x[0]: d.get(x[0],0)+x[1]}) or d, dist_t, {})
-                p_SxTt.append(dist_t)
+                p_STt = reduce(lambda d,x: d.update({x[0]: d.get(x[0],0)+x[1]}) or d, p_STt, {})
+                p_SxTt.append(p_STt)
             # convert maginals to conditionals (pointwise channels)
             p_Sx_g_Tt.append((p_t[t], [condition_pw(p_t[t], x) for x in p_SxTt]))
 
         # compute result (Equation 28c)
-        return sum([p_Tt * i_pw(p_Tt,p_S_g_Tt) for p_Tt, p_S_g_Tt in p_Sx_g_Tt if 0.0 < p_Tt < 1.0])
+        return sum(p_Tt * i_pw(p_Tt,p_S_g_Tt) for p_Tt, p_S_g_Tt in p_Sx_g_Tt if 0.0 < p_Tt < 1.0)
