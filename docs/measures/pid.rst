@@ -461,6 +461,14 @@ Drawing from the reconstructability analysis work of Zwick :cite:`zwick2004overv
 
    This measure can result in a negative PID.
 
+.. py:module:: dit.pid.irdr
+:math:`\Irdr{\bullet}`
+---------------------
+
+The measure of Mages & Rohner :cite:`mages2023measure` can be interpreted as a pointwise version of :math:`\Ibroja{\bullet}` to provide a non-negative partial information decomposition for an arbitrary number of sources.
+It obtains its operational interpretation from valuating the reachable decision regions (achievable type I/II error pairs) for each state of the target variable.
+
+
 .. py:module:: dit.pid.iskar
 Secret Key Agreement Rates
 --------------------------
