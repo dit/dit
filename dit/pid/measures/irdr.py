@@ -2,18 +2,35 @@
 The I_rdr measure (reachable decision regions), by Mages & Rohner
 """
 
-from ..pid import BasePID
-import numpy as np
 from functools import reduce
+import numpy as np
 from scipy.spatial import ConvexHull
+from ..pid import BasePID
 
 __all__ = (
     'PID_RDR',
 )
 
 precision = 14
+def r_prec(x, prec=precision):
+    """
+    Rounding a float to precision
 
-def condition_pw(p_Tt, p_STt): 
+    Parameters
+    ----------
+    x : Float
+        input value
+    pred: Int
+        rounding precision
+
+    Returns
+    -------
+    y : float
+        rounded result
+    """
+    return np.round(x,prec)
+
+def condition_pw(p_Tt, p_STt):
     """
     Compute set of vectors corresponding to the conditional pointwise channel (zonotope vectors)
 
@@ -29,8 +46,9 @@ def condition_pw(p_Tt, p_STt):
     p_S_g_Tt : list of tuples
         set of vectors specifying P(S|Tt)
     """
-    s_alphabet = set([x[0] for x in p_STt.keys()])
-    return [(p_STt.get((s,True),0)/p_Tt, p_STt.get((s,False),0)/(1-p_Tt))  for s in s_alphabet] # list of tuples with target order (True,False)
+    s_alphabet = {x[0] for x in p_STt.keys()}
+    # return list of tuples with target order (True,False)
+    return [(p_STt.get((s,True),0)/p_Tt, p_STt.get((s,False),0)/(1-p_Tt))  for s in s_alphabet]
 
 
 def cv_hull(p_S1_g_Tt,p_S2_g_Tt):
@@ -53,18 +71,18 @@ def cv_hull(p_S1_g_Tt,p_S2_g_Tt):
     channel1 = sorted(p_S1_g_Tt, key=lambda x: x[0]/x[1] if x[1] != 0 else np.inf, reverse=True)
     channel2 = sorted(p_S2_g_Tt, key=lambda x: x[0]/x[1] if x[1] != 0 else np.inf, reverse=True)
     # check dimensionality > 1 (causes issues in ConvexHull function)
-    if len(set([x[0]/x[1] if x[1] != 0 else np.inf for x in (channel1 + channel2)])) > 1:
+    if len({x[0]/x[1] if x[1] != 0 else np.inf for x in (channel1 + channel2)}) > 1:
         # generate zonotopes and their convex hull
-        points1  = [(0.0,0.0)] + reduce(lambda p,v: p+[(p[-1][0]+v[0], p[-1][1]+v[1])], channel1[1:], [channel1[0]])
-        points2  = [(0.0,0.0)] + reduce(lambda p,v: p+[(p[-1][0]+v[0], p[-1][1]+v[1])], channel2[1:], [channel2[0]])
+        acc = lambda p,v: p+[(p[-1][0]+v[0], p[-1][1]+v[1])]
+        points1 = [(0.0,0.0)] + reduce(acc, channel1[1:], [channel1[0]])
+        points2 = [(0.0,0.0)] + reduce(acc, channel2[1:], [channel2[0]])
         hull = ConvexHull([(b,a) for a,b in (points1 + points2)])
         hull_points = [(a,b) for b,a in hull.points[hull.vertices].tolist()]
-        # generate resulting channel
-        hull_points = sorted([x for x in hull_points if x != (0,0) and x != (0.0,0.0)])
-        ch_channel = [hull_points[0]] + [(np.round(n[0]-l[0],precision),np.round(n[1]-l[1],precision)) for l,n in zip(hull_points[:-1],hull_points[1:])]  # rounding since float imprecision can create small negative vectors
-        return ch_channel
-    else:
-        return [(1,1)]
+        # generate resulting channel from vertices
+        hull_points = sorted([x for x in hull_points if x not in ((0, 0), (0.0, 0.0))])
+        diff_list = zip([(0.0,0.0)] + hull_points[:-1], hull_points)
+        return [(r_prec(n[0]-l[0]),r_prec(n[1]-l[1])) for l,n in diff_list]
+    return [(1,1)]
 
 def i_pw(p_Tt, p_Sx_g_Tt):
     """
@@ -84,10 +102,12 @@ def i_pw(p_Tt, p_Sx_g_Tt):
     """
     if len(p_Sx_g_Tt) == 0:
         return 0
-    elif len(p_Sx_g_Tt) == 1:
-        return np.nansum([x*np.log2(x/(p_Tt*x + (1-p_Tt)*y)) for x,y in p_Sx_g_Tt[0]])  # Equation 28a
-    else:
-        return i_pw(p_Tt, [p_Sx_g_Tt[0]]) + i_pw(p_Tt, p_Sx_g_Tt[1:]) - i_pw(p_Tt, [cv_hull(p_Sx_g_Tt[0], x) for x in p_Sx_g_Tt[1:]])  # Equation 28b
+    if len(p_Sx_g_Tt) == 1:
+        # Equation 28a
+        return np.nansum([x*np.log2(x/(p_Tt*x + (1-p_Tt)*y)) for x,y in p_Sx_g_Tt[0] if x != 0.0])
+    # Equation 28b
+    pw_joint = [cv_hull(p_Sx_g_Tt[0], x) for x in p_Sx_g_Tt[1:]]
+    return i_pw(p_Tt, [p_Sx_g_Tt[0]]) + i_pw(p_Tt, p_Sx_g_Tt[1:]) - i_pw(p_Tt, pw_joint)
 
 class PID_RDR(BasePID):
     """
@@ -115,11 +135,22 @@ class PID_RDR(BasePID):
         irdr : float
             The value of I_rdr.
         """
-        p_SxT = [dist.coalesce((source,target)) for source in sources]   # marginals with target as second variable
+        # marginals with target as second variable
+        p_SxT = [dist.coalesce((source,target)) for source in sources]
         p_t   =  dist.marginal(target)
+
         # construct pointwise marginal channels
-        f = lambda x,t: ((x[0][0],x[0][1] == t),x[1])                    # convert to binary target
-        acc = lambda d, x: d.update({x[0]: d.get(x[0],0)+x[1]}) or d     # aggregate identical states
-        p_SxTt = [(p_t[t], [reduce(acc,map(lambda x: f(x,t), dist.to_dict().items()), {}) for dist in p_SxT]) for t in p_t.outcomes] # p_SxTt : [(p_t[t1], [p_S1Tt1, p_S2Tt1, ...]), ...]
-        # compute result
-        return np.nansum([p_Tt * i_pw(p_Tt, [condition_pw(p_Tt,x) for x in p_STt]) for p_Tt, p_STt in p_SxTt if 0.0 < p_Tt and p_Tt < 1.0]) # Equation 28c
+        p_Sx_g_Tt = [] # p_Sx_g_Tt structure: [(p_t[t1], [p_S1_g_Tt1, p_S2_g_Tt1, ...]), ...]
+        for t in p_t.outcomes:
+            p_SxTt = [] # pointwise joint distributions
+            for dist in p_SxT:
+                # convert target to binary variable
+                dist_t = [((key[0],key[1] == t), val) for key, val in dist.to_dict().items()]
+                # aggregate identical states
+                dist_t = reduce(lambda d,x: d.update({x[0]: d.get(x[0],0)+x[1]}) or d, dist_t, {})
+                p_SxTt.append(dist_t)
+            # convert maginals to conditionals (pointwise channels)
+            p_Sx_g_Tt.append((p_t[t], [condition_pw(p_t[t], x) for x in p_SxTt]))
+
+        # compute result (Equation 28c)
+        return sum([p_Tt * i_pw(p_Tt,p_S_g_Tt) for p_Tt, p_S_g_Tt in p_Sx_g_Tt if 0.0 < p_Tt < 1.0])
