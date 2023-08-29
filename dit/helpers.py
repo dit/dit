@@ -77,7 +77,7 @@ class RV_Mode(object):
 
         if item in self._deprecated:
             dep = self._deprecated[self._deprecated.index(item)]
-            if type(item) == type(dep):
+            if type(item) is type(dep):
                 msg = 'Deprecated value for `rv_mode`: {0!r}.'.format(item)
                 msg += ' See docstring for new conventions.'
                 warnings.warn(msg, DeprecationWarning)

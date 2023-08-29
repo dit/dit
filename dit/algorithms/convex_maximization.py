@@ -59,7 +59,7 @@ objective function on each point.
 
         # Get one solution that satisfies A x0 = b
         x0 = np.linalg.lstsq(A_eq, b_eq, rcond=None)[0]
-        assert(np.abs(A_eq.dot(x0) - b_eq).max() < 1e-5)
+        assert np.abs(A_eq.dot(x0) - b_eq).max() < 1e-5
 
         # Get projector onto null space of A, it satisfies AZ=0 and Z^T Z=I
         Z = scipy.linalg.null_space(A_eq)

@@ -7,6 +7,7 @@ import pytest
 from dit.pid.measures.irdr import PID_RDR
 from dit.pid.distributions import bivariates, trivariates
 
+
 def test_pid_rdr1():
     """
     Test rdr on a generic distribution (same as test_ibroja)
@@ -20,6 +21,7 @@ def test_pid_rdr1():
     assert pid.complete
     assert pid.nonnegative
     assert pid.consistent
+
 
 def test_pid_rdr2():
     """
@@ -45,6 +47,7 @@ def test_pid_rdr3():
     assert pid.complete
     assert pid.nonnegative
     assert pid.consistent
+
 
 def test_pid_rdr4():
     """

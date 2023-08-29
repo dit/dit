@@ -2,7 +2,6 @@
 Tests for dit.pid.measures.iprec.
 """
 
-import sys
 import pytest
 
 from dit import Distribution
@@ -51,4 +50,3 @@ def test_pid_prec4():
     d = Distribution(['000', '011', '100', '111'], [.35, .15, .15, .35])
     pid = PID_Prec(d, [[0], [1],], [2], compute=False)
     assert pid[((0,), (1,),)] == pytest.approx(0.119, abs=1e-2)
-

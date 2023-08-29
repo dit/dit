@@ -7,22 +7,21 @@ exclude =
 
 select = A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,B9
 enable_extensions =
-    H601    # Cohesion
-    I100    # Your import statements are in the wrong order.
-    I101    # The names in your from import are in the wrong order.
-    I201    # Missing newline between import groups.
-    I202    # Additional newline in a group of imports.
+    H601
+    I100
+    I101
+    I201
+    I202
 ignore =
-    D200    # One line docstrings are fine.
-    D401    # Allow first line of docstring to be passive.
-    E266    # We use multiple # for comment organization.
-    E501    # Prefer use of B950.
-    I002    # I don't use isort.
-    IF100   # x if bool else y is good.
-    RST301  # Allow directives in docstrings.
-    W503    # This rule is deprecated now.
-    S311    # We don't need cryptographically strong random number generators.
-
+    D200
+    D401
+    E266
+    E501
+    I002
+    IF100
+    RST301
+    W503
+    S311
     S101
     RST902
     RST306
@@ -123,13 +122,9 @@ ignore =
     DAR501
     SF01
 per-file-ignores =
-    # Allow assert statements in tests:
     test_*.py: N817, S101
-    # Allow * imports in __init__.py files:
     __init__.py: F401, F403
-    # allow unused imports, name issues:
     dit/abc.py: F401, N812, N814, N817
-    # dit/divergences/pmf.py is like an __init__.py:
     dit/divergences/pmf.py: F401
 
 count = True

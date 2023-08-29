@@ -51,7 +51,7 @@ def unitsum_tuples(n, k, mn, mx):
     if not (abs(s - 1) <= tol):
         msg = "Specified min and max will not create unitsum tuples."
         e = Exception(msg)
-        raise(e)
+        raise e
 
     # Now we convert from "number of increments/items" to "number of points"
     # The number of points behaviors similar to numpy.linspace(mn,mx,n)
@@ -66,7 +66,7 @@ def unitsum_tuples(n, k, mn, mx):
         t = tuple((seq[i] - seq[i + 1] - shift) for i in range(k))
         # This should be a unitsum tuple.
         s = float(sum(t))
-        assert(s > .001)
+        assert s > .001
         yield tuple(t)
 
         for idx, val in enumerate(seq):  # pragma: no branch

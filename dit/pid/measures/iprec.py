@@ -36,7 +36,6 @@ __all__ = (
 )
 
 
-
 class PID_Prec(BasePID):
     """
     The I_\\prec measure defined by Kolchinsky.
@@ -105,7 +104,7 @@ class PID_Prec(BasePID):
         for rvndx, rv in enumerate(pjoint.rvs):
             variablesQgiven[rvndx] = {}
 
-            mP = pjoint.marginal([rvndx]) # the marginal distribution over the current R.V.
+            mP = pjoint.marginal([rvndx])  # the marginal distribution over the current R.V.
             if len(mP._outcomes_index) != len(pjoint.alphabet[rvndx]):
                 raise Exception('All marginals should have full support (to proceed, drop outcomes with 0 probability)')
 
@@ -149,13 +148,13 @@ class PID_Prec(BasePID):
                 continue
 
             # Compute joint marginal of target Y and source X_rvndx
-            pYSource = pjoint.marginal([rvndx,target_rvndx,], rv_mode='indices')
+            pYSource = pjoint.marginal([rvndx, target_rvndx,], rv_mode='indices')
             for q in range(n_q):
                 for y_ix, y in enumerate(pjoint.alphabet[target_rvndx]):
                     z = np.zeros(num_vars)
                     cur_marg = 0.
                     for x_ix, x in enumerate(pjoint.alphabet[rvndx]):
-                        pXY = pYSource[pYSource._outcome_ctor((x,y))]
+                        pXY = pYSource[pYSource._outcome_ctor((x, y))]
                         cur_marg += pXY
                         z[variablesQgiven[rvndx][(q, x_ix)]] = pXY
                     z[variablesQgiven[target_rvndx][(q, y_ix)]] = -cur_marg
@@ -174,11 +173,11 @@ class PID_Prec(BasePID):
 
         def objective(x):  # efficient calculation of mutual information
             # Map solution vector x to joint distribution over Q and Y
-            pQY  = x.dot(mul_mx).reshape((n_q,n_y))
+            pQY = x.dot(mul_mx).reshape((n_q, n_y))
             pQY += 1e-12   # Remove small negative values that may appear due to numerical issues
             probs_q = pQY.sum(axis=1)
             H_YgQ = entr(pQY / probs_q[:, None]).sum(axis=1).dot(probs_q)
-            v = (H_Y - H_YgQ)/ln2
+            v = (H_Y - H_YgQ) / ln2
             if np.isclose(v, 0):
                 v = 0
             return v
@@ -187,7 +186,7 @@ class PID_Prec(BasePID):
         # set of extreme points of the corresponding polytope. It then calls
         # objective on each extreme point
         x_opt, v_opt = maximize_convex_function(f=objective,
-            A_eq=np.array(A_eq)    , b_eq=np.array(b_eq),
+            A_eq=np.array(A_eq), b_eq=np.array(b_eq),
             A_ineq=np.array(A_ineq), b_ineq=np.array(b_ineq))
 
         # Return mutual information I(Q;Y) and solution information
@@ -195,7 +194,7 @@ class PID_Prec(BasePID):
         sol['p(Q,Y)'] = x_opt.dot(mul_mx).reshape((n_q, n_y))
 
         # Compute conditional distributions of Q given each source X_i
-        for rvndx in range(len(pjoint.rvs)-1):
+        for rvndx in range(len(pjoint.rvs) - 1):
             pX = pjoint.marginal([rvndx,])
             cK = 'p(Q|X{})'.format(rvndx)
             sol[cK] = np.zeros((n_q, len(pX.alphabet[0])))
@@ -213,5 +212,3 @@ class PID_Prec(BasePID):
             return mutual_information(d, sources[0], target)
         v_opt, _ = cls.get_solution_information(d, sources, target, n_q)
         return v_opt
-
-
