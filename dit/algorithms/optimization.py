@@ -807,7 +807,7 @@ class BaseOptimizer(metaclass=ABCMeta):
 
         if x0 is not None:
             res = minimize(fun=self.objective,
-                           x0=x0,
+                           x0=x0.copy().flatten(),
                            **minimizer_kwargs
                            )
             if res.success:
