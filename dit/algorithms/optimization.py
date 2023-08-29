@@ -730,7 +730,7 @@ class BaseOptimizer(metaclass=ABCMeta):
         except AttributeError:
             self.objective = MethodType(self._objective(), self)
 
-        x0 = x0.copy() if x0 is not None else self.construct_initial()
+        x0 = x0.copy().flatten() if x0 is not None else self.construct_initial()
 
         icb = BasinHoppingInnerCallBack() if callback else None
 
