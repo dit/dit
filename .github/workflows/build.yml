@@ -22,7 +22,8 @@ jobs:
           auto-update-conda: true
           channels: conda-forge,defaults
           channel-priority: true
-          mamba-version: "*"
+          # mamba-version: "*"
+          miniconda-version: "latest"
           python-version: ${{ matrix.python-version }}
       - name: Conda info
         run: |
@@ -33,7 +34,7 @@ jobs:
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip
-          mamba install blas cython flit mkl numpy numdifftools scikit-learn scipy
+          conda install blas cython flit mkl numpy numdifftools scikit-learn scipy
       - name: Install package
         env:
           FLIT_ALLOW_INVALID: "1"
@@ -49,7 +50,7 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --statistics
       - name: Test with pytest
         run: |
-          mamba install pytest
+          conda install pytest
           conda run pytest
       - name: Codecov
         uses: codecov/codecov-action@v2
