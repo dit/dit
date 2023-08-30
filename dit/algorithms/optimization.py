@@ -807,7 +807,7 @@ class BaseOptimizer(metaclass=ABCMeta):
 
         if x0 is not None:
             res = minimize(fun=self.objective,
-                           x0=x0.copy().flatten(),
+                           x0=x0.flatten(),
                            **minimizer_kwargs
                            )
             if res.success:
@@ -817,7 +817,7 @@ class BaseOptimizer(metaclass=ABCMeta):
         ics = (self.construct_random_initial() for _ in range(niter))
         for initial in ics:
             res = minimize(fun=self.objective,
-                           x0=initial,
+                           x0=initial.flatten(),
                            **minimizer_kwargs
                            )
             if res.success:
