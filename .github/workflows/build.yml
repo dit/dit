@@ -34,7 +34,7 @@ jobs:
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip
-          conda install blas cython flit mkl numpy numdifftools scikit-learn scipy
+          conda install blas cvxopt cython flit mkl numpy numdifftools scikit-learn scipy
       - name: Install package
         env:
           FLIT_ALLOW_INVALID: "1"
