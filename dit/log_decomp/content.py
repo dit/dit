@@ -38,19 +38,21 @@ def content(dist, rvs):
     """
     # Check that the variables have been names.
     if dist._rvs is None:
-        raise ValueError("Variables in dist do not have names. Please assign names and try again.")
+        # Given them names if not, 0,1,2...
+        dist.set_rv_names(list(range(len(dist.outcomes[0]))))
+        #raise ValueError("Variables in dist do not have names. Please assign names and try again.")
     # Check some instance types.
     if not isinstance(dist, Distribution):
         raise TypeError("'dist' must be a dit distribution.")
-    elif not (rvs is None or isinstance(rvs, list)):
-        raise TypeError("'rvs' must be a list of random variables or empty.")
+    elif not (rvs is None or isinstance(rvs, (list, tuple))):
+        raise TypeError("'rvs' must be a list or tuple of random variables or empty.")
     # If no rvs are specified, set the list of rvs to be *all* of the rvs.
     if rvs is None:
         rvs = list(dist._rvs.keys())
     # Get the list of all outcomes.
     outcomes = dist.outcomes
     # Create a tuple from the named rvs.
-    rv_tuple = tuple(dist._rvs[name] for name in rvs)
+    rv_tuple = tuple(dist._rvs[rv] for rv in rvs)
     # Using this tuple, create a list of outcomes selecting these variables.
     outcomes_on_rvs = tuple(tuple(''.join(outcome[j] for j in rv_tuple)) for outcome in outcomes)
     # Initialise an empty content set.

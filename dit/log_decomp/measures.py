@@ -30,19 +30,22 @@ def total_loss(dist, events, log_base = 2):
     entropy_loss : float
         The entropy lost when merging each of the events in the distribution.
     """
+    # Make logbase a longdouble.
+    log_base = np.longdouble(log_base)
     # Check that the inputs are correct.
     if not isinstance(events, list):
         raise TypeError("'events' must be a list.")
     elif not isinstance(dist, Distribution):
         raise TypeError("'dist' must be a dit distribution.")
-    elif not isinstance(log_base, (int, float)):
-        raise TypeError("'log_base' must be a float.")
+    #elif not isinstance(log_base, (int, float)):
+    #    raise TypeError("'log_base' must be a float.")
     # Get the total probability of all of the events.
     new_probability = dist.event_probability(events)
+    new_probability = np.longdouble(new_probability)
     # Calculate the new entropy of this event.
     new_entropy = new_probability * np.emath.logn(log_base, 1.0/new_probability)
     # Calculate the old entropy of these events.
-    old_entropy = sum([ prob * np.emath.logn(log_base, 1.0/prob) for prob in \
+    old_entropy = sum([ np.longdouble(prob) * np.emath.logn(log_base, 1.0/np.longdouble(prob)) for prob in \
                        [dist.event_probability([event]) for event in events] ])
     # Calculate the entropy lost.
     entropy_loss = old_entropy - new_entropy

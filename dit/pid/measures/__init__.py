@@ -18,6 +18,7 @@ from .irav import PID_RAV
 from .irr import PID_RR
 from .iskar import PID_SKAR_owb
 from .iwedge import PID_GK
+from .ilogdec import PID_LogDec
 
 
 __all_pids = [
@@ -38,4 +39,5 @@ __all_pids = [
     PID_Prec,
     PID_CT,
     PID_IG,
+    PID_LogDec
 ]
