@@ -1,6 +1,6 @@
 [build-system]
-requires = ["flit", "setuptools"]
-build-backend = "flit.buildapi"
+requires = ["flit_core >=2,<4", "setuptools"]
+build-backend = "flit_core.buildapi"
 
 [tool.flit.metadata]
 module = "dit"
