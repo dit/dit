@@ -36,6 +36,7 @@ __all__ = (
     'uniform_like',
     'all_dist_structures',
     'random_dist_structure',
+    'DistributionEnumerator',
 )
 
 
@@ -1092,3 +1093,194 @@ def _combine_scalar_dists(d1, d2, op):
         dist[op(o1, o2)] += d1.ops.mult(p1, p2)
 
     return ScalarDistribution(*zip(*dist.items()), base=d1.get_base())
+
+class DistributionEnumerator():
+    """
+    This object enumerates all the uniform probability distributions over `n` variables each with cardinality `k`
+    """
+
+    def __init__(self, n, k):
+        """
+        Parameters
+        ----------
+        n : int
+           The number of variables.
+        k : int
+           The cardinality of each variable.
+        """
+        self.n = n
+        self.k = k
+
+    def __iter__(self):
+        """
+        Magic function to support usage as an iterator.
+
+        Returns
+        -------
+        cd : iterator
+           Iterator over canonical distributions.
+        """
+        return self._canonical_distributions()
+
+    def _events_to_int(self, events):
+        """
+        Convert between a set of events and an associated integer.
+
+        Parameters
+        ----------
+        events : iterable
+           The events.
+
+        Returns
+        -------
+        i : int
+           The associated integer representing `events`.
+        """
+        return sum(self.k**int(''.join(map(str, e)), base=self.k) for e in events)
+
+    def _int_to_events(self, i):
+        """
+        Convert
+
+        Parameters
+        ----------
+        i : int
+           The integer.
+
+        Returns
+        -------
+        events : tuple(int)
+           The events associated with `i`.
+        """
+        return [tuple(map(int, e)) for e in _int_to_dist(i, self.n, self.k).outcomes]
+
+    def _all_isomorphisms(self, events):
+        """
+        Iterate through various isomorphisms of `events`.
+
+        Parameters
+        ----------
+        events : tuple(int)
+           The events to generate isomorphisms of.
+
+        Yields
+        ------
+        dist : tuple(int)
+           Isomorphic forms of `events`.
+        """
+        cache = set()
+        for dist1 in self._variable_permutations(events):
+            for dist2 in self._symbol_swaps(dist1):
+                tdist2 = tuple(dist2)
+                if tdist2 not in cache:
+                    cache.add(tdist2)
+                    yield dist2
+
+    @staticmethod
+    def _variable_permutations(events):
+        """
+        Permute the order of events in `events`.
+
+        Parameters
+        ----------
+        events : tuple(int)
+           The events to permute.
+
+        Yields
+        ------
+        permuted : tuple(int)
+           One of the permuted forms of `events`.
+        """
+        for perm in permutations(range(len(events[0]))):
+            yield sorted([tuple([e[i] for i in perm]) for e in events])
+
+    @staticmethod
+    def _all_mappings(alphabet):
+        """
+        Iterate through permutations of the alphabet.
+
+        Parameters
+        ----------
+        alphabet: list[int]
+           The distribution's alphabet.
+
+        Yields
+        ------
+        new_alphabet : dict{int: int}
+
+        """
+        for new_alphabet in permutations(alphabet):
+            yield {a: b for a, b in zip(alphabet, new_alphabet)}
+
+    def _symbol_swaps(self, events):
+        """
+        Remap the distribution's alphabet.
+
+        Parameters
+        ----------
+        events : tuple(int)
+           The event to construct variants of.
+
+        Yields
+        ------
+        new_dist : tuple(int)
+           An isomorphic distribution with a different alphabet.
+        """
+        alphabet = list(range(self.k))
+        for maps in product(self._all_mappings(alphabet), repeat=len(events[0])):
+            yield sorted([tuple([m[var] for m, var in zip(maps, e)]) for e in events])
+
+    def _canonical(self, i):
+        """
+        Determine the canonical form of the distribution represented by `i`.
+
+        Parameters
+        ----------
+        i : int
+           The int representation of a distribution.
+
+        Returns
+        -------
+        cd : tuple(int)
+           The canonical form of the distribution represented by `i`.
+        """
+        events = self._int_to_events(i)
+        return min([self._events_to_int(new_events) for new_events in self._all_isomorphisms(events)])
+
+    def _isomorphisms(self, i):
+        """
+        Construct all isomorphisms of the distribution represented by `i`.
+
+        Parameters
+        ----------
+        i : int
+           The integer representation of the event space.
+
+        Returns
+        -------
+        isos : list[int]
+           List of integer representations of all isomorphisms of the `i` distribution.
+        """
+        events = self._int_to_events(i)
+        return [self._events_to_int(new_events) for new_events in self._all_isomorphisms(events)]
+
+    def _canonical_distributions(self):
+        """
+        Enumerate all the non-isomorphic distributions with `self.n` states and `self.k` alphabet size.
+
+        Yields
+        ------
+        dist : Distribution
+           The non-isomorphic distributions.
+        """
+        canonicals = {}
+        for i in tqdm(range(1, 2**(self.k**self.n))):
+            if i in canonicals:
+                continue
+            isos = self._isomorphisms(i)
+            canonical = min(isos)
+            for iso in isos:
+                canonicals[iso] = canonical
+
+        for canon in set(canonicals.values()):
+            yield _int_to_dist(canon, self.n, self.k)
