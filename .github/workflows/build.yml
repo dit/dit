@@ -33,15 +33,14 @@ jobs:
         run: conda list
       - name: Install dependencies
         run: |
-          python3 -m pip install --upgrade pip
-          conda install blas cvxopt cython flit mkl numpy numdifftools scikit-learn scipy
+          conda install blas cvxopt cython flit mkl numpy numdifftools scikit-learn scipy cddlib
       - name: Install package
         env:
           FLIT_ALLOW_INVALID: "1"
         run: |
           conda run flit install --deps=all
       - name: Lint with flake8
-        if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == 3.6 }}
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == 3.13 }}
         run: |
           pip3 install flake8
           # stop the build if there are Python syntax errors or undefined names:
