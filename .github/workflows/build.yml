@@ -33,7 +33,11 @@ jobs:
         run: conda list
       - name: Install dependencies
         run: |
-          conda install blas cvxopt cython flit mkl numpy numdifftools scikit-learn scipy cddlib
+          conda install blas cvxopt cython flit mkl numpy numdifftools scikit-learn scipy
+      - name: Install cddlib
+        if: ${{ matrix.os != 'windows-latest' }}
+        run: |
+          conda install cddlib
       - name: Install package
         env:
           FLIT_ALLOW_INVALID: "1"
