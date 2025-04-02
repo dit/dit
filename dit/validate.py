@@ -253,7 +253,7 @@ def validate_outcome_length(outcomes):
         outcome_length = lengths[0]
 
     # Make sure each outcome has the same length.
-    equal_lengths = np.alltrue(np.equal(lengths, outcome_length))
+    equal_lengths = np.all(np.equal(lengths, outcome_length))
     if not equal_lengths:
         raise ditException('Not all outcomes have the same length.')
     else:
