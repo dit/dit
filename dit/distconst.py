@@ -4,7 +4,7 @@ Specialized distribution constructors.
 
 import numpy as np
 
-from itertools import product
+from itertools import permutations, product
 from collections import defaultdict
 
 from random import randint
@@ -1274,7 +1274,7 @@ class DistributionEnumerator():
            The non-isomorphic distributions.
         """
         canonicals = {}
-        for i in tqdm(range(1, 2**(self.k**self.n))):
+        for i in range(1, 2**(self.k**self.n)):
             if i in canonicals:
                 continue
             isos = self._isomorphisms(i)
