@@ -1230,22 +1230,53 @@ class DistributionEnumerator():
         for maps in product(self._all_mappings(alphabet), repeat=len(events[0])):
             yield sorted([tuple([m[var] for m, var in zip(maps, e)]) for e in events])
 
-    def _canonical(self, i):
+    def _largest_symmetric_subset(self, events):
         """
-        Determine the canonical form of the distribution represented by `i`.
+        Determine how many events are permutations of each other. The purpose of
+        this is to prefer highly symmetric forms of a distribution.
 
         Parameters
         ----------
-        i : int
-           The int representation of a distribution.
+        events : tuple(int)
+           The events to study.
+
+        Returns
+        -------
+        components : tuple(int)
+           Tuple of ordered integers corresponding to how many permuted events
+           exist in the distribution.
+        """
+        isos = {}
+        for event in events:
+            iso_events = set([e[0] for e in self._variable_permutations([event])]) & set(events)
+            isos[event] = iso_events
+
+        return tuple(sorted(map(len, isos.values()), reverse=True))
+
+    def _canonical(self, isos):
+        """
+        Determine the canonical form of the equivalent distributions `isos`.
+        Among the most symmetric distribution, it is the one lexicographically
+        is first.
+
+        Parameters
+        ----------
+        isos : list[int]
+           The int representations of an isomorphic set of distributions.
 
         Returns
         -------
         cd : tuple(int)
-           The canonical form of the distribution represented by `i`.
+           The canonical element from `isos`.
         """
-        events = self._int_to_events(i)
-        return min([self._events_to_int(new_events) for new_events in self._all_isomorphisms(events)])
+        ints = {}
+        forms = defaultdict(list)
+        for iso in isos:
+            events = tuple(self._int_to_events(iso))
+            ints[events] = iso
+            forms[self._largest_symmetric_subset(events)].append(events)
+
+        return ints[tuple(min(forms[max(forms.keys())]))]
 
     def _isomorphisms(self, i):
         """
@@ -1278,7 +1309,7 @@ class DistributionEnumerator():
             if i in canonicals:
                 continue
             isos = self._isomorphisms(i)
-            canonical = min(isos)
+            canonical = self._canonical(isos)
             for iso in isos:
                 canonicals[iso] = canonical
 
