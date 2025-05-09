@@ -1136,7 +1136,7 @@ class DistributionEnumerator():
         i : int
            The associated integer representing `events`.
         """
-        return sum(self.k**int(''.join(map(str, e)), base=self.k) for e in events)
+        return sum(2**int(''.join(map(str, e)), base=self.k) for e in events)
 
     def _int_to_events(self, i):
         """
