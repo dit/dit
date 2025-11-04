@@ -398,6 +398,25 @@ They then define two partial information lattices, one quantified locally by :ma
 
    This measure can result in a negative PID.
 
+.. py:module:: dit.pid.isx
+:math:`\Isx{\bullet}`
+---------------------
+Shared Exclusions PID (:math:`I^{\mathrm{sx}}`) by Makkeh et al.
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Makkeh et al. propose a pointwise redundancy measure built on the notion of shared exclusions in probability space (:cite:`makkeh2021introducing`). Intuitively, the measure quantifies how much probability mass for the target Y is *commonly excluded* by observing sets of sources simultaneously — that common excluded mass is taken as the redundant (shared) contribution.
+
+.. math::
+
+   \Isx{X_{0:1} : Y} \;=\; \sum_{x_0,x_1,y} p(x_0,x_1,y)\; \log_2 \frac{p(x_0 \cup x_1 | y)}{p(x_0 \cup x_1)}
+
+For the general multivariate definition (which is implemented in dit), refer to :cite:`makkeh2021introducing`.
+For large datasets with up to five source variables, refer to the reference implementation at https://github.com/Abzinger/SxPID
+
+.. warning::
+
+   This measure can result in a negative PID.
+
 .. py:module:: dit.pid.irav
 :math:`\Irav{\bullet}`
 ---------------------

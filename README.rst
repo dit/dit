@@ -156,15 +156,15 @@ though it is not in the literature, the multivariate conditional exact common in
 +------------------------------------------+ * :math:`I_{BROJA}`                     | * Hypercontractivity Coefficient  |
 | Secret Key Agreement Bounds              | * :math:`I_{ccs}`                       | * Information Bottleneck          |
 |                                          | * :math:`I_{\pm}`                       | * Information Diagrams            |
-| * Secrecy Capacity                       | * :math:`I_{dep}`                       | * Information Trimming            |
-| * Intrinsic Mutual Information           | * :math:`I_{RAV}`                       | * Lautum Information              |
-| * Reduced Intrinsic Mutual Information   | * :math:`I_{mmi}`                       | * LMPR Complexity                 |
-| * Minimal Intrinsic Mutual Information   | * :math:`I_{\prec}`                     | * Marginal Utility of Information |
-| * Necessary Intrinsic Mutual Information | * :math:`I_{RA}`                        | * Maximum Correlation             |
-| * Two-Part Intrinsic Mutual Information  | * :math:`I_{SKAR}`                      | * Maximum Entropy Distributions   |
-|                                          | * :math:`I_{IG}`                        | * Perplexity                      |
-|                                          | * :math:`I_{RDR}`                       | * Rate-Distortion Theory          |
-|                                          |                                         | * TSE Complexity                  |
+| * Secrecy Capacity                       | * :math:`I_{sx}`                        | * Information Trimming            |
+| * Intrinsic Mutual Information           | * :math:`I_{dep}`                       | * Lautum Information              |
+| * Reduced Intrinsic Mutual Information   | * :math:`I_{RAV}`                       | * LMPR Complexity                 |
+| * Minimal Intrinsic Mutual Information   | * :math:`I_{mmi}`                       | * Marginal Utility of Information |
+| * Necessary Intrinsic Mutual Information | * :math:`I_{\prec}`                     | * Maximum Correlation             |
+| * Two-Part Intrinsic Mutual Information  | * :math:`I_{RA}`                        | * Maximum Entropy Distributions   |
+|                                          | * :math:`I_{SKAR}`                      | * Perplexity                      |
+|                                          | * :math:`I_{IG}`                        | * Rate-Distortion Theory          |
+|                                          | * :math:`I_{RDR}`                       | * TSE Complexity                  |
 +------------------------------------------+-----------------------------------------+-----------------------------------+
 
 Quickstart
