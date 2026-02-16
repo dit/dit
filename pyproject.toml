@@ -13,7 +13,7 @@ license = "BSD-3-Clause"
 requires-python = ">=3.9"
 authors = [
     { name = "chebee7i", email = "admin@dit.io" },
-    { name = "Ryan G. James", email = "rgjames@ucdavis.edu" },
+    { name = "Ryan G. James", email = "dit@autoplectic.com" },
 ]
 classifiers = [
     "Intended Audience :: Science/Research",
