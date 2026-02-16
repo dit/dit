@@ -55,9 +55,9 @@ class TestInit:
         assert not p.is_conditional()
         assert p.shape == (2, 2)
 
-    def test_bad_type(self):
-        with pytest.raises(TypeError):
-            XRDistribution(np.array([1, 2]))
+    def test_outcomes_pmf_missing(self):
+        with pytest.raises(ValueError, match="pmf is required"):
+            XRDistribution(['00', '01', '10', '11'])
 
     def test_free_given_mismatch(self):
         arr = xr.DataArray(np.array([[0.5, 0.5]]),
@@ -86,6 +86,141 @@ class TestInit:
         p = XRDistribution(arr, given_vars={'Y'})
         assert p.free_vars == frozenset({'X'})
         assert p.given_vars == frozenset({'Y'})
+
+
+class TestOutcomesPmfConstruction:
+
+    def test_basic_outcomes_pmf(self):
+        """Construct from outcomes + pmf, like dit.Distribution."""
+        xrd = XRDistribution(
+            ['00', '01', '10', '11'],
+            [0.25, 0.25, 0.25, 0.25],
+            rv_names=['X', 'Y'],
+        )
+        assert xrd.free_vars == frozenset({'X', 'Y'})
+        assert xrd.given_vars == frozenset()
+        assert xrd.shape == (2, 2)
+        np.testing.assert_allclose(float(xrd.data.sel(X='0', Y='0')), 0.25)
+        np.testing.assert_allclose(float(xrd.data.sel(X='1', Y='1')), 0.25)
+        assert xrd.validate()
+
+    def test_default_rv_names(self):
+        """Without rv_names, default to X0, X1, ..."""
+        xrd = XRDistribution(['00', '01', '10', '11'],
+                             [0.25, 0.25, 0.25, 0.25])
+        assert xrd.dims == ('X0', 'X1')
+        assert xrd.free_vars == frozenset({'X0', 'X1'})
+
+    def test_sparse_outcomes(self):
+        """Not all outcomes in the full product space need to be given."""
+        xrd = XRDistribution(['00', '11'], [0.5, 0.5], rv_names=['X', 'Y'])
+        assert xrd.shape == (2, 2)
+        np.testing.assert_allclose(float(xrd.data.sel(X='0', Y='0')), 0.5)
+        np.testing.assert_allclose(float(xrd.data.sel(X='0', Y='1')), 0.0)
+        np.testing.assert_allclose(float(xrd.data.sel(X='1', Y='1')), 0.5)
+
+    def test_tuple_outcomes(self):
+        """Outcomes can be tuples."""
+        xrd = XRDistribution(
+            [(0, 0), (0, 1), (1, 0), (1, 1)],
+            [0.1, 0.2, 0.3, 0.4],
+            rv_names=['A', 'B'],
+        )
+        assert xrd.shape == (2, 2)
+        np.testing.assert_allclose(float(xrd.data.sel(A=0, B=0)), 0.1)
+        np.testing.assert_allclose(float(xrd.data.sel(A=1, B=1)), 0.4)
+
+    def test_three_variables(self):
+        """Outcomes with three characters give three dimensions."""
+        outcomes = ['000', '001', '010', '011',
+                    '100', '101', '110', '111']
+        pmf = [1 / 8] * 8
+        xrd = XRDistribution(outcomes, pmf, rv_names=['X', 'Y', 'Z'])
+        assert xrd.shape == (2, 2, 2)
+        np.testing.assert_allclose(float(xrd.data.sum()), 1.0)
+
+    def test_wrong_rv_names_count(self):
+        with pytest.raises(ValueError, match="Expected 2"):
+            XRDistribution(['00', '01'], [0.5, 0.5], rv_names=['X'])
+
+    def test_mismatched_lengths(self):
+        with pytest.raises(ValueError, match="same length"):
+            XRDistribution(['00', '01', '10'], [0.5, 0.5])
+
+    def test_empty_outcomes(self):
+        with pytest.raises(ValueError, match="non-empty"):
+            XRDistribution([], [])
+
+    def test_with_given_vars(self):
+        """Can set given_vars when constructing from outcomes."""
+        xrd = XRDistribution(
+            ['00', '01', '10', '11'],
+            [0.5, 0.5, 0.5, 0.5],
+            rv_names=['X', 'Y'],
+            free_vars={'Y'},
+            given_vars={'X'},
+        )
+        assert xrd.free_vars == frozenset({'Y'})
+        assert xrd.given_vars == frozenset({'X'})
+
+    def test_equivalence_with_from_distribution(self):
+        """Outcomes+pmf construction should match from_distribution."""
+        import dit
+        d = dit.Distribution([(0, 0), (0, 1), (1, 0), (1, 1)],
+                             [0.1, 0.2, 0.3, 0.4])
+        xrd_old = XRDistribution.from_distribution(d, ['A', 'B'])
+        xrd_new = XRDistribution(
+            [(0, 0), (0, 1), (1, 0), (1, 1)],
+            [0.1, 0.2, 0.3, 0.4],
+            rv_names=['A', 'B'],
+        )
+        np.testing.assert_allclose(xrd_new.data.values, xrd_old.data.values,
+                                   atol=1e-12)
+
+    def test_with_custom_base(self):
+        """Can specify a log base."""
+        xrd = XRDistribution(['00', '11'], [0.5, 0.5],
+                             rv_names=['X', 'Y'], base=2)
+        assert xrd.is_log()
+        assert xrd.get_base() == 2
+
+
+class TestDictConstruction:
+
+    def test_basic_dict(self):
+        """Construct from a dict mapping outcomes to probabilities."""
+        xrd = XRDistribution({'00': 0.5, '11': 0.5}, rv_names=['X', 'Y'])
+        assert xrd.free_vars == frozenset({'X', 'Y'})
+        assert xrd.shape == (2, 2)
+        np.testing.assert_allclose(float(xrd.data.sel(X='0', Y='0')), 0.5)
+        np.testing.assert_allclose(float(xrd.data.sel(X='0', Y='1')), 0.0)
+        np.testing.assert_allclose(float(xrd.data.sel(X='1', Y='1')), 0.5)
+
+    def test_dict_default_names(self):
+        """Dict construction defaults to X0, X1, ..."""
+        xrd = XRDistribution({'00': 0.5, '11': 0.5})
+        assert xrd.dims == ('X0', 'X1')
+
+    def test_dict_three_outcomes(self):
+        xrd = XRDistribution(
+            {'00': 0.25, '01': 0.25, '10': 0.25, '11': 0.25},
+            rv_names=['A', 'B'],
+        )
+        assert xrd.validate()
+        np.testing.assert_allclose(float(xrd.data.sum()), 1.0)
+
+    def test_dict_tuple_keys(self):
+        """Dict with tuple keys."""
+        xrd = XRDistribution(
+            {(0, 0): 0.5, (1, 1): 0.5},
+            rv_names=['X', 'Y'],
+        )
+        assert xrd.shape == (2, 2)
+        np.testing.assert_allclose(float(xrd.data.sel(X=0, Y=0)), 0.5)
+
+    def test_dict_empty(self):
+        with pytest.raises(ValueError, match="non-empty"):
+            XRDistribution({})
 
 
 class TestFromDistribution:

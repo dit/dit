@@ -92,15 +92,32 @@ class XRDistribution:
     # Construction
     # ─────────────────────────────────────────────────────────────────────
 
-    def __init__(self, data, free_vars=None, given_vars=None, base='linear'):
+    def __init__(self, data, pmf=None, rv_names=None, free_vars=None,
+                 given_vars=None, base='linear'):
         """
         Initialize an XRDistribution.
 
+        There are three construction modes:
+
+        1. **DataArray** -- pass an ``xr.DataArray`` directly (original API).
+        2. **Outcomes + pmf** -- pass a sequence of outcomes and a sequence
+           of probabilities, matching the ``dit.Distribution`` signature.
+        3. **Dict** -- pass a dict mapping outcomes to probabilities.
+
         Parameters
         ----------
-        data : xr.DataArray
-            The probability data. Each dimension is a random variable;
-            coordinates are alphabet values.
+        data : xr.DataArray, sequence, or dict
+            If an ``xr.DataArray``, used directly as the probability data.
+            If a dict, keys are outcomes and values are probabilities.
+            Otherwise, treated as a sequence of outcomes (each outcome is
+            an indexable container whose length equals the number of
+            random variables).
+        pmf : sequence of float, optional
+            Probability values corresponding to *data* when *data* is a
+            sequence of outcomes. Ignored when *data* is a DataArray or dict.
+        rv_names : list of str, optional
+            Names for each random variable. Only used when *data* is
+            outcomes or a dict. Defaults to ``'X0'``, ``'X1'``, ...
         free_vars : set-like of str, optional
             Names of the free (joint) variables. If *both* ``free_vars``
             and ``given_vars`` are None, all dimensions are treated as free.
@@ -110,16 +127,79 @@ class XRDistribution:
             The probability base. ``'linear'`` (default) for raw
             probabilities, ``2``, ``'e'``, or any positive float for log
             probabilities.
+
+        Examples
+        --------
+        From outcomes and pmf (like ``dit.Distribution``):
+
+        >>> xrd = XRDistribution(['00','01','10','11'],
+        ...                      [.25, .25, .25, .25],
+        ...                      rv_names=['X', 'Y'])
+
+        From a dict:
+
+        >>> xrd = XRDistribution({'00': .5, '11': .5}, rv_names=['X', 'Y'])
+
+        From a DataArray (original API):
+
+        >>> xrd = XRDistribution(my_dataarray, free_vars={'X', 'Y'})
         """
         _check_xarray()
 
-        if not isinstance(data, xr.DataArray):
-            raise TypeError("data must be an xarray DataArray")
+        # -- Dispatch: build a DataArray if outcomes were provided ----------
+        if isinstance(data, xr.DataArray):
+            # Original path: DataArray passed directly
+            da = data
+        else:
+            # Outcomes path: data is outcomes (sequence or dict)
+            if isinstance(data, dict):
+                outcomes = list(data.keys())
+                pmf = list(data.values())
+            else:
+                outcomes = list(data)
+                if pmf is None:
+                    raise ValueError(
+                        "pmf is required when data is a sequence of outcomes"
+                    )
+                pmf = list(pmf)
 
-        self.data = data
+            if len(outcomes) == 0:
+                raise ValueError("outcomes must be non-empty")
+            if len(outcomes) != len(pmf):
+                raise ValueError(
+                    f"outcomes and pmf must have the same length, "
+                    f"got {len(outcomes)} and {len(pmf)}"
+                )
+
+            n = len(outcomes[0])
+            if rv_names is None:
+                rv_names = [f'X{i}' for i in range(n)]
+            if len(rv_names) != n:
+                raise ValueError(
+                    f"Expected {n} rv_names, got {len(rv_names)}"
+                )
+
+            # Infer sorted alphabet per variable from the outcomes
+            alphabets = [sorted(set(o[i] for o in outcomes)) for i in range(n)]
+            coords = {name: alpha for name, alpha in zip(rv_names, alphabets)}
+
+            shape = tuple(len(a) for a in alphabets)
+            arr = np.zeros(shape)
+            for outcome, p in zip(outcomes, pmf):
+                idx = tuple(alphabets[i].index(outcome[i]) for i in range(n))
+                arr[idx] = p
+
+            da = xr.DataArray(arr, dims=rv_names, coords=coords)
+
+            # Default: all variables are free when constructing from outcomes
+            if free_vars is None and given_vars is None:
+                free_vars = set(rv_names)
+
+        # -- Common initialisation ------------------------------------------
+        self.data = da
         self.ops = get_ops(base)
 
-        all_dims = frozenset(data.dims)
+        all_dims = frozenset(da.dims)
 
         if free_vars is None and given_vars is None:
             self.free_vars = all_dims

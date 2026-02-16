@@ -1,0 +1,47 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.19.11"
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "187cbbfebe1685b1c8d290d10c8cdfb6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "56094abdc988bda4534a427f7f63adbc",
+      "outputs": [
+        {
+          "type": "error",
+          "ename": "exception",
+          "evalue": "data must be an xarray DataArray",
+          "traceback": []
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stderr",
+          "text": "<span class=\"codehilite\"><div class=\"highlight\"><pre><span></span><span class=\"gt\">Traceback (most recent call last):</span>\n  File <span class=\"nb\">&quot;/var/folders/z2/7257kcs52xg2958mlgtkg6780000gn/T/marimo_9830/__marimo__cell_MJUe_.py&quot;</span>, line <span class=\"m\">1</span>, in <span class=\"n\">&lt;module&gt;</span>\n<span class=\"w\">    </span><span class=\"n\">d</span> <span class=\"o\">=</span> <span class=\"n\">XRDistribution</span><span class=\"p\">([</span><span class=\"s1\">&#39;000&#39;</span><span class=\"p\">,</span> <span class=\"s1\">&#39;011&#39;</span><span class=\"p\">,</span> <span class=\"s1\">&#39;101&#39;</span><span class=\"p\">,</span> <span class=\"s1\">&#39;110&#39;</span><span class=\"p\">],</span> <span class=\"p\">[</span><span class=\"mi\">1</span><span class=\"o\">/</span><span class=\"mi\">4</span><span class=\"p\">]</span><span class=\"o\">*</span><span class=\"mi\">4</span><span class=\"p\">)</span>\n<span class=\"w\">        </span><span class=\"pm\">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span>\n  File <span class=\"nb\">&quot;/Users/ryan.james/Code/dit/dit/xrdist.py&quot;</span>, line <span class=\"m\">117</span>, in <span class=\"n\">__init__</span>\n<span class=\"w\">    </span><span class=\"k\">raise</span> <span class=\"ne\">TypeError</span><span class=\"p\">(</span><span class=\"s2\">&quot;data must be an xarray DataArray&quot;</span><span class=\"p\">)</span>\n<span class=\"gr\">TypeError</span>: <span class=\"n\">data must be an xarray DataArray</span>\n</pre></div>\n</span>",
+          "mimetype": "application/vnd.marimo+traceback"
+        }
+      ]
+    },
+    {
+      "id": "awWX",
+      "code_hash": null,
+      "outputs": [],
+      "console": []
+    }
+  ]
+}
