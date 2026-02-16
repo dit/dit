@@ -1,5 +1,7 @@
 """
 The I_rdr measure (reachable decision regions), by Mages & Rohner
+
+https://arxiv.org/abs/2407.04415
 """
 
 from functools import reduce
