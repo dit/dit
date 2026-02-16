@@ -50,6 +50,7 @@ test = [
     "pytest>=7.0",
     "pytest-cov",
     "pytest-rerunfailures",
+    "pytest-sugar",
     "pytest-xdist",
 ]
 jax = [
@@ -78,6 +79,8 @@ dev = [
     "dit[test]",
     "dit[optional]",
     "dit[docs]",
+    "dit[jax]",
+    "dit[torch]",
     "dit[xarray]",
     "ruff",
     "ty",
