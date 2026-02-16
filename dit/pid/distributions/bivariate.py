@@ -3,9 +3,9 @@ Example bivariate distributions. The last index is designed to be the output.
 """
 
 from ... import Distribution
-from ...distconst import erasure, uniform
+from ...distconst import erasure
+from ...distconst import uniform
 from ...example_dists import jeff
-
 
 __all__ = (
     'and_',
@@ -32,6 +32,7 @@ __all__ = (
     'syn',
     'uni',
     'unq1',
+    'w',
     'wb_1',
     'wb_2',
     'wb_3',
@@ -116,6 +117,9 @@ dup = uniform(['000', '001', '111', '112'])
 
 # pointwise unique
 pwu = uniform(['011', '101', '022', '202'])
+
+# w distribution (also known as the elevensies)
+w = uniform(['001', '010', '100'])
 
 # erase distribution. two-way secret key agreement rate is non-zero, even though
 # both one-way secret key agreement rates are zero.
