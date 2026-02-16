@@ -80,6 +80,7 @@ dev = [
     "dit[docs]",
     "dit[xarray]",
     "ruff",
+    "ty",
 ]
 
 # ── Build configuration ─────────────────────────────────────────────────
@@ -166,3 +167,60 @@ ignore = [
 
 [tool.ruff.lint.isort]
 known-first-party = ["dit"]
+
+# ── ty (type checking) ──────────────────────────────────────────────────
+
+[tool.ty.environment]
+python-version = "3.12"
+
+[tool.ty.analysis]
+# Optional/conditional dependencies and compiled extensions
+allowed-unresolved-imports = [
+    # Optional third-party packages
+    "cvxopt.**",
+    "jax.**",
+    "matplotlib.**",
+    "numdifftools.**",
+    "pypoman.**",
+    "torch.**",
+    "ternary.**",
+    "sklearn.**",
+    "pint.**",
+    "colorama.**",
+    "prettytable.**",
+    # Cython compiled extensions (may not be built)
+    "dit.inference.pycounts.**",
+    "dit.math._close.**",
+    "dit.math._samplediscrete.**",
+]
+
+[tool.ty.rules]
+# ── Errors (these catch real bugs) ──
+unresolved-import = "error"
+# ── Warnings (noisy in an untyped codebase, but good to surface) ──
+unresolved-attribute = "warn"
+call-non-callable = "warn"
+invalid-argument-type = "warn"
+not-subscriptable = "warn"
+invalid-method-override = "warn"
+missing-argument = "warn"
+invalid-assignment = "warn"
+unsupported-operator = "warn"
+not-iterable = "warn"
+unknown-argument = "warn"
+too-many-positional-arguments = "warn"
+no-matching-overload = "warn"
+possibly-unresolved-reference = "warn"
+
+[tool.ty.src]
+include = ["dit/", "tests/"]
+
+# Relax rules in tests
+[[tool.ty.overrides]]
+include = ["tests/**"]
+
+[tool.ty.overrides.rules]
+unresolved-attribute = "ignore"
+invalid-argument-type = "ignore"
+missing-argument = "ignore"
+not-iterable = "ignore"
