@@ -17,8 +17,8 @@ These work because xarray automatically aligns arrays by dimension name
 during arithmetic, and the free/given metadata tracks which variables are
 being described vs conditioned on.
 
-Example
--------
+Examples
+--------
 >>> import dit
 >>> from dit.xrdist import XRDistribution
 >>>
@@ -383,11 +383,35 @@ class XRDistribution:
         return True
 
     def make_dense(self):
-        """No-op -- DataArray is always dense."""
+        """
+        No-op -- DataArray is always dense.
+
+        Provided for API compatibility with :class:`dit.Distribution`.
+
+        Returns
+        -------
+        int
+            Always returns 0.
+        """
         return 0
 
     def make_sparse(self, trim=True):
-        """No-op -- DataArray is always dense."""
+        """
+        No-op -- DataArray is always dense.
+
+        Provided for API compatibility with :class:`dit.Distribution`.
+        Sparse representation is not supported.
+
+        Parameters
+        ----------
+        trim : bool, optional
+            Ignored. Kept for API compatibility.
+
+        Returns
+        -------
+        int
+            Always returns 0.
+        """
         return 0
 
     def zipped(self, mode='pmf'):
@@ -677,7 +701,20 @@ class XRDistribution:
         - ``p(X) * p(Z|X,Y)    = p(X,Z|Y)``
         - ``scalar * p(X)       = scaled p(X)``
 
-        Rules:
+        Parameters
+        ----------
+        other : XRDistribution or float
+            Another distribution to multiply, or a scalar for scaling.
+
+        Returns
+        -------
+        result : XRDistribution
+            The product distribution. For scalar multiplication, a scaled
+            copy with the same free/given structure.
+
+        Notes
+        -----
+        Distribution multiplication rules:
 
         - ``free_A`` and ``free_B`` must be disjoint
         - ``given_B`` must be a subset of ``all_A``
@@ -729,7 +766,19 @@ class XRDistribution:
                               given_vars=result_given)
 
     def __rmul__(self, other):
-        """Right multiplication (for scalars)."""
+        """
+        Right multiplication (for scalars).
+
+        Parameters
+        ----------
+        other : int or float
+            Scalar to multiply.
+
+        Returns
+        -------
+        result : XRDistribution
+            Scaled distribution, or NotImplemented if other is not a scalar.
+        """
         if isinstance(other, (int, float, np.number)):
             return self.__mul__(other)
         return NotImplemented
@@ -740,6 +789,17 @@ class XRDistribution:
 
         ``p(X,Y) / p(X)`` yields ``p(Y|X)`` -- division creates a
         conditional distribution.
+
+        Parameters
+        ----------
+        other : XRDistribution or float
+            Denominator distribution, or scalar for scaling.
+
+        Returns
+        -------
+        result : XRDistribution
+            The quotient distribution. The denominator's free variables
+            become given variables in the result.
         """
         if isinstance(other, (int, float, np.number)):
             return XRDistribution(
@@ -797,12 +857,13 @@ class XRDistribution:
 
         Parameters
         ----------
-        base : float
-            Logarithm base.
+        base : float, optional
+            Logarithm base for the result (default: 2).
 
         Returns
         -------
         h : float
+            The (conditional) entropy.
         """
         lin = self._linear_data()
         log_b = np.log(base)
@@ -838,12 +899,16 @@ class XRDistribution:
         Parameters
         ----------
         var_x : str or set of str
+            Variable(s) for the first argument of I(X;Y).
         var_y : str or set of str
-        base : float
+            Variable(s) for the second argument of I(X;Y).
+        base : float, optional
+            Logarithm base for the result (default: 2).
 
         Returns
         -------
         mi : float
+            The mutual information I(X;Y).
         """
         if not self.is_joint():
             raise ValueError("Mutual information requires a joint distribution")
@@ -879,8 +944,9 @@ class XRDistribution:
         Returns
         -------
         result : XRDistribution or float
-            If all dimensions are selected, returns a float probability.
-            Otherwise returns a reduced XRDistribution.
+            If all dimensions are selected, returns a float (probability or
+            log probability, depending on the distribution's base). Otherwise
+            returns a reduced XRDistribution.
 
         Examples
         --------
@@ -905,11 +971,14 @@ class XRDistribution:
         key : dict or tuple
             If a dict, performs label-based selection via :meth:`sel`.
             If a tuple with the same length as :attr:`dims`, looks up the
-            probability of that outcome.
+            value (probability or log probability) of that outcome.
 
         Returns
         -------
-        prob : float or XRDistribution
+        result : float or XRDistribution
+            The value at the outcome, or a reduced distribution for dict
+            selection. For tuple keys, returns probability or log probability
+            depending on the distribution's base.
         """
         if isinstance(key, dict):
             return self.sel(**key)
@@ -986,12 +1055,26 @@ class XRDistribution:
         return d
 
     def to_numpy(self):
-        """Return the underlying data as a numpy array."""
+        """
+        Return the underlying data as a numpy array.
+
+        Returns
+        -------
+        np.ndarray
+            Copy of the probability values (linear or log, depending on base).
+        """
         return self.data.values.copy()
 
     @property
     def DataArray(self):
-        """Return the underlying xr.DataArray (read-only view)."""
+        """
+        Return the underlying xr.DataArray (read-only view).
+
+        Returns
+        -------
+        xr.DataArray
+            The probability array. Modifying it may affect this distribution.
+        """
         return self.data
 
     # ─────────────────────────────────────────────────────────────────────
@@ -1012,11 +1095,14 @@ class XRDistribution:
         Parameters
         ----------
         other : XRDistribution
-        atol : float
+            Distribution to compare against.
+        atol : float, optional
+            Absolute tolerance for value comparison (default: 1e-9).
 
         Returns
         -------
         eq : bool
+            True if free_vars, given_vars match and values are close.
         """
         if not isinstance(other, XRDistribution):
             return False
@@ -1032,6 +1118,10 @@ class XRDistribution:
 
         For a joint distribution, divides by the total sum.
         For a conditional, normalises each conditional slice.
+
+        Returns
+        -------
+        None
         """
         lin = self._linear_data()
 

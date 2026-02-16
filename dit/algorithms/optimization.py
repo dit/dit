@@ -184,7 +184,7 @@ class BaseOptimizer(metaclass=ABCMeta):
         Returns
         -------
         x : np.ndarray
-            A random optimization vector.
+            A uniform optimization vector.
         """
         vec = np.ones(self._optvec_size) / self._optvec_size
         return vec

@@ -82,6 +82,7 @@ def _make_backend_subclass(cls, backend):
     Returns
     -------
     new_cls : type
+        The optimizer class with the requested backend.
     """
     if backend == 'numpy':
         return cls
@@ -156,8 +157,9 @@ class MarkovVarMixin:
         crvs : list, None
             A single list of indexes specifying the random variables to
             condition on. If None, then no variables are conditioned on.
-        bound : int
-            Place an artificial bound on the size of W.
+        bound : int, None
+            Place an artificial bound on the size of W. If None, the
+            theoretical bound from :meth:`compute_bound` is used.
         rv_mode : str, None
             Specifies how to interpret ``rvs`` and ``crvs``. Valid options are:
             ``{'indices', 'names'}``. If equal to ``'indices'``, then the
@@ -276,6 +278,11 @@ class MarkovVarMixin:
         ----------
         x : np.ndarray
             An optimization vector.
+
+        Returns
+        -------
+        delta : float
+            The constraint residual; zero when the joint matches.
         """
         joint = self.construct_joint(x)
         joint = joint.sum(axis=-1)  # marginalize out w
@@ -288,6 +295,12 @@ class MarkovVarMixin:
     def functional(cls):
         """
         Construct a functional form of the optimizer.
+
+        Returns
+        -------
+        common_info : callable
+            A function that computes the common information for a given
+            distribution.
         """
         @unitful
         def common_info(dist, rvs=None, crvs=None, niter=None, maxiter=1000,
@@ -318,7 +331,7 @@ class MarkovVarMixin:
         rvs : list, None
             A list of lists. Each inner list specifies the indexes of the random
             variables used to calculate the {name} common information. If None,
-            then it calculated over all random variables, which is equivalent to
+            then it is calculated over all random variables, which is equivalent to
             passing ``rvs=dist.rvs``.
         crvs : list, None
             A single list of indexes specifying the random variables to condition
@@ -363,6 +376,8 @@ class MinimizingMarkovVarMixin:
     def optimize(self, x0=None, niter=None, maxiter=None, polish=1e-6,
                  callback=False, minimize=True, min_niter=15):
         """
+        Run the optimization, optionally with auxiliary variable minimization.
+
         Parameters
         ----------
         x0 : np.ndarray, None

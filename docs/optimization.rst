@@ -76,3 +76,55 @@ The second constructs several maximum entropy distributions, each with all subse
     In [9]: k0, k1, k2, k3 = marginal_maxent_dists(xor)
 
 where ``k0`` is the maxent dist corresponding the same alphabets as ``xor``; ``k1`` fixes :math:`p(x_0)`, :math:`p(x_1)`, and :math:`p(x_2)`; ``k2`` fixes :math:`p(x_0, x_1)`, :math:`p(x_0, x_2)`, and :math:`p(x_1, x_2)` (as in the ``maxent_dist`` example above), and finally ``k3`` fixes :math:`p(x_0, x_1, x_2)` (e.g. is the distribution we started with).
+
+=====================
+Optimization Backends
+=====================
+
+By default, ``dit`` uses NumPy and SciPy for numerical optimization. Two additional backends are available that leverage automatic differentiation for computing exact gradients, which can improve convergence for large or complex problems:
+
+JAX Backend
+~~~~~~~~~~~
+
+Install with ``pip install "dit[jax]"``. The JAX backend (``dit.algorithms.optimization_jax``) provides:
+
+* Automatic differentiation via ``jax.grad`` for exact gradient computation
+* JIT compilation for improved performance
+* GPU/TPU acceleration when available
+
+PyTorch Backend
+~~~~~~~~~~~~~~~
+
+Install with ``pip install "dit[torch]"``. The PyTorch backend (``dit.algorithms.optimization_torch``) provides:
+
+* Automatic differentiation via ``torch.autograd`` for exact gradient computation
+* GPU acceleration via CUDA or MPS when available
+* ``torch.compile`` support for PyTorch 2.0+
+
+For measures that use the Markov variable optimizer (e.g. common informations), the backend can be selected via the ``backend`` parameter:
+
+.. code-block:: python
+
+    from dit.multivariate import wyner_common_information
+
+    # Default NumPy backend
+    wyner_common_information(d)
+
+    # JAX backend (requires jax)
+    wyner_common_information(d, backend='jax')
+
+    # PyTorch backend (requires torch)
+    wyner_common_information(d, backend='torch')
+
+=======
+Logging
+=======
+
+The optimization modules emit structured log messages via `loguru <https://loguru.readthedocs.io>`_. Logging is disabled by default. To enable it:
+
+.. code-block:: python
+
+    from loguru import logger
+    logger.enable("dit")
+
+This will show optimization progress including problem dimensions, convergence status, and objective values.

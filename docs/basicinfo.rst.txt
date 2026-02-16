@@ -7,28 +7,28 @@ Downloads:
    https://anaconda.org/conda-forge/dit
 
 Dependencies:
-   * Python 2.7, 3.3, 3.4, 3.5, or 3.6
+   * Python 3.9+
    * `boltons <https://boltons.readthedocs.io>`_
    * `debtcollector <https://docs.openstack.org/debtcollector/>`_
+   * `lattices <https://github.com/dit/lattices>`_
+   * `loguru <https://loguru.readthedocs.io>`_
    * `networkx <https://networkx.github.io/>`_
    * `numpy <http://www.numpy.org/>`_
    * `PLTable <https://github.com/platomav/PLTable>`_
    * `scipy <https://www.scipy.org/>`_
-
-
 
 Optional Dependencies
 ~~~~~~~~~~~~~~~~~~~~~
 * colorama: colored column heads in PID indicating failure modes
 * cython: faster sampling from distributions
 * hypothesis: random sampling of distributions
+* jax, jaxlib: JAX-based optimization backend with autodiff support
 * matplotlib, python-ternary: plotting of various information-theoretic expansions
 * numdifftools: numerical evaluation of gradients and hessians during optimization
 * pint: add units to informational values
 * scikit-learn: faster nearest-neighbor lookups during entropy/mutual information estimation from samples
-
-Mailing list:
-   None
+* torch: PyTorch-based optimization backend with autodiff and GPU support
+* xarray: ``XRDistribution`` class for labeled, algebra-friendly distributions
 
 Code and bug tracker:
    https://github.com/dit/dit

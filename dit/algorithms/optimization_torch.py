@@ -7,8 +7,9 @@ PyTorch for:
 - GPU acceleration (when available)
 - torch.compile for improved performance (PyTorch 2.0+)
 
-Requirements:
-    pip install torch
+Notes
+-----
+PyTorch is required. Install with: pip install torch
 """
 
 from abc import ABCMeta
@@ -293,8 +294,8 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
 
         Returns
         -------
-        grad_func : callable
-            The gradient function.
+        grad_func : callable or None
+            The gradient function, or None if autodiff is unavailable.
         """
         if not self._use_autodiff or not TORCH_AVAILABLE:
             return None
@@ -333,7 +334,7 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
         Returns
         -------
         x : np.ndarray
-            A random optimization vector.
+            A uniform optimization vector.
         """
         vec = np.ones(self._optvec_size) / self._optvec_size
         return vec
@@ -1290,12 +1291,13 @@ class BaseNonConvexTorchOptimizer(BaseTorchOptimizer):
 
         Parameters
         ----------
-        x0 : np.ndarray
-            An optimization vector.
+        x0 : np.ndarray, optional
+            Initial optimization vector (unused by this method; kept for
+            interface consistency).
         minimizer_kwargs : dict
             A dictionary of keyword arguments to pass to the optimizer.
         niter : int
-            If applicable, the number of iterations to make.
+            The population size for differential evolution.
 
         Returns
         -------
@@ -1326,12 +1328,13 @@ class BaseNonConvexTorchOptimizer(BaseTorchOptimizer):
 
         Parameters
         ----------
-        x0 : ndarray, None
-            Initial optimization vector. If None, use a random vector.
+        x0 : ndarray, optional
+            Initial optimization vector (unused by this method; kept for
+            interface consistency).
         minimizer_kwargs : dict
             A dictionary of keyword arguments to pass to the optimizer.
         niter : int
-            If applicable, the number of iterations to make.
+            The number of iterations for the SHGO algorithm.
 
         Returns
         -------

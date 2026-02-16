@@ -23,7 +23,7 @@ on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-needs_sphinx = '1.3'
+needs_sphinx = '4.0'
 
 # All our documentation is python.
 primary_domain = 'py'
@@ -70,7 +70,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'dit'
-copyright = u'2013-2018, dit contributors'
+copyright = u'2013-2026, dit contributors'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -351,4 +351,8 @@ texinfo_documents = [
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'http://docs.python.org/': None}
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3/', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/', None),
+}

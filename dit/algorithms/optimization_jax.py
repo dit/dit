@@ -7,8 +7,9 @@ JAX for:
 - JIT compilation for improved performance
 - GPU/TPU acceleration (when available)
 
-Requirements:
-    pip install jax jaxlib
+Notes
+-----
+Requires JAX to be installed: pip install jax jaxlib
 """
 
 from abc import ABCMeta
@@ -77,7 +78,14 @@ __all__ = (
 
 
 def _check_jax():
-    """Raise an error if JAX is not available."""
+    """
+    Raise an error if JAX is not available.
+
+    Raises
+    ------
+    ImportError
+        If JAX is not installed.
+    """
     if not JAX_AVAILABLE:
         raise ImportError(
             "JAX is required for this module. Install with: pip install jax jaxlib"
@@ -87,7 +95,19 @@ def _check_jax():
 # SVD singular values using JAX
 @jit
 def _svdvals(m):
-    """Compute singular values of a matrix using JAX."""
+    """
+    Compute singular values of a matrix using JAX.
+
+    Parameters
+    ----------
+    m : array_like
+        The matrix to compute singular values of.
+
+    Returns
+    -------
+    s : jnp.ndarray
+        The singular values.
+    """
     return jnp.linalg.svd(m, compute_uv=False)
 
 
@@ -300,7 +320,7 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         Returns
         -------
         x : np.ndarray
-            A random optimization vector.
+            A uniform optimization vector.
         """
         vec = np.ones(self._optvec_size) / self._optvec_size
         return vec
@@ -1631,12 +1651,12 @@ class BaseAuxVarJaxOptimizer(BaseNonConvexJaxOptimizer):
 
         Parameters
         ----------
-        x : jnp.ndarray
+        x : array_like
             An optimization vector.
 
         Returns
         -------
-        ccs : [float]
+        ccs : list of float
             The channel capacity of each auxiliary variable.
         """
         ccs = []
@@ -1673,12 +1693,36 @@ class BaseAuxVarJaxOptimizer(BaseNonConvexJaxOptimizer):
 
         @self._maybe_jit
         def objective_entropy(x):
-            """Post-process the entropy."""
+            """
+            Post-process the entropy.
+
+            Parameters
+            ----------
+            x : array_like
+                An optimization vector.
+
+            Returns
+            -------
+            ent : float
+                The entropy scaled by sign (minimize or maximize).
+            """
             ent = entropy(self.construct_joint(x))
             return sign * ent
 
         def objective_channelcapacity(x):
-            """Post-process the channel capacity."""
+            """
+            Post-process the channel capacity.
+
+            Parameters
+            ----------
+            x : array_like
+                An optimization vector.
+
+            Returns
+            -------
+            cc : float
+                The sum of channel capacities scaled by sign.
+            """
             cc = sum(self._channel_capacity(x))
             return sign * cc
 
@@ -1697,6 +1741,17 @@ class BaseAuxVarJaxOptimizer(BaseNonConvexJaxOptimizer):
             """
             Constraint to ensure that the new solution is not worse than that
             found before.
+
+            Parameters
+            ----------
+            x : array_like
+                An optimization vector.
+
+            Returns
+            -------
+            obj : float
+                The squared deviation of the current objective from the
+                previously found optimum.
             """
             obj = (self.objective(x) - true_objective)**2
             return obj

@@ -1,12 +1,8 @@
 ``dit`` is a Python package for information theory.
 
-|build| |codecov| |codacy| |deps|
+|build| |codecov| |docs| |conda|
 
-|docs| |slack| |saythanks| |conda|
-
-|joss| |zenodo|
-
-Try ``dit`` live: |binder|
+|joss| |zenodo| |slack|
 
 Introduction
 ------------
@@ -59,10 +55,11 @@ https://anaconda.org/conda-forge/dit
 +-------------------------------------------------------------------+
 | Dependencies                                                      |
 +===================================================================+
-| * Python 3.3+                                                     |
+| * Python 3.9+                                                     |
 | * `boltons <https://boltons.readthedocs.io>`_                     |
 | * `debtcollector <https://docs.openstack.org/debtcollector/>`_    |
 | * `lattices <https://github.com/dit/lattices>`_                   |
+| * `loguru <https://loguru.readthedocs.io>`_                       |
 | * `networkx <https://networkx.github.io/>`_                       |
 | * `numpy <http://www.numpy.org/>`_                                |
 | * `PLTable <https://github.com/platomav/PLTable>`_                |
@@ -74,10 +71,13 @@ Optional Dependencies
 * colorama: colored column heads in PID indicating failure modes
 * cython: faster sampling from distributions
 * hypothesis: random sampling of distributions
+* jax, jaxlib: JAX-based optimization backend with autodiff support
 * matplotlib, python-ternary: plotting of various information-theoretic expansions
 * numdifftools: numerical evaluation of gradients and hessians during optimization
 * pint: add units to informational values
 * scikit-learn: faster nearest-neighbor lookups during entropy/mutual information estimation from samples
+* torch: PyTorch-based optimization backend with autodiff and GPU support
+* xarray: ``XRDistribution`` class for labeled, algebra-friendly distributions
 
 Install
 *******
@@ -88,35 +88,34 @@ The easiest way to install is:
 
   pip install dit
 
-If you want to install `dit` within a conda environment, you can simply do:
+If you want to install ``dit`` within a conda environment, you can simply do:
 
 .. code-block:: bash
 
   conda install -c conda-forge dit
 
-Alternatively, you can clone this repository, move into the newly created
-``dit`` directory, and then install the package:
+For development, we recommend `uv <https://docs.astral.sh/uv/>`_:
 
 .. code-block:: bash
 
   git clone https://github.com/dit/dit.git
   cd dit
-  pip install .
+  uv sync --extra dev
 
-.. note::
-
-  The cython extensions are currently not supported on windows. Please install
-  using the ``--nocython`` option.
-
+This installs ``dit`` in editable mode with all development dependencies
+(tests, docs, linting, type checking, and optional backends).
 
 Testing
 *******
-.. code-block:: shell
 
-  $ git clone https://github.com/dit/dit.git
-  $ cd dit
-  $ pip install -r requirements_testing.txt
-  $ py.test
+.. code-block:: bash
+
+  # Using uv (recommended)
+  uv run pytest
+
+  # Or with pip
+  pip install -e ".[test]"
+  pytest
 
 Code and bug tracker
 ********************
@@ -301,28 +300,12 @@ If you'd like to get in contact about anything, you can reach us through our `sl
    :alt: Continuous Integration Status
 
 .. |codecov| image:: https://codecov.io/gh/dit/dit/branch/master/graph/badge.svg
-  :target: https://codecov.io/gh/dit/dit
-  :alt: Test Coverage Status
-
-.. |coveralls| image:: https://coveralls.io/repos/dit/dit/badge.svg?branch=master
-   :target: https://coveralls.io/r/dit/dit?branch=master
+   :target: https://codecov.io/gh/dit/dit
    :alt: Test Coverage Status
 
 .. |docs| image:: https://readthedocs.org/projects/dit/badge/?version=latest
    :target: http://dit.readthedocs.org/en/latest/?badge=latest
    :alt: Documentation Status
-
-.. |health| image:: https://landscape.io/github/dit/dit/master/landscape.svg?style=flat
-   :target: https://landscape.io/github/dit/dit/master
-   :alt: Code Health
-
-.. |codacy| image:: https://api.codacy.com/project/badge/Grade/b1beeea8ada647d49f97648216fd9687
-   :target: https://www.codacy.com/app/Autoplectic/dit?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dit/dit&amp;utm_campaign=Badge_Grade
-   :alt: Code Quality
-
-.. |deps| image:: https://requires.io/github/dit/dit/requirements.svg?branch=master
-   :target: https://requires.io/github/dit/dit/requirements/?branch=master
-   :alt: Requirements Status
 
 .. |conda| image:: https://anaconda.org/conda-forge/dit/badges/installer/conda.svg
    :target: https://anaconda.org/conda-forge/dit
@@ -332,22 +315,6 @@ If you'd like to get in contact about anything, you can reach us through our `sl
    :target: https://zenodo.org/badge/latestdoi/13201610
    :alt: DOI
 
-.. |gitter| image:: https://badges.gitter.im/Join%20Chat.svg
-   :target: https://gitter.im/dit/dit?utm_source=badge&utm_medium=badge
-   :alt: Join the Chat
-
-.. |saythanks| image:: https://img.shields.io/badge/SayThanks.io-%E2%98%BC-1EAEDB.svg
-   :target: https://saythanks.io/to/Autoplectic
-   :alt: Say Thanks!
-
-.. |depsy| image:: http://depsy.org/api/package/pypi/dit/badge.svg
-   :target: http://depsy.org/package/python/dit
-   :alt: Research software impact
-
-.. |waffle| image:: https://badge.waffle.io/dit/dit.png?label=ready&title=Ready
-   :target: https://waffle.io/dit/dit?utm_source=badge
-   :alt: Stories in Ready
-
 .. |slack| image:: https://img.shields.io/badge/Slack-dit--python-lightgrey.svg
    :target: https://dit-python.slack.com/
    :alt: dit chat
@@ -355,7 +322,3 @@ If you'd like to get in contact about anything, you can reach us through our `sl
 .. |joss| image:: http://joss.theoj.org/papers/10.21105/joss.00738/status.svg
    :target: https://doi.org/10.21105/joss.00738
    :alt: JOSS Status
-
-.. |binder| image:: https://mybinder.org/badge.svg
-   :target: https://mybinder.org/v2/gh/dit/dit/master?filepath=examples
-   :alt: Run `dit` live!
