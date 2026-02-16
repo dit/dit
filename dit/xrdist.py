@@ -586,10 +586,229 @@ class XRDistribution:
         return f'p({free})'
 
     def __repr__(self):
-        return f'XRDistribution {self._notation()}\n{self.data}'
+        return self._to_string()
 
     def __str__(self):
-        return self.__repr__()
+        return self._to_string()
+
+    def _repr_html_(self):
+        """
+        Rich HTML representation for Jupyter notebooks.
+
+        Returns
+        -------
+        html : str
+        """
+        return self._to_html()
+
+    # ── Display helpers ───────────────────────────────────────────────
+
+    @staticmethod
+    def _native_alphabet(alphabet):
+        """
+        Convert an alphabet tuple to native Python types for clean display.
+
+        Parameters
+        ----------
+        alphabet : tuple of tuples
+            Raw alphabet from ``self.alphabet``.
+
+        Returns
+        -------
+        clean : tuple of tuples
+        """
+        def _native(v):
+            """Convert numpy scalars to native Python types."""
+            if hasattr(v, 'item'):
+                return v.item()
+            return v
+        return tuple(tuple(_native(v) for v in alpha) for alpha in alphabet)
+
+    @staticmethod
+    def _fmt_prob(p, digits=None):
+        """
+        Format a probability value for display.
+
+        Parameters
+        ----------
+        p : float
+            Probability value.
+        digits : int or None
+            Number of digits to round to. ``None`` for a default compact
+            representation.
+
+        Returns
+        -------
+        s : str
+        """
+        if digits is not None:
+            return str(round(p, digits))
+        # Compact default: up to 6 significant figures, strip trailing zeros
+        return f'{p:.6g}'
+
+    def _to_string(self, digits=None):
+        """
+        Build a plain-text representation of the distribution.
+
+        Parameters
+        ----------
+        digits : int or None
+            Round probabilities to this many digits. ``None`` for a compact
+            default format.
+
+        Returns
+        -------
+        s : str
+        """
+        from io import StringIO
+        s = StringIO()
+
+        notation = self._notation()
+        base = self.get_base()
+        alphabet = self._native_alphabet(self.alphabet)
+        free_str = ', '.join(sorted(self.free_vars))
+        given_str = ', '.join(sorted(self.given_vars)) if self.given_vars else '(none)'
+
+        s.write(f"Class:     XRDistribution\n")
+        s.write(f"Notation:  {notation}\n")
+        s.write(f"Alphabet:  {alphabet}\n")
+        s.write(f"Base:      {base}\n")
+        s.write(f"Free vars: {{{free_str}}}\n")
+        s.write(f"Given:     {given_str}\n")
+        s.write("\n")
+
+        dims = list(self.data.dims)
+        arr = self._linear_data()
+
+        # Gather all rows (non-zero for joint, all for conditional)
+        rows = []
+        coord_vals = [self.data.coords[d].values for d in dims]
+        for combo in itertools.product(*coord_vals):
+            sel = {d: v for d, v in zip(dims, combo)}
+            p = float(arr.sel(sel))
+            if p > 0 or not self.is_joint():
+                rows.append((combo, p))
+
+        if not rows:
+            s.write("(empty distribution)\n")
+            s.seek(0)
+            return s.read().rstrip()
+
+        # Format probabilities and outcome values
+        str_vals = [
+            (tuple(str(v.item() if hasattr(v, 'item') else v) for v in combo),
+             self._fmt_prob(p, digits))
+            for combo, p in rows
+        ]
+
+        col_sep = "   "
+        col_widths = [
+            max(len(str(d)), max(len(sv[0][i]) for sv in str_vals))
+            for i, d in enumerate(dims)
+        ]
+        prob_header = "p" if self.is_joint() else "p(·|·)"
+        prob_width = max(len(prob_header), max(len(sv[1]) for sv in str_vals))
+
+        header = col_sep.join(str(d).ljust(w) for d, w in zip(dims, col_widths))
+        header += col_sep + prob_header.rjust(prob_width)
+        s.write(header + "\n")
+
+        for combo_strs, p_str in str_vals:
+            line = col_sep.join(v.ljust(w) for v, w in zip(combo_strs, col_widths))
+            line += col_sep + p_str.rjust(prob_width)
+            s.write(line + "\n")
+
+        s.seek(0)
+        return s.read().rstrip()
+
+    def _to_html(self, digits=None):
+        """
+        Build an HTML representation of the distribution for notebooks.
+
+        Parameters
+        ----------
+        digits : int or None
+            Round probabilities to this many digits. ``None`` for a compact
+            default format.
+
+        Returns
+        -------
+        html : str
+        """
+        notation = self._notation()
+        base = self.get_base()
+        alphabet = self._native_alphabet(self.alphabet)
+        free_str = ', '.join(sorted(self.free_vars))
+        given_str = ', '.join(sorted(self.given_vars)) if self.given_vars else '—'
+
+        # Info table
+        info_rows = [
+            ("Class", "XRDistribution"),
+            ("Notation", f"<code>{notation}</code>"),
+            ("Alphabet", str(alphabet)),
+            ("Base", str(base)),
+            ("Free vars", f"{{{free_str}}}"),
+            ("Given vars", f"{{{given_str}}}"),
+        ]
+        info_html = ''.join(
+            f'<tr><th style="text-align:left; padding:2px 8px;">{k}:</th>'
+            f'<td style="padding:2px 8px;">{v}</td></tr>'
+            for k, v in info_rows
+        )
+
+        dims = list(self.data.dims)
+        arr = self._linear_data()
+
+        # Gather rows
+        rows = []
+        coord_vals = [self.data.coords[d].values for d in dims]
+        for combo in itertools.product(*coord_vals):
+            sel = {d: v for d, v in zip(dims, combo)}
+            p = float(arr.sel(sel))
+            if p > 0 or not self.is_joint():
+                rows.append((combo, p))
+
+        prob_header = "p" if self.is_joint() else "p(·|·)"
+
+        # Probability table
+        th_style = (
+            'style="text-align:center; padding:2px 8px; '
+            'border-bottom:2px solid #333;"'
+        )
+        td_style = 'style="text-align:center; padding:2px 8px;"'
+        td_prob_style = (
+            'style="text-align:right; padding:2px 8px; font-family:monospace;"'
+        )
+
+        thead = '<tr>' + ''.join(
+            f'<th {th_style}>{d}</th>' for d in dims
+        ) + f'<th {th_style}>{prob_header}</th></tr>'
+
+        tbody_rows = []
+        for combo, p in rows:
+            val_str = self._fmt_prob(p, digits)
+            native = (v.item() if hasattr(v, 'item') else v for v in combo)
+            cells = ''.join(f'<td {td_style}>{v}</td>' for v in native)
+            cells += f'<td {td_prob_style}>{val_str}</td>'
+            tbody_rows.append(f'<tr>{cells}</tr>')
+        tbody = ''.join(tbody_rows)
+
+        if not rows:
+            ncols = len(dims) + 1
+            tbody = (
+                f'<tr><td colspan="{ncols}" style="text-align:center; '
+                f'padding:8px; color:#888;">(empty)</td></tr>'
+            )
+
+        html = (
+            '<div style="display:flex; gap:24px; align-items:flex-start; '
+            'flex-wrap:wrap;">'
+            f'<table style="border-collapse:collapse;">{info_html}</table>'
+            f'<table style="border-collapse:collapse;">'
+            f'<thead>{thead}</thead><tbody>{tbody}</tbody></table>'
+            '</div>'
+        )
+        return html
 
     # ─────────────────────────────────────────────────────────────────────
     # Validation
