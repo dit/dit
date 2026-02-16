@@ -25,6 +25,9 @@ from .helpers import copypmf
 from .cdisthelpers import joint_from_factors
 from .algorithms import pruned_samplespace, expanded_samplespace
 
+from loguru import logger as _logger
+_logger.disable("dit")
+
 import dit.algorithms
 import dit.divergences
 import dit.example_dists

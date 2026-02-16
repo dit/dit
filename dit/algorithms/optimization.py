@@ -12,6 +12,7 @@ from string import digits
 from types import MethodType
 
 import numpy as np
+from loguru import logger
 
 from boltons.iterutils import pairwise
 from scipy.optimize import basinhopping
@@ -739,6 +740,8 @@ class BaseOptimizer(metaclass=ABCMeta):
 
         x0 = x0.copy().flatten() if x0 is not None else self.construct_initial()
 
+        logger.info("Starting optimization: dim={dim}, niter={niter}", dim=x0.size, niter=niter)
+
         icb = BasinHoppingInnerCallBack() if callback else None
 
         minimizer_kwargs = {'bounds': [(0, 1)] * x0.size,
@@ -779,6 +782,8 @@ class BaseOptimizer(metaclass=ABCMeta):
         if polish:
             self._polish(cutoff=polish)
 
+        logger.info("Optimization complete: objective={obj}", obj=self.objective(self._optima))
+
         return result
 
     def _optimize_shotgun(self, x0, minimizer_kwargs, niter):
@@ -813,6 +818,7 @@ class BaseOptimizer(metaclass=ABCMeta):
         results = []
 
         if x0 is not None:
+            logger.debug("Shotgun: trying provided initial condition")
             res = minimize(fun=self.objective,
                            x0=x0.flatten(),
                            **minimizer_kwargs
@@ -822,7 +828,8 @@ class BaseOptimizer(metaclass=ABCMeta):
             niter -= 1
 
         ics = (self.construct_random_initial() for _ in range(niter))
-        for initial in ics:
+        for i, initial in enumerate(ics):
+            logger.debug("Shotgun: random initial condition {i}/{niter}", i=i + 1, niter=niter)
             res = minimize(fun=self.objective,
                            x0=initial.flatten(),
                            **minimizer_kwargs
@@ -851,6 +858,8 @@ class BaseOptimizer(metaclass=ABCMeta):
         count = (x0 < cutoff).sum()
         x0[x0 < cutoff] = 0
         x0[x0 > 1 - cutoff] = 1
+
+        logger.debug("Polishing: zeroed {count} variables below cutoff={cutoff}", count=int(count), cutoff=cutoff)
 
         lb = np.array([1.0 if np.isclose(x, 1) else 0.0 for x in x0])
         ub = np.array([0.0 if np.isclose(x, 0) else 1.0 for x in x0])
@@ -885,6 +894,7 @@ class BaseOptimizer(metaclass=ABCMeta):
         )
 
         if res.success:
+            logger.debug("Polishing successful: objective={obj}", obj=res.fun)
             self._optima = res.x.copy()
 
             if count < (res.x < cutoff).sum():
@@ -950,6 +960,8 @@ class BaseNonConvexOptimizer(BaseOptimizer):
         if niter is None:
             niter = self._default_hops
 
+        logger.debug("Basin hopping: starting with niter={niter}", niter=niter)
+
         if self._shotgun:
             res_shotgun = self._optimize_shotgun(x0.copy(), minimizer_kwargs, self._shotgun)
             if res_shotgun:
@@ -965,7 +977,8 @@ class BaseNonConvexOptimizer(BaseOptimizer):
                               callback=self._callback,
                               )
 
-        success, _ = basinhop_status(result)
+        success, msg = basinhop_status(result)
+        logger.info("Basin hopping result: success={success}, message={msg}", success=success, msg=msg)
         if not success:  # pragma: no cover
             result = self._callback.minimum() or res_shotgun
 
@@ -1423,6 +1436,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
         ----
         This should really use some sort of multiobjective optimization.
         """
+        logger.debug("Post-processing: style={style}, minmax={minmax}", style=style, minmax=minmax)
         entropy = self._entropy(self._arvs)
 
         def objective_entropy(x):

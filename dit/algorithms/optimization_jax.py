@@ -21,6 +21,7 @@ from string import digits
 from types import MethodType
 
 import numpy as np
+from loguru import logger
 
 try:
     import jax
@@ -923,6 +924,8 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
 
         x0 = x0.copy().flatten() if x0 is not None else self.construct_initial()
 
+        logger.info("Starting JAX optimization: dim={dim}, niter={niter}", dim=x0.size, niter=niter)
+
         icb = BasinHoppingInnerCallBack() if callback else None
 
         minimizer_kwargs = {'bounds': [(0, 1)] * x0.size,
@@ -933,6 +936,7 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
 
         # Use JAX autodiff for jacobians if available
         if self._use_autodiff and JAX_AVAILABLE:
+            logger.info("Using JAX autodiff for gradient computation")
             # Create a numpy-compatible wrapper for the objective
             def obj_wrapper(x):
                 result = self.objective(jnp.array(x))
@@ -942,6 +946,8 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
                 return float(result)
 
             # Compute gradient using JAX
+            logger.debug("JIT-compiling JAX gradient function")
+
             @jit
             def jax_grad(x):
                 return grad(lambda x: self.objective(x))(x)
@@ -995,6 +1001,8 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         if polish:
             self._polish(cutoff=polish)
 
+        logger.info("JAX optimization complete: objective={obj}", obj=self.objective(self._optima))
+
         return result
 
     def _optimize_shotgun(self, x0, minimizer_kwargs, niter):
@@ -1024,6 +1032,7 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         results = []
 
         if x0 is not None:
+            logger.debug("Shotgun: trying provided initial condition")
             res = minimize(fun=self.objective,
                            x0=x0.flatten(),
                            **minimizer_kwargs
@@ -1033,7 +1042,8 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
             niter -= 1
 
         ics = (self.construct_random_initial() for _ in range(niter))
-        for initial in ics:
+        for i, initial in enumerate(ics):
+            logger.debug("Shotgun: random initial condition {i}/{niter}", i=i + 1, niter=niter)
             res = minimize(fun=self.objective,
                            x0=initial.flatten(),
                            **minimizer_kwargs
@@ -1062,6 +1072,8 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         count = (x0 < cutoff).sum()
         x0[x0 < cutoff] = 0
         x0[x0 > 1 - cutoff] = 1
+
+        logger.debug("Polishing: zeroed {count} variables below cutoff={cutoff}", count=int(count), cutoff=cutoff)
 
         lb = np.array([1.0 if np.isclose(x, 1) else 0.0 for x in x0])
         ub = np.array([0.0 if np.isclose(x, 0) else 1.0 for x in x0])
@@ -1116,6 +1128,7 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         )
 
         if res.success:
+            logger.debug("Polishing successful: objective={obj}", obj=res.fun)
             self._optima = res.x.copy()
 
             if count < (res.x < cutoff).sum():
@@ -1181,6 +1194,8 @@ class BaseNonConvexJaxOptimizer(BaseJaxOptimizer):
         if niter is None:
             niter = self._default_hops
 
+        logger.debug("Basin hopping (JAX): starting with niter={niter}", niter=niter)
+
         if self._shotgun:
             res_shotgun = self._optimize_shotgun(x0.copy(), minimizer_kwargs, self._shotgun)
             if res_shotgun:
@@ -1196,7 +1211,8 @@ class BaseNonConvexJaxOptimizer(BaseJaxOptimizer):
                               callback=self._callback,
                               )
 
-        success, _ = basinhop_status(result)
+        success, msg = basinhop_status(result)
+        logger.info("Basin hopping (JAX) result: success={success}, message={msg}", success=success, msg=msg)
         if not success:  # pragma: no cover
             result = self._callback.minimum() or res_shotgun
 
@@ -1650,6 +1666,7 @@ class BaseAuxVarJaxOptimizer(BaseNonConvexJaxOptimizer):
         This seems to not work well. Presumably the channel space, once
         restricted to matching the correct objective, is very fragmented.
         """
+        logger.debug("Post-processing (JAX): style={style}, minmax={minmax}", style=style, minmax=minmax)
         entropy = self._entropy(self._arvs)
 
         sign = +1 if minmax == 'min' else -1

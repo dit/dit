@@ -8,6 +8,7 @@ from operator import itemgetter
 from string import digits, ascii_letters
 
 import numpy as np
+from loguru import logger
 from scipy.optimize import OptimizeResult
 
 
@@ -121,6 +122,9 @@ class BasinHoppingCallBack(object):
         self.eq_candidates.append(Candidate(x, f, eq_constraints))
         self.ineq_candidates.append(Candidate(x, f, ineq_constraints))
 
+        logger.trace("Basin hop candidate: value={f}, eq_constraints={eq}, ineq_constraints={ineq}, accept={accept}",
+                      f=f, eq=eq_constraints, ineq=ineq_constraints, accept=accept)
+
         if self.icb:  # pragma: no cover
             self.icb.jumped(len(self.icb.positions))
 
@@ -221,6 +225,7 @@ def basinhop_status(res):
     except AttributeError:  # pragma: no cover
         success = 'success' in res.message[0]
         msg = res.message[0]
+    logger.debug("basinhop_status: success={success}, message={msg}", success=success, msg=msg)
     return success, msg
 
 

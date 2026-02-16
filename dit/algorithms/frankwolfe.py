@@ -16,8 +16,8 @@ Frank-Wolfe algorithm.
 
 from debtcollector import removals
 
-import logging
 import numpy as np
+from loguru import logger
 
 from dit.utils import basic_logger
 
@@ -78,13 +78,10 @@ def frank_wolfe(objective, gradient, A, b, initial_x,
     from cvxopt.modeling import variable
 
     # Set up a custom logger.
-    logger = basic_logger('dit.frankwolfe', verbose)
+    fw_logger = basic_logger('dit.frankwolfe', verbose)
 
-    # Set cvx info level based on logging.DEBUG level.
-    if logger.isEnabledFor(logging.DEBUG):
-        show_progress = True
-    else:
-        show_progress = False
+    # Set cvx info level based on verbose.
+    show_progress = bool(verbose)
 
     assert (A.size[1] == initial_x.size[0])
 
@@ -106,24 +103,23 @@ def frank_wolfe(objective, gradient, A, b, initial_x,
         constraints.append((-TOL <= A * xbar - b))
         constraints.append((A * xbar - b <= TOL))
 
-        logger.debug('FW Iteration: {}'.format(i))
+        fw_logger.debug('FW Iteration: {}'.format(i))
         opt = op_runner(new_objective, constraints, show_progress=show_progress)
         if opt.status != 'optimal':
             msg = '\tFrank-Wolfe: Did not find optimal direction on '
             msg += 'iteration {}: {}'
             msg = msg.format(i, opt.status)
-            logger.info(msg)
+            fw_logger.info(msg)
 
         # Calculate optimality gap
         xbar_opt = opt.variables()[0].value
         opt_bd = grad.T * (xbar_opt - x)
 
         msg = "i={:6}  obj={:10.7f}  opt_bd={:10.7f}  xdiff={:12.10f}"
-        if logger.isEnabledFor(logging.DEBUG):
-            logger.debug(msg.format(i, obj, opt_bd[0, 0], xdiff))
-            logger.debug("")
-        elif i % verbosechunk == 0:
-            logger.info(msg.format(i, obj, opt_bd[0, 0], xdiff))
+        if i % verbosechunk == 0:
+            fw_logger.info(msg.format(i, obj, opt_bd[0, 0], xdiff))
+        else:
+            fw_logger.debug(msg.format(i, obj, opt_bd[0, 0], xdiff))
 
         xnew = (i * x + 2 * xbar_opt) / (i + 2)
         xdiff = np.linalg.norm(xnew - x)
@@ -135,7 +131,7 @@ def frank_wolfe(objective, gradient, A, b, initial_x,
     else:
         msg = "Only converged to xdiff={:12.10f} after {} iterations. "
         msg += "Desired: {}"
-        logger.warn(msg.format(xdiff, maxiters, tol))
+        fw_logger.warning(msg.format(xdiff, maxiters, tol))
 
     xopt = np.array(x)
 

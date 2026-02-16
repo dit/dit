@@ -1,54 +1,46 @@
 """
-Setting up a logger.
+Logging configuration for dit.
+
+Uses loguru as the logging backend. The "dit" logger is disabled by default;
+users opt in with::
+
+    from loguru import logger
+    logger.enable("dit")
 """
 
-import logging
+from loguru import logger
 
 
 __all__ = (
+    'logger',
     'basic_logger',
 )
 
 
 def basic_logger(name, level):
     """
-    Returns a basic logger, with no special string formatting.
+    Return a loguru-bound logger for backward compatibility.
 
     Parameters
     ----------
     name : str
-        The name of the logger.
-    level : int
-        An integer, such as `logging.INFO`, indicating the desired severity
-        level. As in the `logging` module, messages which are less severe
-        than the verbosity level will be ignored---though, the level value of
-        0 is treated specially. If `None`, then we use `logging.NOTSET` and
-        the level is determined by a parent logger. This typically corresponds
-        to `logging.WARNING`, which is equal to 30.
+        The name to bind to log messages.
+    level : int, bool, None
+        If ``None`` or ``False``, logging is effectively silenced.
+        If ``True`` or a positive integer, logging is enabled.
 
     Returns
     -------
-    logger : logger
-        The logger.
-
+    logger : loguru.Logger
+        A loguru logger instance bound to *name*.
     """
-    # To have various levels at the INFO category, use numbers greater
-    # than logging.INFO == 20 but less than logging.WARNING == 30. For example,
-    # logging at level LESSINFO = 25, will only cause messages at or above
-    # level 25 to be seen by the user.
+    bound = logger.bind(name=name)
 
-    if level is None:
-        level = logging.NOTSET
-    if level is True:
-        level = logging.WARNING
-    if level is False:
-        level = 1000000
+    if level is False or level is None:
+        bound.disable("dit")
+    elif level is True:
+        bound.enable("dit")
+    else:
+        bound.enable("dit")
 
-    logger = logging.getLogger(name)
-    if len(logger.handlers) == 0:
-        sh = logging.StreamHandler()
-        formatter = logging.Formatter("%(message)s")
-        sh.setFormatter(formatter)
-        logger.addHandler(sh)
-    logger.setLevel(level)
-    return logger
+    return bound

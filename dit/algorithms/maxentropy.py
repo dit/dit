@@ -26,6 +26,7 @@ from debtcollector import removals
 import itertools
 
 import numpy as np
+from loguru import logger
 
 import dit
 
@@ -617,9 +618,7 @@ def marginal_maxent_dists(dist, k_max=None, jitter=True, show_progress=True):
 
     dists = []
     for k in range(k_max + 1):
-        print()
-        print("Constraining maxent dist to match {0}-way marginals.".format(k))
-        print()
+        logger.info("Constraining maxent dist to match {k}-way marginals.", k=k)
         opt = MarginalMaximumEntropy(dist, k)
         pmf_opt = opt.optimize(show_progress=show_progress)
         pmf_opt = pmf_opt.reshape(pmf_opt.shape[0])
@@ -677,10 +676,7 @@ def moment_maxent_dists(dist, symbol_map, k_max=None, jitter=True,
 
     dists = []
     for k in range(k_max + 1):
-        msg = "Constraining maxent dist to match {0}-way moments, {1}."
-        print()
-        print(msg.format(k, text))
-        print()
+        logger.info("Constraining maxent dist to match {k}-way moments, {text}.", k=k, text=text)
         opt = MomentMaximumEntropy(dist, k, symbol_map, with_replacement=with_replacement)
         pmf_opt = opt.optimize(show_progress=show_progress)
         pmf_opt = pmf_opt.reshape(pmf_opt.shape[0])

@@ -11,9 +11,8 @@ from debtcollector import removals
 
 from itertools import combinations
 
-import logging
-
 import numpy as np
+from loguru import logger
 
 import dit
 from dit.helpers import RV_MODES
@@ -180,7 +179,7 @@ def marginal_maxent_generic(dist, rvs, **kwargs):
     from cvxopt import matrix
 
     verbose = kwargs.get('verbose', False)
-    logger = basic_logger('dit.maxentropy', verbose)
+    fw_logger = basic_logger('dit.maxentropy', verbose)
 
     rv_mode = kwargs.pop('rv_mode', None)
 
@@ -194,13 +193,9 @@ def marginal_maxent_generic(dist, rvs, **kwargs):
     Asmall = matrix(Asmall)
     b = matrix(b)
 
-    # Set cvx info level based on logging.INFO level.
-    if logger.isEnabledFor(logging.INFO):
-        show_progress = True
-    else:
-        show_progress = False
+    show_progress = bool(verbose)
 
-    logger.info("Finding initial distribution.")
+    fw_logger.info("Finding initial distribution.")
     initial_x, _ = initial_point_generic(dist, rvs, A=Asmall, b=b,
                                          isolated=variables,
                                          show_progress=show_progress)
@@ -227,7 +222,7 @@ def marginal_maxent_generic(dist, rvs, **kwargs):
         grad[bad_x] = 0
         return matrix(grad)
 
-    logger.info("Finding maximum entropy distribution.")
+    fw_logger.info("Finding maximum entropy distribution.")
     x, obj = frank_wolfe(objective, gradient, Asmall, b, initial_x, **kwargs)
     x = np.asarray(x).transpose()[0]
 
@@ -300,7 +295,7 @@ def marginal_maxent_dists(dist, k_max=None, maxiters=1000, tol=1e-3, verbose=Fal
     dists = [k0, k1]
     for k in range(k_max + 1):
         if verbose:
-            print("Constraining maxent dist to match {0}-way marginals.".format(k))
+            logger.info("Constraining maxent dist to match {k}-way marginals.", k=k)
 
         if k in [0, 1, n_variables]:
             continue

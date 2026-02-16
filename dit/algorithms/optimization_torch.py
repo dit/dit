@@ -21,6 +21,7 @@ from string import digits
 from types import MethodType
 
 import numpy as np
+from loguru import logger
 
 try:
     import torch
@@ -966,6 +967,9 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
 
         x0 = x0.copy().flatten() if x0 is not None else self.construct_initial()
 
+        logger.info("Starting PyTorch optimization: dim={dim}, niter={niter}, device={device}, dtype={dtype}",
+                     dim=x0.size, niter=niter, device=self._device, dtype=self._dtype)
+
         icb = BasinHoppingInnerCallBack() if callback else None
 
         minimizer_kwargs = {'bounds': [(0, 1)] * x0.size,
@@ -976,6 +980,7 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
 
         # Use PyTorch autodiff for jacobians if available
         if self._use_autodiff and TORCH_AVAILABLE:
+            logger.info("Using PyTorch autodiff for gradient computation")
             # Create gradient function using torch autograd
             def torch_obj_for_grad(x_tensor):
                 """Objective that works with torch tensors."""
@@ -1051,6 +1056,8 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
         if polish:
             self._polish(cutoff=polish)
 
+        logger.info("PyTorch optimization complete: objective={obj}", obj=self.objective(self._optima))
+
         return result
 
     def _optimize_shotgun(self, x0, minimizer_kwargs, niter):
@@ -1078,6 +1085,7 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
         results = []
 
         if x0 is not None:
+            logger.debug("Shotgun: trying provided initial condition")
             res = minimize(fun=self.objective,
                            x0=x0.flatten(),
                            **minimizer_kwargs
@@ -1087,7 +1095,8 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
             niter -= 1
 
         ics = (self.construct_random_initial() for _ in range(niter))
-        for initial in ics:
+        for i, initial in enumerate(ics):
+            logger.debug("Shotgun: random initial condition {i}/{niter}", i=i + 1, niter=niter)
             res = minimize(fun=self.objective,
                            x0=initial.flatten(),
                            **minimizer_kwargs
@@ -1116,6 +1125,8 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
         count = (x0 < cutoff).sum()
         x0[x0 < cutoff] = 0
         x0[x0 > 1 - cutoff] = 1
+
+        logger.debug("Polishing: zeroed {count} variables below cutoff={cutoff}", count=int(count), cutoff=cutoff)
 
         lb = np.array([1.0 if np.isclose(x, 1) else 0.0 for x in x0])
         ub = np.array([0.0 if np.isclose(x, 0) else 1.0 for x in x0])
@@ -1184,6 +1195,7 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
         )
 
         if res.success:
+            logger.debug("Polishing successful: objective={obj}", obj=res.fun)
             self._optima = res.x.copy()
 
             if count < (res.x < cutoff).sum():
@@ -1248,6 +1260,8 @@ class BaseNonConvexTorchOptimizer(BaseTorchOptimizer):
         if niter is None:
             niter = self._default_hops
 
+        logger.debug("Basin hopping (PyTorch): starting with niter={niter}", niter=niter)
+
         if self._shotgun:
             res_shotgun = self._optimize_shotgun(x0.copy(), minimizer_kwargs, self._shotgun)
             if res_shotgun:
@@ -1263,7 +1277,8 @@ class BaseNonConvexTorchOptimizer(BaseTorchOptimizer):
                               callback=self._callback,
                               )
 
-        success, _ = basinhop_status(result)
+        success, msg = basinhop_status(result)
+        logger.info("Basin hopping (PyTorch) result: success={success}, message={msg}", success=success, msg=msg)
         if not success:  # pragma: no cover
             result = self._callback.minimum() or res_shotgun
 
@@ -1720,6 +1735,7 @@ class BaseAuxVarTorchOptimizer(BaseNonConvexTorchOptimizer):
         This seems to not work well. Presumably the channel space, once
         restricted to matching the correct objective, is very fragmented.
         """
+        logger.debug("Post-processing (PyTorch): style={style}, minmax={minmax}", style=style, minmax=minmax)
         entropy = self._entropy(self._arvs)
 
         sign = +1 if minmax == 'min' else -1

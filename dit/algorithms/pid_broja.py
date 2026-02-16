@@ -6,11 +6,12 @@ Maxent decompositions of :math:`I[sources : target]`
 
 from debtcollector import removals
 
-import logging
 from collections import defaultdict
 import itertools
 
 import numpy as np
+from loguru import logger
+
 import dit
 
 from ..utils import basic_logger
@@ -584,11 +585,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
             msg = 'A must be the reduced equality constraint matrix.'
             raise Exception(msg)
 
-        # Set cvx info level based on logging.INFO level.
-        if self.logger.isEnabledFor(logging.INFO):
-            show_progress = True
-        else:
-            show_progress = False
+        show_progress = bool(self.verbose)
 
         n = len(self.vartypes.free)  # pylint: disable=no-member
         x = variable(n)
@@ -658,13 +655,8 @@ class MaximumConditionalEntropy(CVXOPT_Template):
         m = "Optimizing from initial distribution using Frank-Wolfe algorithm."
         self.logger.info(m)
 
-        # Set logging level for Frank-Wolfe if we are at logging.INFO level.
-        if self.logger.isEnabledFor(logging.INFO):
-            verbose = logging.INFO
-        else:
-            verbose = None
-        if verbose not in kwargs:
-            kwargs['verbose'] = verbose
+        if 'verbose' not in kwargs:
+            kwargs['verbose'] = self.verbose
 
         x, obj = frank_wolfe(objective, gradient, A, b, initial_x, **kwargs)
         # x is currently a matrix
@@ -715,7 +707,7 @@ def dice(a, b):
     pmf_opt, _ = x.optimize()
     d_opt = x.dist.copy()
     d_opt.pmf[:] = pmf_opt
-    print(pi_decomp(x.dist, d_opt))
+    logger.info("{decomp}", decomp=pi_decomp(x.dist, d_opt))
     return x
 
 
@@ -729,7 +721,7 @@ def demo():
     for b in bvals:
         decomps = []
         for a in avals:
-            print("**** {}, {} *****".format(a, b))
+            logger.info("**** {a}, {b} *****", a=a, b=b)
             d = dit.example_dists.summed_dice(a, b)
             x = MaximumConditionalEntropy(d, [[0], [1]], [2],
                                           extra_constraints=True, verbose=20)
