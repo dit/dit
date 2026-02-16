@@ -1,17 +1,44 @@
 """
-Base class for optimization.
+Base class for optimization using JAX for automatic differentiation.
+
+This module provides the same functionality as optimization.py but leverages
+JAX for:
+- Automatic differentiation (gradients and jacobians)
+- JIT compilation for improved performance
+- GPU/TPU acceleration (when available)
+
+Requirements:
+    pip install jax jaxlib
 """
 
 from abc import ABCMeta
 from abc import abstractmethod
 from collections import namedtuple
 from copy import deepcopy
-from functools import reduce
+from functools import partial
 from string import ascii_letters
 from string import digits
 from types import MethodType
 
 import numpy as np
+
+try:
+    import jax
+    import jax.numpy as jnp
+    from jax import grad, jacobian, jit, vmap
+    JAX_AVAILABLE = True
+except ImportError:
+    JAX_AVAILABLE = False
+    # Provide fallback so module can be imported even without JAX
+    jnp = np
+    def jit(f, **kwargs):
+        return f
+    def grad(f, **kwargs):
+        raise ImportError("JAX is required for automatic differentiation")
+    def jacobian(f, **kwargs):
+        raise ImportError("JAX is required for automatic differentiation")
+    def vmap(f, **kwargs):
+        raise ImportError("JAX is required for vmap")
 
 from boltons.iterutils import pairwise
 from scipy.optimize import basinhopping
@@ -41,20 +68,43 @@ from ..utils.optimization import colon
 from ..utils.optimization import Uniquifier
 
 __all__ = (
-    'BaseOptimizer',
-    'BaseConvexOptimizer',
-    'BaseNonConvexOptimizer',
-    'BaseAuxVarOptimizer',
+    'BaseJaxOptimizer',
+    'BaseConvexJaxOptimizer',
+    'BaseNonConvexJaxOptimizer',
+    'BaseAuxVarJaxOptimizer',
 )
 
 
-svdvals = lambda m: np.linalg.svd(m, compute_uv=False)
+def _check_jax():
+    """Raise an error if JAX is not available."""
+    if not JAX_AVAILABLE:
+        raise ImportError(
+            "JAX is required for this module. Install with: pip install jax jaxlib"
+        )
 
 
-class BaseOptimizer(metaclass=ABCMeta):
+# SVD singular values using JAX
+@jit
+def _svdvals(m):
+    """Compute singular values of a matrix using JAX."""
+    return jnp.linalg.svd(m, compute_uv=False)
+
+
+class BaseJaxOptimizer(metaclass=ABCMeta):
     """
-    Base class for performing optimizations.
+    Base class for performing optimizations using JAX for automatic differentiation.
+
+    This class mirrors BaseOptimizer but uses JAX for:
+    - Computing gradients via autodiff
+    - JIT-compiling objective functions
+    - Computing jacobians for constraints
     """
+
+    # Whether to use JIT compilation (can be disabled for debugging)
+    _use_jit = True
+
+    # Whether to use autodiff for jacobians
+    _use_autodiff = True
 
     def __init__(self, dist, rvs=None, crvs=None, rv_mode=None):
         """
@@ -76,6 +126,8 @@ class BaseOptimizer(metaclass=ABCMeta):
             variable names. If `None`, then the value of `dist._rv_mode` is
             consulted, which defaults to 'indices'.
         """
+        _check_jax()
+
         rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
         self._dist = dist.copy(base='linear')
 
@@ -96,7 +148,7 @@ class BaseOptimizer(metaclass=ABCMeta):
         self._dist.make_dense()
 
         self._full_shape = list(map(len, self._dist.alphabet))
-        self._full_pmf = self._dist.pmf.reshape(self._full_shape)
+        self._full_pmf = jnp.array(self._dist.pmf.reshape(self._full_shape))
 
         self._n = dist.outcome_length()
         self._pmf = self._full_pmf.sum(axis=tuple(range(self._n)))
@@ -112,6 +164,9 @@ class BaseOptimizer(metaclass=ABCMeta):
         self._additional_options = {}
 
         self.constraints = []
+
+        # Cache for JIT-compiled functions
+        self._jit_cache = {}
 
     ###########################################################################
     # Required methods in subclasses
@@ -162,6 +217,67 @@ class BaseOptimizer(metaclass=ABCMeta):
         pass
 
     ###########################################################################
+    # JAX-specific helper methods
+
+    def _maybe_jit(self, func, static_argnums=None):
+        """
+        Optionally JIT-compile a function.
+
+        Parameters
+        ----------
+        func : callable
+            The function to potentially JIT-compile.
+        static_argnums : tuple, optional
+            Arguments to treat as static for JIT compilation.
+
+        Returns
+        -------
+        func : callable
+            The (potentially JIT-compiled) function.
+        """
+        if self._use_jit and JAX_AVAILABLE:
+            if static_argnums is not None:
+                return jit(func, static_argnums=static_argnums)
+            return jit(func)
+        return func
+
+    def _compute_jacobian(self, func):
+        """
+        Compute the Jacobian of a function using JAX autodiff.
+
+        Parameters
+        ----------
+        func : callable
+            The function to differentiate.
+
+        Returns
+        -------
+        jac : callable
+            The Jacobian function.
+        """
+        if self._use_autodiff and JAX_AVAILABLE:
+            return jit(jacobian(func))
+        return None
+
+    def _compute_gradient(self, func):
+        """
+        Compute the gradient of a scalar function using JAX autodiff.
+
+        Parameters
+        ----------
+        func : callable
+            The scalar function to differentiate.
+
+        Returns
+        -------
+        grad_func : callable
+            The gradient function.
+        """
+        if self._use_autodiff and JAX_AVAILABLE:
+            return jit(grad(func))
+        return None
+
+    ###########################################################################
     # Various initial conditions
 
     def construct_random_initial(self):
@@ -189,16 +305,16 @@ class BaseOptimizer(metaclass=ABCMeta):
         return vec
 
     ###########################################################################
-    # Convenience functions for constructing objectives.
+    # Convenience functions for constructing objectives using JAX.
 
     @staticmethod
     def _h(p):
         """
-        Compute the entropy of `p`.
+        Compute the entropy of `p` using JAX.
 
         Parameters
         ----------
-        p : np.ndarray
+        p : jnp.ndarray
             A vector of probabilities.
 
         Returns
@@ -206,11 +322,12 @@ class BaseOptimizer(metaclass=ABCMeta):
         h : float
             The entropy.
         """
-        return -np.nansum(p * np.log2(p))
+        # Use jnp.where to handle 0 * log(0) = 0 safely
+        return -jnp.nansum(jnp.where(p > 0, p * jnp.log2(p), 0.0))
 
     def _entropy(self, rvs, crvs=None):
         """
-        Compute the conditional entropy, :math`H[X|Y]`.
+        Compute the conditional entropy, H[X|Y], using JAX.
 
         Parameters
         ----------
@@ -222,20 +339,21 @@ class BaseOptimizer(metaclass=ABCMeta):
         Returns
         -------
         h : func
-            The conditional entropy.
+            The conditional entropy function.
         """
         if crvs is None:
             crvs = set()
         idx_joint = tuple(self._all_vars - (rvs | crvs))
         idx_crvs = tuple(self._all_vars - crvs)
 
+        @self._maybe_jit
         def entropy(pmf):
             """
             Compute the specified entropy.
 
             Parameters
             ----------
-            pmf : np.ndarray
+            pmf : jnp.ndarray
                 The joint probability distribution.
 
             Returns
@@ -257,7 +375,7 @@ class BaseOptimizer(metaclass=ABCMeta):
 
     def _mutual_information(self, rv_x, rv_y):
         """
-        Compute the mutual information, :math:`I[X:Y]`.
+        Compute the mutual information, I[X:Y], using JAX.
 
         Parameters
         ----------
@@ -269,19 +387,20 @@ class BaseOptimizer(metaclass=ABCMeta):
         Returns
         -------
         mi : func
-            The mutual information.
+            The mutual information function.
         """
         idx_xy = tuple(self._all_vars - (rv_x | rv_y))
         idx_x = tuple(self._all_vars - rv_x)
         idx_y = tuple(self._all_vars - rv_y)
 
+        @self._maybe_jit
         def mutual_information(pmf):
             """
             Compute the specified mutual information.
 
             Parameters
             ----------
-            pmf : np.ndarray
+            pmf : jnp.ndarray
                 The joint probability distribution.
 
             Returns
@@ -293,7 +412,13 @@ class BaseOptimizer(metaclass=ABCMeta):
             pmf_x = pmf_xy.sum(axis=idx_x, keepdims=True)
             pmf_y = pmf_xy.sum(axis=idx_y, keepdims=True)
 
-            mi = np.nansum(pmf_xy * np.log2(pmf_xy / (pmf_x * pmf_y)))
+            # Safe division and log
+            ratio = jnp.where(
+                (pmf_xy > 0) & (pmf_x > 0) & (pmf_y > 0),
+                pmf_xy / (pmf_x * pmf_y),
+                1.0  # log(1) = 0, so this contributes 0
+            )
+            mi = jnp.nansum(jnp.where(pmf_xy > 0, pmf_xy * jnp.log2(ratio), 0.0))
 
             return mi
 
@@ -301,7 +426,7 @@ class BaseOptimizer(metaclass=ABCMeta):
 
     def _conditional_mutual_information(self, rv_x, rv_y, rv_z):
         """
-        Compute the conditional mutual information, :math:`I[X:Y|Z]`.
+        Compute the conditional mutual information, I[X:Y|Z], using JAX.
 
         Parameters
         ----------
@@ -315,7 +440,7 @@ class BaseOptimizer(metaclass=ABCMeta):
         Returns
         -------
         cmi : func
-            The conditional mutual information.
+            The conditional mutual information function.
         """
         if not rv_z:
             return self._mutual_information(rv_x=rv_x, rv_y=rv_y)
@@ -325,13 +450,14 @@ class BaseOptimizer(metaclass=ABCMeta):
         idx_yz = tuple(self._all_vars - (rv_y | rv_z))
         idx_z = tuple(self._all_vars - rv_z)
 
+        @self._maybe_jit
         def conditional_mutual_information(pmf):
             """
             Compute the specified conditional mutual information.
 
             Parameters
             ----------
-            pmf : np.ndarray
+            pmf : jnp.ndarray
                 The joint probability distribution.
 
             Returns
@@ -344,7 +470,15 @@ class BaseOptimizer(metaclass=ABCMeta):
             pmf_yz = pmf_xyz.sum(axis=idx_yz, keepdims=True)
             pmf_z = pmf_xz.sum(axis=idx_z, keepdims=True)
 
-            cmi = np.nansum(pmf_xyz * np.log2(pmf_z * pmf_xyz / pmf_xz / pmf_yz))
+            # Safe computation avoiding division by zero
+            numer = pmf_z * pmf_xyz
+            denom = pmf_xz * pmf_yz
+            ratio = jnp.where(
+                (pmf_xyz > 0) & (denom > 0),
+                numer / denom,
+                1.0
+            )
+            cmi = jnp.nansum(jnp.where(pmf_xyz > 0, pmf_xyz * jnp.log2(ratio), 0.0))
 
             return cmi
 
@@ -352,7 +486,7 @@ class BaseOptimizer(metaclass=ABCMeta):
 
     def _coinformation(self, rvs, crvs=None):
         """
-        Compute the coinformation.
+        Compute the coinformation using JAX.
 
         Parameters
         ----------
@@ -364,8 +498,10 @@ class BaseOptimizer(metaclass=ABCMeta):
         Returns
         -------
         ci : func
-            The coinformation.
+            The coinformation function.
         """
+        from functools import reduce
+
         if crvs is None:
             crvs = set()
         idx_joint = tuple(self._all_vars - (rvs | crvs))
@@ -375,13 +511,14 @@ class BaseOptimizer(metaclass=ABCMeta):
         power += [(-1)**len(rvs)]
         power += [-sum(power)]
 
+        @self._maybe_jit
         def coinformation(pmf):
             """
             Compute the specified co-information.
 
             Parameters
             ----------
-            pmf : np.ndarray
+            pmf : jnp.ndarray
                 The joint probability distribution.
 
             Returns
@@ -393,9 +530,9 @@ class BaseOptimizer(metaclass=ABCMeta):
             pmf_crvs = pmf_joint.sum(axis=idx_crvs, keepdims=True)
             pmf_subrvs = [pmf_joint.sum(axis=idx, keepdims=True) for idx in idx_subrvs] + [pmf_joint, pmf_crvs]
 
-            pmf_ci = reduce(np.multiply, [pmf**p for pmf, p in zip(pmf_subrvs, power)])
+            pmf_ci = reduce(jnp.multiply, [p**pw for p, pw in zip(pmf_subrvs, power)])
 
-            ci = np.nansum(pmf_joint * np.log2(pmf_ci))
+            ci = jnp.nansum(jnp.where(pmf_joint > 0, pmf_joint * jnp.log2(pmf_ci), 0.0))
 
             return ci
 
@@ -403,7 +540,7 @@ class BaseOptimizer(metaclass=ABCMeta):
 
     def _total_correlation(self, rvs, crvs=None):
         """
-        Compute the total correlation.
+        Compute the total correlation using JAX.
 
         Parameters
         ----------
@@ -415,7 +552,7 @@ class BaseOptimizer(metaclass=ABCMeta):
         Returns
         -------
         tc : func
-            The total correlation.
+            The total correlation function.
         """
         if crvs is None:
             crvs = set()
@@ -424,18 +561,19 @@ class BaseOptimizer(metaclass=ABCMeta):
         idx_crvs = tuple(self._all_vars - crvs)
         n = len(rvs) - 1
 
+        @self._maybe_jit
         def total_correlation(pmf):
             """
             Compute the specified total correlation.
 
             Parameters
             ----------
-            pmf : np.ndarray
+            pmf : jnp.ndarray
                 The joint probability distribution.
 
             Returns
             -------
-            ci : float
+            tc : float
                 The total correlation.
             """
             pmf_joint = pmf.sum(axis=idx_joint, keepdims=True)
@@ -454,7 +592,7 @@ class BaseOptimizer(metaclass=ABCMeta):
 
     def _dual_total_correlation(self, rvs, crvs=None):
         """
-        Compute the dual total correlation.
+        Compute the dual total correlation using JAX.
 
         Parameters
         ----------
@@ -466,7 +604,7 @@ class BaseOptimizer(metaclass=ABCMeta):
         Returns
         -------
         dtc : func
-            The dual total correlation.
+            The dual total correlation function.
         """
         if crvs is None:
             crvs = set()
@@ -475,18 +613,19 @@ class BaseOptimizer(metaclass=ABCMeta):
         idx_crvs = tuple(self._all_vars - crvs)
         n = len(rvs) - 1
 
+        @self._maybe_jit
         def dual_total_correlation(pmf):
             """
             Compute the specified dual total correlation.
 
             Parameters
             ----------
-            pmf : np.ndarray
+            pmf : jnp.ndarray
                 The joint probability distribution.
 
             Returns
             -------
-            ci : float
+            dtc : float
                 The dual total correlation.
             """
             pmf_joint = pmf.sum(axis=idx_joint, keepdims=True)
@@ -505,7 +644,7 @@ class BaseOptimizer(metaclass=ABCMeta):
 
     def _caekl_mutual_information(self, rvs, crvs=None):
         """
-        Compute the CAEKL mutual information.
+        Compute the CAEKL mutual information using JAX.
 
         Parameters
         ----------
@@ -517,7 +656,7 @@ class BaseOptimizer(metaclass=ABCMeta):
         Returns
         -------
         caekl : func
-            The CAEKL mutual information.
+            The CAEKL mutual information function.
         """
         if crvs is None:
             crvs = set()
@@ -531,13 +670,18 @@ class BaseOptimizer(metaclass=ABCMeta):
         idx_joint = tuple(self._all_vars - (rvs | crvs))
         idx_crvs = tuple(self._all_vars - crvs)
 
+        # Convert to tuples for JAX tracing
+        parts_tuple = tuple(tuple(p) for p in parts)
+        idx_parts_items = tuple((k, v) for k, v in idx_parts.items())
+
+        @self._maybe_jit
         def caekl_mutual_information(pmf):
             """
             Compute the specified CAEKL mutual information.
 
             Parameters
             ----------
-            pmf : np.ndarray
+            pmf : jnp.ndarray
                 The joint probability distribution.
 
             Returns
@@ -546,14 +690,16 @@ class BaseOptimizer(metaclass=ABCMeta):
                 The CAEKL mutual information.
             """
             pmf_joint = pmf.sum(axis=idx_joint, keepdims=True)
-            pmf_parts = {p: pmf_joint.sum(axis=idx, keepdims=True) for p, idx in idx_parts.items()}
+            pmf_parts = {p: pmf_joint.sum(axis=idx, keepdims=True) for p, idx in idx_parts_items}
             pmf_crvs = pmf_joint.sum(axis=idx_crvs, keepdims=True)
 
             h_crvs = self._h(pmf_crvs)
             h_joint = self._h(pmf_joint) - h_crvs
 
-            pairs = zip(parts, part_norms)
-            candidates = [(sum(self._h(pmf_parts[p]) - h_crvs for p in part) - h_joint) / norm for part, norm in pairs]
+            candidates = []
+            for part, norm in zip(parts_tuple, part_norms):
+                h_parts = sum(self._h(pmf_parts[p]) - h_crvs for p in part)
+                candidates.append((h_parts - h_joint) / norm)
 
             caekl = min(candidates)
 
@@ -563,7 +709,7 @@ class BaseOptimizer(metaclass=ABCMeta):
 
     def _maximum_correlation(self, rv_x, rv_y):
         """
-        Compute the maximum correlation.
+        Compute the maximum correlation using JAX.
 
         Parameters
         ----------
@@ -575,34 +721,35 @@ class BaseOptimizer(metaclass=ABCMeta):
         Returns
         -------
         mc : func
-            The maximum correlation.
+            The maximum correlation function.
         """
         idx_xy = tuple(self._all_vars - (rv_x | rv_y))
         idx_x = tuple(self._all_vars - rv_x)
         idx_y = tuple(self._all_vars - rv_y)
 
+        @self._maybe_jit
         def maximum_correlation(pmf):
             """
             Compute the specified maximum correlation.
 
             Parameters
             ----------
-            pmf : np.ndarray
+            pmf : jnp.ndarray
                 The joint probability distribution.
 
             Returns
             -------
-            mi : float
-                The mutual information.
+            mc : float
+                The maximum correlation.
             """
             pmf_xy = pmf.sum(axis=idx_xy)
-            pmf_x = pmf.sum(axis=idx_x)[:, np.newaxis]
-            pmf_y = pmf.sum(axis=idx_y)[np.newaxis, :]
+            pmf_x = pmf.sum(axis=idx_x)[:, jnp.newaxis]
+            pmf_y = pmf.sum(axis=idx_y)[jnp.newaxis, :]
 
-            Q = pmf_xy / (np.sqrt(pmf_x) * np.sqrt(pmf_y))
-            Q[np.isnan(Q)] = 0
+            Q = pmf_xy / (jnp.sqrt(pmf_x) * jnp.sqrt(pmf_y))
+            Q = jnp.where(jnp.isnan(Q), 0.0, Q)
 
-            mc = svdvals(Q)[1]
+            mc = _svdvals(Q)[1]
 
             return mc
 
@@ -610,7 +757,7 @@ class BaseOptimizer(metaclass=ABCMeta):
 
     def _conditional_maximum_correlation(self, rv_x, rv_y, rv_z):
         """
-        Compute the conditional maximum correlation.
+        Compute the conditional maximum correlation using JAX.
 
         Parameters
         ----------
@@ -624,33 +771,40 @@ class BaseOptimizer(metaclass=ABCMeta):
         Returns
         -------
         cmc : func
-            The conditional maximum correlation.
+            The conditional maximum correlation function.
         """
         idx_xyz = tuple(self._all_vars - (rv_x | rv_y | rv_z))
         idx_xz = tuple(self._all_vars - (rv_x | rv_z))
         idx_yz = tuple(self._all_vars - (rv_y | rv_z))
 
+        @self._maybe_jit
         def conditional_maximum_correlation(pmf):
             """
-            Compute the specified maximum correlation.
+            Compute the specified conditional maximum correlation.
 
             Parameters
             ----------
-            pmf : np.ndarray
+            pmf : jnp.ndarray
                 The joint probability distribution.
 
             Returns
             -------
-            mi : float
-                The mutual information.
+            cmc : float
+                The conditional maximum correlation.
             """
             p_xyz = pmf.sum(axis=idx_xyz)
-            p_xz = pmf.sum(axis=idx_xz)[:, np.newaxis, :]
-            p_yz = pmf.sum(axis=idx_yz)[np.newaxis, :, :]
+            p_xz = pmf.sum(axis=idx_xz)[:, jnp.newaxis, :]
+            p_yz = pmf.sum(axis=idx_yz)[jnp.newaxis, :, :]
 
-            Q = np.where(p_xyz, p_xyz / (np.sqrt(p_xz * p_yz)), 0)
+            Q = jnp.where(p_xyz > 0, p_xyz / (jnp.sqrt(p_xz * p_yz)), 0.0)
 
-            cmc = max(svdvals(np.squeeze(m))[1] for m in np.dsplit(Q, Q.shape[2]))
+            # Compute SVD for each z slice
+            def svd_slice(m):
+                return _svdvals(jnp.squeeze(m))[1]
+
+            # Use vmap for vectorized SVD computation if possible
+            slices = jnp.dsplit(Q, Q.shape[2])
+            cmc = max(svd_slice(m) for m in slices)
 
             return cmc
 
@@ -658,7 +812,7 @@ class BaseOptimizer(metaclass=ABCMeta):
 
     def _total_variation(self, rv_x, rv_y):
         """
-        Compute the total variation, :math:`TV[X||Y]`.
+        Compute the total variation, TV[X||Y], using JAX.
 
         Parameters
         ----------
@@ -670,7 +824,7 @@ class BaseOptimizer(metaclass=ABCMeta):
         Returns
         -------
         tv : func
-            The total variation.
+            The total variation function.
 
         Note
         ----
@@ -680,13 +834,14 @@ class BaseOptimizer(metaclass=ABCMeta):
         idx_x = tuple(self._all_vars - rv_x)
         idx_y = tuple(self._all_vars - rv_y)
 
+        @self._maybe_jit
         def total_variation(pmf):
             """
             Compute the specified total variation.
 
             Parameters
             ----------
-            pmf : np.ndarray
+            pmf : jnp.ndarray
                 The joint probability distribution.
 
             Returns
@@ -698,7 +853,7 @@ class BaseOptimizer(metaclass=ABCMeta):
             pmf_x = pmf_xy.sum(axis=idx_x)
             pmf_y = pmf_xy.sum(axis=idx_y)
 
-            tv = abs(pmf_x - pmf_y).sum() / 2
+            tv = jnp.abs(pmf_x - pmf_y).sum() / 2
 
             return tv
 
@@ -706,6 +861,35 @@ class BaseOptimizer(metaclass=ABCMeta):
 
     ###########################################################################
     # Optimization methods.
+
+    def _build_jacobian(self):
+        """
+        Build the Jacobian function for the objective using JAX autodiff.
+
+        Returns
+        -------
+        jac : callable or None
+            The Jacobian function, or None if autodiff is disabled.
+        """
+        if not self._use_autodiff or not JAX_AVAILABLE:
+            return None
+
+        # Get the objective function
+        try:
+            obj = self.objective
+        except AttributeError:
+            return None
+
+        # Create gradient function using JAX
+        def jac_wrapper(x):
+            # Ensure x is a JAX array
+            x_jax = jnp.array(x)
+            # Compute gradient
+            g = grad(lambda x: float(obj(x)))(x_jax)
+            # Return as numpy array for scipy compatibility
+            return np.array(g)
+
+        return jac_wrapper
 
     def optimize(self, x0=None, niter=None, maxiter=None, polish=1e-6, callback=False):
         """
@@ -747,16 +931,48 @@ class BaseOptimizer(metaclass=ABCMeta):
                             'options': {},
                             }
 
-        try:  # pragma: no cover
-            if callable(self._jacobian):
-                minimizer_kwargs['jac'] = self._jacobian
-            else:  # compute jacobians for objective, constraints using numdifftools
+        # Use JAX autodiff for jacobians if available
+        if self._use_autodiff and JAX_AVAILABLE:
+            # Create a numpy-compatible wrapper for the objective
+            def obj_wrapper(x):
+                result = self.objective(jnp.array(x))
+                # Handle JAX array output
+                if hasattr(result, 'item'):
+                    return float(result.item())
+                return float(result)
+
+            # Compute gradient using JAX
+            @jit
+            def jax_grad(x):
+                return grad(lambda x: self.objective(x))(x)
+
+            def grad_wrapper(x):
+                g = jax_grad(jnp.array(x))
+                return np.array(g)
+
+            minimizer_kwargs['jac'] = grad_wrapper
+
+            # Also compute jacobians for constraints
+            for const in minimizer_kwargs['constraints']:
+                const_fun = const['fun']
+
+                @jit
+                def const_jax_grad(x, f=const_fun):
+                    return grad(lambda x: f(x))(x)
+
+                def const_grad_wrapper(x, f=const_jax_grad):
+                    return np.array(f(jnp.array(x)))
+
+                const['jac'] = const_grad_wrapper
+        else:
+            # Fallback to numdifftools if available
+            try:  # pragma: no cover
                 import numdifftools as ndt
                 minimizer_kwargs['jac'] = ndt.Jacobian(self.objective)
                 for const in minimizer_kwargs['constraints']:
                     const['jac'] = ndt.Jacobian(const['fun'])
-        except AttributeError:
-            pass
+            except ImportError:
+                pass
 
         additions = deepcopy(self._additional_options)
         options = additions.pop('options', {})
@@ -771,7 +987,7 @@ class BaseOptimizer(metaclass=ABCMeta):
         result = self._optimization_backend(x0, minimizer_kwargs, niter)
 
         if result:
-            self._optima = result.x
+            self._optima = np.array(result.x)
         else:  # pragma: no cover
             msg = "No optima found."
             raise OptimizationException(msg)
@@ -801,11 +1017,6 @@ class BaseOptimizer(metaclass=ABCMeta):
         result : OptimizeResult, None
             The result of the optimization. Returns None if the optimization
             failed.
-
-        TODO
-        ----
-         * Rather than random initial conditions, use latin hypercube sampling.
-         * Make parallel in some fashion (threads, processes).
         """
         if niter is None:
             niter = self._default_hops
@@ -863,16 +1074,36 @@ class BaseOptimizer(metaclass=ABCMeta):
             'constraints': self.constraints,
         }
 
-        try:  # pragma: no cover
-            if callable(self._jacobian):
-                minimizer_kwargs['jac'] = self._jacobian
-            else:  # compute jacobians for objective, constraints using numdifftools
+        # Use JAX autodiff for polishing too
+        if self._use_autodiff and JAX_AVAILABLE:
+            @jit
+            def jax_grad(x):
+                return grad(lambda x: self.objective(x))(x)
+
+            def grad_wrapper(x):
+                return np.array(jax_grad(jnp.array(x)))
+
+            minimizer_kwargs['jac'] = grad_wrapper
+
+            for const in minimizer_kwargs['constraints']:
+                const_fun = const['fun']
+
+                @jit
+                def const_jax_grad(x, f=const_fun):
+                    return grad(lambda x: f(x))(x)
+
+                def const_grad_wrapper(x, f=const_jax_grad):
+                    return np.array(f(jnp.array(x)))
+
+                const['jac'] = const_grad_wrapper
+        else:
+            try:  # pragma: no cover
                 import numdifftools as ndt
                 minimizer_kwargs['jac'] = ndt.Jacobian(self.objective)
                 for const in minimizer_kwargs['constraints']:
                     const['jac'] = ndt.Jacobian(const['fun'])
-        except AttributeError:
-            pass
+            except ImportError:
+                pass
 
         if np.allclose(lb, ub):
             self._optima = x0
@@ -891,9 +1122,9 @@ class BaseOptimizer(metaclass=ABCMeta):
                 self._polish(cutoff=cutoff)
 
 
-class BaseConvexOptimizer(BaseOptimizer):
+class BaseConvexJaxOptimizer(BaseJaxOptimizer):
     """
-    Implement convex optimization.
+    Implement convex optimization using JAX.
     """
 
     def _optimization_backend(self, x0, minimizer_kwargs, niter):
@@ -921,9 +1152,9 @@ class BaseConvexOptimizer(BaseOptimizer):
         return self._optimize_shotgun(x0, minimizer_kwargs, niter=niter)
 
 
-class BaseNonConvexOptimizer(BaseOptimizer):
+class BaseNonConvexJaxOptimizer(BaseJaxOptimizer):
     """
-    Implement non-convex optimization.
+    Implement non-convex optimization using JAX.
     """
 
     _shotgun = False
@@ -973,6 +1204,7 @@ class BaseNonConvexOptimizer(BaseOptimizer):
 
     def _optimization_diffevo(self, x0, minimizer_kwargs, niter):  # pragma: no cover
         """
+        Perform optimization using differential evolution.
 
         Parameters
         ----------
@@ -1008,8 +1240,7 @@ class BaseNonConvexOptimizer(BaseOptimizer):
 
     def _optimization_shgo(self, x0, minimizer_kwargs, niter):
         """
-        Perform a non-convex optimization. This uses the relatively new
-        scipy.optimize.shgo.
+        Perform a non-convex optimization using scipy.optimize.shgo.
 
         Parameters
         ----------
@@ -1043,9 +1274,10 @@ class BaseNonConvexOptimizer(BaseOptimizer):
 AuxVar = namedtuple('AuxVar', ['bases', 'bound', 'shape', 'mask', 'size'])
 
 
-class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
+class BaseAuxVarJaxOptimizer(BaseNonConvexJaxOptimizer):
     """
-    Base class that performs many methods related to optimizing auxiliary variables.
+    Base class that performs many methods related to optimizing auxiliary variables,
+    using JAX for automatic differentiation.
     """
 
     ###########################################################################
@@ -1064,8 +1296,8 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
 
         for bases, bound in auxvars:
             shape = [self._shape[i] for i in bases] + [bound]
-            mask = np.ones(shape) / bound
-            self._aux_vars.append(AuxVar(bases, bound, shape, mask, prod(shape)))
+            mask = jnp.ones(shape) / bound
+            self._aux_vars.append(AuxVar(bases, bound, tuple(shape), mask, prod(shape)))
             self._shape += (bound,)
             self._full_shape += (bound,)
             self._all_vars |= {len(self._all_vars)}
@@ -1090,16 +1322,16 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
             relevant_vars = {self._n + b for b in auxvar.bases}
             index = sorted(self._full_vars) + [self._n + a for a in arvs[:i + 1]]
             var += self._n
-            self._full_slices.append(tuple(colon if i in relevant_vars | {var} else np.newaxis for i in index))
+            self._full_slices.append(tuple(colon if i in relevant_vars | {var} else jnp.newaxis for i in index))
 
         self._slices = []
         for i, (auxvar, var) in enumerate(zip(self._aux_vars, arvs)):
             relevant_vars = auxvar.bases
             index = sorted(self._rvs | self._crvs | set(arvs[:i + 1]))
-            self._slices.append(tuple(colon if i in relevant_vars | {var} else np.newaxis for i in index))
+            self._slices.append(tuple(colon if i in relevant_vars | {var} else jnp.newaxis for i in index))
 
     ###########################################################################
-    # Constructing the joint distribution.
+    # Constructing the joint distribution using JAX.
 
     def _construct_channels(self, x):
         """
@@ -1108,94 +1340,95 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
 
         Parameters
         ----------
-        x : np.ndarray
+        x : jnp.ndarray
             An optimization vector
 
         Yields
         ------
-        channel : np.ndarray
+        channel : jnp.ndarray
             A conditional distribution.
         """
         parts = [x[a:b] for a, b in self._parts]
 
         for part, auxvar in zip(parts, self._aux_vars):
             channel = part.reshape(auxvar.shape)
-            channel /= channel.sum(axis=(-1,), keepdims=True)
-            channel = np.where(np.isnan(channel), auxvar.mask, channel)
-            # channel[np.isnan(channel)] = auxvar.mask[np.isnan(channel)]
+            channel = channel / channel.sum(axis=(-1,), keepdims=True)
+            channel = jnp.where(jnp.isnan(channel), auxvar.mask, channel)
 
             yield channel
 
     def construct_joint(self, x):
         """
-        Construct the joint distribution.
+        Construct the joint distribution using JAX.
 
         Parameters
         ----------
-        x : np.ndarray
+        x : jnp.ndarray
             An optimization vector.
 
         Returns
         -------
-        joint : np.ndarray
+        joint : jnp.ndarray
             The joint distribution resulting from the distribution passed
             in and the optimization vector.
         """
+        x = jnp.array(x)
         joint = self._pmf
 
         channels = self._construct_channels(x.copy())
 
         for channel, slc in zip(channels, self._slices):
-            joint = joint[..., np.newaxis] * channel[slc]
+            joint = joint[..., jnp.newaxis] * channel[slc]
 
         return joint
 
     def _construct_joint_single(self, x):
         """
-        Construct the joint distribution.
+        Construct the joint distribution (optimized for single auxiliary variable).
 
         Parameters
         ----------
-        x : np.ndarray
+        x : jnp.ndarray
             An optimization vector.
 
         Returns
         -------
-        joint : np.ndarray
+        joint : jnp.ndarray
             The joint distribution resulting from the distribution passed
             in and the optimization vector.
         """
+        x = jnp.array(x)
         _, _, shape, mask, _ = self._aux_vars[0]
         channel = x.copy().reshape(shape)
-        channel /= channel.sum(axis=-1, keepdims=True)
-        # channel[np.isnan(channel)] = mask[np.isnan(channel)]
-        channel = np.where(np.isnan(channel), mask, channel)
+        channel = channel / channel.sum(axis=-1, keepdims=True)
+        channel = jnp.where(jnp.isnan(channel), mask, channel)
 
-        joint = self._pmf[..., np.newaxis] * channel[self._slices[0]]
+        joint = self._pmf[..., jnp.newaxis] * channel[self._slices[0]]
 
         return joint
 
     def construct_full_joint(self, x):
         """
-        Construct the joint distribution.
+        Construct the full joint distribution using JAX.
 
         Parameters
         ----------
-        x : np.ndarray
+        x : jnp.ndarray
             An optimization vector.
 
         Returns
         -------
-        joint : np.ndarray
+        joint : jnp.ndarray
             The joint distribution resulting from the distribution passed
             in and the optimization vector.
         """
+        x = jnp.array(x)
         joint = self._full_pmf
 
         channels = self._construct_channels(x.copy())
 
         for channel, slc in zip(channels, self._full_slices):
-            joint = joint[..., np.newaxis] * channel[slc]
+            joint = joint[..., jnp.newaxis] * channel[slc]
 
         return joint
 
@@ -1302,7 +1535,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
                 alphabets += [list(range(bound))]
             string = False
 
-        joint = self.construct_full_joint(x)
+        joint = np.array(self.construct_full_joint(x))
         outcomes, pmf = zip(*[(o, p) for o, p in np.ndenumerate(joint) if p > cutoff])
 
         # normalize, in case cutoffs removed a significant amount of pmf
@@ -1352,19 +1585,21 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
         """
         entropy = self._entropy(self._arvs, self._rvs | self._crvs)
 
+        @self._maybe_jit
         def constraint(x):
             """
-            Constraint which ensure that the auxiliary variables are a function
+            Constraint which ensures that the auxiliary variables are a function
             of the random variables.
 
             Parameters
             ----------
-            x : np.ndarray
+            x : jnp.ndarray
                 An optimization vector.
 
             Returns
             -------
-
+            val : float
+                The squared entropy (should be 0 for deterministic).
             """
             pmf = self.construct_joint(x)
             return entropy(pmf) ** 2
@@ -1372,7 +1607,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
         return constraint
 
     ###########################################################################
-    # TODO: make these works
+    # Channel capacity methods
 
     def _channel_capacity(self, x):  # pragma: no cover
         """
@@ -1380,21 +1615,17 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
 
         Parameters
         ----------
-        x : np.ndarray
+        x : jnp.ndarray
             An optimization vector.
 
         Returns
         -------
-        ccd : [float]
+        ccs : [float]
             The channel capacity of each auxiliary variable.
-
-        TODO
-        ----
-        Make this compute the channel capacity of any/all auxvar(s)
         """
         ccs = []
-        for channel in self._construct_channels(x):
-            ccs.append(channel_capacity(channel)[0])
+        for channel in self._construct_channels(jnp.array(x)):
+            ccs.append(channel_capacity(np.array(channel))[0])
         return ccs
 
     def _post_process(self, style='entropy', minmax='min', niter=10, maxiter=None):  # pragma: no cover
@@ -1418,48 +1649,21 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
         -----
         This seems to not work well. Presumably the channel space, once
         restricted to matching the correct objective, is very fragmented.
-
-        TODO
-        ----
-        This should really use some sort of multiobjective optimization.
         """
         entropy = self._entropy(self._arvs)
 
+        sign = +1 if minmax == 'min' else -1
+
+        @self._maybe_jit
         def objective_entropy(x):
-            """
-            Post-process the entropy.
-
-            Parameters
-            ----------
-            x : np.ndarray
-                An optimization vector.
-
-            Returns
-            -------
-            ent : float
-                The entropy.
-            """
+            """Post-process the entropy."""
             ent = entropy(self.construct_joint(x))
             return sign * ent
 
         def objective_channelcapacity(x):
-            """
-            Post-process the channel capacity.
-
-            Parameters
-            ----------
-            x : np.ndarray
-                An optimization vector.
-
-            Returns
-            -------
-            cc : float
-                The sum of the channel capacities.
-            """
+            """Post-process the channel capacity."""
             cc = sum(self._channel_capacity(x))
             return sign * cc
-
-        sign = +1 if minmax == 'min' else -1
 
         if style == 'channel':
             objective = objective_channelcapacity
@@ -1471,20 +1675,11 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
 
         true_objective = self.objective(self._optima)
 
+        @self._maybe_jit
         def constraint_match_objective(x):
             """
             Constraint to ensure that the new solution is not worse than that
             found before.
-
-            Parameters
-            ----------
-            x : np.ndarray
-                An optimization vector.
-
-            Returns
-            -------
-            obj : float
-                The l2 deviation of the current objective from the true.
             """
             obj = (self.objective(x) - true_objective)**2
             return obj
@@ -1510,3 +1705,18 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
 
         self.objective = self.__old_objective
         del self.__old_objective
+
+
+# Convenience function to check JAX availability
+def is_jax_available():
+    """
+    Check if JAX is available for use.
+
+    Returns
+    -------
+    available : bool
+        True if JAX is installed and can be imported.
+    """
+    return JAX_AVAILABLE
+
+

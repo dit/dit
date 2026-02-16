@@ -1,5 +1,10 @@
 """
-Abstract base classes.
+Abstract base classes for Markov variable optimizers.
+
+Supports pluggable optimization backends ('numpy', 'jax', 'torch') via the
+``backend`` parameter. The default backend is 'numpy', which uses
+``BaseAuxVarOptimizer`` from :mod:`dit.algorithms.optimization`. Selecting
+'jax' or 'torch' substitutes the corresponding autodiff-enabled optimizer.
 """
 
 from abc import abstractmethod
@@ -15,13 +20,121 @@ from ..entropy import entropy
 __all__ = (
     'MarkovVarOptimizer',
     'MinimizingMarkovVarOptimizer',
+    'make_markov_var_optimizer',
 )
 
 
-class MarkovVarOptimizer(BaseAuxVarOptimizer):
+# ── Backend resolution ───────────────────────────────────────────────────
+
+def _get_base_class(backend='numpy'):
     """
-    Abstract base class for constructing auxiliary variables which render a set
-    of variables conditionally independent.
+    Return the appropriate ``BaseAuxVarOptimizer`` class for *backend*.
+
+    Parameters
+    ----------
+    backend : str
+        One of ``'numpy'``, ``'jax'``, ``'torch'``.
+
+    Returns
+    -------
+    cls : type
+        The base auxiliary-variable optimizer class.
+
+    Raises
+    ------
+    ValueError
+        If *backend* is not recognised.
+    """
+    if backend == 'numpy':
+        return BaseAuxVarOptimizer
+    elif backend == 'jax':
+        from ...algorithms.optimization_jax import BaseAuxVarJaxOptimizer
+        return BaseAuxVarJaxOptimizer
+    elif backend == 'torch':
+        from ...algorithms.optimization_torch import BaseAuxVarTorchOptimizer
+        return BaseAuxVarTorchOptimizer
+    else:
+        raise ValueError(
+            f"Unknown backend: {backend!r}. "
+            f"Choose from 'numpy', 'jax', 'torch'."
+        )
+
+
+_backend_class_cache = {}
+
+
+def _make_backend_subclass(cls, backend):
+    """
+    Return a version of *cls* whose optimizer base uses *backend*.
+
+    For ``backend='numpy'`` this is a no-op (returns *cls* unchanged).
+    For other backends a new class is synthesised that combines the
+    mixin logic from *cls*'s MRO with the requested backend base.
+
+    Parameters
+    ----------
+    cls : type
+        A concrete subclass of ``MarkovVarOptimizer`` (or of
+        ``MinimizingMarkovVarOptimizer``).
+    backend : str
+        One of ``'numpy'``, ``'jax'``, ``'torch'``.
+
+    Returns
+    -------
+    new_cls : type
+    """
+    if backend == 'numpy':
+        return cls
+
+    cache_key = (cls, backend)
+    if cache_key in _backend_class_cache:
+        return _backend_class_cache[cache_key]
+
+    Base = _get_base_class(backend)
+
+    # Collect mixin classes from the MRO (order preserved).
+    mixins = []
+    for klass in cls.__mro__:
+        if klass.__name__.endswith('Mixin'):
+            mixins.append(klass)
+
+    # Attributes defined directly on the concrete class (method overrides,
+    # class variables like ``name`` / ``description``, etc.).
+    attrs = {
+        k: v for k, v in cls.__dict__.items()
+        if not (k.startswith('__') and k.endswith('__'))
+    }
+
+    new_cls = type(cls.__name__, tuple(mixins) + (Base,), attrs)
+    _backend_class_cache[cache_key] = new_cls
+    return new_cls
+
+
+def make_markov_var_optimizer(backend='numpy'):
+    """
+    Return a ``MarkovVarOptimizer`` class backed by *backend*.
+
+    Parameters
+    ----------
+    backend : str
+        One of ``'numpy'``, ``'jax'``, ``'torch'``.
+
+    Returns
+    -------
+    cls : type
+        A ``MarkovVarOptimizer`` subclass that uses the requested backend.
+    """
+    return _make_backend_subclass(MarkovVarOptimizer, backend)
+
+
+# ── Mixin classes (backend-agnostic logic) ───────────────────────────────
+
+class MarkovVarMixin:
+    """
+    Mixin containing all Markov-variable optimiser logic.
+
+    Must be composed with a ``BaseAuxVarOptimizer``-compatible base class
+    (e.g. via multiple inheritance).
     """
 
     name = ""
@@ -39,19 +152,19 @@ class MarkovVarOptimizer(BaseAuxVarOptimizer):
             A list of lists. Each inner list specifies the indexes of the random
             variables to render conditionally independent. If None, then all
             random variables are used, which is equivalent to passing
-            `rvs=dist.rvs`.
+            ``rvs=dist.rvs``.
         crvs : list, None
             A single list of indexes specifying the random variables to
             condition on. If None, then no variables are conditioned on.
         bound : int
             Place an artificial bound on the size of W.
         rv_mode : str, None
-            Specifies how to interpret `rvs` and `crvs`. Valid options are:
-            {'indices', 'names'}. If equal to 'indices', then the elements of
-            `crvs` and `rvs` are interpreted as random variable indices. If
-            equal to 'names', the the elements are interpreted as random
-            variable names. If `None`, then the value of `dist._rv_mode` is
-            consulted, which defaults to 'indices'.
+            Specifies how to interpret ``rvs`` and ``crvs``. Valid options are:
+            ``{'indices', 'names'}``. If equal to ``'indices'``, then the
+            elements of ``crvs`` and ``rvs`` are interpreted as random variable
+            indices. If equal to ``'names'``, the elements are interpreted as
+            random variable names. If ``None``, then the value of
+            ``dist._rv_mode`` is consulted, which defaults to ``'indices'``.
         """
         super().__init__(dist, rvs=rvs, crvs=crvs, rv_mode=rv_mode)
 
@@ -177,16 +290,19 @@ class MarkovVarOptimizer(BaseAuxVarOptimizer):
         Construct a functional form of the optimizer.
         """
         @unitful
-        def common_info(dist, rvs=None, crvs=None, niter=None, maxiter=1000, polish=1e-6, bound=None, rv_mode=None):
+        def common_info(dist, rvs=None, crvs=None, niter=None, maxiter=1000,
+                        polish=1e-6, bound=None, rv_mode=None,
+                        backend='numpy'):
             dtc = dual_total_correlation(dist, rvs, crvs, rv_mode)
             ent = entropy(dist, rvs, crvs, rv_mode)
             if np.isclose(dtc, ent):
-                # Common informations are bound between the dual total correlation and the joint
-                # entropy. Therefore, if the two are equal, the common information is equal to them
-                # as well.
+                # Common informations are bound between the dual total
+                # correlation and the joint entropy. Therefore, if the two
+                # are equal, the common information is equal to them as well.
                 return dtc
 
-            ci = cls(dist, rvs, crvs, bound, rv_mode)
+            actual_cls = _make_backend_subclass(cls, backend)
+            ci = actual_cls(dist, rvs, crvs, bound, rv_mode)
             ci.optimize(niter=niter, maxiter=maxiter, polish=polish)
             return ci.objective(ci._optima)
 
@@ -203,7 +319,7 @@ class MarkovVarOptimizer(BaseAuxVarOptimizer):
             A list of lists. Each inner list specifies the indexes of the random
             variables used to calculate the {name} common information. If None,
             then it calculated over all random variables, which is equivalent to
-            passing `rvs=dist.rvs`.
+            passing ``rvs=dist.rvs``.
         crvs : list, None
             A single list of indexes specifying the random variables to condition
             on. If None, then no variables are conditioned on.
@@ -219,12 +335,15 @@ class MarkovVarOptimizer(BaseAuxVarOptimizer):
         bound : int
             Bound the size of the Markov variable.
         rv_mode : str, None
-            Specifies how to interpret `rvs` and `crvs`. Valid options are:
-            {{'indices', 'names'}}. If equal to 'indices', then the elements of
-            `crvs` and `rvs` are interpreted as random variable indices. If equal
-            to 'names', the the elements are interpreted as random variable names.
-            If `None`, then the value of `dist._rv_mode` is consulted, which
-            defaults to 'indices'.
+            Specifies how to interpret ``rvs`` and ``crvs``. Valid options are:
+            {{'indices', 'names'}}. If equal to ``'indices'``, then the elements
+            of ``crvs`` and ``rvs`` are interpreted as random variable indices.
+            If equal to ``'names'``, the elements are interpreted as random
+            variable names. If ``None``, then the value of ``dist._rv_mode`` is
+            consulted, which defaults to ``'indices'``.
+        backend : str
+            The optimization backend to use. One of ``'numpy'`` (default),
+            ``'jax'``, or ``'torch'``.
 
         Returns
         -------
@@ -235,13 +354,14 @@ class MarkovVarOptimizer(BaseAuxVarOptimizer):
         return common_info
 
 
-class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):  # pragma: no cover
+class MinimizingMarkovVarMixin:
     """
-    Abstract base class for an optimizer which additionally minimizes the size
-    of the auxiliary variable.
+    Mixin that adds auxiliary-variable minimisation on top of
+    :class:`MarkovVarMixin`.
     """
 
-    def optimize(self, x0=None, niter=None, maxiter=None, polish=1e-6, callback=False, minimize=True, min_niter=15):
+    def optimize(self, x0=None, niter=None, maxiter=None, polish=1e-6,
+                 callback=False, minimize=True, min_niter=15):
         """
         Parameters
         ----------
@@ -262,7 +382,8 @@ class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):  # pragma: no cover
         minimize : bool
             Whether to minimize the auxiliary variable or not.
         min_niter : int
-            The number of basin hops to make during the minimization of the common variable.
+            The number of basin hops to make during the minimization of the
+            common variable.
         """
         # call the normal optimizer
         super().optimize(x0=x0,
@@ -275,3 +396,27 @@ class MinimizingMarkovVarOptimizer(MarkovVarOptimizer):  # pragma: no cover
             self._post_process(style='entropy', minmax='min', niter=min_niter, maxiter=maxiter)
         if polish:
             self._polish(cutoff=polish)
+
+
+# ── Backward-compatible composed classes (numpy backend) ─────────────────
+
+class MarkovVarOptimizer(MarkovVarMixin, BaseAuxVarOptimizer):
+    """
+    Abstract base class for constructing auxiliary variables which render a set
+    of variables conditionally independent.
+
+    Uses the default NumPy / SciPy optimization backend.  Pass
+    ``backend='jax'`` or ``backend='torch'`` to :meth:`functional` (or use
+    :func:`make_markov_var_optimizer`) for alternative backends.
+    """
+    pass
+
+
+class MinimizingMarkovVarOptimizer(MinimizingMarkovVarMixin, MarkovVarOptimizer):  # pragma: no cover
+    """
+    Abstract base class for an optimizer which additionally minimizes the size
+    of the auxiliary variable.
+
+    Uses the default NumPy / SciPy optimization backend.
+    """
+    pass
