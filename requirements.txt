@@ -1,8 +1,0 @@
-boltons
-debtcollector
-lattices >= 0.3.5
-networkx >= 2.6
-numpy >= 1.11
-PLTable
-scipy >= 1.2.0
-pypoman

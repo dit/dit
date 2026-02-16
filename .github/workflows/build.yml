@@ -1,63 +1,59 @@
 name: Build
 
-on: [push, workflow_dispatch]
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
-  build:
-
+  test:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
-      max-parallel: 20
       matrix:
-        os: [ubuntu-latest, macOS-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
 
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v2
-      - name: Setup conda
-        uses: conda-incubator/setup-miniconda@v2
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
         with:
-          auto-update-conda: true
-          channels: conda-forge,defaults
-          channel-priority: true
-          # mamba-version: "*"
-          miniconda-version: "latest"
-          python-version: ${{ matrix.python-version }}
-      - name: Conda info
-        run: |
-          conda info
-          conda info -s
-      - name: Conda list
-        run: conda list
-      - name: Install dependencies
-        run: |
-          conda install blas cvxopt cython flit mkl numpy numdifftools scikit-learn scipy
-      - name: Install cddlib
-        if: ${{ matrix.os != 'windows-latest' }}
-        run: |
-          conda install cddlib
-      - name: Install package
-        env:
-          FLIT_ALLOW_INVALID: "1"
-        run: |
-          conda run flit install --deps=all
-      - name: Lint with flake8
-        if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == 3.13 }}
-        run: |
-          pip3 install flake8
-          # stop the build if there are Python syntax errors or undefined names:
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # exit-zero treats all errors as warnings.
-          flake8 . --count --exit-zero --max-complexity=10 --statistics
-      - name: Test with pytest
-        run: |
-          conda install pytest
-          conda run pytest
-      - name: Codecov
-        uses: codecov/codecov-action@v2
+          version: "latest"
+
+      - name: Install Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install package and dependencies
+        run: uv sync --extra test --extra optional --extra xarray --python ${{ matrix.python-version }}
+
+      - name: Run tests
+        run: uv run pytest
+
+      - name: Upload coverage
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        uses: codecov/codecov-action@v4
         with:
-          # Repository upload token - get it from codecov.io
           token: ${{ secrets.CODECOV_TOKEN }}
           file: .coverage
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      - name: Install Python
+        run: uv python install 3.12
+
+      - name: Install package
+        run: uv sync --extra dev
+
+      - name: Lint with ruff
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .

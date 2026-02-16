@@ -1,109 +1,167 @@
 [build-system]
-requires = ["flit_core >=2,<4", "setuptools"]
-build-backend = "flit_core.buildapi"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.flit.metadata]
-module = "dit"
-author = "chebee7i, Ryan G. James"
-author-email = "admin@dit.io, rgjames@ucdavis.edu"
-home-page = "http://dit.io"
-requires-python = ">=3.6"
-description-file = "README.rst"
+# ── Project metadata (PEP 621) ──────────────────────────────────────────
+
+[project]
+name = "dit"
+version = "1.5"
+description = "Python package for information theory on discrete random variables."
+readme = "README.rst"
+license = "BSD-3-Clause"
+requires-python = ">=3.9"
+authors = [
+    { name = "chebee7i", email = "admin@dit.io" },
+    { name = "Ryan G. James", email = "rgjames@ucdavis.edu" },
+]
 classifiers = [
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: BSD License",
-    "Programming Language :: Python :: 3.6",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Mathematics",
     "Topic :: Scientific/Engineering :: Physics",
 ]
-requires = [
+dependencies = [
     "boltons",
     "debtcollector",
-    "lattices >= 0.3.3",
-    "networkx",
-    "numpy >= 1.11",
+    "lattices>=0.3.5",
+    "networkx>=2.6",
+    "numpy>=1.22",
     "PLTable",
-    "scipy >= 0.15.0",
+    "scipy>=1.7",
 ]
 
-[tool.flit.metadata.requires-extra]
+[project.urls]
+Homepage = "http://dit.io"
+Repository = "https://github.com/dit/dit"
+Documentation = "http://docs.dit.io"
+
+[project.optional-dependencies]
 test = [
-    "codecov",
-    "hypothesis >= 3.56.2",
+    "hypothesis>=6.0",
     "hypothesis[numpy]",
-    "pytest >= 4.4.0",
+    "pytest>=7.0",
     "pytest-cov",
     "pytest-rerunfailures",
     "pytest-xdist",
+]
+jax = [
+    "jax",
+    "jaxlib",
+]
+torch = [
+    "torch",
+]
+xarray = [
+    "xarray",
 ]
 optional = [
     "colorama",
-    "cython",
-    "hypothesis >= 3.56.2",
-    "hypothesis[numpy]",
     "matplotlib",
     "numdifftools",
     "pint",
-    "pypoman",
-    "python-ternary",
     "scikit-learn",
 ]
-doc = [
-    "ipython[nbconvert]",
+docs = [
+    "ipython",
+    "nbconvert",
     "sphinx",
 ]
 dev = [
-    "codecov",
-    'coverage[toml]',
-    'darglint',
-    'flake8',
-    'flake8-awesome',
-    'flake8-bandit',
-    'flake8-broken-line',
-    'flake8-bugbear',
-    'flake8-coding',
-    'flake8-commas',
-    'flake8-docstrings',
-    'flake8-import-order',
-    'flake8-rst',
-    'flake8-rst-docstrings',
-    'flake8-self',
-    'flake8-todos',
-    "hypothesis >= 3.56.2",
-    "hypothesis[numpy]",
-    "ipython[nbconvert]",
-    "nxpd",
-    "pytest >= 4.4.0",
-    "pytest-cov",
-    "pytest-rerunfailures",
-    "pytest-xdist",
-    'radon',
-    "sphinx",
+    "dit[test]",
+    "dit[optional]",
+    "dit[docs]",
+    "dit[xarray]",
+    "ruff",
 ]
 
-[tool.poetry]
-name = "dit"
-version = "1.5"
-description = ""
-authors = [
-    "chebee7i <admin@dit.io>",
-    "Ryan G. James <rgjames@ucdavis.edu>",
+# ── Build configuration ─────────────────────────────────────────────────
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "dit/",
+    "tests/",
+    "README.rst",
+    "LICENSE.txt",
+    "CREDITS.rst",
 ]
 
-[tool.poetry.dependencies]
-python = "^3.3"
-boltons = "*"
-debtcollector = "*"
-lattices = "^0.3.3"
-networkx = "*"
-numpy = "^1.11"
-PLTable = "*"
-scipy = "^0.15.0"
+[tool.hatch.build.targets.wheel]
+packages = ["dit"]
 
+# ── Pytest ───────────────────────────────────────────────────────────────
 
-[tool.poetry.dev-dependencies]
-pytest = "^3.4"
+[tool.pytest.ini_options]
+addopts = [
+    "--cov=dit",
+    "--cov-report=term-missing",
+    "--numprocesses=auto",
+    "--durations=25",
+    "--durations-min=1.0",
+    "--reruns=1",
+]
+markers = [
+    "slow: mark that the test may take several minutes to complete.",
+    "cython: mark that a test requires cython compiled extensions.",
+]
+
+# ── Coverage ─────────────────────────────────────────────────────────────
+
+[tool.coverage.run]
+source = ["dit"]
+omit = ["dit/inference/pycounts*"]
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.",
+    "raise NotImplementedError",
+]
+
+# ── Ruff (replaces flake8 + isort) ──────────────────────────────────────
+
+[tool.ruff]
+line-length = 120
+target-version = "py39"
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "N",      # pep8-naming
+    "UP",     # pyupgrade
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "SIM",    # flake8-simplify
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "E741",   # ambiguous variable name
+    "E731",   # lambda assignment
+    "E722",   # bare except
+    "F403",   # star imports
+    "F405",   # may be undefined from star import
+    "N802",   # function name should be lowercase
+    "N803",   # argument name should be lowercase
+    "N806",   # variable in function should be lowercase
+    "N816",   # mixed case variable in global scope
+    "B001",   # bare except
+]
+
+[tool.ruff.lint.per-file-ignores]
+"test_*.py" = ["N817", "S101"]
+"__init__.py" = ["F401", "F403"]
+"dit/abc.py" = ["F401", "N812", "N814", "N817"]
+"dit/divergences/pmf.py" = ["F401"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["dit"]

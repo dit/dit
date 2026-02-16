@@ -1,8 +1,0 @@
-coverage
-codecov
-hypothesis >= 3.56.2
-hypothesis[numpy]
-pytest >= 3.2
-pytest-cov
-pytest-rerunfailures
-pytest-xdist
