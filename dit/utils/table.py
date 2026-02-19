@@ -6,8 +6,6 @@ try:
 except ImportError:
     from pltable import UNICODE_LINES, PrettyTable
 
-from .. import ditParams
-
 __all__ = (
     'build_table',
 )
@@ -29,6 +27,8 @@ def build_table(field_names=None, title=None):
     table : PrettyTable
         A new table.
     """
+    from .. import ditParams
+
     table = PrettyTable(field_names=field_names, title=title)
     if ditParams['text.font'] == 'linechar':
         try:
