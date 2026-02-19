@@ -141,7 +141,7 @@ exclude_lines = [
 
 [tool.ruff]
 line-length = 120
-target-version = "py39"
+target-version = "py313"
 
 [tool.ruff.lint]
 select = [
@@ -166,7 +166,6 @@ ignore = [
     "N803",   # argument name should be lowercase
     "N806",   # variable in function should be lowercase
     "N816",   # mixed case variable in global scope
-    "B001",   # bare except
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -181,7 +180,7 @@ known-first-party = ["dit"]
 # ── ty (type checking) ──────────────────────────────────────────────────
 
 [tool.ty.environment]
-python-version = "3.12"
+python-version = "3.13"
 
 [tool.ty.analysis]
 # Optional/conditional dependencies and compiled extensions
