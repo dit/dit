@@ -69,7 +69,7 @@ def exp_func(b):
         If the base is less than zero or equal to one.
 
     """
-    from dit.utils import is_string_like
+    from dit.utils.misc import is_string_like
 
     if is_string_like(b) and b not in acceptable_base_strings:
         raise InvalidBase(msg=b)
@@ -137,7 +137,7 @@ def log_func(b):
         If the base is less than zero or equal to one.
 
     """
-    from dit.utils import is_string_like
+    from dit.utils.misc import is_string_like
 
     if is_string_like(b) and b not in acceptable_base_strings:
         raise InvalidBase(msg=b)
