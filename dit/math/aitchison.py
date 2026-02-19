@@ -12,7 +12,7 @@ import math
 import numpy as np
 
 from dit.exceptions import ditException
-from dit.math import LogOperations
+from dit.math.ops import LogOperations
 
 __all__ = (
     'closure',
