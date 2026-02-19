@@ -7,7 +7,6 @@ import numpy as np
 from .. import modify_outcomes
 from .counts import distribution_from_data
 
-
 __all__ = (
     'dist_from_timeseries',
 )

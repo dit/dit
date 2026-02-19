@@ -7,12 +7,11 @@ import pytest
 from dit.example_dists import giant_bit, n_mod_m
 from dit.exceptions import ditException
 from dit.multivariate.secret_key_agreement import (
-    two_part_intrinsic_total_correlation,
+    two_part_intrinsic_CAEKL_mutual_information,
     two_part_intrinsic_dual_total_correlation,
-    two_part_intrinsic_CAEKL_mutual_information
+    two_part_intrinsic_total_correlation,
 )
 from dit.multivariate.secret_key_agreement.base_skar_optimizers import InnerTwoPartIntrinsicMutualInformation
-
 from tests._backends import backends
 
 

@@ -2,13 +2,12 @@
 Tests for dit.xrdist.XRDistribution.
 """
 
-import pytest
 import numpy as np
+import pytest
 
 xr = pytest.importorskip("xarray")
 
 from dit.xrdist import XRDistribution
-
 
 # ─── Helpers ─────────────────────────────────────────────────────────────
 

@@ -4,8 +4,8 @@ Tests for dit.pid.irdr.
 
 import pytest
 
-from dit.pid.measures.irdr import PID_RDR
 from dit.pid.distributions import bivariates, trivariates
+from dit.pid.measures.irdr import PID_RDR
 
 
 def test_pid_rdr1():

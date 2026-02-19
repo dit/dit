@@ -4,8 +4,8 @@ Tests for dit.pid.iproj.
 
 import pytest
 
-from dit.pid.measures.iproj import PID_Proj
 from dit.pid.distributions import bivariates, trivariates
+from dit.pid.measures.iproj import PID_Proj
 
 
 def test_pid_proj1():

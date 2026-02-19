@@ -11,7 +11,6 @@ import numpy as np
 
 from .curves import IBCurve, RDCurve
 
-
 __all__ = (
     'IBPlotter',
     'RDPlotter',

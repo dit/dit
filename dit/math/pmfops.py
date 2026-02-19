@@ -4,10 +4,11 @@ A catch-all module for miscellaneous pmf-based operations.
 Eventually, we will need to reorganize.
 """
 
-import dit
-from ..exceptions import ditException
 import numpy as np
 
+import dit
+
+from ..exceptions import ditException
 
 __all__ = (
     'convex_combination',
@@ -84,7 +85,7 @@ def perturb_support(pmf, eps=.1, shape='ball', prng=None):
         elif shape == 'ball':
             delta = eps * dit.math.ball(p1_ilr.shape[0], prng=prng)
         else:
-            msg = "Shape {} not recognized.".format(shape)
+            msg = f"Shape {shape} not recognized."
             raise ditException(msg)
         p2_ilr = p1_ilr + delta
         p2 = dit.math.aitchison.ilr_inv(p2_ilr)

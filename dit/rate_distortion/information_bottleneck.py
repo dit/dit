@@ -8,7 +8,6 @@ from ..algorithms import BaseAuxVarOptimizer
 from ..divergences.pmf import relative_entropy
 from ..exceptions import ditException
 
-
 __all__ = (
     'InformationBottleneck',
     'InformationBottleneckDivergence',
@@ -63,7 +62,7 @@ class InformationBottleneck(BaseAuxVarOptimizer):
             raise ditException(msg)
         else:
             self._alpha = alpha
-        if not 0.0 <= beta:
+        if not beta >= 0.0:
             msg = "beta must be non-negative."
             raise ditException(msg)
         else:

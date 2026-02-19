@@ -8,7 +8,6 @@ import numpy as np
 
 from ..exceptions import InvalidBase
 
-
 __all__ = (
     'get_ops',
     'LinearOperations',
@@ -178,7 +177,7 @@ def log_func(b):
     return log
 
 
-class Operations(object):
+class Operations:
     """
     Base class which implements certain math operations.
 

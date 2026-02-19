@@ -2,9 +2,8 @@
 Tests for dit.algorithms
 """
 
-import pytest
-
 import numpy as np
+import pytest
 
 import dit
 

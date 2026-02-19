@@ -4,9 +4,8 @@ Some basic Shannon information quantities.
 
 import numpy as np
 
-from ..math import LogOperations
 from ..helpers import RV_MODES
-
+from ..math import LogOperations
 
 __all__ = (
     'conditional_entropy',

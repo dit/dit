@@ -9,7 +9,6 @@ from ..distconst import RVFunctions, insert_rvf
 from ..helpers import normalize_rvs
 from ..utils import extended_partition, partitions, unitful
 
-
 __all__ = (
     'deweese_coinformation',
     'deweese_total_correlation',

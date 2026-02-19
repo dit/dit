@@ -3,13 +3,12 @@ The I_rav measure, defining a 'redundancy' auxiliary variable to capture the
 redundant information between sources
 """
 
-from ..pid import BasePID
-
-from ...multivariate import (generalized_dual_total_correlation as B,
-                             total_correlation as T, coinformation)
-from ...utils import partitions, extended_partition
 from ...distconst import RVFunctions, insert_rvf
-
+from ...multivariate import coinformation
+from ...multivariate import generalized_dual_total_correlation as B
+from ...multivariate import total_correlation as T
+from ...utils import extended_partition, partitions
+from ..pid import BasePID
 
 __all__ = (
     'PID_RAV',

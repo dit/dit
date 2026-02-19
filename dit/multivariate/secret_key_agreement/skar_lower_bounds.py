@@ -2,10 +2,9 @@
 Two lower bounds on the two-way secret key agreement rate.
 """
 
+from ...utils import unitful
 from .one_way_skar import one_way_skar
 from .secrecy_capacity import secrecy_capacity
-from ...utils import unitful
-
 
 __all__ = (
     'necessary_intrinsic_mutual_information',

@@ -3,12 +3,11 @@ Tests for dit.divergences.maximum_correlation.
 """
 
 import pytest
-
 from hypothesis import given
 
 from dit.divergences import maximum_correlation
-from dit.exceptions import ditException
 from dit.example_dists import dyadic, triadic
+from dit.exceptions import ditException
 from dit.utils.testing import distributions
 
 

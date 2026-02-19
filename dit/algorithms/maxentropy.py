@@ -21,20 +21,19 @@ handle any Cartesian product sample space, rather than just homogeneous ones.
 
 """
 
-from debtcollector import removals
-
 import itertools
 
 import numpy as np
+from debtcollector import removals
 from loguru import logger
 
 import dit
-
 from dit.abstractdist import AbstractDenseDistribution, get_abstract_dist
 
 from ..helpers import RV_MODES, parse_rvs
-from .optutil import as_full_rank, CVXOPT_Template, prepare_dist, Bunch
 from ..utils import flatten
+from .optutil import Bunch, CVXOPT_Template, as_full_rank, prepare_dist
+
 # from ..utils import powerset
 
 __all__ = (

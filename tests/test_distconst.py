@@ -3,12 +3,12 @@ Tests for dit.distconst.
 """
 
 import itertools
-import pytest
 
 import numpy as np
+import pytest
 
-from dit.exceptions import ditException
 import dit
+from dit.exceptions import ditException
 
 
 def test_mixture_distribution_weights():

@@ -2,9 +2,8 @@
 The tightest known upper bound on two-way secret key agreement rate.
 """
 
-from .base_skar_optimizers import BaseTwoPartIntrinsicMutualInformation
 from ... import Distribution
-
+from .base_skar_optimizers import BaseTwoPartIntrinsicMutualInformation
 
 __all__ = (
     'two_part_intrinsic_total_correlation',
@@ -141,13 +140,13 @@ def two_part_intrinsic_mutual_information_constructor(func):  # pragma: no cover
             return mi + cmi1 - cmi2
 
     TwoPartIntrinsicMutualInformation.__doc__ = \
+    f"""
+    Compute the two part intrinsic {func.__name__}.
     """
-    Compute the two part intrinsic {name}.
-    """.format(name=func.__name__)
 
     docstring = \
-    """
-    Compute the {name}.
+    f"""
+    Compute the {func.__name__}.
 
     Parameters
     ----------
@@ -157,8 +156,8 @@ def two_part_intrinsic_mutual_information_constructor(func):  # pragma: no cover
     Returns
     -------
     obj : float
-        The {name}-based objective function.
-    """.format(name=func.__name__)
+        The {func.__name__}-based objective function.
+    """
     try:
         # python 2
         TwoPartIntrinsicMutualInformation.objective.__func__.__doc__ = docstring

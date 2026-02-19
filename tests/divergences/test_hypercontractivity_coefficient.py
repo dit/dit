@@ -3,13 +3,12 @@ Tests for dit.divergences.hypercontractivity_coefficient.
 """
 
 import pytest
-
 from hypothesis import given, settings
 
 from dit import Distribution
 from dit.divergences import hypercontractivity_coefficient
-from dit.exceptions import ditException
 from dit.example_dists import dyadic, triadic
+from dit.exceptions import ditException
 from dit.utils.testing import distributions
 
 

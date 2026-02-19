@@ -6,7 +6,6 @@ import numpy as np
 
 from ..pid import BasePID
 
-
 __all__ = (
     'PID_PM',
 )

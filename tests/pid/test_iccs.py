@@ -4,8 +4,8 @@ Tests for dit.pid.iccs.
 
 import pytest
 
-from dit.pid.measures.iccs import PID_CCS
 from dit.pid.distributions import bivariates, trivariates
+from dit.pid.measures.iccs import PID_CCS
 
 
 def test_pid_ccs1():

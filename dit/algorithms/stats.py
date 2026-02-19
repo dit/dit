@@ -6,7 +6,6 @@ import numpy as np
 
 from ..helpers import numerical_test
 
-
 __all__ = (
     'central_moment',
     'mean',

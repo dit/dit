@@ -2,12 +2,12 @@
 Tests for dit.example_dists.giant_bit
 """
 
+import numpy as np
 import pytest
 
-import numpy as np
-
-from dit.multivariate import entropy as H, coinformation as I
 from dit.example_dists.giant_bit import giant_bit
+from dit.multivariate import coinformation as I
+from dit.multivariate import entropy as H
 
 
 @pytest.mark.parametrize('n', range(1, 5))

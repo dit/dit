@@ -8,7 +8,6 @@ import numpy as np
 
 from .. import ditParams
 
-
 __all__ = (
     'unitful',
 )
@@ -18,8 +17,8 @@ try:
     import pint
 
     ureg = pint.UnitRegistry()
-    ureg.define('nat = {} * bit'.format(np.log2(np.e)))
-    ureg.define('dit = {} * bit'.format(np.log2(10)))
+    ureg.define(f'nat = {np.log2(np.e)} * bit')
+    ureg.define(f'dit = {np.log2(10)} * bit')
     pint.set_application_registry(ureg)
 
     def unitful(f):

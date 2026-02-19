@@ -2,13 +2,13 @@
 Tests for dit.other.extropy.
 """
 
+import numpy as np
 import pytest
 
-import numpy as np
-
-from dit import Distribution as D, ScalarDistribution as SD
-from dit.shannon import entropy as H
+from dit import Distribution as D
+from dit import ScalarDistribution as SD
 from dit.other import extropy as J
+from dit.shannon import entropy as H
 
 
 def test_J1():

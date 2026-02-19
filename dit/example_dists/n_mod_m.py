@@ -5,9 +5,8 @@ the i'th symbol be the sum mod m of the others.
 
 from itertools import product
 
-from ..npdist import Distribution
 from ..math.misc import is_integer
-
+from ..npdist import Distribution
 
 __all__ = (
     'n_mod_m',
@@ -37,9 +36,9 @@ def n_mod_m(n, m):
         Raised if n or m are not positive integers.
     """
     if not (is_integer(n) and n > 0):
-        raise ValueError("{0} is not a positive integer.".format(n))
+        raise ValueError(f"{n} is not a positive integer.")
     if not (is_integer(m) and m > 0):
-        raise ValueError("{0} is not a positive integer.".format(m))
+        raise ValueError(f"{m} is not a positive integer.")
     size = m**(n - 1)
     alpha = range(m)
     subwords = product(alpha, repeat=n - 1)

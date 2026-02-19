@@ -4,10 +4,9 @@ The Kullback-Leibler divergence.
 
 import numpy as np
 
-from .cross_entropy import get_pmfs_like
 from ..helpers import normalize_rvs
 from ..utils import flatten
-
+from .cross_entropy import get_pmfs_like
 from .kullback_leibler_divergence import kullback_leibler_divergence
 
 __all__ = (

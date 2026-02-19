@@ -10,7 +10,6 @@ users opt in with::
 
 from loguru import logger
 
-
 __all__ = (
     'logger',
     'basic_logger',

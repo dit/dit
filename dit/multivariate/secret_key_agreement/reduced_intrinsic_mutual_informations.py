@@ -5,10 +5,11 @@ Note: this code is nowhere near efficient enough to actually run. Don't try it.
 """
 
 from .base_skar_optimizers import BaseReducedIntrinsicMutualInformation
-from .intrinsic_mutual_informations import (intrinsic_total_correlation,
-                                            intrinsic_dual_total_correlation,
-                                            intrinsic_caekl_mutual_information,
-                                            )
+from .intrinsic_mutual_informations import (
+    intrinsic_caekl_mutual_information,
+    intrinsic_dual_total_correlation,
+    intrinsic_total_correlation,
+)
 
 __all__ = (
     'reduced_intrinsic_total_correlation',
@@ -81,24 +82,24 @@ def reduced_intrinsic_mutual_information_constructor(func):  # pragma: no cover
         measure = staticmethod(func)
 
     ReducedIntrinsicMutualInformation.__doc__ = \
+    f"""
+    Compute the reduced intrinsic {func.__name__}.
     """
-    Compute the reduced intrinsic {name}.
-    """.format(name=func.__name__)
 
     docstring = \
-    """
-    Compute the {name}.
+    f"""
+    Compute the {func.__name__}.
 
     Parameters
     ----------
     d : Distribution
-        The distribution to compute {name} of.
+        The distribution to compute {func.__name__} of.
 
     Returns
     -------
     imi : float
-        The {name}.
-    """.format(name=func.__name__)
+        The {func.__name__}.
+    """
     try:
         # python 2
         ReducedIntrinsicMutualInformation.objective.__func__.__doc__ = docstring

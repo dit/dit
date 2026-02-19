@@ -6,15 +6,14 @@ from abc import ABCMeta, abstractmethod
 from copy import deepcopy
 from itertools import product
 
-from lattices.lattices import free_distributive_lattice
 import networkx as nx
 import numpy as np
+from lattices.lattices import free_distributive_lattice
 
 from ..exceptions import ditException
 from ..multivariate import coinformation
 from ..params import ditParams
 from ..utils import build_table, flatten, powerset
-
 
 __all__ = (
     'BaseBivariatePID',
@@ -321,8 +320,8 @@ class BasePID(metaclass=ABCMeta):
 
         table = build_table([self.name, red_string, pi_string], title=getattr(self._dist, 'name', ''))
 
-        table.float_format[red_string] = '{}.{}'.format(digits + 2, digits)
-        table.float_format[pi_string] = '{}.{}'.format(digits + 2, digits)
+        table.float_format[red_string] = f'{digits + 2}.{digits}'
+        table.float_format[pi_string] = f'{digits + 2}.{digits}'
 
         for node in sorted(self._lattice, key=sort_key(self._lattice)):
             node_label = ''.join('{{{}}}'.format(':'.join(map(str, n))) for n in node)

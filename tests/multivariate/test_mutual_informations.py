@@ -5,12 +5,21 @@ Tests for the various mutual informations.
 import pytest
 
 from dit import random_distribution
-from dit.multivariate import (coinformation as I,
-                              total_correlation as T,
-                              dual_total_correlation as B,
-                              caekl_mutual_information as J,
-                              interaction_information as II,
-                             )
+from dit.multivariate import (
+    caekl_mutual_information as J,
+)
+from dit.multivariate import (
+    coinformation as I,
+)
+from dit.multivariate import (
+    dual_total_correlation as B,
+)
+from dit.multivariate import (
+    interaction_information as II,
+)
+from dit.multivariate import (
+    total_correlation as T,
+)
 
 
 @pytest.mark.parametrize('d', [random_distribution(2, 4) for _ in range(10)])

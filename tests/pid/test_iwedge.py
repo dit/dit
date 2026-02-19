@@ -4,8 +4,8 @@ Tests for dit.pid.iwedge.
 
 import pytest
 
-from dit.pid.measures.iwedge import PID_GK
 from dit.pid.distributions import bivariates, trivariates
+from dit.pid.measures.iwedge import PID_GK
 
 
 def test_pid_gk1():

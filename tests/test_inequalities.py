@@ -2,31 +2,37 @@
 Test various information theory inequalities.
 """
 
+import numpy as np
+import pytest
 from hypothesis import given, settings
 
-import pytest
-
-import numpy as np
-
-from dit.utils.testing import distributions, markov_chains
-
 from dit import ScalarDistribution as SD
-from dit.divergences import (chernoff_information,
-                             hellinger_distance,
-                             hypercontractivity_coefficient,
-                             maximum_correlation,
-                             relative_entropy,
-                             variational_distance,
-                            )
+from dit.divergences import (
+    chernoff_information,
+    hellinger_distance,
+    hypercontractivity_coefficient,
+    maximum_correlation,
+    relative_entropy,
+    variational_distance,
+)
 from dit.helpers import normalize_pmfs
-from dit.multivariate import (entropy as H,
-                              total_correlation as I,
-                              gk_common_information as K,
-                              wyner_common_information as C,
-                              exact_common_information as G,
-                             )
+from dit.multivariate import (
+    entropy as H,
+)
+from dit.multivariate import (
+    exact_common_information as G,
+)
+from dit.multivariate import (
+    gk_common_information as K,
+)
+from dit.multivariate import (
+    total_correlation as I,
+)
+from dit.multivariate import (
+    wyner_common_information as C,
+)
+from dit.utils.testing import distributions, markov_chains
 from tests._backends import backends
-
 
 epsilon = 1e-4
 

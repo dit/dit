@@ -4,8 +4,8 @@ Tests for dit.algorithms.stats
 
 from math import ceil, floor
 
-import pytest
 import numpy as np
+import pytest
 
 from dit import Distribution as D
 from dit.algorithms import mean, median, mode, standard_deviation, standard_moment

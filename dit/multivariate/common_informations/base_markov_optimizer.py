@@ -249,17 +249,17 @@ class MarkovVarMixin:
             return float(val.detach().cpu().item()) if hasattr(val, 'detach') else float(val)
 
         common_info.__doc__ = \
-        """
-        Computes the {name} common information, {description}.
+        f"""
+        Computes the {cls.name} common information, {cls.description}.
 
         Parameters
         ----------
         dist : Distribution
-            The distribution for which the {name} common information will be
+            The distribution for which the {cls.name} common information will be
             computed.
         rvs : list, None
             A list of lists. Each inner list specifies the indexes of the random
-            variables used to calculate the {name} common information. If None,
+            variables used to calculate the {cls.name} common information. If None,
             then it is calculated over all random variables, which is equivalent to
             passing ``rvs=dist.rvs``.
         crvs : list, None
@@ -290,8 +290,8 @@ class MarkovVarMixin:
         Returns
         -------
         ci : float
-            The {name} common information.
-        """.format(name=cls.name, description=cls.description)
+            The {cls.name} common information.
+        """
 
         return common_info
 

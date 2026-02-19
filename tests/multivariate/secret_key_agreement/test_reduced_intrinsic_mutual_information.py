@@ -5,11 +5,11 @@ Tests for dit.multivariate.secret_key_agreement.reduced_intrinsic_mutual_informa
 import pytest
 
 from dit.example_dists.intrinsic import *
-from dit.multivariate import (reduced_intrinsic_total_correlation,
-                              reduced_intrinsic_dual_total_correlation,
-                              reduced_intrinsic_CAEKL_mutual_information,
-                              )
-
+from dit.multivariate import (
+    reduced_intrinsic_CAEKL_mutual_information,
+    reduced_intrinsic_dual_total_correlation,
+    reduced_intrinsic_total_correlation,
+)
 from tests._backends import backends
 
 

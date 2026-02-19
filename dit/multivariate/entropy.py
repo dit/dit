@@ -4,9 +4,9 @@ measures.
 """
 
 from ..helpers import normalize_rvs
-from ..shannon import conditional_entropy, entropy as shannon_entropy
+from ..shannon import conditional_entropy
+from ..shannon import entropy as shannon_entropy
 from ..utils import flatten, unitful
-
 
 __all__ = (
     'entropy',

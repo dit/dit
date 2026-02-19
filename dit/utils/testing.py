@@ -8,9 +8,8 @@ from hypothesis import assume
 from hypothesis.extra.numpy import arrays
 from hypothesis.strategies import composite, floats, integers, lists, tuples
 
-from .optimization import colon
 from .. import Distribution
-
+from .optimization import colon
 
 __all__ = (
     'distributions',

@@ -11,7 +11,6 @@ from itertools import tee
 
 from debtcollector import removals
 
-
 __all__ = (
     'default_opener',
     'flatten',
@@ -312,7 +311,7 @@ def require_keys(keys, dikt):
     dikt_keys = set(dikt)
     for key in keys:
         if key not in dikt_keys:
-            msg = "'{}' is required.".format(key)
+            msg = f"'{key}' is required."
             raise Exception(msg)
 
 

@@ -2,13 +2,10 @@
 The redundancy measure of Griffith & Ho.
 """
 
-from ..pid import BasePID
-from ...algorithms.optimization import (BaseAuxVarOptimizer,
-                                        BaseConvexOptimizer,
-                                        OptimizationException)
+from ...algorithms.optimization import BaseAuxVarOptimizer, BaseConvexOptimizer, OptimizationException
 from ...math import prod
 from ...shannon import entropy, mutual_information
-
+from ..pid import BasePID
 
 __all__ = (
     'PID_GH',

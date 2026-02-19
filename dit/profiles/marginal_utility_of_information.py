@@ -9,10 +9,9 @@ import numpy as np
 from scipy.linalg import LinAlgWarning
 from scipy.optimize import OptimizeWarning
 
+from ..utils import flatten, powerset
 from .base_profile import BaseProfile, profile_docstring
 from .information_partitions import ShannonPartition
-from ..utils import flatten, powerset
-
 
 __all__ = (
     'MUIProfile',

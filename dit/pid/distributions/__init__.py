@@ -3,8 +3,7 @@ A variety of distributions exemplifying aspects of the partial information
 decomposition.
 """
 
-from . import bivariate
-from . import trivariate
+from . import bivariate, trivariate
 
 __all__ = ['bivariates', 'trivariates']
 

@@ -5,8 +5,7 @@ This can be important when calculating meet and join random variables. It
 is also important for the calculations of various PID quantities.
 """
 
-from dit.samplespace import ScalarSampleSpace, SampleSpace, CartesianProduct
-
+from dit.samplespace import CartesianProduct, SampleSpace, ScalarSampleSpace
 
 __all__ = (
     'expanded_samplespace',
@@ -99,7 +98,7 @@ def expanded_samplespace(d, alphabets=None, union=True):
         alphabets = list(map(sorted, d.alphabet))
     elif joint and len(alphabets) != d.outcome_length():
         L = len(alphabets)
-        raise Exception("You need to provide {0} alphabets".format(L))
+        raise Exception(f"You need to provide {L} alphabets")
 
     if joint and union:
         alphabet = set.union(*map(set, alphabets))

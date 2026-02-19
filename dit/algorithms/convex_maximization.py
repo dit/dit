@@ -8,7 +8,6 @@ import scipy
 
 from .optutil import as_full_rank
 
-
 __all__ = (
     'maximize_convex_function',
 )

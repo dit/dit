@@ -3,19 +3,19 @@ Test the hierarchy of secret key agreement rates.
 """
 
 import pytest
-
 from hypothesis import given, settings
 
+from dit.multivariate.secret_key_agreement import (
+    # reduced_intrinsic_mutual_information,
+    intrinsic_mutual_information,
+    lower_intrinsic_mutual_information,
+    minimal_intrinsic_mutual_information,
+    necessary_intrinsic_mutual_information,
+    secrecy_capacity_skar,
+    upper_intrinsic_mutual_information,
+)
 from dit.utils.testing import distributions
 from tests._backends import backends
-
-from dit.multivariate.secret_key_agreement import (lower_intrinsic_mutual_information,
-                                                   secrecy_capacity_skar,
-                                                   necessary_intrinsic_mutual_information,
-                                                   minimal_intrinsic_mutual_information,
-                                                   # reduced_intrinsic_mutual_information,
-                                                   intrinsic_mutual_information,
-                                                   upper_intrinsic_mutual_information)
 
 eps = 1e-3
 
@@ -35,7 +35,7 @@ def test_hierarchy(dist, backend):
     imi = intrinsic_mutual_information(dist, [[0], [1]], [2], backend=backend)
     uimi = upper_intrinsic_mutual_information(dist, [[0], [1]], [2])
 
-    assert 0 <= limi + eps
+    assert limi + eps >= 0
     assert limi <= sc + eps
     assert sc <= nimi + eps
     assert nimi <= mimi + eps

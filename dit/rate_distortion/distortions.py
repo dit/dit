@@ -6,11 +6,11 @@ from collections import namedtuple
 
 import numpy as np
 
-from .rate_distortion import (RateDistortionHamming,
-                              RateDistortionMaximumCorrelation,
-                              RateDistortionResidualEntropy,
-                              )
-
+from .rate_distortion import (
+    RateDistortionHamming,
+    RateDistortionMaximumCorrelation,
+    RateDistortionResidualEntropy,
+)
 
 __all__ = (
     'hamming',

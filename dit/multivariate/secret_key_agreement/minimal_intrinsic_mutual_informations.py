@@ -2,9 +2,8 @@
 An upper bound on the two-way secret key agreement rate.
 """
 
-from .base_skar_optimizers import BaseMinimalIntrinsicMutualInformation
 from ... import Distribution
-
+from .base_skar_optimizers import BaseMinimalIntrinsicMutualInformation
 
 __all__ = (
     'minimal_intrinsic_total_correlation',
@@ -140,13 +139,13 @@ def minimal_intrinsic_mutual_information_constructor(func):  # pragma: no cover
             return mi + cmi
 
     MinimalIntrinsicMutualInformation.__doc__ = \
+    f"""
+    Compute the minimal intrinsic {func.__name__}.
     """
-    Compute the minimal intrinsic {name}.
-    """.format(name=func.__name__)
 
     docstring = \
-    """
-    Compute the {name}.
+    f"""
+    Compute the {func.__name__}.
 
     Parameters
     ----------
@@ -156,8 +155,8 @@ def minimal_intrinsic_mutual_information_constructor(func):  # pragma: no cover
     Returns
     -------
     obj : float
-        The {name}-based objective function.
-    """.format(name=func.__name__)
+        The {func.__name__}-based objective function.
+    """
     try:
         # python 2
         MinimalIntrinsicMutualInformation.objective.__func__.__doc__ = docstring

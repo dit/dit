@@ -4,7 +4,7 @@ Tests for dit.math.misc.
 
 import pytest
 
-from dit.math.misc import combinations, is_integer, is_number, factorial
+from dit.math.misc import combinations, factorial, is_integer, is_number
 
 
 @pytest.mark.parametrize('n', range(-10, 10))

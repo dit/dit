@@ -6,7 +6,6 @@ import warnings
 
 from .exceptions import InvalidBase
 
-
 __all__ = (
     'ditParams',
     'reset_params',
@@ -91,7 +90,7 @@ class DITParams(dict):
         dict.__init__(self, *args, **kwargs)
 
     def __setitem__(self, key, val):
-        if key in _deprecated_map.keys():  # pragma: no cover
+        if key in _deprecated_map:  # pragma: no cover
             alt = _deprecated_map[key]
             msg = "%r is deprecated. Use %r instead."
             warnings.warn(msg % (key, alt), DeprecationWarning, stacklevel=2)
@@ -106,7 +105,7 @@ class DITParams(dict):
         dict.__setitem__(self, key, cval)
 
     def __getitem__(self, key):
-        if key in _deprecated_map.keys():  # pragma: no cover
+        if key in _deprecated_map:  # pragma: no cover
             alt = _deprecated_map[key]
             msg = "%r is deprecated. Use %r instead."
             warnings.warn(msg % (key, alt), DeprecationWarning, stacklevel=2)

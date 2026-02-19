@@ -2,12 +2,11 @@
 Tests for dit.math.sampling.
 """
 
+import numpy as np
 import pytest
 
-import numpy as np
-
-import dit.math.sampling as module
 import dit.example_dists
+import dit.math.sampling as module
 from dit.exceptions import ditException
 
 

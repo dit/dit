@@ -4,15 +4,14 @@ Objects to compute single rate-distortion curves.
 
 import numpy as np
 
-from .blahut_arimoto import blahut_arimoto, blahut_arimoto_ib
-from .distortions import hamming
-from .information_bottleneck import InformationBottleneck, InformationBottleneckDivergence
 from .. import Distribution
 from ..algorithms.minimal_sufficient_statistic import mss
 from ..exceptions import ditException
 from ..multivariate import entropy, total_correlation
 from ..utils import flatten
-
+from .blahut_arimoto import blahut_arimoto, blahut_arimoto_ib
+from .distortions import hamming
+from .information_bottleneck import InformationBottleneck, InformationBottleneckDivergence
 
 __all__ = (
     'IBCurve',
@@ -20,7 +19,7 @@ __all__ = (
 )
 
 
-class RDCurve(object):
+class RDCurve:
     """
     Compute a rate-distortion curve.
     """
@@ -82,7 +81,7 @@ class RDCurve(object):
                 msg = "Distortion measure is vacuous."
                 raise ditException(msg)
         elif method not in ('sp', 'ba'):  # pragma: no cover
-            msg = "Method '{}' not supported.".format(method)
+            msg = f"Method '{method}' not supported."
             raise ditException(msg)
         elif method == 'sp' and not distortion.optimizer:  # pragma: no cover
             msg = "Method is 'sp' but distortion does not have an optimizer."
@@ -271,7 +270,7 @@ class RDCurve(object):
         return plotter.plot(downsample)
 
 
-class IBCurve(object):
+class IBCurve:
     """
     Compute an information bottleneck curve.
     """
@@ -350,7 +349,7 @@ class IBCurve(object):
         elif np.isclose(alpha, 0.0):
             self.label = "DIB"
         else:
-            self.label = "GIB({:.3f})".format(alpha)
+            self.label = f"GIB({alpha:.3f})"
 
         beta_max = self.find_max_beta() if beta_max is None else beta_max
         self.betas = np.linspace(beta_min, beta_max, beta_num)

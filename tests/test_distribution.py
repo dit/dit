@@ -6,7 +6,7 @@ import pytest
 
 from dit import Distribution, ScalarDistribution
 from dit.distribution import BaseDistribution
-from dit.exceptions import ditException, InvalidNormalization
+from dit.exceptions import InvalidNormalization, ditException
 
 
 def test_dist_iter1():

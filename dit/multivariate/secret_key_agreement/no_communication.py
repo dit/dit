@@ -2,9 +2,8 @@
 Secret Key Agreement Rate when communication is not permitted.
 """
 
-from .. import gk_common_information
 from ...utils import unitful
-
+from .. import gk_common_information
 
 __all__ = (
     'no_communication_skar',

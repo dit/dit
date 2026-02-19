@@ -4,10 +4,9 @@ agree upon a secret key with Eve eavesdropping, if only Alice is permitted
 to publicly communicate.
 """
 
-from .base_skar_optimizers import BaseOneWaySKAR
 from ...utils import unitful
 from .._backend import _make_backend_subclass
-
+from .base_skar_optimizers import BaseOneWaySKAR
 
 __all__ = (
     'one_way_skar',

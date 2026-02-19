@@ -2,11 +2,10 @@
 Tests for dit.inference.time_series.
 """
 
-import pytest
-
 from random import choice
 
 import numpy as np
+import pytest
 
 from dit import Distribution
 from dit.inference import dist_from_timeseries

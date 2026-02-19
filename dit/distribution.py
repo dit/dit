@@ -36,12 +36,10 @@ properly if interrupted midway through (and the distribution is modified).
 
 import numpy as np
 
-from .math import approximate_fraction, prng as pseudo_random_number_generator
-
 from .exceptions import ditException
-
+from .math import approximate_fraction
+from .math import prng as pseudo_random_number_generator
 from .params import ditParams
-
 
 __all__ = (
     'BaseDistribution',
@@ -181,7 +179,7 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9,
     return pmf, outcomes, base, colsep, max_length, pstr
 
 
-class BaseDistribution(object):
+class BaseDistribution:
     """
     The base class for all "distribution" classes.
 
@@ -617,23 +615,23 @@ class BaseDistribution(object):
             ("Alphabet", self.alphabet),
             ("Base", base),
         ]
-        infos = ''.join("<tr><th>{}:</th><td>{}</td></tr>".format(a, b) for a, b in info)
-        header = '<table border="1">{}</table>'.format(infos)
+        infos = ''.join(f"<tr><th>{a}:</th><td>{b}</td></tr>" for a, b in info)
+        header = f'<table border="1">{infos}</table>'
 
         try:
             rv_names = self.get_rv_names()
             if rv_names is None:
-                rv_names = ["x[{}]".format(i) for i in range(self.outcome_length())]
+                rv_names = [f"x[{i}]" for i in range(self.outcome_length())]
         except AttributeError:
             rv_names = ["x"]
 
-        table_header = '<tr>' + ''.join("<th>{}</th>".format(a) for a in rv_names) + "<th>{}</th></tr>".format(pstr)
+        table_header = '<tr>' + ''.join(f"<th>{a}</th>" for a in rv_names) + f"<th>{pstr}</th></tr>"
         table_rows = ''.join(
-            '<tr>' + ''.join('<td>{}</td>'.format(_) for _ in o) + '<td>{}</td></tr>'.format(p) for o, p in
+            '<tr>' + ''.join(f'<td>{_}</td>' for _ in o) + f'<td>{p}</td></tr>' for o, p in
             zip(outcomes, pmf))
-        table = '<table>{}{}</table>'.format(table_header, table_rows)
+        table = f'<table>{table_header}{table_rows}</table>'
 
-        output = '<div><div style="float: left">{}</div><div style="float: left">{}</div></div>'.format(header, table)
+        output = f'<div><div style="float: left">{header}</div><div style="float: left">{table}</div></div>'
 
         return output
 
@@ -681,7 +679,7 @@ class BaseDistribution(object):
 
         L = max(map(len, headers))
         for head, val in zip(headers, vals):
-            s.write("{0}{1}\n".format(head.ljust(L), val))
+            s.write(f"{head.ljust(L)}{val}\n")
         s.write("\n")
 
         s.write(''.join(['x'.ljust(max_length), colsep, pstr, "\n"]))

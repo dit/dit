@@ -3,8 +3,8 @@ Some specific examples of correlated dice.
 """
 
 import itertools
-import dit
 
+import dit
 
 __all__ = (
     'iid_sum',

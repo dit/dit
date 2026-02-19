@@ -5,19 +5,17 @@ The I_proj measure as proposed by Harder et al.
 import numpy as np
 from scipy.optimize import minimize
 
-from ..pid import BaseBivariatePID
-
 from ... import Distribution
 from ...divergences.pmf import relative_entropy
 from ...exceptions import ditException
-
+from ..pid import BaseBivariatePID
 
 __all__ = (
     'PID_Proj',
 )
 
 
-class MinDKLOptimizer(object):
+class MinDKLOptimizer:
     """
     An optimizer to find the minimum D_KL(p||q) given p and a
     restriction on the domain of q.
@@ -98,7 +96,7 @@ class MinDKLOptimizer(object):
                        )
 
         if not res.success:  # pragma: no cover
-            msg = "Optimization failed: {}".format(res.message)
+            msg = f"Optimization failed: {res.message}"
             raise ditException(msg)
 
         self._optima = res.x
@@ -217,7 +215,7 @@ class PID_Proj(BaseBivariatePID):
             The value of I_proj.
         """
         if len(sources) != 2:  # pragma: no cover
-            msg = "This method needs exact two sources, {} given.".format(len(sources))
+            msg = f"This method needs exact two sources, {len(sources)} given."
             raise ditException(msg)
 
         pi_0 = projected_information(d, sources[0], sources[1], target)

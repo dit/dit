@@ -4,8 +4,8 @@ Tests for dit.other.perplexity.
 
 import pytest
 
-from dit import (ScalarDistribution as SD,
-                 Distribution as D)
+from dit import Distribution as D
+from dit import ScalarDistribution as SD
 from dit.other import perplexity as P
 
 

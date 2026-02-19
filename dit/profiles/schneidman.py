@@ -8,12 +8,12 @@ Schneidman's ``connected information'' decomposition: [Schneidman, Elad, et al.
 
 import numpy as np
 
-from .base_profile import BaseProfile, profile_docstring
 from ..algorithms import marginal_maxent_dists
+
 # from ..divergences import kullback_leibler_divergence as D
 from ..multivariate import dual_total_correlation as B
 from ..shannon import entropy as H
-
+from .base_profile import BaseProfile, profile_docstring
 
 __all__ = (
     'ConnectedInformations',

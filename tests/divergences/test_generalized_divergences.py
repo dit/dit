@@ -3,23 +3,22 @@ Tests for dit.divergences.kullback_leibler_divergence.
 """
 
 from functools import partial
-
 from itertools import combinations, product
 
+import numpy as np
 import pytest
 
-import numpy as np
-
 from dit import Distribution
+from dit.divergences import (
+    alpha_divergence,
+    f_divergence,
+    hellinger_divergence,
+    hellinger_sum,
+    kullback_leibler_divergence,
+    renyi_divergence,
+    tsallis_divergence,
+)
 from dit.exceptions import ditException
-from dit.divergences import (kullback_leibler_divergence,
-                             alpha_divergence,
-                             renyi_divergence,
-                             tsallis_divergence,
-                             hellinger_divergence,
-                             f_divergence,
-                             hellinger_sum
-                             )
 from dit.other import renyi_entropy
 
 divergences = [alpha_divergence, renyi_divergence, tsallis_divergence, hellinger_divergence]

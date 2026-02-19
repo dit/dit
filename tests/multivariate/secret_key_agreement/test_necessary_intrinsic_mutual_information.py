@@ -6,7 +6,6 @@ import pytest
 
 from dit.example_dists.intrinsic import *
 from dit.multivariate import necessary_intrinsic_mutual_information
-
 from tests._backends import backends
 
 

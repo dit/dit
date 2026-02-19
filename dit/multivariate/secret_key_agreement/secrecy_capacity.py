@@ -7,10 +7,9 @@ secret key agreement rate since arbitrary input to the channel p(YZ|X) can be
 emulated through proper communication on the part of X.
 """
 
-from .one_way_skar import OneWaySKAR
 from ...utils import unitful
 from .._backend import _make_backend_subclass
-
+from .one_way_skar import OneWaySKAR
 
 __all__ = (
     'secrecy_capacity',

@@ -4,7 +4,6 @@ Non-cython methods for getting counts and distributions from data.
 
 import numpy as np
 
-
 __all__ = (
     'counts_from_data',
     'distribution_from_data',
@@ -18,9 +17,10 @@ try:  # cython
 
 except ImportError:  # no cython
 
-    from boltons.iterutils import windowed_iter
     from collections import Counter, defaultdict
     from itertools import product
+
+    from boltons.iterutils import windowed_iter
 
     from .. import modify_outcomes
     from ..exceptions import ditException
@@ -135,7 +135,7 @@ except ImportError:  # no cython
             value of `dit.ditParams['base']` is used.
 
         """
-        from dit import ditParams, Distribution
+        from dit import Distribution, ditParams
 
         try:
             d = list(map(tuple, d))

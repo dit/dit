@@ -23,13 +23,11 @@ the vertex with the largest value of I(Y;Q).
 """
 
 import numpy as np
-
 from scipy.special import entr
 
 from ...algorithms.convex_maximization import maximize_convex_function
-from ..pid import BasePID
 from ...shannon import mutual_information
-
+from ..pid import BasePID
 
 __all__ = (
     'PID_Prec',
@@ -196,7 +194,7 @@ class PID_Prec(BasePID):
         # Compute conditional distributions of Q given each source X_i
         for rvndx in range(len(pjoint.rvs) - 1):
             pX = pjoint.marginal([rvndx,])
-            cK = 'p(Q|X{})'.format(rvndx)
+            cK = f'p(Q|X{rvndx})'
             sol[cK] = np.zeros((n_q, len(pX.alphabet[0])))
             for (q, v_ix), k in variablesQgiven[rvndx].items():
                 sol[cK][q, v_ix] = x_opt[k]

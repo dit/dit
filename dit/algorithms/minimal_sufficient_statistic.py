@@ -4,11 +4,11 @@ Functions for computing minimal sufficient statistics.
 
 from collections import defaultdict
 
-from .lattice import dist_from_induced_sigalg, insert_join, insert_rv
-from .prune_expand import pruned_samplespace
-from ..helpers import flatten, parse_rvs, normalize_rvs
+from ..helpers import flatten, normalize_rvs, parse_rvs
 from ..math import sigma_algebra
 from ..samplespace import CartesianProduct
+from .lattice import dist_from_induced_sigalg, insert_join, insert_rv
+from .prune_expand import pruned_samplespace
 
 __all__ = (
     'info_trim',

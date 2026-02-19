@@ -4,10 +4,8 @@ Tests for dit.example_dists.circuits.
 
 import pytest
 
-from dit.example_dists import (Unq, Rdn, Xor, RdnXor, ImperfectRdn, Subtle, And,
-                               Or)
-
 from dit.algorithms import insert_meet, pruned_samplespace
+from dit.example_dists import And, ImperfectRdn, Or, Rdn, RdnXor, Subtle, Unq, Xor
 from dit.shannon import mutual_information
 
 

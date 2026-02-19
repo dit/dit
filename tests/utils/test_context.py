@@ -2,12 +2,11 @@
 Tests for dit.utils.context.
 """
 
-import sys
-
 import os
-from dit.utils import cd, named_tempfile, tempdir
-
+import sys
 import tempfile
+
+from dit.utils import cd, named_tempfile, tempdir
 
 root = 'C:\\' if sys.platform in ('win32', 'cygwin') else '/'
 
@@ -33,7 +32,7 @@ def test_named_tempfile1():
     with named_tempfile() as tempfile:
         name = tempfile.name
         assert os.path.isfile(name)
-        tempfile.write('hello'.encode('utf8'))
+        tempfile.write(b'hello')
         tempfile.close()
         assert os.path.isfile(name)
     assert not os.path.isfile(name)
@@ -45,7 +44,7 @@ def test_named_tempfile2():
     with named_tempfile(delete=True) as tempfile:
         name = tempfile.name
         assert os.path.isfile(name)
-        tempfile.write('hello'.encode('utf8'))
+        tempfile.write(b'hello')
         tempfile.close()
         assert os.path.isfile(name)
     assert not os.path.isfile(name)

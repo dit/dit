@@ -4,8 +4,7 @@ Tests for dit.math.sigmaalgebra.
 
 import pytest
 
-from dit.math.sigmaalgebra import sets2matrix, is_sigma_algebra, is_sigma_algebra__brute, atom_set
-
+from dit.math.sigmaalgebra import atom_set, is_sigma_algebra, is_sigma_algebra__brute, sets2matrix
 
 sa = frozenset([frozenset([]), frozenset(['a']), frozenset(['b']), frozenset(['c']),
                 frozenset(['a', 'b']), frozenset(['a', 'c']), frozenset(['b', 'c']),

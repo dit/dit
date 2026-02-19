@@ -3,17 +3,16 @@ Tests for dit.others.cumulative_residual_entropy.
 """
 from itertools import combinations, product
 
-import pytest
-
 import numpy as np
+import pytest
 
 from dit import Distribution as D
 from dit.algorithms.stats import mean, standard_deviation
-from dit.other import (cumulative_residual_entropy as CRE,
-                       generalized_cumulative_residual_entropy as GCRE,
-                       conditional_cumulative_residual_entropy as CCRE,
-                       conditional_generalized_cumulative_residual_entropy as CGCRE)
-from dit.example_dists import uniform, Xor
+from dit.example_dists import Xor, uniform
+from dit.other import conditional_cumulative_residual_entropy as CCRE
+from dit.other import conditional_generalized_cumulative_residual_entropy as CGCRE
+from dit.other import cumulative_residual_entropy as CRE
+from dit.other import generalized_cumulative_residual_entropy as GCRE
 
 
 def miwin():

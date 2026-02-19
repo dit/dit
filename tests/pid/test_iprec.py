@@ -5,8 +5,8 @@ Tests for dit.pid.measures.iprec.
 import pytest
 
 from dit import Distribution
-from dit.pid.measures.iprec import PID_Prec
 from dit.pid.distributions import bivariates
+from dit.pid.measures.iprec import PID_Prec
 
 
 def test_pid_prec1():

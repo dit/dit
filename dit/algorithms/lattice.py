@@ -52,10 +52,10 @@ give the same results as [1].
 from collections import defaultdict
 
 import dit
-from ..helpers import parse_rvs, RV_MODES
-from ..math import sigma_algebra, atom_set
-from ..utils import quasilexico_key
 
+from ..helpers import RV_MODES, parse_rvs
+from ..math import atom_set, sigma_algebra
+from ..utils import quasilexico_key
 
 __all__ = (
     'dist_from_induced_sigalg',

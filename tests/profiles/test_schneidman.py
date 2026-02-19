@@ -2,13 +2,11 @@
 Tests for dit.profiles.ConnectedInformations. Known examples taken from http://arxiv.org/abs/1409.4708 .
 """
 
-import pytest
-
 import numpy as np
+import pytest
 
 from dit import Distribution
 from dit.profiles import ConnectedDualInformations, ConnectedInformations
-
 
 ex1 = Distribution(['000', '001', '010', '011', '100', '101', '110', '111'], [1 / 8] * 8)
 ex2 = Distribution(['000', '111'], [1 / 2] * 2)

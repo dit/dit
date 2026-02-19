@@ -6,11 +6,14 @@ import numpy as np
 
 from .interactive_intrinsic_mutual_informations import interactive_intrinsic_mutual_information
 from .intrinsic_mutual_informations import intrinsic_total_correlation as intrinsic_mutual_information
-from .minimal_intrinsic_mutual_informations import minimal_intrinsic_total_correlation as minimal_intrinsic_mutual_information
+from .minimal_intrinsic_mutual_informations import (
+    minimal_intrinsic_total_correlation as minimal_intrinsic_mutual_information,
+)
 from .no_communication import no_communication_skar
 from .skar_lower_bounds import necessary_intrinsic_mutual_information
-from .two_part_intrinsic_mutual_informations import two_part_intrinsic_total_correlation as two_part_intrinsic_mutual_information
-
+from .two_part_intrinsic_mutual_informations import (
+    two_part_intrinsic_total_correlation as two_part_intrinsic_mutual_information,
+)
 
 __all__ = (
     'two_way_skar',

@@ -3,11 +3,10 @@ Tests for dit.example_dists.n_mod_m.
 """
 
 import pytest
-
 from numpy import log2
 
-from dit.multivariate import interaction_information as II
 from dit.example_dists import n_mod_m
+from dit.multivariate import interaction_information as II
 
 
 def test_n_mod_m1():

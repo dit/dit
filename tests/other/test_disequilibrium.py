@@ -8,9 +8,8 @@ import pytest
 
 from dit import Distribution, ScalarDistribution
 from dit.example_dists import uniform
-from dit.other import disequilibrium, LMPR_complexity
+from dit.other import LMPR_complexity, disequilibrium
 from dit.utils import flatten
-
 
 d1 = Distribution(['000', '001', '110', '111'], [1 / 4] * 4)
 d2 = Distribution(['000', '011', '101', '110'], [1 / 4] * 4)

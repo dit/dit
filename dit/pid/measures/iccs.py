@@ -4,12 +4,10 @@ The I_ccs measure, as proposed by Ince.
 
 import numpy as np
 
-from ..pid import BasePID
-
 from ... import modify_outcomes
 from ...algorithms import maxent_dist
 from ...utils import flatten, powerset
-
+from ..pid import BasePID
 
 __all__ = (
     'PID_CCS',

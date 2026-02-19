@@ -5,7 +5,6 @@ Information.
 
 from ..distconst import uniform
 
-
 __all__ = (
     'dyadic',
     'triadic',

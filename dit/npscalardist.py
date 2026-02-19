@@ -31,15 +31,14 @@ import numpy as np
 
 from .distribution import BaseDistribution
 from .exceptions import (
-    ditException,
     InvalidDistribution,
     InvalidOutcome,
+    ditException,
 )
 from .helpers import flatten, reorder
-from .math import get_ops, LinearOperations
+from .math import LinearOperations, get_ops
 from .params import ditParams
 from .samplespace import BaseSampleSpace, ScalarSampleSpace
-
 
 __all__ = (
     'ScalarDistribution',

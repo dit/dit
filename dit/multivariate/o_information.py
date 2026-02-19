@@ -2,9 +2,8 @@
 The O-information, as defined by Rosas et al.
 """
 
-from .total_correlation import total_correlation
 from .dual_total_correlation import dual_total_correlation
-
+from .total_correlation import total_correlation
 
 __all__ = (
     'o_information',

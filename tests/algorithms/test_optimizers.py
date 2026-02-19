@@ -2,21 +2,23 @@
 Tests for dit.algorithms.optimizers
 """
 
-import pytest
-
-from itertools import product
 import warnings
+from itertools import product
+
+import pytest
 
 from dit.algorithms import maxent_dist, pid_broja
 from dit.algorithms.distribution_optimizers import (
-    MinEntOptimizer,
-    MinCoInfoOptimizer,
     MaxDualTotalCorrelationOptimizer,
-    MinDualTotalCorrelationOptimizer
+    MinCoInfoOptimizer,
+    MinDualTotalCorrelationOptimizer,
+    MinEntOptimizer,
 )
 from dit.distconst import uniform
 from dit.example_dists import Rdn, Unq, Xor
-from dit.multivariate import entropy as H, coinformation as I, dual_total_correlation as B
+from dit.multivariate import coinformation as I
+from dit.multivariate import dual_total_correlation as B
+from dit.multivariate import entropy as H
 
 
 @pytest.mark.parametrize('rvs', [

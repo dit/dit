@@ -8,7 +8,6 @@ from scipy.optimize import minimize_scalar
 from ..exceptions import OptimizationException
 from ..helpers import normalize_pmfs
 
-
 __all__ = (
     'bhattacharyya_coefficient',
     'bhattacharyya_coefficient_pmf',

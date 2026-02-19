@@ -7,7 +7,6 @@ from itertools import product
 from ...distconst import uniform
 from ...example_dists import jeff
 
-
 __all__ = (
     'anddup',
     'cat',

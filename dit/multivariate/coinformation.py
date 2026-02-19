@@ -6,7 +6,6 @@ from ..helpers import normalize_rvs
 from ..shannon import conditional_entropy as H
 from ..utils import powerset, unitful
 
-
 __all__ = (
     'coinformation',
 )

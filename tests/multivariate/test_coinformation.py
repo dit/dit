@@ -4,10 +4,12 @@ Tests for dit.multivariate.coinformation.
 
 import pytest
 
-from dit import Distribution as D, ScalarDistribution as SD
-from dit.multivariate import coinformation as I, entropy as H
-from dit.exceptions import ditException
+from dit import Distribution as D
+from dit import ScalarDistribution as SD
 from dit.example_dists import n_mod_m
+from dit.exceptions import ditException
+from dit.multivariate import coinformation as I
+from dit.multivariate import entropy as H
 
 
 def test_coi1():

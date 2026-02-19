@@ -5,8 +5,10 @@ https://arxiv.org/abs/2407.04415
 """
 
 from functools import reduce
+
 import numpy as np
 from scipy.spatial import ConvexHull
+
 from ..pid import BasePID
 
 __all__ = (

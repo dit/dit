@@ -40,8 +40,7 @@ try:
 except ImportError:
     XARRAY_AVAILABLE = False
 
-from .math.ops import get_ops, LinearOperations
-
+from .math.ops import get_ops
 
 __all__ = (
     'XRDistribution',
@@ -669,7 +668,7 @@ class XRDistribution:
         free_str = ', '.join(sorted(self.free_vars))
         given_str = ', '.join(sorted(self.given_vars)) if self.given_vars else '(none)'
 
-        s.write(f"Class:     XRDistribution\n")
+        s.write("Class:     XRDistribution\n")
         s.write(f"Notation:  {notation}\n")
         s.write(f"Alphabet:  {alphabet}\n")
         s.write(f"Base:      {base}\n")

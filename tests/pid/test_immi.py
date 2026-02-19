@@ -4,8 +4,8 @@ Tests for dit.pid.immi.
 
 import pytest
 
-from dit.pid.measures.immi import PID_MMI
 from dit.pid.distributions import bivariates, trivariates
+from dit.pid.measures.immi import PID_MMI
 
 
 def test_pid_mmi1():

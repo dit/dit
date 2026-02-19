@@ -7,11 +7,12 @@ This is a reasonable measure of distinguishablity between distribution.
 import numpy as np
 
 import dit
-from ..exceptions import ditException
-from ..distconst import mixture_distribution
-from ..shannon import entropy as H, entropy_pmf as H_pmf
-from ..utils import unitful
 
+from ..distconst import mixture_distribution
+from ..exceptions import ditException
+from ..shannon import entropy as H
+from ..shannon import entropy_pmf as H_pmf
+from ..utils import unitful
 
 __all__ = (
     'jensen_shannon_divergence',
@@ -136,14 +137,14 @@ def jensen_divergence(func):
         jbd = one - two
         return jbd
 
-    docstring = """
-        The Jensen-{name} Divergence:
-        :math:`{name}(sum(w_i*P_i)) - sum(w_i*{name}(P_i))`.
+    docstring = f"""
+        The Jensen-{func.__name__} Divergence:
+        :math:`{func.__name__}(sum(w_i*P_i)) - sum(w_i*{func.__name__}(P_i))`.
 
         Parameters
         ----------
         dists : [Distribution]
-            The distributions, P_i, to take the Jensen-{name} Divergence of.
+            The distributions, P_i, to take the Jensen-{func.__name__} Divergence of.
 
         weights : [float], None
             The weights, w_i, to give the distributions. If None, the weights are
@@ -153,8 +154,8 @@ def jensen_divergence(func):
 
         Returns
         -------
-        j{init}d: float
-            The Jensen-{name} Divergence
+        j{func.__name__[0]}d: float
+            The Jensen-{func.__name__} Divergence
 
         Raises
         ------
@@ -164,7 +165,7 @@ def jensen_divergence(func):
             Raised if the weights do not sum to unity.
         InvalidProbability
             Raised if the weights are not valid probabilities.
-        """.format(name=func.__name__, init=func.__name__[0])
+        """
 
     jensen_blank_divergence.__doc__ = docstring
 

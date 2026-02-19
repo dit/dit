@@ -4,13 +4,17 @@ Tests for dit.divergences.jensen_shannon_divergence.
 import pytest
 
 from dit import Distribution
-from dit.exceptions import ditException
 from dit.divergences.jensen_shannon_divergence import (
-    jensen_shannon_divergence as JSD,
-    jensen_shannon_divergence_pmf as JSD_pmf,
     jensen_divergence,
 )
+from dit.divergences.jensen_shannon_divergence import (
+    jensen_shannon_divergence as JSD,
+)
+from dit.divergences.jensen_shannon_divergence import (
+    jensen_shannon_divergence_pmf as JSD_pmf,
+)
 from dit.divergences.pmf import jensen_shannon_divergence2
+from dit.exceptions import ditException
 from dit.other import renyi_entropy
 
 

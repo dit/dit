@@ -12,14 +12,14 @@ from .imes import PID_MES
 from .imin import PID_WB
 from .immi import PID_MMI
 from .ipm import PID_PM
-from .isx import PID_SX
 from .iprec import PID_Prec
 from .iproj import PID_Proj
 from .irav import PID_RAV
+from .irdr import PID_RDR
 from .irr import PID_RR
 from .iskar import PID_SKAR_owb
+from .isx import PID_SX
 from .iwedge import PID_GK
-from .irdr import PID_RDR
 
 __all_pids = [
     PID_MMI,

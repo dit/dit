@@ -4,21 +4,20 @@ Partial information decompositions
 Maxent decompositions of :math:`I[sources : target]`
 """
 
-from debtcollector import removals
-
-from collections import defaultdict
 import itertools
+from collections import defaultdict
 
 import numpy as np
+from debtcollector import removals
 from loguru import logger
 
 import dit
 
-from ..utils import basic_logger
 from ..abstractdist import get_abstract_dist
-from .frankwolfe import frank_wolfe
-from .optutil import CVXOPT_Template, as_full_rank, Bunch, op_runner
 from ..exceptions import ditException
+from ..utils import basic_logger
+from .frankwolfe import frank_wolfe
+from .optutil import Bunch, CVXOPT_Template, as_full_rank, op_runner
 
 __all__ = (
     'unique_informations',
@@ -594,9 +593,9 @@ class MaximumConditionalEntropy(CVXOPT_Template):
         tols = [1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3]
         for tol in tols:
             constraints = []
-            constraints.append((-tol <= A * x - b))
-            constraints.append((A * x - b <= tol))
-            constraints.append((x >= t))
+            constraints.append(-tol <= A * x - b)
+            constraints.append(A * x - b <= tol)
+            constraints.append(x >= t)
 
             # Objective to minimize
             objective = -t
@@ -731,11 +730,11 @@ def demo():
             decomps.append(pi_decomp(x.dist, d_opt))
         decomps = np.asarray(decomps)
         # redundancy
-        axes[0].plot(avals, decomps[:, -1], label="{}".format(b))
+        axes[0].plot(avals, decomps[:, -1], label=f"{b}")
         # unique
-        axes[1].plot(avals, decomps[:, -2], label="{}".format(b))
+        axes[1].plot(avals, decomps[:, -2], label=f"{b}")
         # synergy
-        axes[2].plot(avals, decomps[:, 0], label="{}".format(b))
+        axes[2].plot(avals, decomps[:, 0], label=f"{b}")
 
     axes[0].set_title('Redundancy')
     axes[1].set_title('Unique')

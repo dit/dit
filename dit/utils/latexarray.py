@@ -7,14 +7,12 @@ import os
 import subprocess  # noqa: S404
 import tempfile
 
-from debtcollector import removals
-
 import numpy as np
 import numpy.core.arrayprint as arrayprint
+from debtcollector import removals
 
 from .context import cd, named_tempfile, tempdir
 from .misc import default_opener
-
 
 __all__ = (
     'printoptions',
@@ -78,7 +76,7 @@ def to_latex__numerical(a, decimals, tab):
 
     # Specify that we want all columns to have the same column type.
     nCols = array.shape[1]
-    cols = r"*{{{nCols}}}{{X}}".format(nCols=nCols)
+    cols = rf"*{{{nCols}}}{{X}}"
 
     # Build the lines in the array.
     #
@@ -128,11 +126,11 @@ def to_latex__exact(a, tol, tab):
 
     # Specify that we want all columns to have the same column type.
     nCols = array.shape[1]
-    cols = r"*{{{nCols}}}{{c}}".format(nCols=nCols)
+    cols = rf"*{{{nCols}}}{{c}}"
 
     def to_frac(f):
         if f.denominator != 1:
-            return r'\frac{{{}}}{{{}}}'.format(f.numerator, f.denominator)
+            return rf'\frac{{{f.numerator}}}{{{f.denominator}}}'
         else:
             return str(f.numerator)
 
@@ -276,7 +274,7 @@ def to_pdf(a, exact=False,
         # subprocess and pdfcrop. Also, we need to use shell=True since some
         # versions of pdfcrop rely on a hack to determine what perl interpreter
         # to call it with.
-        cmd = r'pdfcrop --debug {} {}'.format(pdfpath, pdffobj.name)
+        cmd = rf'pdfcrop --debug {pdfpath} {pdffobj.name}'
         with open(os.devnull, 'w') as fp:
             subprocess.call(cmd, stdout=fp)  # noqa: S603
 

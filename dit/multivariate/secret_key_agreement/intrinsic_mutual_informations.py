@@ -4,7 +4,6 @@ Intrinsic Mutual Informations
 
 from .base_skar_optimizers import BaseIntrinsicMutualInformation
 
-
 __all__ = (
     'intrinsic_total_correlation',
     'intrinsic_dual_total_correlation',
@@ -175,8 +174,8 @@ def intrinsic_mutual_information_constructor(func):  # pragma: no cover
                 return mi
 
             docstring = \
-            """
-            Compute the {name}.
+            f"""
+            Compute the {func.__name__}.
 
             Parameters
             ----------
@@ -186,8 +185,8 @@ def intrinsic_mutual_information_constructor(func):  # pragma: no cover
             Returns
             -------
             mi : float
-                The {name}.
-            """.format(name=func.__name__)
+                The {func.__name__}.
+            """
             try:
                 # python 2
                 objective.__func__.__doc__ = docstring
@@ -198,8 +197,8 @@ def intrinsic_mutual_information_constructor(func):  # pragma: no cover
             return objective
 
     IntrinsicMutualInformation.__doc__ = \
+    f"""
+    Compute the intrinsic {func.__name__}.
     """
-    Compute the intrinsic {name}.
-    """.format(name=func.__name__)
 
     return IntrinsicMutualInformation

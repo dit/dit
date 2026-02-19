@@ -2,12 +2,13 @@
 Tests for dit.util.information_partitions.
 """
 
-import pytest
-
 from itertools import islice
 
+import pytest
+
 from dit.example_dists import n_mod_m
-from dit.multivariate import coinformation as I, dual_total_correlation as B
+from dit.multivariate import coinformation as I
+from dit.multivariate import dual_total_correlation as B
 from dit.profiles.information_partitions import DependencyDecomposition, ExtropyPartition, ShannonPartition
 from dit.utils import partitions, powerset
 

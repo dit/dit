@@ -4,8 +4,8 @@ Tests for dit.pid.imin.
 
 import pytest
 
-from dit.pid.measures.imin import PID_WB
 from dit.pid.distributions import bivariates, trivariates
+from dit.pid.measures.imin import PID_WB
 
 
 def test_pid_wb1():

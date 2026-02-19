@@ -2,9 +2,8 @@
 Tests for dit.multivariate.entropy.
 """
 
-import pytest
-
 import numpy as np
+import pytest
 
 from dit import Distribution as D
 from dit.example_dists import uniform

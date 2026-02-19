@@ -2,9 +2,8 @@
 Tests for dit.other.renyi_entropy.
 """
 
-import pytest
-
 import numpy as np
+import pytest
 
 from dit import Distribution
 from dit.example_dists import uniform

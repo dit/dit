@@ -6,8 +6,7 @@ try:
 except ImportError:
     from pltable import UNICODE_LINES, PrettyTable
 
-from ..import ditParams
-
+from .. import ditParams
 
 __all__ = (
     'build_table',

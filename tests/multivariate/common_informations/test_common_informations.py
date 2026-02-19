@@ -3,18 +3,29 @@ Tests for the various common informations.
 """
 
 import pytest
-
 from hypothesis import given, settings
 
-from dit.multivariate import (gk_common_information as K,
-                              caekl_mutual_information as J,
-                              dual_total_correlation as B,
-                              wyner_common_information as C,
-                              exact_common_information as G,
-                              functional_common_information as F,
-                              mss_common_information as M,
-                              )
-
+from dit.multivariate import (
+    caekl_mutual_information as J,
+)
+from dit.multivariate import (
+    dual_total_correlation as B,
+)
+from dit.multivariate import (
+    exact_common_information as G,
+)
+from dit.multivariate import (
+    functional_common_information as F,
+)
+from dit.multivariate import (
+    gk_common_information as K,
+)
+from dit.multivariate import (
+    mss_common_information as M,
+)
+from dit.multivariate import (
+    wyner_common_information as C,
+)
 from dit.utils.testing import distributions
 from tests._backends import backends
 

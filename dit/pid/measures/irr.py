@@ -4,10 +4,8 @@ Characterizing synergy, uniqueness, and redundancy in interacting environmental
 variables'' by Goodwell & Kumar.
 """
 
-from ..pid import BaseBivariatePID
-
 from ...multivariate import coinformation, entropy
-
+from ..pid import BaseBivariatePID
 
 __all__ = (
     'PID_RR',

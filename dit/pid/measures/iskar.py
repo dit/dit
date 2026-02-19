@@ -6,14 +6,13 @@ and source and the target, given the other sources. It turns out that these uniq
 are inconsistent, in that they produce differing redundancy values.
 """
 
-from ..pid import BaseUniquePID
 from ...multivariate.secret_key_agreement import (
     no_communication_skar,
     one_way_skar,
     two_way_skar,
 )
 from ...utils import flatten
-
+from ..pid import BaseUniquePID
 
 __all__ = (
     'PID_SKAR_nw',

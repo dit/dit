@@ -2,15 +2,13 @@
 Tests for dit.divergences.cross_entropy.
 """
 
-import pytest
-
 import numpy as np
+import pytest
 
 from dit import Distribution
 from dit.divergences import cross_entropy
 from dit.exceptions import ditException
 from dit.multivariate import entropy
-
 
 d1 = Distribution(['0', '1'], [1 / 2, 1 / 2])
 d2 = Distribution(['0', '2'], [1 / 2, 1 / 2])

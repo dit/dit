@@ -4,8 +4,8 @@ Tests for dit.pid.iig.
 
 import pytest
 
-from dit.pid.measures.iig import PID_IG
 from dit.pid.distributions import bivariates
+from dit.pid.measures.iig import PID_IG
 
 
 def test_pid_ig1():

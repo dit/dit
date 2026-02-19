@@ -194,16 +194,16 @@ class IntrinsicMIMixin:
             return float(val.detach().cpu().item()) if hasattr(val, 'detach') else float(val)
 
         intrinsic.__doc__ = \
-        """
-        Compute the intrinsic {name}.
+        f"""
+        Compute the intrinsic {cls.name}.
 
         Parameters
         ----------
         dist : Distribution
-            The distribution to compute the intrinsic {name} of.
+            The distribution to compute the intrinsic {cls.name} of.
         rvs : list, None
             A list of lists. Each inner list specifies the indexes of the random
-            variables used to calculate the intrinsic {name}. If None,
+            variables used to calculate the intrinsic {cls.name}. If None,
             then it is calculated over all random variables, which is equivalent
             to passing `rvs=dist.rvs`.
         crvs : list
@@ -224,7 +224,7 @@ class IntrinsicMIMixin:
         backend : str
             The optimization backend. One of ``'numpy'`` (default),
             ``'jax'``, or ``'torch'``.
-        """.format(name=cls.name)
+        """
 
         return intrinsic
 
@@ -318,16 +318,16 @@ class MoreIntrinsicMIMixin:
             return min(candidates)
 
         intrinsic.__doc__ = \
-            """
-            Compute the {style} intrinsic {name}.
+            f"""
+            Compute the {cls.style} intrinsic {cls.name}.
 
             Parameters
             ----------
             dist : Distribution
-                The distribution to compute the {style} intrinsic {name} of.
+                The distribution to compute the {cls.style} intrinsic {cls.name} of.
             rvs : list, None
                 A list of lists. Each inner list specifies the indexes of the random
-                variables used to calculate the intrinsic {name}. If None,
+                variables used to calculate the intrinsic {cls.name}. If None,
                 then it is calculated over all random variables, which is equivalent
                 to passing `rvs=dist.rvs`.
             crvs : list
@@ -348,7 +348,7 @@ class MoreIntrinsicMIMixin:
             backend : str
                 The optimization backend. One of ``'numpy'`` (default),
                 ``'jax'``, or ``'torch'``.
-            """.format(name=cls.name, style=cls.style)
+            """
 
         return intrinsic
 
@@ -594,16 +594,16 @@ class TwoPartIMIMixin:
             return min(candidates)
 
         two_part_intrinsic.__doc__ = \
-            """
-            Compute the two-part intrinsic {name}.
+            f"""
+            Compute the two-part intrinsic {cls.name}.
 
             Parameters
             ----------
             dist : Distribution
-                The distribution to compute the two-part intrinsic {name} of.
+                The distribution to compute the two-part intrinsic {cls.name} of.
             rvs : list, None
                 A list of lists. Each inner list specifies the indexes of the
-                random variables used to calculate the intrinsic {name}. If
+                random variables used to calculate the intrinsic {cls.name}. If
                 None, then it is calculated over all random variables, which is
                 equivalent to passing `rvs=dist.rvs`.
             crvs : list
@@ -630,7 +630,7 @@ class TwoPartIMIMixin:
             backend : str
                 The optimization backend. One of ``'numpy'`` (default),
                 ``'jax'``, or ``'torch'``.
-            """.format(name=cls.name)
+            """
 
         return two_part_intrinsic
 

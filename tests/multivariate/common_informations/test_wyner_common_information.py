@@ -8,9 +8,7 @@ from dit import Distribution as D
 from dit.multivariate import wyner_common_information as C
 from dit.multivariate.common_informations.wyner_common_information import WynerCommonInformation
 from dit.shannon import entropy
-
 from tests._backends import backends
-
 
 outcomes = ['0000', '0001', '0110', '0111', '1010', '1011', '1100', '1101']
 pmf = [1 / 8] * 8

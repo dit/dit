@@ -8,7 +8,6 @@ import numpy as np
 
 from .base_markov_optimizer import MarkovVarOptimizer
 
-
 __all__ = (
     'exact_common_information',
 )

@@ -7,7 +7,6 @@ from scipy.special import digamma
 
 from .counts import get_counts
 
-
 __all__ = (
     'entropy_0',
     'entropy_1',

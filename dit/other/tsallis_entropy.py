@@ -5,9 +5,8 @@ Tsallis Entropy.
 import numpy as np
 
 from ..helpers import normalize_rvs
-from ..utils import flatten
 from ..multivariate import entropy
-
+from ..utils import flatten
 
 __all__ = (
     'tsallis_entropy',

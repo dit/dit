@@ -7,7 +7,6 @@ import numpy as np
 from ...exceptions import ditException
 from ..pid import BaseBivariatePID
 
-
 __all__ = (
     'PID_CT',
 )
@@ -74,7 +73,7 @@ class PID_CT(BaseBivariatePID):
         The PID measure of Sigtermans based on causal tensors.
         """
         if len(sources) != 2:  # pragma: no cover
-            msg = "This method needs exact two sources, {} given.".format(len(sources))
+            msg = f"This method needs exact two sources, {len(sources)} given."
             raise ditException(msg)
 
         return i_triangle(d, sources[0], sources[1], target)

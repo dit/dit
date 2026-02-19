@@ -5,9 +5,10 @@ Tests for dit.multivariate.tse_complexity.
 import pytest
 
 from dit import Distribution as D
-from dit.multivariate import binding_information as B, tse_complexity as TSE
 from dit.example_dists import n_mod_m
 from dit.math.misc import combinations as nCk
+from dit.multivariate import binding_information as B
+from dit.multivariate import tse_complexity as TSE
 from dit.utils import powerset
 
 

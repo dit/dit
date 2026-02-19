@@ -4,18 +4,20 @@ Tests for dit.multivariate.deweese.
 
 import pytest
 
-from dit.example_dists import dyadic, triadic, Xor
-from dit.multivariate import (coinformation,
-                              total_correlation,
-                              dual_total_correlation,
-                              caekl_mutual_information,
-                              )
-from dit.multivariate.deweese import (deweese_constructor,
-                                      deweese_coinformation,
-                                      deweese_total_correlation,
-                                      deweese_dual_total_correlation,
-                                      deweese_caekl_mutual_information,
-                                      )
+from dit.example_dists import Xor, dyadic, triadic
+from dit.multivariate import (
+    caekl_mutual_information,
+    coinformation,
+    dual_total_correlation,
+    total_correlation,
+)
+from dit.multivariate.deweese import (
+    deweese_caekl_mutual_information,
+    deweese_coinformation,
+    deweese_constructor,
+    deweese_dual_total_correlation,
+    deweese_total_correlation,
+)
 
 
 @pytest.mark.parametrize(('func', 'fast'), [

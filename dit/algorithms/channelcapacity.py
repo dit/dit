@@ -3,12 +3,12 @@ Simple implementation for channel capacity.
 """
 
 import numpy as np
+
 import dit
 
-from ..exceptions import ditException
 from ..cdisthelpers import cdist_array
+from ..exceptions import ditException
 from ..utils import unitful
-
 
 __all__ = (
     'channel_capacity',

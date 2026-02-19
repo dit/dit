@@ -3,13 +3,11 @@ The (generalized) cumulative residual entropy and conditional (generalized)
 cumulative residual entropy.
 """
 
-from boltons.iterutils import pairwise
-
 import numpy as np
+from boltons.iterutils import pairwise
 
 from .. import Distribution, ScalarDistribution
 from ..helpers import numerical_test
-
 
 __all__ = (
     'cumulative_residual_entropy',

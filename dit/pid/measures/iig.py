@@ -7,13 +7,11 @@ distribution is minimized. That minimal DKL is then the synergy.
 """
 
 import numpy as np
-
 from scipy.optimize import minimize
 
 from ...exceptions import ditException
 from ...multivariate import coinformation
 from ..pid import BaseBivariatePID
-
 
 __all__ = (
     'PID_IG',
@@ -120,7 +118,7 @@ class PID_IG(BaseBivariatePID):
             The redundancy value.
         """
         if len(sources) != 2:  # pragma: no cover
-            msg = "This method needs exact two sources, {} given.".format(len(sources))
+            msg = f"This method needs exact two sources, {len(sources)} given."
             raise ditException(msg)
 
         syn = ig_synergy(d, sources, target)

@@ -5,8 +5,8 @@ Tests for dit.multivariate.interaction_information.
 import pytest
 
 from dit import Distribution as D
-from dit.multivariate import interaction_information, coinformation
 from dit.example_dists import Xor
+from dit.multivariate import coinformation, interaction_information
 
 
 @pytest.mark.parametrize('i', range(2, 6))

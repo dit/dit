@@ -4,12 +4,11 @@ Tests for dit.samplespace.
 
 import pytest
 
-from dit.samplespace import SampleSpace, CartesianProduct
-
 import dit
+from dit.samplespace import CartesianProduct, SampleSpace
 
 
-class TestSampleSpace(object):
+class TestSampleSpace:
     def setup_class(self):
         product = dit.helpers.get_product_func(str)
         self.samplespace = ['00', '01', '10', '12']
@@ -54,7 +53,7 @@ class TestSampleSpace(object):
         assert indexes == [0, 1, 3, 2]
 
 
-class TestCartesianProduct(object):
+class TestCartesianProduct:
     def setup_class(self):
         product = dit.helpers.get_product_func(str)
         alphabets = [['0', '1'], ['0', '1', '2']]

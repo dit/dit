@@ -2,12 +2,10 @@
 Miscellaneous math.
 """
 
-from functools import lru_cache, reduce
+from functools import cache, reduce
 from itertools import chain
-from operator import mul
-
 from numbers import Integral, Number
-
+from operator import mul
 
 __all__ = (
     'is_number',
@@ -53,7 +51,7 @@ def is_integer(x):
     return isinstance(x, Integral)
 
 
-@lru_cache(maxsize=None)
+@cache
 def factorial(n):
     """
     Computes n!
@@ -76,9 +74,9 @@ def factorial(n):
         If `n` is not non-negative integer.
     """
     if not is_number(n):
-        raise TypeError("{0} is not a number.".format(n))
+        raise TypeError(f"{n} is not a number.")
     if not is_integer(n) or n < 0:
-        raise ValueError("{0} is not a positive integer.".format(n))
+        raise ValueError(f"{n} is not a positive integer.")
     if n == 0:
         return 1
     else:
@@ -111,7 +109,7 @@ def combinations(n, k):
     nf = factorial(n)
     kf = factorial(k)
     if k > n:
-        raise ValueError("{0} is larger than {1}.".format(k, n))
+        raise ValueError(f"{k} is larger than {n}.")
     nmkf = factorial(n - k)
     return nf / (kf * nmkf)
 
@@ -122,9 +120,9 @@ def multinomial(n, ks):
     arranging `n` items into groups of sizes `k1`, `k2`, ...
     """
     if sum(ks) != n:
-        raise ValueError("The values in `ks` ({}) must sum to n ({})".format(ks, n))
+        raise ValueError(f"The values in `ks` ({ks}) must sum to n ({n})")
     if min(ks) < 0:
-        raise ValueError("All values in `ks` must be non-negative; found {}".format(min(ks)))
+        raise ValueError(f"All values in `ks` must be non-negative; found {min(ks)}")
 
     return factorial(n) / prod(factorial(k) for k in ks)
 

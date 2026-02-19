@@ -2,11 +2,10 @@
 Various utilities that can be helpful for optimization problems.
 """
 
+import numpy as np
 from debtcollector import removals
 
-import numpy as np
 import dit
-
 
 __all__ = (
     'Bunch',
@@ -81,7 +80,7 @@ def as_full_rank(A, b):
 
     # See np.linalg.matrix_rank
     tol = S.max() * max(A.shape) * np.finfo(S.dtype).eps
-    rank = np.sum(S > tol)
+    rank = np.sum(tol < S)
 
     B = np.dot(Smat, Vh)[:rank]
     c = np.dot(U.transpose(), b)[:rank]
@@ -92,7 +91,7 @@ def as_full_rank(A, b):
 @removals.removed_class('CVXOPT_Template',
                         message="Please see methods in dit.algorithms.distribution_optimizers.py.",
                         version='1.0.1')
-class CVXOPT_Template(object):
+class CVXOPT_Template:
     """
     Template for convex minimization on probability distributions.
     """
@@ -304,8 +303,8 @@ def op_runner(objective, constraints, **kwargs):
     This uses cvxopt.modeling.
 
     """
-    from cvxopt.solvers import options
     from cvxopt.modeling import op
+    from cvxopt.solvers import options
 
     old_options = options.copy()
 

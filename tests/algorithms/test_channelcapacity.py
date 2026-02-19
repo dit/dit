@@ -2,14 +2,13 @@
 Tests for dit.algorithms.channelcapacity
 """
 
-import pytest
-
 import numpy as np
+import pytest
 
 from dit import Distribution, joint_from_factors
 from dit.algorithms.channelcapacity import channel_capacity, channel_capacity_joint
-from dit.exceptions import ditException
 from dit.cdisthelpers import cdist_array
+from dit.exceptions import ditException
 
 
 def BEC_joint(epsilon):

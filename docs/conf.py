@@ -10,7 +10,6 @@
 # serve to show the default.
 
 import os
-import sys
 
 # environment variable to know if the docs are being built on rtd.
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
@@ -69,8 +68,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'dit'
-copyright = u'2013-2026, dit contributors'
+project = 'dit'
+copyright = '2013-2026, dit contributors'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -78,6 +77,7 @@ copyright = u'2013-2026, dit contributors'
 #
 # The short X.Y version.
 import dit
+
 version = dit.__version__
 # The full version, including alpha/beta/rc tags.
 release = dit.__version__
@@ -291,8 +291,8 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'dit.tex', u'dit Documentation',
-   u'dit Contributors', 'manual'),
+  ('index', 'dit.tex', 'dit Documentation',
+   'dit Contributors', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -321,8 +321,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'dit', u'dit Documentation',
-     [u'dit Contributors'], 1)
+    ('index', 'dit', 'dit Documentation',
+     ['dit Contributors'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -335,8 +335,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'dit', u'dit Documentation',
-   u'dit Contributors', 'dit', 'Discrete Information Theory in Python.',
+  ('index', 'dit', 'dit Documentation',
+   'dit Contributors', 'dit', 'Discrete Information Theory in Python.',
    'Science'),
 ]
 

@@ -11,7 +11,6 @@ from ..helpers import normalize_rvs
 from ..multivariate.entropy import entropy
 from ..multivariate.total_correlation import total_correlation
 
-
 __all__ = (
     'HypercontractivityCoefficient',
     'hypercontractivity_coefficient',
@@ -129,7 +128,7 @@ def hypercontractivity_coefficient(dist, rvs, bound=None, niter=None, rv_mode=No
     rvs, _, rv_mode = normalize_rvs(dist, rvs, None, rv_mode)
 
     if len(rvs) != 2:
-        msg = 'Hypercontractivity coefficient can only be computed for 2 variables, not {}.'.format(len(rvs))
+        msg = f'Hypercontractivity coefficient can only be computed for 2 variables, not {len(rvs)}.'
         raise ditException(msg)
 
     # test some special cases:

@@ -5,8 +5,8 @@ Tests for dit.helpers.
 import pytest
 
 from dit import Distribution
-from dit.exceptions import ditException, InvalidOutcome
-from dit.helpers import construct_alphabets, parse_rvs, reorder, numerical_test
+from dit.exceptions import InvalidOutcome, ditException
+from dit.helpers import construct_alphabets, numerical_test, parse_rvs, reorder
 
 
 def test_construct_alphabets1():

@@ -6,11 +6,10 @@ distribution.
 import re
 from abc import ABCMeta, abstractmethod
 from collections import defaultdict
-from functools import lru_cache
-
-from boltons.iterutils import pairwise_iter
+from functools import cache
 
 import numpy as np
+from boltons.iterutils import pairwise_iter
 from lattices.lattices import dependency_lattice, powerset_lattice
 
 from .. import ditParams
@@ -69,7 +68,7 @@ class BaseInformationPartition(metaclass=ABCMeta):
         b = ','.join(crvs)
         symbol = self._symbol(rvs, crvs)
         sep = '|' if len(crvs) > 0 else ''
-        s = "{0}[{1}{2}{3}]".format(symbol, a, sep, b)
+        s = f"{symbol}[{a}{sep}{b}]"
         return s
 
     def _partition(self):
@@ -153,7 +152,7 @@ class BaseInformationPartition(metaclass=ABCMeta):
         table = build_table(['measure', self.unit], title=self._name)  # pylint: disable=no-member
         ### TODO: add some logic for the format string, so things look nice
         #         with arbitrary values
-        table.float_format[self.unit] = ' 5.{0}'.format(digits)  # pylint: disable=no-member
+        table.float_format[self.unit] = f' 5.{digits}'  # pylint: disable=no-member
         key_function = lambda row: (len(row[0][0]), row[0][0], row[0][1])
         items = self.atoms.items()
         for (rvs, crvs), value in sorted(items, key=key_function):
@@ -223,7 +222,7 @@ def tuplefy(dependency):
     return tuple(tuple(sorted(_)) for _ in sorted(dependency, key=lambda d: (-len(d), d)))
 
 
-class DependencyDecomposition(object):
+class DependencyDecomposition:
     """
     Construct a decomposition of all the dependencies in a given joint
     distribution.
@@ -347,7 +346,7 @@ class DependencyDecomposition(object):
             if constraint <= u - v:
                 yield (u, v)
 
-    @lru_cache(maxsize=None)
+    @cache
     def delta(self, edge, measure):
         """
         Return the difference in `measure` along `edge`.
@@ -378,7 +377,7 @@ class DependencyDecomposition(object):
         ### TODO: add some logic for the format string, so things look nice
         # with arbitrary values
         for m in measures:
-            table.float_format[m] = ' {}.{}'.format(digits + 2, digits)
+            table.float_format[m] = f' {digits + 2}.{digits}'
         items = [(tuplefy(row[0]), row[1]) for row in self._measure_of_interest.items() if row[0]]
         items = sorted(items, key=lambda row: row[0])
         items = sorted(items, key=lambda row: sorted((len(d) for d in row[0]), reverse=True), reverse=True)

@@ -3,12 +3,10 @@ Tests for dit.params.
 """
 
 import pytest
-
 from numpy import inf, nan
 
 from dit.exceptions import InvalidBase
-from dit.params import (validate_boolean, validate_float, validate_base,
-                        validate_choice, validate_text)
+from dit.params import validate_base, validate_boolean, validate_choice, validate_float, validate_text
 
 
 def test_validate_boolean1():

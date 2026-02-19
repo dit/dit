@@ -2,14 +2,12 @@
 Tests for dit.multivariate.secret_key_agreement.two_way_skar.py
 """
 
-import pytest
-
 import numpy as np
+import pytest
 
 from dit import Distribution
 from dit.example_dists.intrinsic import intrinsic_1
 from dit.multivariate.secret_key_agreement import two_way_skar
-
 from tests._backends import backends
 
 

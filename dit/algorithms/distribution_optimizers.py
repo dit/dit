@@ -3,22 +3,20 @@ A variety of distribution optimizers using scipy.optimize's methods.
 """
 
 from collections import namedtuple
-
 from itertools import combinations
 
+import numpy as np
 from debtcollector import removals
 
-import numpy as np
-
-from .maxentropy import marginal_constraints_generic
-from .optimization import BaseOptimizer, BaseConvexOptimizer, BaseNonConvexOptimizer
-from .optutil import prepare_dist
-from .pid_broja import (extra_constraints as broja_extra_constraints,
-                        prepare_dist as broja_prepare_dist)
 from .. import Distribution, product_distribution
 from ..helpers import RV_MODES
 from ..multivariate import coinformation as I
 from ..utils import flatten
+from .maxentropy import marginal_constraints_generic
+from .optimization import BaseConvexOptimizer, BaseNonConvexOptimizer, BaseOptimizer
+from .optutil import prepare_dist
+from .pid_broja import extra_constraints as broja_extra_constraints
+from .pid_broja import prepare_dist as broja_prepare_dist
 
 __all__ = (
     'maxent_dist',

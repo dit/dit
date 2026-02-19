@@ -2,11 +2,11 @@
 Tests for dit.utils.latexarray.
 """
 
-import pytest
-
 import os
 
 import numpy as np
+import pytest
+
 import dit.utils.latexarray as la
 
 

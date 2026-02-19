@@ -2,11 +2,11 @@
 Tests for dit.bgm.
 """
 
+import networkx as nx
+import numpy as np
 import pytest
 
-import numpy as np
 import dit
-import networkx as nx
 
 
 def test_distribution_from_bayesnet_nonames():

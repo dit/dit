@@ -2,9 +2,10 @@
 Tests for dit.math.fraction
 """
 
+from fractions import Fraction
+
 import pytest
 
-from fractions import Fraction
 from dit.math.fraction import *
 
 

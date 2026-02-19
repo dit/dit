@@ -13,8 +13,8 @@ generated from S_0.
 """
 
 import numpy as np
-import dit
 
+import dit
 
 __all__ = (
     'distribution_from_bayesnet',
@@ -35,7 +35,7 @@ def sanitize_inputs(digraph, nodes, attr):
         try:
             val = digraph.nodes[rv][attr]
         except KeyError:
-            msg = "Node {} is missing its distributions.".format(rv)
+            msg = f"Node {rv} is missing its distributions."
             raise ValueError(msg)
 
         if callable(val):
@@ -74,7 +74,7 @@ def sanitize_inputs(digraph, nodes, attr):
         rv_names = sorted(digraph.nodes())
     else:
         if len(nodes) != len(all_nodes):
-            msg = "`nodes` is missing required nodes: {}".format(nodes)
+            msg = f"`nodes` is missing required nodes: {nodes}"
             raise ValueError(msg)
         if set(nodes) != all_nodes:
             msg = "`set(nodes)` does not contain all required nodes."

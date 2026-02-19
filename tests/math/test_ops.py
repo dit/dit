@@ -2,14 +2,11 @@
 Tests for dit.math.ops.
 """
 
+import numpy as np
 import pytest
 
-import numpy as np
-
 from dit.exceptions import InvalidBase
-from dit.math.ops import (
-    get_ops, LinearOperations, LogOperations, exp_func, log_func
-)
+from dit.math.ops import LinearOperations, LogOperations, exp_func, get_ops, log_func
 
 
 def test_get_ops():
@@ -17,7 +14,7 @@ def test_get_ops():
     assert isinstance(get_ops(2), LogOperations)
 
 
-class TestLinear(object):
+class TestLinear:
     def setup_class(self):
         self.ops = LinearOperations()
 
@@ -80,7 +77,7 @@ class TestLinear(object):
         assert np.allclose(Y, Y_)
 
 
-class TestLog2(object):
+class TestLog2:
     def setup_class(self):
         self.ops = LogOperations(2)
 

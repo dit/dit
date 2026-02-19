@@ -5,9 +5,9 @@ Helper functions related to conditional distributions.
 import numpy as np
 
 import dit
+
 from .exceptions import ditException
 from .helpers import copypmf
-
 
 __all__ = (
     'joint_from_factors',

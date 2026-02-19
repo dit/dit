@@ -4,8 +4,8 @@ Tests for dit.pid.measures.ict.
 
 import pytest
 
-from dit.pid.measures.ict import PID_CT
 from dit.pid.distributions import bivariates
+from dit.pid.measures.ict import PID_CT
 
 
 def test_pid_ct1():

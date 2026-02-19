@@ -6,8 +6,7 @@ import pytest
 
 from dit.example_dists.intrinsic import *
 from dit.multivariate import total_correlation
-from dit.multivariate.secret_key_agreement.secrecy_capacity import secrecy_capacity, SecrecyCapacity
-
+from dit.multivariate.secret_key_agreement.secrecy_capacity import SecrecyCapacity, secrecy_capacity
 from tests._backends import backends
 
 

@@ -14,7 +14,6 @@ import subprocess
 import sys
 import time
 
-
 BUILD_DIR = 'build'
 
 

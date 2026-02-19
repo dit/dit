@@ -2,12 +2,11 @@
 Specialized distribution constructors.
 """
 
-import numpy as np
-
-from itertools import permutations, product
 from collections import defaultdict
-
+from itertools import permutations, product
 from random import randint
+
+import numpy as np
 
 from .distribution import BaseDistribution
 from .exceptions import ditException
@@ -16,7 +15,6 @@ from .npdist import Distribution
 from .npscalardist import ScalarDistribution
 from .utils import digits, powerset
 from .validate import validate_pmf
-
 
 __all__ = (
     'mixture_distribution',
@@ -652,7 +650,7 @@ def insert_rvf(d, func, index=-1):
     return d2
 
 
-class RVFunctions(object):
+class RVFunctions:
     """
     Helper class for building new random variables.
 
@@ -1094,7 +1092,7 @@ def _combine_scalar_dists(d1, d2, op):
 
     return ScalarDistribution(*zip(*dist.items()), base=d1.get_base())
 
-class DistributionEnumerator():
+class DistributionEnumerator:
     """
     This object enumerates all the uniform probability distributions over `n` variables each with cardinality `k`
     """

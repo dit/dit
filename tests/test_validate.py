@@ -2,13 +2,12 @@
 Tests for dit.validate.
 """
 
+import numpy as np
 import pytest
 
-import numpy as np
-
 import dit
-from dit.math import LinearOperations, LogOperations
 import dit.validate as v
+from dit.math import LinearOperations, LogOperations
 
 
 def test_is_pmf():

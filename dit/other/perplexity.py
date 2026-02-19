@@ -6,7 +6,6 @@ from ..helpers import RV_MODES
 from ..shannon import conditional_entropy, entropy
 from ..utils.misc import flatten
 
-
 __all__ = (
     'perplexity',
 )

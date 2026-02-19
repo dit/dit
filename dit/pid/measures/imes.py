@@ -6,7 +6,6 @@ from dit.algorithms import maxent_dist
 from dit.multivariate import coinformation as I
 from dit.pid.pid import BaseBivariatePID
 
-
 __all__ = (
     'PID_MES',
 )

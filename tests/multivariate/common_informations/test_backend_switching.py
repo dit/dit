@@ -5,16 +5,17 @@ Tests for the backend-switching functionality in Markov variable optimizers.
 import pytest
 
 from dit import Distribution as D
-from dit.multivariate.common_informations.base_markov_optimizer import (
-    MarkovVarMixin,
-    MinimizingMarkovVarMixin,
-    MarkovVarOptimizer,
-    MinimizingMarkovVarOptimizer,
-    make_markov_var_optimizer,
-)
+from dit.algorithms.optimization import BaseAuxVarOptimizer
 from dit.multivariate._backend import (
     _get_base_class,
     _make_backend_subclass,
+)
+from dit.multivariate.common_informations.base_markov_optimizer import (
+    MarkovVarMixin,
+    MarkovVarOptimizer,
+    MinimizingMarkovVarMixin,
+    MinimizingMarkovVarOptimizer,
+    make_markov_var_optimizer,
 )
 from dit.multivariate.common_informations.exact_common_information import (
     ExactCommonInformation,
@@ -24,8 +25,6 @@ from dit.multivariate.common_informations.wyner_common_information import (
     WynerCommonInformation,
     wyner_common_information,
 )
-from dit.algorithms.optimization import BaseAuxVarOptimizer
-
 
 # ── _get_base_class ──────────────────────────────────────────────────────
 
@@ -82,7 +81,7 @@ class TestMakeBackendSubclass:
         assert result is ExactCommonInformation
 
     def test_jax_has_correct_methods(self):
-        from dit.algorithms.optimization_jax import BaseJaxOptimizer, BaseAuxVarJaxOptimizer
+        from dit.algorithms.optimization_jax import BaseAuxVarJaxOptimizer, BaseJaxOptimizer
         JaxExact = _make_backend_subclass(ExactCommonInformation, 'jax')
         # The new class has the mixin and JAX base
         assert MarkovVarMixin in JaxExact.__mro__
@@ -92,7 +91,7 @@ class TestMakeBackendSubclass:
         assert JaxExact.optimize is BaseJaxOptimizer.optimize
 
     def test_torch_has_correct_methods(self):
-        from dit.algorithms.optimization_torch import BaseTorchOptimizer, BaseAuxVarTorchOptimizer
+        from dit.algorithms.optimization_torch import BaseAuxVarTorchOptimizer, BaseTorchOptimizer
         TorchExact = _make_backend_subclass(ExactCommonInformation, 'torch')
         # The new class has the mixin and torch base
         assert MarkovVarMixin in TorchExact.__mro__
@@ -141,14 +140,14 @@ class TestMakeMarkovVarOptimizer:
         assert cls is MarkovVarOptimizer
 
     def test_jax_returns_jax_based(self):
-        from dit.algorithms.optimization_jax import BaseJaxOptimizer, BaseAuxVarJaxOptimizer
+        from dit.algorithms.optimization_jax import BaseAuxVarJaxOptimizer, BaseJaxOptimizer
         cls = make_markov_var_optimizer('jax')
         assert MarkovVarMixin in cls.__mro__
         assert BaseAuxVarJaxOptimizer in cls.__mro__
         assert cls.optimize is BaseJaxOptimizer.optimize
 
     def test_torch_returns_torch_based(self):
-        from dit.algorithms.optimization_torch import BaseTorchOptimizer, BaseAuxVarTorchOptimizer
+        from dit.algorithms.optimization_torch import BaseAuxVarTorchOptimizer, BaseTorchOptimizer
         cls = make_markov_var_optimizer('torch')
         assert MarkovVarMixin in cls.__mro__
         assert BaseAuxVarTorchOptimizer in cls.__mro__

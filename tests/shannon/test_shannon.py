@@ -2,15 +2,15 @@
 Tests for dit.shannon.shannon.
 """
 
+import numpy as np
 import pytest
 
-import numpy as np
-
-from dit import Distribution as D, ScalarDistribution as SD
-from dit.shannon import (entropy as H,
-                         mutual_information as I,
-                         conditional_entropy as CH,
-                         entropy_pmf)
+from dit import Distribution as D
+from dit import ScalarDistribution as SD
+from dit.shannon import conditional_entropy as CH
+from dit.shannon import entropy as H
+from dit.shannon import entropy_pmf
+from dit.shannon import mutual_information as I
 
 
 def test_entropy_pmf1d():

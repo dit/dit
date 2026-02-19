@@ -8,7 +8,6 @@ from ..exceptions import InvalidOutcome
 from ..helpers import normalize_rvs
 from ..utils import flatten, unitful
 
-
 __all__ = (
     'cross_entropy',
 )

@@ -11,7 +11,6 @@ from ..algorithms import BaseAuxVarOptimizer
 from ..exceptions import ditException
 from ..utils import flatten
 
-
 __all__ = (
     'BaseRateDistortion',
     'RateDistortionHamming',

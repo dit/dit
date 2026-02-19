@@ -6,7 +6,6 @@ from itertools import product
 
 from .. import Distribution
 
-
 __all__ = (
     'giant_bit',
     'jeff',

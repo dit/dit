@@ -2,10 +2,9 @@
 Canonical non-signalling boxes.
 """
 
-from dit import Distribution
-
 from itertools import product
 
+from dit import Distribution
 
 __all__ = (
     'pr_box',

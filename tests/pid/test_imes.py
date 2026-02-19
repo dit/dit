@@ -4,8 +4,8 @@ Tests for dit.pid.measures.imes.
 
 import pytest
 
-from dit.pid.measures.imes import PID_MES
 from dit.pid.distributions import bivariates
+from dit.pid.measures.imes import PID_MES
 
 
 @pytest.mark.flaky(reruns=5)

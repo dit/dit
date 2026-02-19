@@ -12,22 +12,18 @@ Notes
 PyTorch is required. Install with: pip install torch
 """
 
-from abc import ABCMeta
-from abc import abstractmethod
+from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 from copy import deepcopy
 from functools import reduce
-from string import ascii_letters
-from string import digits
+from string import ascii_letters, digits
 from types import MethodType
 
 import numpy as np
-
 from loguru import logger
 
 try:
     import torch
-
     from torch import Tensor
     from torch.autograd.functional import jacobian as torch_jacobian
     TORCH_AVAILABLE = True
@@ -41,31 +37,22 @@ except ImportError:
     Tensor = None
 
 from boltons.iterutils import pairwise
-from scipy.optimize import basinhopping
-from scipy.optimize import Bounds
-from scipy.optimize import differential_evolution
-from scipy.optimize import minimize
-from scipy.optimize import shgo
+from scipy.optimize import Bounds, basinhopping, differential_evolution, minimize, shgo
 
-from .. import Distribution
-from .. import insert_rvf
-from .. import modify_outcomes
+from .. import Distribution, insert_rvf, modify_outcomes
 from ..algorithms.channelcapacity import channel_capacity
-from ..exceptions import ditException
-from ..exceptions import OptimizationException
-from ..helpers import flatten
-from ..helpers import normalize_rvs
-from ..helpers import parse_rvs
-from ..math import prod
-from ..math import sample_simplex
-from ..utils import partitions
-from ..utils import powerset
-from ..utils.optimization import accept_test
-from ..utils.optimization import basinhop_status
-from ..utils.optimization import BasinHoppingCallBack
-from ..utils.optimization import BasinHoppingInnerCallBack
-from ..utils.optimization import colon
-from ..utils.optimization import Uniquifier
+from ..exceptions import OptimizationException, ditException
+from ..helpers import flatten, normalize_rvs, parse_rvs
+from ..math import prod, sample_simplex
+from ..utils import partitions, powerset
+from ..utils.optimization import (
+    BasinHoppingCallBack,
+    BasinHoppingInnerCallBack,
+    Uniquifier,
+    accept_test,
+    basinhop_status,
+    colon,
+)
 
 __all__ = (
     'BaseTorchOptimizer',
@@ -2048,7 +2035,7 @@ class BaseAuxVarTorchOptimizer(BaseNonConvexTorchOptimizer):
         elif style == 'entropy':
             objective = self._maybe_compile(objective_entropy)
         else:
-            msg = "Style {} is not understood.".format(style)
+            msg = f"Style {style} is not understood."
             raise OptimizationException(msg)
 
         true_objective = self.objective(self._optima)

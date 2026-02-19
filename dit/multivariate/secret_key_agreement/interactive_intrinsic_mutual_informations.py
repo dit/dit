@@ -2,8 +2,7 @@
 A lower bound on the two-way secret key agreement rate.
 """
 
-from itertools import chain
-from itertools import zip_longest
+from itertools import chain, zip_longest
 
 from ...algorithms import BaseAuxVarOptimizer
 from ...utils import unitful

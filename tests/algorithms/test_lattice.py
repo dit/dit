@@ -2,14 +2,19 @@
 Tests for dit.algorithms.lattice
 """
 
+import numpy as np
 import pytest
 
-import numpy as np
-
 from dit import Distribution, ScalarDistribution
-from dit.algorithms.lattice import (dist_from_induced_sigalg, insert_join,
-                                    join, join_sigalg, meet, meet_sigalg,
-                                    sigma_algebra_sort)
+from dit.algorithms.lattice import (
+    dist_from_induced_sigalg,
+    insert_join,
+    join,
+    join_sigalg,
+    meet,
+    meet_sigalg,
+    sigma_algebra_sort,
+)
 from dit.utils import powerset
 
 

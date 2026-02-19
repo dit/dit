@@ -8,12 +8,10 @@ from itertools import combinations
 import numpy as np
 
 from ...distconst import RVFunctions, insert_rvf, modify_outcomes
-from ...helpers import parse_rvs, normalize_rvs
+from ...helpers import normalize_rvs, parse_rvs
 from ...utils import partitions, unitful
-
-from ..entropy import entropy
 from ..dual_total_correlation import dual_total_correlation
-
+from ..entropy import entropy
 
 __all__ = (
     'functional_common_information',

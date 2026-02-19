@@ -2,9 +2,9 @@
 Example of using dit to compute maxent distributions.
 """
 
-import dit
 import numpy as np
 
+import dit
 
 try:  # The functions will import this for you...just make sure you have it.
     import cvxopt  # noqa: F401
@@ -30,7 +30,7 @@ def print_output(d, maxent_dists):
     total_corr = netinfo[1:].sum()
     total_corr_true = dit.multivariate.total_correlation(d)
     print()
-    print("Total correlation: {0} (numerically)\t {1} (true)".format(total_corr, total_corr_true))
+    print(f"Total correlation: {total_corr} (numerically)\t {total_corr_true} (true)")
     print()
 
 

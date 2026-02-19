@@ -26,7 +26,6 @@ import numpy as np
 
 import dit
 
-
 __all__ = (
     'cross_entropy',
     'cross_entropy_pmf',

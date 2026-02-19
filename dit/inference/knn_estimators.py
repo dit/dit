@@ -3,12 +3,10 @@ Some estimators based on estimating local densities using k-nearest neighbors.
 """
 
 import numpy as np
-
-from scipy.special import digamma
 from scipy.spatial import cKDTree  # type: ignore[attr-defined]
+from scipy.special import digamma
 
 from dit.utils import flatten
-
 
 __all__ = (
     'differential_entropy_knn',

@@ -7,7 +7,6 @@ import warnings
 import numpy as np
 from numpy.lib.stride_tricks import as_strided
 
-
 __all__ = (
     'segment_axis',
 )
@@ -95,7 +94,7 @@ def segment_axis(a, length, overlap=0, axis=None, end='cut', endvalue=0):
                 b[..., l:] = a[..., :roundup - l]
             a = b
         else:
-            msg = "`end` {} is not recognized.".format(end)
+            msg = f"`end` {end} is not recognized."
             raise ValueError(msg)
 
         a = a.swapaxes(-1, axis)

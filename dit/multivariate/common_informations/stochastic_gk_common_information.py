@@ -9,7 +9,6 @@ from ...algorithms import BaseAuxVarOptimizer
 from ...helpers import normalize_rvs
 from ...utils import unitful
 
-
 __all__ = (
     'StochasticGKCommonInformation',
 )

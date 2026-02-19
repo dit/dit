@@ -7,7 +7,6 @@ import pytest
 from dit.example_dists import giant_bit, n_mod_m
 from dit.multivariate.o_information import o_information
 
-
 d1 = giant_bit(5, 2)
 d2 = n_mod_m(5, 2)
 

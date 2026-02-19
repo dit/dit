@@ -3,11 +3,10 @@ The necessary conditional entropy is the entropy of the minimal sufficient
 statistic of X about Y, given Y.
 """
 
-from .entropy import entropy
 from ..algorithms import insert_mss
 from ..helpers import normalize_rvs
 from ..utils import flatten, unitful
-
+from .entropy import entropy
 
 __all__ = (
     'necessary_conditional_entropy',

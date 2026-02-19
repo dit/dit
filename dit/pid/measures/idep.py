@@ -3,9 +3,8 @@ The dependency-decomposition based unique measure partial information decomposit
 """
 
 from ...multivariate import coinformation
-from ..pid import BaseUniquePID
 from ...profiles import DependencyDecomposition
-
+from ..pid import BaseUniquePID
 
 __all__ = (
     'PID_dep',

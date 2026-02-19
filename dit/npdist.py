@@ -66,22 +66,19 @@ from operator import itemgetter
 
 import numpy as np
 
-from .exceptions import (
-    InvalidDistribution, InvalidOutcome, ditException
-)
+from .exceptions import InvalidDistribution, InvalidOutcome, ditException
 from .helpers import (
+    RV_MODES,
     construct_alphabets,
     get_outcome_ctor,
     get_product_func,
     parse_rvs,
     reorder,
-    RV_MODES,
 )
-from .math import get_ops, LinearOperations
+from .math import LinearOperations, get_ops
 from .npscalardist import ScalarDistribution
 from .params import ditParams
-from .samplespace import SampleSpace, CartesianProduct
-
+from .samplespace import CartesianProduct, SampleSpace
 
 __all__ = (
     'Distribution',
@@ -694,7 +691,7 @@ class Distribution(ScalarDistribution):
 
         dims = dist.get_rv_names()
         if dims is None:
-            dims = ['x[{}]'.format(i) for i in range(dist.outcome_length())]
+            dims = [f'x[{i}]' for i in range(dist.outcome_length())]
 
         coords = {d: sorted(a) for d, a in zip(dims, alphabet)}
 
@@ -1413,19 +1410,19 @@ class Distribution(ScalarDistribution):
             ("Outcome Class", outcome_class),
             ("Outcome Length", self.outcome_length()),
         ]
-        infos = ''.join("<tr><th>{}:</th><td>{}</td></tr>".format(a, b) for a, b in info)
-        header = '<table border="1">{}</table>'.format(infos)
+        infos = ''.join(f"<tr><th>{a}:</th><td>{b}</td></tr>" for a, b in info)
+        header = f'<table border="1">{infos}</table>'
 
         rv_names = self.get_rv_names()
         if rv_names is None:
-            rv_names = ["x[{}]".format(i) for i in range(self.outcome_length())]
+            rv_names = [f"x[{i}]" for i in range(self.outcome_length())]
 
-        table_header = '<tr>' + ''.join("<th>{}</th>".format(a) for a in rv_names) + "<th>{}</th></tr>".format(pstr)
+        table_header = '<tr>' + ''.join(f"<th>{a}</th>" for a in rv_names) + f"<th>{pstr}</th></tr>"
         table_rows = ''.join(
-            '<tr>' + ''.join('<td>{}</td>'.format(str(_)) for _ in o) + '<td>{}</td></tr>'.format(p) for o, p in zip(self.outcomes, pmf))
-        table = '<table>{}{}</table>'.format(table_header, table_rows)
+            '<tr>' + ''.join(f'<td>{str(_)}</td>' for _ in o) + f'<td>{p}</td></tr>' for o, p in zip(self.outcomes, pmf))
+        table = f'<table>{table_header}{table_rows}</table>'
 
-        output = '<div><div style="float: left">{}</div><div style="float: left">{}</div></div>'.format(header, table)
+        output = f'<div><div style="float: left">{header}</div><div style="float: left">{table}</div></div>'
 
         return output
 
@@ -1464,9 +1461,9 @@ class Distribution(ScalarDistribution):
             A string representation of the distribution.
 
         """
-        from .distribution import prepare_string
-
         from io import StringIO
+
+        from .distribution import prepare_string
 
         if exact is None:
             exact = ditParams['print.exact']
@@ -1524,7 +1521,7 @@ class Distribution(ScalarDistribution):
         # Info
         L = max(map(len, headers))
         for head, val in zip(headers, vals):
-            s.write("{0}{1}\n".format("{0}: ".format(head).ljust(L + 2), val))
+            s.write("{0}{1}\n".format(f"{head}: ".ljust(L + 2), val))
         s.write("\n")
 
         # Distribution

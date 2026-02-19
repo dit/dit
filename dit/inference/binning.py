@@ -2,10 +2,8 @@
 Various methods for binning real-valued data.
 """
 
-from boltons.iterutils import pairwise
-
 import numpy as np
-
+from boltons.iterutils import pairwise
 
 __all__ = (
     'binned',
@@ -40,7 +38,7 @@ def binned(ts, bins=2, style='maxent'):
     elif style == 'uniform':
         method = uniform_binning
     else:  # pragma: no cover
-        msg = "The style {} is not understood.".format(style)
+        msg = f"The style {style} is not understood."
         raise ValueError(msg)
 
     try:

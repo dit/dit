@@ -2,12 +2,11 @@
 Tests for dit.example_dists.numeric.
 """
 
+import numpy as np
 import pytest
 
-import numpy as np
-
-from dit.shannon import entropy
 from dit.example_dists import bernoulli, binomial, hypergeometric, uniform
+from dit.shannon import entropy
 
 
 def test_bernoulli1():

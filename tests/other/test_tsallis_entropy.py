@@ -2,9 +2,8 @@
 Tests for dit.other.tsallis_entropy.
 """
 
-import pytest
-
 import numpy as np
+import pytest
 
 from dit import Distribution
 from dit.other import tsallis_entropy
@@ -20,4 +19,4 @@ def test_tsallis_entropy_1(q):
     S_A = tsallis_entropy(d, q, [0])
     S_B = tsallis_entropy(d, q, [1])
     pa_prop = S_A + S_B + (1 - q) * S_A * S_B
-    assert S_AB == pytest.approx(pa_prop)
+    assert pytest.approx(pa_prop) == S_AB

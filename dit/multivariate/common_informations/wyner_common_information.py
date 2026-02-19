@@ -6,7 +6,6 @@ import numpy as np
 
 from .base_markov_optimizer import MarkovVarOptimizer
 
-
 __all__ = (
     'wyner_common_information',
 )

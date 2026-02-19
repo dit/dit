@@ -2,11 +2,11 @@
 Tests for dit.math.pmfops
 """
 
+import numpy as np
+import pytest
+
 import dit
 from dit.exceptions import ditException
-import numpy as np
-
-import pytest
 
 module = dit.math.pmfops
 

@@ -4,7 +4,6 @@ Helper functions to convert between Distribution and ScalarDistribution.
 
 import dit
 
-
 __all__ = (
     'DtoSD',
     'SDtoD'
@@ -55,8 +54,8 @@ def SDtoD(dist):
         The ScalarDistribution to convert to a Distribution.
 
     """
-    from dit.exceptions import ditException, InvalidDistribution
     import dit.validate as v
+    from dit.exceptions import InvalidDistribution, ditException
 
     if len(dist.pmf) == 0:
         msg = "Cannot convert from empty ScalarDistribution."

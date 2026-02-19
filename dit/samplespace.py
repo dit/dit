@@ -42,10 +42,8 @@ from operator import mul
 import numpy as np
 
 from .exceptions import InvalidOutcome
-from .helpers import (parse_rvs, get_outcome_ctor, construct_alphabets,
-                      get_product_func, RV_MODES)
+from .helpers import RV_MODES, construct_alphabets, get_outcome_ctor, get_product_func, parse_rvs
 from .utils import OrderedDict
-
 
 __all__ = (
     'BaseSampleSpace',
@@ -375,7 +373,7 @@ class CartesianProduct(SampleSpace):
             indexes = [self.alphabets[i].index(symbol)
                        for i, symbol in enumerate(item)]
         except (ValueError, IndexError):
-            msg = '{0!r} is not in the sample space'.format(item)
+            msg = f'{item!r} is not in the sample space'
             raise ValueError(msg)
 
         idx = np.sum(np.array(indexes) * self._shifts)

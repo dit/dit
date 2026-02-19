@@ -5,12 +5,11 @@ Helpful utilities for performing optimization.
 from collections import defaultdict, namedtuple
 from functools import wraps
 from operator import itemgetter
-from string import digits, ascii_letters
+from string import ascii_letters, digits
 
 import numpy as np
 from loguru import logger
 from scipy.optimize import OptimizeResult
-
 
 __all__ = (
     'BasinHoppingCallBack',
@@ -26,7 +25,7 @@ __all__ = (
 colon = slice(None, None, None)
 
 
-class BasinHoppingInnerCallBack(object):  # pragma: no cover
+class BasinHoppingInnerCallBack:  # pragma: no cover
     """
     A callback to track the optimization vectors as the optimization is performed.
 
@@ -71,7 +70,7 @@ class BasinHoppingInnerCallBack(object):  # pragma: no cover
 Candidate = namedtuple('Candidate', ['position', 'value', 'constraints'])
 
 
-class BasinHoppingCallBack(object):
+class BasinHoppingCallBack:
     """
     scipy's basinhopping return status often will return an optimization vector which does not
     satisfy the constraints if it has a lower objective value and ran in to some sort of error
@@ -156,7 +155,7 @@ class BasinHoppingCallBack(object):
             return None
 
 
-class Uniquifier(object):
+class Uniquifier:
     """
     Given a stream of categorical symbols, provide a mapping to unique consecutive integers.
 

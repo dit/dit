@@ -4,11 +4,10 @@ The Blahut-Arimoto algorithm for solving the rate-distortion problem.
 
 import numpy as np
 
-from .distortions import hamming_distortion
-from .rate_distortion import RateDistortionResult
 from ..divergences.pmf import relative_entropy
 from ..math.sampling import sample_simplex
-
+from .distortions import hamming_distortion
+from .rate_distortion import RateDistortionResult
 
 __all__ = (
     'blahut_arimoto',

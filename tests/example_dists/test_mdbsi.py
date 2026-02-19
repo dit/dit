@@ -6,23 +6,49 @@ import pytest
 
 from dit.example_dists.mdbsi import dyadic, triadic
 from dit.multivariate import (
-    entropy as H,
-    total_correlation as T,
-    dual_total_correlation as B,
-    coinformation as I,
-    residual_entropy as R,
     caekl_mutual_information as J,
-    tse_complexity as TSE,
-    gk_common_information as K,
-    wyner_common_information as C,
+)
+from dit.multivariate import (
+    coinformation as I,
+)
+from dit.multivariate import (
+    dual_total_correlation as B,
+)
+from dit.multivariate import (
+    entropy as H,
+)
+from dit.multivariate import (
     exact_common_information as G,
+)
+from dit.multivariate import (
     functional_common_information as F,
+)
+from dit.multivariate import (
+    gk_common_information as K,
+)
+from dit.multivariate import (
     mss_common_information as M,
+)
+from dit.multivariate import (
+    residual_entropy as R,
+)
+from dit.multivariate import (
+    total_correlation as T,
+)
+from dit.multivariate import (
+    tse_complexity as TSE,
+)
+from dit.multivariate import (
+    wyner_common_information as C,
+)
+from dit.other import (
+    disequilibrium as D,
 )
 from dit.other import (
     extropy as X,
+)
+from dit.other import (
     perplexity as P,
-    disequilibrium as D,
 )
 
 

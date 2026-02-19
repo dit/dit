@@ -5,8 +5,8 @@ Tests for dit.pid.measures.igh.
 import pytest
 
 from dit import Distribution
-from dit.pid.measures.igh import GHOptimizer, PID_GH
 from dit.pid.distributions import bivariates
+from dit.pid.measures.igh import PID_GH, GHOptimizer
 
 
 @pytest.mark.flaky(reruns=5)

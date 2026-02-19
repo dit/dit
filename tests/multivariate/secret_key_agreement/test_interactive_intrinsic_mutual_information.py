@@ -6,7 +6,6 @@ import pytest
 
 from dit.example_dists import n_mod_m
 from dit.multivariate.secret_key_agreement import interactive_intrinsic_mutual_information
-
 from tests._backends import backends
 
 

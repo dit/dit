@@ -12,7 +12,6 @@ import numpy as np
 
 from dit.utils import powerset
 
-
 __all__ = (
     'is_sigma_algebra',
     'sigma_algebra',
@@ -48,7 +47,7 @@ def sets2matrix(C, X=None):
         Xset = frozenset(X)
         for cet in C:
             if not Xset.issuperset(cet):
-                msg = "Set {0} is not a subset of {1}".format(cet, Xset)
+                msg = f"Set {cet} is not a subset of {Xset}"
                 raise Exception(msg)
 
     # Each element of C will be represented as a binary string of 0s and 1s.
@@ -279,7 +278,7 @@ def atom_set(F, X=None, method=2):
                 # We need to find an other_cet which is a non-empty proper subset
                 # of cet. Then, cet cannot be an atom.
                 L = len(other_cet)
-                if L == 0 or L == len(cet):
+                if L == 0 or len(cet) == L:
                     continue
                 elif other_cet.issubset(cet):
                     break

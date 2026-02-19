@@ -2,14 +2,12 @@
 Tests for dit.divergences.kullback_leibler_divergence.
 """
 
-import pytest
-
 import numpy as np
+import pytest
 
 from dit import Distribution
 from dit.divergences import kullback_leibler_divergence
 from dit.exceptions import ditException
-
 
 d1 = Distribution(['0', '1'], [1 / 2, 1 / 2])
 d2 = Distribution(['0', '2'], [1 / 2, 1 / 2])

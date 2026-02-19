@@ -2,11 +2,10 @@
 The extropy.
 """
 
-from ..helpers import RV_MODES
-from ..math.ops import get_ops
-
 import numpy as np
 
+from ..helpers import RV_MODES
+from ..math.ops import get_ops
 
 __all__ = (
     'extropy',

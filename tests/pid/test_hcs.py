@@ -4,9 +4,9 @@ Tests for dit.pid.hcs.
 
 import pytest
 
-from dit.pid.hcs import h_cs, PED_CS
-from dit.pid.distributions import bivariates
 from dit import Distribution as D
+from dit.pid.distributions import bivariates
+from dit.pid.hcs import PED_CS, h_cs
 
 
 def test_iccs1():

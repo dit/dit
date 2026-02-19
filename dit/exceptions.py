@@ -38,7 +38,7 @@ class ditException(Exception):
         return self.msg
 
     def __repr__(self):
-        return "{0}{1}".format(self.__class__.__name__, repr(self.args))
+        return f"{self.__class__.__name__}{repr(self.args)}"
 
 
 class IncompatibleDistribution(ditException):
@@ -70,7 +70,7 @@ class InvalidBase(ditException):
             The invalid base.
         """
         if args:
-            msg = "{0} is not a valid logarithm base.".format(args[0])
+            msg = f"{args[0]} is not a valid logarithm base."
             args = (msg,) + args
         super().__init__(self, *args, **kwargs)
 
@@ -109,9 +109,9 @@ class InvalidOutcome(ditException):
                 msg = ''
         else:
             if single:
-                msg = "Outcome {0!r} is not in the sample space.".format(bad)
+                msg = f"Outcome {bad!r} is not in the sample space."
             else:
-                msg = "Outcomes {0} are not in the sample space.".format(bad)
+                msg = f"Outcomes {bad} are not in the sample space."
         args = (msg,) + args
         super().__init__(self, *args, **kwargs)
 
@@ -128,7 +128,7 @@ class InvalidNormalization(ditException):
         The sole argument should be the summation of the probabilities.
 
         """
-        msg = "Bad normalization: {0!r}".format(args[0])
+        msg = f"Bad normalization: {args[0]!r}"
         self.summation = args[0]
         args = (msg,) + args
         super().__init__(self, *args, **kwargs)
@@ -152,7 +152,7 @@ class InvalidProbability(ditException):
 
         """
         ops = kwargs['ops']
-        bounds = "[{0}, {1}]".format(ops.zero, ops.one)
+        bounds = f"[{ops.zero}, {ops.one}]"
         prob = args[0]
         if len(args[0]) == 1:
             msg = "Probability {0} is not in {1} (base: {2!r})."

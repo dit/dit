@@ -2,20 +2,35 @@
 Tests for dit.math.aitchison
 """
 
-import pytest
-
 import numpy as np
+import pytest
 
 import dit
 from dit.exceptions import ditException
 from dit.math import LogOperations
+
 ops = LogOperations(2)
 log2 = ops.log
 exp2 = ops.exp
 
-from dit.math.aitchison import (alr, alr_inv, basis, closure, clr, clr_inv,
-                                dist, ilr, ilr_inv, inner, norm, perturbation,
-                                power, subcomposition, _gm, _log2_gm)
+from dit.math.aitchison import (
+    _gm,
+    _log2_gm,
+    alr,
+    alr_inv,
+    basis,
+    closure,
+    clr,
+    clr_inv,
+    dist,
+    ilr,
+    ilr_inv,
+    inner,
+    norm,
+    perturbation,
+    power,
+    subcomposition,
+)
 
 
 def test_closure():

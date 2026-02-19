@@ -6,11 +6,9 @@ Artificial Intelligent Systems. Springer International Publishing, 2016.
 """
 from abc import ABCMeta, abstractmethod
 
-from ..distribution import BaseDistribution
 from ..distconst import product_distribution, uniform_like
-from ..multivariate import (entropy, residual_entropy, dual_total_correlation,
-                            total_correlation)
-
+from ..distribution import BaseDistribution
+from ..multivariate import dual_total_correlation, entropy, residual_entropy, total_correlation
 
 __all__ = (
     'EntropyTriangle',

@@ -4,14 +4,15 @@ Tests for dit.multivariate.dual_total_correlation.
 
 import pytest
 
-from dit import Distribution as D, ScalarDistribution as SD
+from dit import Distribution as D
+from dit import ScalarDistribution as SD
 from dit.example_dists import n_mod_m
 from dit.exceptions import ditException
-from dit.multivariate import (dual_total_correlation as B,
-                              generalized_dual_total_correlation as GB,
-                              residual_entropy as R)
-from dit.shannon import (entropy as H,
-                         mutual_information as I)
+from dit.multivariate import dual_total_correlation as B
+from dit.multivariate import generalized_dual_total_correlation as GB
+from dit.multivariate import residual_entropy as R
+from dit.shannon import entropy as H
+from dit.shannon import mutual_information as I
 
 
 def test_B1():

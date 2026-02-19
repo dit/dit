@@ -2,11 +2,10 @@
 Tests for dit.math.combinatorics
 """
 
+import numpy as np
 import pytest
 
-import numpy as np
-
-from dit.math.combinatorics import unitsum_tuples, slots
+from dit.math.combinatorics import slots, unitsum_tuples
 
 
 def test_unitsum_tuples1():

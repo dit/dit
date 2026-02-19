@@ -4,10 +4,9 @@ Helper functions related to partial information decompositions.
 
 import numpy as np
 
-from .pid import sort_key
-from .measures import __all_pids
 from ..utils import build_table
-
+from .measures import __all_pids
+from .pid import sort_key
 
 __all__ = (
     'compare_measures',
@@ -42,7 +41,7 @@ def compare_measures(dist, pids=__all_pids, inputs=None, output=None, name='', d
     names = [pid.name for pid in pids]
     table = build_table(field_names=([name] + names), title=getattr(dist, 'name', ''))
     for name in names:
-        table.float_format[name] = ' {0}.{1}'.format(digits + 2, digits)
+        table.float_format[name] = f' {digits + 2}.{digits}'
     nodes = sorted(pids[0]._lattice, key=sort_key(pids[0]._lattice))
     stringify = lambda node: ''.join('{{{}}}'.format(':'.join(map(str, n))) for n in node)
     for node in nodes:

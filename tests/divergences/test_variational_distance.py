@@ -5,10 +5,10 @@ Tests for dit.divergences.variational_distance
 import pytest
 
 from dit import Distribution
-from dit.divergences import (bhattacharyya_coefficient,
-                             variational_distance,
-                             )
-
+from dit.divergences import (
+    bhattacharyya_coefficient,
+    variational_distance,
+)
 
 d1 = Distribution(['0', '1'], [1 / 2, 1 / 2])
 d2 = Distribution(['0', '1'], [1 / 4, 3 / 4])

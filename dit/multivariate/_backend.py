@@ -24,7 +24,6 @@ The recommended pattern is a **Mixin + composed class** approach:
 
 from ..algorithms import BaseAuxVarOptimizer
 
-
 __all__ = (
     '_get_base_class',
     '_make_backend_subclass',

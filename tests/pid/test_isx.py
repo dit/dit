@@ -2,11 +2,11 @@
 Tests for dit.pid.isx.
 """
 
-import pytest
 import numpy as np
+import pytest
 
-from dit.pid.measures.isx import PID_SX
 from dit.pid.distributions import bivariates, trivariates
+from dit.pid.measures.isx import PID_SX
 
 
 def test_pid_sx1():
@@ -52,7 +52,7 @@ def test_pid_sx_trivariate():
 
     atoms = [((0,),), ((1,),), ((2,),), ((0, 1),), ((0, 2),), ((1, 2),), ((0, 1, 2),), ((0,), (1,)), ((0,), (2,)), ((0,), (1, 2)), ((1,), (2,)), ((1,), (0, 2)), ((2,), (0, 1)), ((0, 1), (0, 2)), ((0, 1), (1, 2)), ((0, 2), (1, 2)), ((0,), (1,), (2,)), ((0, 1), (0, 2), (1, 2))]
     true_values = np.array([np.log2(5/4), np.log2(5/4), np.log2(5/4), np.log2(9/8), np.log2(9/8), np.log2(9/8), np.log2(32/27), np.log2(7/8), np.log2(7/8), np.log2(32/35), np.log2(7/8), np.log2(32/35), np.log2(32/35), np.log2(16/15), np.log2(16/15), np.log2(16/15), np.log2(8/7), np.log2(875/1024)])
-    
+
     for atom, true_value in zip(atoms, true_values):
         assert pid[atom] == pytest.approx(true_value)
 

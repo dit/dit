@@ -2,9 +2,9 @@
 Some trivial bounds to the two-way secret key agreement problem.
 """
 
-from ..total_correlation import total_correlation
-from ..dual_total_correlation import dual_total_correlation
 from ..caekl_mutual_information import caekl_mutual_information
+from ..dual_total_correlation import dual_total_correlation
+from ..total_correlation import total_correlation
 
 __all__ = (
     'lower_intrinsic_mutual_information',

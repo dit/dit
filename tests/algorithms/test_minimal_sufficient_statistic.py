@@ -3,7 +3,7 @@ Tests for dit.algorithms.minimal_sufficient_statistic.
 """
 
 from dit import Distribution, ScalarDistribution, pruned_samplespace
-from dit.algorithms import insert_mss, mss, info_trim
+from dit.algorithms import info_trim, insert_mss, mss
 
 
 def get_gm():

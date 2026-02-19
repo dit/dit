@@ -2,13 +2,12 @@
 Tests for dit.npdist.
 """
 
-import pytest
-
 import numpy as np
+import pytest
 import scipy.stats as sps
 
+from dit.exceptions import InvalidDistribution, InvalidOutcome, ditException
 from dit.npdist import Distribution, ScalarDistribution, _make_distribution
-from dit.exceptions import ditException, InvalidDistribution, InvalidOutcome
 from dit.samplespace import CartesianProduct
 
 

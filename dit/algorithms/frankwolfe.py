@@ -14,13 +14,10 @@ Frank-Wolfe algorithm.
 # >>> x / 3
 # TypeError: unsupported operand type(s) for /: 'cvxopt.base.matrix' and 'int'
 
+import numpy as np
 from debtcollector import removals
 
-import numpy as np
-from loguru import logger
-
 from dit.utils import basic_logger
-
 
 __all__ = (
     'frank_wolfe',
@@ -71,11 +68,11 @@ def frank_wolfe(objective, gradient, A, b, initial_x,
 
     """
     # Function level import to avoid circular import.
-    from dit.algorithms.optutil import op_runner
-
     # Function level import to keep cvxopt dependency optional.
     # All variables should be cvxopt variables, not NumPy arrays
     from cvxopt.modeling import variable
+
+    from dit.algorithms.optutil import op_runner
 
     # Set up a custom logger.
     fw_logger = basic_logger('dit.frankwolfe', verbose)
@@ -99,11 +96,11 @@ def frank_wolfe(objective, gradient, A, b, initial_x,
 
         new_objective = grad.T * xbar
         constraints = []
-        constraints.append((xbar >= 0))
-        constraints.append((-TOL <= A * xbar - b))
-        constraints.append((A * xbar - b <= TOL))
+        constraints.append(xbar >= 0)
+        constraints.append(A * xbar - b >= -TOL)
+        constraints.append(A * xbar - b <= TOL)
 
-        fw_logger.debug('FW Iteration: {}'.format(i))
+        fw_logger.debug(f'FW Iteration: {i}')
         opt = op_runner(new_objective, constraints, show_progress=show_progress)
         if opt.status != 'optimal':
             msg = '\tFrank-Wolfe: Did not find optimal direction on '

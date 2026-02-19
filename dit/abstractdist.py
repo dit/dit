@@ -3,8 +3,8 @@ Abstract implementation of dense random vectors.
 """
 
 import itertools
-import numpy as np
 
+import numpy as np
 
 __all__ = (
     'AbstractDenseDistribution',
@@ -14,7 +14,7 @@ __all__ = (
 )
 
 
-class AbstractDenseDistribution(object):
+class AbstractDenseDistribution:
     """
     An abstract, dense distribution.
 
@@ -295,7 +295,7 @@ def brute_marginal_array(d, rvs, rv_mode=None):
 
     TODO: Expand this to construct arrays for coalescings as well.
     """
-    from dit.helpers import parse_rvs, RV_MODES
+    from dit.helpers import RV_MODES, parse_rvs
 
     # We need to filter the indexes for duplicates, etc. So that we can be
     # sure that when we query the joint outcome, we have the right indexes.
@@ -335,7 +335,7 @@ def get_abstract_dist(dist):
         n_symbols = len(dist.alphabet[0])
         d = AbstractDenseDistribution(n_variables, n_symbols)
     else:
-        class D(object):
+        class D:
             n_variables = dist.outcome_length()
             n_elements = np.prod(list(map(len, dist.alphabet)))
 

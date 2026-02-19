@@ -2,16 +2,15 @@
 Helper non-public API functions for distributions.
 """
 
-from operator import itemgetter
 import itertools
 import warnings
+from operator import itemgetter
 
 import numpy as np
 
-from .exceptions import ditException, InvalidOutcome
+from .exceptions import InvalidOutcome, ditException
 from .math.misc import is_number
 from .utils import flatten, product_maker
-
 
 __all__ = (
     'RV_Mode',
@@ -32,7 +31,7 @@ def str_outcome_ctor(iterable):
     try:
         return ''.join(iterable)
     except TypeError:
-        msg = 'Outcome could not be constructed from {0!r}'.format(iterable)
+        msg = f'Outcome could not be constructed from {iterable!r}'
         raise ditException(msg)
 
 
@@ -48,7 +47,7 @@ constructor_map = {
 }
 
 
-class RV_Mode(object):
+class RV_Mode:
     """
     Class to manage how rvs and crvs are specified and interpreted.
     """
@@ -78,7 +77,7 @@ class RV_Mode(object):
         if item in self._deprecated:
             dep = self._deprecated[self._deprecated.index(item)]
             if type(item) is type(dep):
-                msg = 'Deprecated value for `rv_mode`: {0!r}.'.format(item)
+                msg = f'Deprecated value for `rv_mode`: {item!r}.'
                 msg += ' See docstring for new conventions.'
                 warnings.warn(msg, DeprecationWarning)
 

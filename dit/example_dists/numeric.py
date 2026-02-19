@@ -3,8 +3,8 @@ Some standard discrete distribution.
 """
 
 from .. import ScalarDistribution
-from ..math.misc import combinations as C, is_integer, is_number
-
+from ..math.misc import combinations as C
+from ..math.misc import is_integer, is_number
 
 __all__ = (
     'bernoulli',
@@ -71,9 +71,9 @@ def binomial(n, p):
         Raised if not 0 <= `p` <= 1.
     """
     if not is_integer(n) or n < 0:
-        raise ValueError("{0} is not a positive integer.".format(n))
+        raise ValueError(f"{n} is not a positive integer.")
     if not is_number(p) or not 0 <= p <= 1:
-        raise ValueError("{0} is not a valid probability.".format(p))
+        raise ValueError(f"{p} is not a valid probability.")
     pp = lambda n, k: C(n, k) * p**k * (1 - p)**(n - k)
     outcomes = list(range(n + 1))
     pmf = [pp(n, k) for k in outcomes]
@@ -110,11 +110,11 @@ def hypergeometric(N, K, n):
         Raised if `N`, `K`, or `n` are not positive integers.
     """
     if not is_integer(N) or N < 0:
-        raise ValueError("{0} is not a positive integer.".format(N))
+        raise ValueError(f"{N} is not a positive integer.")
     if not is_integer(K) or K < 0:
-        raise ValueError("{0} is not a positive integer.".format(K))
+        raise ValueError(f"{K} is not a positive integer.")
     if not is_integer(n) or n < 0:
-        raise ValueError("{0} is not a positive integer.".format(n))
+        raise ValueError(f"{n} is not a positive integer.")
     outcomes = list(range(max(0, n + K - N), min(K, n) + 1))
     pmf = [C(K, k) * C(N - K, n - k) / C(N, n) for k in outcomes]
     return ScalarDistribution(outcomes, pmf)

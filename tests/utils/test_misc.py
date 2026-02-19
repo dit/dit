@@ -4,9 +4,16 @@ Tests for dit.utils.misc.
 
 import pytest
 
-from dit.utils.misc import flatten, is_string_like, partitions, partitions2, \
-                           ordered_partitions, require_keys, partition_set, \
-                           digits
+from dit.utils.misc import (
+    digits,
+    flatten,
+    is_string_like,
+    ordered_partitions,
+    partition_set,
+    partitions,
+    partitions2,
+    require_keys,
+)
 
 
 def test_flatten1():
@@ -19,7 +26,7 @@ def test_flatten1():
 
 
 def test_is_string_like1():
-    ys = ['', 'hi', "pants", '"test"', u'pants', r'pants']
+    ys = ['', 'hi', "pants", '"test"', 'pants', r'pants']
     ns = [1, [], int, {}, ()]
     for y in ys:
         assert is_string_like(y)
@@ -116,7 +123,7 @@ def test_partition_set6():
     assert eqclasses == [frozenset(['0', '00', '000']), frozenset(['1', '11', '111']), frozenset([(0, 1, 2)])]
 
 
-class TestDigits():
+class TestDigits:
     def test_bad_base(self):
         with pytest.raises(ValueError, match="`base` must be an integer greater than 2"):
             digits(3, 1)

@@ -8,7 +8,6 @@ import numpy as np
 
 from ..pid import BasePID
 
-
 __all__ = (
     'PID_SX',
 )
@@ -31,7 +30,7 @@ class PID_SX(BasePID):
 
         dist_marg = dist.marginalize(target)
         dist_target = dist.marginal(target)
-        
+
         def prob_union(dist, outcome, var_sets):
             # sum over all outcomes where one of the sets of sources in "sources" is equal to the corresponding elements in outcome
             mask = np.zeros(len(dist.outcomes), dtype=bool)
@@ -41,7 +40,7 @@ class PID_SX(BasePID):
 
         def i_sx_plus(outcome):
             return -np.log2(prob_union(dist_marg, outcome, sources))
-        
+
         I_sx_plus = np.nansum([dist_marg[outcome] * i_sx_plus(outcome) for outcome in dist_marg.outcomes])
 
         def i_sx_minus(outcome):

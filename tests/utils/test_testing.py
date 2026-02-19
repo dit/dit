@@ -3,11 +3,10 @@ Tests for dit.util.testing
 """
 
 import pytest
-
 from hypothesis import find, given
 
 from dit.multivariate import coinformation
-from dit.utils.testing import distributions, distribution_structures, markov_chains
+from dit.utils.testing import distribution_structures, distributions, markov_chains
 
 
 @given(dist=distributions(alphabets=1))

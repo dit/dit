@@ -7,11 +7,10 @@ This uses the Frank-Wolfe algorithm:
 
 """
 
-from debtcollector import removals
-
 from itertools import combinations
 
 import numpy as np
+from debtcollector import removals
 from loguru import logger
 
 import dit
@@ -19,11 +18,8 @@ from dit.helpers import RV_MODES
 from dit.utils import basic_logger
 
 from .frankwolfe import frank_wolfe
-
-from .optutil import as_full_rank, prepare_dist, op_runner
-from .maxentropy import (
-    marginal_constraints, marginal_constraints_generic, isolate_zeros_generic
-)
+from .maxentropy import isolate_zeros_generic, marginal_constraints, marginal_constraints_generic
+from .optutil import as_full_rank, op_runner, prepare_dist
 
 __all__ = (
     # 'marginal_maxent_dists',
@@ -69,9 +65,9 @@ def initial_point_generic(dist, rvs, A=None, b=None, isolated=None, **kwargs):
     tols = [1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3]
     for tol in tols:
         constraints = []
-        constraints.append((-tol <= Asmall * x - b))
-        constraints.append((Asmall * x - b <= tol))
-        constraints.append((x >= t))
+        constraints.append(-tol <= Asmall * x - b)
+        constraints.append(Asmall * x - b <= tol)
+        constraints.append(x >= t)
 
         # Objective to minimize
         objective = -t

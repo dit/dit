@@ -8,6 +8,7 @@ http://www.springerlink.com/content/wx1166n56n685v82/
 """
 
 import math
+
 import numpy as np
 
 from dit.exceptions import ditException

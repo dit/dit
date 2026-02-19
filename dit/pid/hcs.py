@@ -9,12 +9,11 @@ from itertools import combinations
 import numpy as np
 from lattices.lattices import free_distributive_lattice
 
-from .pid import BasePID, _transform
 from .. import modify_outcomes
 from ..algorithms import maxent_dist
 from ..multivariate import entropy
 from ..utils import flatten, powerset
-
+from .pid import BasePID, _transform
 
 __all__ = (
     'PED_CS',

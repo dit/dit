@@ -4,9 +4,8 @@ Tests for dit.divergences.earth_mover_distance.
 
 import warnings
 
-import pytest
-
 import numpy as np
+import pytest
 
 from dit import Distribution, ScalarDistribution
 from dit.divergences.earth_movers_distance import earth_movers_distance, earth_movers_distance_pmf

@@ -4,11 +4,12 @@ Tests for dit.multivariate.total_correlation.
 
 import pytest
 
-from dit import Distribution as D, ScalarDistribution as SD
+from dit import Distribution as D
+from dit import ScalarDistribution as SD
+from dit.example_dists import n_mod_m
 from dit.exceptions import ditException
 from dit.multivariate import total_correlation as T
 from dit.shannon import mutual_information as I
-from dit.example_dists import n_mod_m
 
 
 @pytest.mark.parametrize('n', range(3, 7))

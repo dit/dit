@@ -6,7 +6,6 @@ import numpy as np
 
 import dit.exceptions
 
-
 __all__ = (
     'sample',
     'ball',

@@ -2,9 +2,8 @@
 Distributions based on circuits with independent inputs.
 """
 
-from dit import Distribution
 import dit
-
+from dit import Distribution
 
 __all__ = (
     'And',

@@ -3,13 +3,11 @@ Tests for dit.multivariate.cohesion.
 """
 
 import pytest
-
 from hypothesis import given
 
 from dit.distconst import uniform
 from dit.multivariate import cohesion, dual_total_correlation, total_correlation
 from dit.utils.testing import distributions
-
 
 reed_solomon = uniform([
     '0000', '0123', '0231', '0312',

@@ -2,9 +2,8 @@
 The Kullback-Leibler divergence.
 """
 
-from .cross_entropy import cross_entropy
 from ..multivariate import entropy
-
+from .cross_entropy import cross_entropy
 
 __all__ = (
     'kullback_leibler_divergence',

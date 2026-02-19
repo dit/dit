@@ -2,37 +2,73 @@
 Import several functions as shorthand.
 """
 
-from dit import (Distribution as D,
+from dit import (
+                 Distribution as D,
+)
+from dit import (
                  ScalarDistribution as SD,
-                )
-
+)
 from dit.algorithms import channel_capacity_joint as CC
-
-from dit.divergences import (cross_entropy as xH,
-                             kullback_leibler_divergence as DKL,
-                             jensen_shannon_divergence as JSD,
-                            )
-
-from dit.other import (extropy as X,
-                       perplexity as P,
-                       cumulative_residual_entropy as CRE,
-                       generalized_cumulative_residual_entropy as GCRE,
-                      )
-
-from dit.multivariate import (caekl_mutual_information as J,
-                              coinformation as I,
-                              dual_total_correlation as B,
-                              entropy as H,
-                              exact_common_information as G,
-                              functional_common_information as F,
-                              gk_common_information as K,
-                              interaction_information as II,
-                              mss_common_information as M,
-                              residual_entropy as R,
-                              total_correlation as T,
-                              tse_complexity as TSE,
-                              wyner_common_information as C,
-                             )
+from dit.divergences import (
+                 cross_entropy as xH,
+)
+from dit.divergences import (
+                 jensen_shannon_divergence as JSD,
+)
+from dit.divergences import (
+                 kullback_leibler_divergence as DKL,
+)
+from dit.multivariate import (
+                 caekl_mutual_information as J,
+)
+from dit.multivariate import (
+                 coinformation as I,
+)
+from dit.multivariate import (
+                 dual_total_correlation as B,
+)
+from dit.multivariate import (
+                 entropy as H,
+)
+from dit.multivariate import (
+                 exact_common_information as G,
+)
+from dit.multivariate import (
+                 functional_common_information as F,
+)
+from dit.multivariate import (
+                 gk_common_information as K,
+)
+from dit.multivariate import (
+                 interaction_information as II,
+)
+from dit.multivariate import (
+                 mss_common_information as M,
+)
+from dit.multivariate import (
+                 residual_entropy as R,
+)
+from dit.multivariate import (
+                 total_correlation as T,
+)
+from dit.multivariate import (
+                 tse_complexity as TSE,
+)
+from dit.multivariate import (
+                 wyner_common_information as C,
+)
+from dit.other import (
+                 cumulative_residual_entropy as CRE,
+)
+from dit.other import (
+                 extropy as X,
+)
+from dit.other import (
+                 generalized_cumulative_residual_entropy as GCRE,
+)
+from dit.other import (
+                 perplexity as P,
+)
 
 # distribution types
 _dists = (

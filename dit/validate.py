@@ -11,7 +11,6 @@ from .exceptions import (
     ditException,
 )
 
-
 __all__ = (
     'is_pmf',
     'validate_normalization',

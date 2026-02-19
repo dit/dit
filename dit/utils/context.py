@@ -9,7 +9,6 @@ import tempfile
 
 from .bindargs import bindcallargs
 
-
 __all__ = (
     'cd',
     'named_tempfile',

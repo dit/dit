@@ -2,9 +2,8 @@
 Tests for dit.inference.segmentaxis.
 """
 
-import pytest
-
 import numpy as np
+import pytest
 
 from dit.inference.segmentaxis import segment_axis
 

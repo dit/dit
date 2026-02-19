@@ -2,15 +2,13 @@
 Metrics related to minimum entropy distributions with fixed marginals.
 """
 
-from boltons.iterutils import pairwise
-
 import numpy as np
+from boltons.iterutils import pairwise
 
 from ..algorithms.distribution_optimizers import MinEntOptimizer
 from ..helpers import normalize_rvs
 from ..multivariate import entropy as H
 from ..utils import unitful
-
 
 __all__ = (
     'coupling_metric',

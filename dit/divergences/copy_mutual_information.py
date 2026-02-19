@@ -2,9 +2,8 @@
 The copy mutual information, as defined by Kolchinsky & Corominas-Murtra.
 """
 
-from .pmf import relative_entropy
 from ..utils import unitful
-
+from .pmf import relative_entropy
 
 __all__ = (
     'copy_mutual_information',

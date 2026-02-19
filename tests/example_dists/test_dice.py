@@ -2,12 +2,12 @@
 Tests for dit.example_dists.dice
 """
 
+import numpy as np
 import pytest
 
-import numpy as np
-
-from dit.example_dists.dice import iid_sum, Wolfs_dice
-from dit.multivariate import entropy as H, total_correlation as I
+from dit.example_dists.dice import Wolfs_dice, iid_sum
+from dit.multivariate import entropy as H
+from dit.multivariate import total_correlation as I
 
 
 def test_iidsum():

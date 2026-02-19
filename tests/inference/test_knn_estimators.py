@@ -2,12 +2,10 @@
 Tests for dit.inference.knn_estimators.
 """
 
+import numpy as np
+import pytest
 from hypothesis import given, settings
 from hypothesis.strategies import floats, lists
-
-import pytest
-
-import numpy as np
 
 from dit.inference.knn_estimators import differential_entropy_knn, total_correlation_ksg
 

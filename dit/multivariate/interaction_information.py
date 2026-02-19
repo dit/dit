@@ -8,7 +8,6 @@ from ..helpers import normalize_rvs
 from ..utils import unitful
 from .coinformation import coinformation
 
-
 __all__ = (
     'interaction_information',
 )

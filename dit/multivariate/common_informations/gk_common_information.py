@@ -8,7 +8,6 @@ from ...npdist import Distribution
 from ...shannon import conditional_entropy as H
 from ...utils import unitful
 
-
 __all__ = (
     'gk_common_information',
 )

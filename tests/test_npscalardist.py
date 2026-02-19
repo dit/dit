@@ -2,16 +2,15 @@
 Tests for dit.npscalardist.
 """
 
-import pytest
+from itertools import product
 
 import numpy as np
+import pytest
 import scipy.stats as sps
-
-from itertools import product
 
 from dit import Distribution, ScalarDistribution
 from dit.distconst import uniform_scalar_distribution
-from dit.exceptions import ditException, InvalidDistribution, InvalidOutcome
+from dit.exceptions import InvalidDistribution, InvalidOutcome, ditException
 
 
 def test_init1():

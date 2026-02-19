@@ -4,8 +4,8 @@ tolerances. This dynamically chooses a cython implementation if available.
 """
 
 from debtcollector import removals
-
-from numpy import allclose as _allclose, isinf
+from numpy import allclose as _allclose
+from numpy import isinf
 
 from dit import ditParams
 
