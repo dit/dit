@@ -23,8 +23,11 @@ jobs:
       - name: Install Python ${{ matrix.python-version }}
         run: uv python install ${{ matrix.python-version }}
 
+      - name: Pin Python version for uv
+        run: echo '${{ matrix.python-version }}' > .python-version
+
       - name: Install package and dependencies
-        run: uv sync --extra test --extra optional --extra xarray --python ${{ matrix.python-version }}
+        run: uv sync --extra test --extra optional --extra xarray
 
       - name: Run tests
         run: uv run pytest
