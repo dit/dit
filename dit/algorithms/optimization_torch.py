@@ -22,10 +22,12 @@ from string import digits
 from types import MethodType
 
 import numpy as np
+
 from loguru import logger
 
 try:
     import torch
+
     from torch import Tensor
     from torch.autograd.functional import jacobian as torch_jacobian
     TORCH_AVAILABLE = True
@@ -127,6 +129,32 @@ def _to_numpy(x):
     if isinstance(x, Tensor):
         return x.detach().cpu().numpy()
     return np.asarray(x)
+
+
+def _marginalize(tensor, dim, keepdim=True):
+    """
+    Sum *tensor* over *dim*, returning the tensor unchanged when *dim* is empty.
+
+    PyTorch's ``Tensor.sum(dim=())`` reduces **all** dimensions (unlike NumPy's
+    ``ndarray.sum(axis=())`` which is a no-op).  This helper normalises that
+    behaviour so the information-theoretic functions work correctly when the
+    set of dimensions to marginalise out is empty.
+
+    Parameters
+    ----------
+    tensor : torch.Tensor
+    dim : tuple of int
+        Dimensions to sum over.  May be an empty tuple.
+    keepdim : bool
+        Whether to retain the summed dimensions as size-1.
+
+    Returns
+    -------
+    result : torch.Tensor
+    """
+    if not dim:
+        return tensor
+    return tensor.sum(dim=dim, keepdim=keepdim)
 
 
 class BaseTorchOptimizer(metaclass=ABCMeta):
@@ -357,9 +385,10 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
         h : torch.Tensor
             The entropy.
         """
-        # Use torch.where to handle 0 * log(0) = 0 safely
-        log_p = torch.where(p > 0, torch.log2(p), torch.zeros_like(p))
-        return -torch.nansum(p * log_p)
+        # "Safe where" pattern: replace p with 1.0 before log so both branches
+        # of torch.where produce finite gradients (autograd traces both paths).
+        safe_p = torch.where(p > 0, p, torch.ones_like(p))
+        return -torch.sum(torch.where(p > 0, p * torch.log2(safe_p), torch.zeros_like(p)))
 
     def _entropy(self, rvs, crvs=None):
         """
@@ -396,8 +425,8 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
             h : torch.Tensor
                 The entropy.
             """
-            pmf_joint = pmf.sum(dim=idx_joint, keepdim=True)
-            pmf_crvs = pmf_joint.sum(dim=idx_crvs, keepdim=True)
+            pmf_joint = _marginalize(pmf, idx_joint)
+            pmf_crvs = _marginalize(pmf_joint, idx_crvs)
 
             h_joint = self._h(pmf_joint)
             h_crvs = self._h(pmf_crvs)
@@ -442,19 +471,17 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
             mi : torch.Tensor
                 The mutual information.
             """
-            pmf_xy = pmf.sum(dim=idx_xy, keepdim=True)
-            pmf_x = pmf_xy.sum(dim=idx_x, keepdim=True)
-            pmf_y = pmf_xy.sum(dim=idx_y, keepdim=True)
+            pmf_xy = _marginalize(pmf, idx_xy)
+            pmf_x = _marginalize(pmf_xy, idx_x)
+            pmf_y = _marginalize(pmf_xy, idx_y)
 
-            # Safe division and log
+            # "Safe where" pattern: use safe denominators so autograd never
+            # traces through 0/0 or log(0), even in the unused branch.
             product = pmf_x * pmf_y
-            ratio = torch.where(
-                (pmf_xy > 0) & (product > 0),
-                pmf_xy / product,
-                torch.ones_like(pmf_xy)  # log(1) = 0
-            )
-            log_ratio = torch.where(pmf_xy > 0, torch.log2(ratio), torch.zeros_like(ratio))
-            mi = torch.nansum(pmf_xy * log_ratio)
+            safe_product = torch.where(product > 0, product, torch.ones_like(product))
+            safe_pmf_xy = torch.where(pmf_xy > 0, pmf_xy, torch.ones_like(pmf_xy))
+            ratio = safe_pmf_xy / safe_product
+            mi = torch.sum(torch.where(pmf_xy > 0, pmf_xy * torch.log2(ratio), torch.zeros_like(pmf_xy)))
 
             return mi
 
@@ -500,21 +527,19 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
             cmi : torch.Tensor
                 The conditional mutual information.
             """
-            pmf_xyz = pmf.sum(dim=idx_xyz, keepdim=True)
-            pmf_xz = pmf_xyz.sum(dim=idx_xz, keepdim=True)
-            pmf_yz = pmf_xyz.sum(dim=idx_yz, keepdim=True)
-            pmf_z = pmf_xz.sum(dim=idx_z, keepdim=True)
+            pmf_xyz = _marginalize(pmf, idx_xyz)
+            pmf_xz = _marginalize(pmf_xyz, idx_xz)
+            pmf_yz = _marginalize(pmf_xyz, idx_yz)
+            pmf_z = _marginalize(pmf_xz, idx_z)
 
-            # Safe computation avoiding division by zero
+            # "Safe where" pattern: use safe values so autograd never traces
+            # through 0/0 or log(0), even in the unused branch.
             numer = pmf_z * pmf_xyz
             denom = pmf_xz * pmf_yz
-            ratio = torch.where(
-                (pmf_xyz > 0) & (denom > 0),
-                numer / denom,
-                torch.ones_like(pmf_xyz)
-            )
-            log_ratio = torch.where(pmf_xyz > 0, torch.log2(ratio), torch.zeros_like(ratio))
-            cmi = torch.nansum(pmf_xyz * log_ratio)
+            safe_denom = torch.where(denom > 0, denom, torch.ones_like(denom))
+            safe_numer = torch.where(pmf_xyz > 0, numer, torch.ones_like(numer))
+            ratio = safe_numer / safe_denom
+            cmi = torch.sum(torch.where(pmf_xyz > 0, pmf_xyz * torch.log2(ratio), torch.zeros_like(pmf_xyz)))
 
             return cmi
 
@@ -559,14 +584,15 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
             ci : torch.Tensor
                 The co-information.
             """
-            pmf_joint = pmf.sum(dim=idx_joint, keepdim=True)
-            pmf_crvs = pmf_joint.sum(dim=idx_crvs, keepdim=True)
-            pmf_subrvs = [pmf_joint.sum(dim=idx, keepdim=True) for idx in idx_subrvs] + [pmf_joint, pmf_crvs]
+            pmf_joint = _marginalize(pmf, idx_joint)
+            pmf_crvs = _marginalize(pmf_joint, idx_crvs)
+            pmf_subrvs = [_marginalize(pmf_joint, idx) for idx in idx_subrvs] + [pmf_joint, pmf_crvs]
 
             pmf_ci = reduce(torch.mul, [p.pow(pw) for p, pw in zip(pmf_subrvs, power)])
 
-            log_ci = torch.where(pmf_joint > 0, torch.log2(pmf_ci), torch.zeros_like(pmf_ci))
-            ci = torch.nansum(pmf_joint * log_ci)
+            # "Safe where" pattern: ensure log argument is always positive
+            safe_pmf_ci = torch.where(pmf_joint > 0, pmf_ci, torch.ones_like(pmf_ci))
+            ci = torch.sum(torch.where(pmf_joint > 0, pmf_joint * torch.log2(safe_pmf_ci), torch.zeros_like(pmf_joint)))
 
             return ci
 
@@ -609,9 +635,9 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
             tc : torch.Tensor
                 The total correlation.
             """
-            pmf_joint = pmf.sum(dim=idx_joint, keepdim=True)
-            pmf_margs = [pmf_joint.sum(dim=marg, keepdim=True) for marg in idx_margs]
-            pmf_crvs = pmf_margs[0].sum(dim=idx_crvs, keepdim=True)
+            pmf_joint = _marginalize(pmf, idx_joint)
+            pmf_margs = [_marginalize(pmf_joint, marg) for marg in idx_margs]
+            pmf_crvs = _marginalize(pmf_margs[0], idx_crvs)
 
             h_crvs = self._h(pmf_crvs.flatten())
             h_margs = sum(self._h(p.flatten()) for p in pmf_margs)
@@ -660,9 +686,9 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
             dtc : torch.Tensor
                 The dual total correlation.
             """
-            pmf_joint = pmf.sum(dim=idx_joint, keepdim=True)
-            pmf_margs = [pmf_joint.sum(dim=marg, keepdim=True) for marg in idx_margs]
-            pmf_crvs = pmf_joint.sum(dim=idx_crvs, keepdim=True)
+            pmf_joint = _marginalize(pmf, idx_joint)
+            pmf_margs = [_marginalize(pmf_joint, marg) for marg in idx_margs]
+            pmf_crvs = _marginalize(pmf_joint, idx_crvs)
 
             h_crvs = self._h(pmf_crvs)
             h_joint = self._h(pmf_joint) - h_crvs
@@ -716,9 +742,9 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
             caekl : torch.Tensor
                 The CAEKL mutual information.
             """
-            pmf_joint = pmf.sum(dim=idx_joint, keepdim=True)
-            pmf_parts = {p: pmf_joint.sum(dim=idx, keepdim=True) for p, idx in idx_parts.items()}
-            pmf_crvs = pmf_joint.sum(dim=idx_crvs, keepdim=True)
+            pmf_joint = _marginalize(pmf, idx_joint)
+            pmf_parts = {p: _marginalize(pmf_joint, idx) for p, idx in idx_parts.items()}
+            pmf_crvs = _marginalize(pmf_joint, idx_crvs)
 
             h_crvs = self._h(pmf_crvs)
             h_joint = self._h(pmf_joint) - h_crvs
@@ -728,7 +754,7 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
                 h_parts = sum(self._h(pmf_parts[p]) - h_crvs for p in part)
                 candidates.append((h_parts - h_joint) / norm)
 
-            caekl = min(candidates)
+            caekl = torch.min(torch.stack(candidates))
 
             return caekl
 
@@ -768,9 +794,9 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
             mc : torch.Tensor
                 The maximum correlation.
             """
-            pmf_xy = pmf.sum(dim=idx_xy)
-            pmf_x = pmf.sum(dim=idx_x).unsqueeze(-1)
-            pmf_y = pmf.sum(dim=idx_y).unsqueeze(0)
+            pmf_xy = _marginalize(pmf, idx_xy, keepdim=False)
+            pmf_x = _marginalize(pmf, idx_x, keepdim=False).unsqueeze(-1)
+            pmf_y = _marginalize(pmf, idx_y, keepdim=False).unsqueeze(0)
 
             Q = pmf_xy / (torch.sqrt(pmf_x) * torch.sqrt(pmf_y))
             Q = torch.where(torch.isnan(Q), torch.zeros_like(Q), Q)
@@ -819,9 +845,9 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
             cmc : torch.Tensor
                 The conditional maximum correlation.
             """
-            p_xyz = pmf.sum(dim=idx_xyz)
-            p_xz = pmf.sum(dim=idx_xz).unsqueeze(1)
-            p_yz = pmf.sum(dim=idx_yz).unsqueeze(0)
+            p_xyz = _marginalize(pmf, idx_xyz, keepdim=False)
+            p_xz = _marginalize(pmf, idx_xz, keepdim=False).unsqueeze(1)
+            p_yz = _marginalize(pmf, idx_yz, keepdim=False).unsqueeze(0)
 
             Q = torch.where(p_xyz > 0, p_xyz / torch.sqrt(p_xz * p_yz), torch.zeros_like(p_xyz))
 
@@ -875,9 +901,9 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
             tv : torch.Tensor
                 The total variation.
             """
-            pmf_xy = pmf.sum(dim=idx_xy, keepdim=True)
-            pmf_x = pmf_xy.sum(dim=idx_x)
-            pmf_y = pmf_xy.sum(dim=idx_y)
+            pmf_xy = _marginalize(pmf, idx_xy)
+            pmf_x = _marginalize(pmf_xy, idx_x, keepdim=False)
+            pmf_y = _marginalize(pmf_xy, idx_y, keepdim=False)
 
             tv = torch.abs(pmf_x - pmf_y).sum() / 2
 
@@ -887,6 +913,303 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
 
     ###########################################################################
     # Optimization methods.
+
+    ###########################################################################
+    # Augmented Lagrangian native optimization helpers
+
+    def _al_minimize(self, x0, constraints=None, maxiter=None,
+                     al_outer_iters=50, al_inner_iters=100,
+                     mu_init=1.0, mu_factor=2.0, al_tol=1e-7):
+        """
+        Augmented Lagrangian minimization using torch.optim.LBFGS.
+
+        Solves::
+
+            min  f(x)
+            s.t. g_i(x) = 0   (equality constraints)
+                 h_j(x) >= 0  (inequality constraints)
+                 0 <= x <= 1   (box bounds)
+
+        by iteratively minimizing the augmented Lagrangian::
+
+            L(x, lam, mu) = f(x)
+                + sum_i lam_eq_i * g_i(x)   + (mu/2) * sum_i g_i(x)^2
+                + sum_j lam_ineq_j * s_j(x) + (mu/2) * sum_j s_j(x)^2
+
+        where s_j(x) = min(0, h_j(x) - lam_ineq_j / mu) for inequality
+        constraints.
+
+        Each outer iteration performs a single LBFGS solve (with up to
+        ``al_inner_iters`` quasi-Newton steps) to approximately minimize the
+        augmented Lagrangian, then updates dual variables and increases the
+        penalty parameter.
+
+        Parameters
+        ----------
+        x0 : array_like
+            Initial point (numpy array, will be converted to tensor).
+        constraints : list of dict, optional
+            Constraints in scipy format. Defaults to ``self._torch_raw_constraints``.
+        maxiter : int, optional
+            Max LBFGS iterations per outer step (overrides ``al_inner_iters``).
+        al_outer_iters : int
+            Number of outer AL iterations.
+        al_inner_iters : int
+            Max LBFGS iterations within each outer step.
+        mu_init : float
+            Initial penalty parameter.
+        mu_factor : float
+            Multiplicative increase of mu each outer iteration.
+        al_tol : float
+            Convergence tolerance on max constraint violation.
+
+        Returns
+        -------
+        result : OptimizeResult
+            Scipy-compatible result object.
+        """
+        from scipy.optimize import OptimizeResult
+
+        if constraints is None:
+            constraints = self._torch_raw_constraints
+
+        raw_objective = self._torch_raw_objective
+        eq_funs = [c['fun'] for c in constraints if c['type'] == 'eq']
+        ineq_funs = [c['fun'] for c in constraints if c['type'] == 'ineq']
+
+        n_eq = len(eq_funs)
+        n_ineq = len(ineq_funs)
+
+        x = torch.tensor(np.asarray(x0, dtype=np.float64),
+                         dtype=self._dtype, device=self._device,
+                         requires_grad=True)
+
+        # Dual variables
+        lam_eq = torch.zeros(n_eq, dtype=self._dtype, device=self._device)
+        lam_ineq = torch.zeros(n_ineq, dtype=self._dtype, device=self._device)
+        mu = mu_init
+
+        lbfgs_maxiter = maxiter or al_inner_iters
+
+        best_x = x.detach().clone()
+        best_obj = float('inf')
+        max_viol = float('inf')
+
+        for outer in range(al_outer_iters):
+            _lam_eq = lam_eq.clone()
+            _lam_ineq = lam_ineq.clone()
+            _mu = mu
+
+            # One LBFGS solve per outer iteration.  The LBFGS max_iter
+            # controls how many quasi-Newton steps are taken; strong_wolfe
+            # line search keeps each step well-conditioned.
+            optimizer = torch.optim.LBFGS(
+                [x], lr=1.0, max_iter=lbfgs_maxiter,
+                line_search_fn='strong_wolfe',
+                tolerance_grad=1e-10, tolerance_change=1e-12,
+            )
+
+            def closure():
+                optimizer.zero_grad()
+                # Project to box bounds before evaluating.  Use a very
+                # tight epsilon -- the "safe where" pattern in the
+                # information-theoretic functions handles exact zeros.
+                with torch.no_grad():
+                    x.data.clamp_(0.0, 1.0)
+
+                obj = raw_objective(x)
+                if not isinstance(obj, Tensor):
+                    obj = torch.tensor(obj, dtype=self._dtype,
+                                       device=self._device)
+                loss = obj
+
+                for i, cfun in enumerate(eq_funs):
+                    ci = cfun(x)
+                    if not isinstance(ci, Tensor):
+                        ci = torch.tensor(ci, dtype=self._dtype,
+                                          device=self._device)
+                    loss = loss + _lam_eq[i] * ci + (_mu / 2.0) * ci ** 2
+
+                for j, cfun in enumerate(ineq_funs):
+                    hj = cfun(x)
+                    if not isinstance(hj, Tensor):
+                        hj = torch.tensor(hj, dtype=self._dtype,
+                                          device=self._device)
+                    slack = torch.min(
+                        torch.zeros_like(hj),
+                        hj - _lam_ineq[j] / _mu,
+                    )
+                    loss = loss + _lam_ineq[j] * slack + (_mu / 2.0) * slack ** 2
+
+                loss.backward()
+                return loss
+
+            optimizer.step(closure)
+
+            # Project to box bounds
+            with torch.no_grad():
+                x.data.clamp_(0.0, 1.0)
+
+            # Update dual variables and check convergence
+            with torch.no_grad():
+                for i, cfun in enumerate(eq_funs):
+                    ci = cfun(x)
+                    if isinstance(ci, Tensor):
+                        ci = ci.detach()
+                    lam_eq[i] = lam_eq[i] + mu * float(ci)
+
+                max_eq_viol = 0.0
+                for cfun in eq_funs:
+                    ci = cfun(x)
+                    max_eq_viol = max(max_eq_viol, abs(float(
+                        ci.detach() if isinstance(ci, Tensor) else ci)))
+
+                max_ineq_viol = 0.0
+                for j, cfun in enumerate(ineq_funs):
+                    hj = cfun(x)
+                    if isinstance(hj, Tensor):
+                        hj = hj.detach()
+                    viol = max(0.0, -float(hj))
+                    max_ineq_viol = max(max_ineq_viol, viol)
+                    lam_ineq[j] = torch.clamp(
+                        lam_ineq[j] - mu * float(hj), min=0.0)
+
+                max_viol = max(max_eq_viol, max_ineq_viol)
+
+                obj_val = raw_objective(x)
+                if isinstance(obj_val, Tensor):
+                    obj_val = float(obj_val.detach().cpu().item())
+                else:
+                    obj_val = float(obj_val)
+
+                if obj_val < best_obj and max_viol < al_tol * 100:
+                    best_obj = obj_val
+                    best_x = x.detach().clone()
+
+            logger.debug("AL outer={outer}: obj={obj:.6f}, max_viol={viol:.2e}, mu={mu:.1f}",
+                         outer=outer, obj=obj_val, viol=max_viol, mu=mu)
+
+            if max_viol < al_tol:
+                logger.debug("AL converged at outer iteration {outer}", outer=outer)
+                break
+
+            mu *= mu_factor
+
+        x_opt = _to_numpy(best_x).astype(np.float64)
+        fun_val = float(best_obj)
+        success = max_viol < al_tol * 10
+
+        return OptimizeResult(
+            x=x_opt, fun=fun_val, success=success,
+            message=f'AL: max_viol={max_viol:.2e}, mu={mu:.1f}',
+        )
+
+    def _optimize_shotgun_native(self, x0, niter, maxiter):
+        """
+        Multi-start optimization using the Augmented Lagrangian method.
+
+        Parameters
+        ----------
+        x0 : ndarray
+            Initial optimization vector.
+        niter : int or None
+            Number of random restarts.
+        maxiter : int or None
+            Maximum iterations per start.
+
+        Returns
+        -------
+        result : OptimizeResult or None
+        """
+        if niter is None:
+            niter = self._default_hops
+
+        starts = []
+        if x0 is not None:
+            starts.append(np.asarray(x0).flatten())
+            niter -= 1
+        for _ in range(max(niter, 0)):
+            ic = self.construct_random_initial()
+            starts.append(np.asarray(ic).flatten())
+
+        if not starts:  # pragma: no cover
+            return None
+
+        raw_obj = self._torch_raw_objective
+        results = []
+        for i, s in enumerate(starts):
+            logger.debug("Shotgun (torch AL): start {i}/{n}", i=i + 1, n=len(starts))
+            res = self._al_minimize(s, maxiter=maxiter)
+            results.append(res)
+
+        if not results:  # pragma: no cover
+            return None
+
+        def _obj_val(r):
+            v = raw_obj(r.x)
+            if isinstance(v, Tensor):
+                return float(v.detach().cpu().item())
+            return float(np.asarray(v))
+
+        return min(results, key=_obj_val)
+
+    def _scipy_minimize_kwargs(self, x0, callback=False, maxiter=None):
+        """
+        Build ``minimizer_kwargs`` for scipy-based optimization (fallback).
+        """
+        icb = BasinHoppingInnerCallBack() if callback else None
+        raw_objective = self._torch_raw_objective
+        raw_constraints = self._torch_raw_constraints
+
+        def _np_objective(x):
+            val = raw_objective(x)
+            if isinstance(val, Tensor):
+                return float(val.detach().cpu().item())
+            return float(np.asarray(val))
+
+        wrapped_constraints = []
+        for const in raw_constraints:
+            _raw_fun = const['fun']
+
+            def _np_const_fun(x, _f=_raw_fun):
+                val = _f(x)
+                if isinstance(val, Tensor):
+                    return float(val.detach().cpu().item())
+                return float(np.asarray(val))
+
+            wrapped_constraints.append({**const, 'fun': _np_const_fun})
+
+        minimizer_kwargs = {
+            'bounds': [(0, 1)] * x0.size,
+            'callback': icb,
+            'constraints': wrapped_constraints,
+            'options': {},
+        }
+
+        additions = deepcopy(self._additional_options)
+        options = additions.pop('options', {})
+        minimizer_kwargs['options'].update(options)
+        minimizer_kwargs.update(additions)
+
+        if maxiter:
+            minimizer_kwargs['options']['maxiter'] = maxiter
+
+        self.objective = _np_objective
+        return minimizer_kwargs, icb
+
+    ###########################################################################
+    # Native optimization dispatch
+
+    def _optimization_backend_native(self, x0, niter, maxiter):
+        """
+        Dispatch to the native AL-based shotgun or basinhopping backend.
+
+        Subclasses may override for different strategies (e.g. non-convex).
+        """
+        return self._optimize_shotgun_native(x0, niter, maxiter)
+
+    ###########################################################################
+    # Legacy helper methods (kept for compatibility)
 
     def _create_torch_objective(self, objective_func):
         """
@@ -967,86 +1290,57 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
             self.objective = MethodType(self._objective(), self)
 
         x0 = x0.copy().flatten() if x0 is not None else self.construct_initial()
+        x0 = _to_numpy(x0).astype(np.float64)
 
         logger.info("Starting PyTorch optimization: dim={dim}, niter={niter}, device={device}, dtype={dtype}",
                      dim=x0.size, niter=niter, device=self._device, dtype=self._dtype)
 
-        icb = BasinHoppingInnerCallBack() if callback else None
+        # Store raw (torch-native) objective and constraints
+        self._torch_raw_objective = self.objective
+        self._torch_raw_constraints = list(self.constraints)
 
-        minimizer_kwargs = {'bounds': [(0, 1)] * x0.size,
-                            'callback': icb,
-                            'constraints': self.constraints,
-                            'options': {},
-                            }
+        # For very large problems, the AL method can be slow.
+        # Fall back to scipy for those cases.
+        _MAX_NATIVE_DIM = 200
 
-        # Use PyTorch autodiff for jacobians if available
-        if self._use_autodiff and TORCH_AVAILABLE:
-            logger.info("Using PyTorch autodiff for gradient computation")
-            # Create gradient function using torch autograd
-            def torch_obj_for_grad(x_tensor):
-                """Objective that works with torch tensors."""
-                return self.objective(x_tensor)
+        def _obj_val(r):
+            """Evaluate raw objective on an OptimizeResult, returning a float."""
+            v = self._torch_raw_objective(r.x)
+            if isinstance(v, Tensor):
+                return float(v.detach().cpu().item())
+            return float(np.asarray(v))
 
-            def grad_wrapper(x):
-                """Compute gradient using PyTorch autograd."""
-                x_tensor = _to_tensor(x, requires_grad=True, dtype=self._dtype).to(self._device)
-                # Need to recompute to build the computational graph
-                result = self.objective(x_tensor)
-                if isinstance(result, Tensor) and result.requires_grad:
-                    result.backward()
-                    grad = x_tensor.grad
-                    if grad is not None:
-                        return _to_numpy(grad)
-                # Fallback: use finite differences
-                return None
+        if TORCH_AVAILABLE and x0.size <= _MAX_NATIVE_DIM:
+            # ---- native AL path (autograd gradients) ----
+            logger.info("Using torch Augmented Lagrangian optimizer with autograd (dim={dim})", dim=x0.size)
+            result = self._optimization_backend_native(x0, niter, maxiter)
 
-            # Try to use the gradient, fall back to numdifftools if it fails
-            try:
-                test_grad = grad_wrapper(x0)
-                if test_grad is not None:
-                    minimizer_kwargs['jac'] = grad_wrapper
-            except Exception:
-                pass
+            # Always also run scipy SLSQP and keep the better result.
+            # The AL+LBFGS method is an interior method that can miss
+            # boundary optima; scipy's SLSQP handles boundaries natively.
+            minimizer_kwargs, icb = self._scipy_minimize_kwargs(
+                x0, callback=callback, maxiter=maxiter)
+            self._callback = BasinHoppingCallBack(
+                minimizer_kwargs.get('constraints', {}), icb)
+            result_scipy = self._optimization_backend(
+                x0, minimizer_kwargs, niter)
 
-            # Compute jacobians for constraints
-            for const in minimizer_kwargs['constraints']:
-                const_fun = const['fun']
-
-                def make_const_grad(f):
-                    def const_grad_wrapper(x):
-                        x_tensor = _to_tensor(x, requires_grad=True, dtype=self._dtype).to(self._device)
-                        result = f(x_tensor)
-                        if isinstance(result, Tensor) and result.requires_grad:
-                            result.backward()
-                            grad = x_tensor.grad
-                            if grad is not None:
-                                return _to_numpy(grad)
-                        return np.zeros_like(x)
-                    return const_grad_wrapper
-
-                const['jac'] = make_const_grad(const_fun)
-
-        # Fallback to numdifftools if no jacobian set
-        if 'jac' not in minimizer_kwargs:
-            try:  # pragma: no cover
-                import numdifftools as ndt
-                minimizer_kwargs['jac'] = ndt.Jacobian(self.objective)
-                for const in minimizer_kwargs['constraints']:
-                    const['jac'] = ndt.Jacobian(const['fun'])
-            except ImportError:
-                pass
-
-        additions = deepcopy(self._additional_options)
-        options = additions.pop('options', {})
-        minimizer_kwargs['options'].update(options)
-        minimizer_kwargs.update(additions)
-
-        if maxiter:
-            minimizer_kwargs['options']['maxiter'] = maxiter
-
-        self._callback = BasinHoppingCallBack(minimizer_kwargs.get('constraints', {}), icb)
-
-        result = self._optimization_backend(x0, minimizer_kwargs, niter)
+            if result_scipy:
+                if result is None or _obj_val(result_scipy) < _obj_val(result):
+                    logger.info("scipy SLSQP found a better solution than AL")
+                    result = result_scipy
+        else:
+            # ---- scipy fallback path ----
+            if x0.size > _MAX_NATIVE_DIM:
+                logger.info("Problem dimension {dim} exceeds native limit {lim}; "
+                            "falling back to scipy SLSQP", dim=x0.size, lim=_MAX_NATIVE_DIM)
+            else:
+                logger.info("Using scipy SLSQP fallback")
+            minimizer_kwargs, icb = self._scipy_minimize_kwargs(
+                x0, callback=callback, maxiter=maxiter)
+            self._callback = BasinHoppingCallBack(
+                minimizer_kwargs.get('constraints', {}), icb)
+            result = self._optimization_backend(x0, minimizer_kwargs, niter)
 
         if result:
             self._optima = np.array(result.x)
@@ -1057,7 +1351,12 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
         if polish:
             self._polish(cutoff=polish)
 
-        logger.info("PyTorch optimization complete: objective={obj}", obj=self.objective(self._optima))
+        obj_val = self._torch_raw_objective(self._optima)
+        if isinstance(obj_val, Tensor):
+            obj_val = float(obj_val.detach().cpu().item())
+        else:
+            obj_val = float(np.asarray(obj_val))
+        logger.info("PyTorch optimization complete: objective={obj}", obj=obj_val)
 
         return result
 
@@ -1133,64 +1432,42 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
         ub = np.array([0.0 if np.isclose(x, 0) else 1.0 for x in x0])
         feasible = np.array([True for _ in x0])
 
+        # Use raw constraints if available, falling back to self.constraints
+        raw_constraints = getattr(self, '_torch_raw_constraints', self.constraints)
+        raw_objective = getattr(self, '_torch_raw_objective', self.objective)
+
+        # Wrap for scipy (return numpy scalars)
+        def _np_obj(x):
+            val = raw_objective(x)
+            if isinstance(val, Tensor):
+                return float(val.detach().cpu().item())
+            return float(np.asarray(val))
+
+        wrapped_constraints = []
+        for const in raw_constraints:
+            _raw_fun = const['fun']
+
+            def _np_const_fun(x, _f=_raw_fun):
+                val = _f(x)
+                if isinstance(val, Tensor):
+                    return float(val.detach().cpu().item())
+                return float(np.asarray(val))
+
+            wrapped_constraints.append({**const, 'fun': _np_const_fun})
+
         minimizer_kwargs = {
             'bounds': Bounds(lb, ub, feasible),
             'tol': None,
             'callback': None,
-            'constraints': self.constraints,
+            'constraints': wrapped_constraints,
         }
-
-        # Use PyTorch autodiff for polishing too
-        if self._use_autodiff and TORCH_AVAILABLE:
-            def grad_wrapper(x):
-                x_tensor = _to_tensor(x, requires_grad=True, dtype=self._dtype).to(self._device)
-                result = self.objective(x_tensor)
-                if isinstance(result, Tensor) and result.requires_grad:
-                    result.backward()
-                    grad = x_tensor.grad
-                    if grad is not None:
-                        return _to_numpy(grad)
-                return np.zeros_like(x)
-
-            try:
-                test_grad = grad_wrapper(x0)
-                if test_grad is not None and not np.allclose(test_grad, 0):
-                    minimizer_kwargs['jac'] = grad_wrapper
-            except Exception:
-                pass
-
-            for const in minimizer_kwargs['constraints']:
-                const_fun = const['fun']
-
-                def make_const_grad(f):
-                    def const_grad_wrapper(x):
-                        x_tensor = _to_tensor(x, requires_grad=True, dtype=self._dtype).to(self._device)
-                        result = f(x_tensor)
-                        if isinstance(result, Tensor) and result.requires_grad:
-                            result.backward()
-                            grad = x_tensor.grad
-                            if grad is not None:
-                                return _to_numpy(grad)
-                        return np.zeros_like(x)
-                    return const_grad_wrapper
-
-                const['jac'] = make_const_grad(const_fun)
-
-        if 'jac' not in minimizer_kwargs:
-            try:  # pragma: no cover
-                import numdifftools as ndt
-                minimizer_kwargs['jac'] = ndt.Jacobian(self.objective)
-                for const in minimizer_kwargs['constraints']:
-                    const['jac'] = ndt.Jacobian(const['fun'])
-            except ImportError:
-                pass
 
         if np.allclose(lb, ub):
             self._optima = x0
             return
 
         res = minimize(
-            fun=self.objective,
+            fun=_np_obj,
             x0=x0,
             **minimizer_kwargs
         )
@@ -1239,6 +1516,19 @@ class BaseNonConvexTorchOptimizer(BaseTorchOptimizer):
     """
 
     _shotgun = False
+
+    def _optimization_backend_native(self, x0, niter, maxiter):
+        """
+        Native AL backend for non-convex optimization.
+
+        Uses a multi-start (shotgun) strategy with ``2 * niter`` random
+        starting points plus the supplied ``x0``.  For the scipy fallback
+        path, scipy's ``basinhopping`` is still used.
+        """
+        if niter is None:
+            niter = self._default_hops
+
+        return self._optimize_shotgun_native(x0, niter, maxiter)
 
     def _optimization_basinhopping(self, x0, minimizer_kwargs, niter):
         """

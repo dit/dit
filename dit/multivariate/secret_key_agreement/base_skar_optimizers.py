@@ -1,5 +1,15 @@
 """
-Base class for the calculation of reduced and minimal intrinsic informations.
+Base classes for secret key agreement rate optimizers.
+
+Supports pluggable optimization backends (``'numpy'``, ``'jax'``, ``'torch'``)
+via the ``backend`` parameter on :meth:`functional` and on the standalone
+public functions.
+
+Each public base class is composed of a **Mixin** (containing all the
+problem-specific logic and ``super()`` calls) and a concrete optimizer base.
+This allows :func:`_make_backend_subclass` to substitute the optimizer base
+while preserving the mixin logic — ``super()`` inside the mixin resolves to
+whichever backend base is composed with it.
 """
 
 from abc import abstractmethod
@@ -11,7 +21,7 @@ from ...algorithms import BaseAuxVarOptimizer
 from ...exceptions import ditException
 from ...math import prod
 from ...utils import unitful
-
+from .._backend import _make_backend_subclass
 
 __all__ = (
     'BaseIntrinsicMutualInformation',
@@ -20,15 +30,14 @@ __all__ = (
 )
 
 
-class BaseOneWaySKAR(BaseAuxVarOptimizer):
-    """
-    Compute lower bounds on the secret key agreement rate of the form:
+# ── Mixin classes (backend-agnostic logic) ────────────────────────────────
 
-    .. math::
-        max_{V - U - X - YZ} objective()
+class OneWaySKARMixin:
     """
+    Mixin containing one-way SKAR optimizer logic.
 
-    construct_initial = BaseAuxVarOptimizer.construct_copy_initial
+    Must be composed with a ``BaseAuxVarOptimizer``-compatible base class.
+    """
 
     def __init__(self, dist, rv_x=None, rv_y=None, rv_z=None, rv_mode=None, bound_u=None, bound_v=None):
         """
@@ -99,12 +108,11 @@ class BaseOneWaySKAR(BaseAuxVarOptimizer):
         pass
 
 
-class BaseIntrinsicMutualInformation(BaseAuxVarOptimizer):
+class IntrinsicMIMixin:
     """
-    Compute a generalized intrinsic mutual information:
+    Mixin containing intrinsic mutual information optimizer logic.
 
-    .. math::
-        IMI[X:Y|Z] = min_{p(z_bar|z)} I[X:Y|Z]
+    Must be composed with a ``BaseAuxVarOptimizer``-compatible base class.
     """
 
     name = ""
@@ -177,10 +185,13 @@ class BaseIntrinsicMutualInformation(BaseAuxVarOptimizer):
         Construct a functional form of the optimizer.
         """
         @unitful
-        def intrinsic(dist, rvs=None, crvs=None, niter=None, bound=None, rv_mode=None):
-            opt = cls(dist, rvs=rvs, crvs=crvs, rv_mode=rv_mode, bound=bound)
+        def intrinsic(dist, rvs=None, crvs=None, niter=None, bound=None,
+                      rv_mode=None, backend='numpy'):
+            actual_cls = _make_backend_subclass(cls, backend)
+            opt = actual_cls(dist, rvs=rvs, crvs=crvs, rv_mode=rv_mode, bound=bound)
             opt.optimize(niter=niter)
-            return opt.objective(opt._optima)
+            val = opt.objective(opt._optima)
+            return float(val.detach().cpu().item()) if hasattr(val, 'detach') else float(val)
 
         intrinsic.__doc__ = \
         """
@@ -210,18 +221,19 @@ class BaseIntrinsicMutualInformation(BaseAuxVarOptimizer):
             equal to 'names', the the elements are interpreted as random
             variable names. If `None`, then the value of `dist._rv_mode` is
             consulted, which defaults to 'indices'.
+        backend : str
+            The optimization backend. One of ``'numpy'`` (default),
+            ``'jax'``, or ``'torch'``.
         """.format(name=cls.name)
 
         return intrinsic
 
 
-class BaseMoreIntrinsicMutualInformation(BaseAuxVarOptimizer):
+class MoreIntrinsicMIMixin:
     """
-    Compute the reduced and minimal intrinsic mutual informations, upper bounds
-    on the secret key agreement rate:
+    Mixin containing reduced/minimal intrinsic MI optimizer logic.
 
-    .. math::
-        I[X : Y \\downarrow\\downarrow\\downarrow Z] = min_U I[X:Y|U] + I[XY:U|Z]
+    Must be composed with a ``BaseAuxVarOptimizer``-compatible base class.
     """
 
     name = ""
@@ -290,15 +302,19 @@ class BaseMoreIntrinsicMutualInformation(BaseAuxVarOptimizer):
         Construct a functional form of the optimizer.
         """
         @unitful
-        def intrinsic(dist, rvs=None, crvs=None, niter=None, bounds=None, rv_mode=None):
+        def intrinsic(dist, rvs=None, crvs=None, niter=None, bounds=None,
+                      rv_mode=None, backend='numpy'):
             if bounds is None:
                 bounds = (2, 3, 4, None)
 
+            actual_cls = _make_backend_subclass(cls, backend)
             candidates = []
             for bound in bounds:
-                opt = cls(dist, rvs=rvs, crvs=crvs, bound=bound, rv_mode=rv_mode)
+                opt = actual_cls(dist, rvs=rvs, crvs=crvs, bound=bound, rv_mode=rv_mode)
                 opt.optimize(niter=niter)
-                candidates.append(opt.objective(opt._optima))
+                val = opt.objective(opt._optima)
+                val = float(val.detach().cpu().item()) if hasattr(val, 'detach') else float(val)
+                candidates.append(val)
             return min(candidates)
 
         intrinsic.__doc__ = \
@@ -329,9 +345,334 @@ class BaseMoreIntrinsicMutualInformation(BaseAuxVarOptimizer):
                 equal to 'names', the the elements are interpreted as random
                 variable names. If `None`, then the value of `dist._rv_mode` is
                 consulted, which defaults to 'indices'.
+            backend : str
+                The optimization backend. One of ``'numpy'`` (default),
+                ``'jax'``, or ``'torch'``.
             """.format(name=cls.name, style=cls.style)
 
         return intrinsic
+
+
+class InnerTwoPartIMIMixin:
+    """
+    Mixin containing inner two-part intrinsic MI optimizer logic.
+
+    Must be composed with a ``BaseAuxVarOptimizer``-compatible base class.
+    """
+
+    name = ""
+
+    def __init__(self, dist, rvs=None, crvs=None, j=None, bound_u=None, bound_v=None, rv_mode=None):
+        """
+        Initialize the optimizer.
+
+        Parameters
+        ----------
+        dist : Distribution
+            The distribution to compute the intrinsic mutual information of.
+        rvs : list, None
+            A list of lists. Each inner list specifies the indexes of the random
+            variables used to calculate the intrinsic mutual information. If
+            None, then it is calculated over all random variables, which is
+            equivalent to passing `rvs=dist.rvs`.
+        crvs : list
+            A single list of indexes specifying the random variables to
+            condition on.
+        j : list
+            A list with a single index specifying the random variable to
+            consider as J.
+        bound_u : int, None
+            Specifies a bound on the size of the U auxiliary random variable. If
+            None, then the theoretical bound is used.
+        bound_v : int, None
+            Specifies a bound on the size of the V auxiliary random variable. If
+            None, then the theoretical bound is used.
+        rv_mode : str, None
+            Specifies how to interpret `rvs` and `crvs`. Valid options are:
+            {'indices', 'names'}. If equal to 'indices', then the elements of
+            `crvs` and `rvs` are interpreted as random variable indices. If
+            equal to 'names', the the elements are interpreted as random
+            variable names. If `None`, then the value of `dist._rv_mode` is
+            consulted, which defaults to 'indices'.
+        """
+        if not crvs:
+            msg = "Intrinsic mutual informations require a conditional variable."
+            raise ditException(msg)
+
+        super().__init__(dist, rvs + [j], crvs, rv_mode=rv_mode)
+
+        theoretical_bound_u = prod(self._shape[rv] for rv in self._rvs)
+        bound_u = min([bound_u, theoretical_bound_u]) if bound_u else theoretical_bound_u
+
+        theoretical_bound_v = prod(self._shape[rv] for rv in self._rvs)**2
+        bound_v = min([bound_v, theoretical_bound_v]) if bound_v else theoretical_bound_v
+
+        self._construct_auxvars([(self._rvs, bound_u),
+                                 ({len(self._shape)}, bound_v),
+                                 ])
+        idx = min(self._arvs)
+        self._j = {max(self._rvs)}
+        self._u = {idx}
+        self._v = {idx + 1}
+
+    def _objective(self):
+        """
+        Maximize I[X:Y|J] + I[U:J|V] - I[U:Z|V], or its multivariate analog.
+
+        Returns
+        -------
+        obj : func
+            The objective function.
+        """
+        cmi1 = self._conditional_mutual_information(self._u, self._j, self._v)
+        cmi2 = self._conditional_mutual_information(self._u, self._crvs, self._v)
+
+        def objective(self, x):
+            """
+            Compute :math:`I[X:Y|J] + I[U:J|V] - I[U:Z|V]`
+
+            Parameters
+            ----------
+            x : np.ndarray
+                An optimization vector.
+
+            Returns
+            -------
+            obj : float
+                The value of the objective.
+            """
+            pmf = self.construct_joint(x)
+
+            # I[U:J|V]
+            b = cmi1(pmf)
+
+            # I[U:Z|V]
+            c = cmi2(pmf)
+
+            return -(b - c)
+
+        return objective
+
+
+class TwoPartIMIMixin:
+    """
+    Mixin containing two-part intrinsic MI optimizer logic.
+
+    Must be composed with a ``BaseAuxVarOptimizer``-compatible base class.
+    """
+
+    name = ""
+
+    def __init__(self, dist, rvs=None, crvs=None, bound_j=None, bound_u=None, bound_v=None, rv_mode=None):
+        """
+        Initialize the optimizer.
+
+        Parameters
+        ----------
+        dist : Distribution
+            The distribution to compute the intrinsic mutual information of.
+        rvs : list, None
+            A list of lists. Each inner list specifies the indexes of the random
+            variables used to calculate the intrinsic mutual information. If
+            None, then it is calculated over all random variables, which is
+            equivalent to passing `rvs=dist.rvs`.
+        crvs : list
+            A single list of indexes specifying the random variables to
+            condition on.
+        bound_j : int, None
+            Specifies a bound on the size of the J auxiliary random variable. If
+            None, then the theoretical bound is used.
+        bound_u : int, None
+            Specifies a bound on the size of the U auxiliary random variable. If
+            None, then the theoretical bound is used.
+        bound_v : int, None
+            Specifies a bound on the size of the V auxiliary random variable. If
+            None, then the theoretical bound is used.
+        rv_mode : str, None
+            Specifies how to interpret `rvs` and `crvs`. Valid options are:
+            {'indices', 'names'}. If equal to 'indices', then the elements of
+            `crvs` and `rvs` are interpreted as random variable indices. If
+            equal to 'names', the the elements are interpreted as random
+            variable names. If `None`, then the value of `dist._rv_mode` is
+            consulted, which defaults to 'indices'.
+        """
+        if not crvs:
+            msg = "Intrinsic mutual informations require a conditional variable."
+            raise ditException(msg)
+
+        super().__init__(dist, rvs, crvs, rv_mode=rv_mode)
+
+        theoretical_bound_j = prod(self._shape)
+        bound_j = min([bound_j, theoretical_bound_j]) if bound_j else theoretical_bound_j
+
+        self._construct_auxvars([(self._rvs | self._crvs, bound_j)])
+        self._j = self._arvs
+
+        self._bound_u = bound_u
+        self._bound_v = bound_v
+
+    def _objective(self):
+        """
+        Mimimize :math:`max(I[X:Y|J] + I[U:J|V] - I[U:Z|V])`, or its
+        multivariate analog.
+
+        Returns
+        -------
+        obj : func
+            The objective function.
+        """
+        mmi = self.measure(self._rvs, self._j)
+
+        def objective(self, x):
+            """
+            Compute max(I[X:Y|J] + I[U:J|V] - I[U:Z|V])
+
+            Parameters
+            ----------
+            x : np.ndarray
+                An optimization vector.
+
+            Returns
+            -------
+            obj : float
+                The value of the objective.
+
+            TODO
+            ----
+            Save the optimal inner, so that full achieving joint can be constructed.
+            """
+            joint = self.construct_joint(x)
+            joint_np = joint.detach().cpu().numpy() if hasattr(joint, 'detach') else np.asarray(joint)
+            outcomes, pmf = zip(*[(o, p) for o, p in np.ndenumerate(joint_np)])
+            dist = Distribution(outcomes, pmf)
+
+            inner_cls = _make_backend_subclass(
+                InnerTwoPartIntrinsicMutualInformation,
+                getattr(self, '_backend', 'numpy'),
+            )
+            inner = inner_cls(dist=dist,
+                              rvs=[[rv] for rv in self._rvs],
+                              crvs=self._crvs,
+                              j=self._j,
+                              bound_u=self._bound_u,
+                              bound_v=self._bound_v,
+                              )
+            inner.optimize()
+            opt = -inner.objective(inner._optima)
+
+            a = mmi(joint)
+
+            return a + opt
+
+        return objective
+
+    @classmethod
+    def functional(cls):
+        """
+        Construct a functional form of the optimizer.
+        """
+        @unitful
+        def two_part_intrinsic(dist, rvs=None, crvs=None, niter=None,
+                               bound_j=None, bound_u=None, bound_v=None,
+                               rv_mode=None, backend='numpy'):
+            bounds = {
+                (2, 2, 2),
+                (bound_j, bound_u, bound_v),
+            }
+
+            actual_cls = _make_backend_subclass(cls, backend)
+            candidates = []
+            for b_j, b_u, b_v in bounds:
+                opt = actual_cls(dist, rvs=rvs, crvs=crvs, bound_j=b_j,
+                                 bound_u=b_u, bound_v=b_v, rv_mode=rv_mode)
+                opt._backend = backend
+                opt.optimize(niter=niter)
+                val = opt.objective(opt._optima)
+                val = float(val.detach().cpu().item()) if hasattr(val, 'detach') else float(val)
+                candidates.append(val)
+
+            return min(candidates)
+
+        two_part_intrinsic.__doc__ = \
+            """
+            Compute the two-part intrinsic {name}.
+
+            Parameters
+            ----------
+            dist : Distribution
+                The distribution to compute the two-part intrinsic {name} of.
+            rvs : list, None
+                A list of lists. Each inner list specifies the indexes of the
+                random variables used to calculate the intrinsic {name}. If
+                None, then it is calculated over all random variables, which is
+                equivalent to passing `rvs=dist.rvs`.
+            crvs : list
+                A single list of indexes specifying the random variables to
+                condition on.
+            niter : int
+                The number of optimization iterations to perform.
+            bound_j : int, None
+                Specifies a bound on the size of the J auxiliary random
+                variable. If None, then the theoretical bound is used.
+            bound_u : int, None
+                Specifies a bound on the size of the U auxiliary random
+                variable. If None, then the theoretical bound is used.
+            bound_v : int, None
+                Specifies a bound on the size of the V auxiliary random
+                variable. If None, then the theoretical bound is used.
+            rv_mode : str, None
+                Specifies how to interpret `rvs` and `crvs`. Valid options are:
+                {{'indices', 'names'}}. If equal to 'indices', then the elements
+                of `crvs` and `rvs` are interpreted as random variable indices.
+                If equal to 'names', the the elements are interpreted as random
+                variable names. If `None`, then the value of `dist._rv_mode` is
+                consulted, which defaults to 'indices'.
+            backend : str
+                The optimization backend. One of ``'numpy'`` (default),
+                ``'jax'``, or ``'torch'``.
+            """.format(name=cls.name)
+
+        return two_part_intrinsic
+
+
+# ── Backward-compatible composed classes (numpy backend) ──────────────────
+
+class BaseOneWaySKAR(OneWaySKARMixin, BaseAuxVarOptimizer):
+    """
+    Compute lower bounds on the secret key agreement rate of the form:
+
+    .. math::
+        max_{V - U - X - YZ} objective()
+
+    Uses the default NumPy / SciPy optimization backend.
+    """
+
+    construct_initial = BaseAuxVarOptimizer.construct_copy_initial
+
+
+class BaseIntrinsicMutualInformation(IntrinsicMIMixin, BaseAuxVarOptimizer):
+    """
+    Compute a generalized intrinsic mutual information:
+
+    .. math::
+        IMI[X:Y|Z] = min_{p(z_bar|z)} I[X:Y|Z]
+
+    Uses the default NumPy / SciPy optimization backend.
+    """
+    pass
+
+
+class BaseMoreIntrinsicMutualInformation(MoreIntrinsicMIMixin, BaseAuxVarOptimizer):
+    """
+    Compute the reduced and minimal intrinsic mutual informations, upper bounds
+    on the secret key agreement rate:
+
+    .. math::
+        I[X : Y \\downarrow\\downarrow\\downarrow Z] = min_U I[X:Y|U] + I[XY:U|Z]
+
+    Uses the default NumPy / SciPy optimization backend.
+    """
+    pass
 
 
 class BaseReducedIntrinsicMutualInformation(BaseMoreIntrinsicMutualInformation):
@@ -445,7 +786,7 @@ class BaseMinimalIntrinsicMutualInformation(BaseMoreIntrinsicMutualInformation):
         return objective
 
 
-class InnerTwoPartIntrinsicMutualInformation(BaseAuxVarOptimizer):
+class InnerTwoPartIntrinsicMutualInformation(InnerTwoPartIMIMixin, BaseAuxVarOptimizer):
     """
     Compute the two-part intrinsic mutual informations, an upper bound on the
     secret key agreement rate:
@@ -453,103 +794,13 @@ class InnerTwoPartIntrinsicMutualInformation(BaseAuxVarOptimizer):
     .. math::
         I[X : Y \\downarrow\\downarrow\\downarrow\\downarrow Z] =
           inf_{J} min_{V - U - XY - ZJ} I[X:Y|J] + I[U:J|V] - I[U:Z|V]
+
+    Uses the default NumPy / SciPy optimization backend.
     """
-
-    name = ""
-
-    def __init__(self, dist, rvs=None, crvs=None, j=None, bound_u=None, bound_v=None, rv_mode=None):
-        """
-        Initialize the optimizer.
-
-        Parameters
-        ----------
-        dist : Distribution
-            The distribution to compute the intrinsic mutual information of.
-        rvs : list, None
-            A list of lists. Each inner list specifies the indexes of the random
-            variables used to calculate the intrinsic mutual information. If
-            None, then it is calculated over all random variables, which is
-            equivalent to passing `rvs=dist.rvs`.
-        crvs : list
-            A single list of indexes specifying the random variables to
-            condition on.
-        j : list
-            A list with a single index specifying the random variable to
-            consider as J.
-        bound_u : int, None
-            Specifies a bound on the size of the U auxiliary random variable. If
-            None, then the theoretical bound is used.
-        bound_v : int, None
-            Specifies a bound on the size of the V auxiliary random variable. If
-            None, then the theoretical bound is used.
-        rv_mode : str, None
-            Specifies how to interpret `rvs` and `crvs`. Valid options are:
-            {'indices', 'names'}. If equal to 'indices', then the elements of
-            `crvs` and `rvs` are interpreted as random variable indices. If
-            equal to 'names', the the elements are interpreted as random
-            variable names. If `None`, then the value of `dist._rv_mode` is
-            consulted, which defaults to 'indices'.
-        """
-        if not crvs:
-            msg = "Intrinsic mutual informations require a conditional variable."
-            raise ditException(msg)
-
-        super().__init__(dist, rvs + [j], crvs, rv_mode=rv_mode)
-
-        theoretical_bound_u = prod(self._shape[rv] for rv in self._rvs)
-        bound_u = min([bound_u, theoretical_bound_u]) if bound_u else theoretical_bound_u
-
-        theoretical_bound_v = prod(self._shape[rv] for rv in self._rvs)**2
-        bound_v = min([bound_v, theoretical_bound_v]) if bound_v else theoretical_bound_v
-
-        self._construct_auxvars([(self._rvs, bound_u),
-                                 ({len(self._shape)}, bound_v),
-                                 ])
-        idx = min(self._arvs)
-        self._j = {max(self._rvs)}
-        self._u = {idx}
-        self._v = {idx + 1}
-
-    def _objective(self):
-        """
-        Maximize I[X:Y|J] + I[U:J|V] - I[U:Z|V], or its multivariate analog.
-
-        Returns
-        -------
-        obj : func
-            The objective function.
-        """
-        cmi1 = self._conditional_mutual_information(self._u, self._j, self._v)
-        cmi2 = self._conditional_mutual_information(self._u, self._crvs, self._v)
-
-        def objective(self, x):
-            """
-            Compute :math:`I[X:Y|J] + I[U:J|V] - I[U:Z|V]`
-
-            Parameters
-            ----------
-            x : np.ndarray
-                An optimization vector.
-
-            Returns
-            -------
-            obj : float
-                The value of the objective.
-            """
-            pmf = self.construct_joint(x)
-
-            # I[U:J|V]
-            b = cmi1(pmf)
-
-            # I[U:Z|V]
-            c = cmi2(pmf)
-
-            return -(b - c)
-
-        return objective
+    pass
 
 
-class BaseTwoPartIntrinsicMutualInformation(BaseAuxVarOptimizer):
+class BaseTwoPartIntrinsicMutualInformation(TwoPartIMIMixin, BaseAuxVarOptimizer):
     """
     Compute the two-part intrinsic mutual informations, an upper bound on the
     secret key agreement rate:
@@ -557,162 +808,7 @@ class BaseTwoPartIntrinsicMutualInformation(BaseAuxVarOptimizer):
     .. math::
         I[X : Y \\downarrow\\downarrow\\downarrow\\downarrow Z] =
           inf_{J} min_{V - U - XY - ZJ} I[X:Y|J] + I[U:J|V] - I[U:Z|V]
+
+    Uses the default NumPy / SciPy optimization backend.
     """
-
-    name = ""
-
-    def __init__(self, dist, rvs=None, crvs=None, bound_j=None, bound_u=None, bound_v=None, rv_mode=None):
-        """
-        Initialize the optimizer.
-
-        Parameters
-        ----------
-        dist : Distribution
-            The distribution to compute the intrinsic mutual information of.
-        rvs : list, None
-            A list of lists. Each inner list specifies the indexes of the random
-            variables used to calculate the intrinsic mutual information. If
-            None, then it is calculated over all random variables, which is
-            equivalent to passing `rvs=dist.rvs`.
-        crvs : list
-            A single list of indexes specifying the random variables to
-            condition on.
-        bound_j : int, None
-            Specifies a bound on the size of the J auxiliary random variable. If
-            None, then the theoretical bound is used.
-        bound_u : int, None
-            Specifies a bound on the size of the U auxiliary random variable. If
-            None, then the theoretical bound is used.
-        bound_v : int, None
-            Specifies a bound on the size of the V auxiliary random variable. If
-            None, then the theoretical bound is used.
-        rv_mode : str, None
-            Specifies how to interpret `rvs` and `crvs`. Valid options are:
-            {'indices', 'names'}. If equal to 'indices', then the elements of
-            `crvs` and `rvs` are interpreted as random variable indices. If
-            equal to 'names', the the elements are interpreted as random
-            variable names. If `None`, then the value of `dist._rv_mode` is
-            consulted, which defaults to 'indices'.
-        """
-        if not crvs:
-            msg = "Intrinsic mutual informations require a conditional variable."
-            raise ditException(msg)
-
-        super().__init__(dist, rvs, crvs, rv_mode=rv_mode)
-
-        theoretical_bound_j = prod(self._shape)
-        bound_j = min([bound_j, theoretical_bound_j]) if bound_j else theoretical_bound_j
-
-        self._construct_auxvars([(self._rvs | self._crvs, bound_j)])
-        self._j = self._arvs
-
-        self._bound_u = bound_u
-        self._bound_v = bound_v
-
-    def _objective(self):
-        """
-        Mimimize :math:`max(I[X:Y|J] + I[U:J|V] - I[U:Z|V])`, or its
-        multivariate analog.
-
-        Returns
-        -------
-        obj : func
-            The objective function.
-        """
-        mmi = self.measure(self._rvs, self._j)
-
-        def objective(self, x):
-            """
-            Compute max(I[X:Y|J] + I[U:J|V] - I[U:Z|V])
-
-            Parameters
-            ----------
-            x : np.ndarray
-                An optimization vector.
-
-            Returns
-            -------
-            obj : float
-                The value of the objective.
-
-            TODO
-            ----
-            Save the optimal inner, so that full achieving joint can be constructed.
-            """
-            joint = self.construct_joint(x)
-            outcomes, pmf = zip(*[(o, p) for o, p in np.ndenumerate(joint)])
-            dist = Distribution(outcomes, pmf)
-
-            inner = InnerTwoPartIntrinsicMutualInformation(dist=dist,
-                                                           rvs=[[rv] for rv in self._rvs],
-                                                           crvs=self._crvs,
-                                                           j=self._j,
-                                                           bound_u=self._bound_u,
-                                                           bound_v=self._bound_v,
-                                                           )
-            inner.optimize()
-            opt = -inner.objective(inner._optima)
-
-            a = mmi(joint)
-
-            return a + opt
-
-        return objective
-
-    @classmethod
-    def functional(cls):
-        """
-        Construct a functional form of the optimizer.
-        """
-        @unitful
-        def two_part_intrinsic(dist, rvs=None, crvs=None, niter=None, bound_j=None, bound_u=None, bound_v=None, rv_mode=None):
-            bounds = {
-                (2, 2, 2),
-                (bound_j, bound_u, bound_v),
-            }
-
-            candidates = []
-            for b_j, b_u, b_v in bounds:
-                opt = cls(dist, rvs=rvs, crvs=crvs, bound_j=b_j, bound_u=b_u, bound_v=b_v, rv_mode=rv_mode)
-                opt.optimize(niter=niter)
-                candidates.append(opt.objective(opt._optima))
-
-            return min(candidates)
-
-        two_part_intrinsic.__doc__ = \
-            """
-            Compute the two-part intrinsic {name}.
-
-            Parameters
-            ----------
-            dist : Distribution
-                The distribution to compute the two-part intrinsic {name} of.
-            rvs : list, None
-                A list of lists. Each inner list specifies the indexes of the
-                random variables used to calculate the intrinsic {name}. If
-                None, then it is calculated over all random variables, which is
-                equivalent to passing `rvs=dist.rvs`.
-            crvs : list
-                A single list of indexes specifying the random variables to
-                condition on.
-            niter : int
-                The number of optimization iterations to perform.
-            bound_j : int, None
-                Specifies a bound on the size of the J auxiliary random
-                variable. If None, then the theoretical bound is used.
-            bound_u : int, None
-                Specifies a bound on the size of the U auxiliary random
-                variable. If None, then the theoretical bound is used.
-            bound_v : int, None
-                Specifies a bound on the size of the V auxiliary random
-                variable. If None, then the theoretical bound is used.
-            rv_mode : str, None
-                Specifies how to interpret `rvs` and `crvs`. Valid options are:
-                {{'indices', 'names'}}. If equal to 'indices', then the elements
-                of `crvs` and `rvs` are interpreted as random variable indices.
-                If equal to 'names', the the elements are interpreted as random
-                variable names. If `None`, then the value of `dist._rv_mode` is
-                consulted, which defaults to 'indices'.
-            """.format(name=cls.name)
-
-        return two_part_intrinsic
+    pass

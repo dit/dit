@@ -8,14 +8,17 @@ from dit.example_dists.intrinsic import *
 from dit.multivariate import total_correlation
 from dit.multivariate.secret_key_agreement.secrecy_capacity import secrecy_capacity, SecrecyCapacity
 
+from tests._backends import backends
+
 
 @pytest.mark.flaky(reruns=5)
+@pytest.mark.parametrize('backend', backends)
 @pytest.mark.parametrize('dist', [intrinsic_1, intrinsic_2, intrinsic_3])
-def test_sc_1(dist):
+def test_sc_1(dist, backend):
     """
     Test against known values.
     """
-    sc = secrecy_capacity(dist, [0], [1], [2], bound_u=2)
+    sc = secrecy_capacity(dist, [0], [1], [2], bound_u=2, backend=backend)
     assert sc == pytest.approx(dist.secret_rate, abs=1e-5)
 
 

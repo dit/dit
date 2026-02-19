@@ -9,6 +9,8 @@ from dit.multivariate import wyner_common_information as C
 from dit.multivariate.common_informations.wyner_common_information import WynerCommonInformation
 from dit.shannon import entropy
 
+from tests._backends import backends
+
 
 outcomes = ['0000', '0001', '0110', '0111', '1010', '1011', '1100', '1101']
 pmf = [1 / 8] * 8
@@ -20,6 +22,7 @@ C_sbec = lambda p: 1 if p < 1 / 2 else entropy(p)
 
 @pytest.mark.slow
 @pytest.mark.flaky(reruns=5)
+@pytest.mark.parametrize('backend', backends)
 @pytest.mark.parametrize(('rvs', 'crvs', 'val'), [
     (None, None, 2.0),
     ([[0], [1], [2]], None, 2.0),
@@ -27,11 +30,11 @@ C_sbec = lambda p: 1 if p < 1 / 2 else entropy(p)
     ([[0], [1]], [2], 1.0),
     ([[0], [1]], None, 0.0),
 ])
-def test_wci1(rvs, crvs, val):
+def test_wci1(rvs, crvs, val, backend):
     """
     Test against known values.
     """
-    c = C(xor, rvs, crvs)
+    c = C(xor, rvs, crvs, backend=backend)
     assert float(c) == pytest.approx(val, abs=1e-4)
 
 

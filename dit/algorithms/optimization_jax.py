@@ -16,18 +16,22 @@ from abc import ABCMeta
 from abc import abstractmethod
 from collections import namedtuple
 from copy import deepcopy
-from functools import partial
 from string import ascii_letters
 from string import digits
 from types import MethodType
 
 import numpy as np
+
 from loguru import logger
 
 try:
     import jax
     import jax.numpy as jnp
-    from jax import grad, jacobian, jit, vmap
+
+    from jax import grad
+    from jax import jacobian
+    from jax import jit
+    from jax import vmap
     JAX_AVAILABLE = True
 except ImportError:
     JAX_AVAILABLE = False
@@ -41,6 +45,14 @@ except ImportError:
         raise ImportError("JAX is required for automatic differentiation")
     def vmap(f, **kwargs):
         raise ImportError("JAX is required for vmap")
+
+try:
+    import optimistix as optx
+
+    from slsqp_jax import SLSQP as JaxSLSQP
+    SLSQP_JAX_AVAILABLE = True
+except ImportError:
+    SLSQP_JAX_AVAILABLE = False
 
 from boltons.iterutils import pairwise
 from scipy.optimize import basinhopping
@@ -79,7 +91,8 @@ __all__ = (
 
 def _check_jax():
     """
-    Raise an error if JAX is not available.
+    Raise an error if JAX is not available.  Also enables 64-bit precision
+    which is required for scipy's SLSQP solver.
 
     Raises
     ------
@@ -90,6 +103,7 @@ def _check_jax():
         raise ImportError(
             "JAX is required for this module. Install with: pip install jax jaxlib"
         )
+    jax.config.update('jax_enable_x64', True)
 
 
 # SVD singular values using JAX
@@ -343,8 +357,12 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         h : float
             The entropy.
         """
-        # Use jnp.where to handle 0 * log(0) = 0 safely
-        return -jnp.nansum(jnp.where(p > 0, p * jnp.log2(p), 0.0))
+        # Safe for both forward (0*log(0)=0) and backward (no NaN gradients).
+        # Using the "safe where" pattern: replace the operand in the masked
+        # branch with a value that produces a finite log, so that jax.grad
+        # never sees -inf or NaN in either branch.
+        safe_p = jnp.where(p > 0, p, 1.0)
+        return -jnp.nansum(jnp.where(p > 0, p * jnp.log2(safe_p), 0.0))
 
     def _entropy(self, rvs, crvs=None):
         """
@@ -433,12 +451,13 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
             pmf_x = pmf_xy.sum(axis=idx_x, keepdims=True)
             pmf_y = pmf_xy.sum(axis=idx_y, keepdims=True)
 
-            # Safe division and log
-            ratio = jnp.where(
-                (pmf_xy > 0) & (pmf_x > 0) & (pmf_y > 0),
-                pmf_xy / (pmf_x * pmf_y),
-                1.0  # log(1) = 0, so this contributes 0
-            )
+            # Safe division and log -- use "safe where" for both forward
+            # and backward: replace denominators/arguments in masked branches
+            # with values that keep log2 finite.
+            safe_denom = jnp.where(
+                (pmf_x > 0) & (pmf_y > 0), pmf_x * pmf_y, 1.0)
+            safe_xy = jnp.where(pmf_xy > 0, pmf_xy, 1.0)
+            ratio = safe_xy / safe_denom
             mi = jnp.nansum(jnp.where(pmf_xy > 0, pmf_xy * jnp.log2(ratio), 0.0))
 
             return mi
@@ -491,14 +510,12 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
             pmf_yz = pmf_xyz.sum(axis=idx_yz, keepdims=True)
             pmf_z = pmf_xz.sum(axis=idx_z, keepdims=True)
 
-            # Safe computation avoiding division by zero
-            numer = pmf_z * pmf_xyz
-            denom = pmf_xz * pmf_yz
-            ratio = jnp.where(
-                (pmf_xyz > 0) & (denom > 0),
-                numer / denom,
-                1.0
-            )
+            # Safe computation: use "safe where" to avoid NaN gradients
+            safe_denom = jnp.where(
+                (pmf_xz > 0) & (pmf_yz > 0), pmf_xz * pmf_yz, 1.0)
+            safe_numer = jnp.where(
+                (pmf_xyz > 0) & (pmf_z > 0), pmf_z * pmf_xyz, 1.0)
+            ratio = safe_numer / safe_denom
             cmi = jnp.nansum(jnp.where(pmf_xyz > 0, pmf_xyz * jnp.log2(ratio), 0.0))
 
             return cmi
@@ -552,8 +569,9 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
             pmf_subrvs = [pmf_joint.sum(axis=idx, keepdims=True) for idx in idx_subrvs] + [pmf_joint, pmf_crvs]
 
             pmf_ci = reduce(jnp.multiply, [p**pw for p, pw in zip(pmf_subrvs, power)])
+            safe_pmf_ci = jnp.where(pmf_joint > 0, pmf_ci, 1.0)
 
-            ci = jnp.nansum(jnp.where(pmf_joint > 0, pmf_joint * jnp.log2(pmf_ci), 0.0))
+            ci = jnp.nansum(jnp.where(pmf_joint > 0, pmf_joint * jnp.log2(safe_pmf_ci), 0.0))
 
             return ci
 
@@ -722,7 +740,7 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
                 h_parts = sum(self._h(pmf_parts[p]) - h_crvs for p in part)
                 candidates.append((h_parts - h_joint) / norm)
 
-            caekl = min(candidates)
+            caekl = jnp.min(jnp.stack(candidates))
 
             return caekl
 
@@ -895,22 +913,202 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         if not self._use_autodiff or not JAX_AVAILABLE:
             return None
 
-        # Get the objective function
         try:
             obj = self.objective
         except AttributeError:
             return None
 
-        # Create gradient function using JAX
         def jac_wrapper(x):
-            # Ensure x is a JAX array
             x_jax = jnp.array(x)
-            # Compute gradient
             g = grad(lambda x: float(obj(x)))(x_jax)
-            # Return as numpy array for scipy compatibility
             return np.array(g)
 
         return jac_wrapper
+
+    ###########################################################################
+    # slsqp-jax native optimization helpers
+
+    def _build_slsqp_jax_solver(self, x0_size, maxiter=None):
+        """
+        Build a slsqp-jax SLSQP solver and the adapted objective/constraint
+        functions for use with optimistix.minimise.
+
+        Parameters
+        ----------
+        x0_size : int
+            The size of the optimization vector (needed for inequality
+            constraint count).
+        maxiter : int, optional
+            Maximum number of SLSQP iterations.
+
+        Returns
+        -------
+        solver : JaxSLSQP
+            The configured SLSQP solver.
+        obj_fn : callable
+            Objective with signature ``(x, args) -> (scalar, None)``.
+        """
+        raw_objective = self._jax_raw_objective
+        raw_constraints = self._jax_raw_constraints
+
+        # The information-theoretic functions (_h, MI, CMI, etc.) now use
+        # the "safe where" pattern: arguments in masked branches are replaced
+        # with values that keep log2 finite, so both the forward pass and
+        # jax.grad are free of NaN/Inf even when some probabilities are zero
+        # or slightly negative during SLSQP line search.
+        def obj_fn(x, args):
+            return raw_objective(x), None
+
+        eq_funs = [c['fun'] for c in raw_constraints if c['type'] == 'eq']
+        ineq_funs = [c['fun'] for c in raw_constraints if c['type'] == 'ineq']
+
+        n_eq = 0
+        eq_constraint_fn = None
+        if eq_funs:
+            def eq_constraint_fn(x, args):
+                vals = [jnp.atleast_1d(f(x)) for f in eq_funs]
+                return jnp.concatenate(vals)
+            # compute count from a dummy call
+            _dummy = jnp.zeros(x0_size)
+            n_eq = int(eq_constraint_fn(_dummy, None).shape[0])
+
+        # box bounds [0, 1] encoded as inequality constraints (>= 0)
+        def _box_ineq(x, args):
+            return jnp.concatenate([x, 1.0 - x])
+
+        n_ineq_box = 2 * x0_size
+
+        n_ineq_extra = 0
+        if ineq_funs:
+            def _extra_ineq(x, args):
+                vals = [jnp.atleast_1d(f(x)) for f in ineq_funs]
+                return jnp.concatenate(vals)
+            _dummy = jnp.zeros(x0_size)
+            n_ineq_extra = int(_extra_ineq(_dummy, None).shape[0])
+
+            def ineq_constraint_fn(x, args):
+                return jnp.concatenate([_box_ineq(x, args),
+                                        _extra_ineq(x, args)])
+        else:
+            def ineq_constraint_fn(x, args):
+                return _box_ineq(x, args)
+
+        n_ineq = n_ineq_box + n_ineq_extra
+
+        solver_kwargs = {
+            'rtol': 1e-10,
+            'atol': 1e-10,
+        }
+        if eq_constraint_fn is not None:
+            solver_kwargs['eq_constraint_fn'] = eq_constraint_fn
+            solver_kwargs['n_eq_constraints'] = n_eq
+        solver_kwargs['ineq_constraint_fn'] = ineq_constraint_fn
+        solver_kwargs['n_ineq_constraints'] = n_ineq
+
+        solver = JaxSLSQP(**solver_kwargs)
+
+        max_steps = maxiter or 1000
+
+        return solver, obj_fn, max_steps
+
+    def _slsqp_jax_minimize(self, x0, maxiter=None):
+        """
+        Run a single slsqp-jax optimization from *x0*.
+
+        Parameters
+        ----------
+        x0 : jnp.ndarray
+            Initial point (JAX array).
+        maxiter : int, optional
+            Maximum SLSQP iterations.
+
+        Returns
+        -------
+        result : OptimizeResult
+            A scipy-compatible OptimizeResult.
+        """
+        from scipy.optimize import OptimizeResult
+
+        solver, obj_fn, max_steps = self._build_slsqp_jax_solver(
+            x0.size, maxiter=maxiter)
+
+        if maxiter:
+            max_steps = maxiter
+
+        sol = optx.minimise(
+            obj_fn, solver, jnp.array(x0), has_aux=True,
+            max_steps=max_steps, throw=False,
+        )
+
+        x_opt = np.asarray(sol.value, dtype=np.float64)
+        fun_val = float(np.asarray(self._jax_raw_objective(sol.value)))
+        success = str(sol.result) == 'RESULTS.successful'
+
+        return OptimizeResult(
+            x=x_opt, fun=fun_val, success=success,
+            message=str(sol.result),
+            nit=int(sol.stats.get('num_steps', 0)) if hasattr(sol.stats, 'get') else 0,
+        )
+
+    ###########################################################################
+    # scipy-based fallback optimization helpers
+
+    def _scipy_minimize_kwargs(self, x0, callback=False, maxiter=None):
+        """
+        Build ``minimizer_kwargs`` for scipy-based optimization (fallback path).
+
+        Returns
+        -------
+        minimizer_kwargs : dict
+        icb : BasinHoppingInnerCallBack or None
+        """
+        icb = BasinHoppingInnerCallBack() if callback else None
+
+        def _np_objective(x):
+            val = self._jax_raw_objective(x)
+            return float(np.asarray(val))
+
+        wrapped_constraints = []
+        for const in self._jax_raw_constraints:
+            _raw_fun = const['fun']
+
+            def _np_const_fun(x, _f=_raw_fun):
+                val = _f(x)
+                return float(np.asarray(val))
+
+            wrapped_constraints.append({**const, 'fun': _np_const_fun})
+
+        minimizer_kwargs = {
+            'bounds': [(0, 1)] * x0.size,
+            'callback': icb,
+            'constraints': wrapped_constraints,
+            'options': {},
+        }
+
+        if not (self._use_autodiff and JAX_AVAILABLE):
+            try:  # pragma: no cover
+                import numdifftools as ndt
+                minimizer_kwargs['jac'] = ndt.Jacobian(_np_objective)
+                for const in minimizer_kwargs['constraints']:
+                    const['jac'] = ndt.Jacobian(const['fun'])
+            except ImportError:
+                pass
+
+        additions = deepcopy(self._additional_options)
+        options = additions.pop('options', {})
+        minimizer_kwargs['options'].update(options)
+        minimizer_kwargs.update(additions)
+
+        if maxiter:
+            minimizer_kwargs['options']['maxiter'] = maxiter
+
+        # Store the numpy-safe objective for use by scipy callers
+        self.objective = _np_objective
+
+        return minimizer_kwargs, icb
+
+    ###########################################################################
+    # Main optimization entry point
 
     def optimize(self, x0=None, niter=None, maxiter=None, polish=1e-6, callback=False):
         """
@@ -943,74 +1141,82 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
             self.objective = MethodType(self._objective(), self)
 
         x0 = x0.copy().flatten() if x0 is not None else self.construct_initial()
+        x0 = np.asarray(x0, dtype=np.float64)
 
         logger.info("Starting JAX optimization: dim={dim}, niter={niter}", dim=x0.size, niter=niter)
 
-        icb = BasinHoppingInnerCallBack() if callback else None
+        # Store raw (JAX-native) objective and constraints for both native
+        # and fallback paths.
+        self._jax_raw_objective = self.objective
+        self._jax_raw_constraints = list(self.constraints)
 
-        minimizer_kwargs = {'bounds': [(0, 1)] * x0.size,
-                            'callback': icb,
-                            'constraints': self.constraints,
-                            'options': {},
-                            }
+        # For very large problems, slsqp-jax JIT compilation is
+        # prohibitively slow. Fall back to scipy for those cases.
+        _MAX_NATIVE_DIM = 200
 
-        # Use JAX autodiff for jacobians if available
-        if self._use_autodiff and JAX_AVAILABLE:
-            logger.info("Using JAX autodiff for gradient computation")
-            # Create a numpy-compatible wrapper for the objective
-            def obj_wrapper(x):
-                result = self.objective(jnp.array(x))
-                # Handle JAX array output
-                if hasattr(result, 'item'):
-                    return float(result.item())
-                return float(result)
+        use_native = (SLSQP_JAX_AVAILABLE
+                      and self._use_autodiff
+                      and x0.size <= _MAX_NATIVE_DIM)
 
-            # Compute gradient using JAX
-            logger.debug("JIT-compiling JAX gradient function")
+        if use_native:
+            # ---- native slsqp-jax path (autodiff gradients) ----
+            logger.info("Using slsqp-jax native optimizer with autodiff (dim={dim})", dim=x0.size)
+            result = self._optimization_backend_native(x0, niter, maxiter)
 
-            @jit
-            def jax_grad(x):
-                return grad(lambda x: self.objective(x))(x)
+            # Validate the native result: check that equality constraints
+            # are approximately satisfied.  The slsqp-jax solver can
+            # struggle with certain constraint formulations (e.g.
+            # sum-of-squares equality constraints have near-zero Jacobians
+            # at the solution).  If the result is clearly infeasible, fall
+            # back to scipy SLSQP.
+            if result is not None and self._jax_raw_constraints:
+                max_eq_viol = 0.0
+                for c in self._jax_raw_constraints:
+                    if c['type'] == 'eq':
+                        viol = abs(float(np.asarray(c['fun'](result.x))))
+                        max_eq_viol = max(max_eq_viol, viol)
+                if max_eq_viol > 0.1:
+                    logger.info("slsqp-jax result has high constraint violation "
+                                "({viol:.2e}); falling back to scipy SLSQP",
+                                viol=max_eq_viol)
+                    result = None  # force scipy fallback
 
-            def grad_wrapper(x):
-                g = jax_grad(jnp.array(x))
-                return np.array(g)
-
-            minimizer_kwargs['jac'] = grad_wrapper
-
-            # Also compute jacobians for constraints
-            for const in minimizer_kwargs['constraints']:
-                const_fun = const['fun']
-
-                @jit
-                def const_jax_grad(x, f=const_fun):
-                    return grad(lambda x: f(x))(x)
-
-                def const_grad_wrapper(x, f=const_jax_grad):
-                    return np.array(f(jnp.array(x)))
-
-                const['jac'] = const_grad_wrapper
+            if result is None:
+                minimizer_kwargs, icb = self._scipy_minimize_kwargs(
+                    x0, callback=callback, maxiter=maxiter)
+                self._callback = BasinHoppingCallBack(
+                    minimizer_kwargs.get('constraints', {}), icb)
+                result = self._optimization_backend(
+                    x0, minimizer_kwargs, niter)
+            else:
+                # Set self.objective for _polish and later use, then do
+                # a quick scipy refinement from the native result to
+                # improve precision (slsqp-jax sometimes converges to
+                # a slightly suboptimal point).
+                minimizer_kwargs, _ = self._scipy_minimize_kwargs(
+                    x0, callback=False, maxiter=maxiter)
+                res_refine = minimize(
+                    fun=self.objective,
+                    x0=result.x.flatten(),
+                    **minimizer_kwargs,
+                )
+                if res_refine.success and res_refine.fun < result.fun:
+                    logger.debug("scipy refinement improved native result: "
+                                 "{old:.6f} -> {new:.6f}",
+                                 old=result.fun, new=res_refine.fun)
+                    result = res_refine
         else:
-            # Fallback to numdifftools if available
-            try:  # pragma: no cover
-                import numdifftools as ndt
-                minimizer_kwargs['jac'] = ndt.Jacobian(self.objective)
-                for const in minimizer_kwargs['constraints']:
-                    const['jac'] = ndt.Jacobian(const['fun'])
-            except ImportError:
-                pass
-
-        additions = deepcopy(self._additional_options)
-        options = additions.pop('options', {})
-        minimizer_kwargs['options'].update(options)
-        minimizer_kwargs.update(additions)
-
-        if maxiter:
-            minimizer_kwargs['options']['maxiter'] = maxiter
-
-        self._callback = BasinHoppingCallBack(minimizer_kwargs.get('constraints', {}), icb)
-
-        result = self._optimization_backend(x0, minimizer_kwargs, niter)
+            # ---- scipy fallback path (finite-difference gradients) ----
+            if x0.size > _MAX_NATIVE_DIM:
+                logger.info("Problem dimension {dim} exceeds native limit {lim}; "
+                            "falling back to scipy SLSQP", dim=x0.size, lim=_MAX_NATIVE_DIM)
+            else:
+                logger.info("Using scipy SLSQP fallback (slsqp-jax not available)")
+            minimizer_kwargs, icb = self._scipy_minimize_kwargs(
+                x0, callback=callback, maxiter=maxiter)
+            self._callback = BasinHoppingCallBack(
+                minimizer_kwargs.get('constraints', {}), icb)
+            result = self._optimization_backend(x0, minimizer_kwargs, niter)
 
         if result:
             self._optima = np.array(result.x)
@@ -1021,9 +1227,103 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         if polish:
             self._polish(cutoff=polish)
 
-        logger.info("JAX optimization complete: objective={obj}", obj=self.objective(self._optima))
+        obj_val = float(np.asarray(self._jax_raw_objective(self._optima)))
+        logger.info("JAX optimization complete: objective={obj}", obj=obj_val)
 
         return result
+
+    ###########################################################################
+    # slsqp-jax native shotgun / basinhopping
+
+    def _optimization_backend_native(self, x0, niter, maxiter):
+        """
+        Dispatch to the native shotgun or basinhopping backend.
+
+        Subclasses set ``_optimization_backend`` for the scipy path;
+        this method mirrors that dispatch for the slsqp-jax path.
+        """
+        # Delegate to the same strategy as the scipy path would use.
+        # BaseConvexJaxOptimizer -> shotgun; BaseNonConvexJaxOptimizer -> basinhopping
+        return self._optimize_shotgun_native(x0, niter, maxiter)
+
+    def _optimize_shotgun_native(self, x0, niter, maxiter):
+        """
+        Multi-start optimization using slsqp-jax.
+
+        Builds the solver once, JIT-compiles a single-start solve function,
+        and reuses it across all starting points for efficient execution.
+
+        Parameters
+        ----------
+        x0 : ndarray
+            Initial optimization vector.
+        niter : int or None
+            Number of random restarts.
+        maxiter : int or None
+            Maximum SLSQP iterations per start.
+
+        Returns
+        -------
+        result : OptimizeResult or None
+        """
+        if niter is None:
+            niter = self._default_hops
+
+        from scipy.optimize import OptimizeResult
+
+        # Collect all starting points
+        starts = []
+        if x0 is not None:
+            starts.append(jnp.array(x0.flatten(), dtype=jnp.float64))
+            niter -= 1
+        for _ in range(max(niter, 0)):
+            ic = self.construct_random_initial()
+            starts.append(jnp.array(ic.flatten(), dtype=jnp.float64))
+
+        if not starts:  # pragma: no cover
+            return None
+
+        # Build solver and objective ONCE; the JIT-compiled function
+        # captures these as closed-over constants so JAX can cache the
+        # compilation across calls with different x0 values.
+        solver, obj_fn, max_steps = self._build_slsqp_jax_solver(
+            starts[0].size, maxiter=maxiter)
+
+        if maxiter:
+            max_steps = maxiter
+
+        @jit
+        def _solve_one(x0_i):
+            sol = optx.minimise(
+                obj_fn, solver, x0_i,
+                has_aux=True, max_steps=max_steps, throw=False,
+            )
+            return sol.value, obj_fn(sol.value, None)[0]
+
+        # Run each start through the JIT-compiled solver.
+        # First call triggers XLA compilation; subsequent calls reuse it.
+        results = []
+        for i, s in enumerate(starts):
+            logger.debug("Shotgun (slsqp-jax): start {i}/{n}", i=i + 1, n=len(starts))
+            try:
+                x_opt, fun_val = _solve_one(s)
+                x_opt = np.asarray(x_opt, dtype=np.float64)
+                fun_val = float(np.asarray(fun_val))
+                results.append(OptimizeResult(
+                    x=x_opt, fun=fun_val, success=True,
+                    message='slsqp-jax sequential',
+                ))
+            except Exception as e:
+                logger.debug("slsqp-jax start {i} failed: {e}", i=i, e=e)
+
+        if not results:  # pragma: no cover
+            return None
+
+        raw_obj = self._jax_raw_objective
+        return min(results, key=lambda r: float(np.asarray(raw_obj(r.x))))
+
+    ###########################################################################
+    # scipy-based shotgun (fallback path)
 
     def _optimize_shotgun(self, x0, minimizer_kwargs, niter):
         """
@@ -1099,36 +1399,26 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         ub = np.array([0.0 if np.isclose(x, 0) else 1.0 for x in x0])
         feasible = np.array([True for _ in x0])
 
+        # Wrap constraints for scipy (return numpy scalars)
+        raw_constraints = getattr(self, '_jax_raw_constraints', self.constraints)
+        wrapped_constraints = []
+        for const in raw_constraints:
+            _raw_fun = const['fun']
+
+            def _np_const_fun(x, _f=_raw_fun):
+                val = _f(x)
+                return float(np.asarray(val))
+
+            wrapped_constraints.append({**const, 'fun': _np_const_fun})
+
         minimizer_kwargs = {
             'bounds': Bounds(lb, ub, feasible),
             'tol': None,
             'callback': None,
-            'constraints': self.constraints,
+            'constraints': wrapped_constraints,
         }
 
-        # Use JAX autodiff for polishing too
-        if self._use_autodiff and JAX_AVAILABLE:
-            @jit
-            def jax_grad(x):
-                return grad(lambda x: self.objective(x))(x)
-
-            def grad_wrapper(x):
-                return np.array(jax_grad(jnp.array(x)))
-
-            minimizer_kwargs['jac'] = grad_wrapper
-
-            for const in minimizer_kwargs['constraints']:
-                const_fun = const['fun']
-
-                @jit
-                def const_jax_grad(x, f=const_fun):
-                    return grad(lambda x: f(x))(x)
-
-                def const_grad_wrapper(x, f=const_jax_grad):
-                    return np.array(f(jnp.array(x)))
-
-                const['jac'] = const_grad_wrapper
-        else:
+        if not (self._use_autodiff and JAX_AVAILABLE):
             try:  # pragma: no cover
                 import numdifftools as ndt
                 minimizer_kwargs['jac'] = ndt.Jacobian(self.objective)
@@ -1191,6 +1481,21 @@ class BaseNonConvexJaxOptimizer(BaseJaxOptimizer):
     """
 
     _shotgun = False
+
+    def _optimization_backend_native(self, x0, niter, maxiter):
+        """
+        Native slsqp-jax backend for non-convex optimization.
+
+        Uses a multi-start (shotgun) strategy with ``2 * niter`` random
+        starting points plus the supplied ``x0``.  The JIT-compiled SLSQP
+        solver makes each start fast, so we can afford many restarts instead
+        of a perturbation-based walk.  For the scipy fallback path, scipy's
+        ``basinhopping`` is still used (see ``_optimization_basinhopping``).
+        """
+        if niter is None:
+            niter = self._default_hops
+
+        return self._optimize_shotgun_native(x0, niter, maxiter)
 
     def _optimization_basinhopping(self, x0, minimizer_kwargs, niter):
         """

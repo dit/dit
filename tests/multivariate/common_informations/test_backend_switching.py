@@ -10,9 +10,11 @@ from dit.multivariate.common_informations.base_markov_optimizer import (
     MinimizingMarkovVarMixin,
     MarkovVarOptimizer,
     MinimizingMarkovVarOptimizer,
+    make_markov_var_optimizer,
+)
+from dit.multivariate._backend import (
     _get_base_class,
     _make_backend_subclass,
-    make_markov_var_optimizer,
 )
 from dit.multivariate.common_informations.exact_common_information import (
     ExactCommonInformation,
@@ -79,17 +81,25 @@ class TestMakeBackendSubclass:
         result = _make_backend_subclass(ExactCommonInformation, 'numpy')
         assert result is ExactCommonInformation
 
-    def test_jax_has_correct_base(self):
-        from dit.algorithms.optimization_jax import BaseAuxVarJaxOptimizer
+    def test_jax_has_correct_methods(self):
+        from dit.algorithms.optimization_jax import BaseJaxOptimizer, BaseAuxVarJaxOptimizer
         JaxExact = _make_backend_subclass(ExactCommonInformation, 'jax')
+        # The new class has the mixin and JAX base
+        assert MarkovVarMixin in JaxExact.__mro__
         assert BaseAuxVarJaxOptimizer in JaxExact.__mro__
-        assert BaseAuxVarOptimizer not in JaxExact.__mro__
+        # Verify JAX-specific methods are available
+        assert hasattr(JaxExact, '_use_jit')
+        assert JaxExact.optimize is BaseJaxOptimizer.optimize
 
-    def test_torch_has_correct_base(self):
-        from dit.algorithms.optimization_torch import BaseAuxVarTorchOptimizer
+    def test_torch_has_correct_methods(self):
+        from dit.algorithms.optimization_torch import BaseTorchOptimizer, BaseAuxVarTorchOptimizer
         TorchExact = _make_backend_subclass(ExactCommonInformation, 'torch')
+        # The new class has the mixin and torch base
+        assert MarkovVarMixin in TorchExact.__mro__
         assert BaseAuxVarTorchOptimizer in TorchExact.__mro__
-        assert BaseAuxVarOptimizer not in TorchExact.__mro__
+        # Verify torch-specific methods are available
+        assert hasattr(TorchExact, '_use_autodiff')
+        assert TorchExact.optimize is BaseTorchOptimizer.optimize
 
     def test_preserves_name(self):
         JaxExact = _make_backend_subclass(ExactCommonInformation, 'jax')
@@ -131,16 +141,18 @@ class TestMakeMarkovVarOptimizer:
         assert cls is MarkovVarOptimizer
 
     def test_jax_returns_jax_based(self):
-        from dit.algorithms.optimization_jax import BaseAuxVarJaxOptimizer
+        from dit.algorithms.optimization_jax import BaseJaxOptimizer, BaseAuxVarJaxOptimizer
         cls = make_markov_var_optimizer('jax')
-        assert BaseAuxVarJaxOptimizer in cls.__mro__
         assert MarkovVarMixin in cls.__mro__
+        assert BaseAuxVarJaxOptimizer in cls.__mro__
+        assert cls.optimize is BaseJaxOptimizer.optimize
 
     def test_torch_returns_torch_based(self):
-        from dit.algorithms.optimization_torch import BaseAuxVarTorchOptimizer
+        from dit.algorithms.optimization_torch import BaseTorchOptimizer, BaseAuxVarTorchOptimizer
         cls = make_markov_var_optimizer('torch')
-        assert BaseAuxVarTorchOptimizer in cls.__mro__
         assert MarkovVarMixin in cls.__mro__
+        assert BaseAuxVarTorchOptimizer in cls.__mro__
+        assert cls.optimize is BaseTorchOptimizer.optimize
 
 
 # ── functional() backend parameter ──────────────────────────────────────

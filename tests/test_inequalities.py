@@ -25,6 +25,7 @@ from dit.multivariate import (entropy as H,
                               wyner_common_information as C,
                               exact_common_information as G,
                              )
+from tests._backends import backends
 
 
 epsilon = 1e-4
@@ -156,29 +157,31 @@ def test_data_processing_inequality_gk(dist):
 
 @pytest.mark.slow
 @pytest.mark.flaky(reruns=5)
+@pytest.mark.parametrize('backend', backends)
 @given(dist=markov_chains(alphabets=(2,) * 3))
 @settings(max_examples=5)
-def test_data_processing_inequality_wyner(dist):
+def test_data_processing_inequality_wyner(dist, backend):
     """
     given X - Y - Z:
         C(X:Z) <= C(X:Y)
     """
-    c_xy = C(dist, [[0], [1]], niter=100)
-    c_xz = C(dist, [[0], [2]], niter=100)
+    c_xy = C(dist, [[0], [1]], niter=100, backend=backend)
+    c_xz = C(dist, [[0], [2]], niter=100, backend=backend)
     assert c_xz <= c_xy + 100 * epsilon
 
 
 @pytest.mark.slow
 @pytest.mark.flaky(reruns=5)
+@pytest.mark.parametrize('backend', backends)
 @given(dist=markov_chains(alphabets=(2,) * 3))
 @settings(max_examples=5)
-def test_data_processing_inequality_exact(dist):
+def test_data_processing_inequality_exact(dist, backend):
     """
     given X - Y - Z:
         G(X:Z) <= G(X:Y)
     """
-    g_xy = G(dist, [[0], [1]], niter=100)
-    g_xz = G(dist, [[0], [2]], niter=100)
+    g_xy = G(dist, [[0], [1]], niter=100, backend=backend)
+    g_xz = G(dist, [[0], [2]], niter=100, backend=backend)
     assert g_xz <= g_xy + 100 * epsilon
 
 

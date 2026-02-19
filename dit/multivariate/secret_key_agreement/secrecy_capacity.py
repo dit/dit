@@ -9,6 +9,7 @@ emulated through proper communication on the part of X.
 
 from .one_way_skar import OneWaySKAR
 from ...utils import unitful
+from .._backend import _make_backend_subclass
 
 
 __all__ = (
@@ -30,7 +31,8 @@ class SecrecyCapacity(OneWaySKAR):
 
 
 @unitful
-def secrecy_capacity(dist, X, Y, Z, rv_mode=None, niter=None, bound_u=None):
+def secrecy_capacity(dist, X, Y, Z, rv_mode=None, niter=None, bound_u=None,
+                     backend='numpy'):
     """
     The rate at which X and Y can agree upon a key over the channel p(YZ|X)
     while Z eavesdrops, and no public communication.
@@ -55,14 +57,19 @@ def secrecy_capacity(dist, X, Y, Z, rv_mode=None, niter=None, bound_u=None):
     niter : int, None
         The number of hops to perform during optimization.
     bound_u : int, None
-        The bound to use on the size of the variable U. If none, use the theoretical bound of |X|.
+        The bound to use on the size of the variable U. If none, use the
+        theoretical bound of |X|.
+    backend : str
+        The optimization backend. One of ``'numpy'`` (default),
+        ``'jax'``, or ``'torch'``.
 
     Returns
     -------
     sc : float
         The secrecy capacity.
     """
-    sc = SecrecyCapacity(dist, X, Y, Z, rv_mode=rv_mode, bound_u=bound_u)
+    actual_cls = _make_backend_subclass(SecrecyCapacity, backend)
+    sc = actual_cls(dist, X, Y, Z, rv_mode=rv_mode, bound_u=bound_u)
     sc.optimize(niter=niter)
     value = -sc.objective(sc._optima)
 

@@ -9,6 +9,8 @@ from dit.multivariate import exact_common_information as G
 from dit.multivariate.common_informations.exact_common_information import ExactCommonInformation
 from dit.shannon import entropy
 
+from tests._backends import backends
+
 outcomes = ['0000', '0001', '0110', '0111', '1010', '1011', '1100', '1101']
 pmf = [1 / 8] * 8
 xor = D(outcomes, pmf)
@@ -19,6 +21,7 @@ G_sbec = lambda p: min(1, entropy(p) + 1 - p)
 
 @pytest.mark.slow
 @pytest.mark.flaky(reruns=5)
+@pytest.mark.parametrize('backend', backends)
 @pytest.mark.parametrize(('rvs', 'crvs', 'val'), [
     (None, None, 2.0),
     ([[0], [1], [2]], None, 2.0),
@@ -26,11 +29,11 @@ G_sbec = lambda p: min(1, entropy(p) + 1 - p)
     ([[0], [1]], [2], 1.0),
     ([[0], [1]], None, 0.0),
 ])
-def test_eci1(rvs, crvs, val):
+def test_eci1(rvs, crvs, val, backend):
     """
     Test against known values.
     """
-    assert G(xor, rvs, crvs) == pytest.approx(val, abs=1e-3)
+    assert G(xor, rvs, crvs, backend=backend) == pytest.approx(val, abs=1e-3)
 
 
 @pytest.fixture

@@ -6,6 +6,7 @@ to publicly communicate.
 
 from .base_skar_optimizers import BaseOneWaySKAR
 from ...utils import unitful
+from .._backend import _make_backend_subclass
 
 
 __all__ = (
@@ -70,12 +71,13 @@ class OneWaySKAR(BaseOneWaySKAR):
 
 
 @unitful
-def one_way_skar(dist, X, Y, Z, rv_mode=None, niter=None, bound_u=None, bound_v=None):
+def one_way_skar(dist, X, Y, Z, rv_mode=None, niter=None, bound_u=None,
+                 bound_v=None, backend='numpy'):
     """
     Compute the secret key agreement rate constrained to one-way communication.
 
     Parameters
-    -----------
+    ----------
     dist : Distribution
         The distribution of interest.
     X : iterable
@@ -99,15 +101,19 @@ def one_way_skar(dist, X, Y, Z, rv_mode=None, niter=None, bound_u=None, bound_v=
     bound_v : int, None
         The bound to use on the size of the variable V. If none, use the
         theoretical bound of |X|^2.
+    backend : str
+        The optimization backend. One of ``'numpy'`` (default),
+        ``'jax'``, or ``'torch'``.
 
     Returns
     -------
     owskar : float
         The necessary intrinsic mutual information.
     """
+    actual_cls = _make_backend_subclass(OneWaySKAR, backend)
     values = []
     for bound in {1, 2, 3, bound_v}:
-        nimi = OneWaySKAR(dist, X, Y, Z, rv_mode=rv_mode, bound_u=bound_u, bound_v=bound)
+        nimi = actual_cls(dist, X, Y, Z, rv_mode=rv_mode, bound_u=bound_u, bound_v=bound)
         nimi.optimize(niter=niter)
         values.append(-nimi.objective(nimi._optima))
 

@@ -2,21 +2,25 @@
 A lower bound on the two-way secret key agreement rate.
 """
 
-from itertools import chain, zip_longest
+from itertools import chain
+from itertools import zip_longest
 
-from ...algorithms.optimization import BaseAuxVarOptimizer
+from ...algorithms import BaseAuxVarOptimizer
 from ...utils import unitful
-
+from .._backend import _make_backend_subclass
 
 __all__ = (
     'interactive_intrinsic_mutual_information',
 )
 
 
-class InteractiveSKAR(BaseAuxVarOptimizer):
+# ── Mixin (backend-agnostic logic) ───────────────────────────────────────
+
+class InteractiveSKARMixin:
     """
-    Compute a lower bound on the secret key agreement rate based on interactive
-    communication between Alice and Bob.
+    Mixin containing interactive SKAR optimizer logic.
+
+    Must be composed with a ``BaseAuxVarOptimizer``-compatible base class.
     """
 
     def __init__(self, dist, rv_x=None, rv_y=None, rv_z=None, rounds=2, bound_func=None, rv_mode=None):
@@ -110,13 +114,29 @@ class InteractiveSKAR(BaseAuxVarOptimizer):
         return objective
 
 
-@unitful
-def interactive_intrinsic_mutual_information(dist, rvs=None, crvs=None, rounds=2, bound_func=None, niter=None, rv_mode=None):
+# ── Backward-compatible composed class (numpy backend) ────────────────────
+
+class InteractiveSKAR(InteractiveSKARMixin, BaseAuxVarOptimizer):
     """
-    Compute a lower bound on the secret key agreement rate based on interactive communicaiton.
+    Compute a lower bound on the secret key agreement rate based on interactive
+    communication between Alice and Bob.
+
+    Uses the default NumPy / SciPy optimization backend.
+    """
+    pass
+
+
+@unitful
+def interactive_intrinsic_mutual_information(dist, rvs=None, crvs=None,
+                                             rounds=2, bound_func=None,
+                                             niter=None, rv_mode=None,
+                                             backend='numpy'):
+    """
+    Compute a lower bound on the secret key agreement rate based on
+    interactive communication.
 
     Parameters
-    -----------
+    ----------
     dist : Distribution
         The distribution of interest.
     rvs : iterable
@@ -136,14 +156,20 @@ def interactive_intrinsic_mutual_information(dist, rvs=None, crvs=None, rounds=2
         equal to 'names', the the elements are interpreted as random
         variable names. If `None`, then the value of `dist._rv_mode` is
         consulted, which defaults to 'indices'.
+    backend : str
+        The optimization backend. One of ``'numpy'`` (default),
+        ``'jax'``, or ``'torch'``.
 
     Returns
     -------
     iskar : float
         The lower bound.
     """
-    iskar = InteractiveSKAR(dist, rv_x=rvs[0], rv_y=rvs[1], rv_z=crvs, rounds=rounds, bound_func=bound_func, rv_mode=rv_mode)
+    actual_cls = _make_backend_subclass(InteractiveSKAR, backend)
+    iskar = actual_cls(dist, rv_x=rvs[0], rv_y=rvs[1], rv_z=crvs,
+                       rounds=rounds, bound_func=bound_func, rv_mode=rv_mode)
     iskar.optimize(niter=niter)
-    value = -iskar.objective(iskar._optima)
+    val = iskar.objective(iskar._optima)
+    val = float(val.detach().cpu().item()) if hasattr(val, 'detach') else float(val)
 
-    return value
+    return -val

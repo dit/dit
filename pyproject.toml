@@ -10,7 +10,7 @@ version = "1.5"
 description = "Python package for information theory on discrete random variables."
 readme = "README.rst"
 license = "BSD-3-Clause"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 authors = [
     { name = "chebee7i", email = "admin@dit.io" },
     { name = "Ryan G. James", email = "dit@autoplectic.com" },
@@ -56,6 +56,8 @@ test = [
 jax = [
     "jax",
     "jaxlib",
+    "optimistix",
+    "slsqp-jax",
 ]
 torch = [
     "torch",
@@ -110,10 +112,15 @@ addopts = [
     "--durations=25",
     "--durations-min=1.0",
     "--reruns=1",
+    "-m", "not very_slow",
 ]
 markers = [
     "slow: mark that the test may take several minutes to complete.",
+    "very_slow: mark that the test is extremely slow (e.g. torch optimization backend). Excluded by default.",
     "cython: mark that a test requires cython compiled extensions.",
+]
+filterwarnings = [
+    "ignore::pytest.PytestUnknownMarkWarning",
 ]
 
 # ── Coverage ─────────────────────────────────────────────────────────────
