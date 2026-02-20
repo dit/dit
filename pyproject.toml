@@ -176,6 +176,7 @@ ignore = [
 "test_*.py" = ["N817", "S101"]
 "__init__.py" = ["F401", "F403"]
 "dit/abc.py" = ["F401", "N812", "N814", "N817"]
+"dit/algorithms/__init__.py" = ["I001"]
 "dit/divergences/pmf.py" = ["F401"]
 "dit/pid/measures/*.py" = ["N801"]
 "dit/pid/hcs.py" = ["N801"]
