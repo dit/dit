@@ -16,7 +16,7 @@ from abc import abstractmethod
 
 import numpy as np
 
-from ... import Distribution
+from ...npdist import Distribution
 from ...algorithms import BaseAuxVarOptimizer
 from ...exceptions import ditException
 from ...math import prod

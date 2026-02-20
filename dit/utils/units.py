@@ -6,7 +6,7 @@ from functools import wraps
 
 import numpy as np
 
-from .. import ditParams
+from ..params import ditParams
 
 __all__ = (
     'unitful',

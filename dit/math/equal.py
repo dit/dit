@@ -7,13 +7,13 @@ from debtcollector import removals
 from numpy import allclose as _allclose
 from numpy import isinf
 
-from dit import ditParams
-
 __all__ = (
     'close',
     'allclose',
 )
 
+
+from dit.params import ditParams
 
 @removals.remove(message="Use numpy.isclose instead",
                  version='1.0.2')

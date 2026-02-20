@@ -12,7 +12,7 @@ import numpy as np
 from boltons.iterutils import pairwise_iter
 from lattices.lattices import dependency_lattice, powerset_lattice
 
-from .. import ditParams
+from ..params import ditParams
 from ..algorithms import maxent_dist
 from ..other import extropy
 from ..shannon import entropy

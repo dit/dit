@@ -14,7 +14,8 @@ from boltons.iterutils import pairwise
 from loguru import logger
 from scipy.optimize import Bounds, basinhopping, differential_evolution, minimize, shgo
 
-from .. import Distribution, insert_rvf, modify_outcomes
+from ..distconst import insert_rvf, modify_outcomes
+from ..npdist import Distribution
 from ..algorithms.channelcapacity import channel_capacity
 from ..exceptions import OptimizationException, ditException
 from ..helpers import flatten, normalize_rvs, parse_rvs

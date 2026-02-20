@@ -8,7 +8,8 @@ from itertools import combinations
 import numpy as np
 from debtcollector import removals
 
-from .. import Distribution, product_distribution
+from ..distconst import product_distribution
+from ..npdist import Distribution
 from ..helpers import RV_MODES
 from ..multivariate import coinformation as I
 from ..utils import flatten
