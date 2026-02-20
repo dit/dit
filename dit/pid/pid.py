@@ -20,6 +20,7 @@ __all__ = (
     "BaseBivariatePID",
     "BaseIncompletePID",
     "BasePID",
+    "BasePointwisePID",
     "BaseUniquePID",
     "sort_key",
 )
@@ -404,6 +405,243 @@ class BasePID(metaclass=ABCMeta):
             True if the lattice is self-consistant, False otherwise.
         """
         return True
+
+
+class BasePointwisePID(BasePID):
+    """
+    Extension of BasePID for measures that support pointwise (per-outcome) computation.
+
+    Subclasses must implement ``_pointwise_measure`` which returns per-outcome
+    redundancy values.  Optionally they may implement ``_pointwise_measure_parts``
+    to expose the informative (+) and misinformative (-) decomposition.
+
+    When *pointwise* is True the constructor computes, for every lattice node
+    and every joint outcome:
+
+    * pointwise redundancies  (``_pw_reds``)
+    * pointwise PI atoms via per-outcome Möbius inversion (``_pw_pis``)
+    * (optional) plus / minus components of each
+    """
+
+    def __init__(self, dist, sources=None, target=None, reds=None, pis=None, compute=True, pointwise=False, **kwargs):
+        """
+        Parameters
+        ----------
+        dist : Distribution
+            The distribution to compute the decomposition on.
+        sources : iter of iters, None
+            The set of input variables. If None, ``dist.rvs`` less indices
+            in *target* is used.
+        target : iter, None
+            The target variable. If None, ``dist.rvs[-1]`` is used.
+        reds : dict, None
+            Redundancy values pre-assessed.
+        pis : dict, None
+            Partial information values pre-assessed.
+        compute : bool
+            If the partial information values should be automatically computed.
+        pointwise : bool
+            If True, also compute pointwise (per-outcome) redundancies and
+            PI atoms.
+        """
+        self._pointwise = pointwise
+        self._pw_reds = {}
+        self._pw_pis = {}
+        self._pw_reds_plus = {}
+        self._pw_reds_minus = {}
+        self._pw_pis_plus = {}
+        self._pw_pis_minus = {}
+        super().__init__(dist, sources=sources, target=target, reds=reds, pis=pis, compute=compute, **kwargs)
+
+    # ------------------------------------------------------------------
+    # Abstract / optional hooks for subclasses
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    @abstractmethod
+    def _pointwise_measure(dist, sources, target):
+        """
+        Compute per-outcome redundancy values.
+
+        Parameters
+        ----------
+        dist : Distribution
+        sources : tuple of tuples
+        target : tuple
+
+        Returns
+        -------
+        pw : dict
+            ``{outcome: float}`` mapping each joint outcome to its
+            pointwise redundancy value.
+        """
+
+    @staticmethod
+    def _pointwise_measure_parts(dist, sources, target):
+        """
+        Compute per-outcome informative (+) and misinformative (-) parts.
+
+        Returns ``None`` by default; subclasses may override.
+
+        Returns
+        -------
+        parts : tuple of (dict, dict) or None
+            ``(plus_dict, minus_dict)`` where each maps outcomes to floats,
+            or None if the decomposition is not available.
+        """
+        return None
+
+    # ------------------------------------------------------------------
+    # Default _measure derived from _pointwise_measure
+    # ------------------------------------------------------------------
+
+    @classmethod
+    def _measure(cls, dist, sources, target, **kwargs):
+        """
+        Averaged redundancy: expectation of the pointwise redundancy over the
+        joint distribution.
+        """
+        pw = cls._pointwise_measure(dist, sources, target, **kwargs)
+        return sum(dist[outcome] * val for outcome, val in pw.items())
+
+    # ------------------------------------------------------------------
+    # Computation
+    # ------------------------------------------------------------------
+
+    def _compute(self):
+        super()._compute()
+        if self._pointwise:
+            self._compute_pointwise()
+
+    def _compute_pointwise(self):
+        """Compute pointwise redundancies and PI atoms for all lattice nodes."""
+        for node in self._lattice:
+            pw = self._pointwise_measure(self._dist, node, self._target, **self._kwargs)
+            self._pw_reds[node] = pw
+
+            parts = self._pointwise_measure_parts(self._dist, node, self._target, **self._kwargs)
+            if parts is not None:
+                self._pw_reds_plus[node], self._pw_reds_minus[node] = parts
+
+        any_node = next(iter(self._pw_reds))
+        outcomes = list(self._pw_reds[any_node].keys())
+        self._compute_pointwise_mobius(outcomes)
+
+    def _compute_pointwise_mobius(self, outcomes):
+        """Möbius inversion per outcome to obtain pointwise PI atoms."""
+        for node in reversed(list(self._lattice)):
+            pw_pi = {}
+            for o in outcomes:
+                desc_sum = sum(self._pw_pis[n][o] for n in self._lattice.descendants(node))
+                pw_pi[o] = self._pw_reds[node].get(o, 0.0) - desc_sum
+            self._pw_pis[node] = pw_pi
+
+        if self._pw_reds_plus:
+            for node in reversed(list(self._lattice)):
+                pw_pi_plus = {}
+                pw_pi_minus = {}
+                for o in outcomes:
+                    desc_sum_p = sum(self._pw_pis_plus[n][o] for n in self._lattice.descendants(node))
+                    desc_sum_m = sum(self._pw_pis_minus[n][o] for n in self._lattice.descendants(node))
+                    pw_pi_plus[o] = self._pw_reds_plus[node].get(o, 0.0) - desc_sum_p
+                    pw_pi_minus[o] = self._pw_reds_minus[node].get(o, 0.0) - desc_sum_m
+                self._pw_pis_plus[node] = pw_pi_plus
+                self._pw_pis_minus[node] = pw_pi_minus
+
+    # ------------------------------------------------------------------
+    # Accessors
+    # ------------------------------------------------------------------
+
+    def get_pw_red(self, node):
+        """
+        Pointwise redundancy values for *node*.
+
+        Returns
+        -------
+        pw_red : dict
+            ``{outcome: float}``
+        """
+        return self._pw_reds[node]
+
+    def get_pw_pi(self, node):
+        """
+        Pointwise PI atom values for *node*.
+
+        Returns
+        -------
+        pw_pi : dict
+            ``{outcome: float}``
+        """
+        return self._pw_pis[node]
+
+    def get_pw_red_plus(self, node):
+        """Informative (+) component of pointwise redundancy."""
+        return self._pw_reds_plus[node]
+
+    def get_pw_red_minus(self, node):
+        """Misinformative (-) component of pointwise redundancy."""
+        return self._pw_reds_minus[node]
+
+    def get_pw_pi_plus(self, node):
+        """Informative (+) component of pointwise PI atom."""
+        return self._pw_pis_plus[node]
+
+    def get_pw_pi_minus(self, node):
+        """Misinformative (-) component of pointwise PI atom."""
+        return self._pw_pis_minus[node]
+
+    # ------------------------------------------------------------------
+    # Display
+    # ------------------------------------------------------------------
+
+    def pw_to_string(self, outcome=None, digits=4):
+        """
+        Create a table of pointwise PID values.
+
+        Parameters
+        ----------
+        outcome : tuple, optional
+            If given, show values for this single outcome.  Otherwise show
+            all outcomes.
+        digits : int
+            Precision for display.
+
+        Returns
+        -------
+        table : str
+        """
+        if not self._pw_pis:
+            return "(pointwise PID not computed — pass pointwise=True)"
+
+        any_node = next(iter(self._pw_pis))
+        all_outcomes = list(self._pw_pis[any_node].keys())
+        outcomes = [outcome] if outcome is not None else all_outcomes
+        red_string = "i_r"
+        pi_string = "pi"
+        parts = bool(self._pw_reds_plus)
+
+        columns = [self._name, "outcome", red_string, pi_string]
+        if parts:
+            columns += ["pi+", "pi-"]
+        table = build_table(columns, title=getattr(self._dist, "name", ""))
+        table.float_format[red_string] = f"{digits + 2}.{digits}"
+        table.float_format[pi_string] = f"{digits + 2}.{digits}"
+        if parts:
+            table.float_format["pi+"] = f"{digits + 2}.{digits}"
+            table.float_format["pi-"] = f"{digits + 2}.{digits}"
+
+        for node in sorted(self._lattice, key=sort_key(self._lattice)):
+            node_label = "".join("{{{}}}".format(":".join(map(str, n))) for n in node)
+            for o in outcomes:
+                red_val = self._pw_reds[node].get(o, 0.0)
+                pi_val = self._pw_pis[node].get(o, 0.0)
+                row = [node_label, str(o), red_val, pi_val]
+                if parts:
+                    row.append(self._pw_pis_plus[node].get(o, 0.0))
+                    row.append(self._pw_pis_minus[node].get(o, 0.0))
+                table.add_row(row)
+
+        return table.get_string()
 
 
 class BaseIncompletePID(BasePID):

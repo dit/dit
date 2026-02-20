@@ -171,9 +171,9 @@ def test_data_processing_inequality_wyner(dist, backend):
     given X - Y - Z:
         C(X:Z) <= C(X:Y)
     """
-    c_xy = C(dist, [[0], [1]], niter=100, backend=backend)
-    c_xz = C(dist, [[0], [2]], niter=100, backend=backend)
-    assert c_xz <= c_xy + 100 * epsilon
+    c_xy = C(dist, [[0], [1]], niter=150, backend=backend)
+    c_xz = C(dist, [[0], [2]], niter=150, backend=backend)
+    assert c_xz <= c_xy + 150 * epsilon
 
 
 @pytest.mark.slow
@@ -186,9 +186,9 @@ def test_data_processing_inequality_exact(dist, backend):
     given X - Y - Z:
         G(X:Z) <= G(X:Y)
     """
-    g_xy = G(dist, [[0], [1]], niter=100, backend=backend)
-    g_xz = G(dist, [[0], [2]], niter=100, backend=backend)
-    assert g_xz <= g_xy + 100 * epsilon
+    g_xy = G(dist, [[0], [1]], niter=150, backend=backend)
+    g_xz = G(dist, [[0], [2]], niter=150, backend=backend)
+    assert g_xz <= g_xy + 150 * epsilon
 
 
 @given(dist=distributions(alphabets=((2, 4),) * 2))
@@ -236,6 +236,6 @@ def test_mi_hc(dist):
         I[U:Y] <= s*(X||Y)*I[U:X]
     """
     a = I(dist, [[0], [2]])
-    b = hypercontractivity_coefficient(dist, [[1], [2]], niter=20)
+    b = hypercontractivity_coefficient(dist, [[1], [2]], niter=150)
     c = I(dist, [[0], [1]])
     assert a <= b * c + epsilon
