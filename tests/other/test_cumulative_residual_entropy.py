@@ -40,7 +40,7 @@ def conditional_uniform2():
 @pytest.mark.parametrize(('n', 'val'), zip(range(2, 23, 2), [0.5, 0.81127812, 1.15002242, 1.49799845,
                                                              1.85028649, 2.20496373, 2.56111354,
                                                              2.91823997, 3.27604979, 3.6343579,
-                                                             3.99304129]))
+                                                             3.99304129], strict=True))
 def test_cre_1(n, val):
     """
     Test the CRE against known values for several uniform distributions.
@@ -69,7 +69,7 @@ def test_cre_3():
 @pytest.mark.parametrize(('n', 'val'), zip(range(2, 23, 2), [0.5, 1.31127812, 2.06831826, 2.80927657,
                                                              3.54316518, 4.27328199, 5.00113503,
                                                              5.72751654, 6.45288453, 7.17752308,
-                                                             7.90161817]))
+                                                             7.90161817], strict=True))
 def test_gcre_1(n, val):
     """
     Test the GCRE against known values for the uniform distribution.

@@ -113,15 +113,15 @@ def test_zipped():
     outcomes = ['000', '011', '101', '110', '222', '321', '333']
     d = Distribution(outcomes, pmf)
 
-    outcomes_, pmf_ = list(zip(*d.zipped()))
+    outcomes_, pmf_ = list(zip(*d.zipped(), strict=True))
     d2 = Distribution(outcomes_, pmf_)
     assert d.is_approx_equal(d2)
 
-    outcomes_, pmf_ = list(zip(*d.zipped(mode='atoms')))
+    outcomes_, pmf_ = list(zip(*d.zipped(mode='atoms'), strict=True))
     d3 = Distribution(outcomes_, pmf_)
     assert d.is_approx_equal(d3)
 
-    outcomes_, pmf_ = list(zip(*d.zipped(mode='patoms')))
+    outcomes_, pmf_ = list(zip(*d.zipped(mode='patoms'), strict=True))
     d4 = Distribution(outcomes_, pmf_)
     d.make_sparse()
     assert np.allclose(d.pmf, d4.pmf)

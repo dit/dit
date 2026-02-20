@@ -21,7 +21,7 @@ def test_flatten1():
     fx = list(flatten(x))
     y = [0, 1, 2, 3, 4]
     assert len(fx) == len(y)
-    for i, j in zip(fx, y):
+    for i, j in zip(fx, y, strict=True):
         assert i == j
 
 

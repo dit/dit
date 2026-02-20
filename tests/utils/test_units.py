@@ -2,17 +2,16 @@
 Tests for dit.utils.units.
 """
 
-import pytest
-
-pint = pytest.importorskip('pint')
-
 import numpy as np
+import pytest
 
 from dit import Distribution, ditParams
 from dit.algorithms.channelcapacity import channel_capacity_joint
 from dit.multivariate import entropy
 from dit.params import reset_params
 from dit.utils.units import ureg
+
+pint = pytest.importorskip('pint')
 
 
 def test_bit():

@@ -35,7 +35,7 @@ def s_i(d, source, target, target_value):
     p_s = pp_s[target_value]
     p_a_s = pp_a_s[pp_s.outcomes.index(target_value)]
     pp_a, pp_s_a = d.condition_on(source, rvs=target)
-    p_s_a = {a: pp[target_value] for a, pp in zip(pp_a.outcomes, pp_s_a)}
+    p_s_a = {a: pp[target_value] for a, pp in zip(pp_a.outcomes, pp_s_a, strict=True)}
 
     return np.nansum([p_a_s[a] * np.log2(psa / p_s) for a, psa in p_s_a.items()])
 

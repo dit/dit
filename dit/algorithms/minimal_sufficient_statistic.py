@@ -83,9 +83,9 @@ def mss_sigalg(dist, rvs, about=None, rv_mode=None):
 
     md, cds = dist.condition_on(rvs=about, crvs=rvs, rv_mode=rv_mode)
 
-    for marg, cd in zip(md.outcomes, cds):
+    for marg, cd in zip(md.outcomes, cds, strict=True):
         matches = [o for o in dist.outcomes if partial_match(o, marg, mapping)]
-        for c in partition.keys():
+        for c in partition:
             if c.is_approx_equal(cd):
                 partition[c].extend(matches)
                 break

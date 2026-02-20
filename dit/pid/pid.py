@@ -2,6 +2,7 @@
 Classes implementing the partial information decomposition.
 """
 
+import contextlib
 from abc import ABCMeta, abstractmethod
 from copy import deepcopy
 from itertools import product
@@ -241,10 +242,8 @@ class BasePID(metaclass=ABCMeta):
         """
         for node in self._lattice:
             if node not in self._reds:  # pragma: no branch
-                try:
+                with contextlib.suppress(TypeError):
                     self.get_red(node)
-                except TypeError:
-                    pass
 
         self._compute_mobius_inversion()
 
@@ -254,10 +253,8 @@ class BasePID(metaclass=ABCMeta):
         """
         for node in reversed(list(self._lattice)):
             if node not in self._pis:
-                try:
+                with contextlib.suppress(TypeError, ditException):
                     self.get_pi(node)
-                except (TypeError, ditException):
-                    pass
 
     def get_red(self, node):
         """
@@ -475,9 +472,8 @@ class BaseIncompletePID(BasePID):
 
         # if redundancy of A is equal to the redundancy any of A's children, then pi(A) = 0
         for node in self._lattice:
-            if node not in self._pis and node in self._reds:
-                if any(np.isclose(self._reds[n], self._reds[node], atol=1e-5, rtol=1e-5) for n in self._lattice.covers(node) if n in self._reds):
-                    self._pis[node] = 0
+            if node not in self._pis and node in self._reds and any(np.isclose(self._reds[n], self._reds[node], atol=1e-5, rtol=1e-5) for n in self._lattice.covers(node) if n in self._reds):
+                self._pis[node] = 0
 
     def _compute_attempt_linsolve(self):
         """
@@ -501,7 +497,7 @@ class BaseIncompletePID(BasePID):
             except ValueError:
                 continue
 
-            row = lambda node: [1 if (c in self._lattice.descendants(node, include=True)) else 0 for c in rvs]
+            row = lambda node, rvs=rvs: [1 if (c in self._lattice.descendants(node, include=True)) else 0 for c in rvs]
 
             A = np.array([row(node) for node in rvs if node in self._reds] + [[1] * len(rvs)])
             b = np.array([self._reds[node] for node in rvs if node in self._reds] + \
@@ -509,15 +505,13 @@ class BaseIncompletePID(BasePID):
             try:
                 new_pis = np.linalg.solve(A, b)
                 if np.all(new_pis > -1e-6):
-                    for node, pi in zip(rvs, new_pis):
+                    for node, pi in zip(rvs, new_pis, strict=True):
                         self._pis[node] = pi
 
                     for node in self._lattice:
                         if node not in self._reds:
-                            try:
+                            with contextlib.suppress(KeyError):  # pragma: no cover
                                 self._reds[node] = sum(self._pis[n] for n in self._lattice.descendants(node, include=True))
-                            except KeyError:  # pragma: no cover
-                                pass
 
                     break
 
@@ -623,9 +617,8 @@ class BaseIncompletePID(BasePID):
         for node in self._lattice:
             red = self.get_red(node)
             parts = sum(self.get_pi(n) for n in self._lattice.descendants(node, include=True))
-            if not np.isnan(red) and not np.isnan(parts):
-                if not np.isclose(red, parts, atol=1e-5, rtol=1e-5):
-                    return False
+            if not np.isnan(red) and not np.isnan(parts) and not np.isclose(red, parts, atol=1e-5, rtol=1e-5):
+                return False
 
         return True
 

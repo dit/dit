@@ -248,11 +248,7 @@ def dist_from_induced_sigalg(dist, sigalg, int_outcomes=True):
         atoms.sort(key=quasilexico_key)
 
     pmf = [dist.event_probability(atom) for atom in atoms]
-    if int_outcomes:
-        outcomes = range(len(atoms))
-    else:
-        # Outcomes must be sequences.
-        outcomes = [tuple(sorted(atom)) for atom in atoms]
+    outcomes = range(len(atoms)) if int_outcomes else [tuple(sorted(atom)) for atom in atoms]
 
     d = ScalarDistribution(outcomes, pmf, base=dist.get_base())
     return d
@@ -360,7 +356,7 @@ def insert_rv(dist, idx, sigalg):
     atoms = atom_set(sigalg)
     atoms = [sorted(atom) for atom in atoms]
     atoms.sort(key=quasilexico_key)
-    if dist._outcome_class == str:
+    if dist._outcome_class is str:
         # Then the labels for the new random variable must be strings.
         from string import ascii_letters, digits
         labels = (digits + ascii_letters)[:len(atoms)]
@@ -369,7 +365,7 @@ def insert_rv(dist, idx, sigalg):
 
     # Create an index from outcomes to atoms.
     atom_of = {}
-    for label, atom in zip(labels, atoms):
+    for label, atom in zip(labels, atoms, strict=True):
         for outcome in atom:
             atom_of[outcome] = label
 

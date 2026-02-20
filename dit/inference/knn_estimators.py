@@ -121,22 +121,22 @@ def _total_correlation_ksg_scipy(data, rvs, crvs=None, k=4, noise=1e-10):
     epsilons = tree.query(data[:, all_rvs], k + 1, p=np.inf)[0][:, -1]  # k+1 because of self
 
     n_rvs = [
-        np.array([len(t.query_ball_point(point, epsilon, p=np.inf)) for point, epsilon in zip(data[:, rv], epsilons)])
-        for rv, t in zip(rvs, tree_rvs)]
+        np.array([len(t.query_ball_point(point, epsilon, p=np.inf)) for point, epsilon in zip(data[:, rv], epsilons, strict=True)])
+        for rv, t in zip(rvs, tree_rvs, strict=True)]
 
     log_epsilons = np.log(epsilons)
 
-    h_rvs = [-digamma(n_rv).mean() for n_rv, d in zip(n_rvs, d_rvs)]
+    h_rvs = [-digamma(n_rv).mean() for n_rv, d in zip(n_rvs, d_rvs, strict=True)]
 
     h_all = -digamma(k)
 
     if crvs:
         tree_crvs = cKDTree(data[:, crvs])
         n_crvs = np.array([len(tree_crvs.query_ball_point(point, epsilon, p=np.inf)) for point, epsilon in
-                           zip(data[:, crvs], epsilons)])
+                           zip(data[:, crvs], epsilons, strict=True)])
         h_crvs = -digamma(n_crvs).mean()
     else:
-        h_rvs = [h_rv + digamma_N + d * (log_2 - log_epsilons).mean() for h_rv, d in zip(h_rvs, d_rvs)]
+        h_rvs = [h_rv + digamma_N + d * (log_2 - log_epsilons).mean() for h_rv, d in zip(h_rvs, d_rvs, strict=True)]
         h_all += digamma_N + sum(d_rvs) * (log_2 - log_epsilons).mean()
         h_crvs = 0
 
@@ -194,11 +194,11 @@ def _total_correlation_ksg_sklearn(data, rvs, crvs=None, k=4, noise=1e-10):
 
     epsilons = tree.query(data[:, all_rvs], k + 1)[0][:, -1]  # k+1 because of self
 
-    n_rvs = [t.query_radius(data[:, rv], epsilons, count_only=True) for rv, t in zip(rvs, tree_rvs)]
+    n_rvs = [t.query_radius(data[:, rv], epsilons, count_only=True) for rv, t in zip(rvs, tree_rvs, strict=True)]
 
     log_epsilons = np.log(epsilons)
 
-    h_rvs = [-digamma(n_rv).mean() for n_rv, d in zip(n_rvs, d_rvs)]
+    h_rvs = [-digamma(n_rv).mean() for n_rv, d in zip(n_rvs, d_rvs, strict=True)]
 
     h_all = -digamma(k)
 
@@ -207,7 +207,7 @@ def _total_correlation_ksg_sklearn(data, rvs, crvs=None, k=4, noise=1e-10):
         n_crvs = tree_crvs.query_radius(data[:, crvs], epsilons, count_only=True)
         h_crvs = -digamma(n_crvs).mean()
     else:
-        h_rvs = [h_rv + digamma_N + d * (log_2 - log_epsilons).mean() for h_rv, d in zip(h_rvs, d_rvs)]
+        h_rvs = [h_rv + digamma_N + d * (log_2 - log_epsilons).mean() for h_rv, d in zip(h_rvs, d_rvs, strict=True)]
         h_all += digamma_N + sum(d_rvs) * (log_2 - log_epsilons).mean()
         h_crvs = 0
 

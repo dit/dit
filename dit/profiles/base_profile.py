@@ -89,7 +89,7 @@ class BaseProfile(metaclass=ABCMeta):
             The distribution to compute the profile for.
         """
         super().__init__()
-        outcomes, pmf = zip(*dist.zipped(mode='atoms'))
+        outcomes, pmf = zip(*dist.zipped(mode='atoms'), strict=True)
         self.dist = Distribution(outcomes, pmf)
         self._compute()
 
@@ -119,7 +119,7 @@ class BaseProfile(metaclass=ABCMeta):
             ax = plt.figure().gca()
 
         # pylint: disable=no-member
-        left, height = zip(*sorted(self.profile.items()))
+        left, height = zip(*sorted(self.profile.items()), strict=True)
         ax.bar(left, height, width=self.widths, align=self.align)
 
         ax.set_xticks(sorted(self.profile.keys()))

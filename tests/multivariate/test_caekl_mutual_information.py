@@ -6,15 +6,9 @@ import pytest
 
 from dit import Distribution as D
 from dit.distconst import all_dist_structures, random_distribution
-from dit.multivariate import (
-    caekl_mutual_information as J,
-)
-from dit.multivariate import (
-    coinformation as I,
-)
-from dit.multivariate import (
-    total_correlation as T,
-)
+from dit.multivariate import caekl_mutual_information as J
+from dit.multivariate import coinformation as I
+from dit.multivariate import total_correlation as T
 
 
 @pytest.mark.parametrize('d', list(all_dist_structures(2, 3))

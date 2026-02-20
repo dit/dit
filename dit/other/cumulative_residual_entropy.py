@@ -40,8 +40,8 @@ def _cumulative_residual_entropy(dist, generalized=False):
     """
     numerical_test(dist)
     eps = ((e if generalized else abs(e), p) for e, p in dist.zipped())
-    events, probs = zip(*sorted(eps))
-    cdf = {a: p for a, p in zip(events, np.cumsum(probs))}
+    events, probs = zip(*sorted(eps), strict=True)
+    cdf = {a: p for a, p in zip(events, np.cumsum(probs), strict=True)}
     terms = []
     for a, b in pairwise(events):
         pgx = cdf[a]
@@ -118,7 +118,7 @@ def cumulative_residual_entropy(dist, extract=False):
     """
     if not dist.is_joint():
         return _cumulative_residual_entropy(dist, generalized=False)
-    es, ps = zip(*[(tuple(abs(ei) for ei in e), p) for e, p in dist.zipped()])
+    es, ps = zip(*[(tuple(abs(ei) for ei in e), p) for e, p in dist.zipped()], strict=True)
     abs_dist = Distribution(es, ps)
     return generalized_cumulative_residual_entropy(abs_dist, extract)
 

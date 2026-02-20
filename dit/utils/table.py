@@ -1,6 +1,8 @@
 """
 """
 
+import contextlib
+
 try:
     from prettytable import UNICODE_LINES, PrettyTable
 except ImportError:
@@ -31,8 +33,6 @@ def build_table(field_names=None, title=None):
     """
     table = PrettyTable(field_names=field_names, title=title)
     if ditParams['text.font'] == 'linechar':
-        try:
+        with contextlib.suppress(Exception):
             table.set_style(UNICODE_LINES)
-        except Exception:  # noqa; S110
-            pass
     return table

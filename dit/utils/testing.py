@@ -107,7 +107,7 @@ def distribution_structures(draw, size=(2, 4), alphabet=(2, 4), uniform=False, m
     events = draw(lists(tuples(*[integers(0, alphabet_ - 1)] * size_), min_size=min_events, unique=True))
 
     # make sure no marginal is a constant
-    for var in zip(*events):
+    for var in zip(*events, strict=True):
         assume(len(set(var)) > 1)
 
     if uniform:

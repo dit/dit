@@ -217,10 +217,7 @@ class Operations:
             If `True`, then if the base is 'e', it is returned as a float.
 
         """
-        if numerical and self.base == 'e':
-            base = np.exp(1)
-        else:
-            base = self.base
+        base = np.exp(1) if numerical and self.base == 'e' else self.base
         return base
 
     def is_null(self, p):
@@ -559,22 +556,12 @@ def set_add_reduce(ops):
     base = ops.base
     if base == 2:
         def add_reduce(self, x, axis=None, func=np.logaddexp2):
-            if len(x) == 0:
-                # Since logaddexp.identity is None, we handle it separately.
-                z = self.zero
-            else:
-                # Note, we are converting to a NumPy array, if necessary.
-                z = func.reduce(x, axis=axis, dtype=float)
+            z = self.zero if len(x) == 0 else func.reduce(x, axis=axis, dtype=float)
             return z
 
     elif base == 'e' or np.isclose(base, np.e):
         def add_reduce(self, x, axis=None, func=np.logaddexp):
-            if len(x) == 0:
-                # Since logaddexp.identity is None, we handle it separately.
-                z = self.zero
-            else:
-                # Note, we are converting to a NumPy array, if necessary.
-                z = func.reduce(x, axis=axis, dtype=float)
+            z = self.zero if len(x) == 0 else func.reduce(x, axis=axis, dtype=float)
             return z
 
     else:

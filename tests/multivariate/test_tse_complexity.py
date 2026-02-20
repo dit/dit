@@ -12,7 +12,7 @@ from dit.multivariate import tse_complexity as TSE
 from dit.utils import powerset
 
 
-@pytest.mark.parametrize(('i', 'j'), list(zip(range(3, 6), range(2, 5))))
+@pytest.mark.parametrize(('i', 'j'), list(zip(range(3, 6), range(2, 5), strict=True)))
 def test_tse1(i, j):
     """ Test identity comparing TSE to B from Olbrich's talk """
     d = n_mod_m(i, j)

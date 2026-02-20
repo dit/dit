@@ -192,10 +192,7 @@ class SampleSpace(ScalarSampleSpace):
         indexes = [parse(rv) for rv in rvs]
 
         # Determine how new outcomes are constructed.
-        if len(rvs) == 1 and extract:
-            ctor_o = lambda x: x[0]
-        else:
-            ctor_o = tuple
+        ctor_o = (lambda x: x[0]) if len(rvs) == 1 and extract else tuple
         # Determine how elements of new outcomes are constructed.
         ctor_i = self._outcome_ctor
 
@@ -287,7 +284,7 @@ class CartesianProduct(SampleSpace):
             # If every alphabet has the class str, let's use that.
             klasses = [next(iter(alphabet)).__class__
                        for alphabet in self.alphabets]
-            if len(set(klasses)) == 1 and klasses[0] == str:
+            if len(set(klasses)) == 1 and klasses[0] is str:
                 product = get_product_func(str)
                 outcome_class = str
             else:
@@ -327,9 +324,9 @@ class CartesianProduct(SampleSpace):
     def __contains__(self, item):
         try:
             iterator = enumerate(item)
-        except TypeError:
+        except TypeError as err:
             msg = '{!r} is not iterable, and thus, is not a valid outcome.'
-            raise InvalidOutcome(item, msg=msg.format(item))
+            raise InvalidOutcome(item, msg=msg.format(item)) from err
 
         if len(item) != len(self._alphabet_sets):
             return False
@@ -372,9 +369,9 @@ class CartesianProduct(SampleSpace):
         try:
             indexes = [self.alphabets[i].index(symbol)
                        for i, symbol in enumerate(item)]
-        except (ValueError, IndexError):
+        except (ValueError, IndexError) as err:
             msg = f'{item!r} is not in the sample space'
-            raise ValueError(msg)
+            raise ValueError(msg) from err
 
         idx = np.sum(np.array(indexes) * self._shifts)
         return idx
@@ -444,10 +441,7 @@ class CartesianProduct(SampleSpace):
         sample_spaces = [CartesianProduct(alphabets, self._product)
                          for alphabets in alphabets_i]
 
-        if len(rvs) == 1 and extract:
-            ss = sample_spaces[0]
-        else:
-            ss = CartesianProduct(sample_spaces, itertools.product)
+        ss = sample_spaces[0] if len(rvs) == 1 and extract else CartesianProduct(sample_spaces, itertools.product)
         return ss
 
     def sort(self):

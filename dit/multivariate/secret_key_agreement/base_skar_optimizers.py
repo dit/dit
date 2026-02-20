@@ -16,10 +16,10 @@ from abc import abstractmethod
 
 import numpy as np
 
-from ...npdist import Distribution
 from ...algorithms import BaseAuxVarOptimizer
 from ...exceptions import ditException
 from ...math import prod
+from ...npdist import Distribution
 from ...utils import unitful
 from .._backend import _make_backend_subclass
 
@@ -543,7 +543,7 @@ class TwoPartIMIMixin:
             """
             joint = self.construct_joint(x)
             joint_np = joint.detach().cpu().numpy() if hasattr(joint, 'detach') else np.asarray(joint)
-            outcomes, pmf = zip(*[(o, p) for o, p in np.ndenumerate(joint_np)])
+            outcomes, pmf = zip(*[(o, p) for o, p in np.ndenumerate(joint_np)], strict=True)
             dist = Distribution(outcomes, pmf)
 
             inner_cls = _make_backend_subclass(

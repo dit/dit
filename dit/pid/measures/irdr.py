@@ -54,7 +54,7 @@ def condition_pw(p_Tt, p_STt):
     p_S_g_Tt : list of tuples
         set of vectors specifying P(S|Tt)
     """
-    s_alphabet = {x[0] for x in p_STt.keys()}
+    s_alphabet = {x[0] for x in p_STt}
     # return list of tuples with target order (True,False)
     return [(p_STt.get((s, True), 0) / p_Tt, p_STt.get((s, False), 0) / (1 - p_Tt)) for s in s_alphabet]
 
@@ -87,7 +87,7 @@ def cv_hull(p_S1_g_Tt, p_S2_g_Tt):
         hull_points = [(a, b) for b, a in hull.points[hull.vertices].tolist()]
         # generate resulting channel from vertices
         hull_points = sorted([x for x in hull_points if x not in ((0, 0), (0.0, 0.0))])
-        diff_list = zip([(0.0, 0.0)] + hull_points[:-1], hull_points)
+        diff_list = zip([(0.0, 0.0)] + hull_points[:-1], hull_points, strict=True)
         return [(r_prec(n[0] - m[0]), r_prec(n[1] - m[1])) for m, n in diff_list]
     return [(1, 1)]
 

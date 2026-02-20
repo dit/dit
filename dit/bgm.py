@@ -34,9 +34,9 @@ def sanitize_inputs(digraph, nodes, attr):
 
         try:
             val = digraph.nodes[rv][attr]
-        except KeyError:
+        except KeyError as err:
             msg = f"Node {rv} is missing its distributions."
-            raise ValueError(msg)
+            raise ValueError(msg) from err
 
         if callable(val):
             is_callable.append(1)
@@ -137,7 +137,7 @@ def build_pfuncs(digraph, rv_names, attr, outcome_ctor):
 
 
     """
-    rv_index = dict(zip(rv_names, range(len(rv_names))))
+    rv_index = dict(zip(rv_names, range(len(rv_names)), strict=True))
     pfuncs = {}
     parents_index = {}
 
@@ -164,7 +164,7 @@ def build_pfuncs(digraph, rv_names, attr, outcome_ctor):
                 dists = val
             else:
                 outcomes, dists = val
-                dists = dict(zip(outcomes, dists))
+                dists = dict(zip(outcomes, dists, strict=True))
 
             def prob(outcome, dists=dists, parents=parents, rv=rv):
                 node_outcome = outcome_ctor([outcome[rv_index[rv]]])
@@ -181,7 +181,7 @@ def build_pfuncs(digraph, rv_names, attr, outcome_ctor):
         node_val = outcome[rv_index[rv]]
         parents = parents_index[rv]
         parent_vals = [outcome[rv_index[parent]] for parent in parents]
-        parents = dict(zip(parents, parent_vals))
+        parents = dict(zip(parents, parent_vals, strict=True))
         return node_val, parents
 
     return pfuncs, get_values

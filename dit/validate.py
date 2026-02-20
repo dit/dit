@@ -246,8 +246,8 @@ def validate_outcome_length(outcomes):
     # Make sure each outcome is a container.
     try:
         lengths = list(map(len, outcomes))
-    except TypeError:
-        raise ditException('One or more outcomes is not a container.')
+    except TypeError as err:
+        raise ditException('One or more outcomes is not a container.') from err
     else:
         outcome_length = lengths[0]
 

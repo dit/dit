@@ -43,20 +43,16 @@ def sample(dist, size=None, rand=None, prng=None):
 
     """
     ### This works for NumPy-base distributions (in npdist.py)
-    if size is None:
-        n = 1
-    else:
-        n = size
+    n = 1 if size is None else size
 
     if rand is None:
         if prng is None:
             prng = dist.prng
         try:
             rand = prng.rand(n)
-        except AttributeError:
+        except AttributeError as err:
             msg = "The random number generator must support a `rand()' call."
-            e = dit.exceptions.ditException(msg)
-            raise e
+            raise dit.exceptions.ditException(msg) from err
     else:
         if size is None:
             rand = np.array([rand])
@@ -66,10 +62,7 @@ def sample(dist, size=None, rand=None, prng=None):
             raise e
 
     # We need linear probabilities.
-    if dist.is_log():
-        pmf = dist.ops.exp(dist.pmf)
-    else:
-        pmf = dist.pmf
+    pmf = dist.ops.exp(dist.pmf) if dist.is_log() else dist.pmf
 
     indexes = _samples(pmf, rand)
     outcomes = dist.outcomes
@@ -187,10 +180,7 @@ def ball(n, size=None, prng=None):
         Points within the unit `n`-ball.
 
     """
-    if size is None:
-        s = 1
-    else:
-        s = size
+    s = 1 if size is None else size
 
     if prng is None:
         prng = dit.math.prng
@@ -355,10 +345,7 @@ def norm(pmf, ilrcov=None, size=None, prng=None):
         else:
             raise dit.exceptions.ditException('`ilrcov` must be a 2D array.')
 
-    if size is None:
-        k = 1
-    else:
-        k = size
+    k = 1 if size is None else size
 
     samples = _norm(ilrmean, ilrcov, k, prng)
     if size is None:
@@ -401,10 +388,7 @@ def _annulus2(rmin, rmax, size=None, prng=None):
     .. [1] http://stackoverflow.com/a/9048443
 
     """
-    if size is None:
-        s = 1
-    else:
-        s = size
+    s = 1 if size is None else size
 
     if prng is None:
         prng = dit.math.prng

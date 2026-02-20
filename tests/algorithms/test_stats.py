@@ -52,7 +52,7 @@ def test_mode2():
     """ Test mode on a generic distribution """
     d = D([(0, 0), (1, 0), (2, 1), (3, 1)], [1 / 8, 1 / 8, 3 / 8, 3 / 8])
     modes = [np.array([2, 3]), np.array([1])]
-    for m1, m2 in zip(mode(d), modes):
+    for m1, m2 in zip(mode(d), modes, strict=True):
         assert np.allclose(m1, m2)
 
 

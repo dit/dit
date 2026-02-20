@@ -5,9 +5,9 @@ Tests for dit.xrdist.XRDistribution.
 import numpy as np
 import pytest
 
-xr = pytest.importorskip("xarray")
-
 from dit.xrdist import XRDistribution
+
+xr = pytest.importorskip("xarray")
 
 # ─── Helpers ─────────────────────────────────────────────────────────────
 
@@ -846,12 +846,12 @@ class TestEquality:
         p1 = _make_pxy()
         p2 = _make_pxy()
         p2.data.values[0, 0] = 0.99
-        assert not (p1 == p2)
+        assert p1 != p2
 
     def test_not_equal_vars(self):
         p = _make_pxy()
         c = p.condition_on('X')
-        assert not (p == c)
+        assert p != c
 
     def test_approx_equal(self):
         p1 = _make_pxy()

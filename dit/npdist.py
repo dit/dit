@@ -138,7 +138,7 @@ def _make_distribution(outcomes, pmf, base,
 
     # Tuple outcomes, and an index.
     d.outcomes = tuple(outcomes)
-    d._outcomes_index = dict(zip(outcomes, range(len(outcomes))))
+    d._outcomes_index = dict(zip(outcomes, range(len(outcomes)), strict=True))
 
     # Alphabet
     d.alphabet = tuple(construct_alphabets(outcomes))
@@ -448,10 +448,7 @@ class Distribution(ScalarDistribution):
             else:
                 alphabets = construct_alphabets(sample_space._samplespace)
         else:
-            if sample_space is None:
-                ss = outcomes
-            else:
-                ss = sample_space
+            ss = outcomes if sample_space is None else sample_space
 
             alphabets = construct_alphabets(ss)
             if sort:
@@ -477,7 +474,7 @@ class Distribution(ScalarDistribution):
         if sort and len(outcomes) > 0:
             outcomes, pmf, index = reorder(outcomes, pmf, self._sample_space)
         else:
-            index = dict(zip(outcomes, range(len(outcomes))))
+            index = dict(zip(outcomes, range(len(outcomes)), strict=True))
 
         # Force the distribution to be numerical and a NumPy array.
         self.pmf = np.asarray(pmf, dtype=float)
@@ -530,8 +527,8 @@ class Distribution(ScalarDistribution):
         try:
             len(outcomes)
             len(pmf)
-        except TypeError:
-            raise TypeError('`outcomes` and `pmf` must be sequences.')
+        except TypeError as err:
+            raise TypeError('`outcomes` and `pmf` must be sequences.') from err
 
         if len(pmf) != len(outcomes):
             msg = "Unequal lengths for `pmf` and `outcomes`"
@@ -543,17 +540,14 @@ class Distribution(ScalarDistribution):
         if len(outcomes):
             try:
                 outcomes[0]
-            except TypeError:
-                raise ditException('`outcomes` must be indexable.')
+            except TypeError as err:
+                raise ditException('`outcomes` must be indexable.') from err
 
         # Determine if the pmf represents log probabilities or not.
         if base is None:
             # Provide help for obvious case of linear probabilities.
             from .validate import is_pmf
-            if is_pmf(np.asarray(pmf, dtype=float), LinearOperations()):
-                base = 'linear'
-            else:
-                base = ditParams['base']
+            base = 'linear' if is_pmf(np.asarray(pmf, dtype=float), LinearOperations()) else ditParams['base']
         self.ops = get_ops(base)
 
         return outcomes, pmf
@@ -672,7 +666,7 @@ class Distribution(ScalarDistribution):
             The distribution resulting from interpreting `ndarray` as a pmf.
 
         """
-        return cls(*zip(*np.ndenumerate(ndarray)), base=base, prng=prng)
+        return cls(*zip(*np.ndenumerate(ndarray), strict=True), base=base, prng=prng)
 
     @property
     def DataArray(self):
@@ -693,7 +687,7 @@ class Distribution(ScalarDistribution):
         if dims is None:
             dims = [f'x[{i}]' for i in range(dist.outcome_length())]
 
-        coords = {d: sorted(a) for d, a in zip(dims, alphabet)}
+        coords = {d: sorted(a) for d, a in zip(dims, alphabet, strict=True)}
 
         return xr.DataArray(pmf, dims=dims, coords=coords)
 
@@ -725,8 +719,8 @@ class Distribution(ScalarDistribution):
 
         """
         rv_names = da.dims
-        events, pmf = zip(*np.ndenumerate(da))
-        events = [tuple(da.coords[rv][_].values.flatten()[0] for _, rv in zip(e, rv_names)) for e in events]
+        events, pmf = zip(*np.ndenumerate(da), strict=True)
+        events = [tuple(da.coords[rv][_].values.flatten()[0] for _, rv in zip(e, rv_names, strict=True)) for e in events]
         dist = Distribution(events, pmf, base=base, prng=prng)
         dist.set_rv_names(rv_names)
         return dist
@@ -953,11 +947,7 @@ class Distribution(ScalarDistribution):
             if extract:
                 sample_space = sample_space.alphabets[0]
         else:
-            if extract:
-                # There is only one sample space: len(indexes) = 1
-                sample_space = sample_spaces[0]
-            else:
-                sample_space = list(zip(*sample_spaces))
+            sample_space = sample_spaces[0] if extract else list(zip(*sample_spaces, strict=True))
 
         d = Distribution(outcomes, pmf,
                          base=self.get_base(),
@@ -1048,7 +1038,7 @@ class Distribution(ScalarDistribution):
 
         # Marginalize the random variables not in crvs or rvs
         if len(union) < self.outcome_length():
-            mapping = dict(zip(sorted(union), range(len(union))))
+            mapping = dict(zip(sorted(union), range(len(union)), strict=True))
             d = self.marginal(union, rv_mode=RV_MODES.INDICES)
             # Now we need to shift the indices to their new index values.
             cindexes = [mapping[idx] for idx in cindexes]
@@ -1090,7 +1080,7 @@ class Distribution(ScalarDistribution):
         # Now build the distributions
         pmfs = np.empty((len(cdist), len(dist)), dtype=float)
         pmfs.fill(ops.zero)
-        for i, (coutcome, outcome) in enumerate(zip(coutcomes, outcomes)):
+        for i, (coutcome, outcome) in enumerate(zip(coutcomes, outcomes, strict=True)):
             pmfs[coutcome, outcome] = probs[i]
         dists = [Distribution(dist.outcomes, pmfs[i], sparse=sparse,
                  base=base, sample_space=sample_space, validate=False)
@@ -1301,13 +1291,13 @@ class Distribution(ScalarDistribution):
         else:
             # We only have the indexes...so reverse lookup to get the names.
             names_, indexes_ = self._rvs.keys(), self._rvs.values()
-            rev = dict(zip(indexes_, names_))
+            rev = dict(zip(indexes_, names_, strict=True))
             names = [rev[i] for i in indexes]
         d.set_rv_names(names)
 
         # Set the mask
         L = self.outcome_length()
-        d._mask = tuple(False if i in indexes else True for i in range(L))
+        d._mask = tuple(i not in indexes for i in range(L))
         return d
 
     def marginalize(self, rvs, rv_mode=None):
@@ -1360,12 +1350,7 @@ class Distribution(ScalarDistribution):
                 raise ditException('Too few unique random variable names.')
             elif len(set(rv_names)) > L:
                 raise ditException('Too many unique random variable names.')
-            if L > 0:
-                rvs = dict(zip(rv_names, range(L)))
-            else:
-                # This is a corner case of a distribution with 0 rvs.
-                # We keep rvs equal to None, instead of an empty dict.
-                rvs = None
+            rvs = dict(zip(rv_names, range(L), strict=True)) if L > 0 else None
 
         self._rvs = rvs
 
@@ -1419,7 +1404,7 @@ class Distribution(ScalarDistribution):
 
         table_header = '<tr>' + ''.join(f"<th>{a}</th>" for a in rv_names) + f"<th>{pstr}</th></tr>"
         table_rows = ''.join(
-            '<tr>' + ''.join(f'<td>{str(_)}</td>' for _ in o) + f'<td>{p}</td></tr>' for o, p in zip(self.outcomes, pmf))
+            '<tr>' + ''.join(f'<td>{str(_)}</td>' for _ in o) + f'<td>{p}</td></tr>' for o, p in zip(self.outcomes, pmf, strict=True))
         table = f'<table>{table_header}{table_rows}</table>'
 
         output = f'<div><div style="float: left">{header}</div><div style="float: left">{table}</div></div>'
@@ -1520,15 +1505,15 @@ class Distribution(ScalarDistribution):
 
         # Info
         L = max(map(len, headers))
-        for head, val in zip(headers, vals):
-            s.write("{0}{1}\n".format(f"{head}: ".ljust(L + 2), val))
+        for head, val in zip(headers, vals, strict=True):
+            s.write("{}{}\n".format(f"{head}: ".ljust(L + 2), val))
         s.write("\n")
 
         # Distribution
         s.write(''.join(['x'.ljust(max_length), colsep, pstr, "\n"]))
         # Adjust for empty outcomes. Min length should be: len('x') == 1
         max_length = max(1, max_length)
-        for o, p in zip(outcomes, pmf):
+        for o, p in zip(outcomes, pmf, strict=True):
             s.write(''.join([o.ljust(max_length), colsep, str(p), "\n"]))
         s.seek(0)
 

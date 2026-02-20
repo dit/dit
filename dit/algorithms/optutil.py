@@ -91,7 +91,7 @@ def as_full_rank(A, b):
 @removals.removed_class('CVXOPT_Template',
                         message="Please see methods in dit.algorithms.distribution_optimizers.py.",
                         version='1.0.1')
-class CVXOPT_Template:
+class CVXOPT_Template:  # noqa: N801
     """
     Template for convex minimization on probability distributions.
     """
@@ -281,7 +281,7 @@ def prepare_dist(dist):
             import warnings
             msg = "Sample space has more than 10k elements."
             msg += " This could be slow."
-            warnings.warn(msg)
+            warnings.warn(msg, stacklevel=2)
         dist.make_dense()
 
     # We also need linear probabilities.

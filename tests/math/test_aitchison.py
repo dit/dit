@@ -8,11 +8,6 @@ import pytest
 import dit
 from dit.exceptions import ditException
 from dit.math import LogOperations
-
-ops = LogOperations(2)
-log2 = ops.log
-exp2 = ops.exp
-
 from dit.math.aitchison import (
     _gm,
     _log2_gm,
@@ -31,6 +26,10 @@ from dit.math.aitchison import (
     power,
     subcomposition,
 )
+
+ops = LogOperations(2)
+log2 = ops.log
+exp2 = ops.exp
 
 
 def test_closure():
@@ -239,7 +238,7 @@ def test_ilr():
     ilrx = ilr(x)
 
     assert ilrx.shape == ilrx_.shape
-    for i, j in zip(ilrx, ilrx_):
+    for i, j in zip(ilrx, ilrx_, strict=True):
         assert i == pytest.approx(j)
 
     # 2D with multiple rows
@@ -252,7 +251,7 @@ def test_ilr():
     ilrxy = ilr(xy)
 
     assert ilrxy.shape == ilrxy_.shape
-    for i, j in zip(ilrxy.ravel(), ilrxy_.ravel()):
+    for i, j in zip(ilrxy.ravel(), ilrxy_.ravel(), strict=True):
         assert i == pytest.approx(j)
 
     # 2D with single rows
@@ -261,7 +260,7 @@ def test_ilr():
     ilrxy = ilr(xy)
 
     assert ilrxy.shape == ilrxy_.shape
-    for i, j in zip(ilrxy.ravel(), ilrxy_.ravel()):
+    for i, j in zip(ilrxy.ravel(), ilrxy_.ravel(), strict=True):
         assert i == pytest.approx(j)
 
 

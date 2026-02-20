@@ -55,7 +55,8 @@ def disequilibrium(dist, rvs=None, rv_mode=None):
     pmf = d.pmf
 
     Pe = np.ones_like(pmf) / pmf.size
-    Pu = np.zeros_like(pmf); Pu[0] = 1
+    Pu = np.zeros_like(pmf)
+    Pu[0] = 1
 
     J = JSD(np.vstack([pmf, Pe]))
     Q = JSD(np.vstack([Pe, Pu]))

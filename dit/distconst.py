@@ -2,6 +2,7 @@
 Specialized distribution constructors.
 """
 
+import contextlib
 from collections import defaultdict
 from itertools import permutations, product
 from random import randint
@@ -85,10 +86,10 @@ def mixture_distribution(dists, weights, merge=False):
 
     if merge:
         vals = lambda o: [(ops.mult(w, d[o]) if o in d else 0)
-                          for w, d in zip(weights, dists)]
+                          for w, d in zip(weights, dists, strict=True)]
     else:
         vals = lambda o: [ops.mult(w, d[o])
-                          for w, d in zip(weights, dists)]
+                          for w, d in zip(weights, dists, strict=True)]
 
     outcomes = set().union(*[d.outcomes for d in dists])
     pmf = [ops.add_reduce(np.array(vals(o))) for o in outcomes]
@@ -152,7 +153,7 @@ def mixture_distribution2(dists, weights):
 
     mix = dists[0].copy()
     ops.mult_inplace(mix.pmf, weights[0])
-    for dist, weight in zip(dists[1:], weights[1:]):
+    for dist, weight in zip(dists[1:], weights[1:], strict=True):
         ops.add_inplace(mix.pmf, ops.mult(dist.pmf, weight))
     return mix
 
@@ -202,7 +203,7 @@ def erasure(dist, epsilon=1 / 2):
     n = dist.outcome_length()
 
     for outcome, prob in dist.zipped():
-        for o in product(*zip(outcome, '_' * n)):
+        for o in product(*zip(outcome, '_' * n, strict=True)):
             count = o.count('_')
             outcomes[ctor(o)] += prob * epsilon**count * (1 - epsilon)**(n - count)
 
@@ -240,7 +241,7 @@ def modify_outcomes(dist, ctor):
     outcomes = tuple(map(ctor, dist.outcomes))
     ops = dist.ops
     newdist = {}
-    for outcome, p in zip(outcomes, dist.pmf):
+    for outcome, p in zip(outcomes, dist.pmf, strict=True):
         newdist[outcome] = ops.add(p, newdist.get(outcome, ops.zero))
     outcomes = list(newdist.keys())
     pmf = np.array(list(newdist.values()))
@@ -502,7 +503,7 @@ def uniform_distribution(outcome_length, alphabet_size, base=None):
     """
     try:
         int(alphabet_size)
-    except TypeError:
+    except TypeError as err:
         # Assume it is a list of lists.
         alphabet = alphabet_size
 
@@ -510,21 +511,19 @@ def uniform_distribution(outcome_length, alphabet_size, base=None):
         if len(alphabet) == 1:
             alphabet = [alphabet[0]] * outcome_length
         elif len(alphabet) != outcome_length:
-            raise TypeError("outcome_length does not match number of rvs.")
+            raise TypeError("outcome_length does not match number of rvs.") from err
     else:
         # Build the standard alphabet.
         alphabet = [tuple(range(alphabet_size))] * outcome_length
 
     try:
         Z = np.prod(list(map(len, alphabet)))
-        try:
+        with contextlib.suppress(Exception):
             # for some reason numpypy.prod returns a list, and pypy can't handle
             #   multiplying a list by a numpy float.
             Z = int(Z[0])
-        except:  # noqa: S110
-            pass
-    except TypeError:
-        raise TypeError("alphabet_size must be an int or list of lists.")
+    except TypeError as err:
+        raise TypeError("alphabet_size must be an int or list of lists.") from err
 
     pmf = [1 / Z] * Z
     outcomes = tuple(product(*alphabet))
@@ -638,9 +637,9 @@ def insert_rvf(d, func, index=-1):
 
     # Now "flatten" the new contributions.
     partial_outcomes = [d._outcome_ctor([o for o_list in outcome for o in o_list])
-                        for outcome in zip(*partial_outcomes)]
+                        for outcome in zip(*partial_outcomes, strict=True)]
 
-    new_outcomes = zip(d.outcomes, partial_outcomes)
+    new_outcomes = zip(d.outcomes, partial_outcomes, strict=True)
     if index == -1:
         outcomes = [old + new for old, new in new_outcomes]
     else:
@@ -787,7 +786,7 @@ class RVFunctions:
                 list(map(ctor, mapping.values()))
             except (TypeError, ditException):
                 values = [ctor([o]) for o in mapping.values()]
-                mapping = dict(zip(mapping.keys(), values))
+                mapping = dict(zip(mapping.keys(), values, strict=True))
 
         def func(outcome):
             return mapping[outcome]
@@ -837,7 +836,7 @@ class RVFunctions:
         alphabet += letters.upper()
 
         n = len(partition)
-        if self.outcome_class == str:
+        if self.outcome_class is str:
             if n > len(alphabet):
                 msg = 'Number of outcomes is too large.'
                 raise NotImplementedError(msg)
@@ -1090,7 +1089,7 @@ def _combine_scalar_dists(d1, d2, op):
     for (o1, p1), (o2, p2) in product(d1.zipped(), d2.zipped()):
         dist[op(o1, o2)] += d1.ops.mult(p1, p2)
 
-    return ScalarDistribution(*zip(*dist.items()), base=d1.get_base())
+    return ScalarDistribution(*zip(*dist.items(), strict=True), base=d1.get_base())
 
 class DistributionEnumerator:
     """
@@ -1208,7 +1207,7 @@ class DistributionEnumerator:
 
         """
         for new_alphabet in permutations(alphabet):
-            yield {a: b for a, b in zip(alphabet, new_alphabet)}
+            yield {a: b for a, b in zip(alphabet, new_alphabet, strict=True)}
 
     def _symbol_swaps(self, events):
         """
@@ -1226,7 +1225,7 @@ class DistributionEnumerator:
         """
         alphabet = list(range(self.k))
         for maps in product(self._all_mappings(alphabet), repeat=len(events[0])):
-            yield sorted([tuple([m[var] for m, var in zip(maps, e)]) for e in events])
+            yield sorted([tuple([m[var] for m, var in zip(maps, e, strict=True)]) for e in events])
 
     def _largest_symmetric_subset(self, events):
         """
@@ -1246,7 +1245,7 @@ class DistributionEnumerator:
         """
         isos = {}
         for event in events:
-            iso_events = set([e[0] for e in self._variable_permutations([event])]) & set(events)
+            iso_events = {e[0] for e in self._variable_permutations([event])} & set(events)
             isos[event] = iso_events
 
         return tuple(sorted(map(len, isos.values()), reverse=True))

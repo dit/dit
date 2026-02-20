@@ -176,7 +176,7 @@ def projected_information(dist, X, Y, Z):
     p_x, p_z_xs = dist.condition_on(rvs=Z, crvs=X)
 
     vals = []
-    for x, p_z_x in zip(p_x.outcomes, p_z_xs):
+    for x, p_z_x in zip(p_x.outcomes, p_z_xs, strict=True):
         p_proj_z = min_dkl(p_z_x, domain)
         for z in p_z.outcomes:
             vals.append(p_xz[(x, z)] * np.log2(p_proj_z[z] / p_z[z]))

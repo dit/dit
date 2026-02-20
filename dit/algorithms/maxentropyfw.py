@@ -36,10 +36,7 @@ def initial_point_generic(dist, rvs, A=None, b=None, isolated=None, **kwargs):
     from cvxopt import matrix
     from cvxopt.modeling import variable
 
-    if isolated is None:
-        variables = isolate_zeros_generic(dist, rvs)
-    else:
-        variables = isolated
+    variables = isolate_zeros_generic(dist, rvs) if isolated is None else isolated
 
     if A is None or b is None:
         A, b = marginal_constraints_generic(dist, rvs)
@@ -82,10 +79,7 @@ def initial_point_generic(dist, rvs, A=None, b=None, isolated=None, **kwargs):
 
     # Grab the optimized x
     optvariables = opt.variables()
-    if len(optvariables[0]) == n:
-        xopt = optvariables[0].value
-    else:
-        xopt = optvariables[1].value
+    xopt = optvariables[0].value if len(optvariables[0]) == n else optvariables[1].value
 
     # Turn values close to zero to be exactly equal to zero.
     xopt = np.array(xopt)[:, 0]

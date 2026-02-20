@@ -9,9 +9,9 @@ import numpy as np
 from debtcollector import removals
 
 from ..distconst import product_distribution
-from ..npdist import Distribution
 from ..helpers import RV_MODES
 from ..multivariate import coinformation as I
+from ..npdist import Distribution
 from ..utils import flatten
 from .maxentropy import marginal_constraints_generic
 from .optimization import BaseConvexOptimizer, BaseNonConvexOptimizer, BaseOptimizer

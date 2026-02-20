@@ -15,6 +15,7 @@ __all__ = (
 
 from dit.params import ditParams
 
+
 @removals.remove(message="Use numpy.isclose instead",
                  version='1.0.2')
 def close__cython(x, y, rtol=None, atol=None):  # pylint: disable=missing-docstring
@@ -36,7 +37,7 @@ def close__python(x, y, rtol=None, atol=None):  # pylint: disable=missing-docstr
     # Make sure they are both inf or non-inf
     xinf = isinf(x)
     yinf = isinf(y)
-    if not xinf == yinf:
+    if xinf != yinf:
         return False
 
     if xinf:

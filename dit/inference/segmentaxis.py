@@ -116,7 +116,7 @@ def segment_axis(a, length, overlap=0, axis=None, end='cut', endvalue=0):
     try:
         return as_strided(a, strides=newstrides, shape=newshape)
     except TypeError:  # pragma: no cover
-        warnings.warn("Problem with ndarray creation forces copy.")
+        warnings.warn("Problem with ndarray creation forces copy.", stacklevel=2)
         a = a.copy()
         # Shape doesn't change but strides does
         newstrides = a.strides[:axis] + ((length - overlap) * s, s) + \

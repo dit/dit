@@ -252,9 +252,8 @@ def memoize_optvec(f):  # pragma: no cover
             self.__cache = defaultdict(dict)
             cache = self.__cache
 
-        if tx in cache:
-            if f in cache[tx]:
-                return cache[tx][f]
+        if tx in cache and f in cache[tx]:
+            return cache[tx][f]
 
         value = f(self, x)
 

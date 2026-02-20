@@ -64,8 +64,7 @@ def flatten(l):
     """
     for el in l:
         if isinstance(el, Iterable) and not (isinstance(el, str) and len(el) == 1):
-            for sub in flatten(el):
-                yield sub
+            yield from flatten(el)
         else:
             yield el
 
@@ -94,7 +93,7 @@ def get_fobj(fname, mode='w+'):  # pragma: no cover
         that we should not close it.
     """
     if is_string_like(fname):
-        fobj = open(fname, mode)
+        fobj = open(fname, mode)  # noqa: SIM115
         close = True
     elif hasattr(fname, 'write'):
         # fname is a file-like object, perhaps a StringIO (for example)
@@ -212,9 +211,8 @@ def partition_set(elements, relation=None, innerset=False, reflexive=False,
             for representative in eqclass:
                 if not relation(representative, element):
                     return False
-                if not reflexive:
-                    if not relation(element, representative):
-                        return False
+                if not reflexive and not relation(element, representative):
+                    return False
                 if transitive:
                     return True
                 else:
@@ -238,10 +236,7 @@ def partition_set(elements, relation=None, innerset=False, reflexive=False,
                 lookup.append(len(eqclasses))
                 eqclasses.append([element])
 
-    if innerset:
-        eqclasses = [frozenset(c) for c in eqclasses]
-    else:
-        eqclasses = [tuple(c) for c in eqclasses]
+    eqclasses = [frozenset(c) for c in eqclasses] if innerset else [tuple(c) for c in eqclasses]
 
     return eqclasses, lookup
 
@@ -538,9 +533,8 @@ def digits(n, base, alphabet=None, pad=0, big_endian=True):
     if base < 2 or int(base) != base:
         raise ValueError('`base` must be an integer greater than 2')
 
-    if alphabet is not None:
-        if len(alphabet) != base:
-            raise ValueError('Length of `alphabet` must equal `base`.')
+    if alphabet is not None and len(alphabet) != base:
+        raise ValueError('Length of `alphabet` must equal `base`.')
 
     sequence = []
     while True:
@@ -568,4 +562,4 @@ def pairwise(iterable):
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
     a, b = tee(iterable)
     next(b, None)
-    return zip(a, b)
+    return zip(a, b, strict=False)

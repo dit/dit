@@ -81,7 +81,7 @@ def channel_capacity(cdists, marginal=None, rtol=None, atol=None):
             yield cc, r
 
     try:
-        cdists.shape
+        cdists.shape  # noqa: B018
         carr = cdists
     except AttributeError:
         # Build the array for P(Y|X)

@@ -4,6 +4,7 @@ Partial information decompositions
 Maxent decompositions of :math:`I[sources : target]`
 """
 
+import contextlib
 import itertools
 from collections import defaultdict
 
@@ -219,11 +220,9 @@ def extra_constraints(dist, k):
     target_rvs = tuple(rvs[-1:])
     source_rvs = tuple(rvs[:-1])
 
-    try:
+    with contextlib.suppress(TypeError):
         # Ignore source restrictions.
         k, _ = k
-    except TypeError:
-        pass
 
     marginal_size = k
     assert k >= 1
@@ -257,7 +256,7 @@ def extra_constraints(dist, k):
     if submarginal_size:
         for i, source_rv in enumerate(source_rvs):
             md, cdists = dist.condition_on(target_rvs, rvs=[source_rv])
-            for target_outcome, cdist in zip(md.outcomes, cdists):
+            for target_outcome, cdist in zip(md.outcomes, cdists, strict=True):
                 # cdist is dense
                 if np.isclose(cdist.pmf, 1).sum() == 1:
                     # Then p(source_rv | target_rvs) = 1
@@ -296,7 +295,7 @@ def extra_constraints(dist, k):
 
     if fixed:
         fixed = sorted(fixed.items())
-        fixed_indexes, fixed_values = list(zip(*fixed))
+        fixed_indexes, fixed_values = list(zip(*fixed, strict=True))
         fixed_indexes = list(fixed_indexes)
         fixed_values = list(fixed_values)
     else:
@@ -611,10 +610,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
         # Grab the optimized x. Perhaps there is a more reliable way to get
         # x rather than t. For now,w e check the length.
         optvariables = opt.variables()
-        if len(optvariables[0]) == n:
-            xopt = optvariables[0].value
-        else:
-            xopt = optvariables[1].value
+        xopt = optvariables[0].value if len(optvariables[0]) == n else optvariables[1].value
 
         # Turn values close to zero to be exactly equal to zero.
         xopt = np.array(xopt)[:, 0]

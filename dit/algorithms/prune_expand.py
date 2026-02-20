@@ -46,10 +46,7 @@ def pruned_samplespace(d, sample_space=None):
             outcomes.append(o)
             pmf.append(p)
 
-    if d.is_joint():
-        sample_space = SampleSpace(outcomes)
-    else:
-        sample_space = ScalarSampleSpace(outcomes)
+    sample_space = SampleSpace(outcomes) if d.is_joint() else ScalarSampleSpace(outcomes)
     pd = d.__class__(outcomes, pmf,
                      sample_space=sample_space, base=d.get_base())
     return pd
@@ -105,10 +102,7 @@ def expanded_samplespace(d, alphabets=None, union=True):
         alphabet = sorted(alphabet)
         alphabets = [alphabet] * len(alphabets)
 
-    if joint:
-        sample_space = CartesianProduct(alphabets, d._product)
-    else:
-        sample_space = ScalarSampleSpace(alphabets)
+    sample_space = CartesianProduct(alphabets, d._product) if joint else ScalarSampleSpace(alphabets)
 
     ed = d.__class__(d.outcomes, d.pmf,
                      sample_space=sample_space, base=d.get_base())

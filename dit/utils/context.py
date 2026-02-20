@@ -28,11 +28,8 @@ def cd(newpath):
     try:
         yield
     finally:
-        try:
+        with contextlib.suppress(OSError):
             os.chdir(oldpath)
-        except OSError:
-            # If oldpath no longer exists, stay where we are.
-            pass
 
 
 @contextlib.contextmanager
@@ -50,7 +47,7 @@ def named_tempfile(*args, **kwargs):
     args[-1] = False
 
     # mode = args[0]
-    ntf = tempfile.NamedTemporaryFile(*args, **kwargs)
+    ntf = tempfile.NamedTemporaryFile(*args, **kwargs)  # noqa: SIM115
     try:
         yield ntf
     finally:

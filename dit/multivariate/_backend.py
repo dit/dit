@@ -127,10 +127,7 @@ def _make_backend_subclass(cls, backend):
         else:
             non_mixin_classes.append(klass)
 
-    if mixins:
-        new_cls = _build_mixin_class(cls, mixins, non_mixin_classes, Base)
-    else:
-        new_cls = _build_legacy_class(cls, Base)
+    new_cls = _build_mixin_class(cls, mixins, non_mixin_classes, Base) if mixins else _build_legacy_class(cls, Base)
 
     _backend_class_cache[cache_key] = new_cls
     return new_cls

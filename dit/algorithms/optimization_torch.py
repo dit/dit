@@ -12,6 +12,7 @@ Notes
 PyTorch is required. Install with: pip install torch
 """
 
+import contextlib
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 from copy import deepcopy
@@ -25,7 +26,6 @@ from loguru import logger
 try:
     import torch
     from torch import Tensor
-    from torch.autograd.functional import jacobian as torch_jacobian
     TORCH_AVAILABLE = True
 
     # Check for torch.compile (PyTorch 2.0+)
@@ -39,12 +39,12 @@ except ImportError:
 from boltons.iterutils import pairwise
 from scipy.optimize import Bounds, basinhopping, differential_evolution, minimize, shgo
 
-from ..distconst import insert_rvf, modify_outcomes
-from ..npdist import Distribution
 from ..algorithms.channelcapacity import channel_capacity
+from ..distconst import insert_rvf, modify_outcomes
 from ..exceptions import OptimizationException, ditException
 from ..helpers import flatten, normalize_rvs, parse_rvs
 from ..math import prod, sample_simplex
+from ..npdist import Distribution
 from ..utils import partitions, powerset
 from ..utils.optimization import (
     BasinHoppingCallBack,
@@ -203,7 +203,7 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
         self._unqs = []
         for var in self._true_rvs + [self._true_crvs]:
             unq = Uniquifier()
-            self._dist = insert_rvf(self._dist, lambda x: (unq(tuple(x[i] for i in var)),))
+            self._dist = insert_rvf(self._dist, lambda x, unq=unq, var=var: (unq(tuple(x[i] for i in var)),))
             self._unqs.append(unq)
 
         self._dist.make_dense()
@@ -576,7 +576,7 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
             pmf_crvs = _marginalize(pmf_joint, idx_crvs)
             pmf_subrvs = [_marginalize(pmf_joint, idx) for idx in idx_subrvs] + [pmf_joint, pmf_crvs]
 
-            pmf_ci = reduce(torch.mul, [p.pow(pw) for p, pw in zip(pmf_subrvs, power)])
+            pmf_ci = reduce(torch.mul, [p.pow(pw) for p, pw in zip(pmf_subrvs, power, strict=True)])
 
             # "Safe where" pattern: ensure log argument is always positive
             safe_pmf_ci = torch.where(pmf_joint > 0, pmf_ci, torch.ones_like(pmf_ci))
@@ -738,7 +738,7 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
             h_joint = self._h(pmf_joint) - h_crvs
 
             candidates = []
-            for part, norm in zip(parts, part_norms):
+            for part, norm in zip(parts, part_norms, strict=True):
                 h_parts = sum(self._h(pmf_parts[p]) - h_crvs for p in part)
                 candidates.append((h_parts - h_joint) / norm)
 
@@ -997,7 +997,7 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
                 tolerance_grad=1e-10, tolerance_change=1e-12,
             )
 
-            def closure():
+            def closure(optimizer=optimizer, _lam_eq=_lam_eq, _mu=_mu, _lam_ineq=_lam_ineq):
                 optimizer.zero_grad()
                 # Project to box bounds before evaluating.  Use a very
                 # tight epsilon -- the "safe where" pattern in the
@@ -1065,10 +1065,7 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
                 max_viol = max(max_eq_viol, max_ineq_viol)
 
                 obj_val = raw_objective(x)
-                if isinstance(obj_val, Tensor):
-                    obj_val = float(obj_val.detach().cpu().item())
-                else:
-                    obj_val = float(obj_val)
+                obj_val = float(obj_val.detach().cpu().item()) if isinstance(obj_val, Tensor) else float(obj_val)
 
                 if obj_val < best_obj and max_viol < al_tol * 100:
                     best_obj = obj_val
@@ -1313,10 +1310,9 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
             result_scipy = self._optimization_backend(
                 x0, minimizer_kwargs, niter)
 
-            if result_scipy:
-                if result is None or _obj_val(result_scipy) < _obj_val(result):
-                    logger.info("scipy SLSQP found a better solution than AL")
-                    result = result_scipy
+            if result_scipy and (result is None or _obj_val(result_scipy) < _obj_val(result)):
+                logger.info("scipy SLSQP found a better solution than AL")
+                result = result_scipy
         else:
             # ---- scipy fallback path ----
             if x0.size > _MAX_NATIVE_DIM:
@@ -1340,10 +1336,7 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
             self._polish(cutoff=polish)
 
         obj_val = self._torch_raw_objective(self._optima)
-        if isinstance(obj_val, Tensor):
-            obj_val = float(obj_val.detach().cpu().item())
-        else:
-            obj_val = float(np.asarray(obj_val))
+        obj_val = float(obj_val.detach().cpu().item()) if isinstance(obj_val, Tensor) else float(np.asarray(obj_val))
         logger.info("PyTorch optimization complete: objective={obj}", obj=obj_val)
 
         return result
@@ -1681,14 +1674,14 @@ class BaseAuxVarTorchOptimizer(BaseNonConvexTorchOptimizer):
         arvs = sorted(self._arvs)
 
         self._full_slices = []
-        for i, (auxvar, var) in enumerate(zip(self._aux_vars, arvs)):
+        for i, (auxvar, var) in enumerate(zip(self._aux_vars, arvs, strict=True)):
             relevant_vars = {self._n + b for b in auxvar.bases}
             index = sorted(self._full_vars) + [self._n + a for a in arvs[:i + 1]]
             var += self._n
             self._full_slices.append(tuple(colon if j in relevant_vars | {var} else None for j in index))
 
         self._slices = []
-        for i, (auxvar, var) in enumerate(zip(self._aux_vars, arvs)):
+        for i, (auxvar, var) in enumerate(zip(self._aux_vars, arvs, strict=True)):
             relevant_vars = auxvar.bases
             index = sorted(self._rvs | self._crvs | set(arvs[:i + 1]))
             self._slices.append(tuple(colon if j in relevant_vars | {var} else None for j in index))
@@ -1713,7 +1706,7 @@ class BaseAuxVarTorchOptimizer(BaseNonConvexTorchOptimizer):
         """
         parts = [x[a:b] for a, b in self._parts]
 
-        for part, auxvar in zip(parts, self._aux_vars):
+        for part, auxvar in zip(parts, self._aux_vars, strict=True):
             channel = part.reshape(auxvar.shape)
             channel = channel / channel.sum(dim=-1, keepdim=True)
             channel = torch.where(torch.isnan(channel), auxvar.mask, channel)
@@ -1740,7 +1733,7 @@ class BaseAuxVarTorchOptimizer(BaseNonConvexTorchOptimizer):
 
         channels = list(self._construct_channels(x.clone()))
 
-        for channel, slc in zip(channels, self._slices):
+        for channel, slc in zip(channels, self._slices, strict=True):
             joint = joint.unsqueeze(-1) * channel[slc]
 
         return joint
@@ -1790,7 +1783,7 @@ class BaseAuxVarTorchOptimizer(BaseNonConvexTorchOptimizer):
 
         channels = list(self._construct_channels(x.clone()))
 
-        for channel, slc in zip(channels, self._full_slices):
+        for channel, slc in zip(channels, self._full_slices, strict=True):
             joint = joint.unsqueeze(-1) * channel[slc]
 
         return joint
@@ -1899,7 +1892,7 @@ class BaseAuxVarTorchOptimizer(BaseNonConvexTorchOptimizer):
             string = False
 
         joint = _to_numpy(self.construct_full_joint(x))
-        outcomes, pmf = zip(*[(o, p) for o, p in np.ndenumerate(joint) if p > cutoff])
+        outcomes, pmf = zip(*[(o, p) for o, p in np.ndenumerate(joint) if p > cutoff], strict=True)
 
         # normalize, in case cutoffs removed a significant amount of pmf
         pmf = np.asarray(pmf)
@@ -1908,28 +1901,26 @@ class BaseAuxVarTorchOptimizer(BaseNonConvexTorchOptimizer):
         d = Distribution(outcomes, pmf)
 
         mapping = {}
-        for i, unq in zip(sorted(self._n + i for i in self._rvs | self._crvs), self._unqs):
+        for i, unq in zip(sorted(self._n + i for i in self._rvs | self._crvs), self._unqs, strict=True):
             if len(unq.inverse) > 1:
                 n = d.outcome_length()
-                d = insert_rvf(d, lambda o: unq.inverse[o[i]])
+                d = insert_rvf(d, lambda o, unq=unq, i=i: unq.inverse[o[i]])
                 mapping[i] = tuple(range(n, n + len(unq.inverse[0])))
 
         new_map = {}
-        for rv, rvs in zip(sorted(self._rvs), self._true_rvs):
+        for rv, rvs in zip(sorted(self._rvs), self._true_rvs, strict=True):
             i = rv + self._n
-            for a, b in zip(rvs, mapping[i]):
+            for a, b in zip(rvs, mapping[i], strict=True):
                 new_map[a] = b
 
-        mapping = [[(new_map[i] if i in new_map else i) for i in range(len(self._full_shape))
+        mapping = [[new_map.get(i, i) for i in range(len(self._full_shape))
                                                                  if i not in self._proxy_vars]]
 
         d = d.coalesce(mapping, extract=True)
 
         if string:
-            try:
+            with contextlib.suppress(ditException):
                 d = modify_outcomes(d, lambda o: ''.join(map(str, o)))
-            except ditException:
-                pass
 
         return d
 

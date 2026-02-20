@@ -89,7 +89,7 @@ def _make_distribution(outcomes, pmf=None, sample_space=None,
 
     # Tuple outcomes, and an index.
     d.outcomes = tuple(outcomes)
-    d._outcomes_index = dict(zip(outcomes, range(len(outcomes))))
+    d._outcomes_index = dict(zip(outcomes, range(len(outcomes)), strict=True))
 
     if isinstance(sample_space, BaseSampleSpace):
         if sample_space._meta['is_joint']:
@@ -354,7 +354,7 @@ class ScalarDistribution(BaseDistribution):
         if sort and len(outcomes) > 0 and not skip_sort:
             outcomes, pmf, index = reorder(outcomes, pmf, self._sample_space)
         else:
-            index = dict(zip(outcomes, range(len(outcomes))))
+            index = dict(zip(outcomes, range(len(outcomes)), strict=True))
 
         # Force the distribution to be numerical and a NumPy array.
         self.pmf = np.asarray(pmf, dtype=float)
@@ -401,9 +401,9 @@ class ScalarDistribution(BaseDistribution):
             pmf = outcomes
             try:
                 np.asarray(pmf, dtype=float)
-            except ValueError:
+            except ValueError as err:
                 msg = 'Failed to convert `outcomes` to an array.'
-                raise ditException(msg)
+                raise ditException(msg) from err
             outcomes = range(len(pmf))
             skip_sort = True
 
@@ -411,8 +411,8 @@ class ScalarDistribution(BaseDistribution):
         try:
             len(outcomes)
             len(pmf)
-        except TypeError:
-            raise TypeError('`outcomes` and `pmf` must be sequences.')
+        except TypeError as err:
+            raise TypeError('`outcomes` and `pmf` must be sequences.') from err
 
         if len(pmf) != len(outcomes):
             msg = "Unequal lengths for `pmf` and `outcomes`"
@@ -424,17 +424,14 @@ class ScalarDistribution(BaseDistribution):
         if len(outcomes):
             try:
                 outcomes[0]
-            except TypeError:
-                raise ditException('`outcomes` must be indexable.')
+            except TypeError as err:
+                raise ditException('`outcomes` must be indexable.') from err
 
         # Determine if the pmf represents log probabilities or not.
         if base is None:
             # Provide help for obvious case of linear probabilities.
             from .validate import is_pmf
-            if is_pmf(np.asarray(pmf, dtype=float), LinearOperations()):
-                base = 'linear'
-            else:
-                base = ditParams['base']
+            base = 'linear' if is_pmf(np.asarray(pmf, dtype=float), LinearOperations()) else ditParams['base']
         self.ops = get_ops(base)
 
         return outcomes, pmf, skip_sort
@@ -1321,7 +1318,7 @@ class ScalarDistribution(BaseDistribution):
             for (o1, p1), (o2, p2) in product(self.zipped(), d2.zipped()):
                 dist[tuple(flatten((o1, o2)))] += self.ops.mult(p1, p2)
 
-            return Distribution(*zip(*dist.items()), base=self.get_base())
+            return Distribution(*zip(*dist.items(), strict=True), base=self.get_base())
         else:
             msg = "Cannot construct a joint from types {0} and {1}"
             raise NotImplementedError(msg.format(type(self), type(other)))
@@ -1397,7 +1394,7 @@ class ScalarDistribution(BaseDistribution):
             new_outcomes = tuple(outcomes[i] for i in new_indexes)
             self.outcomes = new_outcomes
             self._outcomes_index = dict(zip(new_outcomes,
-                                        range(len(new_outcomes))))
+                                        range(len(new_outcomes)), strict=True))
 
             # Update the probabilities.
             self.pmf = self.pmf[new_indexes]
@@ -1431,10 +1428,7 @@ class ScalarDistribution(BaseDistribution):
             raise InvalidOutcome(outcome)
 
         idx = self._outcomes_index.get(outcome, None)
-        if idx is None:
-            p = self.ops.zero
-        else:
-            p = self.pmf[idx]
+        p = self.ops.zero if idx is None else self.pmf[idx]
         return p
 
     def __setitem__(self, outcome, value):
@@ -1609,10 +1603,7 @@ class ScalarDistribution(BaseDistribution):
                 return False
 
         # Outcome spaces must be equal.
-        if self._sample_space != other._sample_space:
-            return False
-
-        return True
+        return self._sample_space == other._sample_space
 
     def is_dense(self):
         """
@@ -1742,7 +1733,7 @@ class ScalarDistribution(BaseDistribution):
         pmf = [self[o] for o in outcomes]
         self.pmf = np.array(pmf, dtype=float)
         self.outcomes = outcomes
-        self._outcomes_index = dict(zip(outcomes, range(len(outcomes))))
+        self._outcomes_index = dict(zip(outcomes, range(len(outcomes)), strict=True))
 
         self._meta['is_sparse'] = False
         n = len(self) - L
@@ -1786,7 +1777,7 @@ class ScalarDistribution(BaseDistribution):
 
             # Update the outcomes and the outcomes index.
             self.outcomes = tuple(outcomes)
-            self._outcomes_index = dict(zip(outcomes, range(len(outcomes))))
+            self._outcomes_index = dict(zip(outcomes, range(len(outcomes)), strict=True))
 
             # Update the probabilities.
             self.pmf = np.array(pmf)

@@ -187,10 +187,7 @@ class AbstractDenseDistribution:
 
             return p
 
-        if indexes in cache:
-            p = cache[indexes]
-        else:
-            p = calculate(indexes)
+        p = cache[indexes] if indexes in cache else calculate(indexes)
 
         # p is a 1D array of sets. Convert it to a 2D array.
         p = np.array([sorted(element) for element in p])
@@ -275,7 +272,7 @@ def distribution_constraint(indexes1, indexes2, distribution):
     A = np.zeros((len(d1), distribution.n_elements), dtype=int)
     b = np.zeros(distribution.n_elements, dtype=int)
 
-    for idx, (w1, w2) in enumerate(zip(d1, d2)):
+    for idx, (w1, w2) in enumerate(zip(d1, d2, strict=True)):
         symdiff = set.symmetric_difference(set(w1), set(w2))
         vec = [1 if i in w1 else -1 for i in symdiff]
         A[(idx,), tuple(symdiff)] = vec

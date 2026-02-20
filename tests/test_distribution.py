@@ -15,7 +15,7 @@ def test_dist_iter1():
     d = Distribution(outcomes, pmf)
     for o in d:
         assert o in outcomes
-    for o1, o2 in zip(d, outcomes):
+    for o1, o2 in zip(d, outcomes, strict=True):
         assert o1 == o2
 
 
@@ -25,7 +25,7 @@ def test_dist_iter2():
     d = Distribution(outcomes, pmf)
     for o in reversed(d):
         assert o in outcomes
-    for o1, o2 in zip(reversed(d), reversed(outcomes)):
+    for o1, o2 in zip(reversed(d), reversed(outcomes), strict=True):
         assert o1 == o2
 
 
@@ -373,5 +373,5 @@ def test_multivariate_lookup():
     assert d['000'] == 1 / 4
     assert d['0', '0', '0'] == 1 / 4
 
-    with pytest.raises(Exception):  # noqa: PT011
+    with pytest.raises(Exception):  # noqa: B017
         d['0', '0', 'A']  # should raise exception

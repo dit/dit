@@ -18,7 +18,7 @@ __all__ = (
 )
 
 
-class ditException(Exception):
+class ditException(Exception):  # noqa: N801, N818
     """
     Base class for all `dit` exceptions.
     """
@@ -103,10 +103,7 @@ class InvalidOutcome(ditException):
             bad = args[0]
         except IndexError:
             # Demand a custom message.
-            if 'msg' in kwargs:
-                msg = kwargs['msg']
-            else:
-                msg = ''
+            msg = kwargs.get('msg', '')
         else:
             if single:
                 msg = f"Outcome {bad!r} is not in the sample space."

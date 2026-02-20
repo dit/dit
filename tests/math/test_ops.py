@@ -22,7 +22,7 @@ class TestLinear:
         X = np.array([0, 1, 0, -1, 0, 1, -1, 1, -1])
         Y = np.array([0, 0, 1, 0, -1, -1, 1, 1, -1])
         Z = np.array([0, 1, 1, -1, -1, 0, 0, 2, -2])
-        for x, y, z in zip(X, Y, Z):
+        for x, y, z in zip(X, Y, Z, strict=True):
             assert self.ops.add(x, y) == pytest.approx(z)
         assert np.allclose(self.ops.add(X, Y), Z)
 
@@ -41,14 +41,14 @@ class TestLinear:
                       [2, 0, -2],
                       [-1, -1, -1]])
         Y = np.array([0, 3, 3, 0, 0, -3])
-        for x, y in zip(X, Y):
+        for x, y in zip(X, Y, strict=True):
             assert self.ops.add_reduce(x) == pytest.approx(y)
 
     def test_mult(self):
         X = np.array([0, 1, 0, -1, 0, 1, -1, 1, -1, 2, 2, 2])
         Y = np.array([0, 0, 1, 0, -1, -1, 1, 1, -1, 1, 2, -2])
         Z = np.array([0, 0, 0, 0, 0, -1, -1, 1, 1, 2, 4, -4])
-        for x, y, z in zip(X, Y, Z):
+        for x, y, z in zip(X, Y, Z, strict=True):
             assert self.ops.mult(x, y) == pytest.approx(z)
         assert np.allclose(self.ops.mult(X, Y), Z)
 
@@ -62,7 +62,7 @@ class TestLinear:
     def test_invert(self):
         X = np.array([1, 2, -1, 10], dtype=float)
         Y = np.array([1, 1 / 2, -1, 1 / 10])
-        for x, y in zip(X, Y):
+        for x, y in zip(X, Y, strict=True):
             assert self.ops.invert(x) == pytest.approx(y)
 
     def test_mult_reduce(self):
@@ -85,7 +85,7 @@ class TestLog2:
         X = self.ops.log(np.array([0, 1, 0, 2, 0, 1, 2, 1, 2]))
         Y = self.ops.log(np.array([0, 0, 1, 0, 2, 2, 1, 1, 2]))
         Z = self.ops.log(np.array([0, 1, 1, 2, 2, 3, 3, 2, 4]))
-        for x, y, z in zip(X, Y, Z):
+        for x, y, z in zip(X, Y, Z, strict=True):
             assert np.allclose(self.ops.add(x, y), z)
         assert np.allclose(self.ops.add(X, Y), Z)
 
@@ -99,7 +99,7 @@ class TestLog2:
     def test_add_reduce(self):
         X = self.ops.log(np.array([[0, 0, 0], [0, 1, 2], [1, 1, 1]]))
         Y = self.ops.log(np.array([0, 3, 3]))
-        for x, y in zip(X, Y):
+        for x, y in zip(X, Y, strict=True):
             assert np.allclose(self.ops.add_reduce(x), y)
         assert np.allclose(self.ops.add_reduce(np.array([])), self.ops.zero)
 
@@ -107,7 +107,7 @@ class TestLog2:
         X = self.ops.log(np.array([0, 1, 0, 0.5, 0, 1, 0.5, 1, 0.5, 2, 2, 2]))
         Y = self.ops.log(np.array([0, 0, 1, 0, 5, 0.5, 1, 1, 0.5, 1, 2, 0.5]))
         Z = self.ops.log(np.array([0, 0, 0, 0, 0, 0.5, 0.5, 1, 0.25, 2, 4, 1]))
-        for x, y, z in zip(X, Y, Z):
+        for x, y, z in zip(X, Y, Z, strict=True):
             assert np.allclose(self.ops.mult(x, y), z)
         assert np.allclose(self.ops.mult(X, Y), Z)
 
@@ -121,7 +121,7 @@ class TestLog2:
     def test_invert(self):
         X = self.ops.log(np.array([1, 2, 0.5, 10], dtype=float))
         Y = self.ops.log(np.array([1, 1 / 2, 2, 1 / 10]))
-        for x, y in zip(X, Y):
+        for x, y in zip(X, Y, strict=True):
             assert np.allclose(self.ops.invert(x), y)
 
     def test_mult_reduce(self):

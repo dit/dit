@@ -327,7 +327,7 @@ class InformationBottleneckDivergence(InformationBottleneck):
                 p_y_zx = p_zxy / p_zxy.sum(axis=2, keepdims=True)
                 q_y_zt = q_zty / q_zty.sum(axis=2, keepdims=True)
 
-                dist_zxt = np.asarray([[[self._divergence(a, b) for b in q_y_t] for a in p_y_x] for p_y_x, q_y_t in zip(p_y_zx, q_y_zt)])
+                dist_zxt = np.asarray([[[self._divergence(a, b) for b in q_y_t] for a in p_y_x] for p_y_x, q_y_t in zip(p_y_zx, q_y_zt, strict=True)])
                 dist_zxt[np.isinf(dist_zxt)] = 0
                 dist = (q_zxt * dist_zxt).sum()
                 return dist

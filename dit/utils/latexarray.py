@@ -33,10 +33,10 @@ def printoptions(strip_zeros=True, **kwargs):
         kwargs['trim'] = 'k'
     origcall = arrayprint.FloatingFormat.__call__
 
-    def __call__(self, x):
+    def call(self, x):
         return origcall.__call__(self, x)
 
-    arrayprint.FloatingFormat.__call__ = __call__
+    arrayprint.FloatingFormat.__call__ = call
     original = np.get_printoptions()
     np.set_printoptions(**kwargs)
     yield
@@ -95,10 +95,8 @@ def to_latex__numerical(a, decimals, tab):
             # Strip [ and ], remove newlines, and split on whitespace
             elements = row.__str__()[1:-1].replace('\n', '').split()
             # hack to fix trailing zeros, really the numpy stuff needs to be updated.
-            try:
+            with contextlib.suppress(Exception):
                 elements = [element + '0' * (decimals - len(element.split('.')[1])) for element in elements]
-            except:  # noqa; S110
-                pass
             line = [tab, ' & '.join(elements), r' \\']
             lines.append(''.join(line))
 
@@ -211,10 +209,7 @@ def to_latex(a, exact=False, decimals=3, tab='  '):
 
     """
     if exact:
-        if exact is True:
-            tol = 1e-6
-        else:
-            tol = exact
+        tol = 1e-6 if exact is True else exact
         return to_latex__exact(a, tol, tab)
     else:
         return to_latex__numerical(a, decimals, tab)
@@ -264,8 +259,8 @@ def to_pdf(a, exact=False,
             subprocess.call(args, stdout=fp, stderr=fp)  # noqa: S603
 
         # Create another tempfile which will not be deleted.
-        pdffobj = tempfile.NamedTemporaryFile(suffix='_pmf.pdf', delete=False)
-        pdffobj.close()
+        with tempfile.NamedTemporaryFile(suffix='_pmf.pdf', delete=False) as pdffobj:
+            pass
 
         # Crop the PDF and copy to persistent tempfile.
         pdfpath = latexfobj.name[:-3] + 'pdf'

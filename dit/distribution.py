@@ -100,11 +100,7 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9,
             msg = '`show_mask` can be `True` only for joint distributions'
             raise ditException(msg)
 
-        if show_mask not in [True, False]:
-            # The user is specifying what the mask should look like.
-            wc = show_mask
-        else:
-            wc = '*'
+        wc = show_mask if show_mask not in [True, False] else '*'
 
         ctor = dist._outcome_ctor
 
@@ -138,7 +134,7 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9,
             # First, convert the elements of the outcome to strings.
             outcomes_ = [map(str, outcome) for outcome in outcomes]
             # Now convert the entire outcome to a string
-            outcomes_ = map(lambda o: ''.join(o), outcomes_)
+            outcomes_ = (''.join(o) for o in outcomes_)
             # Force the iterators to expand in case there are exceptions.
             outcomes = list(outcomes_)
         except:
@@ -147,32 +143,19 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9,
         outcomes = map(str, outcomes)
 
     outcomes = list(outcomes)
-    if len(outcomes):
-        max_length = max(map(len, outcomes))
-    else:
-        max_length = 0
+    max_length = max(map(len, outcomes)) if len(outcomes) else 0
 
     # 1) Convert to linear probabilities, if necessary.
-    if exact:
-        # Copy to avoid precision loss
-        d = dist.copy(base='linear')
-    else:
-        d = dist
+    d = dist.copy(base='linear') if exact else dist
 
     # 2) Round, if necessary, possibly after converting to linear probabilities.
-    if digits is not None and digits is not False:
-        pmf = d.pmf.round(digits)
-    else:
-        pmf = d.pmf
+    pmf = d.pmf.round(digits) if digits is not None and digits is not False else d.pmf
 
     # 3) Construct fractions, if necessary.
     if exact:
         pmf = [approximate_fraction(x, tol) for x in pmf]
 
-    if d.is_log():
-        pstr = 'log p(x)'
-    else:
-        pstr = 'p(x)'
+    pstr = 'log p(x)' if d.is_log() else 'p(x)'
 
     base = d.get_base()
 
@@ -628,7 +611,7 @@ class BaseDistribution:
         table_header = '<tr>' + ''.join(f"<th>{a}</th>" for a in rv_names) + f"<th>{pstr}</th></tr>"
         table_rows = ''.join(
             '<tr>' + ''.join(f'<td>{_}</td>' for _ in o) + f'<td>{p}</td></tr>' for o, p in
-            zip(outcomes, pmf))
+            zip(outcomes, pmf, strict=True))
         table = f'<table>{table_header}{table_rows}</table>'
 
         output = f'<div><div style="float: left">{header}</div><div style="float: left">{table}</div></div>'
@@ -678,12 +661,12 @@ class BaseDistribution:
                 base]
 
         L = max(map(len, headers))
-        for head, val in zip(headers, vals):
+        for head, val in zip(headers, vals, strict=True):
             s.write(f"{head.ljust(L)}{val}\n")
         s.write("\n")
 
         s.write(''.join(['x'.ljust(max_length), colsep, pstr, "\n"]))
-        for o, p in zip(outcomes, pmf):
+        for o, p in zip(outcomes, pmf, strict=True):
             s.write(''.join([o.ljust(max_length), colsep, str(p), "\n"]))
 
         s.seek(0)
@@ -754,8 +737,7 @@ class BaseDistribution:
             raise ditException('Invalid mode.')
 
         if mode == 'pmf':
-            for x in zip(self.outcomes, self.pmf):
-                yield x
+            yield from zip(self.outcomes, self.pmf, strict=True)
         elif mode == 'atoms':
             # Then we want to iterate over the sample space.
             #
@@ -768,7 +750,7 @@ class BaseDistribution:
             is_null = self.ops.is_null
             # Here we can shortcut and go through outcomes and pmf,
             # while pruning null outcomes.
-            for outcome, prob in zip(self.outcomes, self.pmf):
+            for outcome, prob in zip(self.outcomes, self.pmf, strict=True):
                 if not is_null(prob):
                     yield outcome, prob
 

@@ -112,17 +112,11 @@ def maximum_correlation(dist, rvs=None, crvs=None, rv_mode=None):
         msg = f'Maximum correlation can only be computed for 2 variables, not {len(rvs)}.'
         raise ditException(msg)
 
-    if crvs:
-        dist = dist.copy().coalesce(rvs + [crvs])
-    else:
-        dist = dist.copy().coalesce(rvs)
+    dist = dist.copy().coalesce(rvs + [crvs]) if crvs else dist.copy().coalesce(rvs)
 
     dist.make_dense()
     pmf = dist.pmf.reshape(list(map(len, dist.alphabet)))
 
-    if crvs:
-        rho_max = conditional_maximum_correlation_pmf(pmf)
-    else:
-        rho_max = maximum_correlation_pmf(pmf)
+    rho_max = conditional_maximum_correlation_pmf(pmf) if crvs else maximum_correlation_pmf(pmf)
 
     return rho_max

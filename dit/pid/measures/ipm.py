@@ -33,7 +33,7 @@ class PID_PM(BasePID):
         def min_h_s_g_t(outcome):
             t = outcome[-1]
             indexes = [p_s_g_t[0].outcomes.index((t,)) for p_s_g_t in p_s_g_ts]
-            return min(-np.log2(p_s_g_ts[i][1][j][(e,)]) for i, (e, j) in enumerate(zip(outcome[:-1], indexes)))
+            return min(-np.log2(p_s_g_ts[i][1][j][(e,)]) for i, (e, j) in enumerate(zip(outcome[:-1], indexes, strict=True)))
 
         r_plus = np.nansum([dist[outcome] * min_h_s(outcome) for outcome in dist.outcomes])
 

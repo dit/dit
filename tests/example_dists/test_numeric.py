@@ -62,7 +62,7 @@ def test_uniform2(v):
         uniform(v)
 
 
-@pytest.mark.parametrize(('a', 'b'), zip([1, 2, 3, 4, 5], [5, 7, 9, 11, 13]))
+@pytest.mark.parametrize(('a', 'b'), zip([1, 2, 3, 4, 5], [5, 7, 9, 11, 13], strict=True))
 def test_uniform3(a, b):
     """ Test uniform distribution construction """
     d = uniform(a, b)

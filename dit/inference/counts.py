@@ -2,6 +2,8 @@
 Non-cython methods for getting counts and distributions from data.
 """
 
+import contextlib
+
 import numpy as np
 
 __all__ = (
@@ -86,10 +88,8 @@ except ImportError:  # no cython
         Only the rows corresponding to observed histories are returned.
 
         """
-        try:
+        with contextlib.suppress(TypeError):
             data = list(map(tuple, data))
-        except TypeError:
-            pass
         counts = Counter(windowed_iter(data, hLength + fLength))
         cond_counts = defaultdict(lambda: defaultdict(int))
         for word, count in counts.items():
@@ -137,10 +137,8 @@ except ImportError:  # no cython
         """
         from dit import Distribution, ditParams
 
-        try:
+        with contextlib.suppress(TypeError):
             d = list(map(tuple, d))
-        except TypeError:
-            pass
 
         if base is None:
             base = ditParams['base']
@@ -155,10 +153,8 @@ except ImportError:  # no cython
         dist.set_base(base)
 
         if L == 1:
-            try:
+            with contextlib.suppress(ditException):
                 dist = modify_outcomes(dist, lambda o: o[0])
-            except ditException:
-                pass
 
         return dist
 

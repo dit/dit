@@ -30,9 +30,9 @@ __all__ = (
 def str_outcome_ctor(iterable):
     try:
         return ''.join(iterable)
-    except TypeError:
+    except TypeError as err:
         msg = f'Outcome could not be constructed from {iterable!r}'
-        raise ditException(msg)
+        raise ditException(msg) from err
 
 
 #
@@ -47,7 +47,7 @@ constructor_map = {
 }
 
 
-class RV_Mode:
+class RV_Mode:  # noqa: N801
     """
     Class to manage how rvs and crvs are specified and interpreted.
     """
@@ -71,15 +71,15 @@ class RV_Mode:
     def __getitem__(self, item):
         try:
             mode = self._mapping[item]
-        except KeyError:
-            raise KeyError('Invalid value for `rv_mode`')
+        except KeyError as err:
+            raise KeyError('Invalid value for `rv_mode`') from err
 
         if item in self._deprecated:
             dep = self._deprecated[self._deprecated.index(item)]
             if type(item) is type(dep):
                 msg = f'Deprecated value for `rv_mode`: {item!r}.'
                 msg += ' See docstring for new conventions.'
-                warnings.warn(msg, DeprecationWarning)
+                warnings.warn(msg, DeprecationWarning, stacklevel=2)
 
         return mode
 
@@ -128,8 +128,8 @@ def construct_alphabets(outcomes):
     # Make sure outcomes is a sequence
     try:
         L = len(outcomes)
-    except TypeError:
-        raise TypeError('`outcomes` must be a sequence.')
+    except TypeError as err:
+        raise TypeError('`outcomes` must be a sequence.') from err
 
     if L == 0:
         raise ditException('`outcomes` must not be empty.')
@@ -138,10 +138,10 @@ def construct_alphabets(outcomes):
     # but this check is sufficient for now.
     try:
         lengths = list(map(len, outcomes))
-    except TypeError:
+    except TypeError as err:
         raise ditException('At least one element in `outcomes` does not implement __len__. '
                            'Distribution.from_ndarray or ScalarDistribution may help '
-                           'resolve this.')
+                           'resolve this.') from err
     else:
         outcome_length = lengths[0]
 
@@ -204,12 +204,7 @@ def get_product_func(klass):
 
     """
     ctor = get_outcome_ctor(klass)
-    if ctor == tuple:
-        # No need to modify the output of itertools.
-        product = itertools.product
-    else:
-        # Assume the sequence-like constructor can handle tuples as input.
-        product = product_maker(ctor)
+    product = itertools.product if ctor is tuple else product_maker(ctor)
 
     return product
 
@@ -253,10 +248,7 @@ def normalize_rvs(dist, rvs, crvs, rv_mode):
             # Set so that each random variable is its own group.
             rvs = [[i] for i in range(dist.outcome_length())]
             rv_mode = RV_MODES.INDICES
-        if crvs is None:
-            crvs = []
-        else:
-            crvs = list(flatten(crvs))
+        crvs = [] if crvs is None else list(flatten(crvs))
     else:
         msg = "The information measure requires a joint distribution."
         raise ditException(msg)
@@ -342,11 +334,11 @@ def parse_rvs(dist, rvs, rv_mode=None, unique=True, sort=True):
         raise ditException(msg)
 
     # Sort the random variable names (or indexes) by their index.
-    out = zip(rvs, indexes)
+    out = zip(rvs, indexes, strict=True)
     if sort:
         out = list(out)
         out.sort(key=itemgetter(1))
-    rvs, indexes = list(zip(*out))
+    rvs, indexes = list(zip(*out, strict=True))
 
     return rvs, indexes
 
@@ -367,21 +359,17 @@ def reorder(outcomes, pmf, sample_space, index=None):
                 sample_space.index(outcome)
             except ValueError:
                 bad.append(outcome)
-        if len(bad) == 1:
-            single = True
-        else:
-            single = False
-        raise InvalidOutcome(bad, single=single)
+        raise InvalidOutcome(bad, single=len(bad) == 1) from None
 
     order.sort()
-    _, order = zip(*order)
+    _, order = zip(*order, strict=True)
 
     if index is None:
-        index = dict(zip(outcomes, range(len(outcomes))))
+        index = dict(zip(outcomes, range(len(outcomes)), strict=True))
 
     outcomes = [outcomes[i] for i in order]
     pmf = [pmf[i] for i in order]
-    new_index = dict(zip(outcomes, range(len(outcomes))))
+    new_index = dict(zip(outcomes, range(len(outcomes)), strict=True))
     return outcomes, pmf, new_index
 
 
@@ -413,10 +401,7 @@ def copypmf(d, base=None, mode='asis'):
 
     # Sanitize inputs, need numerical base for old base.
     base_old = d.get_base(numerical=True)
-    if base is None:
-        base_new = base_old
-    else:
-        base_new = validate_base(base)
+    base_new = base_old if base is None else validate_base(base)
 
     # Create ops instances.
     ops_old = d.ops
@@ -432,10 +417,7 @@ def copypmf(d, base=None, mode='asis'):
 
     # Determine the conversion targets.
     islog_old = d.is_log()
-    if base_new == 'linear':
-        islog_new = False
-    else:
-        islog_new = True
+    islog_new = base_new != 'linear'
 
     # Do the conversion!
     if islog_old and islog_new:

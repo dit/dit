@@ -12,6 +12,7 @@ Notes
 Requires JAX to be installed: pip install jax jaxlib
 """
 
+import contextlib
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 from copy import deepcopy
@@ -41,7 +42,7 @@ except ImportError:
 
 try:
     import optimistix as optx
-    from slsqp_jax import SLSQP as JaxSLSQP
+    from slsqp_jax import SLSQP as JaxSLSQP  # noqa: N811
     SLSQP_JAX_AVAILABLE = True
 except ImportError:
     SLSQP_JAX_AVAILABLE = False
@@ -49,12 +50,12 @@ except ImportError:
 from boltons.iterutils import pairwise
 from scipy.optimize import Bounds, basinhopping, differential_evolution, minimize, shgo
 
-from ..distconst import insert_rvf, modify_outcomes
-from ..npdist import Distribution
 from ..algorithms.channelcapacity import channel_capacity
+from ..distconst import insert_rvf, modify_outcomes
 from ..exceptions import OptimizationException, ditException
 from ..helpers import flatten, normalize_rvs, parse_rvs
 from ..math import prod, sample_simplex
+from ..npdist import Distribution
 from ..utils import partitions, powerset
 from ..utils.optimization import (
     BasinHoppingCallBack,
@@ -161,7 +162,7 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         self._unqs = []
         for var in self._true_rvs + [self._true_crvs]:
             unq = Uniquifier()
-            self._dist = insert_rvf(self._dist, lambda x: (unq(tuple(x[i] for i in var)),))
+            self._dist = insert_rvf(self._dist, lambda x, unq=unq, var=var: (unq(tuple(x[i] for i in var)),))
             self._unqs.append(unq)
 
         self._dist.make_dense()
@@ -552,7 +553,7 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
             pmf_crvs = pmf_joint.sum(axis=idx_crvs, keepdims=True)
             pmf_subrvs = [pmf_joint.sum(axis=idx, keepdims=True) for idx in idx_subrvs] + [pmf_joint, pmf_crvs]
 
-            pmf_ci = reduce(jnp.multiply, [p**pw for p, pw in zip(pmf_subrvs, power)])
+            pmf_ci = reduce(jnp.multiply, [p**pw for p, pw in zip(pmf_subrvs, power, strict=True)])
             safe_pmf_ci = jnp.where(pmf_joint > 0, pmf_ci, 1.0)
 
             ci = jnp.nansum(jnp.where(pmf_joint > 0, pmf_joint * jnp.log2(safe_pmf_ci), 0.0))
@@ -720,7 +721,7 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
             h_joint = self._h(pmf_joint) - h_crvs
 
             candidates = []
-            for part, norm in zip(parts_tuple, part_norms):
+            for part, norm in zip(parts_tuple, part_norms, strict=True):
                 h_parts = sum(self._h(pmf_parts[p]) - h_crvs for p in part)
                 candidates.append((h_parts - h_joint) / norm)
 
@@ -1643,14 +1644,14 @@ class BaseAuxVarJaxOptimizer(BaseNonConvexJaxOptimizer):
         arvs = sorted(self._arvs)
 
         self._full_slices = []
-        for i, (auxvar, var) in enumerate(zip(self._aux_vars, arvs)):
+        for i, (auxvar, var) in enumerate(zip(self._aux_vars, arvs, strict=True)):
             relevant_vars = {self._n + b for b in auxvar.bases}
             index = sorted(self._full_vars) + [self._n + a for a in arvs[:i + 1]]
             var += self._n
             self._full_slices.append(tuple(colon if i in relevant_vars | {var} else jnp.newaxis for i in index))
 
         self._slices = []
-        for i, (auxvar, var) in enumerate(zip(self._aux_vars, arvs)):
+        for i, (auxvar, var) in enumerate(zip(self._aux_vars, arvs, strict=True)):
             relevant_vars = auxvar.bases
             index = sorted(self._rvs | self._crvs | set(arvs[:i + 1]))
             self._slices.append(tuple(colon if i in relevant_vars | {var} else jnp.newaxis for i in index))
@@ -1675,7 +1676,7 @@ class BaseAuxVarJaxOptimizer(BaseNonConvexJaxOptimizer):
         """
         parts = [x[a:b] for a, b in self._parts]
 
-        for part, auxvar in zip(parts, self._aux_vars):
+        for part, auxvar in zip(parts, self._aux_vars, strict=True):
             channel = part.reshape(auxvar.shape)
             channel = channel / channel.sum(axis=(-1,), keepdims=True)
             channel = jnp.where(jnp.isnan(channel), auxvar.mask, channel)
@@ -1702,7 +1703,7 @@ class BaseAuxVarJaxOptimizer(BaseNonConvexJaxOptimizer):
 
         channels = self._construct_channels(x.copy())
 
-        for channel, slc in zip(channels, self._slices):
+        for channel, slc in zip(channels, self._slices, strict=True):
             joint = joint[..., jnp.newaxis] * channel[slc]
 
         return joint
@@ -1752,7 +1753,7 @@ class BaseAuxVarJaxOptimizer(BaseNonConvexJaxOptimizer):
 
         channels = self._construct_channels(x.copy())
 
-        for channel, slc in zip(channels, self._full_slices):
+        for channel, slc in zip(channels, self._full_slices, strict=True):
             joint = joint[..., jnp.newaxis] * channel[slc]
 
         return joint
@@ -1861,7 +1862,7 @@ class BaseAuxVarJaxOptimizer(BaseNonConvexJaxOptimizer):
             string = False
 
         joint = np.array(self.construct_full_joint(x))
-        outcomes, pmf = zip(*[(o, p) for o, p in np.ndenumerate(joint) if p > cutoff])
+        outcomes, pmf = zip(*[(o, p) for o, p in np.ndenumerate(joint) if p > cutoff], strict=True)
 
         # normalize, in case cutoffs removed a significant amount of pmf
         pmf = np.asarray(pmf)
@@ -1870,28 +1871,26 @@ class BaseAuxVarJaxOptimizer(BaseNonConvexJaxOptimizer):
         d = Distribution(outcomes, pmf)
 
         mapping = {}
-        for i, unq in zip(sorted(self._n + i for i in self._rvs | self._crvs), self._unqs):
+        for i, unq in zip(sorted(self._n + i for i in self._rvs | self._crvs), self._unqs, strict=True):
             if len(unq.inverse) > 1:
                 n = d.outcome_length()
-                d = insert_rvf(d, lambda o: unq.inverse[o[i]])
+                d = insert_rvf(d, lambda o, unq=unq, i=i: unq.inverse[o[i]])
                 mapping[i] = tuple(range(n, n + len(unq.inverse[0])))
 
         new_map = {}
-        for rv, rvs in zip(sorted(self._rvs), self._true_rvs):
+        for rv, rvs in zip(sorted(self._rvs), self._true_rvs, strict=True):
             i = rv + self._n
-            for a, b in zip(rvs, mapping[i]):
+            for a, b in zip(rvs, mapping[i], strict=True):
                 new_map[a] = b
 
-        mapping = [[(new_map[i] if i in new_map else i) for i in range(len(self._full_shape))
-                                                                 if i not in self._proxy_vars]]
+        mapping = [[new_map.get(i, i) for i in range(len(self._full_shape))
+                    if i not in self._proxy_vars]]
 
         d = d.coalesce(mapping, extract=True)
 
         if string:
-            try:
+            with contextlib.suppress(ditException):
                 d = modify_outcomes(d, lambda o: ''.join(map(str, o)))
-            except ditException:
-                pass
 
         return d
 

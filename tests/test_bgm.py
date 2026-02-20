@@ -25,7 +25,7 @@ def test_distribution_from_bayesnet_nonames():
     assert d.is_approx_equal(d3)
 
     # Use a dictionary too
-    x.nodes[2]['dist'] = dict(zip(cdist.outcomes, dists))
+    x.nodes[2]['dist'] = dict(zip(cdist.outcomes, dists, strict=True))
     d4 = dit.distribution_from_bayesnet(x)
     assert d.is_approx_equal(d4)
 
@@ -72,10 +72,7 @@ def test_distribution_from_bayesnet_func():
         return 0.5
 
     def xor(node_val, parents):
-        if parents['A'] != parents['B']:
-            output = '1'
-        else:
-            output = '0'
+        output = '1' if parents['A'] != parents['B'] else '0'
 
         # If output agrees with passed in output, p = 1
         p = int(output == node_val)

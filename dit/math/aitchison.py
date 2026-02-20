@@ -216,10 +216,7 @@ def inner(x, y):
         Otherwise, a float is returned.
 
     """
-    if len(x.shape) == 1 and len(y.shape) == 1:
-        single = True
-    else:
-        single = False
+    single = len(x.shape) == 1 and len(y.shape) == 1
 
     x = np.atleast_2d(x)
     y = np.atleast_2d(y)
@@ -296,10 +293,7 @@ def clr(x):
         Centered log-ratio transformation(s) of `x`.
 
     """
-    if len(x.shape) == 1:
-        single = True
-    else:
-        single = False
+    single = len(x.shape) == 1
 
     x = np.atleast_2d(x)
     x_loggm = _log2_gm(x)[:, np.newaxis]
@@ -333,10 +327,7 @@ def alr(x):
         Additive log-ratio transformation(s) of `x`.
 
     """
-    if len(x.shape) == 1:
-        single = True
-    else:
-        single = False
+    single = len(x.shape) == 1
 
     x = np.atleast_2d(x)
 
@@ -376,10 +367,7 @@ def ilr(x):
         Isometric log-ratio transformation(s) of `x`.
 
     """
-    if len(x.shape) == 1:
-        single = True
-    else:
-        single = False
+    single = len(x.shape) == 1
 
     x = np.atleast_2d(x)
 
@@ -490,10 +478,7 @@ def alr_inv(xalr):
     The sum of the composition is assumed to be 1.
 
     """
-    if len(xalr.shape) == 1:
-        single = True
-    else:
-        single = False
+    single = len(xalr.shape) == 1
 
     xalr = np.atleast_2d(xalr)
 
@@ -529,10 +514,7 @@ def ilr_inv(xilr):
         The original compositions.
 
     """
-    if len(xilr.shape) == 1:
-        single = True
-    else:
-        single = False
+    single = len(xilr.shape) == 1
 
     xilr = np.atleast_2d(xilr)
 

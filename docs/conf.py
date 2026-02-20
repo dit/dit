@@ -11,6 +11,8 @@
 
 import os
 
+import dit
+
 # environment variable to know if the docs are being built on rtd.
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
@@ -76,8 +78,6 @@ copyright = '2013-2026, dit contributors'
 # built documents.
 #
 # The short X.Y version.
-import dit
-
 version = dit.__version__
 # The full version, including alpha/beta/rc tags.
 release = dit.__version__

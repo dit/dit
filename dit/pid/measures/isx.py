@@ -35,7 +35,7 @@ class PID_SX(BasePID):
             # sum over all outcomes where one of the sets of sources in "sources" is equal to the corresponding elements in outcome
             mask = np.zeros(len(dist.outcomes), dtype=bool)
             for var_set in var_sets:
-                mask |= np.array([all([dist.outcomes[rlz][i] == outcome[i] for i in var_set]) for rlz in range(len(dist.outcomes))])
+                mask |= np.array([all(dist.outcomes[rlz][i] == outcome[i] for i in var_set) for rlz in range(len(dist.outcomes))])
             return np.sum(dist.pmf, where=mask)
 
         def i_sx_plus(outcome):

@@ -99,7 +99,7 @@ class PID_Prec(BasePID):
                                     if rvndx != target_rvndx]) + 1
 
         # Iterate over all the random variables (R.V.s): i.e., all the sources + the target
-        for rvndx, rv in enumerate(pjoint.rvs):
+        for rvndx, _rv in enumerate(pjoint.rvs):
             variablesQgiven[rvndx] = {}
 
             mP = pjoint.marginal([rvndx])  # the marginal distribution over the current R.V.
@@ -107,7 +107,7 @@ class PID_Prec(BasePID):
                 raise Exception('All marginals should have full support (to proceed, drop outcomes with 0 probability)')
 
             # Iterate over outcomes of current R.V.
-            for v_ix, v in enumerate(pjoint.alphabet[rvndx]):
+            for v_ix, _v in enumerate(pjoint.alphabet[rvndx]):
                 sum_to_one = 0
                 for q in range(n_q):
                     # represents s(Q=q|X_rvndx=v) if rvndx != target_rvndx
@@ -120,8 +120,8 @@ class PID_Prec(BasePID):
         A_eq, b_eq = [], []  # linear constraints Ax =b
         A_ineq, b_ineq = [], []  # linear constraints Ax<=b
 
-        for rvndx, rv in enumerate(pjoint.rvs):
-            for v_ix, v in enumerate(pjoint.alphabet[rvndx]):
+        for rvndx, _rv in enumerate(pjoint.rvs):
+            for v_ix, _v in enumerate(pjoint.alphabet[rvndx]):
                 sum_to_one = np.zeros(num_vars)
                 for q in range(n_q):
                     var_ix = variablesQgiven[rvndx][(q, v_ix)]
@@ -141,7 +141,7 @@ class PID_Prec(BasePID):
 
         # Now we add the constraint:
         #    ∀i,q,y : Σ_{x_i} s(q|x_i) p(x_i,y) = s(q|y)p(y)
-        for rvndx, rv in enumerate(pjoint.rvs):
+        for rvndx, _rv in enumerate(pjoint.rvs):
             if rvndx == target_rvndx:
                 continue
 

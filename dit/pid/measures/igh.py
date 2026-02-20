@@ -55,7 +55,7 @@ class GHOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
 
         entropies = [entropy(dist, source + target) for source in sources]
         mutual_informations = [mutual_information(dist, source, target) for source in sources]
-        trivial = all(abs(h - i) < 1e-6 for h, i in zip(entropies, mutual_informations))
+        trivial = all(abs(h - i) < 1e-6 for h, i in zip(entropies, mutual_informations, strict=True))
         if not trivial:
             self.constraints += [{'type': 'eq',
                                 'fun': self.constraint_markov_chains(),

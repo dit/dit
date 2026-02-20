@@ -164,10 +164,7 @@ def is_sigma_algebra(F, X=None):
     m = len(F)
     emptyset = frozenset([])
 
-    if frozenset([emptyset, X]) <= F and m == 2**len(unique_cols):
-        return True
-    else:
-        return False
+    return frozenset([emptyset, X]) <= F and m == 2**len(unique_cols)
 
 
 def is_sigma_algebra__brute(F, X=None):
@@ -194,10 +191,7 @@ def is_sigma_algebra__brute(F, X=None):
     """
     # This works because its not necessary to test countable unions if the
     # base set X is finite.  One need only consider pairwise unions.
-    if X is None:
-        X = frozenset().union(*F)
-    else:
-        X = frozenset(X)
+    X = frozenset().union(*F) if X is None else frozenset(X)
 
     for subset1 in F:
         if X.difference(subset1) not in F:

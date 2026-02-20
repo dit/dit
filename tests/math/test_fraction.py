@@ -16,15 +16,15 @@ def test_fraction():
     xvals = [x / denominator for x in numerators]
     af = lambda x: approximate_fraction(x, .01)
     yvals = map(af, xvals)
-    yvals_ = map(lambda x: Fraction(x, denominator), numerators)
-    for y, y_ in zip(yvals, yvals_):
+    yvals_ = (Fraction(x, denominator) for x in numerators)
+    for y, y_ in zip(yvals, yvals_, strict=True):
         assert y == y_
 
     # Negative values
     af = lambda x: approximate_fraction(-x, .01)
     yvals = map(af, xvals)
-    yvals_ = map(lambda x: Fraction(-x, denominator), numerators)
-    for y, y_ in zip(yvals, yvals_):
+    yvals_ = (Fraction(-x, denominator) for x in numerators)
+    for y, y_ in zip(yvals, yvals_, strict=True):
         assert y == y_
 
 

@@ -348,10 +348,7 @@ def moment_constraints(pmf, n_variables, m, symbol_map, with_replacement=True):
     else:
         mvals = m
 
-    if with_replacement:
-        combinations = itertools.combinations_with_replacement
-    else:
-        combinations = itertools.combinations
+    combinations = itertools.combinations_with_replacement if with_replacement else itertools.combinations
 
     # Now add all the moment constraints.
     for m in mvals:
@@ -379,10 +376,7 @@ def moment_constraint_rank(dist, m, symbol_map=None,
     """
     Returns the rank of the moment constraint matrix.
     """
-    if cumulative:
-        mvals = range(m + 1)
-    else:
-        mvals = [m]
+    mvals = range(m + 1) if cumulative else [m]
 
     dist = prepare_dist(dist)
     n_variables = dist.outcome_length()
@@ -563,10 +557,7 @@ class MomentMaximumEntropy(MaximumEntropy):
         # Dimension of optimization variable
         n = self.n
 
-        if self.cumulative:
-            k = range(self.k + 1)
-        else:
-            k = [self.k]
+        k = range(self.k + 1) if self.cumulative else [self.k]
 
         args = (self.pmf, self.n_variables, k, self.symbol_map)
         kwargs = {'with_replacement': self.with_replacement}
@@ -668,10 +659,7 @@ def moment_maxent_dists(dist, symbol_map, k_max=None, jitter=True,
 
     outcomes = list(dist._product(symbols, repeat=n_variables))
 
-    if with_replacement:
-        text = 'with replacement'
-    else:
-        text = 'without replacement'
+    text = 'with replacement' if with_replacement else 'without replacement'
 
     dists = []
     for k in range(k_max + 1):

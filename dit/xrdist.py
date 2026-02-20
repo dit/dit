@@ -179,12 +179,12 @@ class XRDistribution:
                 )
 
             # Infer sorted alphabet per variable from the outcomes
-            alphabets = [sorted(set(o[i] for o in outcomes)) for i in range(n)]
-            coords = {name: alpha for name, alpha in zip(rv_names, alphabets)}
+            alphabets = [sorted({o[i] for o in outcomes}) for i in range(n)]
+            coords = {name: alpha for name, alpha in zip(rv_names, alphabets, strict=True)}
 
             shape = tuple(len(a) for a in alphabets)
             arr = np.zeros(shape)
-            for outcome, p in zip(outcomes, pmf):
+            for outcome, p in zip(outcomes, pmf, strict=True):
                 idx = tuple(alphabets[i].index(outcome[i]) for i in range(n))
                 arr[idx] = p
 
@@ -249,10 +249,7 @@ class XRDistribution:
 
         if rv_names is None:
             rv_names = dist.get_rv_names()
-            if rv_names is None:
-                rv_names = [f'X{i}' for i in range(dist.outcome_length())]
-            else:
-                rv_names = list(rv_names)
+            rv_names = [f'X{i}' for i in range(dist.outcome_length())] if rv_names is None else list(rv_names)
 
         n = dist.outcome_length()
         if len(rv_names) != n:
@@ -265,7 +262,7 @@ class XRDistribution:
         shape = tuple(len(v) for v in coords.values())
         arr = np.zeros(shape)
 
-        for outcome, prob in zip(dist.outcomes, dist.pmf):
+        for outcome, prob in zip(dist.outcomes, dist.pmf, strict=True):
             idx = tuple(
                 coords[name].index(outcome[i])
                 for i, name in enumerate(rv_names)
@@ -302,7 +299,7 @@ class XRDistribution:
         """
         _check_xarray()
 
-        coords = {n: list(a) for n, a in zip(dim_names, alphabets)}
+        coords = {n: list(a) for n, a in zip(dim_names, alphabets, strict=True)}
         data = xr.DataArray(arr, dims=dim_names, coords=coords)
         return cls(data, free_vars=free_vars, given_vars=given_vars, base=base)
 
@@ -373,7 +370,7 @@ class XRDistribution:
         arr = self._linear_data()
         outs = []
         for combo in itertools.product(*coord_vals):
-            sel = {d: v for d, v in zip(dims, combo)}
+            sel = {d: v for d, v in zip(dims, combo, strict=True)}
             p = float(arr.sel(sel))
             if p > 0:
                 outs.append(tuple(combo))
@@ -390,7 +387,7 @@ class XRDistribution:
         arr = self._linear_data()
         probs = []
         for o in self.outcomes:
-            sel = {d: v for d, v in zip(dims, o)}
+            sel = {d: v for d, v in zip(dims, o, strict=True)}
             probs.append(float(arr.sel(sel)))
         return np.array(probs)
 
@@ -437,7 +434,7 @@ class XRDistribution:
             raise ValueError(
                 f"Expected {len(self.data.dims)} names, got {len(rv_names)}"
             )
-        rename_map = dict(zip(self.data.dims, rv_names))
+        rename_map = dict(zip(self.data.dims, rv_names, strict=True))
         self.data = self.data.rename(rename_map)
 
         old_free = self.free_vars
@@ -512,7 +509,7 @@ class XRDistribution:
         coord_vals = [self.data.coords[d].values for d in dims]
         arr = self._linear_data()
         for combo in itertools.product(*coord_vals):
-            sel = {d: v for d, v in zip(dims, combo)}
+            sel = {d: v for d, v in zip(dims, combo, strict=True)}
             p = float(arr.sel(sel))
             if mode == 'atoms' or p > 0:
                 yield tuple(combo), p
@@ -683,7 +680,7 @@ class XRDistribution:
         rows = []
         coord_vals = [self.data.coords[d].values for d in dims]
         for combo in itertools.product(*coord_vals):
-            sel = {d: v for d, v in zip(dims, combo)}
+            sel = {d: v for d, v in zip(dims, combo, strict=True)}
             p = float(arr.sel(sel))
             if p > 0 or not self.is_joint():
                 rows.append((combo, p))
@@ -708,12 +705,12 @@ class XRDistribution:
         prob_header = "p" if self.is_joint() else "p(·|·)"
         prob_width = max(len(prob_header), max(len(sv[1]) for sv in str_vals))
 
-        header = col_sep.join(str(d).ljust(w) for d, w in zip(dims, col_widths))
+        header = col_sep.join(str(d).ljust(w) for d, w in zip(dims, col_widths, strict=True))
         header += col_sep + prob_header.rjust(prob_width)
         s.write(header + "\n")
 
         for combo_strs, p_str in str_vals:
-            line = col_sep.join(v.ljust(w) for v, w in zip(combo_strs, col_widths))
+            line = col_sep.join(v.ljust(w) for v, w in zip(combo_strs, col_widths, strict=True))
             line += col_sep + p_str.rjust(prob_width)
             s.write(line + "\n")
 
@@ -762,7 +759,7 @@ class XRDistribution:
         rows = []
         coord_vals = [self.data.coords[d].values for d in dims]
         for combo in itertools.product(*coord_vals):
-            sel = {d: v for d, v in zip(dims, combo)}
+            sel = {d: v for d, v in zip(dims, combo, strict=True)}
             p = float(arr.sel(sel))
             if p > 0 or not self.is_joint():
                 rows.append((combo, p))
@@ -1173,12 +1170,11 @@ class XRDistribution:
         else:
             # Average per-slice entropy over given variable assignments
             given_dims = list(self.given_vars)
-            free_dims = list(self.free_vars)
             coord_vals = [lin.coords[d].values for d in given_dims]
             total_h = 0.0
             n_slices = 0
             for combo in itertools.product(*coord_vals):
-                sel = {d: v for d, v in zip(given_dims, combo)}
+                sel = {d: v for d, v in zip(given_dims, combo, strict=True)}
                 slc = lin.sel(sel).values.ravel()
                 slc = slc[slc > 0]
                 if len(slc) > 0:
@@ -1211,14 +1207,8 @@ class XRDistribution:
         if not self.is_joint():
             raise ValueError("Mutual information requires a joint distribution")
 
-        if isinstance(var_x, str):
-            var_x = {var_x}
-        else:
-            var_x = set(var_x)
-        if isinstance(var_y, str):
-            var_y = {var_y}
-        else:
-            var_y = set(var_y)
+        var_x = {var_x} if isinstance(var_x, str) else set(var_x)
+        var_y = {var_y} if isinstance(var_y, str) else set(var_y)
 
         h_x = self.marginal(*var_x).entropy(base)
         h_y = self.marginal(*var_y).entropy(base)
@@ -1281,7 +1271,7 @@ class XRDistribution:
         if isinstance(key, dict):
             return self.sel(**key)
         if isinstance(key, tuple) and len(key) == len(self.data.dims):
-            sel = dict(zip(self.data.dims, key))
+            sel = dict(zip(self.data.dims, key, strict=True))
             return float(self.data.sel(sel))
         raise KeyError(f"Invalid key: {key!r}")
 
@@ -1342,7 +1332,7 @@ class XRDistribution:
         pmf = []
         coord_values = [lin.coords[d].values for d in dims]
         for combo in itertools.product(*coord_values):
-            sel = {d: v for d, v in zip(dims, combo)}
+            sel = {d: v for d, v in zip(dims, combo, strict=True)}
             p = float(lin.sel(sel))
             if p > 0:
                 outcomes.append(tuple(combo))
@@ -1469,6 +1459,6 @@ class XRDistribution:
         lin = self._linear_data()
         total = 0.0
         for outcome in event:
-            sel = {d: v for d, v in zip(dims, outcome)}
+            sel = {d: v for d, v in zip(dims, outcome, strict=True)}
             total += float(lin.sel(sel))
         return total

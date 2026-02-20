@@ -98,7 +98,7 @@ class StochasticGKCommonInformation(BaseAuxVarOptimizer):
         delta = 0
         target_marginal = marginals[0]
         for idx in idxs:
-            for i, m in zip(idx[1:], marginals[1:]):
+            for i, m in zip(idx[1:], marginals[1:], strict=True):
                 delta += ((target_marginal[idx[0]] - m[i])**2).sum()
 
         return 100 * delta

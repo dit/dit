@@ -17,7 +17,7 @@ def test_simple_rd_1():
     """
     dist = Distribution(['0', '1'], [1 / 2, 1 / 2])
     rd = RDCurve(dist, beta_num=10)
-    for r, d in zip(rd.rates, rd.distortions):
+    for r, d in zip(rd.rates, rd.distortions, strict=True):
         assert r == pytest.approx(1 - entropy(d))
 
 
@@ -58,7 +58,7 @@ def test_simple_rd_5():
     """
     dist = Distribution(['0', '1'], [1 / 2, 1 / 2])
     rd = RDCurve(dist, beta_num=10, method='ba')
-    for r, d in zip(rd.rates, rd.distortions):
+    for r, d in zip(rd.rates, rd.distortions, strict=True):
         assert r == pytest.approx(1 - entropy(d))
 
 

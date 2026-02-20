@@ -217,10 +217,7 @@ def jittered(pmf, jitter=1e-5, zeros=True, prng=None):
     if prng is None:
         prng = dit.math.prng
 
-    if zeros:
-        d = replace_zeros(pmf, jitter, prng=prng)
-    else:
-        d = pmf
+    d = replace_zeros(pmf, jitter, prng=prng) if zeros else pmf
 
     d = perturb_support(d, jitter, prng=prng)
 
@@ -451,7 +448,7 @@ def projections(pmf, subdivisions, ops=None):
         ops = [np.argmin] * (out.shape[0] - 1)
 
     # Go through each component and move to closest component.
-    for i, op in zip(range(out.shape[0] - 1), ops):
+    for i, op in zip(range(out.shape[0] - 1), ops, strict=True):
         _downsample_componentL1(out, i, op, locs)
         projs.append(out.copy())
 

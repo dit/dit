@@ -100,7 +100,7 @@ def jensen_shannon_divergence(dists, weights=None):
     # so we don't need to worry about it for the second part.
     mixture = mixture_distribution(dists, weights, merge=True)
     one = H(mixture)
-    two = sum(w * H(d) for w, d in zip(weights, dists))
+    two = sum(w * H(d) for w, d in zip(weights, dists, strict=True))
     jsd = one - two
     return jsd
 
@@ -133,7 +133,7 @@ def jensen_divergence(func):
         # so we don't need to worry about it for the second part.
         mixture = mixture_distribution(dists, weights, merge=True)
         one = func(mixture, *args, **kwargs)
-        two = sum(w * func(d, *args, **kwargs) for w, d in zip(weights, dists))
+        two = sum(w * func(d, *args, **kwargs) for w, d in zip(weights, dists, strict=True))
         jbd = one - two
         return jbd
 

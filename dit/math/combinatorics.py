@@ -57,10 +57,7 @@ def unitsum_tuples(n, k, mn, mx):
     # The number of points behaviors similar to numpy.linspace(mn,mx,n)
     n += 1
 
-    if mn < 0:
-        shift = float(abs(mn))
-    else:
-        shift = -float(mn)
+    shift = float(abs(mn)) if mn < 0 else -float(mn)
     seq, i = [mx + shift] * k + [0], k
     while i:
         t = tuple((seq[i] - seq[i + 1] - shift) for i in range(k))

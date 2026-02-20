@@ -157,6 +157,8 @@ select = [
     "SIM",    # flake8-simplify
 ]
 ignore = [
+    "B019",   #
+    "C416",   #
     "E501",   # line too long (handled by formatter)
     "E741",   # ambiguous variable name
     "E731",   # lambda assignment
@@ -166,6 +168,7 @@ ignore = [
     "N802",   # function name should be lowercase
     "N803",   # argument name should be lowercase
     "N806",   # variable in function should be lowercase
+    "N812",   # non-lowercase variables as import aliases
     "N816",   # mixed case variable in global scope
 ]
 
@@ -174,6 +177,8 @@ ignore = [
 "__init__.py" = ["F401", "F403"]
 "dit/abc.py" = ["F401", "N812", "N814", "N817"]
 "dit/divergences/pmf.py" = ["F401"]
+"dit/pid/measures/*.py" = ["N801"]
+"dit/pid/hcs.py" = ["N801"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["dit"]

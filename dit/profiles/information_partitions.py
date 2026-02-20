@@ -12,9 +12,9 @@ import numpy as np
 from boltons.iterutils import pairwise_iter
 from lattices.lattices import dependency_lattice, powerset_lattice
 
-from ..params import ditParams
 from ..algorithms import maxent_dist
 from ..other import extropy
+from ..params import ditParams
 from ..shannon import entropy
 from ..utils import build_table
 
@@ -171,12 +171,9 @@ class BaseInformationPartition(metaclass=ABCMeta):
         string : bool
             If True, return atoms as strings. Otherwise, as a pair of tuples.
         """
-        if string:
-            f = self._stringify
-        else:
-            f = lambda a, b: (a, b)
+        f = self._stringify if string else lambda a, b: (a, b)
 
-        return {f(rvs, crvs) for rvs, crvs in self.atoms.keys()}
+        return {f(rvs, crvs) for rvs, crvs in self.atoms}
 
 
 class ShannonPartition(BaseInformationPartition):
@@ -271,10 +268,7 @@ class DependencyDecomposition:
             The number of iterations for the optimization subroutine.
         """
         names = self.dist.get_rv_names()
-        if names:
-            rvs = [names[i] for i in self.rvs]
-        else:
-            rvs = self.rvs
+        rvs = [names[i] for i in self.rvs] if names else self.rvs
 
         self._lattice = dependency_lattice(rvs, cover=self.cover)
         dists = {}
@@ -399,10 +393,7 @@ class DependencyDecomposition:
             If True, return dependencies as strings. Otherwise, as a tuple of
             tuples.
         """
-        if string:
-            f = self._stringify
-        else:
-            f = lambda d: d
+        f = self._stringify if string else lambda d: d
 
         return set(map(f, self.atoms.keys()))
 
@@ -410,9 +401,11 @@ class DependencyDecomposition:
 class ShapleyDecomposition(DependencyDecomposition):
     """
     """
-    def __init__(self, dist, rvs=None, measures={'H': entropy}, cover=False, maxiter=None, agg_func=np.mean):
+    def __init__(self, dist, rvs=None, measures=None, cover=False, maxiter=None, agg_func=np.mean):
         """
         """
+        if measures is None:
+            measures = {'H': entropy}
         super().__init__(dist, rvs=rvs, measures=measures, cover=cover, maxiter=maxiter)
         self._func = agg_func
         self._shapley_values()

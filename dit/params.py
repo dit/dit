@@ -2,6 +2,7 @@
 Defines `dit` configuration parameters.
 """
 
+import contextlib
 import warnings
 
 from .exceptions import InvalidBase
@@ -16,16 +17,14 @@ def validate_boolean(b):
     """
     Convert b to a boolean or raise a ValueError.
     """
-    try:
+    with contextlib.suppress(AttributeError):
         b = b.lower()
-    except AttributeError:
-        pass
     if b in ('t', 'y', 'yes', 'on', 'true', '1', 1, True):
         return True
     elif b in ('f', 'n', 'no', 'off', 'false', '0', 0, False):
         return False
     else:
-        raise ValueError('Could not convert "%s" to boolean' % b)
+        raise ValueError(f'Could not convert "{b}" to boolean')
 
 
 def validate_float(s):
@@ -34,8 +33,8 @@ def validate_float(s):
     """
     try:
         return float(s)
-    except TypeError:
-        raise ValueError('Could not convert "%s" to float' % s)
+    except TypeError as err:
+        raise ValueError(f'Could not convert "{s}" to float') from err
 
 
 def validate_base(b):
@@ -62,12 +61,10 @@ def validate_base(b):
 def validate_choice(s, choices):
     """
     """
-    try:
+    with contextlib.suppress(AttributeError):
         s = s.lower()
-    except AttributeError:
-        pass
     if s not in choices:
-        raise ValueError("%s is an invalid specification." % s)
+        raise ValueError(f"{s} is an invalid specification.")
     else:
         return s
 
@@ -97,10 +94,9 @@ class DITParams(dict):
 
         try:
             cval = self.validate[key](val)
-        except KeyError:  # pragma: no cover
-            msg = '%r is not a valid dit parameter. ' % key
-            msg += 'See ditParams.keys() for a list of valid parameters.'
-            raise KeyError(msg)
+        except KeyError as err:  # pragma: no cover
+            msg = f'{key!r} is not a valid dit parameter. See ditParams.keys() for a list of valid parameters.'
+            raise KeyError(msg) from err
 
         dict.__setitem__(self, key, cval)
 
