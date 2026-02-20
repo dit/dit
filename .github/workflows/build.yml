@@ -32,11 +32,17 @@ jobs:
 
       - name: Install cddlib (macOS)
         if: runner.os == 'macOS'
-        run: brew install cddlib
+        run: |
+          brew install cddlib
+          echo "CFLAGS=-I$(brew --prefix)/include" >> $GITHUB_ENV
+          echo "LDFLAGS=-L$(brew --prefix)/lib" >> $GITHUB_ENV
 
       - name: Install cddlib (Windows)
         if: runner.os == 'Windows'
-        run: choco install -y --no-progress vcpkg && vcpkg install cddlib
+        run: |
+          vcpkg install cddlib:x64-windows
+          echo "INCLUDE=$env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\include;$env:INCLUDE" >> $env:GITHUB_ENV
+          echo "LIB=$env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\lib;$env:LIB" >> $env:GITHUB_ENV
 
       - name: Install package and dependencies
         run: uv sync --extra test --extra optional --extra xarray
