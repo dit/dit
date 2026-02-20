@@ -26,6 +26,18 @@ jobs:
       - name: Pin Python version for uv
         run: echo '${{ matrix.python-version }}' > .python-version
 
+      - name: Install cddlib (Ubuntu)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libcdd-dev
+
+      - name: Install cddlib (macOS)
+        if: runner.os == 'macOS'
+        run: brew install cddlib
+
+      - name: Install cddlib (Windows)
+        if: runner.os == 'Windows'
+        run: choco install -y --no-progress vcpkg && vcpkg install cddlib
+
       - name: Install package and dependencies
         run: uv sync --extra test --extra optional --extra xarray
 

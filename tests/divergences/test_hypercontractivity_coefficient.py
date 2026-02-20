@@ -53,7 +53,7 @@ def test_hypercontractivity_coefficient_tensorization(dist1, dist2):
     """
     import dit
     dit.ditParams['repr.print'] = True
-    mixed = dist1.__matmul__(dist2)
+    mixed = dist1 @ dist2
     hc_mixed = hypercontractivity_coefficient(mixed, [[0, 2], [1, 3]])
     hc_a = hypercontractivity_coefficient(dist1, [[0], [1]])
     hc_b = hypercontractivity_coefficient(dist2, [[0], [1]])
