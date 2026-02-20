@@ -19,5 +19,5 @@ def test_unq2():
     Test uniquifier with strings.
     """
     unq = Uniquifier()
-    x = [unq(i, string=True) for i in (0, 0, 0, 'pants', 1)]
-    assert x == ['0', '0', '0', '1', '2']
+    x = [unq(i, string=True) for i in (0, 0, 0, "pants", 1)]
+    assert x == ["0", "0", "0", "1", "2"]

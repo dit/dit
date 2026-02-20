@@ -12,7 +12,7 @@ def test_pid_rr1():
     """
     Test irr on a generic distribution.
     """
-    d = bivariates['diff']
+    d = bivariates["diff"]
     pid = PID_RR(d, ((0,), (1,)), (2,))
     assert pid[((0,), (1,))] == pytest.approx(0.15107, abs=1e-5)
     assert pid[((0,),)] == pytest.approx(0.16021, abs=1e-5)
@@ -24,7 +24,7 @@ def test_pid_rr2():
     """
     Test irr on another generic distribution.
     """
-    d = trivariates['anddup']
+    d = trivariates["anddup"]
     pid = PID_RR(d, [[0], [1], [2]], [3])
     for atom in pid._lattice:
         if atom == ((0, 1), (1, 2)):

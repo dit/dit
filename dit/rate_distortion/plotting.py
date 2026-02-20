@@ -12,12 +12,12 @@ import numpy as np
 from .curves import IBCurve, RDCurve
 
 __all__ = (
-    'IBPlotter',
-    'RDPlotter',
+    "IBPlotter",
+    "RDPlotter",
 )
 
 
-Axis = namedtuple('Axis', ['data', 'limit', 'label'])
+Axis = namedtuple("Axis", ["data", "limit", "label"])
 
 
 def _rescale_axes(ax, xmin=None, xmax=None, ymin=None, ymax=None):
@@ -55,10 +55,12 @@ class BasePlotter(metaclass=ABCMeta):
     A plotter of rate-distortion-like curves.
     """
 
-    _beta_axis = Axis(attrgetter('betas'), lambda _: None, r"$\beta$")
-    _rank_axis = Axis(attrgetter('ranks'), attrgetter('_max_rank'), r"rank")
-    _alphabet_axis = Axis(attrgetter('alphabets'), attrgetter('_max_rank'), r"$|\mathcal{A}|$")
-    _distortion_axis = Axis(attrgetter('distortions'), attrgetter('_max_distortion'), r"$\langle d(x, \hat{x}) \rangle$")
+    _beta_axis = Axis(attrgetter("betas"), lambda _: None, r"$\beta$")
+    _rank_axis = Axis(attrgetter("ranks"), attrgetter("_max_rank"), r"rank")
+    _alphabet_axis = Axis(attrgetter("alphabets"), attrgetter("_max_rank"), r"$|\mathcal{A}|$")
+    _distortion_axis = Axis(
+        attrgetter("distortions"), attrgetter("_max_distortion"), r"$\langle d(x, \hat{x}) \rangle$"
+    )
 
     def __init__(self, *curves):
         """
@@ -114,17 +116,15 @@ class BasePlotter(metaclass=ABCMeta):
             x = axis_1.data(curve)
             y = axis_2.data(curve)
             line = ax.plot(x, y, lw=2, label=curve.label)[0]
-            ax.scatter(x[::downsample],
-                       y[::downsample],
-                       c=curve.betas[::downsample])
+            ax.scatter(x[::downsample], y[::downsample], c=curve.betas[::downsample])
 
             # if there is an upper bound, plot it.
             lim_1 = axis_1.limit(curve)
             if lim_1 is not None:
-                ax.axvline(lim_1, ls=':', c=line.get_c())
+                ax.axvline(lim_1, ls=":", c=line.get_c())
             lim_2 = axis_2.limit(curve)
             if lim_2 is not None:
-                ax.axhline(lim_2, ls=':', c=line.get_c())
+                ax.axhline(lim_2, ls=":", c=line.get_c())
 
         ax.set_xlabel(axis_1.label)
         ax.set_ylabel(axis_2.label)
@@ -169,7 +169,7 @@ class RDPlotter(BasePlotter):
     A plotter for rate-distortion curves.
     """
 
-    _rate_axis = Axis(attrgetter('rates'), attrgetter('_max_rate'), r"$I[X:\hat{X}]$")
+    _rate_axis = Axis(attrgetter("rates"), attrgetter("_max_rate"), r"$I[X:\hat{X}]$")
 
     _curve_type = RDCurve
 
@@ -185,10 +185,10 @@ class RDPlotter(BasePlotter):
         fig, axs = plt.subplots(2, 2, figsize=(16, 8))
 
         self._plot(axs[0, 0], self._beta_axis, self._rate_axis, downsample)
-        axs[0, 0].legend(loc='best')
+        axs[0, 0].legend(loc="best")
         self._plot(axs[0, 1], self._distortion_axis, self._rate_axis, downsample)
         self._plot(axs[1, 0], self._beta_axis, self._distortion_axis, downsample)
-        axs[1, 1].axis('off')
+        axs[1, 1].axis("off")
 
         return fig
 
@@ -198,10 +198,10 @@ class IBPlotter(BasePlotter):
     A plotter for information bottleneck curves.
     """
 
-    _complexity_axis = Axis(attrgetter('complexities'), attrgetter('_max_complexity'), r"$I[X:\hat{X}]$")
-    _entropy_axis = Axis(attrgetter('entropies'), attrgetter('_max_complexity'), r"$H[\hat{X}]$")
-    _relevance_axis = Axis(attrgetter('relevances'), attrgetter('_max_relevance'), r"$I[Y:\hat{X}]$")
-    _error_axis = Axis(attrgetter('errors'), attrgetter('_max_relevance'), r"$I[X:Y|\hat{X}]$")
+    _complexity_axis = Axis(attrgetter("complexities"), attrgetter("_max_complexity"), r"$I[X:\hat{X}]$")
+    _entropy_axis = Axis(attrgetter("entropies"), attrgetter("_max_complexity"), r"$H[\hat{X}]$")
+    _relevance_axis = Axis(attrgetter("relevances"), attrgetter("_max_relevance"), r"$I[Y:\hat{X}]$")
+    _error_axis = Axis(attrgetter("errors"), attrgetter("_max_relevance"), r"$I[X:Y|\hat{X}]$")
 
     _curve_type = IBCurve
 
@@ -219,7 +219,7 @@ class IBPlotter(BasePlotter):
         if axis_1 is self._beta_axis:
             for curve in self.curves:
                 for kink in curve.find_kinks():
-                    ax.axvline(kink, ls=':', c='k')
+                    ax.axvline(kink, ls=":", c="k")
 
         return ax
 
@@ -235,7 +235,7 @@ class IBPlotter(BasePlotter):
         fig, axs = plt.subplots(3, 2, figsize=(16, 16))
 
         self._plot(axs[0, 0], self._beta_axis, self._complexity_axis, downsample)
-        axs[0, 0].legend(loc='best')
+        axs[0, 0].legend(loc="best")
         self._plot(axs[1, 0], self._beta_axis, self._relevance_axis, downsample)
         self._plot(axs[2, 0], self._beta_axis, self._rank_axis, downsample)
         self._plot(axs[0, 1], self._complexity_axis, self._relevance_axis, downsample)

@@ -20,8 +20,8 @@ from .pid_broja import extra_constraints as broja_extra_constraints
 from .pid_broja import prepare_dist as broja_prepare_dist
 
 __all__ = (
-    'maxent_dist',
-    'marginal_maxent_dists',
+    "maxent_dist",
+    "marginal_maxent_dists",
 )
 
 
@@ -80,7 +80,7 @@ class BaseDistOptimizer(BaseOptimizer):
             variable names. If `None`, then the value of `dist._rv_mode` is
             consulted, which defaults to 'indices'.
         """
-        super().__init__(dist, dist.rvs, crvs=[], rv_mode='indices')
+        super().__init__(dist, dist.rvs, crvs=[], rv_mode="indices")
 
         # TODO: actually make this class support crvs?
         self._all_vars = self._rvs
@@ -90,18 +90,22 @@ class BaseDistOptimizer(BaseOptimizer):
         self._A, self._b = marginal_constraints_generic(self.dist, marginals, rv_mode)
         self._shape = [len(alpha) for alpha in self.dist.alphabet]
         self._free = infer_free_values(self._A, self._b)
-        self.constraints = [{'type': 'eq',
-                             'fun': self.constraint_match_marginals,
-                             },
-                            ]
+        self.constraints = [
+            {
+                "type": "eq",
+                "fun": self.constraint_match_marginals,
+            },
+        ]
         self._optvec_size = len(self._free)
         self._default_hops = 50
 
-        self._additional_options = {'options': {'maxiter': 1000,
-                                                'ftol': 1e-7,
-                                                'eps': 1.4901161193847656e-08,
-                                                }
-                                    }
+        self._additional_options = {
+            "options": {
+                "maxiter": 1000,
+                "ftol": 1e-7,
+                "eps": 1.4901161193847656e-08,
+            }
+        }
 
     def optimize(self, x0=None, niter=None, maxiter=None, polish=1e-8, callback=False):
         """
@@ -135,11 +139,7 @@ class BaseDistOptimizer(BaseOptimizer):
                 # if a full pmf vector was passed in, restrict it to the free
                 # indices:
                 x0 = x0[self._free]
-            result = super().optimize(x0=x0,
-                                      niter=niter,
-                                      maxiter=maxiter,
-                                      polish=polish,
-                                      callback=callback)
+            result = super().optimize(x0=x0, niter=niter, maxiter=maxiter, polish=polish, callback=callback)
             return result
 
     def construct_vector(self, x):
@@ -194,7 +194,7 @@ class BaseDistOptimizer(BaseOptimizer):
             The deviation from the constraint.
         """
         pmf = self.construct_vector(x)
-        return sum((np.dot(self._A, pmf) - self._b)**2)
+        return sum((np.dot(self._A, pmf) - self._b) ** 2)
 
     def construct_dist(self, x=None, cutoff=1e-6, sparse=True):
         """
@@ -556,7 +556,7 @@ def marginal_maxent_dists(dist, k_max=None):
     # the full space. We also know the answer in these cases.
 
     # This is safe since the distribution must be dense.
-    k0 = Distribution(outcomes, [1] * len(outcomes), base='linear', validate=False)
+    k0 = Distribution(outcomes, [1] * len(outcomes), base="linear", validate=False)
     k0.normalize()
 
     k1 = product_distribution(dist)
@@ -568,7 +568,7 @@ def marginal_maxent_dists(dist, k_max=None):
 
         rv_mode = dist._rv_mode
 
-        if rv_mode in [RV_MODES.NAMES, 'names']:
+        if rv_mode in [RV_MODES.NAMES, "names"]:
             variables = dist.get_rv_names()
             rvs = list(combinations(variables, k))
         else:
@@ -584,11 +584,10 @@ def marginal_maxent_dists(dist, k_max=None):
     return dists
 
 
-PID = namedtuple('PID', ['R', 'U0', 'U1', 'S'])
+PID = namedtuple("PID", ["R", "U0", "U1", "S"])
 
 
-@removals.remove(message="Please see dit.pid.PID_BROJA.",
-                 version='1.0.0.dev8')
+@removals.remove(message="Please see dit.pid.PID_BROJA.", version="1.0.0.dev8")
 def pid_broja(dist, sources, target, niter=10, return_opt=False, rv_mode=None):
     """
     Compute the BROJA partial information decomposition.

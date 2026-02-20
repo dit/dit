@@ -9,7 +9,7 @@ from dit.multivariate.secret_key_agreement import interactive_intrinsic_mutual_i
 from tests._backends import backends
 
 
-@pytest.mark.parametrize('backend', backends)
+@pytest.mark.parametrize("backend", backends)
 def test_iimi1(backend):
     """
     Test against known value.

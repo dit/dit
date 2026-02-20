@@ -6,9 +6,7 @@ import numpy as np
 
 from .base_markov_optimizer import MarkovVarOptimizer
 
-__all__ = (
-    'wyner_common_information',
-)
+__all__ = ("wyner_common_information",)
 
 
 class WynerCommonInformation(MarkovVarOptimizer):
@@ -17,8 +15,8 @@ class WynerCommonInformation(MarkovVarOptimizer):
     render the X_i conditionally independent.
     """
 
-    name = 'wyner'
-    description = 'min I[X:V] such that V renders all X_i independent'
+    name = "wyner"
+    description = "min I[X:V] such that V renders all X_i independent"
 
     def compute_bound(self):
         """

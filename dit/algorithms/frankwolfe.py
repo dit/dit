@@ -19,15 +19,11 @@ from debtcollector import removals
 
 from dit.utils import basic_logger
 
-__all__ = (
-    'frank_wolfe',
-)
+__all__ = ("frank_wolfe",)
 
 
-@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
-                 version='1.0.1')
-def frank_wolfe(objective, gradient, A, b, initial_x,
-                maxiters=2000, tol=1e-4, clean=True, verbose=None):
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.", version="1.0.1")
+def frank_wolfe(objective, gradient, A, b, initial_x, maxiters=2000, tol=1e-4, clean=True, verbose=None):
     """
     Uses the Frank--Wolfe algorithm to minimize the convex objective.
 
@@ -75,12 +71,12 @@ def frank_wolfe(objective, gradient, A, b, initial_x,
     from dit.algorithms.optutil import op_runner
 
     # Set up a custom logger.
-    fw_logger = basic_logger('dit.frankwolfe', verbose)
+    fw_logger = basic_logger("dit.frankwolfe", verbose)
 
     # Set cvx info level based on verbose.
     show_progress = bool(verbose)
 
-    assert (A.size[1] == initial_x.size[0])
+    assert A.size[1] == initial_x.size[0]
 
     n = initial_x.size[0]
     x = initial_x
@@ -100,11 +96,11 @@ def frank_wolfe(objective, gradient, A, b, initial_x,
         constraints.append(A * xbar - b >= -TOL)
         constraints.append(A * xbar - b <= TOL)
 
-        fw_logger.debug(f'FW Iteration: {i}')
+        fw_logger.debug(f"FW Iteration: {i}")
         opt = op_runner(new_objective, constraints, show_progress=show_progress)
-        if opt.status != 'optimal':
-            msg = '\tFrank-Wolfe: Did not find optimal direction on '
-            msg += 'iteration {}: {}'
+        if opt.status != "optimal":
+            msg = "\tFrank-Wolfe: Did not find optimal direction on "
+            msg += "iteration {}: {}"
             msg = msg.format(i, opt.status)
             fw_logger.info(msg)
 

@@ -26,8 +26,7 @@ __all__ = (
 )
 
 
-@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
-                 version='1.0.1')
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.", version="1.0.1")
 def initial_point_generic(dist, rvs, A=None, b=None, isolated=None, **kwargs):
     """
     Find an initial point in the interior of the feasible set.
@@ -52,7 +51,7 @@ def initial_point_generic(dist, rvs, A=None, b=None, isolated=None, **kwargs):
         if A.size[1] == len(variables.nonzero):  # pylint: disable=no-member
             Asmall = A
         else:
-            msg = 'A must be the reduced equality constraint matrix.'
+            msg = "A must be the reduced equality constraint matrix."
             raise Exception(msg)
 
     n = len(variables.nonzero)  # pylint: disable=no-member
@@ -70,11 +69,11 @@ def initial_point_generic(dist, rvs, A=None, b=None, isolated=None, **kwargs):
         objective = -t
 
         opt = op_runner(objective, constraints, **kwargs)
-        if opt.status == 'optimal':
+        if opt.status == "optimal":
             # print("Found initial point with tol={}".format(tol))
             break
     else:
-        msg = 'Could not find valid initial point: {}'
+        msg = "Could not find valid initial point: {}"
         raise Exception(msg.format(opt.status))
 
     # Grab the optimized x
@@ -94,8 +93,7 @@ def initial_point_generic(dist, rvs, A=None, b=None, isolated=None, **kwargs):
     return xopt, opt
 
 
-@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
-                 version='1.0.1')
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.", version="1.0.1")
 def initial_point(dist, k, A=None, b=None, isolated=None, **kwargs):
     """
     Find an initial point in the interior of the feasible set.
@@ -110,13 +108,12 @@ def initial_point(dist, k, A=None, b=None, isolated=None, **kwargs):
         raise ValueError(msg)
 
     rvs = list(combinations(range(n_variables), k))
-    kwargs['rv_mode'] = 'indices'
+    kwargs["rv_mode"] = "indices"
 
     return initial_point_generic(dist, rvs, A, b, isolated, **kwargs)
 
 
-@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
-                 version='1.0.1')
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.", version="1.0.1")
 def check_feasibility(dist, k, **kwargs):
     """
     Checks feasibility by solving the minimum residual problem:
@@ -138,22 +135,21 @@ def check_feasibility(dist, k, **kwargs):
     x = variable(n)
     t = variable()
 
-    c1 = (-t <= A * x - b)
-    c2 = (A * x - b <= t)
-    c3 = (x >= 0)
+    c1 = -t <= A * x - b
+    c2 = A * x - b <= t
+    c3 = x >= 0
 
     objective = t
     constraints = [c1, c2, c3]
 
     opt = op_runner(objective, constraints, **kwargs)
-    if opt.status != 'optimal':
-        raise Exception('Not feasible')
+    if opt.status != "optimal":
+        raise Exception("Not feasible")
 
     return opt
 
 
-@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
-                 version='1.0.1')
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.", version="1.0.1")
 def negentropy(p):
     """
     Entropy which operates on vectors of length `N`.
@@ -163,15 +159,14 @@ def negentropy(p):
     return np.nansum(p * np.log2(p))
 
 
-@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
-                 version='1.0.1')
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.", version="1.0.1")
 def marginal_maxent_generic(dist, rvs, **kwargs):
     from cvxopt import matrix
 
-    verbose = kwargs.get('verbose', False)
-    fw_logger = basic_logger('dit.maxentropy', verbose)
+    verbose = kwargs.get("verbose", False)
+    fw_logger = basic_logger("dit.maxentropy", verbose)
 
-    rv_mode = kwargs.pop('rv_mode', None)
+    rv_mode = kwargs.pop("rv_mode", None)
 
     A, b = marginal_constraints_generic(dist, rvs, rv_mode)
 
@@ -186,9 +181,7 @@ def marginal_maxent_generic(dist, rvs, **kwargs):
     show_progress = bool(verbose)
 
     fw_logger.info("Finding initial distribution.")
-    initial_x, _ = initial_point_generic(dist, rvs, A=Asmall, b=b,
-                                         isolated=variables,
-                                         show_progress=show_progress)
+    initial_x, _ = initial_point_generic(dist, rvs, A=Asmall, b=b, isolated=variables, show_progress=show_progress)
     initial_x = matrix(initial_x)
     objective = negentropy
 
@@ -223,8 +216,7 @@ def marginal_maxent_generic(dist, rvs, **kwargs):
     return xfinal, obj  # , Asmall, b, variables
 
 
-@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
-                 version='1.0.1')
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.", version="1.0.1")
 def marginal_maxent(dist, k, **kwargs):
     n_variables = dist.outcome_length()
 
@@ -234,24 +226,23 @@ def marginal_maxent(dist, k, **kwargs):
         msg = msg.format(k, n_variables)
         raise ValueError(msg)
 
-    rv_mode = kwargs.pop('rv_mode', None)
+    rv_mode = kwargs.pop("rv_mode", None)
 
     if rv_mode is None:
         rv_mode = dist._rv_mode
 
-    if rv_mode in [RV_MODES.NAMES, 'names']:
+    if rv_mode in [RV_MODES.NAMES, "names"]:
         variables = dist.get_rv_names()
         rvs = list(combinations(variables, k))
     else:
         rvs = list(combinations(range(n_variables), k))
 
-    kwargs['rv_mode'] = rv_mode
+    kwargs["rv_mode"] = rv_mode
 
     return marginal_maxent_generic(dist, rvs, **kwargs)
 
 
-@removals.remove(message="Please use the version in dit.algorithms.scipy_optmizers instead.",
-                 version="1.0.0.dev8")
+@removals.remove(message="Please use the version in dit.algorithms.scipy_optmizers instead.", version="1.0.0.dev8")
 def marginal_maxent_dists(dist, k_max=None, maxiters=1000, tol=1e-3, verbose=False):
     """
     Return the marginal-constrained maximum entropy distributions.
@@ -277,7 +268,7 @@ def marginal_maxent_dists(dist, k_max=None, maxiters=1000, tol=1e-3, verbose=Fal
     # the full space. We also know the answer in these cases.
 
     # This is safe since the distribution must be dense.
-    k0 = dit.Distribution(outcomes, [1] * len(outcomes), base='linear', validate=False)
+    k0 = dit.Distribution(outcomes, [1] * len(outcomes), base="linear", validate=False)
     k0.normalize()
 
     k1 = dit.product_distribution(dist)
@@ -290,7 +281,7 @@ def marginal_maxent_dists(dist, k_max=None, maxiters=1000, tol=1e-3, verbose=Fal
         if k in [0, 1, n_variables]:
             continue
 
-        kwargs = {'maxiters': maxiters, 'tol': tol, 'verbose': verbose}
+        kwargs = {"maxiters": maxiters, "tol": tol, "verbose": verbose}
         pmf_opt, _ = marginal_maxent(dist, k, **kwargs)
         d = dit.Distribution(outcomes, pmf_opt)
         d.make_sparse()

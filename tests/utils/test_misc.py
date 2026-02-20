@@ -26,7 +26,7 @@ def test_flatten1():
 
 
 def test_is_string_like1():
-    ys = ['', 'hi', "pants", '"test"', 'pants', r'pants']
+    ys = ["", "hi", "pants", '"test"', "pants", r"pants"]
     ns = [1, [], int, {}, ()]
     for y in ys:
         assert is_string_like(y)
@@ -70,57 +70,57 @@ def test_ordered_partitions2():
 
 
 def test_require_keys1():
-    d = {0: '', '0': '', 'pants': ''}
-    required = [0, '0']
+    d = {0: "", "0": "", "pants": ""}
+    required = [0, "0"]
     assert require_keys(required, d) is None
 
 
 def test_require_keys2():
-    d = {0: '', '0': '', 'pants': ''}
-    required = [0, '0', 'jeans']
+    d = {0: "", "0": "", "pants": ""}
+    required = [0, "0", "jeans"]
     with pytest.raises(Exception, match="'jeans' is required."):
         require_keys(required, d)
 
 
 def test_partition_set1():
-    stuff = ['0', '1', '00', '11', '000', '111', [0, 1, 2]]
+    stuff = ["0", "1", "00", "11", "000", "111", [0, 1, 2]]
     fn = lambda a, b: len(a) == len(b)
     _, lookup = partition_set(stuff, fn)
     assert lookup == [0, 0, 1, 1, 2, 2, 2]
 
 
 def test_partition_set2():
-    stuff = ['0', '1', '00', '11', '000', '111', [0, 1, 2]]
+    stuff = ["0", "1", "00", "11", "000", "111", [0, 1, 2]]
     fn = lambda a, b: len(a) == len(b)
     _, lookup = partition_set(stuff, fn, reflexive=True, transitive=True)
     assert lookup == [0, 0, 1, 1, 2, 2, 2]
 
 
 def test_partition_set3():
-    stuff = ['0', '1', '00', '11', '000', '111', [0, 1, 2]]
+    stuff = ["0", "1", "00", "11", "000", "111", [0, 1, 2]]
     _, lookup = partition_set(stuff, reflexive=False, transitive=True)
     assert lookup == [0, 1, 2, 3, 4, 5, 6]
 
 
 def test_partition_set4():
-    stuff = ['01', '10', '00', '11', '000', '111', [0, 1, 2]]
+    stuff = ["01", "10", "00", "11", "000", "111", [0, 1, 2]]
     fn = lambda a, b: a[0] == b[1]
     _, lookup = partition_set(stuff, fn, reflexive=False, transitive=True)
     assert lookup == [0, 0, 1, 2, 1, 2, 3]
 
 
 def test_partition_set5():
-    stuff = ['01', '10', '00', '11', '000', '111', [0, 1, 2]]
+    stuff = ["01", "10", "00", "11", "000", "111", [0, 1, 2]]
     fn = lambda a, b: a[0] == b[1]
     _, lookup = partition_set(stuff, fn, reflexive=False, transitive=False)
     assert lookup == [0, 0, 1, 2, 1, 2, 3]
 
 
 def test_partition_set6():
-    stuff = ['0', '1', '00', '11', '000', '111', (0, 1, 2)]
+    stuff = ["0", "1", "00", "11", "000", "111", (0, 1, 2)]
     fn = lambda a, b: a[0] == b[0]
     eqclasses, _ = partition_set(stuff, fn, reflexive=True, transitive=False, innerset=True)
-    assert eqclasses == [frozenset(['0', '00', '000']), frozenset(['1', '11', '111']), frozenset([(0, 1, 2)])]
+    assert eqclasses == [frozenset(["0", "00", "000"]), frozenset(["1", "11", "111"]), frozenset([(0, 1, 2)])]
 
 
 class TestDigits:

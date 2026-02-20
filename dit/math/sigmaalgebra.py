@@ -1,9 +1,9 @@
 """
-    Functions for generating sigma algebras on finite sets.
+Functions for generating sigma algebras on finite sets.
 
-    Chetan Jhurani
-    http://users.ices.utexas.edu/~chetan/Publications.html
-    http://users.ices.utexas.edu/~chetan/reports/2009-03-ices-set_algebra_algorithms.pdf
+Chetan Jhurani
+http://users.ices.utexas.edu/~chetan/Publications.html
+http://users.ices.utexas.edu/~chetan/reports/2009-03-ices-set_algebra_algorithms.pdf
 """
 
 from collections import defaultdict
@@ -13,9 +13,9 @@ import numpy as np
 from dit.utils import powerset
 
 __all__ = (
-    'is_sigma_algebra',
-    'sigma_algebra',
-    'atom_set',
+    "is_sigma_algebra",
+    "sigma_algebra",
+    "atom_set",
 )
 
 
@@ -164,7 +164,7 @@ def is_sigma_algebra(F, X=None):
     m = len(F)
     emptyset = frozenset([])
 
-    return frozenset([emptyset, X]) <= F and m == 2**len(unique_cols)
+    return frozenset([emptyset, X]) <= F and m == 2 ** len(unique_cols)
 
 
 def is_sigma_algebra__brute(F, X=None):
@@ -222,7 +222,7 @@ def atom_set(F, X=None, method=2):
 
     """
     if not isinstance(next(iter(F)), frozenset):
-        raise Exception('Input to `atom_set` must contain frozensets.')
+        raise Exception("Input to `atom_set` must contain frozensets.")
 
     def method1():
         """

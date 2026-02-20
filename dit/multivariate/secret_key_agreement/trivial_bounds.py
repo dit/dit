@@ -7,10 +7,10 @@ from ..dual_total_correlation import dual_total_correlation
 from ..total_correlation import total_correlation
 
 __all__ = (
-    'lower_intrinsic_mutual_information',
-    'upper_intrinsic_total_correlation',
-    'upper_intrinsic_dual_total_correlation',
-    'upper_intrinsic_caekl_mutual_information',
+    "lower_intrinsic_mutual_information",
+    "upper_intrinsic_total_correlation",
+    "upper_intrinsic_dual_total_correlation",
+    "upper_intrinsic_caekl_mutual_information",
 )
 
 

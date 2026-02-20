@@ -19,9 +19,9 @@ from ..shannon import entropy
 from ..utils import build_table
 
 __all__ = (
-    'ShannonPartition',
-    'ExtropyPartition',
-    'DependencyDecomposition',
+    "ShannonPartition",
+    "ExtropyPartition",
+    "DependencyDecomposition",
 )
 
 
@@ -62,12 +62,12 @@ class BaseInformationPartition(metaclass=ABCMeta):
         crvs : list
             The random variable(s) that the measure is conditioned on.
         """
-        rvs = [','.join(str(_) for _ in rv) for rv in rvs]
+        rvs = [",".join(str(_) for _ in rv) for rv in rvs]
         crvs = [str(_) for _ in crvs]
-        a = ':'.join(rvs)
-        b = ','.join(crvs)
+        a = ":".join(rvs)
+        b = ",".join(crvs)
         symbol = self._symbol(rvs, crvs)
-        sep = '|' if len(crvs) > 0 else ''
+        sep = "|" if len(crvs) > 0 else ""
         s = f"{symbol}[{a}{sep}{b}]"
         return s
 
@@ -96,7 +96,7 @@ class BaseInformationPartition(metaclass=ABCMeta):
 
         # Subset-sum type thing, basically co-information calculations.
         for node in self._lattice:
-            Is[node] = sum((-1)**(len(rv) + 1) * Hs[rv] for rv in self._lattice.descendants(node, include=True))
+            Is[node] = sum((-1) ** (len(rv) + 1) * Hs[rv] for rv in self._lattice.descendants(node, include=True))
 
         # Mobius inversion of the above, resulting in the Shannon atoms.
         for node in self._lattice:
@@ -123,6 +123,7 @@ class BaseInformationPartition(metaclass=ABCMeta):
         item : tuple
             A pair (rvs, crvs).
         """
+
         def is_part(atom, rvs, crvs):
             lhs = all(any(((_,) in atom[0]) for _ in rv) for rv in rvs)
             rhs = set(crvs).issubset(atom[1])
@@ -134,7 +135,7 @@ class BaseInformationPartition(metaclass=ABCMeta):
         """
         Represent using the str().
         """
-        if ditParams['repr.print']:
+        if ditParams["repr.print"]:
             return self.to_string()
         else:
             return super().__repr__()
@@ -149,10 +150,10 @@ class BaseInformationPartition(metaclass=ABCMeta):
         """
         Use PrettyTable to create a nice table.
         """
-        table = build_table(['measure', self.unit], title=self._name)  # pylint: disable=no-member
+        table = build_table(["measure", self.unit], title=self._name)  # pylint: disable=no-member
         ### TODO: add some logic for the format string, so things look nice
         #         with arbitrary values
-        table.float_format[self.unit] = f' 5.{digits}'  # pylint: disable=no-member
+        table.float_format[self.unit] = f" 5.{digits}"  # pylint: disable=no-member
         key_function = lambda row: (len(row[0][0]), row[0][0], row[0][1])
         items = self.atoms.items()
         for (rvs, crvs), value in sorted(items, key=key_function):
@@ -183,14 +184,14 @@ class ShannonPartition(BaseInformationPartition):
 
     _measure = staticmethod(entropy)
     _name = "Shannon Partition"
-    unit = 'bits'
+    unit = "bits"
 
     @staticmethod
     def _symbol(rvs, crvs):
         """
         Returns H for a conditional entropy, and I for all other atoms.
         """
-        return 'H' if len(rvs) == 1 else 'I'
+        return "H" if len(rvs) == 1 else "I"
 
 
 class ExtropyPartition(BaseInformationPartition):
@@ -202,19 +203,18 @@ class ExtropyPartition(BaseInformationPartition):
 
     _measure = staticmethod(extropy)
     _name = "Extropy Partition"
-    unit = 'exits'
+    unit = "exits"
 
     @staticmethod
     def _symbol(rvs, crvs):
         """
         Returns X for all atoms.
         """
-        return 'X'
+        return "X"
 
 
 def tuplefy(dependency):
-    """
-    """
+    """ """
     dependency = tuple(map(tuple, dependency))
     return tuple(tuple(sorted(_)) for _ in sorted(dependency, key=lambda d: (-len(d), d)))
 
@@ -225,7 +225,7 @@ class DependencyDecomposition:
     distribution.
     """
 
-    def __init__(self, dist, rvs=None, measures={'H': entropy}, cover=True, maxiter=None):  # noqa: B006
+    def __init__(self, dist, rvs=None, measures={"H": entropy}, cover=True, maxiter=None):  # noqa: B006
         """
         Construct a Krippendorff-type partition of the information contained in
         `dist`.
@@ -255,7 +255,7 @@ class DependencyDecomposition:
         ----------
         dependency : tuple of tuples
         """
-        s = ':'.join(''.join(map(str, d)) for d in tuplefy(dependency))
+        s = ":".join("".join(map(str, d)) for d in tuplefy(dependency))
         return s
 
     def _partition(self, maxiter=None):
@@ -295,7 +295,7 @@ class DependencyDecomposition:
         """
         Represent using the str().
         """
-        if ditParams['repr.print']:
+        if ditParams["repr.print"]:
             return self.to_string()
         else:
             return super().__repr__()
@@ -367,11 +367,13 @@ class DependencyDecomposition:
         Use PrettyTable to create a nice table.
         """
         measures = list(self.measures.keys())
-        table = build_table(field_names=['dependency'] + measures, title=re.sub(r'(?<!^)(?=[A-Z])', ' ', self.__class__.__name__))
+        table = build_table(
+            field_names=["dependency"] + measures, title=re.sub(r"(?<!^)(?=[A-Z])", " ", self.__class__.__name__)
+        )
         ### TODO: add some logic for the format string, so things look nice
         # with arbitrary values
         for m in measures:
-            table.float_format[m] = f' {digits + 2}.{digits}'
+            table.float_format[m] = f" {digits + 2}.{digits}"
         items = [(tuplefy(row[0]), row[1]) for row in self._measure_of_interest.items() if row[0]]
         items = sorted(items, key=lambda row: row[0])
         items = sorted(items, key=lambda row: sorted((len(d) for d in row[0]), reverse=True), reverse=True)
@@ -399,21 +401,19 @@ class DependencyDecomposition:
 
 
 class ShapleyDecomposition(DependencyDecomposition):
-    """
-    """
+    """ """
+
     def __init__(self, dist, rvs=None, measures=None, cover=False, maxiter=None, agg_func=np.mean):
-        """
-        """
+        """ """
         if measures is None:
-            measures = {'H': entropy}
+            measures = {"H": entropy}
         super().__init__(dist, rvs=rvs, measures=measures, cover=cover, maxiter=maxiter)
         self._func = agg_func
         self._shapley_values()
         self._measure_of_interest = self._shapleys
 
     def _shapley_values(self):
-        """
-        """
+        """ """
         info_diffs = defaultdict(lambda: defaultdict(list))
         for chain in self._lattice.chains():
             for a, b in pairwise_iter(chain):

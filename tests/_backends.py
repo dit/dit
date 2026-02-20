@@ -23,13 +23,19 @@ def _can_import(module_name):
 
 
 backends = [
-    'numpy',
-    pytest.param('jax', marks=[
-        pytest.mark.skipif(not _can_import('jax'), reason="jax not installed"),
-        pytest.mark.very_slow,
-    ]),
-    pytest.param('torch', marks=[
-        pytest.mark.skipif(not _can_import('torch'), reason="torch not installed"),
-        pytest.mark.very_slow,
-    ]),
+    "numpy",
+    pytest.param(
+        "jax",
+        marks=[
+            pytest.mark.skipif(not _can_import("jax"), reason="jax not installed"),
+            pytest.mark.very_slow,
+        ],
+    ),
+    pytest.param(
+        "torch",
+        marks=[
+            pytest.mark.skipif(not _can_import("torch"), reason="torch not installed"),
+            pytest.mark.very_slow,
+        ],
+    ),
 ]

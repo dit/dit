@@ -4,6 +4,7 @@ Pelaez-Moreno. "The Multivariate Entropy Triangle and Applications." Hybrid
 Artificial Intelligent Systems. Springer International Publishing, 2016.
 647-658].
 """
+
 from abc import ABCMeta, abstractmethod
 
 from ..distconst import product_distribution, uniform_like
@@ -11,8 +12,8 @@ from ..distribution import BaseDistribution
 from ..multivariate import dual_total_correlation, entropy, residual_entropy, total_correlation
 
 __all__ = (
-    'EntropyTriangle',
-    'EntropyTriangle2',
+    "EntropyTriangle",
+    "EntropyTriangle2",
 )
 
 
@@ -73,7 +74,7 @@ class BaseEntropyTriangle(metaclass=ABCMeta):
         """
         pass
 
-    def draw(self, ax=None, setup=True, marker='o', color='k'):  # pragma: no cover
+    def draw(self, ax=None, setup=True, marker="o", color="k"):  # pragma: no cover
         """
         Plot the entropy triangle.
 
@@ -108,7 +109,7 @@ class BaseEntropyTriangle(metaclass=ABCMeta):
             ax.right_axis_label(self.right_label, fontsize=fontsize)
             ax.bottom_axis_label(self.bottom_label, fontsize=fontsize)
 
-            ax.ticks(axis='lbr', multiple=0.1, linewidth=1)
+            ax.ticks(axis="lbr", multiple=0.1, linewidth=1)
             ax.clear_matplotlib_ticks()
 
         ax.scatter(self.points, marker=marker, color=color)

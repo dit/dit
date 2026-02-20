@@ -16,13 +16,13 @@ def test_sample1():
     d = dit.example_dists.Xor()
     dit.math.prng.seed(0)
     x = module.sample(d)
-    assert x == '101'
+    assert x == "101"
 
     # with log dist
     dit.math.prng.seed(0)
     d.set_base(3.5)
     x = module.sample(d)
-    assert x == '101'
+    assert x == "101"
 
 
 def test_sample2():
@@ -30,14 +30,14 @@ def test_sample2():
     d = dit.example_dists.Xor()
     dit.math.prng.seed(0)
     x = module.sample(d, prng=dit.math.prng)
-    assert x == '101'
+    assert x == "101"
 
 
 def test_sample3():
     # Specified rand number
     d = dit.example_dists.Xor()
     x = module.sample(d, rand=0.3)
-    assert x == '011'
+    assert x == "011"
 
 
 def test_sample4():
@@ -45,7 +45,7 @@ def test_sample4():
     d = dit.example_dists.Xor()
     dit.math.prng.seed(0)
     x = module.sample(d, 6)
-    assert x == ['101', '101', '101', '101', '011', '101']
+    assert x == ["101", "101", "101", "101", "011", "101"]
 
 
 def test_sample5():
@@ -105,23 +105,21 @@ def test_base_with_size():
     # size 4, 4
     dit.math.prng.seed(0)
     x = module.ball(4, 4)
-    x_ = np.array([
-        [0.69375635, -0.36303705, 0.35293677, -0.05622584],
-        [-0.06238751, 0.24817385, 0.08706278, 0.87899164],
-        [0.70592518, 0.1128636, 0.41171971, 0.30951042],
-        [0.72885111, -0.1000816, 0.15272267, -0.41665039]
-    ])
+    x_ = np.array(
+        [
+            [0.69375635, -0.36303705, 0.35293677, -0.05622584],
+            [-0.06238751, 0.24817385, 0.08706278, 0.87899164],
+            [0.70592518, 0.1128636, 0.41171971, 0.30951042],
+            [0.72885111, -0.1000816, 0.15272267, -0.41665039],
+        ]
+    )
     assert np.allclose(x, x_)
 
 
 def test_2ball():
     dit.math.prng.seed(0)
     x = module._2ball(3, dit.math.prng)
-    x_ = np.array([
-        [-0.93662222, -0.29662586],
-        [-0.14853979, -0.66826269],
-        [-0.31184301, -0.23494632]
-    ])
+    x_ = np.array([[-0.93662222, -0.29662586], [-0.14853979, -0.66826269], [-0.31184301, -0.23494632]])
     assert x.shape == (3, 2)
     assert np.allclose(x, x_)
 
@@ -129,11 +127,13 @@ def test_2ball():
 def test_3ball_cylinder():
     dit.math.prng.seed(0)
     x = module._3ball_cylinder(3, dit.math.prng)
-    x_ = np.array([
-        [-0.7520198, 0.31101413, 0.08976637],
-        [0.68515146, -0.55406718, -0.1526904],
-        [0.77215823, -0.17942272, 0.29178823]
-    ])
+    x_ = np.array(
+        [
+            [-0.7520198, 0.31101413, 0.08976637],
+            [0.68515146, -0.55406718, -0.1526904],
+            [0.77215823, -0.17942272, 0.29178823],
+        ]
+    )
     assert x.shape == (3, 3)
     assert np.allclose(x, x_)
 
@@ -179,11 +179,13 @@ def test_norm_cov():
     dit.math.prng.seed(0)
     ilrcov = np.array([[0.3, 0.2], [0.2, 0.4]])
     x = dit.math.norm(d, ilrcov, size=3)
-    x_ = np.array([
-        [0.07400846, 0.27603643, 0.64995511],
-        [0.09984353, 0.44856934, 0.45158713],
-        [0.07260608, 0.18948779, 0.73790613]
-    ])
+    x_ = np.array(
+        [
+            [0.07400846, 0.27603643, 0.64995511],
+            [0.09984353, 0.44856934, 0.45158713],
+            [0.07260608, 0.18948779, 0.73790613],
+        ]
+    )
     assert np.allclose(x, x_)
 
 

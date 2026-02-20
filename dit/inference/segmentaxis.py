@@ -7,12 +7,10 @@ import warnings
 import numpy as np
 from numpy.lib.stride_tricks import as_strided
 
-__all__ = (
-    'segment_axis',
-)
+__all__ = ("segment_axis",)
 
 
-def segment_axis(a, length, overlap=0, axis=None, end='cut', endvalue=0):
+def segment_axis(a, length, overlap=0, axis=None, end="cut", endvalue=0):
     """
     Generate a new array that chops the given array along the given axis into
     overlapping frames.
@@ -69,29 +67,26 @@ def segment_axis(a, length, overlap=0, axis=None, end='cut', endvalue=0):
 
     if l < length or (l - length) % (length - overlap):
         if l > length:
-            roundup = length + \
-                      (1 + (l - length) // (length - overlap)) * (length - overlap)
-            rounddown = length + \
-                        ((l - length) // (length - overlap)) * (length - overlap)
+            roundup = length + (1 + (l - length) // (length - overlap)) * (length - overlap)
+            rounddown = length + ((l - length) // (length - overlap)) * (length - overlap)
         else:
             roundup = length
             rounddown = 0
         assert rounddown < l < roundup
-        assert roundup == rounddown + (length - overlap) or \
-               (roundup == length and rounddown == 0)
+        assert roundup == rounddown + (length - overlap) or (roundup == length and rounddown == 0)
         a = a.swapaxes(-1, axis)
 
-        if end == 'cut':
+        if end == "cut":
             a = a[..., :rounddown]
-        elif end in ['pad', 'wrap']:  # copying will be necessary
+        elif end in ["pad", "wrap"]:  # copying will be necessary
             s = list(a.shape)
             s[-1] = roundup
             b = np.empty(s, dtype=a.dtype)
             b[..., :l] = a
-            if end == 'pad':
+            if end == "pad":
                 b[..., l:] = endvalue
             else:  # end == 'wrap'
-                b[..., l:] = a[..., :roundup - l]
+                b[..., l:] = a[..., : roundup - l]
             a = b
         else:
             msg = f"`end` {end} is not recognized."
@@ -109,9 +104,8 @@ def segment_axis(a, length, overlap=0, axis=None, end='cut', endvalue=0):
     assert (l - length) % (length - overlap) == 0
     n = 1 + (l - length) // (length - overlap)
     s = a.strides[axis]
-    newshape = a.shape[:axis] + (n, length) + a.shape[axis + 1:]
-    newstrides = a.strides[:axis] + ((length - overlap) * s, s) + \
-                 a.strides[axis + 1:]
+    newshape = a.shape[:axis] + (n, length) + a.shape[axis + 1 :]
+    newstrides = a.strides[:axis] + ((length - overlap) * s, s) + a.strides[axis + 1 :]
 
     try:
         return as_strided(a, strides=newstrides, shape=newshape)
@@ -119,6 +113,5 @@ def segment_axis(a, length, overlap=0, axis=None, end='cut', endvalue=0):
         warnings.warn("Problem with ndarray creation forces copy.", stacklevel=2)
         a = a.copy()
         # Shape doesn't change but strides does
-        newstrides = a.strides[:axis] + ((length - overlap) * s, s) + \
-                     a.strides[axis + 1:]
+        newstrides = a.strides[:axis] + ((length - overlap) * s, s) + a.strides[axis + 1 :]
         return as_strided(a, strides=newstrides, shape=newshape)

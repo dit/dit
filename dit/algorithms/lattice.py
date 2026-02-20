@@ -49,6 +49,7 @@ give the same results as [1].
     http://arxiv.org/abs/1310.1538
 
 """
+
 from collections import defaultdict
 
 import dit
@@ -58,16 +59,16 @@ from ..math import atom_set, sigma_algebra
 from ..utils import quasilexico_key
 
 __all__ = (
-    'dist_from_induced_sigalg',
-    'induced_sigalg',
-    'insert_join',
-    'insert_meet',
-    'insert_rv',
-    'join',
-    'join_sigalg',
-    'meet',
-    'meet_sigalg',
-    'sigma_algebra_sort',
+    "dist_from_induced_sigalg",
+    "induced_sigalg",
+    "insert_join",
+    "insert_meet",
+    "insert_rv",
+    "join",
+    "join_sigalg",
+    "meet",
+    "meet_sigalg",
+    "sigma_algebra_sort",
 )
 
 
@@ -121,7 +122,7 @@ def induced_sigalg(dist, rvs, rv_mode=None):
     # partition of the original outcomes.
     d = defaultdict(list)
     ctor = dist._outcome_ctor
-    for outcome, _ in dist.zipped(mode='atoms'):
+    for outcome, _ in dist.zipped(mode="atoms"):
         # Build a list of inner outcomes. "c" stands for "constructed".
         # We need to iterate over all atoms, not just those in pmf since
         # we are trying to partition the sample space.
@@ -161,12 +162,10 @@ def join_sigalg(dist, rvs, rv_mode=None):
     """
     # We require unique indexes within each random variable and want the
     # indexes in distribution order. We don't need the names.
-    parse = lambda rv: parse_rvs(dist, rv, rv_mode=rv_mode,
-                                 unique=False, sort=True)[1]
+    parse = lambda rv: parse_rvs(dist, rv, rv_mode=rv_mode, unique=False, sort=True)[1]
     indexes = [parse(rv) for rv in rvs]
 
-    sigalgs = [induced_sigalg(dist, rv, rv_mode=RV_MODES.INDICES)
-               for rv in indexes]
+    sigalgs = [induced_sigalg(dist, rv, rv_mode=RV_MODES.INDICES) for rv in indexes]
 
     # \sigma( X join Y ) = \sigma( \sigma(X) \cup \sigma(Y) )
     # Union all the sigma algebras.
@@ -203,12 +202,10 @@ def meet_sigalg(dist, rvs, rv_mode=None):
     """
     # We require unique indexes within each random variable and want the
     # indexes in distribution order. We don't need the names.
-    parse = lambda rv: parse_rvs(dist, rv, rv_mode=rv_mode,
-                                           unique=False, sort=True)[1]
+    parse = lambda rv: parse_rvs(dist, rv, rv_mode=rv_mode, unique=False, sort=True)[1]
     indexes = [parse(rv) for rv in rvs]
 
-    sigalgs = [induced_sigalg(dist, rv, rv_mode=RV_MODES.INDICES)
-               for rv in indexes]
+    sigalgs = [induced_sigalg(dist, rv, rv_mode=RV_MODES.INDICES) for rv in indexes]
 
     # \sigma( X meet Y ) = \sigma(X) \cap \sigma(Y) )
     # Intersect all the sigma algebras.
@@ -350,7 +347,7 @@ def insert_rv(dist, idx, sigalg):
         idx = dist.outcome_length()
 
     if not 0 <= idx <= dist.outcome_length():
-        raise IndexError('Invalid insertion index.')
+        raise IndexError("Invalid insertion index.")
 
     # Provide sane sorting of atoms
     atoms = atom_set(sigalg)
@@ -359,7 +356,8 @@ def insert_rv(dist, idx, sigalg):
     if dist._outcome_class is str:
         # Then the labels for the new random variable must be strings.
         from string import ascii_letters, digits
-        labels = (digits + ascii_letters)[:len(atoms)]
+
+        labels = (digits + ascii_letters)[: len(atoms)]
     else:
         labels = range(len(atoms))
 
@@ -370,16 +368,19 @@ def insert_rv(dist, idx, sigalg):
             atom_of[outcome] = label
 
     if idx == dist.outcome_length():
+
         def new_outcome_ctor(outcome, ctor=dist._outcome_ctor):
             """The end of the outcome"""
             new_outcome = [outcome, [atom_of[outcome]]]
             return ctor(chain.from_iterable(new_outcome))
     elif idx == 0:
+
         def new_outcome_ctor(outcome, ctor=dist._outcome_ctor):
             """The beginning of the outcome"""
             new_outcome = [[atom_of[outcome]], outcome]
             return ctor(chain.from_iterable(new_outcome))
     else:
+
         def new_outcome_ctor(outcome, ctor=dist._outcome_ctor):
             """In the middle of the outcome"""
             new_outcome = [outcome[:idx], [atom_of[outcome]], outcome[idx:]]

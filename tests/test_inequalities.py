@@ -163,7 +163,7 @@ def test_data_processing_inequality_gk(dist):
 
 @pytest.mark.slow
 @pytest.mark.flaky(reruns=5)
-@pytest.mark.parametrize('backend', backends)
+@pytest.mark.parametrize("backend", backends)
 @given(dist=markov_chains(alphabets=(2,) * 3))
 @settings(max_examples=5)
 def test_data_processing_inequality_wyner(dist, backend):
@@ -178,7 +178,7 @@ def test_data_processing_inequality_wyner(dist, backend):
 
 @pytest.mark.slow
 @pytest.mark.flaky(reruns=5)
-@pytest.mark.parametrize('backend', backends)
+@pytest.mark.parametrize("backend", backends)
 @given(dist=markov_chains(alphabets=(2,) * 3))
 @settings(max_examples=5)
 def test_data_processing_inequality_exact(dist, backend):
@@ -199,7 +199,7 @@ def test_max_correlation_mutual_information(dist):
     p_min = dist.marginal([0]).pmf.min()
     rho = maximum_correlation(dist, [[0], [1]])
     i = I(dist, [[0], [1]])
-    assert (p_min * rho)**2 <= (2 * np.log(2)) * i + epsilon
+    assert (p_min * rho) ** 2 <= (2 * np.log(2)) * i + epsilon
 
 
 @given(dist1=distributions(alphabets=(10,)), dist2=distributions(alphabets=(10,)))
@@ -213,8 +213,7 @@ def test_hellinger_variational(dist1, dist2):
     assert v <= np.sqrt(2) * h + epsilon
 
 
-@given(dist1=distributions(alphabets=(10,), zeros=False),
-       dist2=distributions(alphabets=(10,), zeros=False))
+@given(dist1=distributions(alphabets=(10,), zeros=False), dist2=distributions(alphabets=(10,), zeros=False))
 def test_chernoff_inequalities(dist1, dist2):
     """
     1/8 sum p_i ((q_i - p_i)/max(p_i, q_i))^2 <= 1 - 2^(-C)
@@ -223,10 +222,10 @@ def test_chernoff_inequalities(dist1, dist2):
     p, q = normalize_pmfs(dist1, dist2)
     pq = np.vstack([p, q])
     c = chernoff_information(dist1, dist2)
-    a = (p * ((q - p) / pq.max(axis=0))**2).sum() / 8
-    b = (p * ((q - p) / pq.min(axis=0))**2).sum() / 8
-    assert a <= 1 - 2**(-c) + epsilon
-    assert 1 - 2**(-c) <= b + epsilon
+    a = (p * ((q - p) / pq.max(axis=0)) ** 2).sum() / 8
+    b = (p * ((q - p) / pq.min(axis=0)) ** 2).sum() / 8
+    assert a <= 1 - 2 ** (-c) + epsilon
+    assert 1 - 2 ** (-c) <= b + epsilon
 
 
 @pytest.mark.slow

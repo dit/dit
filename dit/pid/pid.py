@@ -17,11 +17,11 @@ from ..params import ditParams
 from ..utils import build_table, flatten, powerset
 
 __all__ = (
-    'BaseBivariatePID',
-    'BaseIncompletePID',
-    'BasePID',
-    'BaseUniquePID',
-    'sort_key',
+    "BaseBivariatePID",
+    "BaseIncompletePID",
+    "BasePID",
+    "BaseUniquePID",
+    "sort_key",
 )
 
 
@@ -64,6 +64,7 @@ def _transform(lattice):
     tupled_lattice : Lattice
         The lattice, but with tuples in place of frozensets.
     """
+
     def tuplefy(n):
         return tuple(sorted((tuple(sorted(sum(_, ()))) for _ in n), key=lambda tup: (len(tup), tup)))
 
@@ -219,7 +220,7 @@ class BasePID(metaclass=ABCMeta):
         repr : str
             A representation of this object.
         """
-        if ditParams['repr.print']:
+        if ditParams["repr.print"]:
             return self.to_string()
         else:
             return super().__repr__()
@@ -293,7 +294,9 @@ class BasePID(metaclass=ABCMeta):
         """
         if node not in self._pis:
             if node not in self._lattice:
-                raise Exception(f'Cannot get partial information associated with node "{node}" because it is in the lattice')
+                raise Exception(
+                    f'Cannot get partial information associated with node "{node}" because it is in the lattice'
+                )
             self._pis[node] = float(self.get_red(node) - sum(self.get_pi(n) for n in self._lattice.descendants(node)))
 
         return self._pis[node]
@@ -315,13 +318,13 @@ class BasePID(metaclass=ABCMeta):
         red_string = self._red_string
         pi_string = self._pi_string
 
-        table = build_table([self.name, red_string, pi_string], title=getattr(self._dist, 'name', ''))
+        table = build_table([self.name, red_string, pi_string], title=getattr(self._dist, "name", ""))
 
-        table.float_format[red_string] = f'{digits + 2}.{digits}'
-        table.float_format[pi_string] = f'{digits + 2}.{digits}'
+        table.float_format[red_string] = f"{digits + 2}.{digits}"
+        table.float_format[pi_string] = f"{digits + 2}.{digits}"
 
         for node in sorted(self._lattice, key=sort_key(self._lattice)):
-            node_label = ''.join('{{{}}}'.format(':'.join(map(str, n))) for n in node)
+            node_label = "".join("{{{}}}".format(":".join(map(str, n))) for n in node)
             red_value = self.get_red(node)
             pi_value = self.get_pi(node)
             if np.isclose(0, red_value, atol=10 ** -(digits - 1), rtol=10 ** -(digits - 1)):  # pragma: no cover
@@ -345,6 +348,7 @@ class BasePID(metaclass=ABCMeta):
         """
         try:
             from colorama import Fore, Style
+
             inconsistent_style = lambda x: Fore.RED + x + Style.RESET_ALL
             negative_style = lambda x: Fore.GREEN + x + Style.RESET_ALL
             incomplete_style = lambda x: Fore.BLUE + x + Style.RESET_ALL
@@ -432,7 +436,9 @@ class BaseIncompletePID(BasePID):
             If `self` and `other` are the same partial information decomposition.
         """
         equal_pi = super().__eq__(other)
-        equal_red = (np.isclose(self.get_red(node), other.get_red(node), atol=1e-5, rtol=1e-5) for node in self._lattice)
+        equal_red = (
+            np.isclose(self.get_red(node), other.get_red(node), atol=1e-5, rtol=1e-5) for node in self._lattice
+        )
         return equal_pi and all(equal_red)
 
     def _compute_lattice_monotonicity(self):
@@ -460,9 +466,16 @@ class BaseIncompletePID(BasePID):
                         nodes.remove(n)
 
         # if redundancy of A == redundancy of B, then for all A -> C -> B, redundancy of C = redundancy of A, B
-        tops = [node for node in self._lattice if node in self._reds and any((n not in self._reds) for n in self._lattice.covers(node))]
-        bottoms = [node for node in self._lattice if
-                   node in self._reds and any((n not in self._reds) for n in self._inverse_lattice.covers(node))]
+        tops = [
+            node
+            for node in self._lattice
+            if node in self._reds and any((n not in self._reds) for n in self._lattice.covers(node))
+        ]
+        bottoms = [
+            node
+            for node in self._lattice
+            if node in self._reds and any((n not in self._reds) for n in self._inverse_lattice.covers(node))
+        ]
         for top, bottom in product(tops, bottoms):
             if np.isclose(self._reds[top], self._reds[bottom], atol=1e-5, rtol=1e-5):
                 for path in nx.all_simple_paths(self._lattice._lattice, top, bottom):
@@ -472,7 +485,15 @@ class BaseIncompletePID(BasePID):
 
         # if redundancy of A is equal to the redundancy any of A's children, then pi(A) = 0
         for node in self._lattice:
-            if node not in self._pis and node in self._reds and any(np.isclose(self._reds[n], self._reds[node], atol=1e-5, rtol=1e-5) for n in self._lattice.covers(node) if n in self._reds):
+            if (
+                node not in self._pis
+                and node in self._reds
+                and any(
+                    np.isclose(self._reds[n], self._reds[node], atol=1e-5, rtol=1e-5)
+                    for n in self._lattice.covers(node)
+                    if n in self._reds
+                )
+            ):
                 self._pis[node] = 0
 
     def _compute_attempt_linsolve(self):
@@ -488,10 +509,10 @@ class BaseIncompletePID(BasePID):
                 a = node in self._reds
                 b = all((n in self._pis or n in nodes) for n in self._lattice.descendants(node, include=True))
                 return a and b
+
             return inner
 
         for rvs in reversed(list(powerset(missing_rvs))[1:]):
-
             try:
                 lub = self._lattice.join(*rvs, predicate=predicate(rvs))
             except ValueError:
@@ -500,8 +521,13 @@ class BaseIncompletePID(BasePID):
             row = lambda node, rvs=rvs: [1 if (c in self._lattice.descendants(node, include=True)) else 0 for c in rvs]
 
             A = np.array([row(node) for node in rvs if node in self._reds] + [[1] * len(rvs)])
-            b = np.array([self._reds[node] for node in rvs if node in self._reds] + \
-                         [self._reds[lub] - sum(self._pis[node] for node in self._lattice.descendants(lub, include=True) if node in self._pis)])
+            b = np.array(
+                [self._reds[node] for node in rvs if node in self._reds]
+                + [
+                    self._reds[lub]
+                    - sum(self._pis[node] for node in self._lattice.descendants(lub, include=True) if node in self._pis)
+                ]
+            )
             try:
                 new_pis = np.linalg.solve(A, b)
                 if np.all(new_pis > -1e-6):
@@ -511,7 +537,9 @@ class BaseIncompletePID(BasePID):
                     for node in self._lattice:
                         if node not in self._reds:
                             with contextlib.suppress(KeyError):  # pragma: no cover
-                                self._reds[node] = sum(self._pis[n] for n in self._lattice.descendants(node, include=True))
+                                self._reds[node] = sum(
+                                    self._pis[n] for n in self._lattice.descendants(node, include=True)
+                                )
 
                     break
 
@@ -643,8 +671,7 @@ class BaseUniquePID(BaseIncompletePID):
     """
 
     def _compute(self):
-        """
-        """
+        """ """
         uniques = self._measure(self._dist, self._sources, self._target, **self._kwargs)
 
         for node in self._lattice:
@@ -660,8 +687,7 @@ class BaseBivariatePID(BaseIncompletePID):
     """
 
     def _compute(self):
-        """
-        """
+        """ """
         for node in self._lattice:
             if len(node) == 2 and node not in self._reds:
                 self._reds[node] = self._measure(self._dist, node, self._target, **self._kwargs)

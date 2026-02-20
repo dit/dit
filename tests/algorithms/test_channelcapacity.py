@@ -21,9 +21,9 @@ def BEC_joint(epsilon):
         The noise level at which the input is erased.
 
     """
-    pX = Distribution(['0', '1'], [1 / 2, 1 / 2])
-    pYgX0 = Distribution(['0', '1', 'e'], [1 - epsilon, 0, epsilon])
-    pYgX1 = Distribution(['0', '1', 'e'], [0, 1 - epsilon, epsilon])
+    pX = Distribution(["0", "1"], [1 / 2, 1 / 2])
+    pYgX0 = Distribution(["0", "1", "e"], [1 - epsilon, 0, epsilon])
+    pYgX1 = Distribution(["0", "1", "e"], [0, 1 - epsilon, epsilon])
     pYgX = [pYgX0, pYgX1]
     pXY = joint_from_factors(pX, pYgX, strict=False)
     return pXY
@@ -49,8 +49,8 @@ def test_channel_capacity_no_rvnames():
 def test_channel_capacity_rvnames():
     epsilon = 0.01
     pXY = BEC_joint(epsilon)
-    pXY.set_rv_names('XY')
-    pX, pYgX = pXY.condition_on('X')
+    pXY.set_rv_names("XY")
+    pX, pYgX = pXY.condition_on("X")
     cc, pXopt = channel_capacity(pYgX, pX)
 
     # Verify channel capacity.
@@ -81,7 +81,7 @@ def test_channel_capacity_array2():
     epsilon = 0.3
     pXY = BEC_joint(epsilon)
     pX, pYgX = pXY.condition_on([0])
-    pYgX = cdist_array(pYgX, base='linear', mode='dense')
+    pYgX = cdist_array(pYgX, base="linear", mode="dense")
     cc, pXopt_pmf = channel_capacity(pYgX, atol=1e-9, rtol=1e-9)
 
     # Verify channel capacity.
@@ -94,9 +94,9 @@ def test_channel_capacity_array2():
 def test_bad_marginal():
     epsilon = 0.01
     pXY = BEC_joint(epsilon)
-    pXY.set_rv_names('XY')
-    pX, pYgX = pXY.condition_on('X')
-    pX['0'] = 0
+    pXY.set_rv_names("XY")
+    pX, pYgX = pXY.condition_on("X")
+    pX["0"] = 0
     # Now make its length disagree with the number of cdists.
     pX.make_sparse()
     with pytest.raises(ditException):
@@ -107,7 +107,7 @@ def test_channel_capacity_joint1():
     """
     Test against a known value.
     """
-    gm = Distribution(['00', '01', '10'], [1 / 3] * 3)
+    gm = Distribution(["00", "01", "10"], [1 / 3] * 3)
     cc = channel_capacity_joint(gm, [0], [1])
     assert cc == pytest.approx(0.3219280796196524)
 
@@ -116,7 +116,7 @@ def test_channel_capacity_joint2():
     """
     Test against a known value.
     """
-    gm = Distribution(['00', '01', '10'], [1 / 3] * 3)
-    m = Distribution(['0', '1'], [2 / 5, 3 / 5])
+    gm = Distribution(["00", "01", "10"], [1 / 3] * 3)
+    m = Distribution(["0", "1"], [2 / 5, 3 / 5])
     _, marg = channel_capacity_joint(gm, [0], [1], marginal=True)
     assert marg.is_approx_equal(m, atol=1e-3)

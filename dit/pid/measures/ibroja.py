@@ -7,9 +7,7 @@ from ...algorithms.distribution_optimizers import BaseDistOptimizer, BROJABivari
 from ...multivariate import coinformation
 from ..pid import BaseUniquePID
 
-__all__ = (
-    'PID_BROJA',
-)
+__all__ = ("PID_BROJA",)
 
 
 class BROJAOptimizer(BaseDistOptimizer, BaseConvexOptimizer):

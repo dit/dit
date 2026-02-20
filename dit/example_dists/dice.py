@@ -7,9 +7,9 @@ import itertools
 import dit
 
 __all__ = (
-    'iid_sum',
-    'summed_dice',
-    'Wolfs_dice',
+    "iid_sum",
+    "summed_dice",
+    "Wolfs_dice",
 )
 
 
@@ -20,7 +20,7 @@ def iid_sum(n, k=2):
     alphabet = range(k)
     outcomes = list(itertools.product(alphabet, repeat=n))
     pmf = [1] * len(outcomes)
-    d = dit.Distribution(outcomes, pmf, base='linear', validate=False)
+    d = dit.Distribution(outcomes, pmf, base="linear", validate=False)
     d.normalize()
     d = dit.insert_rvf(d, lambda x: (sum(x),))
     return d
@@ -77,14 +77,45 @@ def Wolfs_dice():
     http://bayes.wustl.edu/etj/articles/entropy.concentration.pdf
     """
     outcomes = list(itertools.product(range(1, 7), repeat=2))
-    pmf = [547, 587, 500, 462, 621, 690,
-           609, 655, 497, 535, 651, 684,
-           514, 540, 468, 438, 587, 629,
-           462, 507, 414, 413, 509, 611,
-           551, 562, 499, 506, 658, 672,
-           563, 598, 519, 487, 609, 646,
-          ]
+    pmf = [
+        547,
+        587,
+        500,
+        462,
+        621,
+        690,
+        609,
+        655,
+        497,
+        535,
+        651,
+        684,
+        514,
+        540,
+        468,
+        438,
+        587,
+        629,
+        462,
+        507,
+        414,
+        413,
+        509,
+        611,
+        551,
+        562,
+        499,
+        506,
+        658,
+        672,
+        563,
+        598,
+        519,
+        487,
+        609,
+        646,
+    ]
     pmf = [p / 20000 for p in pmf]
     d = dit.Distribution(outcomes, pmf)
-    d.set_rv_names(('R', 'W'))
+    d.set_rv_names(("R", "W"))
     return d

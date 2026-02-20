@@ -67,11 +67,11 @@ def example_C():
     # Giant bit, perfect correlation.
 
     # Note, doesn't converge if we do this with n=4. e.g.: '1111', '0000'. Lol!
-    outcomes = ['111', '000']
-    d = dit.Distribution(outcomes, [.5, .5])
+    outcomes = ["111", "000"]
+    d = dit.Distribution(outcomes, [0.5, 0.5])
     maxent_dists = dit.algorithms.marginal_maxent_dists(d)
     print_output(d, maxent_dists)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     example_A()

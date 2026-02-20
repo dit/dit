@@ -8,7 +8,7 @@ from dit.example_dists.intrinsic import *
 from dit.multivariate import lower_intrinsic_mutual_information
 
 
-@pytest.mark.parametrize('dist', [intrinsic_1, intrinsic_2, intrinsic_3])
+@pytest.mark.parametrize("dist", [intrinsic_1, intrinsic_2, intrinsic_3])
 def test_1(dist):
     """
     Test against known values.

@@ -7,9 +7,7 @@ from ...algorithms import insert_meet
 from ...multivariate import coinformation
 from ..pid import BasePID
 
-__all__ = (
-    'PID_GK',
-)
+__all__ = ("PID_GK",)
 
 
 class PID_GK(BasePID):

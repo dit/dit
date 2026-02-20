@@ -8,12 +8,12 @@ from numbers import Integral, Number
 from operator import mul
 
 __all__ = (
-    'is_number',
-    'is_integer',
-    'factorial',
-    'combinations',
-    'multinomial',
-    'prod',
+    "is_number",
+    "is_integer",
+    "factorial",
+    "combinations",
+    "multinomial",
+    "prod",
 )
 
 

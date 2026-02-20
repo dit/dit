@@ -19,20 +19,15 @@ from dit.utils import powerset
 
 
 def test_sigalg_sort():
-    """ Test sigma_algebra_sort """
-    sigalg = frozenset([
-        frozenset([]),
-        frozenset([1]),
-        frozenset([2]),
-        frozenset([1, 2])
-    ])
+    """Test sigma_algebra_sort"""
+    sigalg = frozenset([frozenset([]), frozenset([1]), frozenset([2]), frozenset([1, 2])])
     sigalg_ = [(), (1,), (2,), (1, 2)]
     assert sigalg_ == sigma_algebra_sort(sigalg)
 
 
 def test_join_sigalg():
-    """ Test join_sigalg """
-    outcomes = ['00', '01', '10', '11']
+    """Test join_sigalg"""
+    outcomes = ["00", "01", "10", "11"]
     pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
     sigalg = frozenset(frozenset(_) for _ in powerset(outcomes))
@@ -41,8 +36,8 @@ def test_join_sigalg():
 
 
 def test_meet_sigalg():
-    """ Test meet_sigalg """
-    outcomes = ['00', '01', '10', '11']
+    """Test meet_sigalg"""
+    outcomes = ["00", "01", "10", "11"]
     pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
     sigalg = frozenset([frozenset([]), frozenset(outcomes)])
@@ -51,7 +46,7 @@ def test_meet_sigalg():
 
 
 def test_dist_from_induced():
-    """ Test dist_from_induced_sigalg """
+    """Test dist_from_induced_sigalg"""
     outcomes = [(0,), (1,), (2,)]
     pmf = np.array([1 / 3] * 3)
     d = ScalarDistribution(outcomes, pmf)
@@ -72,8 +67,8 @@ def test_dist_from_induced():
 
 
 def test_join():
-    """ Test join """
-    outcomes = ['00', '01', '10', '11']
+    """Test join"""
+    outcomes = ["00", "01", "10", "11"]
     pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
     d2 = join(d, [[0], [1]])
@@ -82,8 +77,8 @@ def test_join():
 
 
 def test_meet():
-    """ Test meet """
-    outcomes = ['00', '01', '10', '11']
+    """Test meet"""
+    outcomes = ["00", "01", "10", "11"]
     pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
     d2 = meet(d, [[0], [1]])
@@ -92,8 +87,8 @@ def test_meet():
 
 
 def test_insert_join():
-    """ Test insert_join """
-    outcomes = ['00', '01', '10', '11']
+    """Test insert_join"""
+    outcomes = ["00", "01", "10", "11"]
     pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
     with pytest.raises(IndexError):

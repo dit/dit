@@ -6,9 +6,9 @@ from ...npdist import Distribution
 from .base_skar_optimizers import BaseTwoPartIntrinsicMutualInformation
 
 __all__ = (
-    'two_part_intrinsic_total_correlation',
-    'two_part_intrinsic_dual_total_correlation',
-    'two_part_intrinsic_CAEKL_mutual_information',
+    "two_part_intrinsic_total_correlation",
+    "two_part_intrinsic_dual_total_correlation",
+    "two_part_intrinsic_CAEKL_mutual_information",
 )
 
 
@@ -17,7 +17,7 @@ class TwoPartIntrinsicTotalCorrelation(BaseTwoPartIntrinsicMutualInformation):
     Compute the two part intrinsic total correlation.
     """
 
-    name = 'total correlation'
+    name = "total correlation"
 
     def measure(self, rvs, crvs):
         """
@@ -46,7 +46,7 @@ class TwoPartIntrinsicDualTotalCorrelation(BaseTwoPartIntrinsicMutualInformation
     Compute the two part intrinsic dual total correlation.
     """
 
-    name = 'dual total correlation'
+    name = "dual total correlation"
 
     def measure(self, rvs, crvs):
         """
@@ -75,7 +75,7 @@ class TwoPartIntrinsicCAEKLMutualInformation(BaseTwoPartIntrinsicMutualInformati
     Compute the two part intrinsic CAEKL mutual information.
     """
 
-    name = 'CAEKL mutual information'
+    name = "CAEKL mutual information"
 
     def measure(self, rvs, crvs):
         """
@@ -122,6 +122,7 @@ def two_part_intrinsic_mutual_information_constructor(func):  # pragma: no cover
     using this function will be significantly slower than if the objective were
     written directly using the joint probability ndarray.
     """
+
     class TwoPartIntrinsicMutualInformation(BaseTwoPartIntrinsicMutualInformation):
         name = func.__name__
 
@@ -139,13 +140,11 @@ def two_part_intrinsic_mutual_information_constructor(func):  # pragma: no cover
             cmi2 = self._conditional_mutual_information(self._u, self._crvs, self._v)(pmf)
             return mi + cmi1 - cmi2
 
-    TwoPartIntrinsicMutualInformation.__doc__ = \
-    f"""
+    TwoPartIntrinsicMutualInformation.__doc__ = f"""
     Compute the two part intrinsic {func.__name__}.
     """
 
-    docstring = \
-    f"""
+    docstring = f"""
     Compute the {func.__name__}.
 
     Parameters

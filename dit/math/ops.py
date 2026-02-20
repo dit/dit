@@ -2,6 +2,7 @@
 Classes to contextualize math operations in log vs linear space.
 
 """
+
 from types import MethodType
 
 import numpy as np
@@ -9,14 +10,14 @@ import numpy as np
 from ..exceptions import InvalidBase
 
 __all__ = (
-    'get_ops',
-    'LinearOperations',
-    'LogOperations',
+    "get_ops",
+    "LinearOperations",
+    "LogOperations",
 )
 
 
 # For 2.x, these are ascii strings. For 3.x these are unicode strings.
-acceptable_base_strings = {'linear', 'e'}
+acceptable_base_strings = {"linear", "e"}
 
 
 def get_ops(base):
@@ -74,13 +75,13 @@ def exp_func(b):
     if is_string_like(b) and b not in acceptable_base_strings:
         raise InvalidBase(msg=b)
 
-    if b == 'linear':
+    if b == "linear":
         exp = lambda x: x  # pragma: no branch
     elif b == 2:
         exp = np.exp2
     elif b == 10:
         exp = lambda x: 10**x
-    elif b == 'e' or np.isclose(b, np.e):
+    elif b == "e" or np.isclose(b, np.e):
         exp = np.exp
     else:
         if b <= 0 or b == 1:
@@ -102,7 +103,7 @@ def exp_func(b):
             p : float
                 `base`**`x`
             """
-            return base**np.asarray(x)
+            return base ** np.asarray(x)
 
     return exp
 
@@ -142,13 +143,13 @@ def log_func(b):
     if is_string_like(b) and b not in acceptable_base_strings:
         raise InvalidBase(msg=b)
 
-    if b == 'linear':
+    if b == "linear":
         log = lambda x: x  # pragma: no branch
     elif b == 2:
         log = np.log2
     elif b == 10:
         log = np.log10
-    elif b == 'e' or np.isclose(b, np.e):
+    elif b == "e" or np.isclose(b, np.e):
         log = np.log
     else:
         if b <= 0 or b == 1:
@@ -217,7 +218,7 @@ class Operations:
             If `True`, then if the base is 'e', it is returned as a float.
 
         """
-        base = np.exp(1) if numerical and self.base == 'e' else self.base
+        base = np.exp(1) if numerical and self.base == "e" else self.base
         return base
 
     def is_null(self, p):
@@ -245,35 +246,35 @@ class Operations:
         return self.zero == p
 
     def add(self, x, y):
-        """ Abstract base class """
+        """Abstract base class"""
         raise NotImplementedError
 
     def add_inplace(self, x, y):
-        """ Abstract base class """
+        """Abstract base class"""
         raise NotImplementedError
 
     def add_reduce(self, x):
-        """ Abstract base class """
+        """Abstract base class"""
         raise NotImplementedError
 
     def mult(self, x, y):
-        """ Abstract base class """
+        """Abstract base class"""
         raise NotImplementedError
 
     def mult_inplace(self, x, y):
-        """ Abstract base class """
+        """Abstract base class"""
         raise NotImplementedError
 
     def mult_reduce(self, x):
-        """ Abstract base class """
+        """Abstract base class"""
         raise NotImplementedError
 
     def invert(self, x):
-        """ Abstract base class """
+        """Abstract base class"""
         raise NotImplementedError
 
     def normalize(self, x):
-        """ Abstract base class """
+        """Abstract base class"""
         raise NotImplementedError
 
 
@@ -284,7 +285,7 @@ class LinearOperations(Operations):
 
     one = 1
     zero = 0
-    base = 'linear'
+    base = "linear"
 
     # If the functions below are standard Python functions (as opposed to
     # NumPy ufuncs), then they will be treated as unbound methods for the class.
@@ -473,9 +474,11 @@ def set_add(ops):
     # are calling 'local'.
     base = ops.base
     if base == 2:
+
         def add(self, x, y, func=np.logaddexp2):
             return func(x, y)
-    elif base == 'e' or np.isclose(base, np.e):
+    elif base == "e" or np.isclose(base, np.e):
+
         def add(self, x, y, func=np.logaddexp):
             return func(x, y)
     else:
@@ -515,12 +518,15 @@ def set_add_inplace(ops):
     """
     base = ops.base
     if base == 2:
+
         def add_inplace(self, x, y, func=np.logaddexp2):
             return func(x, y, x)
-    elif base == 'e' or np.isclose(base, np.e):
+    elif base == "e" or np.isclose(base, np.e):
+
         def add_inplace(self, x, y, func=np.logaddexp):
             return func(x, y, x)
     else:
+
         def add_inplace(self, x, y):
             x *= np.log2(base)
             y2 = y * np.log2(base)
@@ -555,16 +561,19 @@ def set_add_reduce(ops):
     # https://github.com/numpy/numpy/issues/4599
     base = ops.base
     if base == 2:
+
         def add_reduce(self, x, axis=None, func=np.logaddexp2):
             z = self.zero if len(x) == 0 else func.reduce(x, axis=axis, dtype=float)
             return z
 
-    elif base == 'e' or np.isclose(base, np.e):
+    elif base == "e" or np.isclose(base, np.e):
+
         def add_reduce(self, x, axis=None, func=np.logaddexp):
             z = self.zero if len(x) == 0 else func.reduce(x, axis=axis, dtype=float)
             return z
 
     else:
+
         def add_reduce(self, x, axis=None):
             if len(x) == 0:
                 # Since logaddexp.identity is None, we handle it separately.
@@ -592,7 +601,6 @@ def set_add_reduce(ops):
 
 
 class LogOperations(Operations):
-
     one = None
     zero = None
     base = None
@@ -729,8 +737,4 @@ class LogOperations(Operations):
         return z
 
 
-cache = {
-    'linear': LinearOperations(),
-    2: LogOperations(2),
-    'e': LogOperations('e')
-}
+cache = {"linear": LinearOperations(), 2: LogOperations(2), "e": LogOperations("e")}

@@ -16,9 +16,7 @@ import numpy as np
 
 import dit
 
-__all__ = (
-    'distribution_from_bayesnet',
-)
+__all__ = ("distribution_from_bayesnet",)
 
 
 def sanitize_inputs(digraph, nodes, attr):
@@ -27,7 +25,7 @@ def sanitize_inputs(digraph, nodes, attr):
 
     """
     all_nodes = set(digraph.nodes())
-    ops = dit.math.get_ops('linear')
+    ops = dit.math.get_ops("linear")
     is_callable = []
     for rv in digraph:
         # Make sure we have dists for each node.
@@ -54,7 +52,7 @@ def sanitize_inputs(digraph, nodes, attr):
             # This helps find mistakes more easily!
             # We need [parents, dists] rather than a single distribution.
             if isinstance(val, dit.Distribution):
-                msg = 'Node {} has an invalid dist specification.'
+                msg = "Node {} has an invalid dist specification."
                 raise Exception(msg.format(rv))
 
             if isinstance(val, dict):
@@ -62,7 +60,7 @@ def sanitize_inputs(digraph, nodes, attr):
             else:
                 outcomes, dists = val
                 if len(outcomes) != len(dists):
-                    msg = 'Node {} has an invalid dist specification.'
+                    msg = "Node {} has an invalid dist specification."
                     raise Exception(msg.format(rv))
 
         # No worries if this gets overwritten with each rv, as it had better
@@ -187,7 +185,7 @@ def build_pfuncs(digraph, rv_names, attr, outcome_ctor):
     return pfuncs, get_values
 
 
-def distribution_from_bayesnet(digraph, nodes=None, sample_space=None, attr='dist'):
+def distribution_from_bayesnet(digraph, nodes=None, sample_space=None, attr="dist"):
     """
     Returns a distribution built from a Bayesian network.
 
@@ -292,8 +290,8 @@ def distribution_from_bayesnet(digraph, nodes=None, sample_space=None, attr='dis
     rv_names, ops, callables = sanitize_inputs(digraph, nodes, attr)
     if callables:
         if sample_space is None:
-            msg = 'sample_space must be specified since the '
-            msg += 'distributions were callable.'
+            msg = "sample_space must be specified since the "
+            msg += "distributions were callable."
             raise ValueError(msg)
         if not isinstance(sample_space, dit.SampleSpace):
             sample_space = dit.SampleSpace(sample_space)
@@ -306,17 +304,14 @@ def distribution_from_bayesnet(digraph, nodes=None, sample_space=None, attr='dis
     outcomes = list(sample_space)
     mult = ops.mult_reduce
     if callables:
-        pmf = [mult(np.asarray([pfuncs[rv](*get_values(rv, outcome)) for rv in rv_names]))
-               for outcome in outcomes]
+        pmf = [mult(np.asarray([pfuncs[rv](*get_values(rv, outcome)) for rv in rv_names])) for outcome in outcomes]
     else:
-        pmf = [mult(np.asarray([pfuncs[rv](outcome) for rv in rv_names]))
-               for outcome in outcomes]
+        pmf = [mult(np.asarray([pfuncs[rv](outcome) for rv in rv_names])) for outcome in outcomes]
 
     # Technically, we shouldn't need this but some values must be underflowing.
     pmf = ops.normalize(np.asarray(pmf))
 
-    dist = dit.Distribution(outcomes, pmf,
-                            sample_space=sample_space, base=ops.get_base())
+    dist = dit.Distribution(outcomes, pmf, sample_space=sample_space, base=ops.get_base())
     dist.set_rv_names(rv_names)
 
     return dist

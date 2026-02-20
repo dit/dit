@@ -15,9 +15,9 @@ from .context import cd, named_tempfile, tempdir
 from .misc import default_opener
 
 __all__ = (
-    'printoptions',
-    'to_latex',
-    'to_pdf',
+    "printoptions",
+    "to_latex",
+    "to_pdf",
 )
 
 
@@ -25,12 +25,11 @@ __all__ = (
 #
 # Includes hack to prevent NumPy from removing trailing zeros.
 #
-@removals.remove(message="Please use np.core.arrayprint.printoptions",
-                 version='1.2.3')
+@removals.remove(message="Please use np.core.arrayprint.printoptions", version="1.2.3")
 @contextlib.contextmanager
 def printoptions(strip_zeros=True, **kwargs):
     if strip_zeros:
-        kwargs['trim'] = 'k'
+        kwargs["trim"] = "k"
     origcall = arrayprint.FloatingFormat.__call__
 
     def call(self, x):
@@ -84,27 +83,27 @@ def to_latex__numerical(a, decimals, tab):
     # but NumPy strips trailing zeros on floats (undesirably). So we make
     # use of the context manager to prevent that.
     options = {
-        'precision': decimals,
-        'suppress': True,
-        'strip_zeros': False,
-        'threshold': nCols + 1,
+        "precision": decimals,
+        "suppress": True,
+        "strip_zeros": False,
+        "threshold": nCols + 1,
     }
     with printoptions(**options):
         lines = []
         for row in array:
             # Strip [ and ], remove newlines, and split on whitespace
-            elements = row.__str__()[1:-1].replace('\n', '').split()
+            elements = row.__str__()[1:-1].replace("\n", "").split()
             # hack to fix trailing zeros, really the numpy stuff needs to be updated.
             with contextlib.suppress(Exception):
-                elements = [element + '0' * (decimals - len(element.split('.')[1])) for element in elements]
-            line = [tab, ' & '.join(elements), r' \\']
-            lines.append(''.join(line))
+                elements = [element + "0" * (decimals - len(element.split(".")[1])) for element in elements]
+            line = [tab, " & ".join(elements), r" \\"]
+            lines.append("".join(line))
 
     # Remove the \\ on the last line.
     lines[-1] = lines[-1][:-3]
 
     # Create the LaTeX code
-    subs = {'coltype': coltype, 'cols': cols, 'lines': '\n'.join(lines)}
+    subs = {"coltype": coltype, "cols": cols, "lines": "\n".join(lines)}
     template = r"""{coltype}
 \begin{{array}}{{{cols}}}
 {lines}
@@ -128,7 +127,7 @@ def to_latex__exact(a, tol, tab):
 
     def to_frac(f):
         if f.denominator != 1:
-            return rf'\frac{{{f.numerator}}}{{{f.denominator}}}'
+            return rf"\frac{{{f.numerator}}}{{{f.denominator}}}"
         else:
             return str(f.numerator)
 
@@ -137,14 +136,14 @@ def to_latex__exact(a, tol, tab):
     for row in fractions:
         # Strip [ and ], remove newlines, and split on whitespace
         elements = map(to_frac, row)
-        line = [tab, ' & '.join(elements), r' \\']
-        lines.append(''.join(line))
+        line = [tab, " & ".join(elements), r" \\"]
+        lines.append("".join(line))
 
     # Remove the \\ on the last line.
     lines[-1] = lines[-1][:-3]
 
     # Create the LaTeX code
-    subs = {'cols': cols, 'lines': '\n'.join(lines)}
+    subs = {"cols": cols, "lines": "\n".join(lines)}
     template = r"""\begin{{array}}{{{cols}}}
 {lines}
 \end{{array}}"""
@@ -152,7 +151,7 @@ def to_latex__exact(a, tol, tab):
     return template.format(**subs)
 
 
-def to_latex(a, exact=False, decimals=3, tab='  '):
+def to_latex(a, exact=False, decimals=3, tab="  "):
     r"""
     Convert an array-like object into a LaTeX array.
 
@@ -215,10 +214,7 @@ def to_latex(a, exact=False, decimals=3, tab='  '):
         return to_latex__numerical(a, decimals, tab)
 
 
-def to_pdf(a, exact=False,
-              decimals=3,
-              line="p(x) = \\left[\n{0}\n\\right]",
-              show=True):
+def to_pdf(a, exact=False, decimals=3, line="p(x) = \\left[\n{0}\n\\right]", show=True):
     """
     Converts a NumPy array to a LaTeX array, compiles and displays it.
 
@@ -246,31 +242,31 @@ def to_pdf(a, exact=False,
         EC = stack.enter_context
         tmpdir = EC(tempdir())
         EC(cd(tmpdir))
-        latexfobj = EC(named_tempfile(dir=tmpdir, suffix='.tex'))
+        latexfobj = EC(named_tempfile(dir=tmpdir, suffix=".tex"))
 
         # Write the latex file
-        latexfobj.write(latex.encode('utf8'))
+        latexfobj.write(latex.encode("utf8"))
         latexfobj.close()
 
         # Compile to PDF
-        args = ['pdflatex', '-interaction=batchmode', latexfobj.name]
-        with open(os.devnull, 'w') as fp:
+        args = ["pdflatex", "-interaction=batchmode", latexfobj.name]
+        with open(os.devnull, "w") as fp:
             subprocess.call(args, stdout=fp, stderr=fp)  # noqa: S603
             subprocess.call(args, stdout=fp, stderr=fp)  # noqa: S603
 
         # Create another tempfile which will not be deleted.
-        with tempfile.NamedTemporaryFile(suffix='_pmf.pdf', delete=False) as pdffobj:
+        with tempfile.NamedTemporaryFile(suffix="_pmf.pdf", delete=False) as pdffobj:
             pass
 
         # Crop the PDF and copy to persistent tempfile.
-        pdfpath = latexfobj.name[:-3] + 'pdf'
+        pdfpath = latexfobj.name[:-3] + "pdf"
         # Cannot add &>/dev/null to cmd, as Ghostscript is unable to find the
         # input file. This seems to be some weird interaction between
         # subprocess and pdfcrop. Also, we need to use shell=True since some
         # versions of pdfcrop rely on a hack to determine what perl interpreter
         # to call it with.
-        cmd = rf'pdfcrop --debug {pdfpath} {pdffobj.name}'
-        with open(os.devnull, 'w') as fp:
+        cmd = rf"pdfcrop --debug {pdfpath} {pdffobj.name}"
+        with open(os.devnull, "w") as fp:
             subprocess.call(cmd, stdout=fp)  # noqa: S603
 
         # Open the PDF

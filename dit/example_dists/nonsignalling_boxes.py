@@ -6,9 +6,7 @@ from itertools import product
 
 from dit import Distribution
 
-__all__ = (
-    'pr_box',
-)
+__all__ = ("pr_box",)
 
 
 def pr_box(eta=1, name=False):

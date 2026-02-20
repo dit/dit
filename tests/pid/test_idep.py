@@ -13,7 +13,7 @@ def test_pid_dep1():
     """
     Test idep on a generic distribution.
     """
-    d = bivariates['reduced or']
+    d = bivariates["reduced or"]
     pid = PID_dep(d, ((0,), (1,)), (2,))
     assert pid[((0,), (1,))] == pytest.approx(0.073761301440421256, abs=1e-4)
     assert pid[((0,),)] == pytest.approx(0.23751682301871169, abs=1e-4)
@@ -25,7 +25,7 @@ def test_pid_dep2():
     """
     Test idep on another generic distribution.
     """
-    d = trivariates['anddup']
+    d = trivariates["anddup"]
     pid = PID_dep(d, [[0], [1], [2]], [3])
     for atom in pid._lattice:
         if atom == ((0,), (1,), (2,)):
@@ -42,7 +42,7 @@ def test_pid_dep3():
     """
     Test that idep and ibroja differ on reduced or.
     """
-    d = bivariates['reduced or']
+    d = bivariates["reduced or"]
     pid1 = PID_BROJA(d)
     pid2 = PID_dep(d)
     assert pid1 != pid2
@@ -52,7 +52,7 @@ def test_pid_dep4():
     """
     Test that anddup is complete.
     """
-    d = trivariates['anddup']
+    d = trivariates["anddup"]
     pid = PID_dep(d)
     assert pid.complete
     assert pid.nonnegative
@@ -60,9 +60,8 @@ def test_pid_dep4():
 
 
 def test_pid_ra1():
-    """
-    """
-    d = bivariates['and']
+    """ """
+    d = bivariates["and"]
     pid = PID_RA(d, ((0,), (1,)), (2,))
     assert pid[((0,), (1,))] == pytest.approx(-0.18872, abs=1e-4)
     assert pid[((0,),)] == pytest.approx(0.5, abs=1e-4)
@@ -71,9 +70,8 @@ def test_pid_ra1():
 
 
 def test_pid_ra2():
-    """
-    """
-    d = trivariates['cat']
+    """ """
+    d = trivariates["cat"]
     pid = PID_RA(d, ((0,), (1,), (2,)), (3,))
     for atom in pid._lattice:
         if atom in (((0,),), ((1,),), ((2,),)):

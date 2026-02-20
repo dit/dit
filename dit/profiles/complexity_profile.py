@@ -10,16 +10,11 @@ import numpy as np
 from .base_profile import BaseProfile, profile_docstring
 from .information_partitions import ShannonPartition
 
-__all__ = (
-    'ComplexityProfile',
-)
+__all__ = ("ComplexityProfile",)
 
 
 class ComplexityProfile(BaseProfile):  # noqa: D101
-    __doc__ = profile_docstring.format(name='ComplexityProfile',
-                                       static_attributes='',
-                                       attributes='',
-                                       methods='')
+    __doc__ = profile_docstring.format(name="ComplexityProfile", static_attributes="", attributes="", methods="")
 
     def _compute(self):
         """

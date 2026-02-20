@@ -9,14 +9,14 @@ from ..exceptions import OptimizationException
 from ..helpers import normalize_pmfs
 
 __all__ = (
-    'bhattacharyya_coefficient',
-    'bhattacharyya_coefficient_pmf',
-    'chernoff_information',
-    'chernoff_information_pmf',
-    'hellinger_distance',
-    'hellinger_distance_pmf',
-    'variational_distance',
-    'variational_distance_pmf',
+    "bhattacharyya_coefficient",
+    "bhattacharyya_coefficient_pmf",
+    "chernoff_information",
+    "chernoff_information_pmf",
+    "hellinger_distance",
+    "hellinger_distance_pmf",
+    "variational_distance",
+    "variational_distance_pmf",
 )
 
 
@@ -163,10 +163,11 @@ def chernoff_information_pmf(p, q):
     ci : float
         The Chernoff information.
     """
-    def func(alpha):
-        return np.log2((p**alpha * q**(1 - alpha)).sum())
 
-    res = minimize_scalar(fun=func, bounds=(0, 1), method='bounded')
+    def func(alpha):
+        return np.log2((p**alpha * q ** (1 - alpha)).sum())
+
+    res = minimize_scalar(fun=func, bounds=(0, 1), method="bounded")
 
     if not -1e-8 <= res.x <= 1 + 1e-8:  # pragma: no cover
         msg = "Appropriate optima could not be found."

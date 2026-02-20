@@ -6,9 +6,7 @@ from ..helpers import normalize_rvs
 from ..shannon import conditional_entropy as H
 from ..utils import unitful
 
-__all__ = (
-    'total_correlation',
-)
+__all__ = ("total_correlation",)
 
 
 @unitful

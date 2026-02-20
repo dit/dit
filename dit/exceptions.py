@@ -5,16 +5,15 @@ Information Theory Exceptions
 Exceptions related to information theory.
 """
 
-
 __all__ = (
-    'ditException',
-    'IncompatibleDistribution',
-    'InvalidBase',
-    'InvalidDistribution',
-    'InvalidNormalization',
-    'InvalidOutcome',
-    'InvalidProbability',
-    'OptimizationException',
+    "ditException",
+    "IncompatibleDistribution",
+    "InvalidBase",
+    "InvalidDistribution",
+    "InvalidNormalization",
+    "InvalidOutcome",
+    "InvalidProbability",
+    "OptimizationException",
 )
 
 
@@ -24,13 +23,13 @@ class ditException(Exception):  # noqa: N801, N818
     """
 
     def __init__(self, *args, **kwargs):
-        if 'msg' in kwargs:
+        if "msg" in kwargs:
             # Override the message in the first argument.
-            self.msg = kwargs['msg']
+            self.msg = kwargs["msg"]
         elif args:
             self.msg = args[0]
         else:
-            self.msg = ''
+            self.msg = ""
         self.args = args
         self.kwargs = kwargs
 
@@ -98,12 +97,12 @@ class InvalidOutcome(ditException):
             Specifies whether `outcome` represents a single outcome or not.
 
         """
-        single = kwargs.get('single', True)
+        single = kwargs.get("single", True)
         try:
             bad = args[0]
         except IndexError:
             # Demand a custom message.
-            msg = kwargs.get('msg', '')
+            msg = kwargs.get("msg", "")
         else:
             if single:
                 msg = f"Outcome {bad!r} is not in the sample space."
@@ -148,7 +147,7 @@ class InvalidProbability(ditException):
             The operation handler for the incoming probabilities.
 
         """
-        ops = kwargs['ops']
+        ops = kwargs["ops"]
         bounds = f"[{ops.zero}, {ops.one}]"
         prob = args[0]
         if len(args[0]) == 1:

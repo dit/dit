@@ -4,10 +4,7 @@ Helper functions to convert between Distribution and ScalarDistribution.
 
 import dit
 
-__all__ = (
-    'DtoSD',
-    'SDtoD'
-)
+__all__ = ("DtoSD", "SDtoD")
 
 
 def DtoSD(dist, extract):
@@ -33,13 +30,16 @@ def DtoSD(dist, extract):
     # If people really want it, we can use _make_distribution.
     # But we have to decide if we want to set the alphabet to the
     # entire sample or just the sample space represented in outcomes.
-    d = dit.ScalarDistribution(outcomes, dist.pmf,
-                               sample_space=sample_space,
-                               base=dist.get_base(),
-                               prng=dist.prng,
-                               sort=False,
-                               sparse=dist.is_sparse(),
-                               validate=False)
+    d = dit.ScalarDistribution(
+        outcomes,
+        dist.pmf,
+        sample_space=sample_space,
+        base=dist.get_base(),
+        prng=dist.prng,
+        sort=False,
+        sparse=dist.is_sparse(),
+        validate=False,
+    )
 
     return d
 

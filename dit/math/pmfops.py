@@ -11,15 +11,15 @@ import dit
 from ..exceptions import ditException
 
 __all__ = (
-    'convex_combination',
-    'downsample',
-    'jittered',
-    'perturb_support',
-    'replace_zeros',
+    "convex_combination",
+    "downsample",
+    "jittered",
+    "perturb_support",
+    "replace_zeros",
 )
 
 
-def perturb_support(pmf, eps=.1, shape='ball', prng=None):
+def perturb_support(pmf, eps=0.1, shape="ball", prng=None):
     """
     Returns a new distribution with all nonzero probabilities perturbed.
 
@@ -80,9 +80,9 @@ def perturb_support(pmf, eps=.1, shape='ball', prng=None):
         idx = row > 0
         p1 = row[idx]
         p1_ilr = dit.math.aitchison.ilr(p1)
-        if shape == 'square':
-            delta = eps * (prng.rand(*p1_ilr.shape) - .5)
-        elif shape == 'ball':
+        if shape == "square":
+            delta = eps * (prng.rand(*p1_ilr.shape) - 0.5)
+        elif shape == "ball":
             delta = eps * dit.math.ball(p1_ilr.shape[0], prng=prng)
         else:
             msg = f"Shape {shape} not recognized."
@@ -250,7 +250,7 @@ def convex_combination(pmfs, weights=None):
     return mixture
 
 
-def downsample(pmf, subdivisions, method='componentL1'):
+def downsample(pmf, subdivisions, method="componentL1"):
     """
     Returns the nearest pmf on a triangular grid.
 
@@ -286,7 +286,7 @@ def downsample(pmf, subdivisions, method='componentL1'):
     if method in _methods:
         return _methods[method](pmf, subdivisions)
     else:
-        raise NotImplementedError('Unknown method.')
+        raise NotImplementedError("Unknown method.")
 
 
 def _downsample_componentL1(pmf, i, op, locs):
@@ -328,12 +328,12 @@ def _downsample_componentL1(pmf, i, op, locs):
     pmf[i] = locs[locations]
     # Now renormalize the other components of the distribution...
     temp = pmf.transpose()  # View
-    prev_Z = temp[..., :i + 1].sum(axis=-1)
+    prev_Z = temp[..., : i + 1].sum(axis=-1)
     zeros = np.isclose(prev_Z, 1)
-    Z = (1 - prev_Z) / temp[..., i + 1:].sum(axis=-1)
-    temp[..., i + 1:] *= Z[..., np.newaxis]
+    Z = (1 - prev_Z) / temp[..., i + 1 :].sum(axis=-1)
+    temp[..., i + 1 :] *= Z[..., np.newaxis]
     # This assumes len(shape) == 2.
-    temp[zeros, i + 1:] = 0
+    temp[zeros, i + 1 :] = 0
     return locations
 
 
@@ -379,8 +379,8 @@ def clamped_indexes(pmf, locs):
 
     """
     # Find insertion indexes
-    left_index = np.searchsorted(locs, pmf, 'left')
-    right_index = np.searchsorted(locs, pmf, 'right')
+    left_index = np.searchsorted(locs, pmf, "left")
+    right_index = np.searchsorted(locs, pmf, "right")
 
     # If the left index does not equal the right index, then the coordinate
     # is equal to an element of `locs`. This means we want its upper and lower
@@ -459,6 +459,4 @@ def projections(pmf, subdivisions, ops=None):
     return projs
 
 
-_methods = {
-    'componentL1': downsample_componentL1
-}
+_methods = {"componentL1": downsample_componentL1}

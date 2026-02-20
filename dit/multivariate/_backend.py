@@ -25,14 +25,15 @@ The recommended pattern is a **Mixin + composed class** approach:
 from ..algorithms import BaseAuxVarOptimizer
 
 __all__ = (
-    '_get_base_class',
-    '_make_backend_subclass',
+    "_get_base_class",
+    "_make_backend_subclass",
 )
 
 
 # ── Backend resolution ───────────────────────────────────────────────────
 
-def _get_base_class(backend='numpy'):
+
+def _get_base_class(backend="numpy"):
     """
     Return the appropriate ``BaseAuxVarOptimizer`` class for *backend*.
 
@@ -51,29 +52,28 @@ def _get_base_class(backend='numpy'):
     ValueError
         If *backend* is not recognised.
     """
-    if backend == 'numpy':
+    if backend == "numpy":
         return BaseAuxVarOptimizer
-    elif backend == 'jax':
+    elif backend == "jax":
         from ..algorithms.optimization_jax import BaseAuxVarJaxOptimizer
+
         return BaseAuxVarJaxOptimizer
-    elif backend == 'torch':
+    elif backend == "torch":
         from ..algorithms.optimization_torch import BaseAuxVarTorchOptimizer
+
         return BaseAuxVarTorchOptimizer
     else:
-        raise ValueError(
-            f"Unknown backend: {backend!r}. "
-            f"Choose from 'numpy', 'jax', 'torch'."
-        )
+        raise ValueError(f"Unknown backend: {backend!r}. Choose from 'numpy', 'jax', 'torch'.")
 
 
 _backend_class_cache = {}
 
-_EXCLUDE_ATTRS = frozenset({'__dict__', '__weakref__', '_abc_impl'})
+_EXCLUDE_ATTRS = frozenset({"__dict__", "__weakref__", "_abc_impl"})
 
 
 def _is_mixin(klass):
     """Return True if *klass* looks like a backend-agnostic mixin class."""
-    return klass.__name__.endswith('Mixin')
+    return klass.__name__.endswith("Mixin")
 
 
 def _make_backend_subclass(cls, backend):
@@ -106,7 +106,7 @@ def _make_backend_subclass(cls, backend):
     new_cls : type
         The optimizer class with the requested backend.
     """
-    if backend == 'numpy':
+    if backend == "numpy":
         return cls
 
     cache_key = (cls, backend)
@@ -161,14 +161,14 @@ def _build_mixin_class(cls, mixins, non_mixin_classes, Base):
         for name, value in klass.__dict__.items():
             if name in _EXCLUDE_ATTRS:
                 continue
-            if getattr(value, '__isabstractmethod__', False):
+            if getattr(value, "__isabstractmethod__", False):
                 continue
             attrs[name] = value
 
     # The mixin provides __init__, so don't carry over the composed
     # class's __init__ (which would contain a super() referencing the
     # old class and fail with TypeError).
-    attrs.pop('__init__', None)
+    attrs.pop("__init__", None)
 
     new_cls = type(cls.__name__, tuple(mixins) + (Base,), attrs)
     return new_cls
@@ -196,11 +196,11 @@ def _build_legacy_class(cls, Base):
         for name, value in klass.__dict__.items():
             if name in _EXCLUDE_ATTRS:
                 continue
-            if getattr(value, '__isabstractmethod__', False):
+            if getattr(value, "__isabstractmethod__", False):
                 continue
             override_attrs[name] = value
 
-    override_attrs.pop('__init__', None)
+    override_attrs.pop("__init__", None)
 
     new_cls = type(cls.__name__, (cls,), override_attrs)
     return new_cls

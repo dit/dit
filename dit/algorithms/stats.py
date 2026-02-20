@@ -7,12 +7,12 @@ import numpy as np
 from ..helpers import numerical_test
 
 __all__ = (
-    'central_moment',
-    'mean',
-    'median',
-    'mode',
-    'standard_deviation',
-    'standard_moment',
+    "central_moment",
+    "mean",
+    "median",
+    "mode",
+    "standard_deviation",
+    "standard_moment",
 )
 
 
@@ -37,7 +37,7 @@ def mean(dist):
     """
     numerical_test(dist)
 
-    outcomes, pmf = zip(*dist.zipped(mode='patoms'), strict=True)
+    outcomes, pmf = zip(*dist.zipped(mode="patoms"), strict=True)
     outcomes = np.asarray(outcomes)
     pmf = np.asarray(pmf)
     return np.average(outcomes, axis=0, weights=pmf)
@@ -65,10 +65,10 @@ def central_moment(dist, n):
         If the outcomes of the `dist` are not numerical.
     """
     mu = mean(dist)
-    outcomes, pmf = zip(*dist.zipped(mode='patoms'), strict=True)
+    outcomes, pmf = zip(*dist.zipped(mode="patoms"), strict=True)
     outcomes = np.asarray(outcomes)
     pmf = np.asarray(pmf)
-    terms = np.asarray([(np.asarray(o) - mu)**n for o in outcomes])
+    terms = np.asarray([(np.asarray(o) - mu) ** n for o in outcomes])
     terms[np.isnan(terms)] = 0
     return np.average(terms, axis=0, weights=pmf)
 
@@ -94,7 +94,7 @@ def standard_moment(dist, n):
     TypeError
         If the outcomes of the `dist` are not numerical.
     """
-    return central_moment(dist, n) / standard_deviation(dist)**n
+    return central_moment(dist, n) / standard_deviation(dist) ** n
 
 
 def standard_deviation(dist):

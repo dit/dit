@@ -8,9 +8,7 @@ from ..helpers import normalize_rvs
 from ..multivariate import entropy
 from ..utils import flatten
 
-__all__ = (
-    'renyi_entropy',
-)
+__all__ = ("renyi_entropy",)
 
 
 def renyi_entropy(dist, order, rvs=None, rv_mode=None):

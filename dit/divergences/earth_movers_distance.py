@@ -8,10 +8,10 @@ from scipy.optimize import linprog
 from ..helpers import normalize_pmfs, numerical_test
 
 __all__ = (
-    'categorical_distances',
-    'earth_movers_distance',
-    'earth_movers_distance_pmf',
-    'numerical_distances',
+    "categorical_distances",
+    "earth_movers_distance",
+    "earth_movers_distance_pmf",
+    "numerical_distances",
 )
 
 

@@ -10,8 +10,8 @@ from ..helpers import RV_MODES
 from ..shannon import entropy
 
 __all__ = (
-    'disequilibrium',
-    'LMPR_complexity',
+    "disequilibrium",
+    "LMPR_complexity",
 )
 
 
@@ -50,7 +50,7 @@ def disequilibrium(dist, rvs=None, rv_mode=None):
     else:
         d = dist
 
-    d = d.copy(base='linear')
+    d = d.copy(base="linear")
     d.make_dense()
     pmf = d.pmf
 

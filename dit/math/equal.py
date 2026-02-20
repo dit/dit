@@ -8,31 +8,29 @@ from numpy import allclose as _allclose
 from numpy import isinf
 
 __all__ = (
-    'close',
-    'allclose',
+    "close",
+    "allclose",
 )
 
 
 from dit.params import ditParams
 
 
-@removals.remove(message="Use numpy.isclose instead",
-                 version='1.0.2')
+@removals.remove(message="Use numpy.isclose instead", version="1.0.2")
 def close__cython(x, y, rtol=None, atol=None):  # pylint: disable=missing-docstring
     if rtol is None:
-        rtol = ditParams['rtol']
+        rtol = ditParams["rtol"]
     if atol is None:
-        atol = ditParams['atol']
+        atol = ditParams["atol"]
     return close_(x, y, rtol, atol)
 
 
-@removals.remove(message="Use numpy.isclose instead",
-                 version='1.0.2')
+@removals.remove(message="Use numpy.isclose instead", version="1.0.2")
 def close__python(x, y, rtol=None, atol=None):  # pylint: disable=missing-docstring
     if rtol is None:
-        rtol = ditParams['rtol']
+        rtol = ditParams["rtol"]
     if atol is None:
-        atol = ditParams['atol']
+        atol = ditParams["atol"]
 
     # Make sure they are both inf or non-inf
     xinf = isinf(x)
@@ -53,8 +51,7 @@ def close__python(x, y, rtol=None, atol=None):  # pylint: disable=missing-docstr
     return True
 
 
-close_docstring = \
-"""Returns True if the scalars x and y are close.
+close_docstring = """Returns True if the scalars x and y are close.
 
 The relative error rtol must be positive and << 1.0
 The absolute error atol usually comes into play when y is very small or
@@ -74,13 +71,13 @@ close__cython.__doc__ = close_docstring + cython_doc
 # Load the cython function if possible
 try:
     from ._close import close as close_
+
     close = close__cython
 except ImportError:
     close = close__python
 
 
-@removals.remove(message="Use numpy.allclose instead",
-                 version='1.0.2')
+@removals.remove(message="Use numpy.allclose instead", version="1.0.2")
 def allclose(x, y, rtol=None, atol=None):
     """Returns True if all components of x and y are close.
 
@@ -93,8 +90,8 @@ def allclose(x, y, rtol=None, atol=None):
 
     """
     if rtol is None:
-        rtol = ditParams['rtol']
+        rtol = ditParams["rtol"]
     if atol is None:
-        atol = ditParams['atol']
+        atol = ditParams["atol"]
 
     return _allclose(x, y, rtol=rtol, atol=atol)

@@ -12,17 +12,20 @@ from dit.exceptions import ditException
 from dit.utils.testing import distributions
 
 
-@pytest.mark.parametrize('rvs', [
-    ([[0], [1]]),
-    ([[0], [2]]),
-    ([[1], [2]]),
-    ([[0, 1], [2]]),
-    ([[0, 2], [1]]),
-    ([[1, 2], [0]]),
-])
-@pytest.mark.parametrize('dist', [dyadic, triadic])
+@pytest.mark.parametrize(
+    "rvs",
+    [
+        ([[0], [1]]),
+        ([[0], [2]]),
+        ([[1], [2]]),
+        ([[0, 1], [2]]),
+        ([[0, 2], [1]]),
+        ([[1, 2], [0]]),
+    ],
+)
+@pytest.mark.parametrize("dist", [dyadic, triadic])
 def test_hypercontractivity_coefficient(dist, rvs):
-    """ Test against known values """
+    """Test against known values"""
     assert hypercontractivity_coefficient(dist, rvs) == pytest.approx(1.0)
 
 
@@ -30,21 +33,20 @@ def test_hypercontractivity_coefficient2():
     """
     Test against a known value.
     """
-    d = Distribution(['00', '01', '10', '11'], [1 / 4] * 4)
+    d = Distribution(["00", "01", "10", "11"], [1 / 4] * 4)
     hc = hypercontractivity_coefficient(d, [[0], [1]])
     assert hc == pytest.approx(0.0)
 
 
-@pytest.mark.parametrize('rvs', [['X', 'Y', 'Z'], ['X']])
+@pytest.mark.parametrize("rvs", [["X", "Y", "Z"], ["X"]])
 def test_hypercontractivity_coefficient_failure(rvs):
-    """ Test that hypercontractivity_coefficient fails with len(rvs) != 2 """
+    """Test that hypercontractivity_coefficient fails with len(rvs) != 2"""
     with pytest.raises(ditException):
         hypercontractivity_coefficient(dyadic, rvs)
 
 
 @pytest.mark.slow
-@given(dist1=distributions(alphabets=(2,) * 2, zeros=False),
-       dist2=distributions(alphabets=(2,) * 2, zeros=False))
+@given(dist1=distributions(alphabets=(2,) * 2, zeros=False), dist2=distributions(alphabets=(2,) * 2, zeros=False))
 @settings(max_examples=5)
 def test_hypercontractivity_coefficient_tensorization(dist1, dist2):
     """
@@ -52,7 +54,8 @@ def test_hypercontractivity_coefficient_tensorization(dist1, dist2):
         hc(X X' : Y Y') = max(hc(X:Y), hc(X', Y'))
     """
     import dit
-    dit.ditParams['repr.print'] = True
+
+    dit.ditParams["repr.print"] = True
     mixed = dist1 @ dist2
     hc_mixed = hypercontractivity_coefficient(mixed, [[0, 2], [1, 3]])
     hc_a = hypercontractivity_coefficient(dist1, [[0], [1]])

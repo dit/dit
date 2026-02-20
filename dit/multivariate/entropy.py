@@ -8,9 +8,7 @@ from ..shannon import conditional_entropy
 from ..shannon import entropy as shannon_entropy
 from ..utils import flatten, unitful
 
-__all__ = (
-    'entropy',
-)
+__all__ = ("entropy",)
 
 
 @unitful

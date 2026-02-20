@@ -46,10 +46,10 @@ from .helpers import RV_MODES, construct_alphabets, get_outcome_ctor, get_produc
 from .utils import OrderedDict
 
 __all__ = (
-    'BaseSampleSpace',
-    'CartesianProduct',
-    'SampleSpace',
-    'ScalarSampleSpace',
+    "BaseSampleSpace",
+    "CartesianProduct",
+    "SampleSpace",
+    "ScalarSampleSpace",
 )
 
 
@@ -103,7 +103,7 @@ class BaseSampleSpace(Set):
 
 class ScalarSampleSpace(BaseSampleSpace):
     _meta = {
-        'is_joint': False,
+        "is_joint": False,
     }
 
 
@@ -115,7 +115,7 @@ class SampleSpace(ScalarSampleSpace):
     """
 
     _meta = {
-        'is_joint': True,
+        "is_joint": True,
     }
 
     def __init__(self, samplespace, product=None):
@@ -187,8 +187,7 @@ class SampleSpace(ScalarSampleSpace):
 
         """
         # We allow repeats and want to keep the order. We don't need the names.
-        parse = lambda rv: parse_rvs(self, rv, rv_mode=RV_MODES.INDICES,
-                                               unique=False, sort=False)[1]
+        parse = lambda rv: parse_rvs(self, rv, rv_mode=RV_MODES.INDICES, unique=False, sort=False)[1]
         indexes = [parse(rv) for rv in rvs]
 
         # Determine how new outcomes are constructed.
@@ -267,10 +266,12 @@ class CartesianProduct(SampleSpace):
     """
 
     def __init__(self, alphabets, product=None):
-        self.alphabets = tuple(alphabet if isinstance(alphabet, SampleSpace)
-                              else tuple(alphabet) for alphabet in alphabets)
-        self._alphabet_sets = [alphabet if isinstance(alphabet, SampleSpace)
-                              else set(alphabet) for alphabet in alphabets]
+        self.alphabets = tuple(
+            alphabet if isinstance(alphabet, SampleSpace) else tuple(alphabet) for alphabet in alphabets
+        )
+        self._alphabet_sets = [
+            alphabet if isinstance(alphabet, SampleSpace) else set(alphabet) for alphabet in alphabets
+        ]
 
         try:
             self.alphabet_sizes = tuple(len(alphabet) for alphabet in alphabets)
@@ -282,8 +283,7 @@ class CartesianProduct(SampleSpace):
         if product is None:
             # Let's try to guess.
             # If every alphabet has the class str, let's use that.
-            klasses = [next(iter(alphabet)).__class__
-                       for alphabet in self.alphabets]
+            klasses = [next(iter(alphabet)).__class__ for alphabet in self.alphabets]
             if len(set(klasses)) == 1 and klasses[0] is str:
                 product = get_product_func(str)
                 outcome_class = str
@@ -325,7 +325,7 @@ class CartesianProduct(SampleSpace):
         try:
             iterator = enumerate(item)
         except TypeError as err:
-            msg = '{!r} is not iterable, and thus, is not a valid outcome.'
+            msg = "{!r} is not iterable, and thus, is not a valid outcome."
             raise InvalidOutcome(item, msg=msg.format(item)) from err
 
         if len(item) != len(self._alphabet_sets):
@@ -367,10 +367,9 @@ class CartesianProduct(SampleSpace):
         """
         # This works even if alphabets[i] is itself a sample space.
         try:
-            indexes = [self.alphabets[i].index(symbol)
-                       for i, symbol in enumerate(item)]
+            indexes = [self.alphabets[i].index(symbol) for i, symbol in enumerate(item)]
         except (ValueError, IndexError) as err:
-            msg = f'{item!r} is not in the sample space'
+            msg = f"{item!r} is not in the sample space"
             raise ValueError(msg) from err
 
         idx = np.sum(np.array(indexes) * self._shifts)
@@ -433,13 +432,11 @@ class CartesianProduct(SampleSpace):
         """
         # We allow repeats and want to keep the order. We don't need the names.
         rv_mode = RV_MODES.INDICES
-        parse = lambda rv: parse_rvs(self, rv, rv_mode=rv_mode,
-                                               unique=False, sort=False)[1]
+        parse = lambda rv: parse_rvs(self, rv, rv_mode=rv_mode, unique=False, sort=False)[1]
         indexes = [parse(rv) for rv in rvs]
 
         alphabets_i = [[self.alphabets[i] for i in idx] for idx in indexes]
-        sample_spaces = [CartesianProduct(alphabets, self._product)
-                         for alphabets in alphabets_i]
+        sample_spaces = [CartesianProduct(alphabets, self._product) for alphabets in alphabets_i]
 
         ss = sample_spaces[0] if len(rvs) == 1 and extract else CartesianProduct(sample_spaces, itertools.product)
         return ss

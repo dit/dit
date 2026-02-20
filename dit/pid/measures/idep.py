@@ -7,8 +7,8 @@ from ...profiles import DependencyDecomposition
 from ..pid import BaseUniquePID
 
 __all__ = (
-    'PID_dep',
-    'PID_RA',
+    "PID_dep",
+    "PID_RA",
 )
 
 
@@ -40,14 +40,14 @@ class PID_dep(BaseUniquePID):
             The value of I_dep for each individual source.
         """
         uniques = {}
-        measure = {'I': lambda d: coinformation(d, [[0, 1], [2]])}
+        measure = {"I": lambda d: coinformation(d, [[0, 1], [2]])}
         source_0_target = frozenset((frozenset((0, 2)),))
         source_1_target = frozenset((frozenset((1, 2)),))
         if len(sources) == 2:
             dm = d.coalesce(sources + (target,))  # put it into [0, 1], [2] order
             dd = DependencyDecomposition(dm, measures=measure, maxiter=maxiter)
-            u_0 = min(dd.delta(edge, 'I') for edge in dd.edges(source_0_target))
-            u_1 = min(dd.delta(edge, 'I') for edge in dd.edges(source_1_target))
+            u_0 = min(dd.delta(edge, "I") for edge in dd.edges(source_0_target))
+            u_1 = min(dd.delta(edge, "I") for edge in dd.edges(source_1_target))
             uniques[sources[0]] = u_0
             uniques[sources[1]] = u_1
         else:
@@ -55,7 +55,7 @@ class PID_dep(BaseUniquePID):
                 others = sum((i for i in sources if i != source), ())
                 dm = d.coalesce([source, others, target])
                 dd = DependencyDecomposition(dm, measures=measure, maxiter=maxiter)
-                u = min(dd.delta(edge, 'I') for edge in dd.edges(source_0_target))
+                u = min(dd.delta(edge, "I") for edge in dd.edges(source_0_target))
                 uniques[source] = u
 
         return uniques
@@ -90,15 +90,15 @@ class PID_RA(BaseUniquePID):
             The value of I_RA for each individual source.
         """
         uniques = {}
-        measure = {'I': lambda d: coinformation(d, [[0, 1], [2]])}
+        measure = {"I": lambda d: coinformation(d, [[0, 1], [2]])}
         source_0_target = frozenset([frozenset((0, 2))])
         source_1_target = frozenset([frozenset((1, 2))])
         all_pairs = frozenset([frozenset((0, 1))]) | source_0_target | source_1_target
         if len(sources) == 2:
             dm = d.coalesce(sources + (target,))
             dd = DependencyDecomposition(dm, measures=measure, maxiter=maxiter)
-            u_0 = dd.delta((all_pairs, all_pairs - source_0_target), 'I')
-            u_1 = dd.delta((all_pairs, all_pairs - source_1_target), 'I')
+            u_0 = dd.delta((all_pairs, all_pairs - source_0_target), "I")
+            u_1 = dd.delta((all_pairs, all_pairs - source_1_target), "I")
             uniques[sources[0]] = u_0
             uniques[sources[1]] = u_1
         else:
@@ -106,7 +106,7 @@ class PID_RA(BaseUniquePID):
                 others = sum((i for i in sources if i != source), ())
                 dm = d.coalesce([source, others, target])
                 dd = DependencyDecomposition(dm, measures=measure, maxiter=maxiter)
-                u = dd.delta((all_pairs, all_pairs - source_0_target), 'I')
+                u = dd.delta((all_pairs, all_pairs - source_0_target), "I")
                 uniques[source] = u
 
         return uniques
@@ -147,12 +147,12 @@ class PID_dep_a(BaseUniquePID):
         d = d.coalesce(sorted(var_to_index.keys(), key=lambda k: var_to_index[k]))
         invars = [var_to_index[var] for var in sources]
         outvar = [var_to_index[(var,)] for var in target]
-        measure = {'I': lambda d: coinformation(d, [invars, outvar])}
+        measure = {"I": lambda d: coinformation(d, [invars, outvar])}
         dd = DependencyDecomposition(d, list(var_to_index.values()), measures=measure)
         uniques = {}
         for source in sources:
             constraint = frozenset((frozenset((var_to_index[source], var_to_index[target])),))
-            u = min(dd.delta(edge, 'I') for edge in dd.edges(constraint))
+            u = min(dd.delta(edge, "I") for edge in dd.edges(constraint))
             uniques[source] = u
         return uniques
 
@@ -194,14 +194,14 @@ class PID_dep_b(BaseUniquePID):
         d = d.coalesce(sorted(var_to_index.keys(), key=lambda k: var_to_index[k]))
         invars = [var_to_index[var] for var in sources]
         outvar = [var_to_index[(var,)] for var in target]
-        measure = {'I': lambda d: coinformation(d, [invars, outvar])}
+        measure = {"I": lambda d: coinformation(d, [invars, outvar])}
         dd = DependencyDecomposition(d, list(var_to_index.values()), measures=measure)
         uniques = {}
         for source in sources:
             constraint = frozenset((frozenset((var_to_index[source], target_index)),))
             broja_style = lambda edge: all({target_index} < set(_) for _ in edge[0] if len(_) > 1)
             edge_set = (edge for edge in dd.edges(constraint) if broja_style(edge))
-            u = min(dd.delta(edge, 'I') for edge in edge_set)
+            u = min(dd.delta(edge, "I") for edge in edge_set)
             uniques[source] = u
         return uniques
 
@@ -242,12 +242,12 @@ class PID_dep_c(BaseUniquePID):
         d = d.coalesce(sorted(var_to_index.keys(), key=lambda k: var_to_index[k]))
         invars = [var_to_index[var] for var in sources]
         outvar = [var_to_index[(var,)] for var in target]
-        measure = {'I': lambda d: coinformation(d, [invars, outvar])}
+        measure = {"I": lambda d: coinformation(d, [invars, outvar])}
         dd = DependencyDecomposition(d, list(var_to_index.values()), measures=measure)
         uniques = {}
         for source in sources:
             constraint = frozenset((frozenset((var_to_index[source], var_to_index[target])),))
             edge_set = (edge for edge in dd.edges(constraint) if tuple(invars) in edge[0])
-            u = min(dd.delta(edge, 'I') for edge in edge_set)
+            u = min(dd.delta(edge, "I") for edge in edge_set)
             uniques[source] = u
         return uniques

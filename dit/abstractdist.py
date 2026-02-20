@@ -7,10 +7,10 @@ import itertools
 import numpy as np
 
 __all__ = (
-    'AbstractDenseDistribution',
-    'distribution_constraint',
-    'brute_marginal_array',
-    'get_abstract_dist',
+    "AbstractDenseDistribution",
+    "distribution_constraint",
+    "brute_marginal_array",
+    "get_abstract_dist",
 )
 
 
@@ -81,7 +81,7 @@ class AbstractDenseDistribution:
         """
         self.n_variables = n_variables
         self.n_symbols = n_symbols
-        self.n_elements = n_symbols ** n_variables
+        self.n_elements = n_symbols**n_variables
 
         self._initialize_singletons(n_variables, n_symbols)
 
@@ -101,7 +101,7 @@ class AbstractDenseDistribution:
         for t in range(n_variables):
             Xt = rvs[t]
             blocks = range(n_symbols**t)
-            blockCols = n_symbols**(n_variables - t - 1)
+            blockCols = n_symbols ** (n_variables - t - 1)
             cols = range(blockCols)
             locations = itertools.product(blocks, rows, cols)
             for idx, (block, row, col) in enumerate(locations):
@@ -146,7 +146,7 @@ class AbstractDenseDistribution:
 
         indexes = set(indexes)
         if min(indexes) < 0 or max(indexes) >= self.n_variables:
-            msg = 'Invalid indexes: ' + str(indexes)
+            msg = "Invalid indexes: " + str(indexes)
             raise Exception(msg)
         indexes = tuple(sorted(indexes))
 
@@ -165,8 +165,7 @@ class AbstractDenseDistribution:
             # If indexes are consecutive from zero, then we can do these easily.
             elif (indexes[0] == 0) and (np.all(np.diff(indexes) == 1)):
                 p = np.arange(self.n_symbols**self.n_variables)
-                shape = (self.n_symbols**len(indexes),
-                         self.n_symbols**(self.n_variables - len(indexes)))
+                shape = (self.n_symbols ** len(indexes), self.n_symbols ** (self.n_variables - len(indexes)))
                 p = p.reshape(shape)
                 cache[indexes] = p = np.array([set(row) for row in p])
 
@@ -214,10 +213,10 @@ class AbstractDenseDistribution:
         -------
         d : AbstractDenseDistribution
             The new abstract representation of the marignal distribution.
-       """
+        """
         indexes = set(indexes)
         if min(indexes) < 0 or max(indexes) >= self.n_variables:
-            msg = 'Invalid indexes.'
+            msg = "Invalid indexes."
             raise Exception(msg)
 
         d = AbstractDenseDistribution(len(indexes), self.n_symbols)
@@ -332,12 +331,14 @@ def get_abstract_dist(dist):
         n_symbols = len(dist.alphabet[0])
         d = AbstractDenseDistribution(n_variables, n_symbols)
     else:
+
         class D:
             n_variables = dist.outcome_length()
             n_elements = np.prod(list(map(len, dist.alphabet)))
 
             def parameter_array(self, indexes, cache=None):
-                return brute_marginal_array(dist, indexes, rv_mode='indexes')
+                return brute_marginal_array(dist, indexes, rv_mode="indexes")
+
         d = D()
 
     return d

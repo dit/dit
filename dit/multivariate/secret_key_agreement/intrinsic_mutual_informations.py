@@ -5,9 +5,9 @@ Intrinsic Mutual Informations
 from .base_skar_optimizers import BaseIntrinsicMutualInformation
 
 __all__ = (
-    'intrinsic_total_correlation',
-    'intrinsic_dual_total_correlation',
-    'intrinsic_caekl_mutual_information',
+    "intrinsic_total_correlation",
+    "intrinsic_dual_total_correlation",
+    "intrinsic_caekl_mutual_information",
 )
 
 
@@ -16,7 +16,7 @@ class IntrinsicTotalCorrelation(BaseIntrinsicMutualInformation):
     Compute the intrinsic total correlation.
     """
 
-    name = 'total correlation'
+    name = "total correlation"
 
     def _objective(self):
         """
@@ -57,7 +57,7 @@ class IntrinsicDualTotalCorrelation(BaseIntrinsicMutualInformation):
     Compute the intrinsic dual total correlation.
     """
 
-    name = 'dual total correlation'
+    name = "dual total correlation"
 
     def _objective(self):
         """
@@ -98,7 +98,7 @@ class IntrinsicCAEKLMutualInformation(BaseIntrinsicMutualInformation):
     Compute the intrinsic CAEKL mutual information.
     """
 
-    name = 'CAEKL mutual information'
+    name = "CAEKL mutual information"
 
     def _objective(self):
         """
@@ -157,6 +157,7 @@ def intrinsic_mutual_information_constructor(func):  # pragma: no cover
     using this function will be significantly slower than if the objective were
     written directly using the joint probability ndarray.
     """
+
     class IntrinsicMutualInformation(BaseIntrinsicMutualInformation):
         name = func.__name__
 
@@ -168,13 +169,13 @@ def intrinsic_mutual_information_constructor(func):  # pragma: no cover
             obj : func
                 The objective function.
             """
+
             def objective(self, x):
                 d = self.construct_distribution(x)
                 mi = func(d, rvs=self._true_rvs, crvs=d.rvs[-1])
                 return mi
 
-            docstring = \
-            f"""
+            docstring = f"""
             Compute the {func.__name__}.
 
             Parameters
@@ -196,8 +197,7 @@ def intrinsic_mutual_information_constructor(func):  # pragma: no cover
 
             return objective
 
-    IntrinsicMutualInformation.__doc__ = \
-    f"""
+    IntrinsicMutualInformation.__doc__ = f"""
     Compute the intrinsic {func.__name__}.
     """
 

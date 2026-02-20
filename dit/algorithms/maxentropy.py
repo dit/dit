@@ -38,15 +38,14 @@ from .optutil import Bunch, CVXOPT_Template, as_full_rank, prepare_dist
 
 __all__ = (
     # 'MarginalMaximumEntropy',
-    'MomentMaximumEntropy',
+    "MomentMaximumEntropy",
     # Use version provided by maxentropyfw.py
     # 'marginal_maxent_dists',
-    'moment_maxent_dists',
+    "moment_maxent_dists",
 )
 
 
-@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
-                 version='1.0.1')
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.", version="1.0.1")
 def isolate_zeros_generic(dist, rvs):
     """
     Determines if there are any elements of the optimization vector that must
@@ -56,7 +55,7 @@ def isolate_zeros_generic(dist, rvs):
     that marginal probability must be exactly zero for all feasible solutions.
     """
     assert dist.is_dense()
-    assert dist.get_base() == 'linear'
+    assert dist.get_base() == "linear"
 
     rvs_, indexes = parse_rvs(dist, set(flatten(rvs)), unique=True, sort=True)
     rvs = [[indexes[rvs_.index(rv)] for rv in subrv] for subrv in rvs]
@@ -86,8 +85,7 @@ def isolate_zeros_generic(dist, rvs):
     return variables
 
 
-@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
-                 version='1.0.1')
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.", version="1.0.1")
 def isolate_zeros(dist, k):
     """
     Determines if there are any elements of the optimization vector that must
@@ -98,7 +96,7 @@ def isolate_zeros(dist, k):
     feasible solutions.
     """
     assert dist.is_dense()
-    assert dist.get_base() == 'linear'
+    assert dist.get_base() == "linear"
 
     d = get_abstract_dist(dist)
     n_variables = d.n_variables
@@ -127,8 +125,7 @@ def isolate_zeros(dist, k):
     return variables
 
 
-def marginal_constraints_generic(dist, rvs, rv_mode=None,
-                                 with_normalization=True):
+def marginal_constraints_generic(dist, rvs, rv_mode=None, with_normalization=True):
     """
     Returns :math:`A` and :math:`b` in :math:`A x = b`, for a system of marginal
     constraints.
@@ -155,10 +152,9 @@ def marginal_constraints_generic(dist, rvs, rv_mode=None,
         If `None`, then the value of `dist._rv_mode` is consulted.
     """
     assert dist.is_dense()
-    assert dist.get_base() == 'linear'
+    assert dist.get_base() == "linear"
 
-    parse = lambda rv: parse_rvs(dist, rv, rv_mode=rv_mode,
-                                 unique=True, sort=True)[1]
+    parse = lambda rv: parse_rvs(dist, rv, rv_mode=rv_mode, unique=True, sort=True)[1]
 
     # potential inclusion: include implied constraints
     # rvs = set().union(*[set(r for r in powerset(rv) if r) for rv in rvs])
@@ -233,14 +229,13 @@ def marginal_constraints(dist, m, with_normalization=True):
 
     rv_mode = dist._rv_mode
 
-    if rv_mode in [RV_MODES.NAMES, 'names']:
+    if rv_mode in [RV_MODES.NAMES, "names"]:
         variables = dist.get_rv_names()
         rvs = list(itertools.combinations(variables, m))
     else:
         rvs = list(itertools.combinations(range(n_variables), m))
 
-    A, b = marginal_constraints_generic(dist, rvs, rv_mode,
-                                        with_normalization=with_normalization)
+    A, b = marginal_constraints_generic(dist, rvs, rv_mode, with_normalization=with_normalization)
     return A, b
 
 
@@ -276,7 +271,7 @@ def moment(f, pmf, center=0, n=1):
     n : int
         The moment to calculate.
     """
-    return ((f - center)**n * pmf).sum()
+    return ((f - center) ** n * pmf).sum()
 
 
 def moment_constraints(pmf, n_variables, m, symbol_map, with_replacement=True):
@@ -331,7 +326,7 @@ def moment_constraints(pmf, n_variables, m, symbol_map, with_replacement=True):
     d = AbstractDenseDistribution(n_variables, n_symbols)
 
     if len(pmf) != d.n_elements:
-        msg = 'Length of `pmf` != n_symbols ** n_variables. Symbol map: {0!r}'
+        msg = "Length of `pmf` != n_symbols ** n_variables. Symbol map: {0!r}"
         raise ValueError(msg.format(symbol_map))
 
     # Begin with the normalization constraint.
@@ -371,8 +366,7 @@ def moment_constraints(pmf, n_variables, m, symbol_map, with_replacement=True):
     return A, b
 
 
-def moment_constraint_rank(dist, m, symbol_map=None,
-                           cumulative=True, with_replacement=True):
+def moment_constraint_rank(dist, m, symbol_map=None, cumulative=True, with_replacement=True):
     """
     Returns the rank of the moment constraint matrix.
     """
@@ -387,8 +381,7 @@ def moment_constraint_rank(dist, m, symbol_map=None,
     if symbol_map is None:
         symbol_map = range(n_symbols)
 
-    A, b = moment_constraints(pmf, n_variables, mvals, symbol_map,
-                              with_replacement=with_replacement)
+    A, b = moment_constraints(pmf, n_variables, mvals, symbol_map, with_replacement=with_replacement)
     _, _, rank = as_full_rank(A, b)
 
     return rank
@@ -398,8 +391,7 @@ def ising_constraint_rank(dist, m, symbol_map=None, cumulative=True):
     """
     Returns the rank of the Ising constraint matrix.
     """
-    return moment_constraint_rank(dist, m, symbol_map, cumulative,
-                                  with_replacement=False)
+    return moment_constraint_rank(dist, m, symbol_map, cumulative, with_replacement=False)
 
 
 def negentropy(p):
@@ -410,10 +402,12 @@ def negentropy(p):
     return negH
 
 
-@removals.removed_class('MaximumEntropy',
-                        replacement="dit.algorithms.scipy_optimizers.MaxEntOptimizer",
-                        message="Please see methods in dit.algorithms.distribution_optimizers.py.",
-                        version='1.0.1')
+@removals.removed_class(
+    "MaximumEntropy",
+    replacement="dit.algorithms.scipy_optimizers.MaxEntOptimizer",
+    message="Please see methods in dit.algorithms.distribution_optimizers.py.",
+    version="1.0.1",
+)
 class MaximumEntropy(CVXOPT_Template):
     """
     Find maximum entropy distribution.
@@ -423,10 +417,12 @@ class MaximumEntropy(CVXOPT_Template):
         self.func = negentropy
 
 
-@removals.removed_class('MarginalMaximumEntropy',
-                        replacement="dit.algorithms.scipy_optimizers.MaxEntOptimizer",
-                        message="Please see methods in dit.algorithms.distribution_optimizers.py.",
-                        version='1.0.1')
+@removals.removed_class(
+    "MarginalMaximumEntropy",
+    replacement="dit.algorithms.scipy_optimizers.MaxEntOptimizer",
+    message="Please see methods in dit.algorithms.distribution_optimizers.py.",
+    version="1.0.1",
+)
 class MarginalMaximumEntropy(MaximumEntropy):
     """
     Find maximum entropy distribution subject to `k`-way marginal constraints.
@@ -473,7 +469,7 @@ class MarginalMaximumEntropy(MaximumEntropy):
         Asmall = A[:, self.variables.nonzero]  # pylint: disable=no-member
         Asmall, b, rank = as_full_rank(Asmall, b)
         if rank > Asmall.shape[1]:
-            raise ValueError('More independent constraints than free parameters.')
+            raise ValueError("More independent constraints than free parameters.")
 
         Asmall = matrix(Asmall)
         b = matrix(b)  # now a column vector
@@ -483,9 +479,10 @@ class MarginalMaximumEntropy(MaximumEntropy):
 
     def initial_dist(self):
         from .maxentropyfw import initial_point
-        initial_x, _ = initial_point(self.dist, self.k, A=self.A, b=self.b,
-                                     isolated=self.variables,
-                                     show_progress=False)
+
+        initial_x, _ = initial_point(
+            self.dist, self.k, A=self.A, b=self.b, isolated=self.variables, show_progress=False
+        )
         return initial_x
 
     def build_gradient_hessian(self):
@@ -520,8 +517,7 @@ class MomentMaximumEntropy(MaximumEntropy):
     `k = 0` should reproduce the behavior of MaximumEntropy.
     """
 
-    def __init__(self, dist, k, symbol_map, cumulative=True,
-                 with_replacement=True, tol=None, prng=None):
+    def __init__(self, dist, k, symbol_map, cumulative=True, with_replacement=True, tol=None, prng=None):
         """
         Initialize optimizer.
 
@@ -560,11 +556,11 @@ class MomentMaximumEntropy(MaximumEntropy):
         k = range(self.k + 1) if self.cumulative else [self.k]
 
         args = (self.pmf, self.n_variables, k, self.symbol_map)
-        kwargs = {'with_replacement': self.with_replacement}
+        kwargs = {"with_replacement": self.with_replacement}
         A, b = moment_constraints(*args, **kwargs)
         AA, bb, rank = as_full_rank(A, b)
         if rank > n:
-            raise ValueError('More independent constraints than parameters.')
+            raise ValueError("More independent constraints than parameters.")
 
         AA = matrix(AA)
         bb = matrix(bb)  # now a column vector
@@ -573,8 +569,7 @@ class MomentMaximumEntropy(MaximumEntropy):
         self.b = bb
 
 
-@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
-                 version='1.0.1')
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.", version="1.0.1")
 def marginal_maxent_dists(dist, k_max=None, jitter=True, show_progress=True):
     """
     Return the marginal-constrained maximum entropy distributions.
@@ -620,8 +615,7 @@ def marginal_maxent_dists(dist, k_max=None, jitter=True, show_progress=True):
     return dists
 
 
-def moment_maxent_dists(dist, symbol_map, k_max=None, jitter=True,
-                        with_replacement=True, show_progress=True):
+def moment_maxent_dists(dist, symbol_map, k_max=None, jitter=True, with_replacement=True, show_progress=True):
     """
     Return the marginal-constrained maximum entropy distributions.
 
@@ -659,7 +653,7 @@ def moment_maxent_dists(dist, symbol_map, k_max=None, jitter=True,
 
     outcomes = list(dist._product(symbols, repeat=n_variables))
 
-    text = 'with replacement' if with_replacement else 'without replacement'
+    text = "with replacement" if with_replacement else "without replacement"
 
     dists = []
     for k in range(k_max + 1):

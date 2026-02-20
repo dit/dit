@@ -12,22 +12,22 @@ from itertools import tee
 from debtcollector import removals
 
 __all__ = (
-    'default_opener',
-    'flatten',
-    'get_fobj',
-    'is_string_like',
-    'quasilexico_key',
-    'ordered_partitions',
-    'OrderedDict',
-    'partitions',
-    'extended_partition',
-    'partition_set',
-    'powerset',
-    'product_maker',
-    'require_keys',
-    'str_product',
-    'digits',
-    'pairwise',
+    "default_opener",
+    "flatten",
+    "get_fobj",
+    "is_string_like",
+    "quasilexico_key",
+    "ordered_partitions",
+    "OrderedDict",
+    "partitions",
+    "extended_partition",
+    "partition_set",
+    "powerset",
+    "product_maker",
+    "require_keys",
+    "str_product",
+    "digits",
+    "pairwise",
 )
 
 
@@ -40,10 +40,12 @@ def default_opener(filename):  # pragma: no cover
     filename : str
         The path of the file to be opened.
     """
-    cmds = {'darwin': ['open'],
-            'linux2': ['xdg-open'],  # Python 2.x
-            'linux': ['xdg-open'],   # Python 3.x
-            'win32': ['cmd.exe', '/c', 'start', '']}
+    cmds = {
+        "darwin": ["open"],
+        "linux2": ["xdg-open"],  # Python 2.x
+        "linux": ["xdg-open"],  # Python 3.x
+        "win32": ["cmd.exe", "/c", "start", ""],
+    }
     cmd = cmds[sys.platform] + [filename]
     subprocess.call(cmd)  # noqa: S603
 
@@ -69,7 +71,7 @@ def flatten(l):
             yield el
 
 
-def get_fobj(fname, mode='w+'):  # pragma: no cover
+def get_fobj(fname, mode="w+"):  # pragma: no cover
     """
     Obtain a proper file object.
 
@@ -95,7 +97,7 @@ def get_fobj(fname, mode='w+'):  # pragma: no cover
     if is_string_like(fname):
         fobj = open(fname, mode)  # noqa: SIM115
         close = True
-    elif hasattr(fname, 'write'):
+    elif hasattr(fname, "write"):
         # fname is a file-like object, perhaps a StringIO (for example)
         fobj = fname
         close = False
@@ -111,7 +113,7 @@ def is_string_like(obj):
     Returns *True* if *obj* is string-like, and *False* otherwise.
     """
     try:
-        obj + ''
+        obj + ""
     except (TypeError, ValueError):
         return False
     return True
@@ -138,8 +140,7 @@ def quasilexico_key(x):
     return (len(x), x)
 
 
-def partition_set(elements, relation=None, innerset=False, reflexive=False,
-                  transitive=False):
+def partition_set(elements, relation=None, innerset=False, reflexive=False, transitive=False):
     """
     Returns the equivlence classes from `elements`.
 
@@ -188,6 +189,7 @@ def partition_set(elements, relation=None, innerset=False, reflexive=False,
     """
     if relation is None:
         from operator import eq
+
         relation = eq
 
     lookup = []
@@ -207,6 +209,7 @@ def partition_set(elements, relation=None, innerset=False, reflexive=False,
         eqclasses = [c for _, c in eqclasses]
 
     else:
+
         def belongs(element, eqclass):
             for representative in eqclass:
                 if not relation(representative, element):
@@ -279,7 +282,7 @@ def product_maker(func):
     return _product
 
 
-str_product = product_maker(''.join)
+str_product = product_maker("".join)
 
 
 def require_keys(keys, dikt):
@@ -324,7 +327,7 @@ def partitions1(set_):
     if not set_:
         yield ()
         return
-    for i in range(2**len(set_) // 2):  # 2**() is even, so using // is safe.
+    for i in range(2 ** len(set_) // 2):  # 2**() is even, so using // is safe.
         parts = [set(), set()]
         for item in set_:
             parts[i & 1].add(item)
@@ -531,10 +534,10 @@ def digits(n, base, alphabet=None, pad=0, big_endian=True):
     # http://stackoverflow.com/a/2088440
 
     if base < 2 or int(base) != base:
-        raise ValueError('`base` must be an integer greater than 2')
+        raise ValueError("`base` must be an integer greater than 2")
 
     if alphabet is not None and len(alphabet) != base:
-        raise ValueError('Length of `alphabet` must equal `base`.')
+        raise ValueError("Length of `alphabet` must equal `base`.")
 
     sequence = []
     while True:
@@ -556,8 +559,7 @@ def digits(n, base, alphabet=None, pad=0, big_endian=True):
     return sequence
 
 
-@removals.remove(message="Use boltons.iterutils.pairwise instead.",
-                 version="1.0.1")
+@removals.remove(message="Use boltons.iterutils.pairwise instead.", version="1.0.1")
 def pairwise(iterable):
     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
     a, b = tee(iterable)

@@ -9,12 +9,10 @@ import dit
 from .exceptions import ditException
 from .helpers import copypmf
 
-__all__ = (
-    'joint_from_factors',
-)
+__all__ = ("joint_from_factors",)
 
 
-def cdist_array(cdists, base='linear', mode='asis'):
+def cdist_array(cdists, base="linear", mode="asis"):
     """
     Returns a 2D array for P(Y|X). Rows are X, columns are Y.
 
@@ -87,7 +85,7 @@ def joint_from_factors(mdist, cdists, strict=True):
     # Raise exception if mdist and cdists are not compatible.
     compatible = mask_is_complementary(mdist._mask, cdists[0]._mask)
     if strict and not compatible:
-        msg = 'Incompatible masks for ``mdist`` and ``cdists``.'
+        msg = "Incompatible masks for ``mdist`` and ``cdists``."
         raise ditException(msg)
 
     if not compatible:
@@ -98,10 +96,10 @@ def joint_from_factors(mdist, cdists, strict=True):
     YgX_pmf = cdist_array(cdists)
     if len(mdist) != YgX_pmf.shape[0]:
         # Maybe it is not trim.
-        mdist = mdist.copy(base='linear')
+        mdist = mdist.copy(base="linear")
         mdist.make_sparse()
         if len(mdist) != YgX_pmf.shape[0]:
-            msg = 'len(mdist) != len(cdists)'
+            msg = "len(mdist) != len(cdists)"
             raise ditException(msg)
         else:
             X_outcomes = mdist.outcomes
@@ -113,7 +111,7 @@ def joint_from_factors(mdist, cdists, strict=True):
         # cdists was obtained from, since d.condition_on() only returns
         # conditional distriutions whose condition has positive probability.
         X_outcomes = mdist.outcomes
-        X_pmf = copypmf(mdist, base='linear', mode='asis')
+        X_pmf = copypmf(mdist, base="linear", mode="asis")
 
     # The joint probabilities
     XY_pmf = YgX_pmf * X_pmf[:, np.newaxis]
@@ -128,8 +126,7 @@ def joint_from_factors(mdist, cdists, strict=True):
         tmp = [ctor(outcome_iter(X, Y, cdist_mask)) for Y in cdists[i].outcomes]
         outcomes.extend(tmp)
 
-    d = dit.Distribution(outcomes, list(XY_pmf.flat),
-                         sparse=True, trim=False)
+    d = dit.Distribution(outcomes, list(XY_pmf.flat), sparse=True, trim=False)
 
     X_rv_names = mdist.get_rv_names()
     Y_rv_names = cdists[0].get_rv_names()

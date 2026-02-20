@@ -8,9 +8,7 @@ from ..helpers import normalize_rvs
 from ..utils import partitions, unitful
 from .entropy import entropy
 
-__all__ = (
-    'caekl_mutual_information',
-)
+__all__ = ("caekl_mutual_information",)
 
 
 @unitful

@@ -6,9 +6,9 @@ from ...npdist import Distribution
 from .base_skar_optimizers import BaseMinimalIntrinsicMutualInformation
 
 __all__ = (
-    'minimal_intrinsic_total_correlation',
-    'minimal_intrinsic_dual_total_correlation',
-    'minimal_intrinsic_CAEKL_mutual_information',
+    "minimal_intrinsic_total_correlation",
+    "minimal_intrinsic_dual_total_correlation",
+    "minimal_intrinsic_CAEKL_mutual_information",
 )
 
 
@@ -17,7 +17,7 @@ class MinimalIntrinsicTotalCorrelation(BaseMinimalIntrinsicMutualInformation):
     Compute the minimal intrinsic total correlation.
     """
 
-    name = 'total correlation'
+    name = "total correlation"
 
     def measure(self, rvs, crvs):
         """
@@ -46,7 +46,7 @@ class MinimalIntrinsicDualTotalCorrelation(BaseMinimalIntrinsicMutualInformation
     Compute the minimal intrinsic dual total correlation.
     """
 
-    name = 'dual total correlation'
+    name = "dual total correlation"
 
     def measure(self, rvs, crvs):
         """
@@ -75,7 +75,7 @@ class MinimalIntrinsicCAEKLMutualInformation(BaseMinimalIntrinsicMutualInformati
     Compute the minimal intrinsic CAEKL mutual information.
     """
 
-    name = 'CAEKL mutual information'
+    name = "CAEKL mutual information"
 
     def measure(self, rvs, crvs):
         """
@@ -122,6 +122,7 @@ def minimal_intrinsic_mutual_information_constructor(func):  # pragma: no cover
     using this function will be significantly slower than if the objective were
     written directly using the joint probability ndarray.
     """
+
     class MinimalIntrinsicMutualInformation(BaseMinimalIntrinsicMutualInformation):
         name = func.__name__
 
@@ -138,13 +139,11 @@ def minimal_intrinsic_mutual_information_constructor(func):  # pragma: no cover
             cmi = self._conditional_mutual_information(self._rvs, self._arvs, self._crvs)(pmf)
             return mi + cmi
 
-    MinimalIntrinsicMutualInformation.__doc__ = \
-    f"""
+    MinimalIntrinsicMutualInformation.__doc__ = f"""
     Compute the minimal intrinsic {func.__name__}.
     """
 
-    docstring = \
-    f"""
+    docstring = f"""
     Compute the {func.__name__}.
 
     Parameters

@@ -52,23 +52,26 @@ from dit.other import (
 )
 
 
-@pytest.mark.parametrize(('measure', 'dy_val', 'tri_val'), [
-    (H, 3, 3),
-    (T, 3, 3),
-    (B, 3, 3),
-    (I, 0, 0),
-    (R, 0, 0),
-    (J, 1.5, 1.5),
-    (TSE, 2, 2),
-    (K, 0, 1),
-    (C, 3, 3),
-    (G, 3, 3),
-    (F, 3, 3),
-    (M, 3, 3),
-    (X, 1.3485155455967712, 1.3485155455967712),
-    (P, 8, 8),
-    (D, 0.76124740551164605, 0.76124740551164605),
-])
+@pytest.mark.parametrize(
+    ("measure", "dy_val", "tri_val"),
+    [
+        (H, 3, 3),
+        (T, 3, 3),
+        (B, 3, 3),
+        (I, 0, 0),
+        (R, 0, 0),
+        (J, 1.5, 1.5),
+        (TSE, 2, 2),
+        (K, 0, 1),
+        (C, 3, 3),
+        (G, 3, 3),
+        (F, 3, 3),
+        (M, 3, 3),
+        (X, 1.3485155455967712, 1.3485155455967712),
+        (P, 8, 8),
+        (D, 0.76124740551164605, 0.76124740551164605),
+    ],
+)
 def test_measures(measure, dy_val, tri_val):
     """
     Test that the distributions have the correct properties.

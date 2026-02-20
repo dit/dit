@@ -9,9 +9,7 @@ from ...algorithms import BaseAuxVarOptimizer
 from ...helpers import normalize_rvs
 from ...utils import unitful
 
-__all__ = (
-    'StochasticGKCommonInformation',
-)
+__all__ = ("StochasticGKCommonInformation",)
 
 
 class StochasticGKCommonInformation(BaseAuxVarOptimizer):
@@ -56,10 +54,12 @@ class StochasticGKCommonInformation(BaseAuxVarOptimizer):
 
         self._construct_auxvars([({0}, bound)])
 
-        self.constraints += [{'type': 'eq',
-                              'fun': self.constraint_match_conditional_distributions,
-                              },
-                             ]
+        self.constraints += [
+            {
+                "type": "eq",
+                "fun": self.constraint_match_conditional_distributions,
+            },
+        ]
 
     def compute_bound(self):
         """
@@ -70,7 +70,7 @@ class StochasticGKCommonInformation(BaseAuxVarOptimizer):
         bound : int
             The bound on the size of W.
         """
-        return 2 * min(self._shape[:len(self._rvs)]) + 1
+        return 2 * min(self._shape[: len(self._rvs)]) + 1
 
     def constraint_match_conditional_distributions(self, x):
         """
@@ -99,7 +99,7 @@ class StochasticGKCommonInformation(BaseAuxVarOptimizer):
         target_marginal = marginals[0]
         for idx in idxs:
             for i, m in zip(idx[1:], marginals[1:], strict=True):
-                delta += ((target_marginal[idx[0]] - m[i])**2).sum()
+                delta += ((target_marginal[idx[0]] - m[i]) ** 2).sum()
 
         return 100 * delta
 
@@ -135,7 +135,9 @@ class StochasticGKCommonInformation(BaseAuxVarOptimizer):
 
 
 @unitful
-def stochastic_gk_common_information(dist, rvs=None, crvs=None, niter=None, maxiter=1000, polish=1e-6, bound=None, rv_mode=None):
+def stochastic_gk_common_information(
+    dist, rvs=None, crvs=None, niter=None, maxiter=1000, polish=1e-6, bound=None, rv_mode=None
+):
     """
     Compute the functional common information, F, of `dist`. It is the entropy
     of the smallest random variable W such that all the variables in `rvs` are

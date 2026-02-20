@@ -12,9 +12,7 @@ from ...utils import unitful
 from ..dual_total_correlation import dual_total_correlation
 from ..entropy import entropy
 
-__all__ = (
-    'mss_common_information',
-)
+__all__ = ("mss_common_information",)
 
 
 @unitful

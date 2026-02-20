@@ -9,28 +9,28 @@ from dit.example_dists import Xor
 from dit.multivariate import coinformation, interaction_information
 
 
-@pytest.mark.parametrize('i', range(2, 6))
+@pytest.mark.parametrize("i", range(2, 6))
 def test_ii1(i):
-    """ Test II for giant bit distributions """
-    outcomes = ['0' * i, '1' * i]
+    """Test II for giant bit distributions"""
+    outcomes = ["0" * i, "1" * i]
     pmf = [1 / 2] * 2
     d = D(outcomes, pmf)
-    assert interaction_information(d) == pytest.approx((-1)**i)
+    assert interaction_information(d) == pytest.approx((-1) ** i)
 
 
-@pytest.mark.parametrize('i', range(2, 6))
+@pytest.mark.parametrize("i", range(2, 6))
 def test_ii2(i):
-    """ Test II = -1^n * I for giant bit distributions """
-    outcomes = ['0' * i, '1' * i]
+    """Test II = -1^n * I for giant bit distributions"""
+    outcomes = ["0" * i, "1" * i]
     pmf = [1 / 2] * 2
     d = D(outcomes, pmf)
     ci = coinformation(d)
     ii = interaction_information(d)
-    assert ii == pytest.approx((-1)**i * ci)
+    assert ii == pytest.approx((-1) ** i * ci)
 
 
 def test_ii3():
-    """ Test II and conditional II for xor """
+    """Test II and conditional II for xor"""
     d = Xor()
     ii1 = interaction_information(d, [[0], [1], [2]], [2])
     ii2 = interaction_information(d, [[0], [1]], [2])

@@ -20,26 +20,26 @@ from ..entropy import entropy
 
 def _copy_array(a):
     """Copy an array, supporting both numpy and torch."""
-    if hasattr(a, 'clone'):
+    if hasattr(a, "clone"):
         return a.clone()
     return a.copy()
 
 
 def _moveaxis(a, source, destination):
     """Move an array axis, supporting both numpy, JAX, and torch."""
-    if hasattr(a, 'moveaxis'):
+    if hasattr(a, "moveaxis"):
         return a.moveaxis(source, destination)
     return np.moveaxis(a, source, destination)
 
 
 __all__ = (
-    'MarkovVarOptimizer',
-    'MinimizingMarkovVarOptimizer',
-    'make_markov_var_optimizer',
+    "MarkovVarOptimizer",
+    "MinimizingMarkovVarOptimizer",
+    "make_markov_var_optimizer",
 )
 
 
-def make_markov_var_optimizer(backend='numpy'):
+def make_markov_var_optimizer(backend="numpy"):
     """
     Return a ``MarkovVarOptimizer`` class backed by *backend*.
 
@@ -57,6 +57,7 @@ def make_markov_var_optimizer(backend='numpy'):
 
 
 # ── Mixin classes (backend-agnostic logic) ───────────────────────────────
+
 
 class MarkovVarMixin:
     """
@@ -119,8 +120,7 @@ class MarkovVarMixin:
         self.__rvs, self._rvs = self._rvs, {0}
         self.__crvs, self._crvs = self._crvs, {1}
 
-        self._construct_auxvars([({0, 1}, bound)]
-                                + [({1, 2}, s) for s in rv_bounds])
+        self._construct_auxvars([({0, 1}, bound)] + [({1, 2}, s) for s in rv_bounds])
 
         # put rvs, crvs back:
         self._rvs = self.__rvs
@@ -131,18 +131,22 @@ class MarkovVarMixin:
         self._W = {1 + len(self._aux_vars)}
 
         # The constraint that the joint doesn't change.
-        self.constraints += [{'type': 'eq',
-                              'fun': self.constraint_match_joint,
-                              },
-                             ]
+        self.constraints += [
+            {
+                "type": "eq",
+                "fun": self.constraint_match_joint,
+            },
+        ]
 
         self._default_hops = 5
 
-        self._additional_options = {'options': {'maxiter': 1000,
-                                                'ftol': 1e-6,
-                                                'eps': 1.4901161193847656e-9,
-                                                }
-                                    }
+        self._additional_options = {
+            "options": {
+                "maxiter": 1000,
+                "ftol": 1e-6,
+                "eps": 1.4901161193847656e-9,
+            }
+        }
 
     @abstractmethod
     def compute_bound(self):
@@ -215,7 +219,7 @@ class MarkovVarMixin:
         joint = self.construct_joint(x)
         joint = joint.sum(axis=-1)  # marginalize out w
 
-        delta = (100 * (joint - self._pmf_to_match)**2).sum()
+        delta = (100 * (joint - self._pmf_to_match) ** 2).sum()
 
         return delta
 
@@ -230,10 +234,11 @@ class MarkovVarMixin:
             A function that computes the common information for a given
             distribution.
         """
+
         @unitful
-        def common_info(dist, rvs=None, crvs=None, niter=None, maxiter=1000,
-                        polish=1e-6, bound=None, rv_mode=None,
-                        backend='numpy'):
+        def common_info(
+            dist, rvs=None, crvs=None, niter=None, maxiter=1000, polish=1e-6, bound=None, rv_mode=None, backend="numpy"
+        ):
             dtc = dual_total_correlation(dist, rvs, crvs, rv_mode)
             ent = entropy(dist, rvs, crvs, rv_mode)
             if np.isclose(dtc, ent):
@@ -246,10 +251,9 @@ class MarkovVarMixin:
             ci = actual_cls(dist, rvs, crvs, bound, rv_mode)
             ci.optimize(niter=niter, maxiter=maxiter, polish=polish)
             val = ci.objective(ci._optima)
-            return float(val.detach().cpu().item()) if hasattr(val, 'detach') else float(val)
+            return float(val.detach().cpu().item()) if hasattr(val, "detach") else float(val)
 
-        common_info.__doc__ = \
-        f"""
+        common_info.__doc__ = f"""
         Computes the {cls.name} common information, {cls.description}.
 
         Parameters
@@ -302,8 +306,7 @@ class MinimizingMarkovVarMixin:
     :class:`MarkovVarMixin`.
     """
 
-    def optimize(self, x0=None, niter=None, maxiter=None, polish=1e-6,
-                 callback=False, minimize=True, min_niter=15):
+    def optimize(self, x0=None, niter=None, maxiter=None, polish=1e-6, callback=False, minimize=True, min_niter=15):
         """
         Run the optimization, optionally with auxiliary variable minimization.
 
@@ -330,19 +333,16 @@ class MinimizingMarkovVarMixin:
             common variable.
         """
         # call the normal optimizer
-        super().optimize(x0=x0,
-                         niter=niter,
-                         maxiter=maxiter,
-                         polish=False,
-                         callback=callback)
+        super().optimize(x0=x0, niter=niter, maxiter=maxiter, polish=False, callback=callback)
         if minimize:
             # minimize the entropy of W
-            self._post_process(style='entropy', minmax='min', niter=min_niter, maxiter=maxiter)
+            self._post_process(style="entropy", minmax="min", niter=min_niter, maxiter=maxiter)
         if polish:
             self._polish(cutoff=polish)
 
 
 # ── Backward-compatible composed classes (numpy backend) ─────────────────
+
 
 class MarkovVarOptimizer(MarkovVarMixin, BaseAuxVarOptimizer):
     """
@@ -353,6 +353,7 @@ class MarkovVarOptimizer(MarkovVarMixin, BaseAuxVarOptimizer):
     ``backend='jax'`` or ``backend='torch'`` to :meth:`functional` (or use
     :func:`make_markov_var_optimizer`) for alternative backends.
     """
+
     pass
 
 
@@ -363,4 +364,5 @@ class MinimizingMarkovVarOptimizer(MinimizingMarkovVarMixin, MarkovVarOptimizer)
 
     Uses the default NumPy / SciPy optimization backend.
     """
+
     pass

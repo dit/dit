@@ -8,17 +8,15 @@ import numpy as np
 
 from ..params import ditParams
 
-__all__ = (
-    'unitful',
-)
+__all__ = ("unitful",)
 
 
 try:
     import pint
 
     ureg = pint.UnitRegistry()
-    ureg.define(f'nat = {np.log2(np.e)} * bit')
-    ureg.define(f'dit = {np.log2(10)} * bit')
+    ureg.define(f"nat = {np.log2(np.e)} * bit")
+    ureg.define(f"dit = {np.log2(10)} * bit")
     pint.set_application_registry(ureg)
 
     def unitful(f):
@@ -35,11 +33,12 @@ try:
         wrapper : func
             A function which optionally adds units to return values.
         """
+
         @wraps(f)
         def wrapper(*args, **kwargs):
             value = f(*args, **kwargs)
 
-            if ditParams['units']:
+            if ditParams["units"]:
                 if isinstance(value, tuple):
                     value = (value[0] * ureg.bit,) + value[1:]
                 else:
@@ -66,6 +65,7 @@ except ImportError:
         wrapper : func
             A function which does exactly the same as f.
         """
+
         @wraps(f)
         def wrapper(*args, **kwargs):
             value = f(*args, **kwargs)

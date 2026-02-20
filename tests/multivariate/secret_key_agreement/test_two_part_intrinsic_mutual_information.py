@@ -16,41 +16,53 @@ from tests._backends import backends
 
 
 @pytest.mark.flaky(reruns=5)
-@pytest.mark.parametrize('backend', backends)
-@pytest.mark.parametrize(['dist', 'value'], [
-    (giant_bit(3, 2), 0.0),
-    # (n_mod_m(3, 2), 0.0),
-])
+@pytest.mark.parametrize("backend", backends)
+@pytest.mark.parametrize(
+    ["dist", "value"],
+    [
+        (giant_bit(3, 2), 0.0),
+        # (n_mod_m(3, 2), 0.0),
+    ],
+)
 def test_tpitc1(dist, value, backend):
-    """
-    """
-    tpitc = two_part_intrinsic_total_correlation(dist, [[0], [1]], [2], bound_j=2, bound_u=2, bound_v=2, backend=backend)
+    """ """
+    tpitc = two_part_intrinsic_total_correlation(
+        dist, [[0], [1]], [2], bound_j=2, bound_u=2, bound_v=2, backend=backend
+    )
     assert tpitc == pytest.approx(value, abs=1e-6)
 
 
 @pytest.mark.flaky(reruns=5)
-@pytest.mark.parametrize('backend', backends)
-@pytest.mark.parametrize(['dist', 'value'], [
-    (giant_bit(3, 2), 0.0),
-    # (n_mod_m(3, 2), 0.0),
-])
+@pytest.mark.parametrize("backend", backends)
+@pytest.mark.parametrize(
+    ["dist", "value"],
+    [
+        (giant_bit(3, 2), 0.0),
+        # (n_mod_m(3, 2), 0.0),
+    ],
+)
 def test_tpidtc1(dist, value, backend):
-    """
-    """
-    tpidtc = two_part_intrinsic_dual_total_correlation(dist, [[0], [1]], [2], bound_j=2, bound_u=2, bound_v=2, backend=backend)
+    """ """
+    tpidtc = two_part_intrinsic_dual_total_correlation(
+        dist, [[0], [1]], [2], bound_j=2, bound_u=2, bound_v=2, backend=backend
+    )
     assert tpidtc == pytest.approx(value, abs=1e-6)
 
 
 @pytest.mark.flaky(reruns=5)
-@pytest.mark.parametrize('backend', backends)
-@pytest.mark.parametrize(['dist', 'value'], [
-    (giant_bit(3, 2), 0.0),
-    # (n_mod_m(3, 2), 0.0),
-])
+@pytest.mark.parametrize("backend", backends)
+@pytest.mark.parametrize(
+    ["dist", "value"],
+    [
+        (giant_bit(3, 2), 0.0),
+        # (n_mod_m(3, 2), 0.0),
+    ],
+)
 def test_tpicaekl1(dist, value, backend):
-    """
-    """
-    tpicaekl = two_part_intrinsic_CAEKL_mutual_information(dist, [[0], [1]], [2], bound_j=2, bound_u=2, bound_v=2, backend=backend)
+    """ """
+    tpicaekl = two_part_intrinsic_CAEKL_mutual_information(
+        dist, [[0], [1]], [2], bound_j=2, bound_u=2, bound_v=2, backend=backend
+    )
     assert tpicaekl == pytest.approx(value, abs=1e-6)
 
 

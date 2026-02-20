@@ -24,13 +24,14 @@ from ...utils import unitful
 from .._backend import _make_backend_subclass
 
 __all__ = (
-    'BaseIntrinsicMutualInformation',
-    'BaseMoreIntrinsicMutualInformation',
-    'BaseOneWaySKAR',
+    "BaseIntrinsicMutualInformation",
+    "BaseMoreIntrinsicMutualInformation",
+    "BaseOneWaySKAR",
 )
 
 
 # ── Mixin classes (backend-agnostic logic) ────────────────────────────────
+
 
 class OneWaySKARMixin:
     """
@@ -172,10 +173,11 @@ class IntrinsicMIMixin:
         result = super().optimize(*args, **kwargs)
 
         # test against known upper bounds as well, in case space wasn't well sampled.
-        options = [self.construct_constant_initial(),  # mutual information
-                   self.construct_copy_initial(),      # conditional mutual information
-                   result.x,                           # found optima
-                  ]
+        options = [
+            self.construct_constant_initial(),  # mutual information
+            self.construct_copy_initial(),  # conditional mutual information
+            result.x,  # found optima
+        ]
 
         self._optima = min(options, key=lambda opt: self.objective(opt))
 
@@ -184,17 +186,16 @@ class IntrinsicMIMixin:
         """
         Construct a functional form of the optimizer.
         """
+
         @unitful
-        def intrinsic(dist, rvs=None, crvs=None, niter=None, bound=None,
-                      rv_mode=None, backend='numpy'):
+        def intrinsic(dist, rvs=None, crvs=None, niter=None, bound=None, rv_mode=None, backend="numpy"):
             actual_cls = _make_backend_subclass(cls, backend)
             opt = actual_cls(dist, rvs=rvs, crvs=crvs, rv_mode=rv_mode, bound=bound)
             opt.optimize(niter=niter)
             val = opt.objective(opt._optima)
-            return float(val.detach().cpu().item()) if hasattr(val, 'detach') else float(val)
+            return float(val.detach().cpu().item()) if hasattr(val, "detach") else float(val)
 
-        intrinsic.__doc__ = \
-        f"""
+        intrinsic.__doc__ = f"""
         Compute the intrinsic {cls.name}.
 
         Parameters
@@ -301,9 +302,9 @@ class MoreIntrinsicMIMixin:
         """
         Construct a functional form of the optimizer.
         """
+
         @unitful
-        def intrinsic(dist, rvs=None, crvs=None, niter=None, bounds=None,
-                      rv_mode=None, backend='numpy'):
+        def intrinsic(dist, rvs=None, crvs=None, niter=None, bounds=None, rv_mode=None, backend="numpy"):
             if bounds is None:
                 bounds = (2, 3, 4, None)
 
@@ -313,12 +314,11 @@ class MoreIntrinsicMIMixin:
                 opt = actual_cls(dist, rvs=rvs, crvs=crvs, bound=bound, rv_mode=rv_mode)
                 opt.optimize(niter=niter)
                 val = opt.objective(opt._optima)
-                val = float(val.detach().cpu().item()) if hasattr(val, 'detach') else float(val)
+                val = float(val.detach().cpu().item()) if hasattr(val, "detach") else float(val)
                 candidates.append(val)
             return min(candidates)
 
-        intrinsic.__doc__ = \
-            f"""
+        intrinsic.__doc__ = f"""
             Compute the {cls.style} intrinsic {cls.name}.
 
             Parameters
@@ -404,12 +404,15 @@ class InnerTwoPartIMIMixin:
         theoretical_bound_u = prod(self._shape[rv] for rv in self._rvs)
         bound_u = min([bound_u, theoretical_bound_u]) if bound_u else theoretical_bound_u
 
-        theoretical_bound_v = prod(self._shape[rv] for rv in self._rvs)**2
+        theoretical_bound_v = prod(self._shape[rv] for rv in self._rvs) ** 2
         bound_v = min([bound_v, theoretical_bound_v]) if bound_v else theoretical_bound_v
 
-        self._construct_auxvars([(self._rvs, bound_u),
-                                 ({len(self._shape)}, bound_v),
-                                 ])
+        self._construct_auxvars(
+            [
+                (self._rvs, bound_u),
+                ({len(self._shape)}, bound_v),
+            ]
+        )
         idx = min(self._arvs)
         self._j = {max(self._rvs)}
         self._u = {idx}
@@ -542,21 +545,22 @@ class TwoPartIMIMixin:
             Save the optimal inner, so that full achieving joint can be constructed.
             """
             joint = self.construct_joint(x)
-            joint_np = joint.detach().cpu().numpy() if hasattr(joint, 'detach') else np.asarray(joint)
+            joint_np = joint.detach().cpu().numpy() if hasattr(joint, "detach") else np.asarray(joint)
             outcomes, pmf = zip(*[(o, p) for o, p in np.ndenumerate(joint_np)], strict=True)
             dist = Distribution(outcomes, pmf)
 
             inner_cls = _make_backend_subclass(
                 InnerTwoPartIntrinsicMutualInformation,
-                getattr(self, '_backend', 'numpy'),
+                getattr(self, "_backend", "numpy"),
             )
-            inner = inner_cls(dist=dist,
-                              rvs=[[rv] for rv in self._rvs],
-                              crvs=self._crvs,
-                              j=self._j,
-                              bound_u=self._bound_u,
-                              bound_v=self._bound_v,
-                              )
+            inner = inner_cls(
+                dist=dist,
+                rvs=[[rv] for rv in self._rvs],
+                crvs=self._crvs,
+                j=self._j,
+                bound_u=self._bound_u,
+                bound_v=self._bound_v,
+            )
             inner.optimize()
             opt = -inner.objective(inner._optima)
 
@@ -571,10 +575,19 @@ class TwoPartIMIMixin:
         """
         Construct a functional form of the optimizer.
         """
+
         @unitful
-        def two_part_intrinsic(dist, rvs=None, crvs=None, niter=None,
-                               bound_j=None, bound_u=None, bound_v=None,
-                               rv_mode=None, backend='numpy'):
+        def two_part_intrinsic(
+            dist,
+            rvs=None,
+            crvs=None,
+            niter=None,
+            bound_j=None,
+            bound_u=None,
+            bound_v=None,
+            rv_mode=None,
+            backend="numpy",
+        ):
             bounds = {
                 (2, 2, 2),
                 (bound_j, bound_u, bound_v),
@@ -583,18 +596,16 @@ class TwoPartIMIMixin:
             actual_cls = _make_backend_subclass(cls, backend)
             candidates = []
             for b_j, b_u, b_v in bounds:
-                opt = actual_cls(dist, rvs=rvs, crvs=crvs, bound_j=b_j,
-                                 bound_u=b_u, bound_v=b_v, rv_mode=rv_mode)
+                opt = actual_cls(dist, rvs=rvs, crvs=crvs, bound_j=b_j, bound_u=b_u, bound_v=b_v, rv_mode=rv_mode)
                 opt._backend = backend
                 opt.optimize(niter=niter)
                 val = opt.objective(opt._optima)
-                val = float(val.detach().cpu().item()) if hasattr(val, 'detach') else float(val)
+                val = float(val.detach().cpu().item()) if hasattr(val, "detach") else float(val)
                 candidates.append(val)
 
             return min(candidates)
 
-        two_part_intrinsic.__doc__ = \
-            f"""
+        two_part_intrinsic.__doc__ = f"""
             Compute the two-part intrinsic {cls.name}.
 
             Parameters
@@ -637,6 +648,7 @@ class TwoPartIMIMixin:
 
 # ── Backward-compatible composed classes (numpy backend) ──────────────────
 
+
 class BaseOneWaySKAR(OneWaySKARMixin, BaseAuxVarOptimizer):
     """
     Compute lower bounds on the secret key agreement rate of the form:
@@ -659,6 +671,7 @@ class BaseIntrinsicMutualInformation(IntrinsicMIMixin, BaseAuxVarOptimizer):
 
     Uses the default NumPy / SciPy optimization backend.
     """
+
     pass
 
 
@@ -672,6 +685,7 @@ class BaseMoreIntrinsicMutualInformation(MoreIntrinsicMIMixin, BaseAuxVarOptimiz
 
     Uses the default NumPy / SciPy optimization backend.
     """
+
     pass
 
 
@@ -797,6 +811,7 @@ class InnerTwoPartIntrinsicMutualInformation(InnerTwoPartIMIMixin, BaseAuxVarOpt
 
     Uses the default NumPy / SciPy optimization backend.
     """
+
     pass
 
 
@@ -811,4 +826,5 @@ class BaseTwoPartIntrinsicMutualInformation(TwoPartIMIMixin, BaseAuxVarOptimizer
 
     Uses the default NumPy / SciPy optimization backend.
     """
+
     pass

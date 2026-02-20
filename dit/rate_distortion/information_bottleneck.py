@@ -9,8 +9,8 @@ from ..divergences.pmf import relative_entropy
 from ..exceptions import ditException
 
 __all__ = (
-    'InformationBottleneck',
-    'InformationBottleneckDivergence',
+    "InformationBottleneck",
+    "InformationBottleneckDivergence",
 )
 
 
@@ -97,7 +97,9 @@ class InformationBottleneck(BaseAuxVarOptimizer):
         distortion : func
             The distortion function.
         """
-        cmi = self._conditional_mutual_information(self._x, self._y, self._z)(self.construct_joint(self.construct_random_initial()))
+        cmi = self._conditional_mutual_information(self._x, self._y, self._z)(
+            self.construct_joint(self.construct_random_initial())
+        )
         relevance = self._conditional_mutual_information(self._y, self._t, self._z)
 
         def distortion(pmf):
@@ -199,6 +201,7 @@ class InformationBottleneck(BaseAuxVarOptimizer):
         information_bottleneck : func
             The function which performs this optimization.
         """
+
         def information_bottleneck(dist, beta, alpha=1.0, rvs=None, crvs=None, bound=None, rv_mode=None):
             """
             Compute an information bottleneck point.
@@ -227,14 +230,15 @@ class InformationBottleneck(BaseAuxVarOptimizer):
                 variable names. If `None`, then the value of `dist._rv_mode` is
                 consulted, which defaults to 'indices'.
             """
-            ib = cls(dist=dist,
-                     beta=beta,
-                     alpha=alpha,
-                     rvs=rvs,
-                     crvs=crvs,
-                     bound=bound,
-                     rv_mode=rv_mode,
-                     )
+            ib = cls(
+                dist=dist,
+                beta=beta,
+                alpha=alpha,
+                rvs=rvs,
+                crvs=crvs,
+                bound=bound,
+                rv_mode=rv_mode,
+            )
             ib.optimize()
             pmf = ib.construct_joint(ib._optima)
             complexity = ib.complexity(pmf)
@@ -250,7 +254,9 @@ class InformationBottleneckDivergence(InformationBottleneck):
     D( p(Y|x) || q(Y|t) ) for an arbitrary divergence measure D.
     """
 
-    def __init__(self, dist, beta, alpha=1.0, divergence=relative_entropy, rvs=None, crvs=None, bound=None, rv_mode=None):
+    def __init__(
+        self, dist, beta, alpha=1.0, divergence=relative_entropy, rvs=None, crvs=None, bound=None, rv_mode=None
+    ):
         """
         Initialize the optimizer.
 
@@ -282,14 +288,15 @@ class InformationBottleneckDivergence(InformationBottleneck):
             consulted, which defaults to 'indices'.
         """
         self._divergence = divergence
-        super().__init__(dist=dist,
-                         beta=beta,
-                         alpha=alpha,
-                         rvs=rvs,
-                         crvs=crvs,
-                         bound=bound,
-                         rv_mode=rv_mode,
-                         )
+        super().__init__(
+            dist=dist,
+            beta=beta,
+            alpha=alpha,
+            rvs=rvs,
+            crvs=crvs,
+            bound=bound,
+            rv_mode=rv_mode,
+        )
         self._default_hops *= 2
 
     def _distortion(self):
@@ -327,7 +334,12 @@ class InformationBottleneckDivergence(InformationBottleneck):
                 p_y_zx = p_zxy / p_zxy.sum(axis=2, keepdims=True)
                 q_y_zt = q_zty / q_zty.sum(axis=2, keepdims=True)
 
-                dist_zxt = np.asarray([[[self._divergence(a, b) for b in q_y_t] for a in p_y_x] for p_y_x, q_y_t in zip(p_y_zx, q_y_zt, strict=True)])
+                dist_zxt = np.asarray(
+                    [
+                        [[self._divergence(a, b) for b in q_y_t] for a in p_y_x]
+                        for p_y_x, q_y_t in zip(p_y_zx, q_y_zt, strict=True)
+                    ]
+                )
                 dist_zxt[np.isinf(dist_zxt)] = 0
                 dist = (q_zxt * dist_zxt).sum()
                 return dist

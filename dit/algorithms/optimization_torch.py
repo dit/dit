@@ -26,10 +26,11 @@ from loguru import logger
 try:
     import torch
     from torch import Tensor
+
     TORCH_AVAILABLE = True
 
     # Check for torch.compile (PyTorch 2.0+)
-    TORCH_COMPILE_AVAILABLE = hasattr(torch, 'compile')
+    TORCH_COMPILE_AVAILABLE = hasattr(torch, "compile")
 except ImportError:
     TORCH_AVAILABLE = False
     TORCH_COMPILE_AVAILABLE = False
@@ -56,19 +57,17 @@ from ..utils.optimization import (
 )
 
 __all__ = (
-    'BaseTorchOptimizer',
-    'BaseConvexTorchOptimizer',
-    'BaseNonConvexTorchOptimizer',
-    'BaseAuxVarTorchOptimizer',
+    "BaseTorchOptimizer",
+    "BaseConvexTorchOptimizer",
+    "BaseNonConvexTorchOptimizer",
+    "BaseAuxVarTorchOptimizer",
 )
 
 
 def _check_torch():
     """Raise an error if PyTorch is not available."""
     if not TORCH_AVAILABLE:
-        raise ImportError(
-            "PyTorch is required for this module. Install with: pip install torch"
-        )
+        raise ImportError("PyTorch is required for this module. Install with: pip install torch")
 
 
 def _to_tensor(x, requires_grad=False, dtype=None):
@@ -162,7 +161,7 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
     _use_autodiff = True
 
     # Device to use for computations ('cpu', 'cuda', 'mps', etc.)
-    _device = 'cpu'
+    _device = "cpu"
 
     # Data type for tensors
     _dtype = torch.float64 if TORCH_AVAILABLE else None
@@ -190,7 +189,7 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
         _check_torch()
 
         rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
-        self._dist = dist.copy(base='linear')
+        self._dist = dist.copy(base="linear")
 
         self._alphabet = self._dist.alphabet
         self._original_shape = list(map(len, self._dist.alphabet))
@@ -210,10 +209,7 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
 
         self._full_shape = list(map(len, self._dist.alphabet))
         # Convert to PyTorch tensor
-        self._full_pmf = _to_tensor(
-            self._dist.pmf.reshape(self._full_shape),
-            dtype=self._dtype
-        ).to(self._device)
+        self._full_pmf = _to_tensor(self._dist.pmf.reshape(self._full_shape), dtype=self._dtype).to(self._device)
 
         self._n = dist.outcome_length()
         self._pmf = self._full_pmf.sum(dim=tuple(range(self._n)))
@@ -554,8 +550,8 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
         idx_joint = tuple(self._all_vars - (rvs | crvs))
         idx_crvs = tuple(self._all_vars - crvs)
         idx_subrvs = [tuple(self._all_vars - set(ss)) for ss in sorted(powerset(rvs), key=len)[1:-1]]
-        power = [(-1)**len(ss) for ss in sorted(powerset(rvs), key=len)[1:-1]]
-        power += [(-1)**len(rvs)]
+        power = [(-1) ** len(ss) for ss in sorted(powerset(rvs), key=len)[1:-1]]
+        power += [(-1) ** len(rvs)]
         power += [-sum(power)]
 
         def coinformation(pmf):
@@ -905,9 +901,17 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
     ###########################################################################
     # Augmented Lagrangian native optimization helpers
 
-    def _al_minimize(self, x0, constraints=None, maxiter=None,
-                     al_outer_iters=50, al_inner_iters=100,
-                     mu_init=1.0, mu_factor=2.0, al_tol=1e-7):
+    def _al_minimize(
+        self,
+        x0,
+        constraints=None,
+        maxiter=None,
+        al_outer_iters=50,
+        al_inner_iters=100,
+        mu_init=1.0,
+        mu_factor=2.0,
+        al_tol=1e-7,
+    ):
         """
         Augmented Lagrangian minimization using torch.optim.LBFGS.
 
@@ -962,15 +966,13 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
             constraints = self._torch_raw_constraints
 
         raw_objective = self._torch_raw_objective
-        eq_funs = [c['fun'] for c in constraints if c['type'] == 'eq']
-        ineq_funs = [c['fun'] for c in constraints if c['type'] == 'ineq']
+        eq_funs = [c["fun"] for c in constraints if c["type"] == "eq"]
+        ineq_funs = [c["fun"] for c in constraints if c["type"] == "ineq"]
 
         n_eq = len(eq_funs)
         n_ineq = len(ineq_funs)
 
-        x = torch.tensor(np.asarray(x0, dtype=np.float64),
-                         dtype=self._dtype, device=self._device,
-                         requires_grad=True)
+        x = torch.tensor(np.asarray(x0, dtype=np.float64), dtype=self._dtype, device=self._device, requires_grad=True)
 
         # Dual variables
         lam_eq = torch.zeros(n_eq, dtype=self._dtype, device=self._device)
@@ -980,8 +982,8 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
         lbfgs_maxiter = maxiter or al_inner_iters
 
         best_x = x.detach().clone()
-        best_obj = float('inf')
-        max_viol = float('inf')
+        best_obj = float("inf")
+        max_viol = float("inf")
 
         for outer in range(al_outer_iters):
             _lam_eq = lam_eq.clone()
@@ -992,9 +994,12 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
             # controls how many quasi-Newton steps are taken; strong_wolfe
             # line search keeps each step well-conditioned.
             optimizer = torch.optim.LBFGS(
-                [x], lr=1.0, max_iter=lbfgs_maxiter,
-                line_search_fn='strong_wolfe',
-                tolerance_grad=1e-10, tolerance_change=1e-12,
+                [x],
+                lr=1.0,
+                max_iter=lbfgs_maxiter,
+                line_search_fn="strong_wolfe",
+                tolerance_grad=1e-10,
+                tolerance_change=1e-12,
             )
 
             def closure(optimizer=optimizer, _lam_eq=_lam_eq, _mu=_mu, _lam_ineq=_lam_ineq):
@@ -1007,27 +1012,24 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
 
                 obj = raw_objective(x)
                 if not isinstance(obj, Tensor):
-                    obj = torch.tensor(obj, dtype=self._dtype,
-                                       device=self._device)
+                    obj = torch.tensor(obj, dtype=self._dtype, device=self._device)
                 loss = obj
 
                 for i, cfun in enumerate(eq_funs):
                     ci = cfun(x)
                     if not isinstance(ci, Tensor):
-                        ci = torch.tensor(ci, dtype=self._dtype,
-                                          device=self._device)
-                    loss = loss + _lam_eq[i] * ci + (_mu / 2.0) * ci ** 2
+                        ci = torch.tensor(ci, dtype=self._dtype, device=self._device)
+                    loss = loss + _lam_eq[i] * ci + (_mu / 2.0) * ci**2
 
                 for j, cfun in enumerate(ineq_funs):
                     hj = cfun(x)
                     if not isinstance(hj, Tensor):
-                        hj = torch.tensor(hj, dtype=self._dtype,
-                                          device=self._device)
+                        hj = torch.tensor(hj, dtype=self._dtype, device=self._device)
                     slack = torch.min(
                         torch.zeros_like(hj),
                         hj - _lam_ineq[j] / _mu,
                     )
-                    loss = loss + _lam_ineq[j] * slack + (_mu / 2.0) * slack ** 2
+                    loss = loss + _lam_ineq[j] * slack + (_mu / 2.0) * slack**2
 
                 loss.backward()
                 return loss
@@ -1049,8 +1051,7 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
                 max_eq_viol = 0.0
                 for cfun in eq_funs:
                     ci = cfun(x)
-                    max_eq_viol = max(max_eq_viol, abs(float(
-                        ci.detach() if isinstance(ci, Tensor) else ci)))
+                    max_eq_viol = max(max_eq_viol, abs(float(ci.detach() if isinstance(ci, Tensor) else ci)))
 
                 max_ineq_viol = 0.0
                 for j, cfun in enumerate(ineq_funs):
@@ -1059,8 +1060,7 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
                         hj = hj.detach()
                     viol = max(0.0, -float(hj))
                     max_ineq_viol = max(max_ineq_viol, viol)
-                    lam_ineq[j] = torch.clamp(
-                        lam_ineq[j] - mu * float(hj), min=0.0)
+                    lam_ineq[j] = torch.clamp(lam_ineq[j] - mu * float(hj), min=0.0)
 
                 max_viol = max(max_eq_viol, max_ineq_viol)
 
@@ -1071,8 +1071,13 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
                     best_obj = obj_val
                     best_x = x.detach().clone()
 
-            logger.debug("AL outer={outer}: obj={obj:.6f}, max_viol={viol:.2e}, mu={mu:.1f}",
-                         outer=outer, obj=obj_val, viol=max_viol, mu=mu)
+            logger.debug(
+                "AL outer={outer}: obj={obj:.6f}, max_viol={viol:.2e}, mu={mu:.1f}",
+                outer=outer,
+                obj=obj_val,
+                viol=max_viol,
+                mu=mu,
+            )
 
             if max_viol < al_tol:
                 logger.debug("AL converged at outer iteration {outer}", outer=outer)
@@ -1085,8 +1090,10 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
         success = max_viol < al_tol * 10
 
         return OptimizeResult(
-            x=x_opt, fun=fun_val, success=success,
-            message=f'AL: max_viol={max_viol:.2e}, mu={mu:.1f}',
+            x=x_opt,
+            fun=fun_val,
+            success=success,
+            message=f"AL: max_viol={max_viol:.2e}, mu={mu:.1f}",
         )
 
     def _optimize_shotgun_native(self, x0, niter, maxiter):
@@ -1154,7 +1161,7 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
 
         wrapped_constraints = []
         for const in raw_constraints:
-            _raw_fun = const['fun']
+            _raw_fun = const["fun"]
 
             def _np_const_fun(x, _f=_raw_fun):
                 val = _f(x)
@@ -1162,22 +1169,22 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
                     return float(val.detach().cpu().item())
                 return float(np.asarray(val))
 
-            wrapped_constraints.append({**const, 'fun': _np_const_fun})
+            wrapped_constraints.append({**const, "fun": _np_const_fun})
 
         minimizer_kwargs = {
-            'bounds': [(0, 1)] * x0.size,
-            'callback': icb,
-            'constraints': wrapped_constraints,
-            'options': {},
+            "bounds": [(0, 1)] * x0.size,
+            "callback": icb,
+            "constraints": wrapped_constraints,
+            "options": {},
         }
 
         additions = deepcopy(self._additional_options)
-        options = additions.pop('options', {})
-        minimizer_kwargs['options'].update(options)
+        options = additions.pop("options", {})
+        minimizer_kwargs["options"].update(options)
         minimizer_kwargs.update(additions)
 
         if maxiter:
-            minimizer_kwargs['options']['maxiter'] = maxiter
+            minimizer_kwargs["options"]["maxiter"] = maxiter
 
         self.objective = _np_objective
         return minimizer_kwargs, icb
@@ -1210,12 +1217,14 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
         wrapper : callable
             A numpy-compatible wrapper.
         """
+
         def wrapper(x):
             x_tensor = _to_tensor(x, requires_grad=False, dtype=self._dtype).to(self._device)
             result = objective_func(x_tensor)
             if isinstance(result, Tensor):
                 return float(result.item())
             return float(result)
+
         return wrapper
 
     def _create_torch_gradient(self, objective_func):
@@ -1232,6 +1241,7 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
         grad_func : callable
             A numpy-compatible gradient function.
         """
+
         def grad_func(x):
             x_tensor = _to_tensor(x, requires_grad=True, dtype=self._dtype).to(self._device)
             result = objective_func(x_tensor)
@@ -1242,6 +1252,7 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
                 if grad is not None:
                     return _to_numpy(grad)
             return np.zeros_like(x)
+
         return grad_func
 
     def optimize(self, x0=None, niter=None, maxiter=None, polish=1e-6, callback=False):
@@ -1277,8 +1288,13 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
         x0 = x0.copy().flatten() if x0 is not None else self.construct_initial()
         x0 = _to_numpy(x0).astype(np.float64)
 
-        logger.info("Starting PyTorch optimization: dim={dim}, niter={niter}, device={device}, dtype={dtype}",
-                     dim=x0.size, niter=niter, device=self._device, dtype=self._dtype)
+        logger.info(
+            "Starting PyTorch optimization: dim={dim}, niter={niter}, device={device}, dtype={dtype}",
+            dim=x0.size,
+            niter=niter,
+            device=self._device,
+            dtype=self._dtype,
+        )
 
         # Store raw (torch-native) objective and constraints
         self._torch_raw_objective = self.objective
@@ -1303,12 +1319,9 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
             # Always also run scipy SLSQP and keep the better result.
             # The AL+LBFGS method is an interior method that can miss
             # boundary optima; scipy's SLSQP handles boundaries natively.
-            minimizer_kwargs, icb = self._scipy_minimize_kwargs(
-                x0, callback=callback, maxiter=maxiter)
-            self._callback = BasinHoppingCallBack(
-                minimizer_kwargs.get('constraints', {}), icb)
-            result_scipy = self._optimization_backend(
-                x0, minimizer_kwargs, niter)
+            minimizer_kwargs, icb = self._scipy_minimize_kwargs(x0, callback=callback, maxiter=maxiter)
+            self._callback = BasinHoppingCallBack(minimizer_kwargs.get("constraints", {}), icb)
+            result_scipy = self._optimization_backend(x0, minimizer_kwargs, niter)
 
             if result_scipy and (result is None or _obj_val(result_scipy) < _obj_val(result)):
                 logger.info("scipy SLSQP found a better solution than AL")
@@ -1316,14 +1329,15 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
         else:
             # ---- scipy fallback path ----
             if x0.size > _MAX_NATIVE_DIM:
-                logger.info("Problem dimension {dim} exceeds native limit {lim}; "
-                            "falling back to scipy SLSQP", dim=x0.size, lim=_MAX_NATIVE_DIM)
+                logger.info(
+                    "Problem dimension {dim} exceeds native limit {lim}; falling back to scipy SLSQP",
+                    dim=x0.size,
+                    lim=_MAX_NATIVE_DIM,
+                )
             else:
                 logger.info("Using scipy SLSQP fallback")
-            minimizer_kwargs, icb = self._scipy_minimize_kwargs(
-                x0, callback=callback, maxiter=maxiter)
-            self._callback = BasinHoppingCallBack(
-                minimizer_kwargs.get('constraints', {}), icb)
+            minimizer_kwargs, icb = self._scipy_minimize_kwargs(x0, callback=callback, maxiter=maxiter)
+            self._callback = BasinHoppingCallBack(minimizer_kwargs.get("constraints", {}), icb)
             result = self._optimization_backend(x0, minimizer_kwargs, niter)
 
         if result:
@@ -1367,10 +1381,7 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
 
         if x0 is not None:
             logger.debug("Shotgun: trying provided initial condition")
-            res = minimize(fun=self.objective,
-                           x0=x0.flatten(),
-                           **minimizer_kwargs
-                           )
+            res = minimize(fun=self.objective, x0=x0.flatten(), **minimizer_kwargs)
             if res.success:
                 results.append(res)
             niter -= 1
@@ -1378,10 +1389,7 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
         ics = (self.construct_random_initial() for _ in range(niter))
         for i, initial in enumerate(ics):
             logger.debug("Shotgun: random initial condition {i}/{niter}", i=i + 1, niter=niter)
-            res = minimize(fun=self.objective,
-                           x0=initial.flatten(),
-                           **minimizer_kwargs
-                           )
+            res = minimize(fun=self.objective, x0=initial.flatten(), **minimizer_kwargs)
             if res.success:
                 results.append(res)
 
@@ -1414,8 +1422,8 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
         feasible = np.array([True for _ in x0])
 
         # Use raw constraints if available, falling back to self.constraints
-        raw_constraints = getattr(self, '_torch_raw_constraints', self.constraints)
-        raw_objective = getattr(self, '_torch_raw_objective', self.objective)
+        raw_constraints = getattr(self, "_torch_raw_constraints", self.constraints)
+        raw_objective = getattr(self, "_torch_raw_objective", self.objective)
 
         # Wrap for scipy (return numpy scalars)
         def _np_obj(x):
@@ -1426,7 +1434,7 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
 
         wrapped_constraints = []
         for const in raw_constraints:
-            _raw_fun = const['fun']
+            _raw_fun = const["fun"]
 
             def _np_const_fun(x, _f=_raw_fun):
                 val = _f(x)
@@ -1434,24 +1442,20 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
                     return float(val.detach().cpu().item())
                 return float(np.asarray(val))
 
-            wrapped_constraints.append({**const, 'fun': _np_const_fun})
+            wrapped_constraints.append({**const, "fun": _np_const_fun})
 
         minimizer_kwargs = {
-            'bounds': Bounds(lb, ub, feasible),
-            'tol': None,
-            'callback': None,
-            'constraints': wrapped_constraints,
+            "bounds": Bounds(lb, ub, feasible),
+            "tol": None,
+            "callback": None,
+            "constraints": wrapped_constraints,
         }
 
         if np.allclose(lb, ub):
             self._optima = x0
             return
 
-        res = minimize(
-            fun=_np_obj,
-            x0=x0,
-            **minimizer_kwargs
-        )
+        res = minimize(fun=_np_obj, x0=x0, **minimizer_kwargs)
 
         if res.success:
             logger.debug("Polishing successful: objective={obj}", obj=res.fun)
@@ -1541,13 +1545,14 @@ class BaseNonConvexTorchOptimizer(BaseTorchOptimizer):
         else:
             res_shotgun = None
 
-        result = basinhopping(func=self.objective,
-                              x0=x0,
-                              minimizer_kwargs=minimizer_kwargs,
-                              niter=niter,
-                              accept_test=accept_test,
-                              callback=self._callback,
-                              )
+        result = basinhopping(
+            func=self.objective,
+            x0=x0,
+            minimizer_kwargs=minimizer_kwargs,
+            niter=niter,
+            accept_test=accept_test,
+            callback=self._callback,
+        )
 
         success, msg = basinhop_status(result)
         logger.info("Basin hopping (PyTorch) result: success={success}, message={msg}", success=success, msg=msg)
@@ -1576,19 +1581,20 @@ class BaseNonConvexTorchOptimizer(BaseTorchOptimizer):
             The result of the optimization. Returns None if the optimization
             failed.
         """
-        if 'constraints' in minimizer_kwargs:
+        if "constraints" in minimizer_kwargs:
             msg = "Differential Evolution can only be used in unconstrained optimization."
             raise OptimizationException(msg)
 
         if niter is None:
             niter = self._default_hops
 
-        result = differential_evolution(func=self.objective,
-                                        bounds=minimizer_kwargs['bounds'],
-                                        maxiter=minimizer_kwargs['options']['maxiter'],
-                                        popsize=niter,
-                                        tol=minimizer_kwargs['options']['ftol'],
-                                        )
+        result = differential_evolution(
+            func=self.objective,
+            bounds=minimizer_kwargs["bounds"],
+            maxiter=minimizer_kwargs["options"]["maxiter"],
+            popsize=niter,
+            tol=minimizer_kwargs["options"]["ftol"],
+        )
 
         if result.success:
             return result
@@ -1615,11 +1621,12 @@ class BaseNonConvexTorchOptimizer(BaseTorchOptimizer):
         if niter is None:
             niter = self._default_hops
 
-        result = shgo(func=self.objective,
-                      bounds=minimizer_kwargs['bounds'],
-                      constraints=minimizer_kwargs['constraints'],
-                      iters=niter,
-                      )
+        result = shgo(
+            func=self.objective,
+            bounds=minimizer_kwargs["bounds"],
+            constraints=minimizer_kwargs["constraints"],
+            iters=niter,
+        )
 
         if result.success:  # pragma: no cover
             return result
@@ -1627,7 +1634,7 @@ class BaseNonConvexTorchOptimizer(BaseTorchOptimizer):
     _optimization_backend = _optimization_basinhopping
 
 
-AuxVar = namedtuple('AuxVar', ['bases', 'bound', 'shape', 'mask', 'size'])
+AuxVar = namedtuple("AuxVar", ["bases", "bound", "shape", "mask", "size"])
 
 
 class BaseAuxVarTorchOptimizer(BaseNonConvexTorchOptimizer):
@@ -1676,14 +1683,14 @@ class BaseAuxVarTorchOptimizer(BaseNonConvexTorchOptimizer):
         self._full_slices = []
         for i, (auxvar, var) in enumerate(zip(self._aux_vars, arvs, strict=True)):
             relevant_vars = {self._n + b for b in auxvar.bases}
-            index = sorted(self._full_vars) + [self._n + a for a in arvs[:i + 1]]
+            index = sorted(self._full_vars) + [self._n + a for a in arvs[: i + 1]]
             var += self._n
             self._full_slices.append(tuple(colon if j in relevant_vars | {var} else None for j in index))
 
         self._slices = []
         for i, (auxvar, var) in enumerate(zip(self._aux_vars, arvs, strict=True)):
             relevant_vars = auxvar.bases
-            index = sorted(self._rvs | self._crvs | set(arvs[:i + 1]))
+            index = sorted(self._rvs | self._crvs | set(arvs[: i + 1]))
             self._slices.append(tuple(colon if j in relevant_vars | {var} else None for j in index))
 
     ###########################################################################
@@ -1882,7 +1889,7 @@ class BaseAuxVarTorchOptimizer(BaseNonConvexTorchOptimizer):
 
         try:
             # if all outcomes are strings, make new variable strings too.
-            ''.join(flatten(alphabets))
+            "".join(flatten(alphabets))
             for bound in self._aux_bounds:
                 alphabets += [(digits + ascii_letters)[:bound]]
             string = True
@@ -1913,14 +1920,13 @@ class BaseAuxVarTorchOptimizer(BaseNonConvexTorchOptimizer):
             for a, b in zip(rvs, mapping[i], strict=True):
                 new_map[a] = b
 
-        mapping = [[new_map.get(i, i) for i in range(len(self._full_shape))
-                                                                 if i not in self._proxy_vars]]
+        mapping = [[new_map.get(i, i) for i in range(len(self._full_shape)) if i not in self._proxy_vars]]
 
         d = d.coalesce(mapping, extract=True)
 
         if string:
             with contextlib.suppress(ditException):
-                d = modify_outcomes(d, lambda o: ''.join(map(str, o)))
+                d = modify_outcomes(d, lambda o: "".join(map(str, o)))
 
         return d
 
@@ -1985,7 +1991,7 @@ class BaseAuxVarTorchOptimizer(BaseNonConvexTorchOptimizer):
             ccs.append(channel_capacity(_to_numpy(channel))[0])
         return ccs
 
-    def _post_process(self, style='entropy', minmax='min', niter=10, maxiter=None):  # pragma: no cover
+    def _post_process(self, style="entropy", minmax="min", niter=10, maxiter=None):  # pragma: no cover
         """
         Find a solution to the minimization with a secondary property.
 
@@ -2010,7 +2016,7 @@ class BaseAuxVarTorchOptimizer(BaseNonConvexTorchOptimizer):
         logger.debug("Post-processing (PyTorch): style={style}, minmax={minmax}", style=style, minmax=minmax)
         entropy = self._entropy(self._arvs)
 
-        sign = +1 if minmax == 'min' else -1
+        sign = +1 if minmax == "min" else -1
 
         def objective_entropy(x):
             """Post-process the entropy."""
@@ -2022,9 +2028,9 @@ class BaseAuxVarTorchOptimizer(BaseNonConvexTorchOptimizer):
             cc = sum(self._channel_capacity(x))
             return sign * cc
 
-        if style == 'channel':
+        if style == "channel":
             objective = objective_channelcapacity
-        elif style == 'entropy':
+        elif style == "entropy":
             objective = self._maybe_compile(objective_entropy)
         else:
             msg = f"Style {style} is not understood."
@@ -2037,12 +2043,15 @@ class BaseAuxVarTorchOptimizer(BaseNonConvexTorchOptimizer):
             Constraint to ensure that the new solution is not worse than that
             found before.
             """
-            obj = (self.objective(x) - true_objective)**2
+            obj = (self.objective(x) - true_objective) ** 2
             return obj
 
-        constraint = [{'type': 'eq',
-                       'fun': constraint_match_objective,
-                       }]
+        constraint = [
+            {
+                "type": "eq",
+                "fun": constraint_match_objective,
+            }
+        ]
 
         # set up required attributes
         try:
@@ -2101,7 +2110,7 @@ def is_mps_available():
     """
     if not TORCH_AVAILABLE:
         return False
-    return hasattr(torch.backends, 'mps') and torch.backends.mps.is_available()
+    return hasattr(torch.backends, "mps") and torch.backends.mps.is_available()
 
 
 def get_best_device():
@@ -2114,9 +2123,7 @@ def get_best_device():
         The device string ('cuda', 'mps', or 'cpu').
     """
     if is_cuda_available():
-        return 'cuda'
+        return "cuda"
     elif is_mps_available():
-        return 'mps'
-    return 'cpu'
-
-
+        return "mps"
+    return "cpu"

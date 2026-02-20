@@ -12,7 +12,7 @@ def test_pid_ig1():
     """
     Test iproj on a generic distribution.
     """
-    d = bivariates['and']
+    d = bivariates["and"]
     pid = PID_IG(d, ((0,), (1,)), (2,))
     assert pid[((0,), (1,))] == pytest.approx(0.08283, abs=1e-4)
     assert pid[((0,),)] == pytest.approx(0.22845, abs=1e-4)
@@ -24,7 +24,7 @@ def test_pid_proj2():
     """
     Test iproj on another generic distribution.
     """
-    d = bivariates['reduced or']
+    d = bivariates["reduced or"]
     pid = PID_IG(d, [[0], [1]], [2])
     assert pid[((0,), (1,))] == pytest.approx(-0.03122, abs=1e-4)
     assert pid[((0,),)] == pytest.approx(0.34250, abs=1e-4)

@@ -2,10 +2,9 @@
 Combinatorial functions.
 """
 
-
 __all__ = (
-    'slots',
-    'unitsum_tuples',
+    "slots",
+    "unitsum_tuples",
 )
 
 
@@ -63,7 +62,7 @@ def unitsum_tuples(n, k, mn, mx):
         t = tuple((seq[i] - seq[i + 1] - shift) for i in range(k))
         # This should be a unitsum tuple.
         s = float(sum(t))
-        assert s > .001
+        assert s > 0.001
         yield tuple(t)
 
         for idx, val in enumerate(seq):  # pragma: no branch

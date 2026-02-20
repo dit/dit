@@ -7,12 +7,12 @@ from ..shannon import conditional_entropy as H
 from ..utils import unitful
 
 __all__ = (
-    'binding_information',
-    'dual_total_correlation',
-    'generalized_dual_total_correlation',
-    'independent_information',
-    'residual_entropy',
-    'variation_of_information',
+    "binding_information",
+    "dual_total_correlation",
+    "generalized_dual_total_correlation",
+    "independent_information",
+    "residual_entropy",
+    "variation_of_information",
 )
 
 
@@ -57,8 +57,7 @@ def dual_total_correlation(dist, rvs=None, crvs=None, rv_mode=None):
     others = lambda rv, rvs: set(set().union(*rvs)) - set(rv)
 
     one = H(dist, set().union(*rvs), crvs, rv_mode=rv_mode)
-    two = sum(H(dist, rv, others(rv, rvs).union(crvs), rv_mode=rv_mode)
-              for rv in rvs)
+    two = sum(H(dist, rv, others(rv, rvs).union(crvs), rv_mode=rv_mode) for rv in rvs)
     B = one - two
 
     return B
@@ -103,8 +102,7 @@ def residual_entropy(dist, rvs=None, crvs=None, rv_mode=None):
 
     others = lambda rv, rvs: set(set().union(*rvs)) - set(rv)
 
-    R = sum(H(dist, rv, others(rv, rvs).union(crvs), rv_mode=rv_mode)
-            for rv in rvs)
+    R = sum(H(dist, rv, others(rv, rvs).union(crvs), rv_mode=rv_mode) for rv in rvs)
 
     return R
 
@@ -149,6 +147,7 @@ def generalized_dual_total_correlation(dist, order, rvs=None, crvs=None, rv_mode
         contain non-existant random variables.
     """
     from ..profiles import ShannonPartition
+
     rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
 
     rvs = {tuple(rv) for rv in rvs}

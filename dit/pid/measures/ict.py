@@ -7,9 +7,7 @@ import numpy as np
 from ...exceptions import ditException
 from ..pid import BaseBivariatePID
 
-__all__ = (
-    'PID_CT',
-)
+__all__ = ("PID_CT",)
 
 
 def i_triangle(d, source_0, source_1, target):

@@ -27,10 +27,10 @@ import numpy as np
 import dit
 
 __all__ = (
-    'cross_entropy',
-    'cross_entropy_pmf',
-    'relative_entropy',
-    'relative_entropy_pmf',
+    "cross_entropy",
+    "cross_entropy_pmf",
+    "relative_entropy",
+    "relative_entropy_pmf",
 )
 
 
@@ -78,10 +78,10 @@ def cross_entropy(d1, d2, pmf_only=True):
     Returns :math:`H(d1, d2)`
 
     """
-    mode = 'asis' if pmf_only else 'dense'
+    mode = "asis" if pmf_only else "dense"
 
-    pmf1 = dit.copypmf(d1, base='linear', mode=mode)
-    pmf2 = dit.copypmf(d2, base='linear', mode=mode)
+    pmf1 = dit.copypmf(d1, base="linear", mode=mode)
+    pmf2 = dit.copypmf(d2, base="linear", mode=mode)
     return -np.nansum(pmf1 * np.log2(pmf2))
 
 

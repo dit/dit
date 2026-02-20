@@ -8,9 +8,7 @@ from ..helpers import normalize_rvs
 from ..utils import unitful
 from .coinformation import coinformation
 
-__all__ = (
-    'interaction_information',
-)
+__all__ = ("interaction_information",)
 
 
 @unitful
@@ -50,7 +48,7 @@ def interaction_information(dist, rvs=None, crvs=None, rv_mode=None):
     """
     rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
 
-    II = (-1)**len(rvs) * coinformation(dist, rvs, crvs, rv_mode)
+    II = (-1) ** len(rvs) * coinformation(dist, rvs, crvs, rv_mode)
 
     if np.isclose(II, 0):
         II = 0.0

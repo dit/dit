@@ -6,9 +6,7 @@ import numpy as np
 
 from ..pid import BasePID
 
-__all__ = (
-    'PID_PM',
-)
+__all__ = ("PID_PM",)
 
 
 class PID_PM(BasePID):
@@ -20,8 +18,7 @@ class PID_PM(BasePID):
 
     @staticmethod
     def _measure(dist, sources, target):
-        """
-        """
+        """ """
         dist = dist.coalesce(sources + (target,))
         source_dists = [dist.marginal([i]) for i, _ in enumerate(sources)]
         source_target_dists = [dist.marginal([i, len(sources)]) for i, _ in enumerate(sources)]
@@ -33,7 +30,9 @@ class PID_PM(BasePID):
         def min_h_s_g_t(outcome):
             t = outcome[-1]
             indexes = [p_s_g_t[0].outcomes.index((t,)) for p_s_g_t in p_s_g_ts]
-            return min(-np.log2(p_s_g_ts[i][1][j][(e,)]) for i, (e, j) in enumerate(zip(outcome[:-1], indexes, strict=True)))
+            return min(
+                -np.log2(p_s_g_ts[i][1][j][(e,)]) for i, (e, j) in enumerate(zip(outcome[:-1], indexes, strict=True))
+            )
 
         r_plus = np.nansum([dist[outcome] * min_h_s(outcome) for outcome in dist.outcomes])
 

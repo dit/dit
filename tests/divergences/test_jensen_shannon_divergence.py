@@ -1,6 +1,7 @@
 """
 Tests for dit.divergences.jensen_shannon_divergence.
 """
+
 import pytest
 
 from dit import Distribution
@@ -19,21 +20,21 @@ from dit.other import renyi_entropy
 
 
 def test_jsd0():
-    """ Test the JSD of a distribution but with weights misspecified."""
+    """Test the JSD of a distribution but with weights misspecified."""
     d1 = Distribution("AB", [0.5, 0.5])
     with pytest.raises(ditException):
         JSD(d1, d1)
 
 
 def test_jsd1():
-    """ Test the JSD of a distribution with itself """
+    """Test the JSD of a distribution with itself"""
     d1 = Distribution("AB", [0.5, 0.5])
     jsd = JSD([d1, d1])
     assert jsd == pytest.approx(0)
 
 
 def test_jsd2():
-    """ Test the JSD with half-overlapping distributions """
+    """Test the JSD with half-overlapping distributions"""
     d1 = Distribution("AB", [0.5, 0.5])
     d2 = Distribution("BC", [0.5, 0.5])
     jsd = JSD([d1, d2])
@@ -41,7 +42,7 @@ def test_jsd2():
 
 
 def test_jsd3():
-    """ Test the JSD with disjoint distributions """
+    """Test the JSD with disjoint distributions"""
     d1 = Distribution("AB", [0.5, 0.5])
     d2 = Distribution("CD", [0.5, 0.5])
     jsd = JSD([d1, d2])
@@ -49,7 +50,7 @@ def test_jsd3():
 
 
 def test_jsd4():
-    """ Test the JSD with half-overlapping distributions with weights """
+    """Test the JSD with half-overlapping distributions with weights"""
     d1 = Distribution("AB", [0.5, 0.5])
     d2 = Distribution("BC", [0.5, 0.5])
     jsd = JSD([d1, d2], [0.25, 0.75])
@@ -57,7 +58,7 @@ def test_jsd4():
 
 
 def test_jsd5():
-    """ Test that JSD fails when more weights than dists are given """
+    """Test that JSD fails when more weights than dists are given"""
     d1 = Distribution("AB", [0.5, 0.5])
     d2 = Distribution("BC", [0.5, 0.5])
     with pytest.raises(ditException):
@@ -65,14 +66,14 @@ def test_jsd5():
 
 
 def test_jsd_pmf1():
-    """ Test the JSD of a distribution with itself """
+    """Test the JSD of a distribution with itself"""
     d1 = [0.5, 0.5]
     jsd = JSD_pmf([d1, d1])
     assert jsd == pytest.approx(0)
 
 
 def test_jsd_pmf2():
-    """ Test the JSD with half-overlapping distributions """
+    """Test the JSD with half-overlapping distributions"""
     d1 = [0.5, 0.5, 0.0]
     d2 = [0.0, 0.5, 0.5]
     jsd = JSD_pmf([d1, d2])
@@ -80,7 +81,7 @@ def test_jsd_pmf2():
 
 
 def test_jsd_pmf3():
-    """ Test the JSD with disjoint distributions """
+    """Test the JSD with disjoint distributions"""
     d1 = [0.5, 0.5, 0.0, 0.0]
     d2 = [0.0, 0.0, 0.5, 0.5]
     jsd = JSD_pmf([d1, d2])
@@ -88,7 +89,7 @@ def test_jsd_pmf3():
 
 
 def test_jsd_pmf4():
-    """ Test the JSD with half-overlapping distributions with weights """
+    """Test the JSD with half-overlapping distributions with weights"""
     d1 = [0.5, 0.5, 0.0]
     d2 = [0.0, 0.5, 0.5]
     jsd = JSD_pmf([d1, d2], [0.25, 0.75])
@@ -96,7 +97,7 @@ def test_jsd_pmf4():
 
 
 def test_jsd_pmf5():
-    """ Test that JSD fails when more weights than dists are given """
+    """Test that JSD fails when more weights than dists are given"""
     d1 = [0.5, 0.5, 0.0]
     d2 = [0.0, 0.5, 0.5]
     with pytest.raises(ditException):
@@ -104,14 +105,14 @@ def test_jsd_pmf5():
 
 
 def test_jsd_pmf2_1():
-    """ Test the JSD of a distribution with itself """
+    """Test the JSD of a distribution with itself"""
     d1 = [0.5, 0.5]
     jsd = jensen_shannon_divergence2(d1, d1)
     assert jsd == pytest.approx(0)
 
 
 def test_plugable():
-    """ Tests for the pluggable form """
+    """Tests for the pluggable form"""
     d1 = Distribution("AB", [0.5, 0.5])
     d2 = Distribution("BC", [0.5, 0.5])
     f = jensen_divergence(renyi_entropy)
@@ -124,7 +125,7 @@ def test_plugable():
 
 
 def test_plugable_fail():
-    """ Tests for the pluggable form """
+    """Tests for the pluggable form"""
     d1 = Distribution("AB", [0.5, 0.5])
     d2 = Distribution("BC", [0.5, 0.5])
     f = jensen_divergence(renyi_entropy)

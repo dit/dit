@@ -10,7 +10,7 @@ from dit.exceptions import InvalidDistribution
 
 
 def test_DtoSD1():
-    outcomes = ['00', '01', '10', '11']
+    outcomes = ["00", "01", "10", "11"]
     pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
     sd = DtoSD(d, False)

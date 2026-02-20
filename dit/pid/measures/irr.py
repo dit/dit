@@ -7,9 +7,7 @@ variables'' by Goodwell & Kumar.
 from ...multivariate import coinformation, entropy
 from ..pid import BaseBivariatePID
 
-__all__ = (
-    'PID_RR',
-)
+__all__ = ("PID_RR",)
 
 
 class PID_RR(BaseBivariatePID):

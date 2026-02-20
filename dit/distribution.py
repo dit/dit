@@ -41,13 +41,10 @@ from .math import approximate_fraction
 from .math import prng as pseudo_random_number_generator
 from .params import ditParams
 
-__all__ = (
-    'BaseDistribution',
-)
+__all__ = ("BaseDistribution",)
 
 
-def prepare_string(dist, digits=None, exact=False, tol=1e-9,
-                   show_mask=False, str_outcomes=False):
+def prepare_string(dist, digits=None, exact=False, tol=1e-9, show_mask=False, str_outcomes=False):
     """
     Prepares a distribution for a string representation.
 
@@ -92,15 +89,15 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9,
         A informative string representing the probability of an outcome.
         This will be 'p(x)' xor 'log p(x)'.
     """
-    colsep = '   '
+    colsep = "   "
 
     # Create outcomes with wildcards, if desired and possible.
     if show_mask:
         if not dist.is_joint():
-            msg = '`show_mask` can be `True` only for joint distributions'
+            msg = "`show_mask` can be `True` only for joint distributions"
             raise ditException(msg)
 
-        wc = show_mask if show_mask not in [True, False] else '*'
+        wc = show_mask if show_mask not in [True, False] else "*"
 
         ctor = dist._outcome_ctor
 
@@ -120,6 +117,7 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9,
 
             e = ctor(e)
             return e
+
         outcomes = map(outcome_wc, dist.outcomes)
     else:
         outcomes = dist.outcomes
@@ -127,14 +125,14 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9,
     # Convert outcomes to strings, if desired and possible.
     if str_outcomes:
         if not dist.is_joint():
-            msg = '`str_outcomes` can be `True` only for joint distributions'
+            msg = "`str_outcomes` can be `True` only for joint distributions"
             raise ditException(msg)
 
         try:
             # First, convert the elements of the outcome to strings.
             outcomes_ = [map(str, outcome) for outcome in outcomes]
             # Now convert the entire outcome to a string
-            outcomes_ = (''.join(o) for o in outcomes_)
+            outcomes_ = ("".join(o) for o in outcomes_)
             # Force the iterators to expand in case there are exceptions.
             outcomes = list(outcomes_)
         except:
@@ -146,7 +144,7 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9,
     max_length = max(map(len, outcomes)) if len(outcomes) else 0
 
     # 1) Convert to linear probabilities, if necessary.
-    d = dist.copy(base='linear') if exact else dist
+    d = dist.copy(base="linear") if exact else dist
 
     # 2) Round, if necessary, possibly after converting to linear probabilities.
     pmf = d.pmf.round(digits) if digits is not None and digits is not False else d.pmf
@@ -155,7 +153,7 @@ def prepare_string(dist, digits=None, exact=False, tol=1e-9,
     if exact:
         pmf = [approximate_fraction(x, tol) for x in pmf]
 
-    pstr = 'log p(x)' if d.is_log() else 'p(x)'
+    pstr = "log p(x)" if d.is_log() else "p(x)"
 
     base = d.get_base()
 
@@ -272,8 +270,8 @@ class BaseDistribution:
         self.prng = pseudo_random_number_generator if prng is None else prng
 
         self._meta = {
-            'is_joint': None,
-            'is_numerical': None,
+            "is_joint": None,
+            "is_numerical": None,
         }
 
     def __contains__(self, outcome):
@@ -298,9 +296,8 @@ class BaseDistribution:
         return len(self.outcomes)
 
     def __repr__(self):
-        """
-        """
-        if ditParams['repr.print']:
+        """ """
+        if ditParams["repr.print"]:
             return self.to_string()
         else:
             return super().__repr__()
@@ -346,6 +343,7 @@ class BaseDistribution:
             When an outcome is not in the sample space.
         """
         from .validate import validate_outcomes
+
         # Provide the actual sample space, not an iterator over it.
         return validate_outcomes(self.outcomes, self._sample_space)  # pylint: disable=no-member
 
@@ -364,6 +362,7 @@ class BaseDistribution:
             When the distribution is not properly normalized.
         """
         from .validate import validate_normalization
+
         v = validate_normalization(self.pmf, self.ops)
         return v
 
@@ -379,9 +378,9 @@ class BaseDistribution:
             then all atoms of the underlying measurable space are returned.
             In this case, its behavior is synonymous with `sample_space()`.
         """
-        mode = 'atoms'
+        mode = "atoms"
         if patoms:
-            mode = 'patoms'
+            mode = "patoms"
 
         for outcome, _ in self.zipped(mode):
             yield outcome
@@ -417,6 +416,7 @@ class BaseDistribution:
         The event space is the powerset of the sample space.
         """
         from dit.utils import powerset
+
         return powerset(list(self.sample_space()))
 
     def get_base(self, numerical=False):
@@ -465,13 +465,13 @@ class BaseDistribution:
         """
         Returns `True` if the distribution values are log probabilities.
         """
-        return self.ops.base != 'linear'
+        return self.ops.base != "linear"
 
     def is_numerical(self):
         """
         Returns `True` if the distribution values are numerical.
         """
-        return self._meta['is_numerical']
+        return self._meta["is_numerical"]
 
     def normalize(self):
         """
@@ -507,6 +507,7 @@ class BaseDistribution:
             The sample(s) drawn from the distribution.
         """
         import dit.math
+
         s = dit.math.sample(self, size, rand, prng)
         return s
 
@@ -585,7 +586,7 @@ class BaseDistribution:
             An HTML version of this distribution.
         """
         if exact is None:
-            exact = ditParams['print.exact']
+            exact = ditParams["print.exact"]
 
         x = prepare_string(self, digits, exact, tol)
         pmf, outcomes, base, colsep, max_length, pstr = x
@@ -598,7 +599,7 @@ class BaseDistribution:
             ("Alphabet", self.alphabet),
             ("Base", base),
         ]
-        infos = ''.join(f"<tr><th>{a}:</th><td>{b}</td></tr>" for a, b in info)
+        infos = "".join(f"<tr><th>{a}:</th><td>{b}</td></tr>" for a, b in info)
         header = f'<table border="1">{infos}</table>'
 
         try:
@@ -608,11 +609,12 @@ class BaseDistribution:
         except AttributeError:
             rv_names = ["x"]
 
-        table_header = '<tr>' + ''.join(f"<th>{a}</th>" for a in rv_names) + f"<th>{pstr}</th></tr>"
-        table_rows = ''.join(
-            '<tr>' + ''.join(f'<td>{_}</td>' for _ in o) + f'<td>{p}</td></tr>' for o, p in
-            zip(outcomes, pmf, strict=True))
-        table = f'<table>{table_header}{table_rows}</table>'
+        table_header = "<tr>" + "".join(f"<th>{a}</th>" for a in rv_names) + f"<th>{pstr}</th></tr>"
+        table_rows = "".join(
+            "<tr>" + "".join(f"<td>{_}</td>" for _ in o) + f"<td>{p}</td></tr>"
+            for o, p in zip(outcomes, pmf, strict=True)
+        )
+        table = f"<table>{table_header}{table_rows}</table>"
 
         output = f'<div><div style="float: left">{header}</div><div style="float: left">{table}</div></div>'
 
@@ -645,29 +647,30 @@ class BaseDistribution:
             A string representation of the distribution.
         """
         from io import StringIO
+
         s = StringIO()
 
         if exact is None:
-            exact = ditParams['print.exact']
+            exact = ditParams["print.exact"]
 
         x = prepare_string(self, digits, exact, tol)
         pmf, outcomes, base, colsep, max_length, pstr = x
 
-        headers = ["Class: ",
-                   "Alphabet: ",
-                   "Base: "]
-        vals = [self.__class__.__name__,
-                self.alphabet,  # pylint: disable=no-member
-                base]
+        headers = ["Class: ", "Alphabet: ", "Base: "]
+        vals = [
+            self.__class__.__name__,
+            self.alphabet,  # pylint: disable=no-member
+            base,
+        ]
 
         L = max(map(len, headers))
         for head, val in zip(headers, vals, strict=True):
             s.write(f"{head.ljust(L)}{val}\n")
         s.write("\n")
 
-        s.write(''.join(['x'.ljust(max_length), colsep, pstr, "\n"]))
+        s.write("".join(["x".ljust(max_length), colsep, pstr, "\n"]))
         for o, p in zip(outcomes, pmf, strict=True):
-            s.write(''.join([o.ljust(max_length), colsep, str(p), "\n"]))
+            s.write("".join([o.ljust(max_length), colsep, str(p), "\n"]))
 
         s.seek(0)
         s = s.read()
@@ -704,8 +707,8 @@ class BaseDistribution:
             Raised if the distribution is improperly normalized.
         """
         mapping = {
-            'outcomes': '_validate_outcomes',
-            'norm': '_validate_normalization',
+            "outcomes": "_validate_outcomes",
+            "norm": "_validate_normalization",
         }
         for kw, method in mapping.items():
             test = kwargs.get(kw, True)
@@ -714,7 +717,7 @@ class BaseDistribution:
 
         return True
 
-    def zipped(self, mode='pmf'):
+    def zipped(self, mode="pmf"):
         """
         Returns an iterator over (outcome, probability) tuples.
 
@@ -732,13 +735,13 @@ class BaseDistribution:
             measure on the probability space. That is, only atoms such that
             P(atom) > 0 are yielded.
         """
-        modes = ['pmf', 'atoms', 'patoms']
+        modes = ["pmf", "atoms", "patoms"]
         if mode not in modes:
-            raise ditException('Invalid mode.')
+            raise ditException("Invalid mode.")
 
-        if mode == 'pmf':
+        if mode == "pmf":
             yield from zip(self.outcomes, self.pmf, strict=True)
-        elif mode == 'atoms':
+        elif mode == "atoms":
             # Then we want to iterate over the sample space.
             #
             # There are many ways to do this, but we need to do it in a way

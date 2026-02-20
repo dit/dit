@@ -10,9 +10,7 @@ from ..cdisthelpers import cdist_array
 from ..exceptions import ditException
 from ..utils import unitful
 
-__all__ = (
-    'channel_capacity',
-)
+__all__ = ("channel_capacity",)
 
 
 def channel_capacity(cdists, marginal=None, rtol=None, atol=None):
@@ -53,12 +51,12 @@ def channel_capacity(cdists, marginal=None, rtol=None, atol=None):
 
     """
     if rtol is None:
-        rtol = dit.ditParams['rtol']
+        rtol = dit.ditParams["rtol"]
     if atol is None:
-        atol = dit.ditParams['atol']
+        atol = dit.ditParams["atol"]
 
     def next_r(p, q):
-        r = (q ** p.T).prod(axis=0)
+        r = (q**p.T).prod(axis=0)
         r /= r.sum()
         return r
 
@@ -86,10 +84,10 @@ def channel_capacity(cdists, marginal=None, rtol=None, atol=None):
     except AttributeError:
         # Build the array for P(Y|X)
         # We need Y dense so that we search the appropriate space.
-        carr = cdist_array(cdists, base='linear', mode='dense')
+        carr = cdist_array(cdists, base="linear", mode="dense")
 
     if marginal and len(marginal) != carr.shape[0]:
-        msg = 'len(mdist) != len(cdists)'
+        msg = "len(mdist) != len(cdists)"
         raise ditException(msg)
 
     cc_iter = next_cc(carr)

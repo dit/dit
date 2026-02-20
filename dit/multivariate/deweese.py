@@ -10,10 +10,10 @@ from ..helpers import normalize_rvs
 from ..utils import extended_partition, partitions, unitful
 
 __all__ = (
-    'deweese_coinformation',
-    'deweese_total_correlation',
-    'deweese_dual_total_correlation',
-    'deweese_caekl_mutual_information',
+    "deweese_coinformation",
+    "deweese_total_correlation",
+    "deweese_dual_total_correlation",
+    "deweese_caekl_mutual_information",
 )
 
 
@@ -31,6 +31,7 @@ def deweese_constructor(mmi):
     deweese_mmi : func
         A DeWeese'd form of `mmi`.
     """
+
     @unitful
     def deweese(dist, rvs=None, crvs=None, return_opt=False, rv_mode=None):
         """
@@ -142,10 +143,12 @@ class BaseDeWeeseOptimizer(BaseAuxVarOptimizer):
         self._construct_auxvars([({rv}, size) for rv, size in zip(self._rvs, self._shape, strict=False)])
 
         if deterministic:
-            self.constraints = [{'type': 'eq',
-                                 'fun': self._constraint_deterministic(),
-                                 },
-                                ]
+            self.constraints = [
+                {
+                    "type": "eq",
+                    "fun": self._constraint_deterministic(),
+                },
+            ]
             self._default_hops *= 2
 
     @classmethod
@@ -158,6 +161,7 @@ class BaseDeWeeseOptimizer(BaseAuxVarOptimizer):
         function : func
             A function which constructs this optimizer and performs the optimization.
         """
+
         @unitful
         def function(dist, rvs=None, crvs=None, niter=None, deterministic=False, rv_mode=None):
             """
@@ -189,10 +193,7 @@ class BaseDeWeeseOptimizer(BaseAuxVarOptimizer):
             val : float
                 The value of the DeWeese {name}.
             """
-            opt = cls(dist, rvs=rvs,
-                            crvs=crvs,
-                            rv_mode=rv_mode,
-                            deterministic=deterministic)
+            opt = cls(dist, rvs=rvs, crvs=crvs, rv_mode=rv_mode, deterministic=deterministic)
             opt.optimize(niter=niter)
             return cls._sign * opt.objective(opt._optima)
 
@@ -207,7 +208,7 @@ class DeWeeseCoInformation(BaseDeWeeseOptimizer):
         I_D[X_0 : ... : X_n | Y] = max_{p(x'_i | x_i)} I[X'_0 : ... : X'_n | Y]
     """
 
-    name = 'coinformation'
+    name = "coinformation"
 
     def _objective(self):
         """
@@ -249,7 +250,7 @@ class DeWeeseTotalCorrelation(BaseDeWeeseOptimizer):
         T_D[X_0 : ... : X_n | Y] = max_{p(x'_i | x_i)} T[X'_0 : ... : X'_n | Y]
     """
 
-    name = 'total correlation'
+    name = "total correlation"
 
     def _objective(self):
         """
@@ -291,7 +292,7 @@ class DeWeeseDualTotalCorrelation(BaseDeWeeseOptimizer):
         B_D[X_0 : ... : X_n | Y] = max_{p(x'_i | x_i)} B[X'_0 : ... : X'_n | Y]
     """
 
-    name = 'dual total correlation'
+    name = "dual total correlation"
 
     def _objective(self):
         """
@@ -333,7 +334,7 @@ class DeWeeseCAEKLMutualInformation(BaseDeWeeseOptimizer):
         J_D[X_0 : ... : X_n | Y] = max_{p(x'_i | x_i)} J[X'_0 : ... : X'_n | Y]
     """
 
-    name = 'caekl mutual information'
+    name = "caekl mutual information"
 
     def _objective(self):
         """

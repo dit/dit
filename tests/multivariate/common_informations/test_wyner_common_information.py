@@ -10,24 +10,27 @@ from dit.multivariate.common_informations.wyner_common_information import WynerC
 from dit.shannon import entropy
 from tests._backends import backends
 
-outcomes = ['0000', '0001', '0110', '0111', '1010', '1011', '1100', '1101']
+outcomes = ["0000", "0001", "0110", "0111", "1010", "1011", "1100", "1101"]
 pmf = [1 / 8] * 8
 xor = D(outcomes, pmf)
 
-sbec = lambda p: D(['00', '0e', '1e', '11'], [(1 - p) / 2, p / 2, p / 2, (1 - p) / 2])
+sbec = lambda p: D(["00", "0e", "1e", "11"], [(1 - p) / 2, p / 2, p / 2, (1 - p) / 2])
 C_sbec = lambda p: 1 if p < 1 / 2 else entropy(p)
 
 
 @pytest.mark.slow
 @pytest.mark.flaky(reruns=5)
-@pytest.mark.parametrize('backend', backends)
-@pytest.mark.parametrize(('rvs', 'crvs', 'val'), [
-    (None, None, 2.0),
-    ([[0], [1], [2]], None, 2.0),
-    ([[0], [1]], [2, 3], 1.0),
-    ([[0], [1]], [2], 1.0),
-    ([[0], [1]], None, 0.0),
-])
+@pytest.mark.parametrize("backend", backends)
+@pytest.mark.parametrize(
+    ("rvs", "crvs", "val"),
+    [
+        (None, None, 2.0),
+        ([[0], [1], [2]], None, 2.0),
+        ([[0], [1]], [2, 3], 1.0),
+        ([[0], [1]], [2], 1.0),
+        ([[0], [1]], None, 0.0),
+    ],
+)
 def test_wci1(rvs, crvs, val, backend):
     """
     Test against known values.
@@ -77,19 +80,19 @@ def test_wci3():
 
 @pytest.fixture
 def x0():
-    return {'x0': None}
+    return {"x0": None}
 
 
 @pytest.mark.slow
 @pytest.mark.flaky(reruns=5)
-@pytest.mark.parametrize('i', range(1, 10))
+@pytest.mark.parametrize("i", range(1, 10))
 def test_wci4(i, x0):
     """
     Test the binary symmetric erasure channel.
     """
     p = i / 10
     wci = WynerCommonInformation(sbec(p))
-    wci.optimize(x0=x0['x0'])
-    x0['x0'] = wci._optima.copy()
+    wci.optimize(x0=x0["x0"])
+    x0["x0"] = wci._optima.copy()
     c = wci.objective(wci._optima)
     assert c == pytest.approx(C_sbec(p), abs=1e-3)

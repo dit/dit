@@ -6,8 +6,8 @@ from ..multivariate import entropy
 from .cross_entropy import cross_entropy
 
 __all__ = (
-    'kullback_leibler_divergence',
-    'relative_entropy',
+    "kullback_leibler_divergence",
+    "relative_entropy",
 )
 
 

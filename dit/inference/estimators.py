@@ -8,9 +8,9 @@ from scipy.special import digamma
 from .counts import get_counts
 
 __all__ = (
-    'entropy_0',
-    'entropy_1',
-    'entropy_2',
+    "entropy_0",
+    "entropy_1",
+    "entropy_2",
 )
 
 
@@ -97,7 +97,7 @@ def entropy_2(data, length=1):
     log2 = np.log(2)
     jss = [np.arange(1, count) for count in counts]
 
-    alt_terms = np.array([(((-1)**js) / js).sum() for js in jss])
+    alt_terms = np.array([(((-1) ** js) / js).sum() for js in jss])
 
     h2 = np.log2(np.e) * (counts / total * (digamma_N - digamma(counts) + log2 + alt_terms)).sum()
 

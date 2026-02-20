@@ -14,14 +14,7 @@ def test_sa1():
     """
     a = np.arange(9).reshape(3, 3)
     sa = segment_axis(a, 2, 1)
-    sa_correct = np.array([[0, 1],
-                           [1, 2],
-                           [2, 3],
-                           [3, 4],
-                           [4, 5],
-                           [5, 6],
-                           [6, 7],
-                           [7, 8]])
+    sa_correct = np.array([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8]])
     assert np.all(sa == sa_correct)
 
 
@@ -30,10 +23,8 @@ def test_sa2():
     Test padding.
     """
     a = np.arange(5)
-    sa = segment_axis(a, 2, 0, axis=0, end='pad', endvalue=7)
-    sa_correct = np.array([[0, 1],
-                           [2, 3],
-                           [4, 7]])
+    sa = segment_axis(a, 2, 0, axis=0, end="pad", endvalue=7)
+    sa_correct = np.array([[0, 1], [2, 3], [4, 7]])
     assert np.all(sa == sa_correct)
 
 
@@ -42,9 +33,8 @@ def test_sa3():
     Test cutting.
     """
     a = np.arange(5)
-    sa = segment_axis(a, 2, 0, end='cut')
-    sa_correct = np.array([[0, 1],
-                           [2, 3]])
+    sa = segment_axis(a, 2, 0, end="cut")
+    sa_correct = np.array([[0, 1], [2, 3]])
     assert np.all(sa == sa_correct)
 
 
@@ -53,10 +43,8 @@ def test_sa4():
     Test wrapping.
     """
     a = np.arange(5)
-    sa = segment_axis(a, 2, 0, end='wrap')
-    sa_correct = np.array([[0, 1],
-                           [2, 3],
-                           [4, 0]])
+    sa = segment_axis(a, 2, 0, end="wrap")
+    sa_correct = np.array([[0, 1], [2, 3], [4, 0]])
     assert np.all(sa == sa_correct)
 
 
@@ -66,7 +54,7 @@ def test_sa5():
     """
     a = np.arange(5)
     with pytest.raises(ValueError, match="Not enough data points to segment array in 'cut' mode; try 'pad' or 'wrap'"):
-        segment_axis(a, 10, 0, end='cut')
+        segment_axis(a, 10, 0, end="cut")
 
 
 def test_sa6():
@@ -75,7 +63,7 @@ def test_sa6():
     """
     a = np.arange(5)
     with pytest.raises(ValueError, match="frames cannot overlap by more than 100%"):
-        segment_axis(a, 2, 3, end='wrap')
+        segment_axis(a, 2, 3, end="wrap")
 
 
 def test_sa7():
@@ -84,7 +72,7 @@ def test_sa7():
     """
     a = np.arange(5)
     with pytest.raises(ValueError, match="overlap must be nonnegative and length must be positive"):
-        segment_axis(a, 2, -1, end='wrap')
+        segment_axis(a, 2, -1, end="wrap")
 
 
 def test_sa8():
@@ -93,4 +81,4 @@ def test_sa8():
     """
     a = np.arange(5)
     with pytest.raises(ValueError, match="is not recognized"):
-        segment_axis(a, 7, 0, end='pants')
+        segment_axis(a, 7, 0, end="pants")

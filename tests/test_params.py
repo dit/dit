@@ -10,28 +10,26 @@ from dit.params import validate_base, validate_boolean, validate_choice, validat
 
 
 def test_validate_boolean1():
-    good = ['t', 'T', 'y', 'Y', 'yes', 'Yes', 'YES', 'on', 'On', 'ON', 'true',
-            'True', 'TRUE', '1', 1, True]
+    good = ["t", "T", "y", "Y", "yes", "Yes", "YES", "on", "On", "ON", "true", "True", "TRUE", "1", 1, True]
     for value in good:
         assert validate_boolean(value)
 
 
 def test_validate_boolean2():
-    bad = ['f', 'F', 'n', 'N', 'no', 'No', 'NO', 'off', 'Off', 'OFF', 'false',
-           'False', 'FALSE', '0', 0, False]
+    bad = ["f", "F", "n", "N", "no", "No", "NO", "off", "Off", "OFF", "false", "False", "FALSE", "0", 0, False]
     for value in bad:
         assert not validate_boolean(value)
 
 
 def test_validate_boolean3():
-    not_valid = ['maybe', 2, 0.5]
+    not_valid = ["maybe", 2, 0.5]
     for value in not_valid:
         with pytest.raises(ValueError, match="Could not convert"):
             validate_boolean(value)
 
 
 def test_validate_float1():
-    good = [0.5, 0, '0.123', 2, inf, nan]
+    good = [0.5, 0, "0.123", 2, inf, nan]
     for value in good:
         val1 = validate_float(value)
         val2 = float(value)
@@ -40,45 +38,45 @@ def test_validate_float1():
 
 
 def test_validate_float2():
-    bad = ['pants', float, []]
+    bad = ["pants", float, []]
     for value in bad:
         with pytest.raises(ValueError, match="(c|C)ould not convert"):
             validate_float(value)
 
 
 def test_validate_base1():
-    good = ['e', 'linear', 0.5, 1.5, 2, 10]
+    good = ["e", "linear", 0.5, 1.5, 2, 10]
     for value in good:
         assert validate_base(value) == value
 
 
 def test_validate_base2():
-    bad = ['nope', -0.5, 0, 1]
+    bad = ["nope", -0.5, 0, 1]
     for value in bad:
         with pytest.raises(InvalidBase):  # noqa: PT011
             validate_base(value)
 
 
 def test_validate_choice1():
-    choices = [0, 1, '2', 3, 'four']
+    choices = [0, 1, "2", 3, "four"]
     for choice in choices:
         assert validate_choice(choice, choices) == choice
 
 
 def test_validate_choice2():
     choices = [0, 1, 2]
-    bads = ['0', '1', '2']
+    bads = ["0", "1", "2"]
     for choice in bads:
         with pytest.raises(ValueError, match="is an invalid specification."):
             validate_choice(choice, choices)
 
 
 def test_validate_text1():
-    for s in ['ascii', 'linechar']:
+    for s in ["ascii", "linechar"]:
         assert validate_text(s) == s
 
 
 def test_validate_text2():
-    for s in ['no', 3]:
+    for s in ["no", 3]:
         with pytest.raises(ValueError, match="is an invalid specification."):
             validate_text(s)

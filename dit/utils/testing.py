@@ -12,9 +12,9 @@ from .. import Distribution
 from .optimization import colon
 
 __all__ = (
-    'distributions',
-    'distribution_structures',
-    'markov_chains',
+    "distributions",
+    "distribution_structures",
+    "markov_chains",
 )
 
 

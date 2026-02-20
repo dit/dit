@@ -8,7 +8,7 @@ import tempfile
 
 from dit.utils import cd, named_tempfile, tempdir
 
-root = 'C:\\' if sys.platform in ('win32', 'cygwin') else '/'
+root = "C:\\" if sys.platform in ("win32", "cygwin") else "/"
 
 
 def test_cd():
@@ -32,7 +32,7 @@ def test_named_tempfile1():
     with named_tempfile() as tempfile:
         name = tempfile.name
         assert os.path.isfile(name)
-        tempfile.write(b'hello')
+        tempfile.write(b"hello")
         tempfile.close()
         assert os.path.isfile(name)
     assert not os.path.isfile(name)
@@ -44,7 +44,7 @@ def test_named_tempfile2():
     with named_tempfile(delete=True) as tempfile:
         name = tempfile.name
         assert os.path.isfile(name)
-        tempfile.write(b'hello')
+        tempfile.write(b"hello")
         tempfile.close()
         assert os.path.isfile(name)
     assert not os.path.isfile(name)

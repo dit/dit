@@ -10,14 +10,11 @@ from ...multivariate import total_correlation as T
 from ...utils import extended_partition, partitions
 from ..pid import BasePID
 
-__all__ = (
-    'PID_RAV',
-)
+__all__ = ("PID_RAV",)
 
 
 def corex_o_information(dist):
-    """
-    """
+    """ """
     n = dist.outcome_length()
     rvs = [[i] for i in range(n - 2)]
     crvs = [n - 2, n - 1]

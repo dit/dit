@@ -9,9 +9,7 @@ from ..math.misc import combinations as nCk
 from ..shannon import conditional_entropy as H
 from ..utils import unitful
 
-__all__ = (
-    'tse_complexity',
-)
+__all__ = ("tse_complexity",)
 
 
 @unitful

@@ -16,8 +16,8 @@ from ..utils import flatten, powerset
 from .pid import BasePID, _transform
 
 __all__ = (
-    'PED_CS',
-    'h_cs',
+    "PED_CS",
+    "h_cs",
 )
 
 

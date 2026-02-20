@@ -20,7 +20,7 @@ from tests._backends import backends
 eps = 1e-3
 
 
-@pytest.mark.parametrize('backend', backends)
+@pytest.mark.parametrize("backend", backends)
 @settings(max_examples=5)
 @given(dist=distributions(alphabets=(2,) * 3))
 def test_hierarchy(dist, backend):

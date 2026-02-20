@@ -14,14 +14,14 @@ def test_fraction():
     numerators = range(10)
     denominator = 10
     xvals = [x / denominator for x in numerators]
-    af = lambda x: approximate_fraction(x, .01)
+    af = lambda x: approximate_fraction(x, 0.01)
     yvals = map(af, xvals)
     yvals_ = (Fraction(x, denominator) for x in numerators)
     for y, y_ in zip(yvals, yvals_, strict=True):
         assert y == y_
 
     # Negative values
-    af = lambda x: approximate_fraction(-x, .01)
+    af = lambda x: approximate_fraction(-x, 0.01)
     yvals = map(af, xvals)
     yvals_ = (Fraction(-x, denominator) for x in numerators)
     for y, y_ in zip(yvals, yvals_, strict=True):
@@ -30,11 +30,11 @@ def test_fraction():
 
 def test_fraction_zero():
     """Convert float to fraction when closer to 0."""
-    x = .1
-    y = approximate_fraction(x, .2)
+    x = 0.1
+    y = approximate_fraction(x, 0.2)
     y_ = Fraction(0, 1)
     assert y == y_
-    y = approximate_fraction(-x, .2)
+    y = approximate_fraction(-x, 0.2)
     assert y == -y_
 
 

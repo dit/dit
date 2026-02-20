@@ -7,14 +7,13 @@ from .one_way_skar import one_way_skar
 from .secrecy_capacity import secrecy_capacity
 
 __all__ = (
-    'necessary_intrinsic_mutual_information',
-    'secrecy_capacity_skar',
+    "necessary_intrinsic_mutual_information",
+    "secrecy_capacity_skar",
 )
 
 
 @unitful
-def secrecy_capacity_skar(dist, rvs=None, crvs=None, rv_mode=None,
-                          niter=None, bound_u=None, backend='numpy'):
+def secrecy_capacity_skar(dist, rvs=None, crvs=None, rv_mode=None, niter=None, bound_u=None, backend="numpy"):
     """
     The rate at which X and Y can agree upon a key with Z eavesdropping,
     and no public communication.
@@ -48,17 +47,15 @@ def secrecy_capacity_skar(dist, rvs=None, crvs=None, rv_mode=None,
     sc : float
         The secrecy capacity.
     """
-    a = secrecy_capacity(dist, rvs[0], rvs[1], crvs, rv_mode=rv_mode,
-                         niter=niter, bound_u=bound_u, backend=backend)
-    b = secrecy_capacity(dist, rvs[1], rvs[0], crvs, rv_mode=rv_mode,
-                         niter=niter, bound_u=bound_u, backend=backend)
+    a = secrecy_capacity(dist, rvs[0], rvs[1], crvs, rv_mode=rv_mode, niter=niter, bound_u=bound_u, backend=backend)
+    b = secrecy_capacity(dist, rvs[1], rvs[0], crvs, rv_mode=rv_mode, niter=niter, bound_u=bound_u, backend=backend)
     return max([a, b])
 
 
 @unitful
-def necessary_intrinsic_mutual_information(dist, rvs, crvs, rv_mode=None,
-                                           niter=None, bound_u=None,
-                                           bound_v=None, backend='numpy'):
+def necessary_intrinsic_mutual_information(
+    dist, rvs, crvs, rv_mode=None, niter=None, bound_u=None, bound_v=None, backend="numpy"
+):
     """
     Compute a non-trivial lower bound on secret key agreement rate.
 
@@ -94,11 +91,11 @@ def necessary_intrinsic_mutual_information(dist, rvs, crvs, rv_mode=None,
     nimi : float
         The necessary intrinsic mutual information.
     """
-    a = one_way_skar(dist, rvs[0], rvs[1], crvs, rv_mode=rv_mode,
-                     niter=niter, bound_u=bound_u, bound_v=bound_v,
-                     backend=backend)
-    b = one_way_skar(dist, rvs[1], rvs[0], crvs, rv_mode=rv_mode,
-                     niter=niter, bound_u=bound_u, bound_v=bound_v,
-                     backend=backend)
+    a = one_way_skar(
+        dist, rvs[0], rvs[1], crvs, rv_mode=rv_mode, niter=niter, bound_u=bound_u, bound_v=bound_v, backend=backend
+    )
+    b = one_way_skar(
+        dist, rvs[1], rvs[0], crvs, rv_mode=rv_mode, niter=niter, bound_u=bound_u, bound_v=bound_v, backend=backend
+    )
 
     return max([a, b])

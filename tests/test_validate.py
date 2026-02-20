@@ -72,7 +72,7 @@ def test_validate_probabilities():
 
 
 def test_validate_sequence():
-    x = '101'
+    x = "101"
     assert v.validate_sequence(x)
     x = 3
     with pytest.raises(dit.exceptions.ditException):
@@ -82,20 +82,20 @@ def test_validate_sequence():
 def test_validate_outcome_class():
     x = [1, 2, 3]
     assert v.validate_outcome_class(x)
-    x = [1, 2, '3']
+    x = [1, 2, "3"]
     with pytest.raises(dit.exceptions.ditException):
         v.validate_outcome_class(x)
 
 
 def test_validate_outcome_length():
     # Is a sequence
-    x = ['1', '2', '3']
+    x = ["1", "2", "3"]
     assert v.validate_outcome_length(x)
     # Not a sequence
-    x = ['1', '2', 3]
+    x = ["1", "2", 3]
     with pytest.raises(dit.exceptions.ditException):
         v.validate_outcome_length(x)
     # Unequal lengths
-    x = ['1', '2', '33']
+    x = ["1", "2", "33"]
     with pytest.raises(dit.exceptions.ditException):
         v.validate_outcome_length(x)

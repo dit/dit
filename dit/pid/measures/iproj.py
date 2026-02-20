@@ -10,9 +10,7 @@ from ...divergences.pmf import relative_entropy
 from ...exceptions import ditException
 from ..pid import BaseBivariatePID
 
-__all__ = (
-    'PID_Proj',
-)
+__all__ = ("PID_Proj",)
 
 
 class MinDKLOptimizer:
@@ -85,15 +83,17 @@ class MinDKLOptimizer:
 
         bounds = [(0, 1)] * x0.size
 
-        res = minimize(fun=self.objective,
-                       x0=x0,
-                       method='L-BFGS-B',
-                       bounds=bounds,
-                       options={'maxiter': 1000,
-                                'ftol': 1e-7,
-                                'eps': 1.4901161193847656e-08,
-                                },
-                       )
+        res = minimize(
+            fun=self.objective,
+            x0=x0,
+            method="L-BFGS-B",
+            bounds=bounds,
+            options={
+                "maxiter": 1000,
+                "ftol": 1e-7,
+                "eps": 1.4901161193847656e-08,
+            },
+        )
 
         if not res.success:  # pragma: no cover
             msg = f"Optimization failed: {res.message}"

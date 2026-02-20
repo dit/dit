@@ -7,8 +7,8 @@ from itertools import product
 from .. import Distribution
 
 __all__ = (
-    'giant_bit',
-    'jeff',
+    "giant_bit",
+    "jeff",
 )
 
 
@@ -52,6 +52,6 @@ def jeff(n):
         The JEFF distribution with `n` inputs.
     """
     xs = list(product((0, 1), repeat=n))
-    prob = lambda x, y: ((1 - y) + ((-1)**(1 + y)) * sum(x) / n) / 2**n
-    dist = {''.join(map(str, x + (y,))): prob(x, y) for x, y in product(xs, (0, 1))}
+    prob = lambda x, y: ((1 - y) + ((-1) ** (1 + y)) * sum(x) / n) / 2**n
+    dist = {"".join(map(str, x + (y,))): prob(x, y) for x, y in product(xs, (0, 1))}
     return Distribution(dist)

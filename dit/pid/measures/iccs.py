@@ -9,9 +9,7 @@ from ...algorithms import maxent_dist
 from ...utils import flatten, powerset
 from ..pid import BasePID
 
-__all__ = (
-    'PID_CCS',
-)
+__all__ = ("PID_CCS",)
 
 
 class PID_CCS(BasePID):
@@ -78,9 +76,17 @@ class PID_CCS(BasePID):
         target_dist = sub_dists[(rvs[-1],)]
         joint_pmis = {e: np.log2(d[e] / (sources_dist[e[:-1]] * target_dist[(e[-1],)])) for e in d.outcomes}
 
-        coinfos = {e: np.log2(np.prod(
-            [sub_dists[sub_rv][tuple(e[i] for i in flatten(sub_rv))] ** ((-1) ** len(sub_rv)) for sub_rv in sub_rvs]))
-                for e in d.outcomes}
+        coinfos = {
+            e: np.log2(
+                np.prod(
+                    [
+                        sub_dists[sub_rv][tuple(e[i] for i in flatten(sub_rv))] ** ((-1) ** len(sub_rv))
+                        for sub_rv in sub_rvs
+                    ]
+                )
+            )
+            for e in d.outcomes
+        }
 
         # fix the sign of things close to zero
         for pmi in pmis.values():
@@ -91,8 +97,11 @@ class PID_CCS(BasePID):
             if np.isclose(val, 0.0):
                 coinfos[e] = 0.0
 
-        i = sum(d[e] * coinfos[e] for e in d.outcomes if
-                all(np.sign(coinfos[e]) == np.sign(pmi[tuple(e[i] for i in marg)]) for marg, pmi in pmis.items()) \
-                and np.sign(coinfos[e]) == np.sign(joint_pmis[e]))
+        i = sum(
+            d[e] * coinfos[e]
+            for e in d.outcomes
+            if all(np.sign(coinfos[e]) == np.sign(pmi[tuple(e[i] for i in marg)]) for marg, pmi in pmis.items())
+            and np.sign(coinfos[e]) == np.sign(joint_pmis[e])
+        )
 
         return i

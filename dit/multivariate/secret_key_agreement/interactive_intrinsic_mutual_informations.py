@@ -8,12 +8,11 @@ from ...algorithms import BaseAuxVarOptimizer
 from ...utils import unitful
 from .._backend import _make_backend_subclass
 
-__all__ = (
-    'interactive_intrinsic_mutual_information',
-)
+__all__ = ("interactive_intrinsic_mutual_information",)
 
 
 # ── Mixin (backend-agnostic logic) ───────────────────────────────────────
+
 
 class InteractiveSKARMixin:
     """
@@ -66,10 +65,9 @@ class InteractiveSKARMixin:
 
     @staticmethod
     def bound(i, x, y):
-        """
-        """
+        """ """
         i += 1
-        return x**(i // 2 + i % 2) * y**(i // 2)
+        return x ** (i // 2 + i % 2) * y ** (i // 2)
 
     def _objective(self):
         """
@@ -84,8 +82,20 @@ class InteractiveSKARMixin:
         """
         arvs = sorted(self._arvs)
 
-        evens = [(self._conditional_mutual_information(self._y, {arvs[i]}, set(arvs[:i])), self._conditional_mutual_information(self._crvs, {arvs[i]}, set(arvs[:i]))) for i in range(0, self._rounds, 2)]
-        odds = [(self._conditional_mutual_information(self._x, {arvs[i]}, set(arvs[:i])), self._conditional_mutual_information(self._crvs, {arvs[i]}, set(arvs[:i]))) for i in range(1, self._rounds, 2)]
+        evens = [
+            (
+                self._conditional_mutual_information(self._y, {arvs[i]}, set(arvs[:i])),
+                self._conditional_mutual_information(self._crvs, {arvs[i]}, set(arvs[:i])),
+            )
+            for i in range(0, self._rounds, 2)
+        ]
+        odds = [
+            (
+                self._conditional_mutual_information(self._x, {arvs[i]}, set(arvs[:i])),
+                self._conditional_mutual_information(self._crvs, {arvs[i]}, set(arvs[:i])),
+            )
+            for i in range(1, self._rounds, 2)
+        ]
         terms = [term for term in chain.from_iterable(zip_longest(evens, odds)) if term]
 
         def objective(self, x):
@@ -115,6 +125,7 @@ class InteractiveSKARMixin:
 
 # ── Backward-compatible composed class (numpy backend) ────────────────────
 
+
 class InteractiveSKAR(InteractiveSKARMixin, BaseAuxVarOptimizer):
     """
     Compute a lower bound on the secret key agreement rate based on interactive
@@ -122,14 +133,14 @@ class InteractiveSKAR(InteractiveSKARMixin, BaseAuxVarOptimizer):
 
     Uses the default NumPy / SciPy optimization backend.
     """
+
     pass
 
 
 @unitful
-def interactive_intrinsic_mutual_information(dist, rvs=None, crvs=None,
-                                             rounds=2, bound_func=None,
-                                             niter=None, rv_mode=None,
-                                             backend='numpy'):
+def interactive_intrinsic_mutual_information(
+    dist, rvs=None, crvs=None, rounds=2, bound_func=None, niter=None, rv_mode=None, backend="numpy"
+):
     """
     Compute a lower bound on the secret key agreement rate based on
     interactive communication.
@@ -165,10 +176,9 @@ def interactive_intrinsic_mutual_information(dist, rvs=None, crvs=None,
         The lower bound.
     """
     actual_cls = _make_backend_subclass(InteractiveSKAR, backend)
-    iskar = actual_cls(dist, rv_x=rvs[0], rv_y=rvs[1], rv_z=crvs,
-                       rounds=rounds, bound_func=bound_func, rv_mode=rv_mode)
+    iskar = actual_cls(dist, rv_x=rvs[0], rv_y=rvs[1], rv_z=crvs, rounds=rounds, bound_func=bound_func, rv_mode=rv_mode)
     iskar.optimize(niter=niter)
     val = iskar.objective(iskar._optima)
-    val = float(val.detach().cpu().item()) if hasattr(val, 'detach') else float(val)
+    val = float(val.detach().cpu().item()) if hasattr(val, "detach") else float(val)
 
     return -val

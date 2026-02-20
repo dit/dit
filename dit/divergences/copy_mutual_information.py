@@ -5,9 +5,7 @@ The copy mutual information, as defined by Kolchinsky & Corominas-Murtra.
 from ..utils import unitful
 from .pmf import relative_entropy
 
-__all__ = (
-    'copy_mutual_information',
-)
+__all__ = ("copy_mutual_information",)
 
 
 def binary_kullback_leibler_divergence(p, q):
@@ -85,4 +83,7 @@ def copy_mutual_information(dist, X, Y, rv_mode=None):
     """
     p_Y = dist.marginal(Y, rv_mode=rv_mode)
     marg, cdists = dist.condition_on(X, rvs=Y, rv_mode=rv_mode)
-    return sum(marg[x] * specific_copy_mutual_information(cdist, p_Y, x) for x, cdist in zip(marg.outcomes, cdists, strict=True))
+    return sum(
+        marg[x] * specific_copy_mutual_information(cdist, p_Y, x)
+        for x, cdist in zip(marg.outcomes, cdists, strict=True)
+    )

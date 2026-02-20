@@ -10,7 +10,7 @@ from dit.math.ops import LinearOperations, LogOperations, exp_func, get_ops, log
 
 
 def test_get_ops():
-    assert isinstance(get_ops('linear'), LinearOperations)
+    assert isinstance(get_ops("linear"), LinearOperations)
     assert isinstance(get_ops(2), LogOperations)
 
 
@@ -34,12 +34,7 @@ class TestLinear:
         assert np.allclose(X, Z)
 
     def test_add_reduce(self):
-        X = np.array([[0, 0, 0],
-                      [0, 1, 2],
-                      [1, 1, 1],
-                      [-1, 0, 1],
-                      [2, 0, -2],
-                      [-1, -1, -1]])
+        X = np.array([[0, 0, 0], [0, 1, 2], [1, 1, 1], [-1, 0, 1], [2, 0, -2], [-1, -1, -1]])
         Y = np.array([0, 3, 3, 0, 0, -3])
         for x, y in zip(X, Y, strict=True):
             assert self.ops.add_reduce(x) == pytest.approx(y)
@@ -130,7 +125,7 @@ class TestLog2:
         prods = self.ops.log(prods)
         nums = self.ops.log(nums)
         for i, p in enumerate(prods):
-            assert np.allclose(self.ops.mult_reduce(nums[:i + 1]), p)
+            assert np.allclose(self.ops.mult_reduce(nums[: i + 1]), p)
         assert np.allclose(self.ops.mult_reduce(np.array([])), self.ops.one)
 
     def test_normalize(self):
@@ -149,7 +144,7 @@ class TestLog3(TestLog2):
 
 class TestLogE(TestLog2):
     def setup_class(self):
-        self.ops = LogOperations('e')
+        self.ops = LogOperations("e")
 
 
 class TestLogHalf(TestLog2):
@@ -157,7 +152,7 @@ class TestLogHalf(TestLog2):
         self.ops = LogOperations(0.5)
 
 
-@pytest.mark.parametrize('base', ['pants', -1, 0, 1])
+@pytest.mark.parametrize("base", ["pants", -1, 0, 1])
 def test_exp_func1(base):
     with pytest.raises(InvalidBase):
         exp_func(base)
@@ -168,7 +163,7 @@ def test_exp_func2():
     assert np.allclose([0.5**1, 0.5**2, 0.5**3], ops.exp([1, 2, 3]))
 
 
-@pytest.mark.parametrize('base', ['pants', -1, 0, 1])
+@pytest.mark.parametrize("base", ["pants", -1, 0, 1])
 def test_log_func1(base):
     with pytest.raises(InvalidBase):
         log_func(base)

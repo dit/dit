@@ -29,9 +29,7 @@ from ...algorithms.convex_maximization import maximize_convex_function
 from ...shannon import mutual_information
 from ..pid import BasePID
 
-__all__ = (
-    'PID_Prec',
-)
+__all__ = ("PID_Prec",)
 
 
 class PID_Prec(BasePID):
@@ -75,12 +73,12 @@ class PID_Prec(BasePID):
         """
         pjoint = d.coalesce(list(sources) + [target])
         target_rvndx = len(pjoint.rvs) - 1
-        pY = pjoint.marginal([target_rvndx], rv_mode='indices')
+        pY = pjoint.marginal([target_rvndx], rv_mode="indices")
         probs_y = np.array([pY[y] for y in pjoint.alphabet[target_rvndx]])
         n_y = len(pY)
 
         if not (n_q is None or (isinstance(n_q, int) and n_q >= 1)):
-            raise Exception('Parameter n_q should be None or positive integer')
+            raise Exception("Parameter n_q should be None or positive integer")
 
         if n_y <= 1 or n_q == 1:
             # Trivial case where target or redundancy has a single outcome, redundancy has to be 0
@@ -95,8 +93,9 @@ class PID_Prec(BasePID):
 
         if n_q is None:
             # Calculate the maximum number of outcomes we will require for Q, per Theorem A1
-            n_q = sum([len(alphabet) - 1 for rvndx, alphabet in enumerate(pjoint.alphabet)
-                                    if rvndx != target_rvndx]) + 1
+            n_q = (
+                sum([len(alphabet) - 1 for rvndx, alphabet in enumerate(pjoint.alphabet) if rvndx != target_rvndx]) + 1
+            )
 
         # Iterate over all the random variables (R.V.s): i.e., all the sources + the target
         for rvndx, _rv in enumerate(pjoint.rvs):
@@ -104,7 +103,7 @@ class PID_Prec(BasePID):
 
             mP = pjoint.marginal([rvndx])  # the marginal distribution over the current R.V.
             if len(mP._outcomes_index) != len(pjoint.alphabet[rvndx]):
-                raise Exception('All marginals should have full support (to proceed, drop outcomes with 0 probability)')
+                raise Exception("All marginals should have full support (to proceed, drop outcomes with 0 probability)")
 
             # Iterate over outcomes of current R.V.
             for v_ix, _v in enumerate(pjoint.alphabet[rvndx]):
@@ -146,11 +145,17 @@ class PID_Prec(BasePID):
                 continue
 
             # Compute joint marginal of target Y and source X_rvndx
-            pYSource = pjoint.marginal([rvndx, target_rvndx,], rv_mode='indices')
+            pYSource = pjoint.marginal(
+                [
+                    rvndx,
+                    target_rvndx,
+                ],
+                rv_mode="indices",
+            )
             for q in range(n_q):
                 for y_ix, y in enumerate(pjoint.alphabet[target_rvndx]):
                     z = np.zeros(num_vars)
-                    cur_marg = 0.
+                    cur_marg = 0.0
                     for x_ix, x in enumerate(pjoint.alphabet[rvndx]):
                         pXY = pYSource[pYSource._outcome_ctor((x, y))]
                         cur_marg += pXY
@@ -172,7 +177,7 @@ class PID_Prec(BasePID):
         def objective(x):  # efficient calculation of mutual information
             # Map solution vector x to joint distribution over Q and Y
             pQY = x.dot(mul_mx).reshape((n_q, n_y))
-            pQY += 1e-12   # Remove small negative values that may appear due to numerical issues
+            pQY += 1e-12  # Remove small negative values that may appear due to numerical issues
             probs_q = pQY.sum(axis=1)
             H_YgQ = entr(pQY / probs_q[:, None]).sum(axis=1).dot(probs_q)
             v = (H_Y - H_YgQ) / ln2
@@ -183,18 +188,22 @@ class PID_Prec(BasePID):
         # The following uses ppl to turn our system of linear inequalities into a
         # set of extreme points of the corresponding polytope. It then calls
         # objective on each extreme point
-        x_opt, v_opt = maximize_convex_function(f=objective,
-            A_eq=np.array(A_eq), b_eq=np.array(b_eq),
-            A_ineq=np.array(A_ineq), b_ineq=np.array(b_ineq))
+        x_opt, v_opt = maximize_convex_function(
+            f=objective, A_eq=np.array(A_eq), b_eq=np.array(b_eq), A_ineq=np.array(A_ineq), b_ineq=np.array(b_ineq)
+        )
 
         # Return mutual information I(Q;Y) and solution information
         sol = {}
-        sol['p(Q,Y)'] = x_opt.dot(mul_mx).reshape((n_q, n_y))
+        sol["p(Q,Y)"] = x_opt.dot(mul_mx).reshape((n_q, n_y))
 
         # Compute conditional distributions of Q given each source X_i
         for rvndx in range(len(pjoint.rvs) - 1):
-            pX = pjoint.marginal([rvndx,])
-            cK = f'p(Q|X{rvndx})'
+            pX = pjoint.marginal(
+                [
+                    rvndx,
+                ]
+            )
+            cK = f"p(Q|X{rvndx})"
             sol[cK] = np.zeros((n_q, len(pX.alphabet[0])))
             for (q, v_ix), k in variablesQgiven[rvndx].items():
                 sol[cK][q, v_ix] = x_opt[k]

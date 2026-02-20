@@ -14,8 +14,8 @@ from tests._backends import backends
 
 
 @pytest.mark.skip(reason="Calculation of RIMI is prohibitively slow.")
-@pytest.mark.parametrize('backend', backends)
-@pytest.mark.parametrize(('dist', 'val'), [(intrinsic_1, 0.0), (intrinsic_2, 1.0), (intrinsic_3, 1.0)])
+@pytest.mark.parametrize("backend", backends)
+@pytest.mark.parametrize(("dist", "val"), [(intrinsic_1, 0.0), (intrinsic_2, 1.0), (intrinsic_3, 1.0)])
 def test_1(dist, val, backend):
     """
     Test against known values.
@@ -25,8 +25,8 @@ def test_1(dist, val, backend):
 
 
 @pytest.mark.skip(reason="Calculation of RIMI is prohibitively slow.")
-@pytest.mark.parametrize('backend', backends)
-@pytest.mark.parametrize(('dist', 'val'), [(intrinsic_1, 0.0), (intrinsic_2, 1.0), (intrinsic_3, 1.0)])
+@pytest.mark.parametrize("backend", backends)
+@pytest.mark.parametrize(("dist", "val"), [(intrinsic_1, 0.0), (intrinsic_2, 1.0), (intrinsic_3, 1.0)])
 def test_2(dist, val, backend):
     """
     Test against known values.
@@ -36,8 +36,8 @@ def test_2(dist, val, backend):
 
 
 @pytest.mark.skip(reason="Calculation of RIMI is prohibitively slow.")
-@pytest.mark.parametrize('backend', backends)
-@pytest.mark.parametrize(('dist', 'val'), [(intrinsic_1, 0.0), (intrinsic_2, 1.0), (intrinsic_3, 1.0)])
+@pytest.mark.parametrize("backend", backends)
+@pytest.mark.parametrize(("dist", "val"), [(intrinsic_1, 0.0), (intrinsic_2, 1.0), (intrinsic_3, 1.0)])
 def test_3(dist, val, backend):
     """
     Test against known values.

@@ -8,9 +8,7 @@ import numpy as np
 
 from ..pid import BasePID
 
-__all__ = (
-    'PID_SX',
-)
+__all__ = ("PID_SX",)
 
 
 class PID_SX(BasePID):
@@ -25,8 +23,7 @@ class PID_SX(BasePID):
 
     @staticmethod
     def _measure(dist, sources, target):
-        """
-        """
+        """ """
 
         dist_marg = dist.marginalize(target)
         dist_target = dist.marginal(target)
@@ -35,7 +32,9 @@ class PID_SX(BasePID):
             # sum over all outcomes where one of the sets of sources in "sources" is equal to the corresponding elements in outcome
             mask = np.zeros(len(dist.outcomes), dtype=bool)
             for var_set in var_sets:
-                mask |= np.array([all(dist.outcomes[rlz][i] == outcome[i] for i in var_set) for rlz in range(len(dist.outcomes))])
+                mask |= np.array(
+                    [all(dist.outcomes[rlz][i] == outcome[i] for i in var_set) for rlz in range(len(dist.outcomes))]
+                )
             return np.sum(dist.pmf, where=mask)
 
         def i_sx_plus(outcome):
@@ -44,7 +43,10 @@ class PID_SX(BasePID):
         I_sx_plus = np.nansum([dist_marg[outcome] * i_sx_plus(outcome) for outcome in dist_marg.outcomes])
 
         def i_sx_minus(outcome):
-            return -np.log2(prob_union(dist, outcome, tuple(s + target for s in sources)) / dist_target[tuple(outcome[t] for t in target)])
+            return -np.log2(
+                prob_union(dist, outcome, tuple(s + target for s in sources))
+                / dist_target[tuple(outcome[t] for t in target)]
+            )
 
         I_sx_minus = np.nansum([dist[outcome] * i_sx_minus(outcome) for outcome in dist.outcomes])
 

@@ -21,9 +21,9 @@ from .frankwolfe import frank_wolfe
 from .optutil import Bunch, CVXOPT_Template, as_full_rank, op_runner
 
 __all__ = (
-    'unique_informations',
-    'k_informations',
-    'k_synergy',
+    "unique_informations",
+    "k_informations",
+    "k_synergy",
 )
 
 
@@ -96,7 +96,7 @@ def marginal_constraints(dist, k, normalization=True, source_marginal=False):  #
     For unique information, `k = 2` is used, but we allow more general constraints.
     """
     assert dist.is_dense()
-    assert dist.get_base() == 'linear'
+    assert dist.get_base() == "linear"
 
     pmf = dist.pmf
 
@@ -210,7 +210,7 @@ def extra_constraints(dist, k):
        :math:`x_i`.
     """
     assert dist.is_dense()
-    assert dist.get_base() == 'linear'
+    assert dist.get_base() == "linear"
 
     d = get_abstract_dist(dist)
     n_variables = d.n_variables
@@ -315,12 +315,13 @@ def extra_constraints(dist, k):
         fixed_values=fixed_values,
         fixed_nonzeros=fixed_nonzeros,
         zeros=zeros,
-        nonzeros=nonzeros)
+        nonzeros=nonzeros,
+    )
 
     return variables
 
 
-@removals.remove(message="Please see dit.pid.PID_BROJA.", version='1.0.1')
+@removals.remove(message="Please see dit.pid.PID_BROJA.", version="1.0.1")
 class MaximumConditionalEntropy(CVXOPT_Template):
     """
     An optimizer for the unique information.
@@ -338,9 +339,19 @@ class MaximumConditionalEntropy(CVXOPT_Template):
         Quantifying Unique Information. Entropy 2014, 16, 2161-2183.
     """
 
-    def __init__(self, dist, sources, target, k=2, rv_mode=None,
-                 extra_constraints=True, source_marginal=False, tol=None,
-                 prng=None, verbose=None):
+    def __init__(
+        self,
+        dist,
+        sources,
+        target,
+        k=2,
+        rv_mode=None,
+        extra_constraints=True,
+        source_marginal=False,
+        tol=None,
+        prng=None,
+        verbose=None,
+    ):
         """
         Initialize an optimizer for the partial information framework.
 
@@ -387,7 +398,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
             For a bit less, set this to `logging.ERROR`, or perhaps 100.
 
         """
-        self.logger = basic_logger('dit.pid_broja', verbose)
+        self.logger = basic_logger("dit.pid_broja", verbose)
 
         # Store the original parameters in case we want to construct an
         # "uncoalesced" distribution from the optimial distribution.
@@ -426,13 +437,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
             self.logger.warn(warn)
 
             indexes = np.arange(len(self.pmf))
-            variables = Bunch(
-                free=indexes,
-                fixed=[],
-                fixed_values=[],
-                fixed_nonzeros=[],
-                zeros=[],
-                nonzeros=indexes)
+            variables = Bunch(free=indexes, fixed=[], fixed_values=[], fixed_nonzeros=[], zeros=[], nonzeros=indexes)
             self.vartypes = variables
             self.normalization = 1
 
@@ -440,6 +445,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
 
         # Build the matrix which calculates the marginal of the inputs.
         from scipy.linalg import block_diag
+
         Bsize = len(self.dist.alphabet[-1])
         Osize = np.prod([len(a) for a in self.dist.alphabet[:-1]])
         block = np.ones((Bsize, Bsize))
@@ -463,7 +469,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
             try:
                 x_free = np.asarray(x_free).transpose()[0]
             except IndexError:
-                assert (x_free.size[1] == 0)
+                assert x_free.size[1] == 0
                 x_free = np.array([])
 
             y_partial_free = np.dot(M_col_free, x_free)
@@ -504,7 +510,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
             Asmall, b, rank = as_full_rank(Asmall, b)
             # print(Asmall[0], b[0])
             if rank > Asmall.shape[1]:
-                msg = 'More independent constraints than free parameters.'
+                msg = "More independent constraints than free parameters."
                 raise ValueError(msg)
 
             Asmall = matrix(Asmall)
@@ -580,7 +586,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
 
         # Assume they are already CVXOPT matrices
         if self.vartypes and A.size[1] != len(self.vartypes.free):  # pylint: disable=no-member
-            msg = 'A must be the reduced equality constraint matrix.'
+            msg = "A must be the reduced equality constraint matrix."
             raise Exception(msg)
 
         show_progress = bool(self.verbose)
@@ -600,11 +606,11 @@ class MaximumConditionalEntropy(CVXOPT_Template):
             objective = -t
 
             opt = op_runner(objective, constraints, show_progress=show_progress)
-            if opt.status == 'optimal':
+            if opt.status == "optimal":
                 # print("Found initial point with tol={}".format(tol))
                 break
         else:
-            msg = 'Could not find valid initial point: {}'
+            msg = "Could not find valid initial point: {}"
             raise Exception(msg.format(opt.status))
 
         # Grab the optimized x. Perhaps there is a more reliable way to get
@@ -634,7 +640,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
 
         if self.A is None:
             # No free constraints.
-            assert (len(self.vartypes.fixed) == len(self.pmf))  # pylint: disable=no-member
+            assert len(self.vartypes.fixed) == len(self.pmf)  # pylint: disable=no-member
             self.logger.info("No free parameters. Optimization unnecessary.")
             self.pmf_copy[self.vartypes.fixed] = self.vartypes.fixed_values  # pylint: disable=no-member
             xfinal = self.pmf_copy.copy()
@@ -650,8 +656,8 @@ class MaximumConditionalEntropy(CVXOPT_Template):
         m = "Optimizing from initial distribution using Frank-Wolfe algorithm."
         self.logger.info(m)
 
-        if 'verbose' not in kwargs:
-            kwargs['verbose'] = self.verbose
+        if "verbose" not in kwargs:
+            kwargs["verbose"] = self.verbose
 
         x, obj = frank_wolfe(objective, gradient, A, b, initial_x, **kwargs)
         # x is currently a matrix
@@ -668,7 +674,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
         return xfinal_full, obj
 
 
-@removals.remove(message="Please see dit.pid.PID_BROJA.", version='1.0.1')
+@removals.remove(message="Please see dit.pid.PID_BROJA.", version="1.0.1")
 def pi_decomp(d, d_opt):
     u0 = dit.multivariate.coinformation(d_opt, [[2], [0]], [1])
     u1 = dit.multivariate.coinformation(d_opt, [[2], [1]], [0])
@@ -680,7 +686,7 @@ def pi_decomp(d, d_opt):
     return syn, u0, u1, rdn
 
 
-@removals.remove(message="Please see dit.pid.PID_BROJA.", version='1.0.1')
+@removals.remove(message="Please see dit.pid.PID_BROJA.", version="1.0.1")
 def calculate_synergy(pmf_opt, ui):
     d = ui.dist
     d_opt = d.copy()
@@ -694,7 +700,7 @@ def calculate_synergy(pmf_opt, ui):
     return mi - mi_opt
 
 
-@removals.remove(message="Please see dit.pid.PID_BROJA.", version='1.0.1')
+@removals.remove(message="Please see dit.pid.PID_BROJA.", version="1.0.1")
 def dice(a, b):
     # DoF: 85, 36, 15, 10, 5, 0
     d = dit.example_dists.summed_dice(a, b)
@@ -706,7 +712,7 @@ def dice(a, b):
     return x
 
 
-@removals.remove(message="Please see dit.pid.PID_BROJA.", version='1.0.1')
+@removals.remove(message="Please see dit.pid.PID_BROJA.", version="1.0.1")
 def demo():
     import matplotlib.pyplot as plt
 
@@ -718,8 +724,7 @@ def demo():
         for a in avals:
             logger.info("**** {a}, {b} *****", a=a, b=b)
             d = dit.example_dists.summed_dice(a, b)
-            x = MaximumConditionalEntropy(d, [[0], [1]], [2],
-                                          extra_constraints=True, verbose=20)
+            x = MaximumConditionalEntropy(d, [[0], [1]], [2], extra_constraints=True, verbose=20)
             pmf_opt, _ = x.optimize()
             d_opt = x.dist.copy()
             d_opt.pmf[:] = pmf_opt
@@ -732,16 +737,17 @@ def demo():
         # synergy
         axes[2].plot(avals, decomps[:, 0], label=f"{b}")
 
-    axes[0].set_title('Redundancy')
-    axes[1].set_title('Unique')
-    axes[2].set_title('Synergy')
+    axes[0].set_title("Redundancy")
+    axes[1].set_title("Unique")
+    axes[2].set_title("Synergy")
 
     plt.show()
 
 
-@removals.remove(message="Please see dit.pid.PID_BROJA.", version='1.0.1')
-def k_synergy(d, sources, target, k=2, rv_mode=None, extra_constraints=True,
-              tol=None, prng=None, verbose=None):  # pragma: no cover
+@removals.remove(message="Please see dit.pid.PID_BROJA.", version="1.0.1")
+def k_synergy(
+    d, sources, target, k=2, rv_mode=None, extra_constraints=True, tol=None, prng=None, verbose=None
+):  # pragma: no cover
     """
     Returns the `k`-synergy.
 
@@ -802,10 +808,18 @@ def k_synergy(d, sources, target, k=2, rv_mode=None, extra_constraints=True,
         The total mutual information between the sources and the target for
         the optimized distribution.
     """
-    x = MaximumConditionalEntropy(d, sources, target, k=k, rv_mode=rv_mode,
-                                  extra_constraints=extra_constraints,
-                                  source_marginal=True, tol=tol, prng=prng,
-                                  verbose=verbose)
+    x = MaximumConditionalEntropy(
+        d,
+        sources,
+        target,
+        k=k,
+        rv_mode=rv_mode,
+        extra_constraints=extra_constraints,
+        source_marginal=True,
+        tol=tol,
+        prng=prng,
+        verbose=verbose,
+    )
     pmf, _ = x.optimize()
     d_orig = x.dist
     d_opt = d_orig.copy()
@@ -815,9 +829,10 @@ def k_synergy(d, sources, target, k=2, rv_mode=None, extra_constraints=True,
     return H_opt - H_orig
 
 
-@removals.remove(message="Please see dit.pid.PID_BROJA.", version='1.0.1')
-def k_informations(d, sources, target, rv_mode=None, extra_constraints=True,
-                   tol=None, prng=None, verbose=None):  # pragma: no cover
+@removals.remove(message="Please see dit.pid.PID_BROJA.", version="1.0.1")
+def k_informations(
+    d, sources, target, rv_mode=None, extra_constraints=True, tol=None, prng=None, verbose=None
+):  # pragma: no cover
     """
     Returns the amount of :math:`I[sources:target]` captured by matching `k`-way
     marginals that include the target and the source marginal distribution.
@@ -868,10 +883,18 @@ def k_informations(d, sources, target, rv_mode=None, extra_constraints=True,
         marginals (with source) and source marginals.
     """
     nonkinfos = []
-    x = MaximumConditionalEntropy(d, sources, target, k=1, rv_mode=rv_mode,
-                                  extra_constraints=extra_constraints,
-                                  source_marginal=True, tol=tol, prng=prng,
-                                  verbose=verbose)
+    x = MaximumConditionalEntropy(
+        d,
+        sources,
+        target,
+        k=1,
+        rv_mode=rv_mode,
+        extra_constraints=extra_constraints,
+        source_marginal=True,
+        tol=tol,
+        prng=prng,
+        verbose=verbose,
+    )
     n = x.dist.outcome_length()
     while x.k <= n:
         pmf, _ = x.optimize()
@@ -890,10 +913,10 @@ def k_informations(d, sources, target, rv_mode=None, extra_constraints=True,
     return np.asarray(list(reversed(diffs)))
 
 
-@removals.remove(message="Please see dit.pid.PID_BROJA.", version='1.0.1')
-def unique_informations(d, sources, target, k=2, rv_mode=None,
-                        extra_constraints=True, tol=None, prng=None,
-                        verbose=None):  # pragma: no cover
+@removals.remove(message="Please see dit.pid.PID_BROJA.", version="1.0.1")
+def unique_informations(
+    d, sources, target, k=2, rv_mode=None, extra_constraints=True, tol=None, prng=None, verbose=None
+):  # pragma: no cover
     """
     Returns the unique information each source has about the target.
 
@@ -952,9 +975,17 @@ def unique_informations(d, sources, target, k=2, rv_mode=None,
     -----
     The nonunique information would be `mi_orig - ui.sum()`.
     """
-    x = MaximumConditionalEntropy(d, sources, target, k=k, rv_mode=rv_mode,
-                                  extra_constraints=extra_constraints, tol=tol,
-                                  prng=prng, verbose=verbose)
+    x = MaximumConditionalEntropy(
+        d,
+        sources,
+        target,
+        k=k,
+        rv_mode=rv_mode,
+        extra_constraints=extra_constraints,
+        tol=tol,
+        prng=prng,
+        verbose=verbose,
+    )
     pmf, _ = x.optimize()
     d_orig = x.dist
     d_opt = d_orig.copy()
@@ -972,5 +1003,5 @@ def unique_informations(d, sources, target, k=2, rv_mode=None,
     return np.array(uis), rdn, syn, mi_orig, mi_opt
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     z = dice(1, 3)

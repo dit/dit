@@ -15,23 +15,23 @@ from dit.exceptions import ditException
 from dit.math.ops import LogOperations
 
 __all__ = (
-    'closure',
-    'subcomposition',
-    'perturbation',
-    'power',
-    'add',
-    'sub',
-    'inner',
-    'norm',
-    'dist',
-    'metric',
-    'clr',
-    'alr',
-    'ilr',
-    'basis',
-    'clr_inv',
-    'alr_inv',
-    'ilr_inv',
+    "closure",
+    "subcomposition",
+    "perturbation",
+    "power",
+    "add",
+    "sub",
+    "inner",
+    "norm",
+    "dist",
+    "metric",
+    "clr",
+    "alr",
+    "ilr",
+    "basis",
+    "clr_inv",
+    "alr_inv",
+    "ilr_inv",
 )
 
 ops = LogOperations(2)
@@ -413,7 +413,7 @@ def ubasis(n):
     u *= np.array([1 / i for i in rng])[:, np.newaxis]
 
     # the 1st diag is set to -1
-    u.flat[1::n + 2] = -1
+    u.flat[1 :: n + 2] = -1
 
     # scale everything
     u *= np.array([math.sqrt(i / (i + 1)) for i in rng])[:, np.newaxis]
@@ -443,7 +443,7 @@ def basis(n):
 
 
 def clr_inv(xclr):
-    """"Returns the inverse centered log-ratio transformation of x.
+    """ "Returns the inverse centered log-ratio transformation of x.
 
     Parameters
     ----------

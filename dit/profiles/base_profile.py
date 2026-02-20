@@ -10,9 +10,7 @@ from .. import Distribution
 from ..params import ditParams
 from ..utils import build_table
 
-__all__ = (
-    'BaseProfile',
-)
+__all__ = ("BaseProfile",)
 
 
 profile_docstring = """
@@ -74,10 +72,10 @@ class BaseProfile(metaclass=ABCMeta):
         Compute the profile.
     """
 
-    xlabel = 'scale'
-    ylabel = 'information [bits]'
-    align = 'center'
-    unit = 'bits'
+    xlabel = "scale"
+    ylabel = "information [bits]"
+    align = "center"
+    unit = "bits"
 
     def __init__(self, dist):
         """
@@ -89,7 +87,7 @@ class BaseProfile(metaclass=ABCMeta):
             The distribution to compute the profile for.
         """
         super().__init__()
-        outcomes, pmf = zip(*dist.zipped(mode='atoms'), strict=True)
+        outcomes, pmf = zip(*dist.zipped(mode="atoms"), strict=True)
         self.dist = Distribution(outcomes, pmf)
         self._compute()
 
@@ -116,6 +114,7 @@ class BaseProfile(metaclass=ABCMeta):
         """
         if ax is None:
             import matplotlib.pyplot as plt
+
             ax = plt.figure().gca()
 
         # pylint: disable=no-member
@@ -140,7 +139,7 @@ class BaseProfile(metaclass=ABCMeta):
         """
         Represent using the str().
         """
-        if ditParams['repr.print']:
+        if ditParams["repr.print"]:
             return self.to_string()
         else:
             return super().__repr__()
@@ -155,8 +154,8 @@ class BaseProfile(metaclass=ABCMeta):
         """
         Use PrettyTable to create a nice table.
         """
-        table = build_table(field_names=['measure', self.unit], title=self._name)
-        table.float_format[self.unit] = f' 5.{digits}'  # pylint: disable=no-member
+        table = build_table(field_names=["measure", self.unit], title=self._name)
+        table.float_format[self.unit] = f" 5.{digits}"  # pylint: disable=no-member
         for level, value in sorted(self.profile.items(), reverse=True):
             # gets rid of pesky -0.0 display values
             if np.isclose(value, 0.0):

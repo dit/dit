@@ -13,9 +13,7 @@ from ...exceptions import ditException
 from ...multivariate import coinformation
 from ..pid import BaseBivariatePID
 
-__all__ = (
-    'PID_IG',
-)
+__all__ = ("PID_IG",)
 
 
 def ig_synergy(dist, sources, target, fuzz=1e-100):
@@ -67,7 +65,7 @@ def ig_synergy(dist, sources, target, fuzz=1e-100):
     p_t_s1 = d.sum(axis=0, keepdims=True) / p_s1
 
     def p_star(t):
-        d = p_s0s1 * p_t_s0 ** t * p_t_s1 ** (1 - t)
+        d = p_s0s1 * p_t_s0**t * p_t_s1 ** (1 - t)
         d /= d.sum()
         return d
 
@@ -75,14 +73,16 @@ def ig_synergy(dist, sources, target, fuzz=1e-100):
         dkl = (d * np.log2(d / p_star(t))).sum().item()
         return dkl
 
-    res = minimize(fun=objective,
-                   x0=np.random.random(),
-                   method='L-BFGS-B',
-                   options={'maxiter': 1000,
-                            'ftol': 1e-10,
-                            'eps': 1.4901161193847656e-08,
-                            },
-                   )
+    res = minimize(
+        fun=objective,
+        x0=np.random.random(),
+        method="L-BFGS-B",
+        options={
+            "maxiter": 1000,
+            "ftol": 1e-10,
+            "eps": 1.4901161193847656e-08,
+        },
+    )
 
     if not res.success:  # pragma: no cover
         msg = f"Optimization failed: {res.message}"

@@ -8,9 +8,7 @@ from ...utils import unitful
 from .._backend import _make_backend_subclass
 from .base_skar_optimizers import BaseOneWaySKAR
 
-__all__ = (
-    'one_way_skar',
-)
+__all__ = ("one_way_skar",)
 
 
 class OneWaySKAR(BaseOneWaySKAR):
@@ -29,7 +27,7 @@ class OneWaySKAR(BaseOneWaySKAR):
         """
         |V| <= |X|^2
         """
-        return self._shape[0]**2
+        return self._shape[0] ** 2
 
     def _objective(self):
         """
@@ -70,8 +68,7 @@ class OneWaySKAR(BaseOneWaySKAR):
 
 
 @unitful
-def one_way_skar(dist, X, Y, Z, rv_mode=None, niter=None, bound_u=None,
-                 bound_v=None, backend='numpy'):
+def one_way_skar(dist, X, Y, Z, rv_mode=None, niter=None, bound_u=None, bound_v=None, backend="numpy"):
     """
     Compute the secret key agreement rate constrained to one-way communication.
 

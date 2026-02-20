@@ -15,8 +15,8 @@ from ..shannon import entropy_pmf as H_pmf
 from ..utils import unitful
 
 __all__ = (
-    'jensen_shannon_divergence',
-    'jensen_shannon_divergence_pmf',
+    "jensen_shannon_divergence",
+    "jensen_shannon_divergence_pmf",
 )
 
 
@@ -92,8 +92,8 @@ def jensen_shannon_divergence(dists, weights=None):
     if weights is None:
         weights = np.array([1 / len(dists)] * len(dists))
     else:
-        if hasattr(weights, 'pmf'):
-            m = 'Likely user error. Second argument to JSD should be weights.'
+        if hasattr(weights, "pmf"):
+            m = "Likely user error. Second argument to JSD should be weights."
             raise dit.exceptions.ditException(m)
 
     # validation of `weights` is done in mixture_distribution,
@@ -120,13 +120,14 @@ def jensen_divergence(func):
     jensen_func_divergence : function
         The divergence based on `func`
     """
+
     @unitful
     def jensen_blank_divergence(dists, weights=None, *args, **kwargs):
         if weights is None:
             weights = np.array([1 / len(dists)] * len(dists))
         else:
-            if hasattr(weights, 'pmf'):
-                m = 'Likely user error. Second argument should be weights.'
+            if hasattr(weights, "pmf"):
+                m = "Likely user error. Second argument should be weights."
                 raise ditException(m)
 
         # validation of `weights` is done in mixture_distribution,

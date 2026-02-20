@@ -18,9 +18,7 @@ and the max denominator that gives a particular tolerance is not obvious.
 from fractions import Fraction
 from math import modf
 
-__all__ = (
-    'approximate_fraction',
-)
+__all__ = ("approximate_fraction",)
 
 
 def simplest_fraction_in_interval(x, y):

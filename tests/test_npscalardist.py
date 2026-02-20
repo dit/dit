@@ -28,7 +28,7 @@ def test_init2():
 
 
 def test_init3():
-    pmf = ['a', 'b', 'c']
+    pmf = ["a", "b", "c"]
     with pytest.raises(ditException):
         ScalarDistribution(pmf)
 
@@ -86,7 +86,7 @@ def test_init10():
 
 
 def test_init11():
-    outcomes = ['0', '1']
+    outcomes = ["0", "1"]
     pmf = [1 / 2] * 2
     d = Distribution(outcomes, pmf)
     sd = ScalarDistribution.from_distribution(d)
@@ -95,7 +95,7 @@ def test_init11():
 
 
 def test_init12():
-    outcomes = ['0', '1']
+    outcomes = ["0", "1"]
     pmf = [1 / 2] * 2
     d = Distribution(outcomes, pmf)
     sd = ScalarDistribution.from_distribution(d, base=10)
@@ -306,13 +306,13 @@ def test_matmul():
 def test_cmp_fail():
     d1 = uniform_scalar_distribution(range(1, 7))
     with pytest.raises(NotImplementedError):
-        (lambda x: x + '0')(d1)
+        (lambda x: x + "0")(d1)
 
 
 def test_matmul_fail():
     d1 = uniform_scalar_distribution(range(1, 7))
     with pytest.raises(NotImplementedError):
-        (lambda x: x.__matmul__('0'))(d1)
+        (lambda x: x.__matmul__("0"))(d1)
 
 
 def test_from_rv():

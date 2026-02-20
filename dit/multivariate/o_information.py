@@ -5,9 +5,7 @@ The O-information, as defined by Rosas et al.
 from .dual_total_correlation import dual_total_correlation
 from .total_correlation import total_correlation
 
-__all__ = (
-    'o_information',
-)
+__all__ = ("o_information",)
 
 
 def o_information(dist, rvs=None, crvs=None, rv_mode=None):

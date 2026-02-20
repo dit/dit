@@ -8,16 +8,15 @@ from debtcollector import removals
 import dit
 
 __all__ = (
-    'Bunch',
-    'CVXOPT_Template',
-    'as_full_rank',
-    'op_runner',
-    'prepare_dist',
+    "Bunch",
+    "CVXOPT_Template",
+    "as_full_rank",
+    "op_runner",
+    "prepare_dist",
 )
 
 
-@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
-                 version='1.0.1')
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.", version="1.0.1")
 def as_full_rank(A, b):
     """
     From a linear system :math:`Ax = b`, return :math:`Bx = c` such that
@@ -88,9 +87,9 @@ def as_full_rank(A, b):
     return B, c, rank
 
 
-@removals.removed_class('CVXOPT_Template',
-                        message="Please see methods in dit.algorithms.distribution_optimizers.py.",
-                        version='1.0.1')
+@removals.removed_class(
+    "CVXOPT_Template", message="Please see methods in dit.algorithms.distribution_optimizers.py.", version="1.0.1"
+)
 class CVXOPT_Template:  # noqa: N801
     """
     Template for convex minimization on probability distributions.
@@ -165,7 +164,7 @@ class CVXOPT_Template:  # noqa: N801
         # We have M = N = 0 (no 2nd order cones or positive semidefinite cones)
         # So, K = l where l is the dimension of the nonnegative orthant. Thus,
         # we have l = n.
-        G = matrix(-1 * np.eye(n))   # G should have shape: (K,n) = (n,n)
+        G = matrix(-1 * np.eye(n))  # G should have shape: (K,n) = (n,n)
         h = matrix(np.zeros((n, 1)))  # h should have shape: (K,1) = (n,1)
 
         self.G = G
@@ -246,18 +245,15 @@ class CVXOPT_Template:  # noqa: N801
         try:
             options.clear()
             options.update(kwargs)
-            with np.errstate(divide='ignore', invalid='ignore'):
-                result = cp(F=self.F,
-                            G=self.G,
-                            h=self.h,
-                            dims={'l': self.G.size[0], 'q': [], 's': []},
-                            A=self.A,
-                            b=self.b)
+            with np.errstate(divide="ignore", invalid="ignore"):
+                result = cp(
+                    F=self.F, G=self.G, h=self.h, dims={"l": self.G.size[0], "q": [], "s": []}, A=self.A, b=self.b
+                )
         except:
             raise
         else:
             self.result = result
-            out = np.asarray(result['x'])
+            out = np.asarray(result["x"])
         finally:
             options.clear()
             options.update(old_options)
@@ -265,8 +261,7 @@ class CVXOPT_Template:  # noqa: N801
         return out
 
 
-@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
-                 version='1.0.1')
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.", version="1.0.1")
 class Bunch:
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
@@ -279,19 +274,19 @@ def prepare_dist(dist):
     if not dist.is_dense():
         if len(dist._sample_space) > 1e4:  # pragma: no cover
             import warnings
+
             msg = "Sample space has more than 10k elements."
             msg += " This could be slow."
             warnings.warn(msg, stacklevel=2)
         dist.make_dense()
 
     # We also need linear probabilities.
-    dist.set_base('linear')
+    dist.set_base("linear")
 
     return dist
 
 
-@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.",
-                 version='1.0.1')
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.", version="1.0.1")
 def op_runner(objective, constraints, **kwargs):
     """
     Minimize the objective specified by the constraints.
@@ -314,7 +309,7 @@ def op_runner(objective, constraints, **kwargs):
         options.clear()
         options.update(kwargs)
         # Ignore 0 log 0 warnings.
-        with np.errstate(divide='ignore', invalid='ignore'):
+        with np.errstate(divide="ignore", invalid="ignore"):
             opt.solve()
     except:
         raise

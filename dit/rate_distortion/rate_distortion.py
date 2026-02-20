@@ -12,15 +12,15 @@ from ..exceptions import ditException
 from ..utils import flatten
 
 __all__ = (
-    'BaseRateDistortion',
-    'RateDistortionHamming',
-    'RateDistortionMaximumCorrelation',
-    'RateDistortionResidualEntropy',
-    'RateDistortionResult',
+    "BaseRateDistortion",
+    "RateDistortionHamming",
+    "RateDistortionMaximumCorrelation",
+    "RateDistortionResidualEntropy",
+    "RateDistortionResult",
 )
 
 
-RateDistortionResult = namedtuple('RateDistortionResult', ['rate', 'distortion'])
+RateDistortionResult = namedtuple("RateDistortionResult", ["rate", "distortion"])
 
 
 class BaseRateDistortion(BaseAuxVarOptimizer):
@@ -89,6 +89,7 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
         """
         Produce the rate-distortion Lagrangian.
         """
+
         def rd_objective(self, x):
             """
             The rate-distortion objective.
@@ -167,6 +168,7 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
         """
         Construct a functional form of the optimizer.
         """
+
         def rate_distortion(dist, beta=0.0, rv=None, crvs=None, bound=None, rv_mode=None):
             """
             Compute a rate-distortion point.

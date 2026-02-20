@@ -12,13 +12,13 @@ from loguru import logger
 from scipy.optimize import OptimizeResult
 
 __all__ = (
-    'BasinHoppingCallBack',
-    'BasinHoppingInnerCallBack',
-    'Uniquifier',
-    'accept_test',
-    'basinhop_status',
-    'colon',
-    'memoize_optvec',
+    "BasinHoppingCallBack",
+    "BasinHoppingInnerCallBack",
+    "Uniquifier",
+    "accept_test",
+    "basinhop_status",
+    "colon",
+    "memoize_optvec",
 )
 
 
@@ -67,7 +67,7 @@ class BasinHoppingInnerCallBack:  # pragma: no cover
         self.jumps.append(time)
 
 
-Candidate = namedtuple('Candidate', ['position', 'value', 'constraints'])
+Candidate = namedtuple("Candidate", ["position", "value", "constraints"])
 
 
 class BasinHoppingCallBack:
@@ -98,8 +98,8 @@ class BasinHoppingCallBack:
         optimizer : MarkovVarOptimizer
             The optimizer to track the optimization of.
         """
-        self.eq_constraints = [c['fun'] for c in constraints if c['type'] == 'eq']
-        self.ineq_constraints = [c['fun'] for c in constraints if c['type'] == 'ineq']
+        self.eq_constraints = [c["fun"] for c in constraints if c["type"] == "eq"]
+        self.ineq_constraints = [c["fun"] for c in constraints if c["type"] == "ineq"]
         self.icb = icb
         self.eq_candidates = []
         self.ineq_candidates = []
@@ -121,8 +121,13 @@ class BasinHoppingCallBack:
         self.eq_candidates.append(Candidate(x, f, eq_constraints))
         self.ineq_candidates.append(Candidate(x, f, ineq_constraints))
 
-        logger.trace("Basin hop candidate: value={f}, eq_constraints={eq}, ineq_constraints={ineq}, accept={accept}",
-                      f=f, eq=eq_constraints, ineq=ineq_constraints, accept=accept)
+        logger.trace(
+            "Basin hop candidate: value={f}, eq_constraints={eq}, ineq_constraints={ineq}, accept={accept}",
+            f=f,
+            eq=eq_constraints,
+            ineq=ineq_constraints,
+            accept=accept,
+        )
 
         if self.icb:  # pragma: no cover
             self.icb.jumped(len(self.icb.positions))
@@ -147,9 +152,12 @@ class BasinHoppingCallBack:
         possible = [(x, f) for x, f in possible if accept_test(x_new=x)]
         try:
             x, val = min(possible, key=itemgetter(1))
-            opt_res = OptimizeResult({'x': x,
-                                      'success': True,
-                                      })
+            opt_res = OptimizeResult(
+                {
+                    "x": x,
+                    "success": True,
+                }
+            )
             return opt_res
         except ValueError:  # pragma: no cover
             return None
@@ -166,15 +174,13 @@ class Uniquifier:
     """
 
     def __init__(self):
-        """
-        """
+        """ """
         self.chars = digits + ascii_letters
         self.mapping = {}
         self.inverse = {}
 
     def __call__(self, item, string=False):
-        """
-        """
+        """ """
         if item not in self.mapping:
             n = len(self.mapping)
             self.mapping[item] = n
@@ -195,7 +201,7 @@ def accept_test(**kwargs):
     accept : bool
         Whether to accept a jump or not.
     """
-    x = kwargs['x_new']
+    x = kwargs["x_new"]
     tmax = bool(np.all(x <= 1))
     tmin = bool(np.all(x >= 0))
     return tmin and tmax
@@ -222,7 +228,7 @@ def basinhop_status(res):
         success = res.lowest_optimization_result.success
         msg = res.lowest_optimization_result.message
     except AttributeError:  # pragma: no cover
-        success = 'success' in res.message[0]
+        success = "success" in res.message[0]
         msg = res.message[0]
     logger.debug("basinhop_status: success={success}, message={msg}", success=success, msg=msg)
     return success, msg
@@ -243,6 +249,7 @@ def memoize_optvec(f):  # pragma: no cover
     wrapper : func
         A memoized version of `f`.
     """
+
     @wraps(f)
     def wrapper(self, x):
         tx = tuple(x)

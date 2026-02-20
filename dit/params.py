@@ -8,8 +8,8 @@ import warnings
 from .exceptions import InvalidBase
 
 __all__ = (
-    'ditParams',
-    'reset_params',
+    "ditParams",
+    "reset_params",
 )
 
 
@@ -19,9 +19,9 @@ def validate_boolean(b):
     """
     with contextlib.suppress(AttributeError):
         b = b.lower()
-    if b in ('t', 'y', 'yes', 'on', 'true', '1', 1, True):
+    if b in ("t", "y", "yes", "on", "true", "1", 1, True):
         return True
-    elif b in ('f', 'n', 'no', 'off', 'false', '0', 0, False):
+    elif b in ("f", "n", "no", "off", "false", "0", 0, False):
         return False
     else:
         raise ValueError(f'Could not convert "{b}" to boolean')
@@ -42,11 +42,11 @@ def validate_base(b):
     Convert s to a valid base or raise InvalidBase.
     """
     # String bases.
-    if b == 'e' or b == 'linear':
+    if b == "e" or b == "linear":
         return b
     else:
         try:
-            b + ''  # pylint disable=pointless-statement
+            b + ""  # pylint disable=pointless-statement
             raise InvalidBase(b)
         except TypeError:
             pass
@@ -59,8 +59,7 @@ def validate_base(b):
 
 
 def validate_choice(s, choices):
-    """
-    """
+    """ """
     with contextlib.suppress(AttributeError):
         s = s.lower()
     if s not in choices:
@@ -70,9 +69,8 @@ def validate_choice(s, choices):
 
 
 def validate_text(s):
-    """
-    """
-    choices = ['ascii', 'linechar']
+    """ """
+    choices = ["ascii", "linechar"]
     return validate_choice(s, choices)
 
 
@@ -95,7 +93,7 @@ class DITParams(dict):
         try:
             cval = self.validate[key](val)
         except KeyError as err:  # pragma: no cover
-            msg = f'{key!r} is not a valid dit parameter. See ditParams.keys() for a list of valid parameters.'
+            msg = f"{key!r} is not a valid dit parameter. See ditParams.keys() for a list of valid parameters."
             raise KeyError(msg) from err
 
         dict.__setitem__(self, key, cval)
@@ -130,16 +128,17 @@ def set_params():
 
 ## key -> (value, validator)
 ## TODO:  key -> (value, validator, info_string)
-defaultParams = {'rtol': (1e-7, validate_float),
-                 'atol': (1e-9, validate_float),
-                 'logs': (True, validate_boolean),
-                 'base': (2, validate_base),
-                 'text.usetex': (False, validate_boolean),
-                 'text.font': ('ascii', validate_text),
-                 'print.exact': (False, validate_boolean),
-                 'repr.print': (False, validate_boolean),
-                 'units': (False, validate_boolean),
-                }
+defaultParams = {
+    "rtol": (1e-7, validate_float),
+    "atol": (1e-9, validate_float),
+    "logs": (True, validate_boolean),
+    "base": (2, validate_base),
+    "text.usetex": (False, validate_boolean),
+    "text.font": ("ascii", validate_text),
+    "print.exact": (False, validate_boolean),
+    "repr.print": (False, validate_boolean),
+    "units": (False, validate_boolean),
+}
 
 
 ## Dictionary relating deprecated parameter names to new parameter names.
@@ -150,5 +149,4 @@ _deprecated_map = {}
 ditParams = set_params()
 
 
-ditParamsDefault = DITParams([(key, tup[0]) \
-                             for key, tup in defaultParams.items()])
+ditParamsDefault = DITParams([(key, tup[0]) for key, tup in defaultParams.items()])

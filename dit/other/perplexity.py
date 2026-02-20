@@ -6,9 +6,7 @@ from ..helpers import RV_MODES
 from ..shannon import conditional_entropy, entropy
 from ..utils.misc import flatten
 
-__all__ = (
-    'perplexity',
-)
+__all__ = ("perplexity",)
 
 
 def perplexity(dist, rvs=None, crvs=None, rv_mode=None):
@@ -50,6 +48,6 @@ def perplexity(dist, rvs=None, crvs=None, rv_mode=None):
         if crvs is None:
             crvs = []
     else:
-        return base**entropy(dist)
+        return base ** entropy(dist)
 
-    return base**conditional_entropy(dist, rvs, crvs, rv_mode=rv_mode)
+    return base ** conditional_entropy(dist, rvs, crvs, rv_mode=rv_mode)

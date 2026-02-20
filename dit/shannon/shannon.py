@@ -8,10 +8,10 @@ from ..helpers import RV_MODES
 from ..math import LogOperations
 
 __all__ = (
-    'conditional_entropy',
-    'entropy',
-    'entropy_pmf',
-    'mutual_information',
+    "conditional_entropy",
+    "entropy",
+    "entropy_pmf",
+    "mutual_information",
 )
 
 
@@ -69,6 +69,7 @@ def entropy(dist, rvs=None, rv_mode=None):
     else:
         # Assume linear probability for binary entropy.
         import dit
+
         dist = dit.ScalarDistribution([dist, 1 - dist])
 
     if dist.is_joint():
@@ -84,7 +85,7 @@ def entropy(dist, rvs=None, rv_mode=None):
     pmf = d.pmf
     if d.is_log():
         base = d.get_base(numerical=True)
-        terms = -base**pmf * pmf
+        terms = -(base**pmf) * pmf
     else:
         # Calculate entropy in bits.
         log = LogOperations(2).log

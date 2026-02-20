@@ -12,7 +12,7 @@ def test_pid_proj1():
     """
     Test iproj on a generic distribution.
     """
-    d = bivariates['diff']
+    d = bivariates["diff"]
     pid = PID_Proj(d, ((0,), (1,)), (2,))
     assert pid[((0,), (1,))] == pytest.approx(0.16503749927884365)
     assert pid[((0,),)] == pytest.approx(0.1462406251802893)
@@ -24,7 +24,7 @@ def test_pid_proj2():
     """
     Test iproj on another generic distribution.
     """
-    d = trivariates['anddup']
+    d = trivariates["anddup"]
     pid = PID_Proj(d, [[0], [1], [2]], [3])
     assert pid[((0, 1), (1, 2))] == pytest.approx(0.5)
     assert pid[((0,), (1,), (2,))] == pytest.approx(0.31127812445913305)
@@ -37,7 +37,7 @@ def test_pid_proj3():
     """
     Test iproj on another generic distribution.
     """
-    d = trivariates['xor shared']
+    d = trivariates["xor shared"]
     pid = PID_Proj(d)
     for atom in pid._lattice:
         if atom == ((0,), (1, 2)):

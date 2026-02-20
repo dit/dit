@@ -26,23 +26,30 @@ try:
     import jax
     import jax.numpy as jnp
     from jax import grad, jacobian, jit, vmap
+
     JAX_AVAILABLE = True
 except ImportError:
     JAX_AVAILABLE = False
     # Provide fallback so module can be imported even without JAX
     jnp = np
+
     def jit(f, **kwargs):
         return f
+
     def grad(f, **kwargs):
         raise ImportError("JAX is required for automatic differentiation")
+
     def jacobian(f, **kwargs):
         raise ImportError("JAX is required for automatic differentiation")
+
     def vmap(f, **kwargs):
         raise ImportError("JAX is required for vmap")
+
 
 try:
     import optimistix as optx
     from slsqp_jax import SLSQP as JaxSLSQP  # noqa: N811
+
     SLSQP_JAX_AVAILABLE = True
 except ImportError:
     SLSQP_JAX_AVAILABLE = False
@@ -67,10 +74,10 @@ from ..utils.optimization import (
 )
 
 __all__ = (
-    'BaseJaxOptimizer',
-    'BaseConvexJaxOptimizer',
-    'BaseNonConvexJaxOptimizer',
-    'BaseAuxVarJaxOptimizer',
+    "BaseJaxOptimizer",
+    "BaseConvexJaxOptimizer",
+    "BaseNonConvexJaxOptimizer",
+    "BaseAuxVarJaxOptimizer",
 )
 
 
@@ -85,10 +92,8 @@ def _check_jax():
         If JAX is not installed.
     """
     if not JAX_AVAILABLE:
-        raise ImportError(
-            "JAX is required for this module. Install with: pip install jax jaxlib"
-        )
-    jax.config.update('jax_enable_x64', True)
+        raise ImportError("JAX is required for this module. Install with: pip install jax jaxlib")
+    jax.config.update("jax_enable_x64", True)
 
 
 # SVD singular values using JAX
@@ -149,7 +154,7 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         _check_jax()
 
         rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
-        self._dist = dist.copy(base='linear')
+        self._dist = dist.copy(base="linear")
 
         self._alphabet = self._dist.alphabet
         self._original_shape = list(map(len, self._dist.alphabet))
@@ -439,8 +444,7 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
             # Safe division and log -- use "safe where" for both forward
             # and backward: replace denominators/arguments in masked branches
             # with values that keep log2 finite.
-            safe_denom = jnp.where(
-                (pmf_x > 0) & (pmf_y > 0), pmf_x * pmf_y, 1.0)
+            safe_denom = jnp.where((pmf_x > 0) & (pmf_y > 0), pmf_x * pmf_y, 1.0)
             safe_xy = jnp.where(pmf_xy > 0, pmf_xy, 1.0)
             ratio = safe_xy / safe_denom
             mi = jnp.nansum(jnp.where(pmf_xy > 0, pmf_xy * jnp.log2(ratio), 0.0))
@@ -496,10 +500,8 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
             pmf_z = pmf_xz.sum(axis=idx_z, keepdims=True)
 
             # Safe computation: use "safe where" to avoid NaN gradients
-            safe_denom = jnp.where(
-                (pmf_xz > 0) & (pmf_yz > 0), pmf_xz * pmf_yz, 1.0)
-            safe_numer = jnp.where(
-                (pmf_xyz > 0) & (pmf_z > 0), pmf_z * pmf_xyz, 1.0)
+            safe_denom = jnp.where((pmf_xz > 0) & (pmf_yz > 0), pmf_xz * pmf_yz, 1.0)
+            safe_numer = jnp.where((pmf_xyz > 0) & (pmf_z > 0), pmf_z * pmf_xyz, 1.0)
             ratio = safe_numer / safe_denom
             cmi = jnp.nansum(jnp.where(pmf_xyz > 0, pmf_xyz * jnp.log2(ratio), 0.0))
 
@@ -530,8 +532,8 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         idx_joint = tuple(self._all_vars - (rvs | crvs))
         idx_crvs = tuple(self._all_vars - crvs)
         idx_subrvs = [tuple(self._all_vars - set(ss)) for ss in sorted(powerset(rvs), key=len)[1:-1]]
-        power = [(-1)**len(ss) for ss in sorted(powerset(rvs), key=len)[1:-1]]
-        power += [(-1)**len(rvs)]
+        power = [(-1) ** len(ss) for ss in sorted(powerset(rvs), key=len)[1:-1]]
+        power += [(-1) ** len(rvs)]
         power += [-sum(power)]
 
         @self._maybe_jit
@@ -944,15 +946,17 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         def obj_fn(x, args):
             return raw_objective(x), None
 
-        eq_funs = [c['fun'] for c in raw_constraints if c['type'] == 'eq']
-        ineq_funs = [c['fun'] for c in raw_constraints if c['type'] == 'ineq']
+        eq_funs = [c["fun"] for c in raw_constraints if c["type"] == "eq"]
+        ineq_funs = [c["fun"] for c in raw_constraints if c["type"] == "ineq"]
 
         n_eq = 0
         eq_constraint_fn = None
         if eq_funs:
+
             def eq_constraint_fn(x, args):
                 vals = [jnp.atleast_1d(f(x)) for f in eq_funs]
                 return jnp.concatenate(vals)
+
             # compute count from a dummy call
             _dummy = jnp.zeros(x0_size)
             n_eq = int(eq_constraint_fn(_dummy, None).shape[0])
@@ -965,30 +969,32 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
 
         n_ineq_extra = 0
         if ineq_funs:
+
             def _extra_ineq(x, args):
                 vals = [jnp.atleast_1d(f(x)) for f in ineq_funs]
                 return jnp.concatenate(vals)
+
             _dummy = jnp.zeros(x0_size)
             n_ineq_extra = int(_extra_ineq(_dummy, None).shape[0])
 
             def ineq_constraint_fn(x, args):
-                return jnp.concatenate([_box_ineq(x, args),
-                                        _extra_ineq(x, args)])
+                return jnp.concatenate([_box_ineq(x, args), _extra_ineq(x, args)])
         else:
+
             def ineq_constraint_fn(x, args):
                 return _box_ineq(x, args)
 
         n_ineq = n_ineq_box + n_ineq_extra
 
         solver_kwargs = {
-            'rtol': 1e-10,
-            'atol': 1e-10,
+            "rtol": 1e-10,
+            "atol": 1e-10,
         }
         if eq_constraint_fn is not None:
-            solver_kwargs['eq_constraint_fn'] = eq_constraint_fn
-            solver_kwargs['n_eq_constraints'] = n_eq
-        solver_kwargs['ineq_constraint_fn'] = ineq_constraint_fn
-        solver_kwargs['n_ineq_constraints'] = n_ineq
+            solver_kwargs["eq_constraint_fn"] = eq_constraint_fn
+            solver_kwargs["n_eq_constraints"] = n_eq
+        solver_kwargs["ineq_constraint_fn"] = ineq_constraint_fn
+        solver_kwargs["n_ineq_constraints"] = n_ineq
 
         solver = JaxSLSQP(**solver_kwargs)
 
@@ -1014,25 +1020,30 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         """
         from scipy.optimize import OptimizeResult
 
-        solver, obj_fn, max_steps = self._build_slsqp_jax_solver(
-            x0.size, maxiter=maxiter)
+        solver, obj_fn, max_steps = self._build_slsqp_jax_solver(x0.size, maxiter=maxiter)
 
         if maxiter:
             max_steps = maxiter
 
         sol = optx.minimise(
-            obj_fn, solver, jnp.array(x0), has_aux=True,
-            max_steps=max_steps, throw=False,
+            obj_fn,
+            solver,
+            jnp.array(x0),
+            has_aux=True,
+            max_steps=max_steps,
+            throw=False,
         )
 
         x_opt = np.asarray(sol.value, dtype=np.float64)
         fun_val = float(np.asarray(self._jax_raw_objective(sol.value)))
-        success = str(sol.result) == 'RESULTS.successful'
+        success = str(sol.result) == "RESULTS.successful"
 
         return OptimizeResult(
-            x=x_opt, fun=fun_val, success=success,
+            x=x_opt,
+            fun=fun_val,
+            success=success,
             message=str(sol.result),
-            nit=int(sol.stats.get('num_steps', 0)) if hasattr(sol.stats, 'get') else 0,
+            nit=int(sol.stats.get("num_steps", 0)) if hasattr(sol.stats, "get") else 0,
         )
 
     ###########################################################################
@@ -1055,37 +1066,38 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
 
         wrapped_constraints = []
         for const in self._jax_raw_constraints:
-            _raw_fun = const['fun']
+            _raw_fun = const["fun"]
 
             def _np_const_fun(x, _f=_raw_fun):
                 val = _f(x)
                 return float(np.asarray(val))
 
-            wrapped_constraints.append({**const, 'fun': _np_const_fun})
+            wrapped_constraints.append({**const, "fun": _np_const_fun})
 
         minimizer_kwargs = {
-            'bounds': [(0, 1)] * x0.size,
-            'callback': icb,
-            'constraints': wrapped_constraints,
-            'options': {},
+            "bounds": [(0, 1)] * x0.size,
+            "callback": icb,
+            "constraints": wrapped_constraints,
+            "options": {},
         }
 
         if not (self._use_autodiff and JAX_AVAILABLE):
             try:  # pragma: no cover
                 import numdifftools as ndt
-                minimizer_kwargs['jac'] = ndt.Jacobian(_np_objective)
-                for const in minimizer_kwargs['constraints']:
-                    const['jac'] = ndt.Jacobian(const['fun'])
+
+                minimizer_kwargs["jac"] = ndt.Jacobian(_np_objective)
+                for const in minimizer_kwargs["constraints"]:
+                    const["jac"] = ndt.Jacobian(const["fun"])
             except ImportError:
                 pass
 
         additions = deepcopy(self._additional_options)
-        options = additions.pop('options', {})
-        minimizer_kwargs['options'].update(options)
+        options = additions.pop("options", {})
+        minimizer_kwargs["options"].update(options)
         minimizer_kwargs.update(additions)
 
         if maxiter:
-            minimizer_kwargs['options']['maxiter'] = maxiter
+            minimizer_kwargs["options"]["maxiter"] = maxiter
 
         # Store the numpy-safe objective for use by scipy callers
         self.objective = _np_objective
@@ -1139,9 +1151,7 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         # prohibitively slow. Fall back to scipy for those cases.
         _MAX_NATIVE_DIM = 200
 
-        use_native = (SLSQP_JAX_AVAILABLE
-                      and self._use_autodiff
-                      and x0.size <= _MAX_NATIVE_DIM)
+        use_native = SLSQP_JAX_AVAILABLE and self._use_autodiff and x0.size <= _MAX_NATIVE_DIM
 
         if use_native:
             # ---- native slsqp-jax path (autodiff gradients) ----
@@ -1157,50 +1167,50 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
             if result is not None and self._jax_raw_constraints:
                 max_eq_viol = 0.0
                 for c in self._jax_raw_constraints:
-                    if c['type'] == 'eq':
-                        viol = abs(float(np.asarray(c['fun'](result.x))))
+                    if c["type"] == "eq":
+                        viol = abs(float(np.asarray(c["fun"](result.x))))
                         max_eq_viol = max(max_eq_viol, viol)
                 if max_eq_viol > 0.1:
-                    logger.info("slsqp-jax result has high constraint violation "
-                                "({viol:.2e}); falling back to scipy SLSQP",
-                                viol=max_eq_viol)
+                    logger.info(
+                        "slsqp-jax result has high constraint violation ({viol:.2e}); falling back to scipy SLSQP",
+                        viol=max_eq_viol,
+                    )
                     result = None  # force scipy fallback
 
             if result is None:
-                minimizer_kwargs, icb = self._scipy_minimize_kwargs(
-                    x0, callback=callback, maxiter=maxiter)
-                self._callback = BasinHoppingCallBack(
-                    minimizer_kwargs.get('constraints', {}), icb)
-                result = self._optimization_backend(
-                    x0, minimizer_kwargs, niter)
+                minimizer_kwargs, icb = self._scipy_minimize_kwargs(x0, callback=callback, maxiter=maxiter)
+                self._callback = BasinHoppingCallBack(minimizer_kwargs.get("constraints", {}), icb)
+                result = self._optimization_backend(x0, minimizer_kwargs, niter)
             else:
                 # Set self.objective for _polish and later use, then do
                 # a quick scipy refinement from the native result to
                 # improve precision (slsqp-jax sometimes converges to
                 # a slightly suboptimal point).
-                minimizer_kwargs, _ = self._scipy_minimize_kwargs(
-                    x0, callback=False, maxiter=maxiter)
+                minimizer_kwargs, _ = self._scipy_minimize_kwargs(x0, callback=False, maxiter=maxiter)
                 res_refine = minimize(
                     fun=self.objective,
                     x0=result.x.flatten(),
                     **minimizer_kwargs,
                 )
                 if res_refine.success and res_refine.fun < result.fun:
-                    logger.debug("scipy refinement improved native result: "
-                                 "{old:.6f} -> {new:.6f}",
-                                 old=result.fun, new=res_refine.fun)
+                    logger.debug(
+                        "scipy refinement improved native result: {old:.6f} -> {new:.6f}",
+                        old=result.fun,
+                        new=res_refine.fun,
+                    )
                     result = res_refine
         else:
             # ---- scipy fallback path (finite-difference gradients) ----
             if x0.size > _MAX_NATIVE_DIM:
-                logger.info("Problem dimension {dim} exceeds native limit {lim}; "
-                            "falling back to scipy SLSQP", dim=x0.size, lim=_MAX_NATIVE_DIM)
+                logger.info(
+                    "Problem dimension {dim} exceeds native limit {lim}; falling back to scipy SLSQP",
+                    dim=x0.size,
+                    lim=_MAX_NATIVE_DIM,
+                )
             else:
                 logger.info("Using scipy SLSQP fallback (slsqp-jax not available)")
-            minimizer_kwargs, icb = self._scipy_minimize_kwargs(
-                x0, callback=callback, maxiter=maxiter)
-            self._callback = BasinHoppingCallBack(
-                minimizer_kwargs.get('constraints', {}), icb)
+            minimizer_kwargs, icb = self._scipy_minimize_kwargs(x0, callback=callback, maxiter=maxiter)
+            self._callback = BasinHoppingCallBack(minimizer_kwargs.get("constraints", {}), icb)
             result = self._optimization_backend(x0, minimizer_kwargs, niter)
 
         if result:
@@ -1271,8 +1281,7 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         # Build solver and objective ONCE; the JIT-compiled function
         # captures these as closed-over constants so JAX can cache the
         # compilation across calls with different x0 values.
-        solver, obj_fn, max_steps = self._build_slsqp_jax_solver(
-            starts[0].size, maxiter=maxiter)
+        solver, obj_fn, max_steps = self._build_slsqp_jax_solver(starts[0].size, maxiter=maxiter)
 
         if maxiter:
             max_steps = maxiter
@@ -1280,8 +1289,12 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         @jit
         def _solve_one(x0_i):
             sol = optx.minimise(
-                obj_fn, solver, x0_i,
-                has_aux=True, max_steps=max_steps, throw=False,
+                obj_fn,
+                solver,
+                x0_i,
+                has_aux=True,
+                max_steps=max_steps,
+                throw=False,
             )
             return sol.value, obj_fn(sol.value, None)[0]
 
@@ -1294,10 +1307,14 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
                 x_opt, fun_val = _solve_one(s)
                 x_opt = np.asarray(x_opt, dtype=np.float64)
                 fun_val = float(np.asarray(fun_val))
-                results.append(OptimizeResult(
-                    x=x_opt, fun=fun_val, success=True,
-                    message='slsqp-jax sequential',
-                ))
+                results.append(
+                    OptimizeResult(
+                        x=x_opt,
+                        fun=fun_val,
+                        success=True,
+                        message="slsqp-jax sequential",
+                    )
+                )
             except Exception as e:
                 logger.debug("slsqp-jax start {i} failed: {e}", i=i, e=e)
 
@@ -1338,10 +1355,7 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
 
         if x0 is not None:
             logger.debug("Shotgun: trying provided initial condition")
-            res = minimize(fun=self.objective,
-                           x0=x0.flatten(),
-                           **minimizer_kwargs
-                           )
+            res = minimize(fun=self.objective, x0=x0.flatten(), **minimizer_kwargs)
             if res.success:
                 results.append(res)
             niter -= 1
@@ -1349,10 +1363,7 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         ics = (self.construct_random_initial() for _ in range(niter))
         for i, initial in enumerate(ics):
             logger.debug("Shotgun: random initial condition {i}/{niter}", i=i + 1, niter=niter)
-            res = minimize(fun=self.objective,
-                           x0=initial.flatten(),
-                           **minimizer_kwargs
-                           )
+            res = minimize(fun=self.objective, x0=initial.flatten(), **minimizer_kwargs)
             if res.success:
                 results.append(res)
 
@@ -1385,30 +1396,31 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         feasible = np.array([True for _ in x0])
 
         # Wrap constraints for scipy (return numpy scalars)
-        raw_constraints = getattr(self, '_jax_raw_constraints', self.constraints)
+        raw_constraints = getattr(self, "_jax_raw_constraints", self.constraints)
         wrapped_constraints = []
         for const in raw_constraints:
-            _raw_fun = const['fun']
+            _raw_fun = const["fun"]
 
             def _np_const_fun(x, _f=_raw_fun):
                 val = _f(x)
                 return float(np.asarray(val))
 
-            wrapped_constraints.append({**const, 'fun': _np_const_fun})
+            wrapped_constraints.append({**const, "fun": _np_const_fun})
 
         minimizer_kwargs = {
-            'bounds': Bounds(lb, ub, feasible),
-            'tol': None,
-            'callback': None,
-            'constraints': wrapped_constraints,
+            "bounds": Bounds(lb, ub, feasible),
+            "tol": None,
+            "callback": None,
+            "constraints": wrapped_constraints,
         }
 
         if not (self._use_autodiff and JAX_AVAILABLE):
             try:  # pragma: no cover
                 import numdifftools as ndt
-                minimizer_kwargs['jac'] = ndt.Jacobian(self.objective)
-                for const in minimizer_kwargs['constraints']:
-                    const['jac'] = ndt.Jacobian(const['fun'])
+
+                minimizer_kwargs["jac"] = ndt.Jacobian(self.objective)
+                for const in minimizer_kwargs["constraints"]:
+                    const["jac"] = ndt.Jacobian(const["fun"])
             except ImportError:
                 pass
 
@@ -1416,11 +1428,7 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
             self._optima = x0
             return
 
-        res = minimize(
-            fun=self.objective,
-            x0=x0,
-            **minimizer_kwargs
-        )
+        res = minimize(fun=self.objective, x0=x0, **minimizer_kwargs)
 
         if res.success:
             logger.debug("Polishing successful: objective={obj}", obj=res.fun)
@@ -1513,13 +1521,14 @@ class BaseNonConvexJaxOptimizer(BaseJaxOptimizer):
         else:
             res_shotgun = None
 
-        result = basinhopping(func=self.objective,
-                              x0=x0,
-                              minimizer_kwargs=minimizer_kwargs,
-                              niter=niter,
-                              accept_test=accept_test,
-                              callback=self._callback,
-                              )
+        result = basinhopping(
+            func=self.objective,
+            x0=x0,
+            minimizer_kwargs=minimizer_kwargs,
+            niter=niter,
+            accept_test=accept_test,
+            callback=self._callback,
+        )
 
         success, msg = basinhop_status(result)
         logger.info("Basin hopping (JAX) result: success={success}, message={msg}", success=success, msg=msg)
@@ -1547,19 +1556,20 @@ class BaseNonConvexJaxOptimizer(BaseJaxOptimizer):
             The result of the optimization. Returns None if the optimization
             failed.
         """
-        if 'constraints' in minimizer_kwargs:
+        if "constraints" in minimizer_kwargs:
             msg = "Differential Evolution can only be used in unconstrained optimization."
             raise OptimizationException(msg)
 
         if niter is None:
             niter = self._default_hops
 
-        result = differential_evolution(func=self.objective,
-                                        bounds=minimizer_kwargs['bounds'],
-                                        maxiter=minimizer_kwargs['options']['maxiter'],
-                                        popsize=niter,
-                                        tol=minimizer_kwargs['options']['ftol'],
-                                        )
+        result = differential_evolution(
+            func=self.objective,
+            bounds=minimizer_kwargs["bounds"],
+            maxiter=minimizer_kwargs["options"]["maxiter"],
+            popsize=niter,
+            tol=minimizer_kwargs["options"]["ftol"],
+        )
 
         if result.success:
             return result
@@ -1585,11 +1595,12 @@ class BaseNonConvexJaxOptimizer(BaseJaxOptimizer):
         if niter is None:
             niter = self._default_hops
 
-        result = shgo(func=self.objective,
-                      bounds=minimizer_kwargs['bounds'],
-                      constraints=minimizer_kwargs['constraints'],
-                      iters=niter,
-                      )
+        result = shgo(
+            func=self.objective,
+            bounds=minimizer_kwargs["bounds"],
+            constraints=minimizer_kwargs["constraints"],
+            iters=niter,
+        )
 
         if result.success:  # pragma: no cover
             return result
@@ -1597,7 +1608,7 @@ class BaseNonConvexJaxOptimizer(BaseJaxOptimizer):
     _optimization_backend = _optimization_basinhopping
 
 
-AuxVar = namedtuple('AuxVar', ['bases', 'bound', 'shape', 'mask', 'size'])
+AuxVar = namedtuple("AuxVar", ["bases", "bound", "shape", "mask", "size"])
 
 
 class BaseAuxVarJaxOptimizer(BaseNonConvexJaxOptimizer):
@@ -1646,14 +1657,14 @@ class BaseAuxVarJaxOptimizer(BaseNonConvexJaxOptimizer):
         self._full_slices = []
         for i, (auxvar, var) in enumerate(zip(self._aux_vars, arvs, strict=True)):
             relevant_vars = {self._n + b for b in auxvar.bases}
-            index = sorted(self._full_vars) + [self._n + a for a in arvs[:i + 1]]
+            index = sorted(self._full_vars) + [self._n + a for a in arvs[: i + 1]]
             var += self._n
             self._full_slices.append(tuple(colon if i in relevant_vars | {var} else jnp.newaxis for i in index))
 
         self._slices = []
         for i, (auxvar, var) in enumerate(zip(self._aux_vars, arvs, strict=True)):
             relevant_vars = auxvar.bases
-            index = sorted(self._rvs | self._crvs | set(arvs[:i + 1]))
+            index = sorted(self._rvs | self._crvs | set(arvs[: i + 1]))
             self._slices.append(tuple(colon if i in relevant_vars | {var} else jnp.newaxis for i in index))
 
     ###########################################################################
@@ -1852,7 +1863,7 @@ class BaseAuxVarJaxOptimizer(BaseNonConvexJaxOptimizer):
 
         try:
             # if all outcomes are strings, make new variable strings too.
-            ''.join(flatten(alphabets))
+            "".join(flatten(alphabets))
             for bound in self._aux_bounds:
                 alphabets += [(digits + ascii_letters)[:bound]]
             string = True
@@ -1883,14 +1894,13 @@ class BaseAuxVarJaxOptimizer(BaseNonConvexJaxOptimizer):
             for a, b in zip(rvs, mapping[i], strict=True):
                 new_map[a] = b
 
-        mapping = [[new_map.get(i, i) for i in range(len(self._full_shape))
-                    if i not in self._proxy_vars]]
+        mapping = [[new_map.get(i, i) for i in range(len(self._full_shape)) if i not in self._proxy_vars]]
 
         d = d.coalesce(mapping, extract=True)
 
         if string:
             with contextlib.suppress(ditException):
-                d = modify_outcomes(d, lambda o: ''.join(map(str, o)))
+                d = modify_outcomes(d, lambda o: "".join(map(str, o)))
 
         return d
 
@@ -1952,7 +1962,7 @@ class BaseAuxVarJaxOptimizer(BaseNonConvexJaxOptimizer):
             ccs.append(channel_capacity(np.array(channel))[0])
         return ccs
 
-    def _post_process(self, style='entropy', minmax='min', niter=10, maxiter=None):  # pragma: no cover
+    def _post_process(self, style="entropy", minmax="min", niter=10, maxiter=None):  # pragma: no cover
         """
         Find a solution to the minimization with a secondary property.
 
@@ -1977,7 +1987,7 @@ class BaseAuxVarJaxOptimizer(BaseNonConvexJaxOptimizer):
         logger.debug("Post-processing (JAX): style={style}, minmax={minmax}", style=style, minmax=minmax)
         entropy = self._entropy(self._arvs)
 
-        sign = +1 if minmax == 'min' else -1
+        sign = +1 if minmax == "min" else -1
 
         @self._maybe_jit
         def objective_entropy(x):
@@ -2014,9 +2024,9 @@ class BaseAuxVarJaxOptimizer(BaseNonConvexJaxOptimizer):
             cc = sum(self._channel_capacity(x))
             return sign * cc
 
-        if style == 'channel':
+        if style == "channel":
             objective = objective_channelcapacity
-        elif style == 'entropy':
+        elif style == "entropy":
             objective = objective_entropy
         else:
             msg = f"Style {style} is not understood."
@@ -2041,12 +2051,15 @@ class BaseAuxVarJaxOptimizer(BaseNonConvexJaxOptimizer):
                 The squared deviation of the current objective from the
                 previously found optimum.
             """
-            obj = (self.objective(x) - true_objective)**2
+            obj = (self.objective(x) - true_objective) ** 2
             return obj
 
-        constraint = [{'type': 'eq',
-                       'fun': constraint_match_objective,
-                       }]
+        constraint = [
+            {
+                "type": "eq",
+                "fun": constraint_match_objective,
+            }
+        ]
 
         # set up required attributes
         try:
@@ -2078,5 +2091,3 @@ def is_jax_available():
         True if JAX is installed and can be imported.
     """
     return JAX_AVAILABLE
-
-

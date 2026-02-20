@@ -8,9 +8,7 @@ from ...npdist import Distribution
 from ...shannon import conditional_entropy as H
 from ...utils import unitful
 
-__all__ = (
-    'gk_common_information',
-)
+__all__ = ("gk_common_information",)
 
 
 @unitful
@@ -52,7 +50,7 @@ def gk_common_information(dist, rvs=None, crvs=None, rv_mode=None):
     rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
     crvs = parse_rvs(dist, crvs, rv_mode)[1]
 
-    outcomes, pmf = zip(*dist.zipped(mode='patoms'), strict=True)
+    outcomes, pmf = zip(*dist.zipped(mode="patoms"), strict=True)
     # The GK-common information is sensitive to zeros in the sample space.
     # Here, we make sure to remove them.
     d = Distribution(outcomes, pmf, sample_space=outcomes)

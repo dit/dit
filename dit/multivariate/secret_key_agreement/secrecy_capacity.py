@@ -11,9 +11,7 @@ from ...utils import unitful
 from .._backend import _make_backend_subclass
 from .one_way_skar import OneWaySKAR
 
-__all__ = (
-    'secrecy_capacity',
-)
+__all__ = ("secrecy_capacity",)
 
 
 class SecrecyCapacity(OneWaySKAR):
@@ -30,8 +28,7 @@ class SecrecyCapacity(OneWaySKAR):
 
 
 @unitful
-def secrecy_capacity(dist, X, Y, Z, rv_mode=None, niter=None, bound_u=None,
-                     backend='numpy'):
+def secrecy_capacity(dist, X, Y, Z, rv_mode=None, niter=None, bound_u=None, backend="numpy"):
     """
     The rate at which X and Y can agree upon a key over the channel p(YZ|X)
     while Z eavesdrops, and no public communication.

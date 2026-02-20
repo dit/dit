@@ -12,14 +12,14 @@ from .exceptions import (
 )
 
 __all__ = (
-    'is_pmf',
-    'validate_normalization',
-    'validate_outcomes',
-    'validate_outcome_class',
-    'validate_outcome_length',
-    'validate_pmf',
-    'validate_probabilities',
-    'validate_sequence',
+    "is_pmf",
+    "validate_normalization",
+    "validate_outcomes",
+    "validate_outcome_class",
+    "validate_outcome_length",
+    "validate_pmf",
+    "validate_probabilities",
+    "validate_sequence",
 )
 
 
@@ -216,8 +216,9 @@ def validate_sequence(outcome):
 
     """
     from collections.abc import Sequence
+
     if not isinstance(outcome, Sequence):
-        raise ditException('Outcome class is not a sequence.')
+        raise ditException("Outcome class is not a sequence.")
     else:
         return True
 
@@ -229,11 +230,10 @@ def validate_outcome_class(outcomes):
 
     """
     # Make sure the class is the same for all outcomes.
-    equal_classes = all(outcomes[0].__class__ == outcome.__class__
-                        for outcome in outcomes)
+    equal_classes = all(outcomes[0].__class__ == outcome.__class__ for outcome in outcomes)
 
     if not equal_classes:
-        raise ditException('Not all outcomes have the same class.')
+        raise ditException("Not all outcomes have the same class.")
     else:
         return True
 
@@ -247,13 +247,13 @@ def validate_outcome_length(outcomes):
     try:
         lengths = list(map(len, outcomes))
     except TypeError as err:
-        raise ditException('One or more outcomes is not a container.') from err
+        raise ditException("One or more outcomes is not a container.") from err
     else:
         outcome_length = lengths[0]
 
     # Make sure each outcome has the same length.
     equal_lengths = np.all(np.equal(lengths, outcome_length))
     if not equal_lengths:
-        raise ditException('Not all outcomes have the same length.')
+        raise ditException("Not all outcomes have the same length.")
     else:
         return True

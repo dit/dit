@@ -13,9 +13,7 @@ from ..utils import flatten, powerset
 from .base_profile import BaseProfile, profile_docstring
 from .information_partitions import ShannonPartition
 
-__all__ = (
-    'MUIProfile',
-)
+__all__ = ("MUIProfile",)
 
 
 def get_lp_form(dist, ents):
@@ -67,19 +65,18 @@ def get_lp_form(dist, ents):
             # constraint (iii)
             cond = np.zeros(len(atoms))
             for j, atom in enumerate(atoms):
-                if (pa_V & atom):
+                if pa_V & atom:
                     cond[j] += 1
-                if (pa_W & atom):
+                if pa_W & atom:
                     cond[j] += 1
-                if ((pa_V | pa_W) & atom):
+                if (pa_V | pa_W) & atom:
                     cond[j] -= 1
-                if ((pa_V & pa_W) & atom):
+                if (pa_V & pa_W) & atom:
                     cond[j] -= 1
                 A.append(cond)
-                b.append(ents[([pa_V], [])]
-                         + ents[([pa_W], [])]
-                         - ents[([pa_V | pa_W], [])]
-                         - ents[([pa_V & pa_W], [])])
+                b.append(
+                    ents[([pa_V], [])] + ents[([pa_W], [])] - ents[([pa_V | pa_W], [])] - ents[([pa_V & pa_W], [])]
+                )
 
     A.append([1] * len(atoms))
     b.append(0)  # placeholder for y
@@ -125,14 +122,11 @@ def max_util_of_info(c, A, b, bounds, y):
 
 
 class MUIProfile(BaseProfile):
-    __doc__ = profile_docstring.format(name='MUIProfile',
-                                       static_attributes='',
-                                       attributes='',
-                                       methods='')
+    __doc__ = profile_docstring.format(name="MUIProfile", static_attributes="", attributes="", methods="")
 
     xlabel = "scale [bits]"
     ylabel = "marginal utility of information"
-    align = 'edge'
+    align = "edge"
     _name = "Marginal Utility of Info."
 
     def _compute(self):

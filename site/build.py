@@ -14,7 +14,7 @@ import subprocess
 import sys
 import time
 
-BUILD_DIR = 'build'
+BUILD_DIR = "build"
 
 
 def get_build_dir():
@@ -30,7 +30,7 @@ def get_build_dir():
 
 def build(dest):
     source = os.path.split(os.path.abspath(__file__))[0]
-    source = os.path.join(source, 'src')
+    source = os.path.join(source, "src")
 
     # We aren't doing anything fancy yet.
     shutil.copytree(source, dest)
@@ -41,7 +41,7 @@ def update_gitrepo():
     initial = os.getcwd()
     try:
         os.chdir(source)
-        subprocess.call(['git', 'pull'])
+        subprocess.call(["git", "pull"])
     finally:
         os.chdir(initial)
 
@@ -71,9 +71,9 @@ def main():
 
     # update_gitrepo()
     build(build_dir)
-    subprocess.call(['touch', build_dir])
+    subprocess.call(["touch", build_dir])
     print("Done.\n")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

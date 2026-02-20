@@ -7,10 +7,10 @@ import numpy as np
 import dit.exceptions
 
 __all__ = (
-    'sample',
-    'ball',
-    'norm',
-    'sample_simplex',
+    "sample",
+    "ball",
+    "norm",
+    "sample_simplex",
 )
 
 
@@ -214,7 +214,7 @@ def _ball(n, size, prng):
     .. [1] http://math.stackexchange.com/a/87238
 
     """
-    R = prng.rand(size, 1)**(1 / n)
+    R = prng.rand(size, 1) ** (1 / n)
     X = prng.randn(size, n)
     norm = np.sqrt((X**2).sum(axis=1))[..., np.newaxis]
     return (R * X) / norm
@@ -270,10 +270,10 @@ def _3ball_cylinder(size, prng):
 
     """
     # This also ends up being slower than _ball.
-    R = prng.rand(size)**(1 / 3)
+    R = prng.rand(size) ** (1 / 3)
     z = 2 * prng.rand(size) - 1
     theta = 2 * np.pi * prng.rand(size)
-    r = np.sqrt(R ** 2 - z ** 2)
+    r = np.sqrt(R**2 - z**2)
     x = r * np.cos(theta)
     y = r * np.sin(theta)
     return np.array([x, y, z]).transpose()
@@ -311,7 +311,7 @@ def norm(pmf, ilrcov=None, size=None, prng=None):
 
     pmf = np.asarray(pmf)
     if len(pmf.shape) != 1:
-        raise dit.exceptions.ditException('`pmf` must be a 1D array.')
+        raise dit.exceptions.ditException("`pmf` must be a 1D array.")
 
     ilrmean = dit.math.aitchison.ilr(pmf)
     n = len(pmf)
@@ -331,7 +331,7 @@ def norm(pmf, ilrcov=None, size=None, prng=None):
         elif D == 1:
             # diagonal covariance
             if ilrcov.shape != (n - 1,):
-                msg = '`ilrcov` must have shape (n-1,)'
+                msg = "`ilrcov` must have shape (n-1,)"
                 raise dit.exceptions.ditException(msg)
 
             x = np.eye(n - 1)
@@ -340,10 +340,10 @@ def norm(pmf, ilrcov=None, size=None, prng=None):
         elif D == 2:
             # user specified covariance
             if ilrcov.shape != (n - 1, n - 1):
-                msg = '`ilrcov` must have shape (n-1, n-1)'
+                msg = "`ilrcov` must have shape (n-1, n-1)"
                 raise dit.exceptions.ditException(msg)
         else:
-            raise dit.exceptions.ditException('`ilrcov` must be a 2D array.')
+            raise dit.exceptions.ditException("`ilrcov` must be a 2D array.")
 
     k = 1 if size is None else size
 
@@ -446,12 +446,14 @@ def annulus2(pmf, rmin, rmax, size=None, prng=None):
 # Load the cython function if possible
 try:  # pragma: no cover
     from ._samplediscrete import sample as _sample_discrete__cython
+
     _sample = _sample_discrete__cython
 except ImportError:  # pragma: no cover
     _sample = _sample_discrete__python
 
 try:  # pragma: no cover
     from ._samplediscrete import samples as _samples_discrete__cython
+
     _samples = _samples_discrete__cython
 except ImportError:  # pragma: no cover
     _samples = _samples_discrete__python

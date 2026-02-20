@@ -10,9 +10,7 @@ from ..helpers import normalize_rvs
 from ..multivariate import entropy as H
 from ..utils import unitful
 
-__all__ = (
-    'coupling_metric',
-)
+__all__ = ("coupling_metric",)
 
 
 @unitful
@@ -56,8 +54,7 @@ def residual_entropy(dist, rvs=None, crvs=None, p=1.0, rv_mode=None):
 
     others = lambda rv, rvs: set(set().union(*rvs)) - set(rv)
 
-    R = sum(H(dist, rv, others(rv, rvs).union(crvs), rv_mode=rv_mode)**p
-            for rv in rvs)**(1 / p)
+    R = sum(H(dist, rv, others(rv, rvs).union(crvs), rv_mode=rv_mode) ** p for rv in rvs) ** (1 / p)
 
     return R
 

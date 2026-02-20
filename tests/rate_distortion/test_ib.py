@@ -9,8 +9,8 @@ from dit.divergences.pmf import relative_entropy
 from dit.exceptions import ditException
 from dit.rate_distortion.information_bottleneck import InformationBottleneck, InformationBottleneckDivergence
 
-dist = Distribution(['00', '02', '12', '21', '22'], [1 / 5] * 5)
-dist2 = Distribution(['000', '001', '020', '021', '120', '121', '210', '211', '220', '221'], [1 / 10] * 10)
+dist = Distribution(["00", "02", "12", "21", "22"], [1 / 5] * 5)
+dist2 = Distribution(["000", "001", "020", "021", "120", "121", "210", "211", "220", "221"], [1 / 10] * 10)
 
 
 def test_ib_1():

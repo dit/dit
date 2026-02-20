@@ -8,9 +8,7 @@ from ..helpers import normalize_rvs
 from ..multivariate import entropy
 from ..utils import flatten
 
-__all__ = (
-    'tsallis_entropy',
-)
+__all__ = ("tsallis_entropy",)
 
 
 def tsallis_entropy(dist, order, rvs=None, rv_mode=None):

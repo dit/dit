@@ -12,7 +12,7 @@ def test_pid_gk1():
     """
     Test iwedge on a generic distribution.
     """
-    d = bivariates['imp. rdn']
+    d = bivariates["imp. rdn"]
     pid = PID_GK(d, ((0,), (1,)), (2,))
     assert pid[((0,), (1,))] == pytest.approx(0.0)
     assert pid[((0,),)] == pytest.approx(1.0)
@@ -24,7 +24,7 @@ def test_pid_gk2():
     """
     Test iwedge on another generic distribution.
     """
-    d = trivariates['sum']
+    d = trivariates["sum"]
     pid = PID_GK(d, [[0], [1], [2]], [3])
     for atom in pid._lattice:
         if atom in [((0, 1, 2),), ((0,),), ((1,),), ((2,),)]:

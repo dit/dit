@@ -5,9 +5,7 @@ The I_mmi measure, briefly looked at by the BROJA team.
 from ...multivariate import coinformation
 from ..pid import BasePID
 
-__all__ = (
-    'PID_MMI',
-)
+__all__ = ("PID_MMI",)
 
 
 class PID_MMI(BasePID):

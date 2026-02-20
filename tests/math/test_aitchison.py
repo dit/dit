@@ -230,9 +230,7 @@ def test_alr():
 def test_ilr():
     # 1D
     x = np.array([1, 2, 3, 4])
-    lg = log2([(x[0])**(1) / x[1],
-               (x[0] * x[1])**(1 / 2) / x[2],
-               (x[0] * x[1] * x[2])**(1 / 3) / x[3]])
+    lg = log2([(x[0]) ** (1) / x[1], (x[0] * x[1]) ** (1 / 2) / x[2], (x[0] * x[1] * x[2]) ** (1 / 3) / x[3]])
     coeff = np.sqrt([1 / 2, 2 / 3, 3 / 4])
     ilrx_ = coeff * lg
     ilrx = ilr(x)
@@ -279,7 +277,7 @@ def test_equiv_inner2():
     clry = clr(y)
     D = len(x)
     M = -1 * np.ones((D, D))
-    M.flat[::D + 1] = D - 1
+    M.flat[:: D + 1] = D - 1
 
     z1 = inner(x, y)
     z2 = 1 / D * np.dot(np.dot(clrx, M), clry[:, np.newaxis])
@@ -313,10 +311,9 @@ def test_clr_prop():
 
 
 def test_basis():
-    b = np.array([[1 / 1, -1, 0, 0, 0],
-                  [1 / 2, 1 / 2, -1, 0, 0],
-                  [1 / 3, 1 / 3, 1 / 3, -1, 0],
-                  [1 / 4, 1 / 4, 1 / 4, 1 / 4, -1]])
+    b = np.array(
+        [[1 / 1, -1, 0, 0, 0], [1 / 2, 1 / 2, -1, 0, 0], [1 / 3, 1 / 3, 1 / 3, -1, 0], [1 / 4, 1 / 4, 1 / 4, 1 / 4, -1]]
+    )
     b *= np.sqrt([i / (i + 1) for i in range(1, 5)])[:, np.newaxis]
     b = closure(exp2(b))
     b_ = basis(4)
@@ -405,7 +402,7 @@ def test_ilr_inv_underflow():
     """
     # We need a lot of small probabilities so their products will underflow
     # if we don't use logarithms properly.
-    d = dit.example_dists.summed_dice(.5, 1)
+    d = dit.example_dists.summed_dice(0.5, 1)
     d = dit.expanded_samplespace(d, union=True)
     d.make_dense()
 

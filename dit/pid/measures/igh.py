@@ -7,9 +7,7 @@ from ...math import prod
 from ...shannon import entropy, mutual_information
 from ..pid import BasePID
 
-__all__ = (
-    'PID_GH',
-)
+__all__ = ("PID_GH",)
 
 
 class GHOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
@@ -57,16 +55,20 @@ class GHOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
         mutual_informations = [mutual_information(dist, source, target) for source in sources]
         trivial = all(abs(h - i) < 1e-6 for h, i in zip(entropies, mutual_informations, strict=True))
         if not trivial:
-            self.constraints += [{'type': 'eq',
-                                'fun': self.constraint_markov_chains(),
-                                },
-                                ]
+            self.constraints += [
+                {
+                    "type": "eq",
+                    "fun": self.constraint_markov_chains(),
+                },
+            ]
 
-        self._additional_options = {'options': {'maxiter': 2500,
-                                                'ftol': 1e-6,
-                                                'eps': 1.4901161193847656e-9,
-                                                }
-                                    }
+        self._additional_options = {
+            "options": {
+                "maxiter": 2500,
+                "ftol": 1e-6,
+                "eps": 1.4901161193847656e-9,
+            }
+        }
 
     def constraint_markov_chains(self):
         """

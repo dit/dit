@@ -18,24 +18,24 @@ from .utils import digits, powerset
 from .validate import validate_pmf
 
 __all__ = (
-    'mixture_distribution',
-    'mixture_distribution2',
-    'noisy',
-    'erasure',
-    'modify_outcomes',
-    'random_scalar_distribution',
-    'random_distribution',
-    'simplex_grid',
-    'uniform_distribution',
-    'uniform_scalar_distribution',
-    'insert_rvf',
-    'RVFunctions',
-    'product_distribution',
-    'uniform',
-    'uniform_like',
-    'all_dist_structures',
-    'random_dist_structure',
-    'DistributionEnumerator',
+    "mixture_distribution",
+    "mixture_distribution2",
+    "noisy",
+    "erasure",
+    "modify_outcomes",
+    "random_scalar_distribution",
+    "random_distribution",
+    "simplex_grid",
+    "uniform_distribution",
+    "uniform_scalar_distribution",
+    "insert_rvf",
+    "RVFunctions",
+    "product_distribution",
+    "uniform",
+    "uniform_like",
+    "all_dist_structures",
+    "random_dist_structure",
+    "DistributionEnumerator",
 )
 
 
@@ -85,11 +85,9 @@ def mixture_distribution(dists, weights, merge=False):
     validate_pmf(weights, ops)
 
     if merge:
-        vals = lambda o: [(ops.mult(w, d[o]) if o in d else 0)
-                          for w, d in zip(weights, dists, strict=True)]
+        vals = lambda o: [(ops.mult(w, d[o]) if o in d else 0) for w, d in zip(weights, dists, strict=True)]
     else:
-        vals = lambda o: [ops.mult(w, d[o])
-                          for w, d in zip(weights, dists, strict=True)]
+        vals = lambda o: [ops.mult(w, d[o]) for w, d in zip(weights, dists, strict=True)]
 
     outcomes = set().union(*[d.outcomes for d in dists])
     pmf = [ops.add_reduce(np.array(vals(o))) for o in outcomes]
@@ -146,7 +144,7 @@ def mixture_distribution2(dists, weights):
     # be broadcast. This would make it harder to detect errors.
     shapes = {dist.pmf.shape for dist in dists}
     if len(shapes) != 1:
-        raise ValueError('All pmfs must have the same length.')
+        raise ValueError("All pmfs must have the same length.")
 
     ops = dists[0].ops
     validate_pmf(weights, ops)
@@ -176,7 +174,7 @@ def noisy(dist, noise=1 / 2):
     """
     fuzz = uniform(list(product(*dist.alphabet)))
     if isinstance(dist.outcomes[0], str):
-        fuzz = modify_outcomes(fuzz, lambda o: ''.join(o))
+        fuzz = modify_outcomes(fuzz, lambda o: "".join(o))
     fuzzy = mixture_distribution([dist, fuzz], [1 - noise, noise], merge=True)
     return fuzzy
 
@@ -203,9 +201,9 @@ def erasure(dist, epsilon=1 / 2):
     n = dist.outcome_length()
 
     for outcome, prob in dist.zipped():
-        for o in product(*zip(outcome, '_' * n, strict=True)):
-            count = o.count('_')
-            outcomes[ctor(o)] += prob * epsilon**count * (1 - epsilon)**(n - count)
+        for o in product(*zip(outcome, "_" * n, strict=True)):
+            count = o.count("_")
+            outcomes[ctor(o)] += prob * epsilon**count * (1 - epsilon) ** (n - count)
 
     return Distribution(outcomes)
 
@@ -285,7 +283,7 @@ def random_scalar_distribution(n, base=None, alpha=None, prng=None):
     if alpha is None:
         alpha = np.ones(len(d))
     elif len(alpha) != nOutcomes:
-        raise ditException('Number of concentration parameters must be `n`.')
+        raise ditException("Number of concentration parameters must be `n`.")
 
     pmf = prng.dirichlet(alpha)
     d.pmf = pmf
@@ -341,7 +339,7 @@ def random_distribution(outcome_length, alphabet_size, base=None, alpha=None, pr
     if alpha is None:
         alpha = np.ones(len(d))
     elif len(alpha) != len(d):
-        raise ditException('Invalid number of concentration parameters.')
+        raise ditException("Invalid number of concentration parameters.")
 
     pmf = prng.dirichlet(alpha)
     d.pmf = pmf
@@ -400,9 +398,9 @@ def simplex_grid(length, subdivisions, using=None, inplace=False):
     from dit.math.combinatorics import slots
 
     if subdivisions < 1:
-        raise ditException('`subdivisions` must be greater than or equal to 1')
+        raise ditException("`subdivisions` must be greater than or equal to 1")
     elif length < 1:
-        raise ditException('`length` must be greater than or equal to 1')
+        raise ditException("`length` must be greater than or equal to 1")
 
     gen = slots(int(subdivisions), int(length), normalized=True)
 
@@ -417,7 +415,7 @@ def simplex_grid(length, subdivisions, using=None, inplace=False):
             yield using(pmf)
     else:
         if length != len(using.pmf):
-            raise Exception('`length` must match the length of pmf')
+            raise Exception("`length` must match the length of pmf")
 
         if inplace:
             d = using
@@ -455,7 +453,7 @@ def uniform_scalar_distribution(n, base=None):
         outcomes = tuple(range(n))
 
     pmf = [1 / nOutcomes] * nOutcomes
-    d = ScalarDistribution(outcomes, pmf, base='linear')
+    d = ScalarDistribution(outcomes, pmf, base="linear")
 
     # Maybe we should use ditParams['base'] when base is None?
     if base is not None:
@@ -527,7 +525,7 @@ def uniform_distribution(outcome_length, alphabet_size, base=None):
 
     pmf = [1 / Z] * Z
     outcomes = tuple(product(*alphabet))
-    d = Distribution(outcomes, pmf, base='linear')
+    d = Distribution(outcomes, pmf, base="linear")
 
     # Maybe we should use ditParams['base'] when base is None?
     if base is not None:
@@ -636,8 +634,9 @@ def insert_rvf(d, func, index=-1):
     partial_outcomes = [map(func, d.outcomes) for func in funcs]
 
     # Now "flatten" the new contributions.
-    partial_outcomes = [d._outcome_ctor([o for o_list in outcome for o in o_list])
-                        for outcome in zip(*partial_outcomes, strict=True)]
+    partial_outcomes = [
+        d._outcome_ctor([o for o_list in outcome for o in o_list]) for outcome in zip(*partial_outcomes, strict=True)
+    ]
 
     new_outcomes = zip(d.outcomes, partial_outcomes, strict=True)
     if index == -1:
@@ -681,9 +680,9 @@ class RVFunctions:
         ('0000', '0110', '1011', '1101')
         """
         if not isinstance(d, Distribution):
-            raise ditException('`d` must be a Distribution instance.')
+            raise ditException("`d` must be a Distribution instance.")
         try:
-            d.outcomes[0] + ''
+            d.outcomes[0] + ""
         except TypeError:
             is_int = True
         else:
@@ -721,10 +720,12 @@ class RVFunctions:
         ('000', '011', '101', '110')
         """
         if self.is_int:
+
             def func(outcome):
                 result = outcome[indices[0]] != outcome[indices[1]]
                 return (int(result),)
         else:
+
             def func(outcome):
                 result = outcome[indices[0]] != outcome[indices[1]]
                 return str(int(result))
@@ -830,15 +831,15 @@ class RVFunctions:
         """
         # Practically, we support the str class. This is bytes in Python
         # versions <3 and unicode >3.
-        alphabet = '0123456789'
-        letters = 'abcdefghijklmnopqrstuvwxyz'
+        alphabet = "0123456789"
+        letters = "abcdefghijklmnopqrstuvwxyz"
         alphabet += letters
         alphabet += letters.upper()
 
         n = len(partition)
         if self.outcome_class is str:
             if n > len(alphabet):
-                msg = 'Number of outcomes is too large.'
+                msg = "Number of outcomes is too large."
                 raise NotImplementedError(msg)
             vals = alphabet[:n]
         else:
@@ -898,13 +899,16 @@ class RVFunctions:
         outcomes = set(outcomes)
 
         if self.is_int:
+
             def func(outcome):
                 result = outcome in outcomes
                 return (int(result),)
         else:
+
             def func(outcome):
                 result = outcome in outcomes
                 return str(int(result))
+
         return func
 
 
@@ -958,13 +962,12 @@ def product_distribution(dist, rvs=None, rv_mode=None, base=None):
     else:
         # We do not allow repeats and want to keep the order.
         # Use argument [1] since we don't need the names.
-        parse = lambda rv: parse_rvs(dist, rv, rv_mode=rv_mode,
-                                     unique=True, sort=False)[1]
+        parse = lambda rv: parse_rvs(dist, rv, rv_mode=rv_mode, unique=True, sort=False)[1]
         indexes = [parse(rv) for rv in rvs]
 
     all_indexes = [idx for index_list in indexes for idx in index_list]
     if len(all_indexes) != len(set(all_indexes)):
-        raise Exception('The elements of `rvs` have nonzero intersection.')
+        raise Exception("The elements of `rvs` have nonzero intersection.")
 
     marginals = [dist.marginal(index_list, rv_mode=rv_mode) for index_list in indexes]
     ctor = dist._outcome_ctor
@@ -1008,12 +1011,12 @@ def all_dist_structures(outcome_length, alphabet_size):
     d : Distribution
         A uniform distribution over a subset of the possible joint events.
     """
-    alphabet = ''.join(str(i) for i in range(alphabet_size))
+    alphabet = "".join(str(i) for i in range(alphabet_size))
     words = product(alphabet, repeat=outcome_length)
     topologies = powerset(words)
     next(topologies)  # the first element is the null set
     for t in topologies:
-        outcomes = [''.join(_) for _ in t]
+        outcomes = ["".join(_) for _ in t]
         yield uniform(outcomes)
 
 
@@ -1036,8 +1039,8 @@ def _int_to_dist(number, outcome_length, alphabet_size):
     d : Distribution
         A uniform distribution over the joint event specified by the parameters.
     """
-    alphabet = ''.join(str(i) for i in range(alphabet_size))
-    words = [''.join(word) for word in product(alphabet, repeat=outcome_length)]
+    alphabet = "".join(str(i) for i in range(alphabet_size))
+    words = ["".join(word) for word in product(alphabet, repeat=outcome_length)]
     events = digits(number, 2, pad=alphabet_size**outcome_length, big_endian=False)
     pmf = [p / sum(events) for p in events]
     return Distribution(words, pmf)
@@ -1060,7 +1063,7 @@ def random_dist_structure(outcome_length, alphabet_size):
     d : Distribution
         A uniform distribution over a random subset of joint events.
     """
-    bound = 2**(alphabet_size**outcome_length)
+    bound = 2 ** (alphabet_size**outcome_length)
     return _int_to_dist(randint(1, bound - 1), outcome_length, alphabet_size)
 
 
@@ -1090,6 +1093,7 @@ def _combine_scalar_dists(d1, d2, op):
         dist[op(o1, o2)] += d1.ops.mult(p1, p2)
 
     return ScalarDistribution(*zip(*dist.items(), strict=True), base=d1.get_base())
+
 
 class DistributionEnumerator:
     """
@@ -1133,7 +1137,7 @@ class DistributionEnumerator:
         i : int
            The associated integer representing `events`.
         """
-        return sum(2**int(''.join(map(str, e)), base=self.k) for e in events)
+        return sum(2 ** int("".join(map(str, e)), base=self.k) for e in events)
 
     def _int_to_events(self, i):
         """
@@ -1302,7 +1306,7 @@ class DistributionEnumerator:
            The non-isomorphic distributions.
         """
         canonicals = {}
-        for i in range(1, 2**(self.k**self.n)):
+        for i in range(1, 2 ** (self.k**self.n)):
             if i in canonicals:
                 continue
             isos = self._isomorphisms(i)

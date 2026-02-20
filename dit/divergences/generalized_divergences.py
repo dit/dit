@@ -10,12 +10,12 @@ from .cross_entropy import get_pmfs_like
 from .kullback_leibler_divergence import kullback_leibler_divergence
 
 __all__ = (
-    'double_power_sum',
-    'hellinger_sum',
-    'alpha_divergence',
-    'hellinger_divergence',
-    'renyi_divergence',
-    'tsallis_divergence',
+    "double_power_sum",
+    "hellinger_sum",
+    "alpha_divergence",
+    "hellinger_divergence",
+    "renyi_divergence",
+    "tsallis_divergence",
 )
 
 ### References for Divergence Formulas ###

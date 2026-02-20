@@ -6,13 +6,31 @@ import pytest
 
 from dit.math.sigmaalgebra import atom_set, is_sigma_algebra, is_sigma_algebra__brute, sets2matrix
 
-sa = frozenset([frozenset([]), frozenset(['a']), frozenset(['b']), frozenset(['c']),
-                frozenset(['a', 'b']), frozenset(['a', 'c']), frozenset(['b', 'c']),
-                frozenset(['a', 'b', 'c'])])
-not_sa1 = frozenset([frozenset([]), frozenset('c'), frozenset('b'), frozenset(['a', 'b'])])
-not_sa2 = frozenset([frozenset([]), frozenset(['a']), frozenset(['b']), frozenset(['c']),
-                frozenset(['a', 'b']), frozenset(['a', 'c']), frozenset(['b', 'c'])])
-not_sa3 = frozenset([frozenset([]), frozenset('c'), frozenset(['a', 'b', 'c'])])
+sa = frozenset(
+    [
+        frozenset([]),
+        frozenset(["a"]),
+        frozenset(["b"]),
+        frozenset(["c"]),
+        frozenset(["a", "b"]),
+        frozenset(["a", "c"]),
+        frozenset(["b", "c"]),
+        frozenset(["a", "b", "c"]),
+    ]
+)
+not_sa1 = frozenset([frozenset([]), frozenset("c"), frozenset("b"), frozenset(["a", "b"])])
+not_sa2 = frozenset(
+    [
+        frozenset([]),
+        frozenset(["a"]),
+        frozenset(["b"]),
+        frozenset(["c"]),
+        frozenset(["a", "b"]),
+        frozenset(["a", "c"]),
+        frozenset(["b", "c"]),
+    ]
+)
+not_sa3 = frozenset([frozenset([]), frozenset("c"), frozenset(["a", "b", "c"])])
 
 
 def test_s2m1():
@@ -20,14 +38,7 @@ def test_s2m1():
     Test matrix construction.
     """
     m, _ = sets2matrix(sa)
-    true_m = {(0, 1, 0),
-              (0, 0, 1),
-              (0, 0, 0),
-              (1, 0, 1),
-              (1, 0, 0),
-              (1, 1, 1),
-              (1, 1, 0),
-              (0, 1, 1)}
+    true_m = {(0, 1, 0), (0, 0, 1), (0, 0, 0), (1, 0, 1), (1, 0, 0), (1, 1, 1), (1, 1, 0), (0, 1, 1)}
     assert set(map(tuple, m.tolist())) == true_m
 
 
@@ -35,15 +46,8 @@ def test_s2m2():
     """
     Test matrix construction.
     """
-    m, _ = sets2matrix(sa, X=['a', 'b', 'c'])
-    true_m = {(0, 1, 0),
-              (0, 0, 1),
-              (0, 0, 0),
-              (1, 0, 1),
-              (1, 0, 0),
-              (1, 1, 1),
-              (1, 1, 0),
-              (0, 1, 1)}
+    m, _ = sets2matrix(sa, X=["a", "b", "c"])
+    true_m = {(0, 1, 0), (0, 0, 1), (0, 0, 0), (1, 0, 1), (1, 0, 0), (1, 1, 1), (1, 1, 0), (0, 1, 1)}
     assert set(map(tuple, m.tolist())) == true_m
 
 
@@ -52,7 +56,7 @@ def test_s2m3():
     Test matrix construction.
     """
     with pytest.raises(Exception, match="is not a subset of frozenset"):
-        sets2matrix(sa, X=['a'])
+        sets2matrix(sa, X=["a"])
 
 
 def test_isa1():
@@ -94,7 +98,7 @@ def test_isa6():
     """
     Test not SA brute.
     """
-    assert not is_sigma_algebra__brute(not_sa2, X=['a', 'b', 'c'])
+    assert not is_sigma_algebra__brute(not_sa2, X=["a", "b", "c"])
 
 
 def test_isa7():
@@ -109,7 +113,7 @@ def test_atom_set1():
     Find the atoms.
     """
     atoms = atom_set(sa)
-    assert atoms == frozenset([frozenset('a'), frozenset('b'), frozenset('c')])
+    assert atoms == frozenset([frozenset("a"), frozenset("b"), frozenset("c")])
 
 
 def test_atom_set2():
@@ -117,7 +121,7 @@ def test_atom_set2():
     Find the atoms.
     """
     atoms = atom_set(not_sa1, method=1)
-    assert atoms == frozenset([frozenset('c'), frozenset('b')])
+    assert atoms == frozenset([frozenset("c"), frozenset("b")])
 
 
 def test_atom_set3():
@@ -125,7 +129,7 @@ def test_atom_set3():
     Find the atoms.
     """
     atoms = atom_set(not_sa2, method=1)
-    assert atoms == frozenset([frozenset('a'), frozenset('b'), frozenset('c')])
+    assert atoms == frozenset([frozenset("a"), frozenset("b"), frozenset("c")])
 
 
 def test_atom_set4():
@@ -133,7 +137,7 @@ def test_atom_set4():
     Find the atoms.
     """
     atoms = atom_set(sa, method=1)
-    assert atoms == frozenset([frozenset('a'), frozenset('b'), frozenset('c')])
+    assert atoms == frozenset([frozenset("a"), frozenset("b"), frozenset("c")])
 
 
 def test_atom_set5():
@@ -141,4 +145,4 @@ def test_atom_set5():
     Test failure.
     """
     with pytest.raises(Exception, match="Input to `atom_set` must contain frozensets."):
-        atom_set('pants')
+        atom_set("pants")

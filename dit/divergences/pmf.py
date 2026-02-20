@@ -34,17 +34,17 @@ from .variational_distance import (
 )
 
 __all__ = (
-    'bhattacharyya_coefficient',
-    'chernoff_information',
-    'conditional_maximum_correlation',
-    'cross_entropy',
-    'earth_movers_distance',
-    'hellinger_distance',
-    'jensen_shannon_divergence',
-    'jensen_shannon_divergence2',
-    'maximum_correlation',
-    'relative_entropy',
-    'variational_distance',
+    "bhattacharyya_coefficient",
+    "chernoff_information",
+    "conditional_maximum_correlation",
+    "cross_entropy",
+    "earth_movers_distance",
+    "hellinger_distance",
+    "jensen_shannon_divergence",
+    "jensen_shannon_divergence2",
+    "maximum_correlation",
+    "relative_entropy",
+    "variational_distance",
 )
 
 

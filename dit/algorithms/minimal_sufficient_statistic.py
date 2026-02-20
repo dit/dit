@@ -11,10 +11,10 @@ from .lattice import dist_from_induced_sigalg, insert_join, insert_rv
 from .prune_expand import pruned_samplespace
 
 __all__ = (
-    'info_trim',
-    'insert_mss',
-    'mss',
-    'mss_sigalg',
+    "info_trim",
+    "insert_mss",
+    "mss",
+    "mss_sigalg",
 )
 
 

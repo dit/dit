@@ -1,6 +1,7 @@
 """
 Module for basic inference tools.
 """
+
 from .binning import binned
 from .counts import distribution_from_data, get_counts
 from .estimators import entropy_0, entropy_1, entropy_2

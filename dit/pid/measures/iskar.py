@@ -15,10 +15,10 @@ from ...utils import flatten
 from ..pid import BaseUniquePID
 
 __all__ = (
-    'PID_SKAR_nw',
-    'PID_SKAR_owa',
-    'PID_SKAR_owb',
-    'PID_SKAR_tw',
+    "PID_SKAR_nw",
+    "PID_SKAR_owa",
+    "PID_SKAR_owb",
+    "PID_SKAR_tw",
 )
 
 

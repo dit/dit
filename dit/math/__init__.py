@@ -16,5 +16,5 @@ from .sigmaalgebra import atom_set, is_sigma_algebra, sigma_algebra
 
 prng = np.random.RandomState()
 # Set the error level to ignore...for example: log2(0).
-np.seterr(all='ignore')
+np.seterr(all="ignore")
 del np

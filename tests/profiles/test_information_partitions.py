@@ -14,8 +14,7 @@ from dit.utils import partitions, powerset
 
 
 def all_info_measures(rvs):
-    """
-    """
+    """ """
     for stuff in islice(powerset(rvs), 1, None):
         others = set(rvs) - set(stuff)
         for part in partitions(stuff, tuples=True):
@@ -23,41 +22,34 @@ def all_info_measures(rvs):
                 yield (part, cond)
 
 
-@pytest.mark.parametrize('meas', all_info_measures(range(4)))
+@pytest.mark.parametrize("meas", all_info_measures(range(4)))
 def test_sp1(meas):
-    """ Test all possible info measures """
+    """Test all possible info measures"""
     d = n_mod_m(4, 2)
     ip = ShannonPartition(d)
     assert ip[meas] == pytest.approx(I(d, meas[0], meas[1]))
 
 
-@pytest.mark.parametrize('meas', all_info_measures('xyzw'))
+@pytest.mark.parametrize("meas", all_info_measures("xyzw"))
 def test_sp2(meas):
-    """ Test all possible info measures, with rv_names """
+    """Test all possible info measures, with rv_names"""
     d = n_mod_m(4, 2)
-    d.set_rv_names('xyzw')
+    d.set_rv_names("xyzw")
     ip = ShannonPartition(d)
     assert ip[meas] == pytest.approx(I(d, meas[0], meas[1]))
 
 
 def test_sp3():
-    """ Test get_atoms() """
+    """Test get_atoms()"""
     d = n_mod_m(3, 2)
     ip = ShannonPartition(d)
-    atoms1 = {'H[0|1,2]',
-              'H[1|0,2]',
-              'H[2|0,1]',
-              'I[0:1:2]',
-              'I[0:1|2]',
-              'I[0:2|1]',
-              'I[1:2|0]'
-              }
+    atoms1 = {"H[0|1,2]", "H[1|0,2]", "H[2|0,1]", "I[0:1:2]", "I[0:1|2]", "I[0:2|1]", "I[1:2|0]"}
     atoms2 = ip.get_atoms()
     assert (atoms1 - atoms2) | (atoms2 - atoms1) == set()
 
 
 def test_sp4():
-    """ Test printing """
+    """Test printing"""
     d = n_mod_m(3, 2)
     ip = ShannonPartition(d)
     string = """\
@@ -105,7 +97,7 @@ def test_dd1():
     Test against known values.
     """
     d = n_mod_m(3, 2)
-    ep = DependencyDecomposition(d, measures={'B': B})
+    ep = DependencyDecomposition(d, measures={"B": B})
     string = """\
 +--------------------------+
 | Dependency Decomposition |
@@ -130,9 +122,9 @@ def test_dd2():
     Test against known values.
     """
     d = n_mod_m(3, 2)
-    d.set_rv_names('XYZ')
+    d.set_rv_names("XYZ")
     dd = DependencyDecomposition(d)
-    assert dd[frozenset([frozenset(['X', 'Y', 'Z'])])]['H'] == pytest.approx(2.0)
+    assert dd[frozenset([frozenset(["X", "Y", "Z"])])]["H"] == pytest.approx(2.0)
 
 
 def test_dd3():
@@ -142,7 +134,7 @@ def test_dd3():
     d = n_mod_m(3, 2)
     dd = DependencyDecomposition(d)
     deps = dd.get_dependencies()
-    true_deps = {'012', '01:02:12', '01:02', '01:12', '02:12', '01:2', '02:1', '12:0', '0:1:2'}
+    true_deps = {"012", "01:02:12", "01:02", "01:12", "02:12", "01:2", "02:1", "12:0", "0:1:2"}
     assert deps == true_deps
 
 
@@ -156,13 +148,15 @@ def test_dd4():
     a = frozenset([0])
     b = frozenset([1])
     c = frozenset([2])
-    true_deps = {frozenset([a | b | c]),
-                 frozenset([a | b, a | c, b | c]),
-                 frozenset([a | b, a | c]),
-                 frozenset([a | b, b | c]),
-                 frozenset([a | c, b | c]),
-                 frozenset([a | b, c]),
-                 frozenset([a | c, b]),
-                 frozenset([b | c, a]),
-                 frozenset([a, b, c])}
+    true_deps = {
+        frozenset([a | b | c]),
+        frozenset([a | b, a | c, b | c]),
+        frozenset([a | b, a | c]),
+        frozenset([a | b, b | c]),
+        frozenset([a | c, b | c]),
+        frozenset([a | b, c]),
+        frozenset([a | c, b]),
+        frozenset([b | c, a]),
+        frozenset([a, b, c]),
+    }
     assert deps == true_deps

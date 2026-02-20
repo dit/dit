@@ -12,7 +12,7 @@ def test_pid_wb1():
     """
     Test imin on a generic distribution.
     """
-    d = bivariates['prob. 1']
+    d = bivariates["prob. 1"]
     pid = PID_WB(d, ((0,), (1,)), (2,))
     assert pid[((0,), (1,))] == pytest.approx(0.019973094021974794)
     assert pid[((0,),)] == pytest.approx(0.15097750043269376)
@@ -24,7 +24,7 @@ def test_pid_wb2():
     """
     Test imin on another generic distribution.
     """
-    d = trivariates['sum']
+    d = trivariates["sum"]
     pid = PID_WB(d, [[0], [1], [2]], [3])
     for atom in pid._lattice:
         if atom == ((0,), (1,), (2,)):
@@ -41,7 +41,7 @@ def test_pid_wb3():
     """
     Test imin on a generic distribution.
     """
-    d = bivariates['jeff']
+    d = bivariates["jeff"]
     pid = PID_WB(d)
     assert pid.complete
     assert pid.nonnegative

@@ -11,9 +11,7 @@ from scipy.spatial import ConvexHull
 
 from ..pid import BasePID
 
-__all__ = (
-    'PID_RDR',
-)
+__all__ = ("PID_RDR",)
 
 
 PRECISION = 14

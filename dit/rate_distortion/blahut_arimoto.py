@@ -10,13 +10,14 @@ from .distortions import hamming_distortion
 from .rate_distortion import RateDistortionResult
 
 __all__ = (
-    'blahut_arimoto',
-    'blahut_arimoto_ib',
+    "blahut_arimoto",
+    "blahut_arimoto_ib",
 )
 
 
 ###############################################################################
 # Rate-Distortion
+
 
 def _blahut_arimoto(p_x, beta, q_y_x, distortion, max_iters=100):
     """
@@ -42,6 +43,7 @@ def _blahut_arimoto(p_x, beta, q_y_x, distortion, max_iters=100):
     q_xy : np.ndarray
         The joint distribution q(x, y).
     """
+
     def q_xy(q_y_x):
         """
         :math:`q(x,y) = q(y|x)p(x)`
@@ -126,7 +128,6 @@ def blahut_arimoto(p_x, beta, distortion=hamming_distortion, max_iters=100, rest
     n = len(p_x)
     candidates = []
     for i in range(restarts):
-
         if i == 0:
             q_y_x = np.ones((n, n)) / n
         elif i == 1:
@@ -135,12 +136,7 @@ def blahut_arimoto(p_x, beta, distortion=hamming_distortion, max_iters=100, rest
         else:
             q_y_x = sample_simplex(n, n)
 
-        result = _blahut_arimoto(p_x=p_x,
-                                 beta=beta,
-                                 q_y_x=q_y_x,
-                                 distortion=distortion,
-                                 max_iters=max_iters
-                                 )
+        result = _blahut_arimoto(p_x=p_x, beta=beta, q_y_x=q_y_x, distortion=distortion, max_iters=max_iters)
         candidates.append(result)
 
     rd = min(candidates, key=lambda result: result[0].rate + beta * result[0].distortion)
@@ -149,6 +145,7 @@ def blahut_arimoto(p_x, beta, distortion=hamming_distortion, max_iters=100, rest
 
 ###############################################################################
 # Information Bottleneck
+
 
 def blahut_arimoto_ib(p_xy, beta, divergence=relative_entropy, max_iters=100, restarts=250):  # pragma: no cover
     """
@@ -197,12 +194,7 @@ def blahut_arimoto_ib(p_xy, beta, divergence=relative_entropy, max_iters=100, re
         distortions = np.asarray([divergence(a, b) for a in p_y_x for b in q_y_t]).reshape(q_y_t.shape)
         return distortions
 
-    rd, q_xt = blahut_arimoto(p_x=p_x,
-                              beta=beta,
-                              distortion=distortion,
-                              max_iters=max_iters,
-                              restarts=restarts
-                              )
+    rd, q_xt = blahut_arimoto(p_x=p_x, beta=beta, distortion=distortion, max_iters=max_iters, restarts=restarts)
 
     sums = q_xt.sum(axis=1, keepdims=True)
     q_t_x = q_xt / sums

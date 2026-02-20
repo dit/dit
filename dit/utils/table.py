@@ -1,5 +1,4 @@
-"""
-"""
+""" """
 
 import contextlib
 
@@ -10,9 +9,7 @@ except ImportError:
 
 from ..params import ditParams
 
-__all__ = (
-    'build_table',
-)
+__all__ = ("build_table",)
 
 
 def build_table(field_names=None, title=None):
@@ -32,7 +29,7 @@ def build_table(field_names=None, title=None):
         A new table.
     """
     table = PrettyTable(field_names=field_names, title=title)
-    if ditParams['text.font'] == 'linechar':
+    if ditParams["text.font"] == "linechar":
         with contextlib.suppress(Exception):
             table.set_style(UNICODE_LINES)
     return table

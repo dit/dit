@@ -9,12 +9,26 @@ from dit.distconst import uniform
 from dit.multivariate import cohesion, dual_total_correlation, total_correlation
 from dit.utils.testing import distributions
 
-reed_solomon = uniform([
-    '0000', '0123', '0231', '0312',
-    '1111', '1032', '1320', '1203',
-    '2222', '2301', '2013', '2130',
-    '3333', '3210', '3102', '3021',
-])
+reed_solomon = uniform(
+    [
+        "0000",
+        "0123",
+        "0231",
+        "0312",
+        "1111",
+        "1032",
+        "1320",
+        "1203",
+        "2222",
+        "2301",
+        "2013",
+        "2130",
+        "3333",
+        "3210",
+        "3102",
+        "3021",
+    ]
+)
 
 
 @given(dist=distributions(alphabets=(2,) * 4))

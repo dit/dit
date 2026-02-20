@@ -12,7 +12,7 @@ def test_pid_mmi1():
     """
     Test immi on a generic distribution.
     """
-    d = bivariates['prob. 1']
+    d = bivariates["prob. 1"]
     pid = PID_MMI(d, ((0,), (1,)), (2,))
     assert pid[((0,), (1,))] == pytest.approx(0.019973094021974794)
     assert pid[((0,),)] == pytest.approx(0.15097750043269376)
@@ -24,7 +24,7 @@ def test_pid_mmi2():
     """
     Test immi on another generic distribution.
     """
-    d = trivariates['sum']
+    d = trivariates["sum"]
     pid = PID_MMI(d, [[0], [1], [2]], [3])
     for atom in pid._lattice:
         if atom == ((0,), (1,), (2,)):

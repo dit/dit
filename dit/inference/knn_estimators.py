@@ -9,8 +9,8 @@ from scipy.special import digamma
 from dit.utils import flatten
 
 __all__ = (
-    'differential_entropy_knn',
-    'total_correlation_ksg',
+    "differential_entropy_knn",
+    "total_correlation_ksg",
 )
 
 
@@ -121,8 +121,14 @@ def _total_correlation_ksg_scipy(data, rvs, crvs=None, k=4, noise=1e-10):
     epsilons = tree.query(data[:, all_rvs], k + 1, p=np.inf)[0][:, -1]  # k+1 because of self
 
     n_rvs = [
-        np.array([len(t.query_ball_point(point, epsilon, p=np.inf)) for point, epsilon in zip(data[:, rv], epsilons, strict=True)])
-        for rv, t in zip(rvs, tree_rvs, strict=True)]
+        np.array(
+            [
+                len(t.query_ball_point(point, epsilon, p=np.inf))
+                for point, epsilon in zip(data[:, rv], epsilons, strict=True)
+            ]
+        )
+        for rv, t in zip(rvs, tree_rvs, strict=True)
+    ]
 
     log_epsilons = np.log(epsilons)
 
@@ -132,8 +138,12 @@ def _total_correlation_ksg_scipy(data, rvs, crvs=None, k=4, noise=1e-10):
 
     if crvs:
         tree_crvs = cKDTree(data[:, crvs])
-        n_crvs = np.array([len(tree_crvs.query_ball_point(point, epsilon, p=np.inf)) for point, epsilon in
-                           zip(data[:, crvs], epsilons, strict=True)])
+        n_crvs = np.array(
+            [
+                len(tree_crvs.query_ball_point(point, epsilon, p=np.inf))
+                for point, epsilon in zip(data[:, crvs], epsilons, strict=True)
+            ]
+        )
         h_crvs = -digamma(n_crvs).mean()
     else:
         h_rvs = [h_rv + digamma_N + d * (log_2 - log_epsilons).mean() for h_rv, d in zip(h_rvs, d_rvs, strict=True)]
@@ -218,6 +228,7 @@ def _total_correlation_ksg_sklearn(data, rvs, crvs=None, k=4, noise=1e-10):
 
 try:
     from sklearn.neighbors import KDTree
+
     total_correlation_ksg = _total_correlation_ksg_sklearn
 except ImportError:
     total_correlation_ksg = _total_correlation_ksg_scipy

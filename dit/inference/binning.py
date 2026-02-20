@@ -5,12 +5,10 @@ Various methods for binning real-valued data.
 import numpy as np
 from boltons.iterutils import pairwise
 
-__all__ = (
-    'binned',
-)
+__all__ = ("binned",)
 
 
-def binned(ts, bins=2, style='maxent'):
+def binned(ts, bins=2, style="maxent"):
     """
     Discretize a real-valued list.
 
@@ -33,9 +31,9 @@ def binned(ts, bins=2, style='maxent'):
     ValueError
         Raised if `style` is not a recognized method.
     """
-    if style == 'maxent':
+    if style == "maxent":
         method = maxent_binning
-    elif style == 'uniform':
+    elif style == "uniform":
         method = uniform_binning
     else:  # pragma: no cover
         msg = f"The style {style} is not understood."

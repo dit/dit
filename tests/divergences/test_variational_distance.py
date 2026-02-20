@@ -10,9 +10,9 @@ from dit.divergences import (
     variational_distance,
 )
 
-d1 = Distribution(['0', '1'], [1 / 2, 1 / 2])
-d2 = Distribution(['0', '1'], [1 / 4, 3 / 4])
-d3 = Distribution(['1', '2'], [1 / 4, 3 / 4])
+d1 = Distribution(["0", "1"], [1 / 2, 1 / 2])
+d2 = Distribution(["0", "1"], [1 / 4, 3 / 4])
+d3 = Distribution(["1", "2"], [1 / 4, 3 / 4])
 
 
 def test_vd1():

@@ -12,7 +12,7 @@ def test_pid_rav1():
     """
     Test irav on a generic distribution.
     """
-    d = bivariates['diff']
+    d = bivariates["diff"]
     pid = PID_RAV(d, ((0,), (1,)), (2,))
     assert pid[((0,), (1,))] == pytest.approx(0.12255624891826589)
     assert pid[((0,),)] == pytest.approx(0.18872187554086706)
@@ -24,9 +24,9 @@ def test_pid_rav2():
     """
     Test irav on a trivariate distribution based on a bivariate one.
     """
-    d = trivariates['anddup']
+    d = trivariates["anddup"]
     pid = PID_RAV(d, [[0], [1], [2]], [3])
-    d_and = bivariates['and']
+    d_and = bivariates["and"]
     pid_and = PID_RAV(d_and, [[0], [1]], [2])
     assert pid[((0, 1), (1, 2))] == pytest.approx(pid_and[((0, 1),)])
     assert pid[((0,), (2,))] == pytest.approx(pid_and[((0,),)])
@@ -41,7 +41,7 @@ def test_pid_rav3():
     """
     Test irav on a generic trivariate distribution.
     """
-    d = trivariates['xor shared']
+    d = trivariates["xor shared"]
     pid = PID_RAV(d)
     for atom in pid._lattice:
         if atom == ((0,), (1, 2)):

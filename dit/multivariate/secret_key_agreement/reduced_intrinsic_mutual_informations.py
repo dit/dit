@@ -12,9 +12,9 @@ from .intrinsic_mutual_informations import (
 )
 
 __all__ = (
-    'reduced_intrinsic_total_correlation',
-    'reduced_intrinsic_dual_total_correlation',
-    'reduced_intrinsic_CAEKL_mutual_information',
+    "reduced_intrinsic_total_correlation",
+    "reduced_intrinsic_dual_total_correlation",
+    "reduced_intrinsic_CAEKL_mutual_information",
 )
 
 
@@ -23,7 +23,7 @@ class ReducedIntrinsicTotalCorrelation(BaseReducedIntrinsicMutualInformation):
     Compute the reduced intrinsic total correlation.
     """
 
-    name = 'total correlation'
+    name = "total correlation"
     measure = staticmethod(intrinsic_total_correlation)
 
 
@@ -35,7 +35,7 @@ class ReducedIntrinsicDualTotalCorrelation(BaseReducedIntrinsicMutualInformation
     Compute the reduced intrinsic dual total correlation.
     """
 
-    name = 'dual total correlation'
+    name = "dual total correlation"
     measure = staticmethod(intrinsic_dual_total_correlation)
 
 
@@ -47,7 +47,7 @@ class ReducedIntrinsicCAEKLMutualInformation(BaseReducedIntrinsicMutualInformati
     Compute the reduced intrinsic CAEKL mutual information.
     """
 
-    name = 'CAEKL mutual information'
+    name = "CAEKL mutual information"
     measure = staticmethod(intrinsic_caekl_mutual_information)
 
 
@@ -77,17 +77,16 @@ def reduced_intrinsic_mutual_information_constructor(func):  # pragma: no cover
     using this function will be significantly slower than if the objective were
     written directly using the joint probability ndarray.
     """
+
     class ReducedIntrinsicMutualInformation(BaseReducedIntrinsicMutualInformation):
         name = func.__name__
         measure = staticmethod(func)
 
-    ReducedIntrinsicMutualInformation.__doc__ = \
-    f"""
+    ReducedIntrinsicMutualInformation.__doc__ = f"""
     Compute the reduced intrinsic {func.__name__}.
     """
 
-    docstring = \
-    f"""
+    docstring = f"""
     Compute the {func.__name__}.
 
     Parameters

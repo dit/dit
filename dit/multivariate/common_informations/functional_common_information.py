@@ -13,9 +13,7 @@ from ...utils import partitions, unitful
 from ..dual_total_correlation import dual_total_correlation
 from ..entropy import entropy
 
-__all__ = (
-    'functional_common_information',
-)
+__all__ = ("functional_common_information",)
 
 
 def functional_markov_chain_naive(dist, rvs=None, crvs=None, rv_mode=None):  # pragma: no cover
@@ -130,7 +128,6 @@ def functional_markov_chain(dist, rvs=None, crvs=None, rv_mode=None):
         d = insert_rvf(dist, bf.from_partition(part))
 
         if np.isclose(B(d), 0):
-
             h = H(d)
 
             if h <= optimal[0]:
@@ -139,9 +136,9 @@ def functional_markov_chain(dist, rvs=None, crvs=None, rv_mode=None):
             if np.isclose(h, optimal_b):
                 break
 
-            new_parts = [frozenset([p for p in part if p not in pair]
-                                   + [pair[0] | pair[1]])
-                         for pair in combinations(part, 2)]
+            new_parts = [
+                frozenset([p for p in part if p not in pair] + [pair[0] | pair[1]]) for pair in combinations(part, 2)
+            ]
             new_parts = sorted((part for part in new_parts if part not in checked), key=lambda p: sorted(map(len, p)))
             queue.extendleft(new_parts)
 

@@ -12,9 +12,9 @@ from ..exceptions import ditException
 from ..helpers import normalize_rvs
 
 __all__ = (
-    'conditional_maximum_correlation_pmf',
-    'maximum_correlation',
-    'maximum_correlation_pmf',
+    "conditional_maximum_correlation_pmf",
+    "maximum_correlation",
+    "maximum_correlation_pmf",
 )
 
 
@@ -109,7 +109,7 @@ def maximum_correlation(dist, rvs=None, crvs=None, rv_mode=None):
     rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
 
     if len(rvs) != 2:
-        msg = f'Maximum correlation can only be computed for 2 variables, not {len(rvs)}.'
+        msg = f"Maximum correlation can only be computed for 2 variables, not {len(rvs)}."
         raise ditException(msg)
 
     dist = dist.copy().coalesce(rvs + [crvs]) if crvs else dist.copy().coalesce(rvs)

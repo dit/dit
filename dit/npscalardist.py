@@ -40,13 +40,10 @@ from .math import LinearOperations, get_ops
 from .params import ditParams
 from .samplespace import BaseSampleSpace, ScalarSampleSpace
 
-__all__ = (
-    'ScalarDistribution',
-)
+__all__ = ("ScalarDistribution",)
 
 
-def _make_distribution(outcomes, pmf=None, sample_space=None,
-                            base=None, prng=None, sparse=True):
+def _make_distribution(outcomes, pmf=None, sample_space=None, base=None, prng=None, sparse=True):
     """
     An unsafe, but faster, initialization for distributions.
 
@@ -75,7 +72,7 @@ def _make_distribution(outcomes, pmf=None, sample_space=None,
 
     # Determine if the pmf represents log probabilities or not.
     if base is None:
-        base = ditParams['base']
+        base = ditParams["base"]
     d.ops = get_ops(base)
 
     ## pmf and outcomes
@@ -92,8 +89,8 @@ def _make_distribution(outcomes, pmf=None, sample_space=None,
     d._outcomes_index = dict(zip(outcomes, range(len(outcomes)), strict=True))
 
     if isinstance(sample_space, BaseSampleSpace):
-        if sample_space._meta['is_joint']:
-            msg = '`sample_space` must be a scalar sample space.'
+        if sample_space._meta["is_joint"]:
+            msg = "`sample_space` must be a scalar sample space."
             raise InvalidDistribution(msg)
         d._sample_space = sample_space
     else:
@@ -104,7 +101,7 @@ def _make_distribution(outcomes, pmf=None, sample_space=None,
     # For scalar dists, the alphabet is the sample space.
     d.alphabet = tuple(d._sample_space)
 
-    d._meta['is_sparse'] = sparse
+    d._meta["is_sparse"] = sparse
 
     return d
 
@@ -242,9 +239,18 @@ class ScalarDistribution(BaseDistribution):
     pmf = None
     prng = None
 
-    def __init__(self, outcomes, pmf=None, sample_space=None, base=None,
-                                 prng=None, sort=True, sparse=True, trim=True,
-                                 validate=True):
+    def __init__(
+        self,
+        outcomes,
+        pmf=None,
+        sample_space=None,
+        base=None,
+        prng=None,
+        sort=True,
+        sparse=True,
+        trim=True,
+        validate=True,
+    ):
         """
         Initialize the distribution.
 
@@ -315,9 +321,9 @@ class ScalarDistribution(BaseDistribution):
         super().__init__(prng)
 
         # Set *instance* attributes.
-        self._meta['is_joint'] = False
-        self._meta['is_numerical'] = True
-        self._meta['is_sparse'] = None
+        self._meta["is_joint"] = False
+        self._meta["is_numerical"] = True
+        self._meta["is_sparse"] = None
 
         if pmf is None and not isinstance(outcomes, dict):
             # If we make it through the checks, the outcomes will be integers.
@@ -327,12 +333,12 @@ class ScalarDistribution(BaseDistribution):
 
         ## alphabets
         if len(outcomes) == 0 and sample_space is None:
-            msg = '`outcomes` must be nonempty if no sample space is given'
+            msg = "`outcomes` must be nonempty if no sample space is given"
             raise InvalidDistribution(msg)
 
         if isinstance(sample_space, BaseSampleSpace):
-            if sample_space._meta['is_joint']:
-                msg = '`sample_space` must be a scalar sample space.'
+            if sample_space._meta["is_joint"]:
+                msg = "`sample_space` must be a scalar sample space."
                 raise InvalidDistribution(msg)
 
             if sort:
@@ -392,7 +398,7 @@ class ScalarDistribution(BaseDistribution):
         else:
             outcomes = outcomes_
             if pmf is not None:
-                msg = '`pmf` must be `None` if `outcomes` is a dict.'
+                msg = "`pmf` must be `None` if `outcomes` is a dict."
                 raise ditException(msg)
             pmf = pmf_
 
@@ -402,7 +408,7 @@ class ScalarDistribution(BaseDistribution):
             try:
                 np.asarray(pmf, dtype=float)
             except ValueError as err:
-                msg = 'Failed to convert `outcomes` to an array.'
+                msg = "Failed to convert `outcomes` to an array."
                 raise ditException(msg) from err
             outcomes = range(len(pmf))
             skip_sort = True
@@ -412,7 +418,7 @@ class ScalarDistribution(BaseDistribution):
             len(outcomes)
             len(pmf)
         except TypeError as err:
-            raise TypeError('`outcomes` and `pmf` must be sequences.') from err
+            raise TypeError("`outcomes` and `pmf` must be sequences.") from err
 
         if len(pmf) != len(outcomes):
             msg = "Unequal lengths for `pmf` and `outcomes`"
@@ -425,13 +431,14 @@ class ScalarDistribution(BaseDistribution):
             try:
                 outcomes[0]
             except TypeError as err:
-                raise ditException('`outcomes` must be indexable.') from err
+                raise ditException("`outcomes` must be indexable.") from err
 
         # Determine if the pmf represents log probabilities or not.
         if base is None:
             # Provide help for obvious case of linear probabilities.
             from .validate import is_pmf
-            base = 'linear' if is_pmf(np.asarray(pmf, dtype=float), LinearOperations()) else ditParams['base']
+
+            base = "linear" if is_pmf(np.asarray(pmf, dtype=float), LinearOperations()) else ditParams["base"]
         self.ops = get_ops(base)
 
         return outcomes, pmf, skip_sort
@@ -472,8 +479,10 @@ class ScalarDistribution(BaseDistribution):
 
         """
         from .npdist import Distribution  # pylint: disable=cyclic-import
+
         if isinstance(dist, Distribution):
             from .convert import DtoSD
+
             d = DtoSD(dist, extract)
             if base is not None:
                 d.set_base(base)
@@ -537,11 +546,13 @@ class ScalarDistribution(BaseDistribution):
         if isinstance(other, ScalarDistribution):
             # pylint: disable=cyclic-import
             from .distconst import _combine_scalar_dists
+
             return _combine_scalar_dists(self, other, op)
 
         elif isinstance(other, numbers.Number):
             # pylint: disable=cyclic-import
             from .distconst import modify_outcomes
+
             d = modify_outcomes(self, lambda x: op(x, other))
             return d
 
@@ -1311,6 +1322,7 @@ class ScalarDistribution(BaseDistribution):
         """
         if isinstance(other, ScalarDistribution):
             from .npdist import Distribution  # pylint: disable=cyclic-import
+
             # Copy to make sure we don't lose precision when converting.
             d2 = other.copy(base=self.get_base())
 
@@ -1393,8 +1405,7 @@ class ScalarDistribution(BaseDistribution):
             new_indexes = [i for i in range(len(outcomes)) if i != idx]
             new_outcomes = tuple(outcomes[i] for i in new_indexes)
             self.outcomes = new_outcomes
-            self._outcomes_index = dict(zip(new_outcomes,
-                                        range(len(new_outcomes)), strict=True))
+            self._outcomes_index = dict(zip(new_outcomes, range(len(new_outcomes)), strict=True))
 
             # Update the probabilities.
             self.pmf = self.pmf[new_indexes]
@@ -1485,9 +1496,7 @@ class ScalarDistribution(BaseDistribution):
             pmf = self.pmf.tolist() + [value]
 
             # 2. Reorder
-            outcomes, pmf, index = reorder(self.outcomes, pmf,
-                                           self._sample_space,
-                                           index=self._outcomes_index)
+            outcomes, pmf, index = reorder(self.outcomes, pmf, self._sample_space, index=self._outcomes_index)
 
             # 3. Store
             self.outcomes = tuple(outcomes)
@@ -1514,12 +1523,14 @@ class ScalarDistribution(BaseDistribution):
         prng = np.random.RandomState()
         prng.set_state(self.prng.get_state())
 
-        d = _make_distribution(outcomes=deepcopy(self.outcomes),
-                               pmf=np.array(self.pmf, copy=True),
-                               sample_space=deepcopy(self._sample_space),
-                               base=self.ops.base,
-                               prng=prng,
-                               sparse=self._meta['is_sparse'])
+        d = _make_distribution(
+            outcomes=deepcopy(self.outcomes),
+            pmf=np.array(self.pmf, copy=True),
+            sample_space=deepcopy(self._sample_space),
+            base=self.ops.base,
+            prng=prng,
+            sparse=self._meta["is_sparse"],
+        )
         if base is not None:
             d.set_base(base)
 
@@ -1589,9 +1600,9 @@ class ScalarDistribution(BaseDistribution):
 
         """
         if rtol is None:
-            rtol = ditParams['rtol']
+            rtol = ditParams["rtol"]
         if atol is None:
-            atol = ditParams['atol']
+            atol = ditParams["atol"]
 
         # We assume the distributions are properly normalized.
 
@@ -1617,7 +1628,7 @@ class ScalarDistribution(BaseDistribution):
         Returns `True` if the distribution is sparse and `False` otherwise.
 
         """
-        return self._meta['is_sparse']
+        return self._meta["is_sparse"]
 
     def normalize(self):
         """
@@ -1674,7 +1685,7 @@ class ScalarDistribution(BaseDistribution):
 
         # Determine the conversion targets.
         from_log = self.is_log()
-        if base == 'linear':
+        if base == "linear":
             to_log = False
             new_ops = LinearOperations()
         else:
@@ -1735,7 +1746,7 @@ class ScalarDistribution(BaseDistribution):
         self.outcomes = outcomes
         self._outcomes_index = dict(zip(outcomes, range(len(outcomes)), strict=True))
 
-        self._meta['is_sparse'] = False
+        self._meta["is_sparse"] = False
         n = len(self) - L
 
         return n
@@ -1782,7 +1793,7 @@ class ScalarDistribution(BaseDistribution):
             # Update the probabilities.
             self.pmf = np.array(pmf)
 
-        self._meta['is_sparse'] = True
+        self._meta["is_sparse"] = True
         n = L - len(self)
         return n
 
@@ -1796,6 +1807,7 @@ class ScalarDistribution(BaseDistribution):
             A copy of this distribution as a rv_discrete.
         """
         from scipy.stats import rv_discrete
+
         d = rv_discrete(values=(self.outcomes, self.pmf), seed=self.prng)
         return d
 
@@ -1831,9 +1843,9 @@ class ScalarDistribution(BaseDistribution):
 
         """
         mapping = {
-            'outcomes': '_validate_outcomes',
-            'norm': '_validate_normalization',
-            'probs': '_validate_probabilities'
+            "outcomes": "_validate_outcomes",
+            "norm": "_validate_normalization",
+            "probs": "_validate_probabilities",
         }
         for kw, method in mapping.items():
             test = kwargs.get(kw, True)
@@ -1853,5 +1865,6 @@ class ScalarDistribution(BaseDistribution):
 
         """
         from .validate import validate_probabilities
+
         v = validate_probabilities(self.pmf, self.ops)
         return v

@@ -10,7 +10,7 @@ from dit.exceptions import InvalidNormalization, ditException
 
 
 def test_dist_iter1():
-    outcomes = ['00', '01', '10', '11']
+    outcomes = ["00", "01", "10", "11"]
     pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
     for o in d:
@@ -20,7 +20,7 @@ def test_dist_iter1():
 
 
 def test_dist_iter2():
-    outcomes = ['00', '01', '10', '11']
+    outcomes = ["00", "01", "10", "11"]
     pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
     for o in reversed(d):
@@ -30,22 +30,22 @@ def test_dist_iter2():
 
 
 def test_numerical():
-    outcomes = ['00', '01', '10', '11']
+    outcomes = ["00", "01", "10", "11"]
     pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
     assert d.is_numerical()
 
 
-@pytest.mark.parametrize('i', range(10))
+@pytest.mark.parametrize("i", range(10))
 def test_rand(i):
-    outcomes = ['00', '01', '10', '11']
+    outcomes = ["00", "01", "10", "11"]
     pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
     assert d.rand() in outcomes
 
 
 def test_to_dict():
-    outcomes = ['00', '01', '10', '11']
+    outcomes = ["00", "01", "10", "11"]
     pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
     dd = d.to_dict()
@@ -54,7 +54,7 @@ def test_to_dict():
 
 
 def test_validate1():
-    outcomes = ['00', '01', '10', '11']
+    outcomes = ["00", "01", "10", "11"]
     pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
     assert d.validate()
@@ -62,10 +62,10 @@ def test_validate1():
 
 
 def test_validate2():
-    outcomes = ['00', '01', '10', '11']
+    outcomes = ["00", "01", "10", "11"]
     pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
-    d['00'] = 0
+    d["00"] = 0
     with pytest.raises(InvalidNormalization):
         d.validate()
     with pytest.raises(InvalidNormalization):
@@ -73,17 +73,17 @@ def test_validate2():
 
 
 def test_zipped1():
-    outcomes = ['00', '01', '10', '11']
+    outcomes = ["00", "01", "10", "11"]
     pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
-    zipped = d.zipped(mode='pants')
+    zipped = d.zipped(mode="pants")
     with pytest.raises(ditException):
         list(zipped)
 
 
 def test_to_string1():
     # Basic
-    outcomes = ['00', '01', '10', '11']
+    outcomes = ["00", "01", "10", "11"]
     pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
     s = d.to_string()
@@ -104,7 +104,7 @@ x    p(x)
 
 def test_to_string2():
     # Test with exact.
-    outcomes = ['00', '01', '10', '11']
+    outcomes = ["00", "01", "10", "11"]
     pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
     s = d.to_string(exact=True)
@@ -125,7 +125,7 @@ x    p(x)
 
 def test_to_string3():
     # Test printing
-    outcomes = ['00', '01', '10', '11']
+    outcomes = ["00", "01", "10", "11"]
     pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
     s_ = """Class:          Distribution
@@ -144,11 +144,12 @@ x    p(x)
     # context manager?
     import sys
     from io import StringIO
+
     sio = StringIO()
     try:
         old = sys.stdout
         sys.stdout = sio
-        print(d, end='')
+        print(d, end="")
     finally:
         sys.stdout = old
     sio.seek(0)
@@ -158,7 +159,7 @@ x    p(x)
 
 def test_to_string4():
     # Basic with marginal
-    outcomes = ['00', '01', '10', '11']
+    outcomes = ["00", "01", "10", "11"]
     pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
     d = d.marginal([0])
@@ -178,7 +179,7 @@ x   p(x)
 
 def test_to_string5():
     # Basic with marginal and mask
-    outcomes = ['00', '01', '10', '11']
+    outcomes = ["00", "01", "10", "11"]
     pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
     d = d.marginal([0])
@@ -198,7 +199,7 @@ x    p(x)
 
 def test_to_string6():
     # Basic
-    outcomes = ['00', '01', '10', '11']
+    outcomes = ["00", "01", "10", "11"]
     pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
     s = d.to_string(digits=1)
@@ -219,7 +220,7 @@ x    p(x)
 
 def test_to_string7():
     # Basic
-    outcomes = ['00', '01', '10', '11']
+    outcomes = ["00", "01", "10", "11"]
     pmf = [1 / 4] * 4
     d = ScalarDistribution(outcomes, pmf)
     s = d.to_string()
@@ -236,11 +237,11 @@ x    p(x)
 
 
 def test_to_string8():
-    outcomes = ['00', '01', '10', '11']
+    outcomes = ["00", "01", "10", "11"]
     pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
     d = d.marginal([0])
-    s = d.to_string(show_mask='!')
+    s = d.to_string(show_mask="!")
     s_ = """Class:          Distribution
 Alphabet:       ('0', '1') for all rvs
 Base:           linear
@@ -256,7 +257,7 @@ x    p(x)
 
 def test_to_string9():
     # Basic
-    outcomes = ['00', '01', '10', '11']
+    outcomes = ["00", "01", "10", "11"]
     pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
     d.set_base(2)
@@ -290,20 +291,22 @@ x   log p(x)"""
 
 def test_prepare_string1():
     # Basic
-    outcomes = ['00', '01', '10', '11']
+    outcomes = ["00", "01", "10", "11"]
     pmf = [1 / 4] * 4
     d = ScalarDistribution(outcomes, pmf)
     from dit.distribution import prepare_string
+
     with pytest.raises(ditException):
         prepare_string(d, show_mask=True)
 
 
 def test_prepare_string2():
     # Basic
-    outcomes = ['00', '01', '10', '11']
+    outcomes = ["00", "01", "10", "11"]
     pmf = [1 / 4] * 4
     d = ScalarDistribution(outcomes, pmf)
     from dit.distribution import prepare_string
+
     with pytest.raises(ditException):
         prepare_string(d, str_outcomes=True)
 
@@ -332,6 +335,7 @@ def test_prepare_string4():
     class WeirdInt(int):
         def __str__(self):
             raise Exception
+
     outcomes = [(0, 0), (0, 1), (1, 0), (1, 1)]
     outcomes = [(WeirdInt(x), WeirdInt(y)) for (x, y) in outcomes]
     pmf = [1 / 4] * 4
@@ -356,22 +360,22 @@ def test_really_big_words():
     """
     Test to ensure that large but sparse outcomes are fast.
     """
-    outcomes = ['01' * 45, '10' * 45]
+    outcomes = ["01" * 45, "10" * 45]
     pmf = [1 / 2] * 2
     d = Distribution(outcomes, pmf)
     d = d.coalesce([range(30), range(30, 60), range(60, 90)])
-    new_outcomes = (('10' * 15,) * 3, ('01' * 15,) * 3)
+    new_outcomes = (("10" * 15,) * 3, ("01" * 15,) * 3)
     assert d.outcomes == new_outcomes
 
 
 def test_multivariate_lookup():
     # issue #156
-    outcomes = ['000', '010', '100', '111']
+    outcomes = ["000", "010", "100", "111"]
     pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
 
-    assert d['000'] == 1 / 4
-    assert d['0', '0', '0'] == 1 / 4
+    assert d["000"] == 1 / 4
+    assert d["0", "0", "0"] == 1 / 4
 
     with pytest.raises(Exception):  # noqa: B017
-        d['0', '0', 'A']  # should raise exception
+        d["0", "0", "A"]  # should raise exception

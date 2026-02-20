@@ -32,10 +32,10 @@ from ..utils.optimization import (
 )
 
 __all__ = (
-    'BaseOptimizer',
-    'BaseConvexOptimizer',
-    'BaseNonConvexOptimizer',
-    'BaseAuxVarOptimizer',
+    "BaseOptimizer",
+    "BaseConvexOptimizer",
+    "BaseNonConvexOptimizer",
+    "BaseAuxVarOptimizer",
 )
 
 
@@ -68,7 +68,7 @@ class BaseOptimizer(metaclass=ABCMeta):
             consulted, which defaults to 'indices'.
         """
         rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
-        self._dist = dist.copy(base='linear')
+        self._dist = dist.copy(base="linear")
 
         self._alphabet = self._dist.alphabet
         self._original_shape = list(map(len, self._dist.alphabet))
@@ -362,8 +362,8 @@ class BaseOptimizer(metaclass=ABCMeta):
         idx_joint = tuple(self._all_vars - (rvs | crvs))
         idx_crvs = tuple(self._all_vars - crvs)
         idx_subrvs = [tuple(self._all_vars - set(ss)) for ss in sorted(powerset(rvs), key=len)[1:-1]]
-        power = [(-1)**len(ss) for ss in sorted(powerset(rvs), key=len)[1:-1]]
-        power += [(-1)**len(rvs)]
+        power = [(-1) ** len(ss) for ss in sorted(powerset(rvs), key=len)[1:-1]]
+        power += [(-1) ** len(rvs)]
         power += [-sum(power)]
 
         def coinformation(pmf):
@@ -734,32 +734,34 @@ class BaseOptimizer(metaclass=ABCMeta):
 
         icb = BasinHoppingInnerCallBack() if callback else None
 
-        minimizer_kwargs = {'bounds': [(0, 1)] * x0.size,
-                            'callback': icb,
-                            'constraints': self.constraints,
-                            'options': {},
-                            }
+        minimizer_kwargs = {
+            "bounds": [(0, 1)] * x0.size,
+            "callback": icb,
+            "constraints": self.constraints,
+            "options": {},
+        }
 
         try:  # pragma: no cover
             if callable(self._jacobian):
-                minimizer_kwargs['jac'] = self._jacobian
+                minimizer_kwargs["jac"] = self._jacobian
             else:  # compute jacobians for objective, constraints using numdifftools
                 import numdifftools as ndt
-                minimizer_kwargs['jac'] = ndt.Jacobian(self.objective)
-                for const in minimizer_kwargs['constraints']:
-                    const['jac'] = ndt.Jacobian(const['fun'])
+
+                minimizer_kwargs["jac"] = ndt.Jacobian(self.objective)
+                for const in minimizer_kwargs["constraints"]:
+                    const["jac"] = ndt.Jacobian(const["fun"])
         except AttributeError:
             pass
 
         additions = deepcopy(self._additional_options)
-        options = additions.pop('options', {})
-        minimizer_kwargs['options'].update(options)
+        options = additions.pop("options", {})
+        minimizer_kwargs["options"].update(options)
         minimizer_kwargs.update(additions)
 
         if maxiter:
-            minimizer_kwargs['options']['maxiter'] = maxiter
+            minimizer_kwargs["options"]["maxiter"] = maxiter
 
-        self._callback = BasinHoppingCallBack(minimizer_kwargs.get('constraints', {}), icb)
+        self._callback = BasinHoppingCallBack(minimizer_kwargs.get("constraints", {}), icb)
 
         result = self._optimization_backend(x0, minimizer_kwargs, niter)
 
@@ -809,10 +811,7 @@ class BaseOptimizer(metaclass=ABCMeta):
 
         if x0 is not None:
             logger.debug("Shotgun: trying provided initial condition")
-            res = minimize(fun=self.objective,
-                           x0=x0.flatten(),
-                           **minimizer_kwargs
-                           )
+            res = minimize(fun=self.objective, x0=x0.flatten(), **minimizer_kwargs)
             if res.success:
                 results.append(res)
             niter -= 1
@@ -820,10 +819,7 @@ class BaseOptimizer(metaclass=ABCMeta):
         ics = (self.construct_random_initial() for _ in range(niter))
         for i, initial in enumerate(ics):
             logger.debug("Shotgun: random initial condition {i}/{niter}", i=i + 1, niter=niter)
-            res = minimize(fun=self.objective,
-                           x0=initial.flatten(),
-                           **minimizer_kwargs
-                           )
+            res = minimize(fun=self.objective, x0=initial.flatten(), **minimizer_kwargs)
             if res.success:
                 results.append(res)
 
@@ -856,20 +852,21 @@ class BaseOptimizer(metaclass=ABCMeta):
         feasible = np.array([True for _ in x0])
 
         minimizer_kwargs = {
-            'bounds': Bounds(lb, ub, feasible),
-            'tol': None,
-            'callback': None,
-            'constraints': self.constraints,
+            "bounds": Bounds(lb, ub, feasible),
+            "tol": None,
+            "callback": None,
+            "constraints": self.constraints,
         }
 
         try:  # pragma: no cover
             if callable(self._jacobian):
-                minimizer_kwargs['jac'] = self._jacobian
+                minimizer_kwargs["jac"] = self._jacobian
             else:  # compute jacobians for objective, constraints using numdifftools
                 import numdifftools as ndt
-                minimizer_kwargs['jac'] = ndt.Jacobian(self.objective)
-                for const in minimizer_kwargs['constraints']:
-                    const['jac'] = ndt.Jacobian(const['fun'])
+
+                minimizer_kwargs["jac"] = ndt.Jacobian(self.objective)
+                for const in minimizer_kwargs["constraints"]:
+                    const["jac"] = ndt.Jacobian(const["fun"])
         except AttributeError:
             pass
 
@@ -877,11 +874,7 @@ class BaseOptimizer(metaclass=ABCMeta):
             self._optima = x0
             return
 
-        res = minimize(
-            fun=self.objective,
-            x0=x0,
-            **minimizer_kwargs
-        )
+        res = minimize(fun=self.objective, x0=x0, **minimizer_kwargs)
 
         if res.success:
             logger.debug("Polishing successful: objective={obj}", obj=res.fun)
@@ -959,13 +952,14 @@ class BaseNonConvexOptimizer(BaseOptimizer):
         else:
             res_shotgun = None
 
-        result = basinhopping(func=self.objective,
-                              x0=x0,
-                              minimizer_kwargs=minimizer_kwargs,
-                              niter=niter,
-                              accept_test=accept_test,
-                              callback=self._callback,
-                              )
+        result = basinhopping(
+            func=self.objective,
+            x0=x0,
+            minimizer_kwargs=minimizer_kwargs,
+            niter=niter,
+            accept_test=accept_test,
+            callback=self._callback,
+        )
 
         success, msg = basinhop_status(result)
         logger.info("Basin hopping result: success={success}, message={msg}", success=success, msg=msg)
@@ -992,19 +986,20 @@ class BaseNonConvexOptimizer(BaseOptimizer):
             The result of the optimization. Returns None if the optimization
             failed.
         """
-        if 'constraints' in minimizer_kwargs:
+        if "constraints" in minimizer_kwargs:
             msg = "Differential Evolution can only be used in unconstrained optimization."
             raise OptimizationException(msg)
 
         if niter is None:
             niter = self._default_hops
 
-        result = differential_evolution(func=self.objective,
-                                        bounds=minimizer_kwargs['bounds'],
-                                        maxiter=minimizer_kwargs['options']['maxiter'],
-                                        popsize=niter,
-                                        tol=minimizer_kwargs['options']['ftol'],
-                                        )
+        result = differential_evolution(
+            func=self.objective,
+            bounds=minimizer_kwargs["bounds"],
+            maxiter=minimizer_kwargs["options"]["maxiter"],
+            popsize=niter,
+            tol=minimizer_kwargs["options"]["ftol"],
+        )
 
         if result.success:
             return result
@@ -1031,11 +1026,12 @@ class BaseNonConvexOptimizer(BaseOptimizer):
         if niter is None:
             niter = self._default_hops
 
-        result = shgo(func=self.objective,
-                      bounds=minimizer_kwargs['bounds'],
-                      constraints=minimizer_kwargs['constraints'],
-                      iters=niter,
-                      )
+        result = shgo(
+            func=self.objective,
+            bounds=minimizer_kwargs["bounds"],
+            constraints=minimizer_kwargs["constraints"],
+            iters=niter,
+        )
 
         if result.success:  # pragma: no cover
             return result
@@ -1043,7 +1039,7 @@ class BaseNonConvexOptimizer(BaseOptimizer):
     _optimization_backend = _optimization_basinhopping
 
 
-AuxVar = namedtuple('AuxVar', ['bases', 'bound', 'shape', 'mask', 'size'])
+AuxVar = namedtuple("AuxVar", ["bases", "bound", "shape", "mask", "size"])
 
 
 class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
@@ -1091,14 +1087,14 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
         self._full_slices = []
         for i, (auxvar, var) in enumerate(zip(self._aux_vars, arvs, strict=True)):
             relevant_vars = {self._n + b for b in auxvar.bases}
-            index = sorted(self._full_vars) + [self._n + a for a in arvs[:i + 1]]
+            index = sorted(self._full_vars) + [self._n + a for a in arvs[: i + 1]]
             var += self._n
             self._full_slices.append(tuple(colon if i in relevant_vars | {var} else np.newaxis for i in index))
 
         self._slices = []
         for i, (auxvar, var) in enumerate(zip(self._aux_vars, arvs, strict=True)):
             relevant_vars = auxvar.bases
-            index = sorted(self._rvs | self._crvs | set(arvs[:i + 1]))
+            index = sorted(self._rvs | self._crvs | set(arvs[: i + 1]))
             self._slices.append(tuple(colon if i in relevant_vars | {var} else np.newaxis for i in index))
 
     ###########################################################################
@@ -1296,7 +1292,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
 
         try:
             # if all outcomes are strings, make new variable strings too.
-            ''.join(flatten(alphabets))
+            "".join(flatten(alphabets))
             for bound in self._aux_bounds:
                 alphabets += [(digits + ascii_letters)[:bound]]
             string = True
@@ -1327,14 +1323,13 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
             for a, b in zip(rvs, mapping[i], strict=True):
                 new_map[a] = b
 
-        mapping = [[new_map.get(i, i) for i in range(len(self._full_shape))
-                    if i not in self._proxy_vars]]
+        mapping = [[new_map.get(i, i) for i in range(len(self._full_shape)) if i not in self._proxy_vars]]
 
         d = d.coalesce(mapping, extract=True)
 
         if string:
             with contextlib.suppress(ditException):
-                d = modify_outcomes(d, lambda o: ''.join(map(str, o)))
+                d = modify_outcomes(d, lambda o: "".join(map(str, o)))
 
         return d
 
@@ -1398,7 +1393,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
             ccs.append(channel_capacity(channel)[0])
         return ccs
 
-    def _post_process(self, style='entropy', minmax='min', niter=10, maxiter=None):  # pragma: no cover
+    def _post_process(self, style="entropy", minmax="min", niter=10, maxiter=None):  # pragma: no cover
         """
         Find a solution to the minimization with a secondary property.
 
@@ -1461,11 +1456,11 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
             cc = sum(self._channel_capacity(x))
             return sign * cc
 
-        sign = +1 if minmax == 'min' else -1
+        sign = +1 if minmax == "min" else -1
 
-        if style == 'channel':
+        if style == "channel":
             objective = objective_channelcapacity
-        elif style == 'entropy':
+        elif style == "entropy":
             objective = objective_entropy
         else:
             msg = f"Style {style} is not understood."
@@ -1488,12 +1483,15 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
             obj : float
                 The l2 deviation of the current objective from the true.
             """
-            obj = (self.objective(x) - true_objective)**2
+            obj = (self.objective(x) - true_objective) ** 2
             return obj
 
-        constraint = [{'type': 'eq',
-                       'fun': constraint_match_objective,
-                       }]
+        constraint = [
+            {
+                "type": "eq",
+                "fun": constraint_match_objective,
+            }
+        ]
 
         # set up required attributes
         try:

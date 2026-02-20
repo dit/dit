@@ -12,7 +12,7 @@ def test_pid_ct1():
     """
     Test ict on a generic distribution.
     """
-    d = bivariates['reduced or']
+    d = bivariates["reduced or"]
     pid = PID_CT(d, ((0,), (1,)), (2,))
     assert pid[((0,), (1,))] == pytest.approx(0.02712, abs=1e-4)
     assert pid[((0,),)] == pytest.approx(0.28416, abs=1e-4)

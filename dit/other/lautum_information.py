@@ -6,9 +6,7 @@ from dit.distconst import product_distribution
 from dit.divergences import kullback_leibler_divergence
 from dit.helpers import normalize_rvs
 
-__all__ = (
-    'lautum_information',
-)
+__all__ = ("lautum_information",)
 
 
 def lautum_information(dist, rvs=None, crvs=None, rv_mode=None):

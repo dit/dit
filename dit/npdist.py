@@ -80,13 +80,10 @@ from .npscalardist import ScalarDistribution
 from .params import ditParams
 from .samplespace import CartesianProduct, SampleSpace
 
-__all__ = (
-    'Distribution',
-)
+__all__ = ("Distribution",)
 
 
-def _make_distribution(outcomes, pmf, base,
-                       sample_space=None, prng=None, sparse=True):
+def _make_distribution(outcomes, pmf, base, sample_space=None, prng=None, sparse=True):
     """
     An unsafe, but faster, initialization for distributions.
 
@@ -117,13 +114,13 @@ def _make_distribution(outcomes, pmf, base,
     # This sets the prng.
     super(ScalarDistribution, d).__init__(prng)
 
-    d._meta['is_joint'] = True
-    d._meta['is_numerical'] = True
-    d._meta['is_sparse'] = None
+    d._meta["is_joint"] = True
+    d._meta["is_numerical"] = True
+    d._meta["is_sparse"] = None
 
     if base is None:
         # Assume default base.
-        base = ditParams['base']
+        base = ditParams["base"]
     d.ops = get_ops(base)
 
     ## Set the outcome class, ctor, and product function.
@@ -154,7 +151,7 @@ def _make_distribution(outcomes, pmf, base,
     # Set the mask
     d._mask = d._new_mask()
 
-    d._meta['is_sparse'] = sparse
+    d._meta["is_sparse"] = sparse
     d.rvs = [[i] for i in range(d.outcome_length())]
 
     return d
@@ -331,7 +328,7 @@ class Distribution(ScalarDistribution):
     _outcomes_index = None
     _product = None
     _rvs = None
-    _rv_mode = 'indices'
+    _rv_mode = "indices"
 
     ## Advertised attributes.
     alphabet = None
@@ -340,9 +337,18 @@ class Distribution(ScalarDistribution):
     pmf = None
     prng = None
 
-    def __init__(self, outcomes, pmf=None, sample_space=None, base=None,
-                            prng=None, sort=True, sparse=True, trim=True,
-                            validate=True):
+    def __init__(
+        self,
+        outcomes,
+        pmf=None,
+        sample_space=None,
+        base=None,
+        prng=None,
+        sort=True,
+        sparse=True,
+        trim=True,
+        validate=True,
+    ):
         """
         Initialize the distribution.
 
@@ -421,20 +427,20 @@ class Distribution(ScalarDistribution):
         super(ScalarDistribution, self).__init__(prng)  # pylint: disable=bad-super-call
 
         # Set *instance* attributes
-        self._meta['is_joint'] = True
-        self._meta['is_numerical'] = True
-        self._meta['is_sparse'] = None
+        self._meta["is_joint"] = True
+        self._meta["is_numerical"] = True
+        self._meta["is_sparse"] = None
 
         # Do any checks/conversions necessary to get the parameters.
         outcomes, pmf = self._init(outcomes, pmf, base)
 
         if len(outcomes) == 0 and sample_space is None:
-            msg = '`outcomes` must be nonempty if no sample space is given'
+            msg = "`outcomes` must be nonempty if no sample space is given"
             raise InvalidDistribution(msg)
 
         if isinstance(sample_space, SampleSpace):
-            if not sample_space._meta['is_joint']:
-                msg = '`sample_space` must be a joint sample space.'
+            if not sample_space._meta["is_joint"]:
+                msg = "`sample_space` must be a joint sample space."
                 raise InvalidDistribution(msg)
 
             if sort:
@@ -515,12 +521,12 @@ class Distribution(ScalarDistribution):
         else:
             outcomes = outcomes_
             if pmf is not None:
-                msg = '`pmf` must be `None` if `outcomes` is a dict.'
+                msg = "`pmf` must be `None` if `outcomes` is a dict."
                 raise InvalidDistribution(msg)
             pmf = pmf_
 
         if pmf is None:
-            msg = '`pmf` was `None` but `outcomes` was not a dict.'
+            msg = "`pmf` was `None` but `outcomes` was not a dict."
             raise InvalidDistribution(msg)
 
         # Make sure pmf and outcomes are sequences
@@ -528,7 +534,7 @@ class Distribution(ScalarDistribution):
             len(outcomes)
             len(pmf)
         except TypeError as err:
-            raise TypeError('`outcomes` and `pmf` must be sequences.') from err
+            raise TypeError("`outcomes` and `pmf` must be sequences.") from err
 
         if len(pmf) != len(outcomes):
             msg = "Unequal lengths for `pmf` and `outcomes`"
@@ -541,13 +547,14 @@ class Distribution(ScalarDistribution):
             try:
                 outcomes[0]
             except TypeError as err:
-                raise ditException('`outcomes` must be indexable.') from err
+                raise ditException("`outcomes` must be indexable.") from err
 
         # Determine if the pmf represents log probabilities or not.
         if base is None:
             # Provide help for obvious case of linear probabilities.
             from .validate import is_pmf
-            base = 'linear' if is_pmf(np.asarray(pmf, dtype=float), LinearOperations()) else ditParams['base']
+
+            base = "linear" if is_pmf(np.asarray(pmf, dtype=float), LinearOperations()) else ditParams["base"]
         self.ops = get_ops(base)
 
         return outcomes, pmf
@@ -627,6 +634,7 @@ class Distribution(ScalarDistribution):
             else:
                 # Assume it is a ScalarDistribution
                 from .convert import SDtoD
+
                 d = SDtoD(dist)
                 if base is not None:
                     d.set_base(base)
@@ -685,7 +693,7 @@ class Distribution(ScalarDistribution):
 
         dims = dist.get_rv_names()
         if dims is None:
-            dims = [f'x[{i}]' for i in range(dist.outcome_length())]
+            dims = [f"x[{i}]" for i in range(dist.outcome_length())]
 
         coords = {d: sorted(a) for d, a in zip(dims, alphabet, strict=True)}
 
@@ -720,7 +728,9 @@ class Distribution(ScalarDistribution):
         """
         rv_names = da.dims
         events, pmf = zip(*np.ndenumerate(da), strict=True)
-        events = [tuple(da.coords[rv][_].values.flatten()[0] for _, rv in zip(e, rv_names, strict=True)) for e in events]
+        events = [
+            tuple(da.coords[rv][_].values.flatten()[0] for _, rv in zip(e, rv_names, strict=True)) for e in events
+        ]
         dist = Distribution(events, pmf, base=base, prng=prng)
         dist.set_rv_names(rv_names)
         return dist
@@ -806,8 +816,7 @@ class Distribution(ScalarDistribution):
             pmf = self.pmf.tolist() + [value]
 
             # 2. Reorder  ### This call is different from Distribution
-            outcomes, pmf, index = reorder(self.outcomes, pmf,
-                                           self._sample_space)
+            outcomes, pmf, index = reorder(self.outcomes, pmf, self._sample_space)
 
             # 3. Store
             self.outcomes = tuple(outcomes)
@@ -908,8 +917,7 @@ class Distribution(ScalarDistribution):
         from array import array
 
         # We allow repeats and want to keep the order. We don't need the names.
-        parse = lambda rv: parse_rvs(self, rv, rv_mode=rv_mode,
-                                     unique=False, sort=False)[1]
+        parse = lambda rv: parse_rvs(self, rv, rv_mode=rv_mode, unique=False, sort=False)[1]
         indexes = [parse(rv) for rv in rvs]
 
         # Determine how new outcomes are constructed.
@@ -918,13 +926,13 @@ class Distribution(ScalarDistribution):
         else:
             ctor_o = tuple
             if extract:
-                raise Exception('Cannot extract with more than one rv.')
+                raise Exception("Cannot extract with more than one rv.")
 
         # Determine how elements of new outcomes are constructed.
         ctor_i = self._outcome_ctor
 
         # Build the distribution.
-        factory = lambda: array('d')
+        factory = lambda: array("d")
         d = defaultdict(factory)
         for outcome, p in self.zipped():
             # Build a list of inner outcomes. "c" stands for "constructed".
@@ -939,22 +947,23 @@ class Distribution(ScalarDistribution):
         pmf = tuple(pmf)
 
         # Preserve the sample space during coalescing.
-        sample_spaces = [self._sample_space.coalesce([idxes], extract=True)
-                         for idxes in indexes]
+        sample_spaces = [self._sample_space.coalesce([idxes], extract=True) for idxes in indexes]
         if isinstance(self._sample_space, CartesianProduct):
-            sample_space = CartesianProduct(sample_spaces,
-                                            product=itertools.product)
+            sample_space = CartesianProduct(sample_spaces, product=itertools.product)
             if extract:
                 sample_space = sample_space.alphabets[0]
         else:
             sample_space = sample_spaces[0] if extract else list(zip(*sample_spaces, strict=True))
 
-        d = Distribution(outcomes, pmf,
-                         base=self.get_base(),
-                         sort=True,
-                         sample_space=sample_space,
-                         sparse=self.is_sparse(),
-                         validate=False)
+        d = Distribution(
+            outcomes,
+            pmf,
+            base=self.get_base(),
+            sort=True,
+            sample_space=sample_space,
+            sparse=self.is_sparse(),
+            validate=False,
+        )
 
         # We do not set the rv names, since these are new random variables.
 
@@ -1034,7 +1043,7 @@ class Distribution(ScalarDistribution):
 
         union = set(cindexes).union(indexes)
         if len(union) != len(cindexes) + len(indexes):
-            raise ditException('`crvs` and `rvs` must have no intersection.')
+            raise ditException("`crvs` and `rvs` must have no intersection.")
 
         # Marginalize the random variables not in crvs or rvs
         if len(union) < self.outcome_length():
@@ -1082,9 +1091,10 @@ class Distribution(ScalarDistribution):
         pmfs.fill(ops.zero)
         for i, (coutcome, outcome) in enumerate(zip(coutcomes, outcomes, strict=True)):
             pmfs[coutcome, outcome] = probs[i]
-        dists = [Distribution(dist.outcomes, pmfs[i], sparse=sparse,
-                 base=base, sample_space=sample_space, validate=False)
-                 for i in range(pmfs.shape[0])]
+        dists = [
+            Distribution(dist.outcomes, pmfs[i], sparse=sparse, base=base, sample_space=sample_space, validate=False)
+            for i in range(pmfs.shape[0])
+        ]
 
         # Set the masks and r.v. names for each conditional distribution.
         for dd in dists:
@@ -1116,12 +1126,14 @@ class Distribution(ScalarDistribution):
         prng = np.random.RandomState()
         prng.set_state(self.prng.get_state())
 
-        d = _make_distribution(outcomes=deepcopy(self.outcomes),
-                               pmf=np.array(self.pmf, copy=True),
-                               base=self.ops.base,
-                               sample_space=deepcopy(self._sample_space),
-                               prng=prng,
-                               sparse=self._meta['is_sparse'])
+        d = _make_distribution(
+            outcomes=deepcopy(self.outcomes),
+            pmf=np.array(self.pmf, copy=True),
+            base=self.ops.base,
+            sample_space=deepcopy(self._sample_space),
+            prng=prng,
+            sparse=self._meta["is_sparse"],
+        )
 
         if base is not None:
             d.set_base(base)
@@ -1347,16 +1359,16 @@ class Distribution(ScalarDistribution):
         else:
             L = self.outcome_length()
             if len(set(rv_names)) < L:
-                raise ditException('Too few unique random variable names.')
+                raise ditException("Too few unique random variable names.")
             elif len(set(rv_names)) > L:
-                raise ditException('Too many unique random variable names.')
+                raise ditException("Too many unique random variable names.")
             rvs = dict(zip(rv_names, range(L), strict=True)) if L > 0 else None
 
         self._rvs = rvs
 
         if self._rvs is not None:
             # Unsure if we should change this automatically.
-            self._rv_mode = 'names'
+            self._rv_mode = "names"
 
     def to_html(self, digits=None, exact=None, tol=1e-9):  # pragma: no cover
         """
@@ -1370,7 +1382,7 @@ class Distribution(ScalarDistribution):
         from .distribution import prepare_string
 
         if exact is None:
-            exact = ditParams['print.exact']
+            exact = ditParams["print.exact"]
 
         x = prepare_string(self, digits, exact, tol)
         pmf, outcomes, base, colsep, max_length, pstr = x
@@ -1395,24 +1407,25 @@ class Distribution(ScalarDistribution):
             ("Outcome Class", outcome_class),
             ("Outcome Length", self.outcome_length()),
         ]
-        infos = ''.join(f"<tr><th>{a}:</th><td>{b}</td></tr>" for a, b in info)
+        infos = "".join(f"<tr><th>{a}:</th><td>{b}</td></tr>" for a, b in info)
         header = f'<table border="1">{infos}</table>'
 
         rv_names = self.get_rv_names()
         if rv_names is None:
             rv_names = [f"x[{i}]" for i in range(self.outcome_length())]
 
-        table_header = '<tr>' + ''.join(f"<th>{a}</th>" for a in rv_names) + f"<th>{pstr}</th></tr>"
-        table_rows = ''.join(
-            '<tr>' + ''.join(f'<td>{str(_)}</td>' for _ in o) + f'<td>{p}</td></tr>' for o, p in zip(self.outcomes, pmf, strict=True))
-        table = f'<table>{table_header}{table_rows}</table>'
+        table_header = "<tr>" + "".join(f"<th>{a}</th>" for a in rv_names) + f"<th>{pstr}</th></tr>"
+        table_rows = "".join(
+            "<tr>" + "".join(f"<td>{str(_)}</td>" for _ in o) + f"<td>{p}</td></tr>"
+            for o, p in zip(self.outcomes, pmf, strict=True)
+        )
+        table = f"<table>{table_header}{table_rows}</table>"
 
         output = f'<div><div style="float: left">{header}</div><div style="float: left">{table}</div></div>'
 
         return output
 
-    def to_string(self, digits=None, exact=None, tol=1e-9, show_mask=False,
-                        str_outcomes=False):
+    def to_string(self, digits=None, exact=None, tol=1e-9, show_mask=False, str_outcomes=False):
         """
         Returns a string representation of the distribution.
 
@@ -1451,21 +1464,14 @@ class Distribution(ScalarDistribution):
         from .distribution import prepare_string
 
         if exact is None:
-            exact = ditParams['print.exact']
+            exact = ditParams["print.exact"]
 
         s = StringIO()
 
         x = prepare_string(self, digits, exact, tol, show_mask, str_outcomes)
         pmf, outcomes, base, colsep, max_length, pstr = x
 
-        headers = [
-            "Class",
-            "Alphabet",
-            "Base",
-            "Outcome Class",
-            "Outcome Length",
-            "RV Names"
-        ]
+        headers = ["Class", "Alphabet", "Base", "Outcome Class", "Outcome Length", "RV Names"]
 
         vals = []
 
@@ -1493,8 +1499,7 @@ class Distribution(ScalarDistribution):
         # Outcome length
         if show_mask:
             outcome_length = "{0} (mask: {1})"
-            outcome_length = outcome_length.format(self.outcome_length(),
-                                                   len(self._mask))
+            outcome_length = outcome_length.format(self.outcome_length(), len(self._mask))
         else:
             outcome_length = str(self.outcome_length())
         vals.append(outcome_length)
@@ -1510,11 +1515,11 @@ class Distribution(ScalarDistribution):
         s.write("\n")
 
         # Distribution
-        s.write(''.join(['x'.ljust(max_length), colsep, pstr, "\n"]))
+        s.write("".join(["x".ljust(max_length), colsep, pstr, "\n"]))
         # Adjust for empty outcomes. Min length should be: len('x') == 1
         max_length = max(1, max_length)
         for o, p in zip(outcomes, pmf, strict=True):
-            s.write(''.join([o.ljust(max_length), colsep, str(p), "\n"]))
+            s.write("".join([o.ljust(max_length), colsep, str(p), "\n"]))
         s.seek(0)
 
         s = s.read()

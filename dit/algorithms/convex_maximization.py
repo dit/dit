@@ -8,42 +8,40 @@ import scipy
 
 from .optutil import as_full_rank
 
-__all__ = (
-    'maximize_convex_function',
-)
+__all__ = ("maximize_convex_function",)
 
 
 def maximize_convex_function(f, A_ineq, b_ineq, A_eq=None, b_eq=None):
     """
-Maximize a convex function over a polytope. This function uses the fact that
-the maximum of a convex function over a polytope will be achieved at one of
-the extreme points of the polytope.
+    Maximize a convex function over a polytope. This function uses the fact that
+    the maximum of a convex function over a polytope will be achieved at one of
+    the extreme points of the polytope.
 
-The maximization is done by taking a system of linear inequalities, using the
-pypoman library to create a list of extreme points, and then evaluating the
-objective function on each point.
+    The maximization is done by taking a system of linear inequalities, using the
+    pypoman library to create a list of extreme points, and then evaluating the
+    objective function on each point.
 
-    Parameters
-    ----------
-    f : function
-        Objective function to maximize
-    A_ineq : matrix
-        Specifies inequalities matrix, should be num_inequalities x num_variables
-    b_ineq : array
-        Specifies inequalities vector, should be num_inequalities long
-    A_eq : matrix
-        Specifies equalities matrix, should be num_equalities x num_variables
-    b_eq : array
-        Specifies equalities vector, should be num_equalities long
+        Parameters
+        ----------
+        f : function
+            Objective function to maximize
+        A_ineq : matrix
+            Specifies inequalities matrix, should be num_inequalities x num_variables
+        b_ineq : array
+            Specifies inequalities vector, should be num_inequalities long
+        A_eq : matrix
+            Specifies equalities matrix, should be num_equalities x num_variables
+        b_eq : array
+            Specifies equalities vector, should be num_equalities long
 
-    Returns tuple optimal_extreme_point, maximum_function_value
+        Returns tuple optimal_extreme_point, maximum_function_value
 
     """
 
     best_x, best_val = None, -np.inf
 
-    A_ineq = A_ineq.astype('float')
-    b_ineq = b_ineq.astype('float')
+    A_ineq = A_ineq.astype("float")
+    b_ineq = b_ineq.astype("float")
 
     A_ineq, b_ineq, _ = as_full_rank(A_ineq, b_ineq)
 
@@ -51,8 +49,8 @@ objective function on each point.
         # pypoman doesn't support equality constraints. We remove equality
         # constraints by doing a coordinate transformation.
 
-        A_eq = A_eq.astype('float')
-        b_eq = b_eq.astype('float')
+        A_eq = A_eq.astype("float")
+        b_eq = b_eq.astype("float")
 
         A_eq, b_eq, _ = as_full_rank(A_eq, b_eq)
 
@@ -76,6 +74,7 @@ objective function on each point.
         transform = lambda x: x
 
     import pypoman
+
     extreme_points = pypoman.compute_polytope_vertices(A_ineq, b_ineq)
 
     for v in extreme_points:
@@ -85,6 +84,6 @@ objective function on each point.
             best_x, best_val = x, val
 
     if best_x is None:
-        raise Exception('No extreme points found!')
+        raise Exception("No extreme points found!")
 
     return best_x, best_val

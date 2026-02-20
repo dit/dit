@@ -14,8 +14,8 @@ from .distortions import hamming
 from .information_bottleneck import InformationBottleneck, InformationBottleneckDivergence
 
 __all__ = (
-    'IBCurve',
-    'RDCurve',
+    "IBCurve",
+    "RDCurve",
 )
 
 
@@ -24,7 +24,18 @@ class RDCurve:
     Compute a rate-distortion curve.
     """
 
-    def __init__(self, dist, rv=None, crvs=None, beta_min=0, beta_max=10, beta_num=101, alpha=1.0, distortion=hamming, method=None):
+    def __init__(
+        self,
+        dist,
+        rv=None,
+        crvs=None,
+        beta_min=0,
+        beta_max=10,
+        beta_num=101,
+        alpha=1.0,
+        distortion=hamming,
+        method=None,
+    ):
         """
         Initialize the curve computer.
 
@@ -74,34 +85,31 @@ class RDCurve:
 
         if method is None:
             if distortion.optimizer:
-                method = 'sp'
+                method = "sp"
             elif distortion.matrix:  # pragma: no cover
-                method = 'ba'
+                method = "ba"
             else:  # pragma: no cover
                 msg = "Distortion measure is vacuous."
                 raise ditException(msg)
-        elif method not in ('sp', 'ba'):  # pragma: no cover
+        elif method not in ("sp", "ba"):  # pragma: no cover
             msg = f"Method '{method}' not supported."
             raise ditException(msg)
-        elif method == 'sp' and not distortion.optimizer:  # pragma: no cover
+        elif method == "sp" and not distortion.optimizer:  # pragma: no cover
             msg = "Method is 'sp' but distortion does not have an optimizer."
             raise ditException(msg)
-        elif method == 'ba' and not distortion.matrix:  # pragma: no cover
+        elif method == "ba" and not distortion.matrix:  # pragma: no cover
             msg = "Method is 'ba' but distortion does not have a matrix."
             raise ditException(msg)
-        elif method == 'ba' and crvs:  # pragma: no cover
+        elif method == "ba" and crvs:  # pragma: no cover
             msg = "Method 'ba' does not support conditional variables."
             raise ditException(msg)
 
-        self._get_rd = {'ba': self._get_rd_ba,
-                        'sp': self._get_rd_sp,
-                        }[method]
+        self._get_rd = {
+            "ba": self._get_rd_ba,
+            "sp": self._get_rd_sp,
+        }[method]
 
-        self._rd_opt = self._distortion.optimizer(self.dist,
-                                                  beta=0.0,
-                                                  alpha=alpha,
-                                                  rv=self.rv,
-                                                  crvs=self.crvs)
+        self._rd_opt = self._distortion.optimizer(self.dist, beta=0.0, alpha=alpha, rv=self.rv, crvs=self.crvs)
 
         self._max_rate = entropy(d)
         _, self._max_distortion, _, _ = self._get_rd(beta=0.0)
@@ -134,6 +142,7 @@ class RDCurve:
             A plotter with both `self` and `other`.
         """
         from .plotting import RDPlotter
+
         if isinstance(other, RDCurve):
             plotter = RDPlotter(self, other)
             return plotter
@@ -211,10 +220,11 @@ class RDCurve:
         x0 : np.ndarray
             The found optima.
         """
-        (r, d), q = blahut_arimoto(p_x=self.p_x,
-                                   beta=beta,
-                                   distortion=self._distortion.matrix,
-                                   )
+        (r, d), q = blahut_arimoto(
+            p_x=self.p_x,
+            beta=beta,
+            distortion=self._distortion.matrix,
+        )
         return r, d, q, initial
 
     def compute(self):
@@ -266,6 +276,7 @@ class RDCurve:
             The resulting figure.
         """
         from .plotting import RDPlotter
+
         plotter = RDPlotter(self)
         return plotter.plot(downsample)
 
@@ -275,7 +286,19 @@ class IBCurve:
     Compute an information bottleneck curve.
     """
 
-    def __init__(self, dist, rvs=None, crvs=None, rv_mode=None, beta_min=0.0, beta_max=15.0, beta_num=101, alpha=1.0, method='sp', divergence=None):
+    def __init__(
+        self,
+        dist,
+        rvs=None,
+        crvs=None,
+        rv_mode=None,
+        beta_min=0.0,
+        beta_max=15.0,
+        beta_num=101,
+        alpha=1.0,
+        method="sp",
+        divergence=None,
+    ):
         """
         Initialize the curve computer.
 
@@ -324,17 +347,18 @@ class IBCurve:
         self.p_xy = self.dist.coalesce([self._x, self._y])
         self.p_xy = self.p_xy.pmf.reshape(tuple(map(len, self.p_xy.alphabet)))
 
-        args = {'dist': self.dist,
-                'beta': 0.0,
-                'alpha': alpha,
-                'rvs': [self._x, self._y],
-                'crvs': self._z,
-                'rv_mode': self._rv_mode
+        args = {
+            "dist": self.dist,
+            "beta": 0.0,
+            "alpha": alpha,
+            "rvs": [self._x, self._y],
+            "crvs": self._z,
+            "rv_mode": self._rv_mode,
         }
 
         if divergence is not None:  # pragma: no cover
             bottleneck = InformationBottleneckDivergence
-            args['divergence'] = divergence
+            args["divergence"] = divergence
         else:
             bottleneck = InformationBottleneck
         self._bn = bottleneck(**args)
@@ -371,6 +395,7 @@ class IBCurve:
             A plotter with both `self` and `other`.
         """
         from .plotting import IBPlotter
+
         if isinstance(other, IBCurve):
             plotter = IBPlotter(self, other)
             return plotter
@@ -423,7 +448,7 @@ class IBCurve:
         q_xyzt = q_xyt[:, :, np.newaxis, :]
         return q_xyzt, None
 
-    def compute(self, method='sp'):
+    def compute(self, method="sp"):
         """
         Sweep beta and compute the information bottleneck curve.
 
@@ -433,9 +458,10 @@ class IBCurve:
             The method of computation to use. 'sp' denotes scipy.optimize;
             'ba' denotes blahut-arimoto.
         """
-        get_opt = {'ba': self._get_opt_ba,
-                   'sp': self._get_opt_sp,
-                   }[method]
+        get_opt = {
+            "ba": self._get_opt_ba,
+            "sp": self._get_opt_sp,
+        }[method]
 
         self.distributions = []
         complexities = []
@@ -461,7 +487,7 @@ class IBCurve:
             distortions.append(self._bn.distortion(q_xyzt))
 
             q_xt = q_xyzt.sum(axis=(1, 2))
-            q_x_t = (q_xt / q_xt.sum(axis=0, keepdims=True))
+            q_x_t = q_xt / q_xt.sum(axis=0, keepdims=True)
             q_x_t[np.isnan(q_x_t)] = 0
 
             ranks.append(np.linalg.matrix_rank(q_x_t, tol=1e-4))
@@ -526,5 +552,6 @@ class IBCurve:
             The resulting figure.
         """
         from .plotting import IBPlotter
+
         plotter = IBPlotter(self)
         return plotter.plot(downsample)

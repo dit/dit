@@ -7,18 +7,16 @@ import contextlib
 import numpy as np
 
 __all__ = (
-    'counts_from_data',
-    'distribution_from_data',
-    'get_counts',
+    "counts_from_data",
+    "distribution_from_data",
+    "get_counts",
 )
 
 
 try:  # cython
-
     from .pycounts import counts_from_data, distribution_from_data
 
 except ImportError:  # no cython
-
     from collections import Counter, defaultdict
     from itertools import product
 
@@ -99,7 +97,7 @@ except ImportError:  # no cython
         alphabet = set(alphabet) if alphabet is not None else set()
         alphabet = tuple(sorted(alphabet.union(*[set(hist) for hist in histories])))
 
-        cCounts = np.empty((len(histories), len(alphabet)**fLength))
+        cCounts = np.empty((len(histories), len(alphabet) ** fLength))
         for i, hist in enumerate(histories):
             for j, future in enumerate(product(alphabet, repeat=fLength)):
                 cCounts[i, j] = cond_counts[hist][future]
@@ -141,7 +139,7 @@ except ImportError:  # no cython
             d = list(map(tuple, d))
 
         if base is None:
-            base = ditParams['base']
+            base = ditParams["base"]
 
         words, _, counts, _ = counts_from_data(d, L, 0)
 

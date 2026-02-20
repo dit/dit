@@ -7,10 +7,10 @@ from ..math.misc import combinations as C
 from ..math.misc import is_integer, is_number
 
 __all__ = (
-    'bernoulli',
-    'binomial',
-    'hypergeometric',
-    'uniform',
+    "bernoulli",
+    "binomial",
+    "hypergeometric",
+    "uniform",
 )
 
 
@@ -74,7 +74,7 @@ def binomial(n, p):
         raise ValueError(f"{n} is not a positive integer.")
     if not is_number(p) or not 0 <= p <= 1:
         raise ValueError(f"{p} is not a valid probability.")
-    pp = lambda n, k: C(n, k) * p**k * (1 - p)**(n - k)
+    pp = lambda n, k: C(n, k) * p**k * (1 - p) ** (n - k)
     outcomes = list(range(n + 1))
     pmf = [pp(n, k) for k in outcomes]
     return ScalarDistribution(outcomes, pmf)

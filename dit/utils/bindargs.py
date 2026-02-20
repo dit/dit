@@ -28,9 +28,7 @@ Also useful:
 
 import inspect
 
-__all__ = (
-    'bindcallargs',
-)
+__all__ = ("bindcallargs",)
 
 
 def bindcallargs(_fUnCtIoN_, *args, **kwargs):

@@ -8,9 +8,7 @@ from ..helpers import normalize_rvs
 from ..utils import flatten, unitful
 from .entropy import entropy
 
-__all__ = (
-    'necessary_conditional_entropy',
-)
+__all__ = ("necessary_conditional_entropy",)
 
 
 @unitful

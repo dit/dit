@@ -1,6 +1,7 @@
 """
 Tests for dit.others.cumulative_residual_entropy.
 """
+
 from itertools import combinations, product
 
 import numpy as np
@@ -24,23 +25,39 @@ def miwin():
 
 
 def conditional_uniform1():
-    events = [(a, b) for a, b, in product(range(5), range(5)) if a <= b]
+    events = [(a, b) for a, b in product(range(5), range(5)) if a <= b]
     probs = [1 / (5 - a) / 5 for a, _ in events]
     d = D(events, probs)
     return d
 
 
 def conditional_uniform2():
-    events = [(a - 2, b - 2) for a, b, in product(range(5), range(5)) if a <= b]
+    events = [(a - 2, b - 2) for a, b in product(range(5), range(5)) if a <= b]
     probs = [1 / (3 - a) / 5 for a, _ in events]
     d = D(events, probs)
     return d
 
 
-@pytest.mark.parametrize(('n', 'val'), zip(range(2, 23, 2), [0.5, 0.81127812, 1.15002242, 1.49799845,
-                                                             1.85028649, 2.20496373, 2.56111354,
-                                                             2.91823997, 3.27604979, 3.6343579,
-                                                             3.99304129], strict=True))
+@pytest.mark.parametrize(
+    ("n", "val"),
+    zip(
+        range(2, 23, 2),
+        [
+            0.5,
+            0.81127812,
+            1.15002242,
+            1.49799845,
+            1.85028649,
+            2.20496373,
+            2.56111354,
+            2.91823997,
+            3.27604979,
+            3.6343579,
+            3.99304129,
+        ],
+        strict=True,
+    ),
+)
 def test_cre_1(n, val):
     """
     Test the CRE against known values for several uniform distributions.
@@ -66,10 +83,26 @@ def test_cre_3():
         CRE(dist)
 
 
-@pytest.mark.parametrize(('n', 'val'), zip(range(2, 23, 2), [0.5, 1.31127812, 2.06831826, 2.80927657,
-                                                             3.54316518, 4.27328199, 5.00113503,
-                                                             5.72751654, 6.45288453, 7.17752308,
-                                                             7.90161817], strict=True))
+@pytest.mark.parametrize(
+    ("n", "val"),
+    zip(
+        range(2, 23, 2),
+        [
+            0.5,
+            1.31127812,
+            2.06831826,
+            2.80927657,
+            3.54316518,
+            4.27328199,
+            5.00113503,
+            5.72751654,
+            6.45288453,
+            7.17752308,
+            7.90161817,
+        ],
+        strict=True,
+    ),
+)
 def test_gcre_1(n, val):
     """
     Test the GCRE against known values for the uniform distribution.
@@ -95,7 +128,7 @@ def test_gcre_3():
         GCRE(dist)
 
 
-@pytest.mark.parametrize('i', range(-5, 1))
+@pytest.mark.parametrize("i", range(-5, 1))
 def test_gcre_4(i):
     """
     Test that equal-length uniform distributions all have the same GCRE.
@@ -104,7 +137,7 @@ def test_gcre_4(i):
     assert gcre == pytest.approx(GCRE(uniform(-5, 0)))
 
 
-@pytest.mark.parametrize('crvs', combinations([0, 1, 2], 2))
+@pytest.mark.parametrize("crvs", combinations([0, 1, 2], 2))
 def test_ccre_1(crvs):
     """
     Test that independent RVs have CCRE = CRE.
@@ -148,7 +181,7 @@ def test_cgcre_1():
     assert np.allclose(cgcre.outcomes, uniforms)
 
 
-@pytest.mark.parametrize('crvs', combinations([0, 1, 2], 2))
+@pytest.mark.parametrize("crvs", combinations([0, 1, 2], 2))
 def test_cgcre_2(crvs):
     """
     Test that independent RVs have CGCRE = GCRE.

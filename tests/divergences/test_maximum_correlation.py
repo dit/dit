@@ -11,25 +11,29 @@ from dit.exceptions import ditException
 from dit.utils.testing import distributions
 
 
-@pytest.mark.parametrize(('rvs', 'crvs'), [
-    ([[0], [1]], []),
-    ([[0], [1]], [2]),
-])
-@pytest.mark.parametrize('dist', [dyadic, triadic])
+@pytest.mark.parametrize(
+    ("rvs", "crvs"),
+    [
+        ([[0], [1]], []),
+        ([[0], [1]], [2]),
+    ],
+)
+@pytest.mark.parametrize("dist", [dyadic, triadic])
 def test_maximum_correlation(dist, rvs, crvs):
-    """ Test against known values """
+    """Test against known values"""
     assert maximum_correlation(dist, rvs, crvs) == pytest.approx(1.0)
 
 
-@pytest.mark.parametrize('rvs', [['X', 'Y', 'Z'], ['X']])
+@pytest.mark.parametrize("rvs", [["X", "Y", "Z"], ["X"]])
 def test_maximum_correlation_failure(rvs):
-    """ Test that maximum_correlation fails with len(rvs) != 2 """
+    """Test that maximum_correlation fails with len(rvs) != 2"""
     with pytest.raises(ditException):
         maximum_correlation(dyadic, rvs)
 
 
-@given(dist1=distributions(alphabets=((2, 4),) * 2, zeros=False),
-       dist2=distributions(alphabets=((2, 4),) * 2, zeros=False))
+@given(
+    dist1=distributions(alphabets=((2, 4),) * 2, zeros=False), dist2=distributions(alphabets=((2, 4),) * 2, zeros=False)
+)
 def test_maximum_correlation_tensorization(dist1, dist2):
     """
     Test tensorization:

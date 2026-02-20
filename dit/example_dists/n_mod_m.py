@@ -8,9 +8,7 @@ from itertools import product
 from ..math.misc import is_integer
 from ..npdist import Distribution
 
-__all__ = (
-    'n_mod_m',
-)
+__all__ = ("n_mod_m",)
 
 
 def n_mod_m(n, m):
@@ -39,10 +37,10 @@ def n_mod_m(n, m):
         raise ValueError(f"{n} is not a positive integer.")
     if not (is_integer(m) and m > 0):
         raise ValueError(f"{m} is not a positive integer.")
-    size = m**(n - 1)
+    size = m ** (n - 1)
     alpha = range(m)
     subwords = product(alpha, repeat=n - 1)
-    outcomes = [''.join(map(str, w)) + str(sum(w) % m) for w in subwords]
+    outcomes = ["".join(map(str, w)) + str(sum(w) % m) for w in subwords]
     pmf = [1 / size] * size
     d = Distribution(outcomes, pmf)
     return d

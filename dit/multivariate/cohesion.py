@@ -10,9 +10,7 @@ from ..math import multinomial
 from ..shannon import conditional_entropy as H
 from ..utils import unitful
 
-__all__ = (
-    'cohesion',
-)
+__all__ = ("cohesion",)
 
 
 @unitful

@@ -36,24 +36,20 @@ import numpy as np
 
 try:
     import xarray as xr
+
     XARRAY_AVAILABLE = True
 except ImportError:
     XARRAY_AVAILABLE = False
 
 from .math.ops import get_ops
 
-__all__ = (
-    'XRDistribution',
-)
+__all__ = ("XRDistribution",)
 
 
 def _check_xarray():
     """Raise an error if xarray is not available."""
     if not XARRAY_AVAILABLE:
-        raise ImportError(
-            "xarray is required for XRDistribution. "
-            "Install with: pip install xarray"
-        )
+        raise ImportError("xarray is required for XRDistribution. Install with: pip install xarray")
 
 
 class XRDistribution:
@@ -91,8 +87,7 @@ class XRDistribution:
     # Construction
     # ─────────────────────────────────────────────────────────────────────
 
-    def __init__(self, data, pmf=None, rv_names=None, free_vars=None,
-                 given_vars=None, base='linear'):
+    def __init__(self, data, pmf=None, rv_names=None, free_vars=None, given_vars=None, base="linear"):
         """
         Initialize an XRDistribution.
 
@@ -157,26 +152,19 @@ class XRDistribution:
             else:
                 outcomes = list(data)
                 if pmf is None:
-                    raise ValueError(
-                        "pmf is required when data is a sequence of outcomes"
-                    )
+                    raise ValueError("pmf is required when data is a sequence of outcomes")
                 pmf = list(pmf)
 
             if len(outcomes) == 0:
                 raise ValueError("outcomes must be non-empty")
             if len(outcomes) != len(pmf):
-                raise ValueError(
-                    f"outcomes and pmf must have the same length, "
-                    f"got {len(outcomes)} and {len(pmf)}"
-                )
+                raise ValueError(f"outcomes and pmf must have the same length, got {len(outcomes)} and {len(pmf)}")
 
             n = len(outcomes[0])
             if rv_names is None:
-                rv_names = [f'X{i}' for i in range(n)]
+                rv_names = [f"X{i}" for i in range(n)]
             if len(rv_names) != n:
-                raise ValueError(
-                    f"Expected {n} rv_names, got {len(rv_names)}"
-                )
+                raise ValueError(f"Expected {n} rv_names, got {len(rv_names)}")
 
             # Infer sorted alphabet per variable from the outcomes
             alphabets = [sorted({o[i] for o in outcomes}) for i in range(n)]
@@ -220,10 +208,7 @@ class XRDistribution:
                 f"given: {self.given_vars}"
             )
         if self.free_vars & self.given_vars:
-            raise ValueError(
-                f"free_vars and given_vars must be disjoint. "
-                f"Overlap: {self.free_vars & self.given_vars}"
-            )
+            raise ValueError(f"free_vars and given_vars must be disjoint. Overlap: {self.free_vars & self.given_vars}")
 
     @classmethod
     def from_distribution(cls, dist, rv_names=None):
@@ -244,12 +229,12 @@ class XRDistribution:
         """
         _check_xarray()
 
-        dist = dist.copy(base='linear')
+        dist = dist.copy(base="linear")
         dist.make_dense()
 
         if rv_names is None:
             rv_names = dist.get_rv_names()
-            rv_names = [f'X{i}' for i in range(dist.outcome_length())] if rv_names is None else list(rv_names)
+            rv_names = [f"X{i}" for i in range(dist.outcome_length())] if rv_names is None else list(rv_names)
 
         n = dist.outcome_length()
         if len(rv_names) != n:
@@ -263,18 +248,14 @@ class XRDistribution:
         arr = np.zeros(shape)
 
         for outcome, prob in zip(dist.outcomes, dist.pmf, strict=True):
-            idx = tuple(
-                coords[name].index(outcome[i])
-                for i, name in enumerate(rv_names)
-            )
+            idx = tuple(coords[name].index(outcome[i]) for i, name in enumerate(rv_names))
             arr[idx] = prob
 
         data = xr.DataArray(arr, dims=rv_names, coords=coords)
         return cls(data, free_vars=set(rv_names), given_vars=set())
 
     @classmethod
-    def from_array(cls, arr, dim_names, alphabets,
-                   free_vars=None, given_vars=None, base='linear'):
+    def from_array(cls, arr, dim_names, alphabets, free_vars=None, given_vars=None, base="linear"):
         """
         Create an XRDistribution from a numpy array.
 
@@ -352,9 +333,7 @@ class XRDistribution:
 
         This mirrors ``dit.Distribution.alphabet``.
         """
-        return tuple(
-            tuple(self.data.coords[d].values) for d in self.data.dims
-        )
+        return tuple(tuple(self.data.coords[d].values) for d in self.data.dims)
 
     @property
     def outcomes(self):
@@ -431,9 +410,7 @@ class XRDistribution:
             New names, one per dimension.
         """
         if len(rv_names) != len(self.data.dims):
-            raise ValueError(
-                f"Expected {len(self.data.dims)} names, got {len(rv_names)}"
-            )
+            raise ValueError(f"Expected {len(self.data.dims)} names, got {len(rv_names)}")
         rename_map = dict(zip(self.data.dims, rv_names, strict=True))
         self.data = self.data.rename(rename_map)
 
@@ -452,7 +429,7 @@ class XRDistribution:
 
     def is_log(self):
         """True if the distribution stores log probabilities."""
-        return self.ops.base != 'linear'
+        return self.ops.base != "linear"
 
     def is_numerical(self):
         """True (always numerical)."""
@@ -490,7 +467,7 @@ class XRDistribution:
         """
         return 0
 
-    def zipped(self, mode='pmf'):
+    def zipped(self, mode="pmf"):
         """
         Iterator over ``(outcome, probability)`` tuples.
 
@@ -511,7 +488,7 @@ class XRDistribution:
         for combo in itertools.product(*coord_vals):
             sel = {d: v for d, v in zip(dims, combo, strict=True)}
             p = float(arr.sel(sel))
-            if mode == 'atoms' or p > 0:
+            if mode == "atoms" or p > 0:
                 yield tuple(combo), p
 
     # ── Base / ops ───────────────────────────────────────────────────────
@@ -551,17 +528,16 @@ class XRDistribution:
         old_base = old_ops.base
         new_base = new_ops.base
 
-        if old_base == 'linear' and new_base != 'linear':
+        if old_base == "linear" and new_base != "linear":
             values = new_ops.log(values)
-        elif old_base != 'linear' and new_base == 'linear':
+        elif old_base != "linear" and new_base == "linear":
             values = old_ops.exp(values)
-        elif old_base != 'linear' and new_base != 'linear':
+        elif old_base != "linear" and new_base != "linear":
             # log_a -> linear -> log_b
             values = old_ops.exp(values)
             values = new_ops.log(values)
 
-        self.data = xr.DataArray(values, dims=self.data.dims,
-                                 coords=self.data.coords)
+        self.data = xr.DataArray(values, dims=self.data.dims, coords=self.data.coords)
         self.ops = new_ops
 
     # ─────────────────────────────────────────────────────────────────────
@@ -575,11 +551,11 @@ class XRDistribution:
         # Use dims order for stable output
         ordered_free = [d for d in self.dims if d in self.free_vars]
         ordered_given = [d for d in self.dims if d in self.given_vars]
-        free = ','.join(ordered_free)
+        free = ",".join(ordered_free)
         if ordered_given:
-            given = ','.join(ordered_given)
-            return f'p({free}|{given})'
-        return f'p({free})'
+            given = ",".join(ordered_given)
+            return f"p({free}|{given})"
+        return f"p({free})"
 
     def __repr__(self):
         return self._to_string()
@@ -613,11 +589,13 @@ class XRDistribution:
         -------
         clean : tuple of tuples
         """
+
         def _native(v):
             """Convert numpy scalars to native Python types."""
-            if hasattr(v, 'item'):
+            if hasattr(v, "item"):
                 return v.item()
             return v
+
         return tuple(tuple(_native(v) for v in alpha) for alpha in alphabet)
 
     @staticmethod
@@ -640,7 +618,7 @@ class XRDistribution:
         if digits is not None:
             return str(round(p, digits))
         # Compact default: up to 6 significant figures, strip trailing zeros
-        return f'{p:.6g}'
+        return f"{p:.6g}"
 
     def _to_string(self, digits=None):
         """
@@ -657,13 +635,14 @@ class XRDistribution:
         s : str
         """
         from io import StringIO
+
         s = StringIO()
 
         notation = self._notation()
         base = self.get_base()
         alphabet = self._native_alphabet(self.alphabet)
-        free_str = ', '.join(sorted(self.free_vars))
-        given_str = ', '.join(sorted(self.given_vars)) if self.given_vars else '(none)'
+        free_str = ", ".join(sorted(self.free_vars))
+        given_str = ", ".join(sorted(self.given_vars)) if self.given_vars else "(none)"
 
         s.write("Class:     XRDistribution\n")
         s.write(f"Notation:  {notation}\n")
@@ -692,16 +671,12 @@ class XRDistribution:
 
         # Format probabilities and outcome values
         str_vals = [
-            (tuple(str(v.item() if hasattr(v, 'item') else v) for v in combo),
-             self._fmt_prob(p, digits))
+            (tuple(str(v.item() if hasattr(v, "item") else v) for v in combo), self._fmt_prob(p, digits))
             for combo, p in rows
         ]
 
         col_sep = "   "
-        col_widths = [
-            max(len(str(d)), max(len(sv[0][i]) for sv in str_vals))
-            for i, d in enumerate(dims)
-        ]
+        col_widths = [max(len(str(d)), max(len(sv[0][i]) for sv in str_vals)) for i, d in enumerate(dims)]
         prob_header = "p" if self.is_joint() else "p(·|·)"
         prob_width = max(len(prob_header), max(len(sv[1]) for sv in str_vals))
 
@@ -734,8 +709,8 @@ class XRDistribution:
         notation = self._notation()
         base = self.get_base()
         alphabet = self._native_alphabet(self.alphabet)
-        free_str = ', '.join(sorted(self.free_vars))
-        given_str = ', '.join(sorted(self.given_vars)) if self.given_vars else '—'
+        free_str = ", ".join(sorted(self.free_vars))
+        given_str = ", ".join(sorted(self.given_vars)) if self.given_vars else "—"
 
         # Info table
         info_rows = [
@@ -746,9 +721,8 @@ class XRDistribution:
             ("Free vars", f"{{{free_str}}}"),
             ("Given vars", f"{{{given_str}}}"),
         ]
-        info_html = ''.join(
-            f'<tr><th style="text-align:left; padding:2px 8px;">{k}:</th>'
-            f'<td style="padding:2px 8px;">{v}</td></tr>'
+        info_html = "".join(
+            f'<tr><th style="text-align:left; padding:2px 8px;">{k}:</th><td style="padding:2px 8px;">{v}</td></tr>'
             for k, v in info_rows
         )
 
@@ -767,42 +741,32 @@ class XRDistribution:
         prob_header = "p" if self.is_joint() else "p(·|·)"
 
         # Probability table
-        th_style = (
-            'style="text-align:center; padding:2px 8px; '
-            'border-bottom:2px solid #333;"'
-        )
+        th_style = 'style="text-align:center; padding:2px 8px; border-bottom:2px solid #333;"'
         td_style = 'style="text-align:center; padding:2px 8px;"'
-        td_prob_style = (
-            'style="text-align:right; padding:2px 8px; font-family:monospace;"'
-        )
+        td_prob_style = 'style="text-align:right; padding:2px 8px; font-family:monospace;"'
 
-        thead = '<tr>' + ''.join(
-            f'<th {th_style}>{d}</th>' for d in dims
-        ) + f'<th {th_style}>{prob_header}</th></tr>'
+        thead = "<tr>" + "".join(f"<th {th_style}>{d}</th>" for d in dims) + f"<th {th_style}>{prob_header}</th></tr>"
 
         tbody_rows = []
         for combo, p in rows:
             val_str = self._fmt_prob(p, digits)
-            native = (v.item() if hasattr(v, 'item') else v for v in combo)
-            cells = ''.join(f'<td {td_style}>{v}</td>' for v in native)
-            cells += f'<td {td_prob_style}>{val_str}</td>'
-            tbody_rows.append(f'<tr>{cells}</tr>')
-        tbody = ''.join(tbody_rows)
+            native = (v.item() if hasattr(v, "item") else v for v in combo)
+            cells = "".join(f"<td {td_style}>{v}</td>" for v in native)
+            cells += f"<td {td_prob_style}>{val_str}</td>"
+            tbody_rows.append(f"<tr>{cells}</tr>")
+        tbody = "".join(tbody_rows)
 
         if not rows:
             ncols = len(dims) + 1
-            tbody = (
-                f'<tr><td colspan="{ncols}" style="text-align:center; '
-                f'padding:8px; color:#888;">(empty)</td></tr>'
-            )
+            tbody = f'<tr><td colspan="{ncols}" style="text-align:center; padding:8px; color:#888;">(empty)</td></tr>'
 
         html = (
             '<div style="display:flex; gap:24px; align-items:flex-start; '
             'flex-wrap:wrap;">'
             f'<table style="border-collapse:collapse;">{info_html}</table>'
             f'<table style="border-collapse:collapse;">'
-            f'<thead>{thead}</thead><tbody>{tbody}</tbody></table>'
-            '</div>'
+            f"<thead>{thead}</thead><tbody>{tbody}</tbody></table>"
+            "</div>"
         )
         return html
 
@@ -836,19 +800,14 @@ class XRDistribution:
         if self.is_joint():
             total = float(arr.sum())
             if not np.isclose(total, 1.0, atol=atol):
-                raise ValueError(
-                    f"Joint distribution sums to {total}, expected 1.0"
-                )
+                raise ValueError(f"Joint distribution sums to {total}, expected 1.0")
         else:
             sums = arr.sum(dim=list(self.free_vars))
             # Only check values where the given vars have positive marginal
             vals = sums.values.ravel()
             nonzero = vals[vals > atol]
             if len(nonzero) > 0 and not np.allclose(nonzero, 1.0, atol=atol):
-                raise ValueError(
-                    f"Conditional distribution does not normalise properly. "
-                    f"Sums over free vars:\n{sums}"
-                )
+                raise ValueError(f"Conditional distribution does not normalise properly. Sums over free vars:\n{sums}")
         return True
 
     # ─────────────────────────────────────────────────────────────────────
@@ -879,8 +838,7 @@ class XRDistribution:
         invalid = keep - self.free_vars
         if invalid:
             raise ValueError(
-                f"Cannot keep {invalid}: not free variables. "
-                f"Free: {self.free_vars}, given: {self.given_vars}"
+                f"Cannot keep {invalid}: not free variables. Free: {self.free_vars}, given: {self.given_vars}"
             )
 
         sum_over = list(self.free_vars - keep)
@@ -894,15 +852,13 @@ class XRDistribution:
             new_ops = self.ops
             new_data = xr.DataArray(
                 new_ops.log(new_data.values),
-                dims=new_data.dims, coords=new_data.coords,
+                dims=new_data.dims,
+                coords=new_data.coords,
             )
-            return XRDistribution(new_data, free_vars=keep,
-                                  given_vars=self.given_vars,
-                                  base=self.ops.base)
+            return XRDistribution(new_data, free_vars=keep, given_vars=self.given_vars, base=self.ops.base)
         else:
             new_data = self.data.sum(dim=sum_over)
-            return XRDistribution(new_data, free_vars=keep,
-                                  given_vars=self.given_vars)
+            return XRDistribution(new_data, free_vars=keep, given_vars=self.given_vars)
 
     def marginalize(self, *drop_vars):
         """
@@ -920,10 +876,7 @@ class XRDistribution:
         drop = frozenset(drop_vars)
         invalid = drop - self.free_vars
         if invalid:
-            raise ValueError(
-                f"Cannot drop {invalid}: not free variables. "
-                f"Free: {self.free_vars}"
-            )
+            raise ValueError(f"Cannot drop {invalid}: not free variables. Free: {self.free_vars}")
         keep = self.free_vars - drop
         return self.marginal(*keep)
 
@@ -951,10 +904,7 @@ class XRDistribution:
         cond = frozenset(cond_vars)
         invalid = cond - self.free_vars
         if invalid:
-            raise ValueError(
-                f"Cannot condition on {invalid}: not free variables. "
-                f"Free: {self.free_vars}"
-            )
+            raise ValueError(f"Cannot condition on {invalid}: not free variables. Free: {self.free_vars}")
 
         new_free = self.free_vars - cond
         if not new_free:
@@ -963,9 +913,7 @@ class XRDistribution:
         # Work in linear space
         lin = self._linear_data()
         marginal_data = lin.sum(dim=list(new_free))
-        conditional_data = xr.where(marginal_data > 0,
-                                    lin / marginal_data,
-                                    0.0)
+        conditional_data = xr.where(marginal_data > 0, lin / marginal_data, 0.0)
 
         new_given = self.given_vars | cond
 
@@ -975,11 +923,9 @@ class XRDistribution:
                 dims=conditional_data.dims,
                 coords=conditional_data.coords,
             )
-            return XRDistribution(conditional_data, free_vars=new_free,
-                                  given_vars=new_given, base=self.ops.base)
+            return XRDistribution(conditional_data, free_vars=new_free, given_vars=new_given, base=self.ops.base)
 
-        return XRDistribution(conditional_data, free_vars=new_free,
-                              given_vars=new_given)
+        return XRDistribution(conditional_data, free_vars=new_free, given_vars=new_given)
 
     # ─────────────────────────────────────────────────────────────────────
     # Arithmetic
@@ -1049,16 +995,15 @@ class XRDistribution:
 
         # If either operand was log-based, convert result back
         base = self.ops.base
-        if base != 'linear':
+        if base != "linear":
             product_data = xr.DataArray(
                 get_ops(base).log(product_data.values),
-                dims=product_data.dims, coords=product_data.coords,
+                dims=product_data.dims,
+                coords=product_data.coords,
             )
-            return XRDistribution(product_data, free_vars=result_free,
-                                  given_vars=result_given, base=base)
+            return XRDistribution(product_data, free_vars=result_free, given_vars=result_given, base=base)
 
-        return XRDistribution(product_data, free_vars=result_free,
-                              given_vars=result_given)
+        return XRDistribution(product_data, free_vars=result_free, given_vars=result_given)
 
     def __rmul__(self, other):
         """
@@ -1109,30 +1054,26 @@ class XRDistribution:
 
         if not other.free_vars <= self.free_vars:
             raise ValueError(
-                f"Cannot divide: denominator has free vars "
-                f"{other.free_vars - self.free_vars} not in numerator"
+                f"Cannot divide: denominator has free vars {other.free_vars - self.free_vars} not in numerator"
             )
 
         lin_self = self._linear_data()
         lin_other = other._linear_data()
-        quotient_data = xr.where(lin_other > 0,
-                                 lin_self / lin_other,
-                                 0.0)
+        quotient_data = xr.where(lin_other > 0, lin_self / lin_other, 0.0)
 
         new_free = self.free_vars - other.free_vars
         new_given = (self.given_vars | other.free_vars | other.given_vars) - new_free
 
         base = self.ops.base
-        if base != 'linear':
+        if base != "linear":
             quotient_data = xr.DataArray(
                 get_ops(base).log(quotient_data.values),
-                dims=quotient_data.dims, coords=quotient_data.coords,
+                dims=quotient_data.dims,
+                coords=quotient_data.coords,
             )
-            return XRDistribution(quotient_data, free_vars=new_free,
-                                  given_vars=new_given, base=base)
+            return XRDistribution(quotient_data, free_vars=new_free, given_vars=new_given, base=base)
 
-        return XRDistribution(quotient_data, free_vars=new_free,
-                              given_vars=new_given)
+        return XRDistribution(quotient_data, free_vars=new_free, given_vars=new_given)
 
     # ─────────────────────────────────────────────────────────────────────
     # Information-theoretic convenience methods
@@ -1247,8 +1188,7 @@ class XRDistribution:
         dropped = frozenset(kwargs.keys())
         new_free = self.free_vars - dropped
         new_given = self.given_vars - dropped
-        return XRDistribution(new_data, free_vars=new_free,
-                              given_vars=new_given, base=self.ops.base)
+        return XRDistribution(new_data, free_vars=new_free, given_vars=new_given, base=self.ops.base)
 
     def __getitem__(self, key):
         """
@@ -1320,10 +1260,7 @@ class XRDistribution:
         from .npdist import Distribution
 
         if not self.is_joint():
-            raise ValueError(
-                "Can only convert joint distributions to dit.Distribution. "
-                f"This is {self._notation()}"
-            )
+            raise ValueError(f"Can only convert joint distributions to dit.Distribution. This is {self._notation()}")
 
         lin = self._linear_data()
         dims = list(lin.dims)
@@ -1372,9 +1309,9 @@ class XRDistribution:
     def __eq__(self, other):
         if not isinstance(other, XRDistribution):
             return NotImplemented
-        return (self.free_vars == other.free_vars
-                and self.given_vars == other.given_vars
-                and self.data.equals(other.data))
+        return (
+            self.free_vars == other.free_vars and self.given_vars == other.given_vars and self.data.equals(other.data)
+        )
 
     def is_approx_equal(self, other, atol=1e-9):
         """
@@ -1424,7 +1361,8 @@ class XRDistribution:
         if self.is_log():
             self.data = xr.DataArray(
                 self.ops.log(lin.values),
-                dims=self.data.dims, coords=self.data.coords,
+                dims=self.data.dims,
+                coords=self.data.coords,
             )
         else:
             self.data = lin

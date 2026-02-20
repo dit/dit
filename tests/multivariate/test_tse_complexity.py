@@ -12,9 +12,9 @@ from dit.multivariate import tse_complexity as TSE
 from dit.utils import powerset
 
 
-@pytest.mark.parametrize(('i', 'j'), list(zip(range(3, 6), range(2, 5), strict=True)))
+@pytest.mark.parametrize(("i", "j"), list(zip(range(3, 6), range(2, 5), strict=True)))
 def test_tse1(i, j):
-    """ Test identity comparing TSE to B from Olbrich's talk """
+    """Test identity comparing TSE to B from Olbrich's talk"""
     d = n_mod_m(i, j)
     indices = [[k] for k in range(i)]
     tse = TSE(d)
@@ -22,9 +22,9 @@ def test_tse1(i, j):
     assert tse == pytest.approx(x)
 
 
-@pytest.mark.parametrize('n', range(2, 7))
+@pytest.mark.parametrize("n", range(2, 7))
 def test_tse2(n):
-    """ Test TSE for giant bit distributions """
-    d = D(['0' * n, '1' * n], [1 / 2] * 2)
+    """Test TSE for giant bit distributions"""
+    d = D(["0" * n, "1" * n], [1 / 2] * 2)
     tse = TSE(d)
     assert tse == pytest.approx((n - 1) / 2)

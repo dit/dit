@@ -8,8 +8,8 @@ is also important for the calculations of various PID quantities.
 from dit.samplespace import CartesianProduct, SampleSpace, ScalarSampleSpace
 
 __all__ = (
-    'expanded_samplespace',
-    'pruned_samplespace',
+    "expanded_samplespace",
+    "pruned_samplespace",
 )
 
 
@@ -41,14 +41,13 @@ def pruned_samplespace(d, sample_space=None):
     keep = set(sample_space)
     outcomes = []
     pmf = []
-    for o, p in d.zipped(mode='atoms'):
+    for o, p in d.zipped(mode="atoms"):
         if not d.ops.is_null_exact(p) or o in keep:
             outcomes.append(o)
             pmf.append(p)
 
     sample_space = SampleSpace(outcomes) if d.is_joint() else ScalarSampleSpace(outcomes)
-    pd = d.__class__(outcomes, pmf,
-                     sample_space=sample_space, base=d.get_base())
+    pd = d.__class__(outcomes, pmf, sample_space=sample_space, base=d.get_base())
     return pd
 
 
@@ -104,6 +103,5 @@ def expanded_samplespace(d, alphabets=None, union=True):
 
     sample_space = CartesianProduct(alphabets, d._product) if joint else ScalarSampleSpace(alphabets)
 
-    ed = d.__class__(d.outcomes, d.pmf,
-                     sample_space=sample_space, base=d.get_base())
+    ed = d.__class__(d.outcomes, d.pmf, sample_space=sample_space, base=d.get_base())
     return ed

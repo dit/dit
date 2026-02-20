@@ -17,8 +17,8 @@ from tests._backends import backends
 
 
 @pytest.mark.flaky(reruns=5)
-@pytest.mark.parametrize('backend', backends)
-@pytest.mark.parametrize('dist', [intrinsic_1, intrinsic_2, intrinsic_3])
+@pytest.mark.parametrize("backend", backends)
+@pytest.mark.parametrize("dist", [intrinsic_1, intrinsic_2, intrinsic_3])
 def test_1(dist, backend):
     """
     Test against known values.
@@ -28,8 +28,8 @@ def test_1(dist, backend):
 
 
 @pytest.mark.flaky(reruns=5)
-@pytest.mark.parametrize('backend', backends)
-@pytest.mark.parametrize('dist', [intrinsic_1, intrinsic_2, intrinsic_3])
+@pytest.mark.parametrize("backend", backends)
+@pytest.mark.parametrize("dist", [intrinsic_1, intrinsic_2, intrinsic_3])
 def test_2(dist, backend):
     """
     Test against known values.
@@ -39,8 +39,8 @@ def test_2(dist, backend):
 
 
 @pytest.mark.flaky(reruns=5)
-@pytest.mark.parametrize('backend', backends)
-@pytest.mark.parametrize('dist', [intrinsic_1, intrinsic_2, intrinsic_3])
+@pytest.mark.parametrize("backend", backends)
+@pytest.mark.parametrize("dist", [intrinsic_1, intrinsic_2, intrinsic_3])
 def test_3(dist, backend):
     """
     Test against known values.

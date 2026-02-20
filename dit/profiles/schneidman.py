@@ -16,17 +16,14 @@ from ..shannon import entropy as H
 from .base_profile import BaseProfile, profile_docstring
 
 __all__ = (
-    'ConnectedInformations',
-    'ConnectedDualInformations',
-    'SchneidmanProfile',
+    "ConnectedInformations",
+    "ConnectedDualInformations",
+    "SchneidmanProfile",
 )
 
 
 class ConnectedInformations(BaseProfile):  # noqa: D101
-    __doc__ = profile_docstring.format(name='ConnectedInformations',
-                                       static_attributes='',
-                                       attributes='',
-                                       methods='')
+    __doc__ = profile_docstring.format(name="ConnectedInformations", static_attributes="", attributes="", methods="")
 
     _name = "Connected Informations"
 
@@ -45,10 +42,9 @@ SchneidmanProfile = ConnectedInformations
 
 
 class ConnectedDualInformations(BaseProfile):  # noqa: D101
-    __doc__ = profile_docstring.format(name='ConnectedDualInformations',
-                                       static_attributes='',
-                                       attributes='',
-                                       methods='')
+    __doc__ = profile_docstring.format(
+        name="ConnectedDualInformations", static_attributes="", attributes="", methods=""
+    )
 
     _name = "Connected Dual Informations"
 

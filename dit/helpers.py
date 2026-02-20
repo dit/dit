@@ -13,25 +13,25 @@ from .math.misc import is_number
 from .utils import flatten, product_maker
 
 __all__ = (
-    'RV_Mode',
-    'construct_alphabets',
-    'copypmf',
-    'get_outcome_ctor',
-    'get_product_func',
-    'normalize_pmfs',
-    'normalize_rvs',
-    'numerical_test',
-    'parse_rvs',
-    'reorder',
-    'str_outcome_ctor',
+    "RV_Mode",
+    "construct_alphabets",
+    "copypmf",
+    "get_outcome_ctor",
+    "get_product_func",
+    "normalize_pmfs",
+    "normalize_rvs",
+    "numerical_test",
+    "parse_rvs",
+    "reorder",
+    "str_outcome_ctor",
 )
 
 
 def str_outcome_ctor(iterable):
     try:
-        return ''.join(iterable)
+        return "".join(iterable)
     except TypeError as err:
-        msg = f'Outcome could not be constructed from {iterable!r}'
+        msg = f"Outcome could not be constructed from {iterable!r}"
         raise ditException(msg) from err
 
 
@@ -56,13 +56,13 @@ class RV_Mode:  # noqa: N801
     NAMES = 1
 
     _mapping = {
-        'indexes': INDICES,
-        'indices': INDICES,
-        'names': NAMES,
+        "indexes": INDICES,
+        "indices": INDICES,
+        "names": NAMES,
         None: None,
         # Deprecated stuff:
         True: NAMES,
-        False: INDICES
+        False: INDICES,
     }
 
     # Temporary until we can convert everything to using: rv_mode
@@ -72,13 +72,13 @@ class RV_Mode:  # noqa: N801
         try:
             mode = self._mapping[item]
         except KeyError as err:
-            raise KeyError('Invalid value for `rv_mode`') from err
+            raise KeyError("Invalid value for `rv_mode`") from err
 
         if item in self._deprecated:
             dep = self._deprecated[self._deprecated.index(item)]
             if type(item) is type(dep):
-                msg = f'Deprecated value for `rv_mode`: {item!r}.'
-                msg += ' See docstring for new conventions.'
+                msg = f"Deprecated value for `rv_mode`: {item!r}."
+                msg += " See docstring for new conventions."
                 warnings.warn(msg, DeprecationWarning, stacklevel=2)
 
         return mode
@@ -129,26 +129,28 @@ def construct_alphabets(outcomes):
     try:
         L = len(outcomes)
     except TypeError as err:
-        raise TypeError('`outcomes` must be a sequence.') from err
+        raise TypeError("`outcomes` must be a sequence.") from err
 
     if L == 0:
-        raise ditException('`outcomes` must not be empty.')
+        raise ditException("`outcomes` must not be empty.")
 
     # Make sure each outcome is sized.  They really should be sequences,
     # but this check is sufficient for now.
     try:
         lengths = list(map(len, outcomes))
     except TypeError as err:
-        raise ditException('At least one element in `outcomes` does not implement __len__. '
-                           'Distribution.from_ndarray or ScalarDistribution may help '
-                           'resolve this.') from err
+        raise ditException(
+            "At least one element in `outcomes` does not implement __len__. "
+            "Distribution.from_ndarray or ScalarDistribution may help "
+            "resolve this."
+        ) from err
     else:
         outcome_length = lengths[0]
 
     # Make sure each outcome has the same length.
     equal_lengths = np.all(np.equal(lengths, outcome_length))
     if not equal_lengths:
-        raise ditException('Not all outcomes have the same length.')
+        raise ditException("Not all outcomes have the same length.")
 
     alphabets = _construct_alphabets(outcomes)
     return alphabets
@@ -303,7 +305,7 @@ def parse_rvs(dist, rvs, rv_mode=None, unique=True, sort=True):
 
     # Make sure all random variables are unique.
     if unique and len(set(rvs)) != len(rvs):
-        msg = '`rvs` contained duplicates.'
+        msg = "`rvs` contained duplicates."
         raise ditException(msg)
 
     if rv_mode == RV_MODES.NAMES:
@@ -311,7 +313,7 @@ def parse_rvs(dist, rvs, rv_mode=None, unique=True, sort=True):
         # We convert these to indexes.
 
         if dist._rvs is None:
-            raise ditException('There are no random variable names to use.')
+            raise ditException("There are no random variable names to use.")
 
         indexes = []
         for rv in rvs:
@@ -319,7 +321,7 @@ def parse_rvs(dist, rvs, rv_mode=None, unique=True, sort=True):
                 indexes.append(dist._rvs[rv])
 
         if len(indexes) != len(rvs):
-            msg = '`rvs` contains invalid random variable names.'
+            msg = "`rvs` contains invalid random variable names."
             raise ditException(msg)
     else:
         # Then `rvs` contained the set of indexes.
@@ -329,7 +331,7 @@ def parse_rvs(dist, rvs, rv_mode=None, unique=True, sort=True):
     all_indexes = set(range(dist.outcome_length()))
     good_indexes = all_indexes.intersection(indexes)
     if len(good_indexes) != len(set(indexes)):
-        msg = '`rvs` contains invalid random variables, {0}, {1} {2}.'
+        msg = "`rvs` contains invalid random variables, {0}, {1} {2}."
         msg = msg.format(indexes, good_indexes, rv_mode)
         raise ditException(msg)
 
@@ -349,8 +351,7 @@ def reorder(outcomes, pmf, sample_space, index=None):
 
     """
     try:
-        order = [(sample_space.index(outcome), i)
-                 for i, outcome in enumerate(outcomes)]
+        order = [(sample_space.index(outcome), i) for i, outcome in enumerate(outcomes)]
     except ValueError:
         # Let's identify which outcomes were not in the sample space.
         bad = []
@@ -373,7 +374,7 @@ def reorder(outcomes, pmf, sample_space, index=None):
     return outcomes, pmf, new_index
 
 
-def copypmf(d, base=None, mode='asis'):
+def copypmf(d, base=None, mode="asis"):
     """
     Returns a NumPy array of the distribution's pmf.
 
@@ -408,16 +409,16 @@ def copypmf(d, base=None, mode='asis'):
     ops_new = get_ops(base_new)
 
     # Build the pmf
-    if mode == 'asis':
+    if mode == "asis":
         pmf = np.array(d.pmf, copy=True)
-    elif mode == 'dense':
+    elif mode == "dense":
         pmf = np.array([d[o] for o in d.sample_space()], dtype=float)
-    elif mode == 'sparse':
+    elif mode == "sparse":
         pmf = np.array([p for p in d.pmf if not ops_old.is_null(p)], dtype=float)
 
     # Determine the conversion targets.
     islog_old = d.is_log()
-    islog_new = base_new != 'linear'
+    islog_new = base_new != "linear"
 
     # Do the conversion!
     if islog_old and islog_new:
