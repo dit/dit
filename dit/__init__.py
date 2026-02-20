@@ -10,18 +10,10 @@ Python package for sigma-algebras defined on finite sets.
 
 """
 
+__version__ = "1.5"
+
 # Order is important!
 from loguru import logger as _logger
-
-import dit.algorithms
-import dit.divergences
-import dit.example_dists
-import dit.inference
-import dit.multivariate
-import dit.other
-import dit.pid
-import dit.profiles
-import dit.shannon
 
 from .algorithms import expanded_samplespace, pruned_samplespace
 from .bgm import *
@@ -37,4 +29,12 @@ from .samplespace import CartesianProduct, SampleSpace, ScalarSampleSpace
 
 _logger.disable("dit")
 
-__version__ = "1.5"
+import dit.algorithms  # noqa: E402
+import dit.divergences  # noqa: E402
+import dit.example_dists  # noqa: E402
+import dit.inference  # noqa: E402
+import dit.multivariate  # noqa: E402
+import dit.other  # noqa: E402
+import dit.pid  # noqa: E402
+import dit.profiles  # noqa: E402
+import dit.shannon  # noqa: E402

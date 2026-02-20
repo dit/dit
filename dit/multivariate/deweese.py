@@ -139,7 +139,7 @@ class BaseDeWeeseOptimizer(BaseAuxVarOptimizer):
             consulted, which defaults to 'indices'.
         """
         super().__init__(dist, rvs=rvs, crvs=crvs, rv_mode=rv_mode)
-        self._construct_auxvars([({rv}, size) for rv, size in zip(self._rvs, self._shape, strict=True)])
+        self._construct_auxvars([({rv}, size) for rv, size in zip(self._rvs, self._shape, strict=False)])
 
         if deterministic:
             self.constraints = [{'type': 'eq',

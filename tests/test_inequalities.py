@@ -70,7 +70,7 @@ def test_fanos_inequality(dist):
     X = len(set().union(dist1.outcomes, dist2.outcomes))
 
     eq_dist = dist1 == dist2
-    P_e = eq_dist.get(False, 0)
+    P_e = eq_dist[False] if False in eq_dist.outcomes else 0
 
     hb = H(SD([P_e, 1 - P_e]))
 
