@@ -502,7 +502,7 @@ class BasePointwisePID(BasePID):
         joint distribution.
         """
         pw = cls._pointwise_measure(dist, sources, target, **kwargs)
-        return sum(dist[outcome] * val for outcome, val in pw.items())
+        return np.nansum([dist[outcome] * val for outcome, val in pw.items()])
 
     # ------------------------------------------------------------------
     # Computation

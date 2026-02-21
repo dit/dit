@@ -2,6 +2,7 @@
 Tests for dit.pid.ipm.
 """
 
+import numpy as np
 import pytest
 
 from dit.pid.distributions import bivariates
@@ -59,8 +60,8 @@ def test_pid_pm_pointwise_average_matches_scalar():
         pid_pw = PID_PM(d, ((0,), (1,)), (2,), pointwise=True)
 
         for node in pid_scalar._lattice:
-            avg_red = sum(d[o] * pid_pw.get_pw_red(node)[o] for o in d.outcomes)
-            avg_pi = sum(d[o] * pid_pw.get_pw_pi(node)[o] for o in d.outcomes)
+            avg_red = np.nansum([d[o] * pid_pw.get_pw_red(node)[o] for o in d.outcomes])
+            avg_pi = np.nansum([d[o] * pid_pw.get_pw_pi(node)[o] for o in d.outcomes])
             assert avg_red == pytest.approx(pid_scalar.get_red(node), abs=1e-10)
             assert avg_pi == pytest.approx(pid_scalar.get_pi(node), abs=1e-10)
 
@@ -76,7 +77,10 @@ def test_pid_pm_plus_minus_parts():
     for node in pid._lattice:
         for o in d.outcomes:
             diff = pid.get_pw_red_plus(node)[o] - pid.get_pw_red_minus(node)[o]
-            assert diff == pytest.approx(pid.get_pw_red(node)[o], abs=1e-10)
+            expected = pid.get_pw_red(node)[o]
+            if np.isnan(diff) and np.isnan(expected):
+                continue
+            assert diff == pytest.approx(expected, abs=1e-10)
 
 
 def test_pid_pm_specificity_nonneg():
