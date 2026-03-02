@@ -83,12 +83,7 @@ def one_way_skar(dist, X, Y, Z, rv_mode=None, niter=None, bound_u=None, bound_v=
     Z : iterable
         The indices to consider as the Z variable, Eve.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If
-        equal to 'names', the the elements are interpreted as random
-        variable names. If `None`, then the value of `dist._rv_mode` is
-        consulted, which defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
     niter : int, None
         The number of hops to perform during optimization.
     bound_u : int, None
@@ -109,7 +104,7 @@ def one_way_skar(dist, X, Y, Z, rv_mode=None, niter=None, bound_u=None, bound_v=
     actual_cls = _make_backend_subclass(OneWaySKAR, backend)
     values = []
     for bound in {1, 2, 3, bound_v}:
-        nimi = actual_cls(dist, X, Y, Z, rv_mode=rv_mode, bound_u=bound_u, bound_v=bound)
+        nimi = actual_cls(dist, X, Y, Z, bound_u=bound_u, bound_v=bound)
         nimi.optimize(niter=niter)
         values.append(-nimi.objective(nimi._optima))
 

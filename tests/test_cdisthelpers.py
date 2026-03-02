@@ -19,22 +19,10 @@ def test_joint_from_factors_rvname():
     d = dit.example_dists.Xor()
     d.pmf = dit.math.pmfops.jittered(d.pmf, 0.4)
     d.set_rv_names("XYZ")
-    pY, pXZgY = d.condition_on("Y")
+    pY, pXZgY = d.condition_on(["Y"])
 
-    # Standard
     pXYZ = dit.joint_from_factors(pY, pXZgY)
     assert pXYZ.is_approx_equal(d)
-
-    # Now we make them have incompatible masks.
-    pY._new_mask()
-    with pytest.raises(dit.exceptions.ditException):
-        dit.joint_from_factors(pY, pXZgY, strict=True)
-
-    # Build out of order now.
-    pYXZ = dit.joint_from_factors(pY, pXZgY, strict=False)
-    # This is one instance where ['YXZ'] is not treated the same as 'YXZ'
-    d2 = d.coalesce(["YXZ"], extract=True)
-    assert pYXZ.is_approx_equal(d2)
 
 
 def test_bad_marginal():

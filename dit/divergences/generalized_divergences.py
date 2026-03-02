@@ -43,12 +43,7 @@ def double_power_sum(dist1, dist2, exp1=1, exp2=1, rvs=None, rv_mode=None):
         The indexes of the random variable used to calculate the sum.
         If None, then the sum is calculated over all random variables.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If equal
-        to 'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted, which
-        defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -61,11 +56,11 @@ def double_power_sum(dist1, dist2, exp1=1, exp2=1, rvs=None, rv_mode=None):
         Raised if either `dist1` or `dist2` doesn't have `rvs` or, if `rvs` is
         None, if `dist2` has an outcome length different than `dist1`.
     """
-    rvs, _, rv_mode = normalize_rvs(dist1, rvs, None, rv_mode)
+    rvs, _, rv_mode = normalize_rvs(dist1, rvs, None)
     rvs = list(flatten(rvs))
-    normalize_rvs(dist2, rvs, None, rv_mode)
+    normalize_rvs(dist2, rvs, None)
 
-    ps, qs = get_pmfs_like(dist1, dist2, rvs, rv_mode)
+    ps, qs = get_pmfs_like(dist1, dist2, rvs)
     div = np.nansum(np.power(ps, exp1) * np.power(qs, exp2))
 
     return div
@@ -88,12 +83,7 @@ def hellinger_sum(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
         The indexes of the random variable used to calculate the sum.
         If None, then the sum is calculated over all random variables.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If equal
-        to 'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted, which
-        defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -106,7 +96,7 @@ def hellinger_sum(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
         Raised if either `dist1` or `dist2` doesn't have `rvs` or, if `rvs` is
         None, if `dist2` has an outcome length different than `dist1`.
     """
-    return double_power_sum(dist1, dist2, alpha, 1 - alpha, rvs=rvs, rv_mode=rv_mode)
+    return double_power_sum(dist1, dist2, alpha, 1 - alpha, rvs=rvs)
 
 
 def hellinger_divergence(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
@@ -127,12 +117,7 @@ def hellinger_divergence(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
         Hellinger divergence between. If None, then the Hellinger
         divergence is calculated over all random variables.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If equal
-        to 'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted, which
-        defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -146,8 +131,8 @@ def hellinger_divergence(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
         None, if `dist2` has an outcome length different than `dist1`.
     """
     if alpha == 1:
-        return kullback_leibler_divergence(dist1, dist2, rvs=rvs, rv_mode=rv_mode)
-    s = hellinger_sum(dist1, dist2, rvs=rvs, alpha=alpha, rv_mode=rv_mode)
+        return kullback_leibler_divergence(dist1, dist2, rvs=rvs)
+    s = hellinger_sum(dist1, dist2, rvs=rvs, alpha=alpha)
     return (s - 1) / (alpha - 1)
 
 
@@ -168,12 +153,7 @@ def tsallis_divergence(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
         Tsallis divergence between. If None, then the Tsallis
         divergence is calculated over all random variables.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If equal
-        to 'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted, which
-        defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -188,9 +168,9 @@ def tsallis_divergence(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
     """
     # D_T = (D_alpha -1) / (alpha-1)
     if alpha == 1:
-        div = kullback_leibler_divergence(dist1, dist2, rvs=rvs, rv_mode=rv_mode)
+        div = kullback_leibler_divergence(dist1, dist2, rvs=rvs)
     else:
-        s = hellinger_sum(dist1, dist2, rvs=rvs, alpha=alpha, rv_mode=rv_mode)
+        s = hellinger_sum(dist1, dist2, rvs=rvs, alpha=alpha)
         div = (s - 1) / (alpha - 1)
     return div
 
@@ -212,12 +192,7 @@ def renyi_divergence(dist1, dist2, alpha=1, rvs=None, rv_mode=None):
         Renyi divergence between. If None, then the Renyi
         divergence is calculated over all random variables.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If equal
-        to 'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted, which
-        defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -232,9 +207,9 @@ def renyi_divergence(dist1, dist2, alpha=1, rvs=None, rv_mode=None):
     """
     # D_R = log D_alpha / (alpha-1)
     if alpha == 1:
-        div = kullback_leibler_divergence(dist1, dist2, rvs=rvs, rv_mode=rv_mode)
+        div = kullback_leibler_divergence(dist1, dist2, rvs=rvs)
     else:
-        s = hellinger_sum(dist1, dist2, rvs=rvs, alpha=alpha, rv_mode=rv_mode)
+        s = hellinger_sum(dist1, dist2, rvs=rvs, alpha=alpha)
         div = np.log2(s) / (alpha - 1.0)
     return div
 
@@ -259,12 +234,7 @@ def alpha_divergence(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
         alpha divergence between. If None, then the alpha
         divergence is calculated over all random variables.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If equal
-        to 'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted, which
-        defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -278,10 +248,10 @@ def alpha_divergence(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
         None, if `dist2` has an outcome length different than `dist1`.
     """
     if alpha == 1:
-        return kullback_leibler_divergence(dist1, dist2, rvs=rvs, rv_mode=rv_mode)
+        return kullback_leibler_divergence(dist1, dist2, rvs=rvs)
     if alpha == -1:
-        return kullback_leibler_divergence(dist2, dist1, rvs=rvs, rv_mode=rv_mode)
-    s = double_power_sum(dist1, dist2, (1 - alpha) / 2, (1 + alpha) / 2, rvs=rvs, rv_mode=rv_mode)
+        return kullback_leibler_divergence(dist2, dist1, rvs=rvs)
+    s = double_power_sum(dist1, dist2, (1 - alpha) / 2, (1 + alpha) / 2, rvs=rvs)
     return 4 * (1 - s) / (1 - alpha * alpha)
 
 
@@ -304,12 +274,7 @@ def f_divergence(dist1, dist2, f, rvs=None, rv_mode=None):
         f-divergence between. If None, then the
         f-divergence is calculated over all random variables.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If equal
-        to 'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted, which
-        defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -322,11 +287,11 @@ def f_divergence(dist1, dist2, f, rvs=None, rv_mode=None):
         Raised if either `dist1` or `dist2` doesn't have `rvs` or, if `rvs` is
         None, if `dist2` has an outcome length different than `dist1`.
     """
-    rvs, _, rv_mode = normalize_rvs(dist1, rvs, None, rv_mode)
+    rvs, _, rv_mode = normalize_rvs(dist1, rvs, None)
     rvs = list(flatten(rvs))
-    normalize_rvs(dist2, rvs, None, rv_mode)
+    normalize_rvs(dist2, rvs, None)
 
-    ps, qs = get_pmfs_like(dist1, dist2, rvs, rv_mode)
+    ps, qs = get_pmfs_like(dist1, dist2, rvs)
     vfunc = np.vectorize(f)
     div = np.nansum(qs * vfunc(np.divide(ps, qs)))
 

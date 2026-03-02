@@ -45,7 +45,7 @@ from ..distconst import insert_rvf, modify_outcomes
 from ..exceptions import OptimizationException, ditException
 from ..helpers import flatten, normalize_rvs, parse_rvs
 from ..math import prod, sample_simplex
-from ..npdist import Distribution
+from .. import Distribution
 from ..utils import partitions, powerset
 from ..utils.optimization import (
     BasinHoppingCallBack,
@@ -179,23 +179,18 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
         crvs : iterable
             The variables to be conditioned on.
         rv_mode : str, None
-            Specifies how to interpret `rvs` and `crvs`. Valid options are:
-            {'indices', 'names'}. If equal to 'indices', then the elements of
-            `crvs` and `rvs` are interpreted as random variable indices. If
-            equal to 'names', the the elements are interpreted as random
-            variable names. If `None`, then the value of `dist._rv_mode` is
-            consulted, which defaults to 'indices'.
+            Deprecated. Kept for signature compatibility.
         """
         _check_torch()
 
-        rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
+        rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
         self._dist = dist.copy(base="linear")
 
         self._alphabet = self._dist.alphabet
         self._original_shape = list(map(len, self._dist.alphabet))
 
-        self._true_rvs = [parse_rvs(self._dist, rv, rv_mode=rv_mode)[1] for rv in rvs]
-        self._true_crvs = parse_rvs(self._dist, crvs, rv_mode=rv_mode)[1]
+        self._true_rvs = [parse_rvs(self._dist, rv)[1] for rv in rvs]
+        self._true_crvs = parse_rvs(self._dist, crvs)[1]
         self._dist = modify_outcomes(self._dist, tuple)
 
         # compress all random variables down to single vars

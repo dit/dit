@@ -4,7 +4,6 @@ Some basic Shannon information quantities.
 
 import numpy as np
 
-from ..helpers import RV_MODES
 from ..math import LogOperations
 
 __all__ = (
@@ -47,13 +46,9 @@ def entropy(dist, rvs=None, rv_mode=None):
     rvs : list, None
         The indexes of the random variable used to calculate the entropy.
         If None, then the entropy is calculated over all random variables.
-        This should remain `None` for ScalarDistributions.
+        This should remain `None` for scalar distributions.
     rv_mode : str, None
-        Specifies how to interpret the elements of `rvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `rvs` are interpreted as random variable indices. If equal to 'names',
-        the the elements are interpreted as random variable names. If `None`,
-        then the value of `dist._rv_mode` is consulted.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -70,15 +65,10 @@ def entropy(dist, rvs=None, rv_mode=None):
         # Assume linear probability for binary entropy.
         import dit
 
-        dist = dit.ScalarDistribution([dist, 1 - dist])
+        dist = dit.Distribution([dist, 1 - dist])
 
-    if dist.is_joint():
-        if rvs is None:
-            # Set to entropy of entire distribution
-            rvs = range(dist.outcome_length())  # pylint: disable=no-member
-            rv_mode = RV_MODES.INDICES
-
-        d = dist.marginal(rvs, rv_mode=rv_mode)  # pylint: disable=no-member
+    if rvs is not None:
+        d = dist.marginal(rvs)
     else:
         d = dist
 
@@ -111,12 +101,7 @@ def conditional_entropy(dist, rvs_X, rvs_Y, rv_mode=None):
     rvs_Y : list, None
         The indexes of the random variables defining Y.
     rv_mode : str, None
-        Specifies how to interpret the elements of `rvs_X` and `rvs_Y`. Valid
-        options are: {'indices', 'names'}. If equal to 'indices', then the
-        elements of `rvs_X` and `rvs_Y` are interpreted as random variable
-        indices. If equal to 'names', the the elements are interpreted as
-        random variable names. If `None`, then the value of `dist._rv_mode`
-        is consulted.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -129,8 +114,8 @@ def conditional_entropy(dist, rvs_X, rvs_Y, rv_mode=None):
         # instead of 1e-12 or something smaller.
         return 0.0
 
-    MI_XY = mutual_information(dist, rvs_X, rvs_Y, rv_mode=rv_mode)
-    H_X = entropy(dist, rvs_X, rv_mode=rv_mode)
+    MI_XY = mutual_information(dist, rvs_X, rvs_Y)
+    H_X = entropy(dist, rvs_X)
     H_XgY = H_X - MI_XY
     return H_XgY
 
@@ -151,11 +136,7 @@ def mutual_information(dist, rvs_X, rvs_Y, rv_mode=None):
     rvs_Y : list, None
         The indexes of the random variables defining Y.
     rv_mode : str, None
-        Specifies how to interpret the elements of `rvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `rvs` are interpreted as random variable indices. If equal to 'names',
-        the the elements are interpreted as random variable names. If `None`,
-        then the value of `dist._rv_mode` is consulted.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -163,10 +144,10 @@ def mutual_information(dist, rvs_X, rvs_Y, rv_mode=None):
         The mutual information I[X:Y].
 
     """
-    H_X = entropy(dist, rvs_X, rv_mode=rv_mode)
-    H_Y = entropy(dist, rvs_Y, rv_mode=rv_mode)
+    H_X = entropy(dist, rvs_X)
+    H_Y = entropy(dist, rvs_Y)
     # Make sure to union the indexes. This handles the case when X and Y
     # do not partition the set of all indexes.
-    H_XY = entropy(dist, set(rvs_X) | set(rvs_Y), rv_mode=rv_mode)
+    H_XY = entropy(dist, set(rvs_X) | set(rvs_Y))
     I = H_X + H_Y - H_XY
     return I

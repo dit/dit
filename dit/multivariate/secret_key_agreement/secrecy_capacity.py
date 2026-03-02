@@ -44,12 +44,7 @@ def secrecy_capacity(dist, X, Y, Z, rv_mode=None, niter=None, bound_u=None, back
     Z : iterable
         The indices to consider as the Z variable, Eve.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If
-        equal to 'names', the the elements are interpreted as random
-        variable names. If `None`, then the value of `dist._rv_mode` is
-        consulted, which defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
     niter : int, None
         The number of hops to perform during optimization.
     bound_u : int, None
@@ -65,7 +60,7 @@ def secrecy_capacity(dist, X, Y, Z, rv_mode=None, niter=None, bound_u=None, back
         The secrecy capacity.
     """
     actual_cls = _make_backend_subclass(SecrecyCapacity, backend)
-    sc = actual_cls(dist, X, Y, Z, rv_mode=rv_mode, bound_u=bound_u)
+    sc = actual_cls(dist, X, Y, Z, bound_u=bound_u)
     sc.optimize(niter=niter)
     value = -sc.objective(sc._optima)
 

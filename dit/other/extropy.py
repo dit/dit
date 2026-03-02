@@ -4,7 +4,6 @@ The extropy.
 
 import numpy as np
 
-from ..helpers import RV_MODES
 from ..math.ops import get_ops
 
 __all__ = ("extropy",)
@@ -25,13 +24,9 @@ def extropy(dist, rvs=None, rv_mode=None):
     rvs : list, None
         The indexes of the random variable used to calculate the extropy.
         If None, then the extropy is calculated over all random variables.
-        This should remain `None` for ScalarDistributions.
+        This should remain `None` for scalar distributions.
     rv_mode : str, None
-        Specifies how to interpret the elements of `rvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `rvs` are interpreted as random variable indices. If equal to 'names',
-        the the elements are interpreted as random variable names. If `None`,
-        then the value of `dist._rv_mode` is consulted.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -48,17 +43,11 @@ def extropy(dist, rvs=None, rv_mode=None):
         # Assume linear probability for binary extropy.
         import dit
 
-        dist = dit.ScalarDistribution([dist, 1 - dist])
+        dist = dit.Distribution([dist, 1 - dist])
         rvs = None
-        rv_mode = RV_MODES.INDICES
 
-    if dist.is_joint():
-        if rvs is None:
-            # Set to entropy of entire distribution
-            rvs = list(range(dist.outcome_length()))
-            rv_mode = RV_MODES.INDICES
-
-        d = dist.marginal(rvs, rv_mode=rv_mode)
+    if rvs is not None:
+        d = dist.marginal(rvs)
     else:
         d = dist
 

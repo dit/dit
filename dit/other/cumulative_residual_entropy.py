@@ -6,7 +6,7 @@ cumulative residual entropy.
 import numpy as np
 from boltons.iterutils import pairwise
 
-from .. import Distribution, ScalarDistribution
+from .. import Distribution
 from ..helpers import numerical_test
 
 __all__ = (
@@ -24,7 +24,7 @@ def _cumulative_residual_entropy(dist, generalized=False):
 
     Parameters
     ----------
-    dist : ScalarDistribution
+    dist : Distribution
         The distribution to compute the cumulative residual entropy of.
     generalized : bool
         Whether to integrate from zero over the CDF or to integrate from zero
@@ -80,7 +80,7 @@ def generalized_cumulative_residual_entropy(dist, extract=False):
     if not dist.is_joint():
         return _cumulative_residual_entropy(dist, generalized=True)
     length = dist.outcome_length()
-    margs = [ScalarDistribution.from_distribution(dist.marginal([i])) for i in range(length)]
+    margs = [dist.marginal([i]) for i in range(length)]
     cres = np.array([_cumulative_residual_entropy(m, generalized=True) for m in margs])
     if len(cres) == 1 and extract:
         cres = cres[0]
@@ -109,8 +109,8 @@ def cumulative_residual_entropy(dist, extract=False):
 
     Examples
     --------
-    >>> d1 = ScalarDistribution([1, 2, 3, 4, 5, 6], [1/6]*6)
-    >>> d2 = ScalarDistribution([1, 2, 3, 4, 5, 100], [1/6]*6)
+    >>> d1 = Distribution([1, 2, 3, 4, 5, 6], [1/6]*6)
+    >>> d2 = Distribution([1, 2, 3, 4, 5, 100], [1/6]*6)
     >>> cumulative_residual_entropy(d1)
     2.0683182557028439
     >>> cumulative_residual_entropy(d2)
@@ -118,8 +118,13 @@ def cumulative_residual_entropy(dist, extract=False):
     """
     if not dist.is_joint():
         return _cumulative_residual_entropy(dist, generalized=False)
-    es, ps = zip(*[(tuple(abs(ei) for ei in e), p) for e, p in dist.zipped()], strict=True)
-    abs_dist = Distribution(es, ps)
+    # Build a distribution of absolute-valued outcomes
+    pairs = []
+    for e, p in dist.zipped():
+        abs_e = tuple(abs(ei) for ei in e)
+        pairs.append((abs_e, p))
+    es, ps = zip(*pairs, strict=True)
+    abs_dist = Distribution(list(es), list(ps))
     return generalized_cumulative_residual_entropy(abs_dist, extract)
 
 
@@ -140,16 +145,11 @@ def conditional_cumulative_residual_entropy(dist, rv, crvs=None, rv_mode=None):
         The random variables to condition on. If `None`, nothing is conditioned
         on.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If equal
-        to 'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted, which
-        defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
-    CCRE : ScalarDistribution
+    CCRE : Distribution
         The conditional cumulative residual entropy.
 
     Examples
@@ -159,7 +159,7 @@ def conditional_cumulative_residual_entropy(dist, rv, crvs=None, rv_mode=None):
     >>> probs = [ 1/(5-a)/5 for a, b in events ]
     >>> d = Distribution(events, probs)
     >>> print(conditional_cumulative_residual_entropy(d, 1, [0]))
-    Class:    ScalarDistribution
+    Class:    Distribution
     Alphabet: (-0.0, 0.5, 0.91829583405448956, 1.3112781244591329, 1.6928786893420307)
     Base:     linear
 
@@ -172,9 +172,9 @@ def conditional_cumulative_residual_entropy(dist, rv, crvs=None, rv_mode=None):
     """
     if crvs is None:
         crvs = []
-    mdist, cdists = dist.condition_on(crvs=crvs, rvs=[rv], rv_mode=rv_mode)
+    mdist, cdists = dist.condition_on(crvs=crvs, rvs=[rv])
     cres = [cumulative_residual_entropy(cd, extract=True) for cd in cdists]
-    ccre = ScalarDistribution(cres, mdist.pmf)
+    ccre = Distribution(cres, mdist.pmf)
     return ccre
 
 
@@ -195,16 +195,11 @@ def conditional_generalized_cumulative_residual_entropy(dist, rv, crvs=None, rv_
         The random variables to condition on. If `None`, nothing is conditioned
         on.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If equal
-        to 'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted, which
-        defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
-    CCRE : ScalarDistribution
+    CCRE : Distribution
         The conditional cumulative residual entropy.
 
     Examples
@@ -214,7 +209,7 @@ def conditional_generalized_cumulative_residual_entropy(dist, rv, crvs=None, rv_
     >>> probs = [ 1/(3-a)/5 for a, b in events ]
     >>> d = Distribution(events, probs)
     >>> print(conditional_generalized_cumulative_residual_entropy(d, 1, [0]))
-    Class:    ScalarDistribution
+    Class:    Distribution
     Alphabet: (-0.0, 0.5, 0.91829583405448956, 1.3112781244591329, 1.6928786893420307)
     Base:     linear
 
@@ -227,7 +222,7 @@ def conditional_generalized_cumulative_residual_entropy(dist, rv, crvs=None, rv_
     """
     if crvs is None:
         crvs = []
-    mdist, cdists = dist.condition_on(crvs=crvs, rvs=[rv], rv_mode=rv_mode)
+    mdist, cdists = dist.condition_on(crvs=crvs, rvs=[rv])
     cres = [generalized_cumulative_residual_entropy(cd, extract=True) for cd in cdists]
-    ccre = ScalarDistribution(cres, mdist.pmf)
+    ccre = Distribution(cres, mdist.pmf)
     return ccre

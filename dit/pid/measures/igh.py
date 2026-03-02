@@ -37,14 +37,9 @@ class GHOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
             Specifies a bound on the size of the auxiliary random variable. If None,
             then the theoretical bound is used.
         rv_mode : str, None
-            Specifies how to interpret `rvs` and `crvs`. Valid options are:
-            {'indices', 'names'}. If equal to 'indices', then the elements of
-            `crvs` and `rvs` are interpreted as random variable indices. If
-            equal to 'names', the the elements are interpreted as random
-            variable names. If `None`, then the value of `dist._rv_mode` is
-            consulted, which defaults to 'indices'.
+            Deprecated. Kept for signature compatibility.
         """
-        super().__init__(dist, sources, target, rv_mode=rv_mode)
+        super().__init__(dist, sources, target)
 
         q_size = prod(self._shape) + 1
         bound = min([bound, q_size]) if bound is not None else q_size

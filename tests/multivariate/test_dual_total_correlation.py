@@ -5,9 +5,8 @@ Tests for dit.multivariate.dual_total_correlation.
 import pytest
 
 from dit import Distribution as D
-from dit import ScalarDistribution as SD
+from dit import Distribution
 from dit.example_dists import n_mod_m
-from dit.exceptions import ditException
 from dit.multivariate import dual_total_correlation as B
 from dit.multivariate import generalized_dual_total_correlation as GB
 from dit.multivariate import residual_entropy as R
@@ -52,10 +51,9 @@ def test_B5():
 
 
 def test_B6():
-    """Test that B fails on SDs"""
-    d = SD([1 / 4] * 4)
-    with pytest.raises(ditException):
-        B(d)
+    """Test that B works on 1-D (scalar) distributions, returning 0"""
+    d = Distribution([1 / 4] * 4)
+    assert B(d) == pytest.approx(0.0)
 
 
 def test_R1():
@@ -85,10 +83,9 @@ def test_R4():
 
 
 def test_R5():
-    """Test that R fails on SDs"""
-    d = SD([1 / 4] * 4)
-    with pytest.raises(ditException):
-        R(d)
+    """Test that R works on 1-D (scalar) distributions"""
+    d = Distribution([1 / 4] * 4)
+    assert R(d) == pytest.approx(2.0)
 
 
 def test_BR1():

@@ -402,7 +402,7 @@ They then define two partial information lattices, one quantified locally by :ma
 :math:`\Isx{\bullet}`
 ---------------------
 Shared Exclusions PID (:math:`I^{\mathrm{sx}}`) by Makkeh et al.
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Makkeh et al. propose a pointwise redundancy measure built on the notion of shared exclusions in probability space (:cite:`makkeh2021introducing`). Intuitively, the measure quantifies how much probability mass for the target Y is *commonly excluded* by observing sets of sources simultaneously — that common excluded mass is taken as the redundant (shared) contribution.
 
@@ -419,7 +419,7 @@ For large datasets with up to five source variables, refer to the reference impl
 
 .. py:module:: dit.pid.irav
 :math:`\Irav{\bullet}`
----------------------
+----------------------
 
 Taking a functional perspective as in :math:`\Iwedge`, :math:`\Irav` defines bivariate redundancy as the maximum coinformation between the two sources :math:`X_0, X_1', a target :math:`Y`, and a deterministic function of the inputs :math:`f(X_0,X_1)`.
 
@@ -482,7 +482,7 @@ Drawing from the reconstructability analysis work of Zwick :cite:`zwick2004overv
 
 .. py:module:: dit.pid.irdr
 :math:`\Irdr{\bullet}`
----------------------
+----------------------
 
 The measure of Mages & Rohner :cite:`mages2023measure` can be interpreted as a pointwise version of :math:`\Ibroja{\bullet}` to provide a non-negative partial information decomposition for an arbitrary number of sources.
 It obtains its operational interpretation from valuating the reachable decision regions (achievable type I/II error pairs) for each state of the target variable.
@@ -555,7 +555,7 @@ Ince :cite:`ince2017partial` proposed applying the PID framework to decompose mu
 
 .. py:module:: dit.pid.hcs
 :math:`\Hcs{\bullet}`
-----------------------
+---------------------
 
 Taking a pointwise point of view, following :math:`\Iccs{\bullet}`, Ince has proposed a measure of redundant entropy based on the :ref:`coinformation` :cite:`ince2017partial`:
 

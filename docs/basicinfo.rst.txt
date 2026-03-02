@@ -28,7 +28,7 @@ Optional Dependencies
 * pint: add units to informational values
 * scikit-learn: faster nearest-neighbor lookups during entropy/mutual information estimation from samples
 * torch: PyTorch-based optimization backend with autodiff and GPU support
-* xarray: ``XRDistribution`` class for labeled, algebra-friendly distributions
+* xarray: ``Distribution`` class for labeled, algebra-friendly distributions
 
 Code and bug tracker:
    https://github.com/dit/dit

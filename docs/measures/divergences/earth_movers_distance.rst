@@ -26,9 +26,9 @@ For categorical data, the "distance" between unequal symbols is unitary. In this
 
    In [1]: from dit.divergences import earth_movers_distance
 
-   In [2]: d1 = dit.ScalarDistribution([0, 1, 2], [2/3, 1/6, 1/6])
+   In [2]: d1 = dit.Distribution([0, 1, 2], [2/3, 1/6, 1/6])
 
-   In [3]: d2 = dit.ScalarDistribution([0, 1, 2], [1/3, 1/3, 1/3])
+   In [3]: d2 = dit.Distribution([0, 1, 2], [1/3, 1/3, 1/3])
 
    @doctest float
    In [4]: earth_movers_distance(d1, d2)

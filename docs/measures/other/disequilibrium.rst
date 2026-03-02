@@ -39,7 +39,7 @@ The LMPR complexity does not necessarily behave as one might intuitively hope. F
 
 This is because they are both equally "far from equilibrium" with four equiprobable events over the space of three binary variables, and both have the same entropy of two bits.
 
-This implies that the LMPR complexity is perhaps best applied to a :class:`ScalarDistribution`, and is not suitable for measuring the complexity of dependencies between variables.
+This implies that the LMPR complexity is perhaps best applied to a :class:`Distribution`, and is not suitable for measuring the complexity of dependencies between variables.
 
 API
 ===

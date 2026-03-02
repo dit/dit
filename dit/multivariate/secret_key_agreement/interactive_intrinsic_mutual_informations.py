@@ -40,14 +40,9 @@ class InteractiveSKARMixin:
         bound_func : func
             A function over i, |X|, |Y| which returns the bound on variable U_i.
         rv_mode : str, None
-            Specifies how to interpret `rvs` and `crvs`. Valid options are:
-            {'indices', 'names'}. If equal to 'indices', then the elements of
-            `crvs` and `rvs` are interpreted as random variable indices. If
-            equal to 'names', the the elements are interpreted as random
-            variable names. If `None`, then the value of `dist._rv_mode` is
-            consulted, which defaults to 'indices'.
+            Deprecated. Kept for signature compatibility.
         """
-        super().__init__(dist, [rv_x, rv_y], rv_z, rv_mode=rv_mode)
+        super().__init__(dist, [rv_x, rv_y], rv_z)
 
         self._rounds = rounds
         if bound_func is None:
@@ -160,12 +155,7 @@ def interactive_intrinsic_mutual_information(
     niter : int, None
         The number of hops to perform during optimization.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If
-        equal to 'names', the the elements are interpreted as random
-        variable names. If `None`, then the value of `dist._rv_mode` is
-        consulted, which defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
     backend : str
         The optimization backend. One of ``'numpy'`` (default),
         ``'jax'``, or ``'torch'``.
@@ -176,7 +166,7 @@ def interactive_intrinsic_mutual_information(
         The lower bound.
     """
     actual_cls = _make_backend_subclass(InteractiveSKAR, backend)
-    iskar = actual_cls(dist, rv_x=rvs[0], rv_y=rvs[1], rv_z=crvs, rounds=rounds, bound_func=bound_func, rv_mode=rv_mode)
+    iskar = actual_cls(dist, rv_x=rvs[0], rv_y=rvs[1], rv_z=crvs, rounds=rounds, bound_func=bound_func)
     iskar.optimize(niter=niter)
     val = iskar.objective(iskar._optima)
     val = float(val.detach().cpu().item()) if hasattr(val, "detach") else float(val)

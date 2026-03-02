@@ -5,20 +5,20 @@ Tests for dit.other.perplexity.
 import pytest
 
 from dit import Distribution as D
-from dit import ScalarDistribution as SD
+from dit import Distribution
 from dit.other import perplexity as P
 
 
 @pytest.mark.parametrize("i", range(2, 10))
 def test_p1(i):
-    """Test some simple base cases using SD"""
-    assert P(SD([1 / i] * i)) == pytest.approx(i)
+    """Test some simple base cases using Distribution"""
+    assert P(Distribution([1 / i] * i)) == pytest.approx(i)
 
 
 @pytest.mark.parametrize("i", range(2, 10))
 def test_p2(i):
-    """Test some simple base cases using SD with varying bases"""
-    d = SD([1 / i] * i)
+    """Test some simple base cases using Distribution with varying bases"""
+    d = Distribution([1 / i] * i)
     d.set_base(i)
     assert P(d) == pytest.approx(i)
 

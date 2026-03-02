@@ -42,7 +42,7 @@ def sample(dist, size=None, rand=None, prng=None):
         The sample drawn from the distribution.
 
     """
-    ### This works for NumPy-base distributions (in npdist.py)
+    ### This works for NumPy-based distributions
     n = 1 if size is None else size
 
     if rand is None:

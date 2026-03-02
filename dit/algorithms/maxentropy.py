@@ -145,16 +145,12 @@ def marginal_constraints_generic(dist, rvs, rv_mode=None, with_normalization=Tru
         each inner sequence, but it can occur in multiple inner sequences.
 
     rv_mode : str, None
-        Specifies how to interpret the elements of `rvs`. Valid options
-        are: {'indices', 'names'}. If equal to 'indices', then the elements
-        of `rvs` are interpreted as random variable indices. If equal to
-        'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted.
+        Deprecated. Kept for signature compatibility.
     """
     assert dist.is_dense()
     assert dist.get_base() == "linear"
 
-    parse = lambda rv: parse_rvs(dist, rv, rv_mode=rv_mode, unique=True, sort=True)[1]
+    parse = lambda rv: parse_rvs(dist, rv, unique=True, sort=True)[1]
 
     # potential inclusion: include implied constraints
     # rvs = set().union(*[set(r for r in powerset(rv) if r) for rv in rvs])
@@ -229,13 +225,13 @@ def marginal_constraints(dist, m, with_normalization=True):
 
     rv_mode = dist._rv_mode
 
-    if rv_mode in [RV_MODES.NAMES, "names"]:
-        variables = dist.get_rv_names()
+    variables = dist.get_rv_names()
+    if variables is not None:
         rvs = list(itertools.combinations(variables, m))
     else:
         rvs = list(itertools.combinations(range(n_variables), m))
 
-    A, b = marginal_constraints_generic(dist, rvs, rv_mode, with_normalization=with_normalization)
+    A, b = marginal_constraints_generic(dist, rvs, with_normalization=with_normalization)
     return A, b
 
 

@@ -312,12 +312,7 @@ class IBCurve:
         crvs : iterable, None
             The random variables to condition on.
         rv_mode : str, None
-            Specifies how to interpret `rvs` and `crvs`. Valid options are:
-            {'indices', 'names'}. If equal to 'indices', then the elements of
-            `crvs` and `rvs` are interpreted as random variable indices. If
-            equal to 'names', the the elements are interpreted as random
-            variable names. If `None`, then the value of `dist._rv_mode` is
-            consulted, which defaults to 'indices'.
+            Deprecated. Kept for signature compatibility.
         beta_min : float
             The minimum beta value for the curve. Defaults to 0.
         beta_max : float, None
@@ -342,9 +337,9 @@ class IBCurve:
         self._x, self._y = rvs if rvs is not None else ([0], [1])
         self._z = crvs if crvs is not None else []
         self._aux = [dist.outcome_length()]
-        self._rv_mode = rv_mode
 
         self.p_xy = self.dist.coalesce([self._x, self._y])
+        self.p_xy.make_dense()
         self.p_xy = self.p_xy.pmf.reshape(tuple(map(len, self.p_xy.alphabet)))
 
         args = {
@@ -353,7 +348,6 @@ class IBCurve:
             "alpha": alpha,
             "rvs": [self._x, self._y],
             "crvs": self._z,
-            "rv_mode": self._rv_mode,
         }
 
         if divergence is not None:  # pragma: no cover

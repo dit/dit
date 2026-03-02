@@ -65,7 +65,7 @@ def flatten(l):
         The non-iterable items in `l`.
     """
     for el in l:
-        if isinstance(el, Iterable) and not (isinstance(el, str) and len(el) == 1):
+        if isinstance(el, Iterable) and not isinstance(el, str):
             yield from flatten(el)
         else:
             yield el

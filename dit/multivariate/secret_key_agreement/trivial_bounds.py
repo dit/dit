@@ -30,20 +30,15 @@ def lower_intrinsic_mutual_information_directed(dist, X, Y, Z, rv_mode=None):
     Z : iterable
         The variables representing Eve.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If
-        equal to 'names', the the elements are interpreted as random
-        variable names. If `None`, then the value of `dist._rv_mode` is
-        consulted, which defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
     lb : float
         A lower-bound on the secret key agreement rate.
     """
-    a = total_correlation(dist, [X, Y], rv_mode=rv_mode)
-    b = total_correlation(dist, [X, Z], rv_mode=rv_mode)
+    a = total_correlation(dist, [X, Y])
+    b = total_correlation(dist, [X, Z])
     return max(0.0, a - b)
 
 
@@ -60,20 +55,15 @@ def lower_intrinsic_mutual_information(dist, rvs, crvs, rv_mode=None):
     crvs : iterable
         The variable representing the eavesdropper.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If
-        equal to 'names', the the elements are interpreted as random
-        variable names. If `None`, then the value of `dist._rv_mode` is
-        consulted, which defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
     lb : float
         A lower-bound on the secret key agreement rate.
     """
-    a = lower_intrinsic_mutual_information_directed(dist, rvs[0], rvs[1], crvs, rv_mode=None)
-    b = lower_intrinsic_mutual_information_directed(dist, rvs[1], rvs[0], crvs, rv_mode=None)
+    a = lower_intrinsic_mutual_information_directed(dist, rvs[0], rvs[1], crvs)
+    b = lower_intrinsic_mutual_information_directed(dist, rvs[1], rvs[0], crvs)
     return max([a, b])
 
 
@@ -90,20 +80,15 @@ def upper_intrinsic_total_correlation(dist, rvs, crvs, rv_mode=None):
     crvs : iterable
         The variable representing the eavesdropper.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If
-        equal to 'names', the the elements are interpreted as random
-        variable names. If `None`, then the value of `dist._rv_mode` is
-        consulted, which defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
     ub : float
         A lower-bound on the secret key agreement rate.
     """
-    a = total_correlation(dist, rvs, rv_mode=rv_mode)
-    b = total_correlation(dist, rvs, crvs, rv_mode=rv_mode)
+    a = total_correlation(dist, rvs)
+    b = total_correlation(dist, rvs, crvs)
     return min([a, b])
 
 
@@ -120,20 +105,15 @@ def upper_intrinsic_dual_total_correlation(dist, rvs, crvs, rv_mode=None):
     crvs : iterable
         The variable representing the eavesdropper.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If
-        equal to 'names', the the elements are interpreted as random
-        variable names. If `None`, then the value of `dist._rv_mode` is
-        consulted, which defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
     ub : float
         A lower-bound on the secret key agreement rate.
     """
-    a = dual_total_correlation(dist, rvs, rv_mode=rv_mode)
-    b = dual_total_correlation(dist, rvs, crvs, rv_mode=rv_mode)
+    a = dual_total_correlation(dist, rvs)
+    b = dual_total_correlation(dist, rvs, crvs)
     return min([a, b])
 
 
@@ -150,18 +130,13 @@ def upper_intrinsic_caekl_mutual_information(dist, rvs, crvs, rv_mode=None):
     crvs : iterable
         The variable representing the eavesdropper.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If
-        equal to 'names', the the elements are interpreted as random
-        variable names. If `None`, then the value of `dist._rv_mode` is
-        consulted, which defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
     ub : float
         A lower-bound on the secret key agreement rate.
     """
-    a = caekl_mutual_information(dist, rvs, rv_mode=rv_mode)
-    b = caekl_mutual_information(dist, rvs, crvs, rv_mode=rv_mode)
+    a = caekl_mutual_information(dist, rvs)
+    b = caekl_mutual_information(dist, rvs, crvs)
     return min([a, b])

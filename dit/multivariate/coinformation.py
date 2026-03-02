@@ -26,12 +26,7 @@ def coinformation(dist, rvs=None, crvs=None, rv_mode=None):
         The indexes of the random variables to condition on. If None, then no
         variables are condition on.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If equal
-        to 'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted, which
-        defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -152,13 +147,13 @@ def coinformation(dist, rvs=None, crvs=None, rv_mode=None):
     be treated the same as ['XY'].
 
     """
-    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
+    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
 
-    def entropy(rvs, dist=dist, crvs=crvs, rv_mode=rv_mode):
+    def entropy(rvs, dist=dist, crvs=crvs):
         """
         Helper function to aid in computing the entropy of subsets.
         """
-        return H(dist, set().union(*rvs), crvs, rv_mode=rv_mode)
+        return H(dist, set().union(*rvs), crvs)
 
     I = sum((-1) ** (len(Xs) + 1) * entropy(Xs) for Xs in powerset(rvs))
 

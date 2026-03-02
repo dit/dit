@@ -27,12 +27,7 @@ def secrecy_capacity_skar(dist, rvs=None, crvs=None, rv_mode=None, niter=None, b
     crvs : iterable
         The indices of the eavesdropper.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If
-        equal to 'names', the the elements are interpreted as random
-        variable names. If `None`, then the value of `dist._rv_mode` is
-        consulted, which defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
     niter : int, None
         The number of hops to perform during optimization.
     bound_u : int, None
@@ -47,8 +42,8 @@ def secrecy_capacity_skar(dist, rvs=None, crvs=None, rv_mode=None, niter=None, b
     sc : float
         The secrecy capacity.
     """
-    a = secrecy_capacity(dist, rvs[0], rvs[1], crvs, rv_mode=rv_mode, niter=niter, bound_u=bound_u, backend=backend)
-    b = secrecy_capacity(dist, rvs[1], rvs[0], crvs, rv_mode=rv_mode, niter=niter, bound_u=bound_u, backend=backend)
+    a = secrecy_capacity(dist, rvs[0], rvs[1], crvs, niter=niter, bound_u=bound_u, backend=backend)
+    b = secrecy_capacity(dist, rvs[1], rvs[0], crvs, niter=niter, bound_u=bound_u, backend=backend)
     return max([a, b])
 
 
@@ -68,12 +63,7 @@ def necessary_intrinsic_mutual_information(
     crvs : iterable
         The indices of the eavesdropper.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If
-        equal to 'names', the the elements are interpreted as random
-        variable names. If `None`, then the value of `dist._rv_mode` is
-        consulted, which defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
     niter : int, None
         The number of hops to perform during optimization.
     bound_u : int, None
@@ -92,10 +82,10 @@ def necessary_intrinsic_mutual_information(
         The necessary intrinsic mutual information.
     """
     a = one_way_skar(
-        dist, rvs[0], rvs[1], crvs, rv_mode=rv_mode, niter=niter, bound_u=bound_u, bound_v=bound_v, backend=backend
+        dist, rvs[0], rvs[1], crvs, niter=niter, bound_u=bound_u, bound_v=bound_v, backend=backend
     )
     b = one_way_skar(
-        dist, rvs[1], rvs[0], crvs, rv_mode=rv_mode, niter=niter, bound_u=bound_u, bound_v=bound_v, backend=backend
+        dist, rvs[1], rvs[0], crvs, niter=niter, bound_u=bound_u, bound_v=bound_v, backend=backend
     )
 
     return max([a, b])

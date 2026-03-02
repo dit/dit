@@ -19,37 +19,27 @@ def channel_capacity(cdists, marginal=None, rtol=None, atol=None):
 
     Parameters
     ----------
-    cdists : list, ndarray
-        A list of conditional distributions. For each ``x=outcomes[i]``, the
-        corresponding element ``cdists[i]`` should represent P(Y | X=x); or
-        the conditional distribution as an array.
+    cdists : list, ndarray, Distribution
+        A list of conditional distributions, a 2D array where rows are
+        inputs and columns are outputs, or a conditional Distribution
+        such as p(Y|X).
     marginal : distribution | None
-        The marginal distribution P(X) that goes with P(Y|X). This is optional,
-        but if provided, then it is used to construct a Distribution object
-        for the distribution P*(X) which achieves the channel capacity.
-        If ``None`` then P*(X) is returned as a NumPy array.
-    rtol : None
-        Relative tolerance used to determine convergence criterion. This is
-        passed to ``np.isclose``.
-    atol : None
-        Absolute tolerance used to determine convergence criterion. This is
-        passed to ``np.isclose``.
+        The marginal distribution P(X). If provided, P*(X) is returned as
+        a distribution object. If None, P*(X) is returned as a numpy array.
+    rtol : float or None
+        Relative convergence tolerance. Defaults to ditParams['rtol'].
+    atol : float or None
+        Absolute convergence tolerance. Defaults to ditParams['atol'].
 
     Returns
     -------
     cc : float
         The channel capacity.
-    marginal_opt : Distribution
-        The optimal marginal distribution for P(X) which achieves the
-        channel capacity by maximizing the mutual information I[X:Y].
-
-    Examples
-    --------
-    >>> d = dit.random_distribution(3, 2)
-    >>> mdist_true, cdists = d.condition_on([1])
-    >>> cc, mdist_opt = channel_capacity(cdists, mdist_true)
-
+    marginal_opt : distribution or ndarray
+        The optimal marginal P*(X).
     """
+    from ..distribution import Distribution
+
     if rtol is None:
         rtol = dit.ditParams["rtol"]
     if atol is None:
@@ -78,17 +68,32 @@ def channel_capacity(cdists, marginal=None, rtol=None, atol=None):
             cc = calc_cc(p, q, r)
             yield cc, r
 
-    try:
-        cdists.shape  # noqa: B018
-        carr = cdists
-    except AttributeError:
-        # Build the array for P(Y|X)
-        # We need Y dense so that we search the appropriate space.
-        carr = cdist_array(cdists, base="linear", mode="dense")
+    is_xr = isinstance(cdists, Distribution)
+    is_xr_conditional = is_xr and cdists.is_conditional()
 
-    if marginal and len(marginal) != carr.shape[0]:
-        msg = "len(mdist) != len(cdists)"
-        raise ditException(msg)
+    if is_xr and not is_xr_conditional:
+        raise ditException("Distribution passed to channel_capacity must be conditional")
+
+    if is_xr_conditional:
+        lin = cdists._linear_data()
+        given_dims = [d for d in cdists.dims if d in cdists.given_vars]
+        free_dims = [d for d in cdists.dims if d in cdists.free_vars]
+        reordered = lin.transpose(*given_dims, *free_dims)
+        n_given = int(np.prod([len(cdists.data.coords[d]) for d in given_dims]))
+        n_free = int(np.prod([len(cdists.data.coords[d]) for d in free_dims]))
+        carr = reordered.values.reshape(n_given, n_free)
+    else:
+        try:
+            cdists.shape  # noqa: B018
+            carr = cdists
+        except AttributeError:
+            carr = cdist_array(cdists, base="linear", mode="dense")
+
+    if marginal is not None:
+        n_inputs = len(marginal)
+        if n_inputs != carr.shape[0]:
+            msg = "len(mdist) != len(cdists)"
+            raise ditException(msg)
 
     cc_iter = next_cc(carr)
     cc, pmf = next(cc_iter)
@@ -97,8 +102,14 @@ def channel_capacity(cdists, marginal=None, rtol=None, atol=None):
         old_cc, (cc, pmf) = cc, next(cc_iter)
 
     if marginal is not None:
-        marginal_opt = marginal.copy()
-        marginal_opt.pmf = pmf
+        if is_xr_conditional and isinstance(marginal, Distribution):
+            result = marginal.copy()
+            result.data = result.data.copy(deep=True)
+            result.data.values[:] = pmf.reshape(result.data.shape)
+            marginal_opt = result
+        else:
+            marginal_opt = marginal.copy()
+            marginal_opt.pmf = pmf
     else:
         marginal_opt = pmf
 
@@ -108,38 +119,29 @@ def channel_capacity(cdists, marginal=None, rtol=None, atol=None):
 @unitful
 def channel_capacity_joint(dist, input_, output, marginal=False, rv_mode=None):
     """
-    Compute the channel capacity from ``rvs1`` to ``rvs2``.
+    Compute the channel capacity from ``input_`` to ``output``.
 
     Parameters
     ----------
     dist : Distribution
-        The distribution to find a channel capacity within.
+        The joint distribution.
     input_ : iterable
         The random variables that are the input of the channel.
     output : iterable
         The random variables that are the output of the channel.
     marginal : bool
-        Whether to return the marginal distribution or not. Defaults to False.
-    rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If equal
-        to 'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted, which
-        defaults to 'indices'.
-
-    Returns
-    -------
-    cc : float
-        The channel capacity.
-    marg : Distribution
-        The marginal distribution that achieves the channel capacity.
-        Only returned if `marginal` is True.
+        Whether to return the marginal distribution. Defaults to False.
+    rv_mode : ignored
+        Deprecated.  Kept for signature compatibility.
     """
-    marg, cdists = dist.condition_on(crvs=input_, rvs=output, rv_mode=rv_mode)
-    cc, marg_opt = channel_capacity(cdists)
+    input_names = list(dist._resolve_rv_names(list(input_)))
+    output_names = list(dist._resolve_rv_names(list(output)))
+
+    keep_vars = input_names + output_names
+    sub = dist.marginal(*keep_vars)
+    marg, cdist_list = sub.condition_on(input_names)
+    cc, marg_opt = channel_capacity(cdist_list, marg)
     if marginal:
-        marg.pmf = marg_opt
-        return cc, marg
+        return cc, marg_opt
     else:
         return cc

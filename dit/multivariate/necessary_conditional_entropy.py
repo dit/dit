@@ -31,12 +31,7 @@ def necessary_conditional_entropy(dist, rvs=None, crvs=None, rv_mode=None):
         The indexes of the random variables to condition on. If None, then no
         variables are conditioned on.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If equal
-        to 'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted, which
-        defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -52,8 +47,8 @@ def necessary_conditional_entropy(dist, rvs=None, crvs=None, rv_mode=None):
     -------
 
     """
-    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
+    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
     rvs = list(flatten(rvs))
-    d = insert_mss(dist, -1, rvs, about=crvs, rv_mode=rv_mode)
-    H = entropy(d, [dist.outcome_length()], crvs, rv_mode)
+    d = insert_mss(dist, -1, rvs, about=crvs)
+    H = entropy(d, [dist.outcome_length()], crvs)
     return H

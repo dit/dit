@@ -6,7 +6,7 @@ from itertools import combinations
 
 import pytest
 
-from dit import Distribution, ScalarDistribution
+from dit import Distribution
 from dit.example_dists import uniform
 from dit.other import LMPR_complexity, disequilibrium
 from dit.utils import flatten
@@ -39,7 +39,7 @@ def test_disequilibrium2():
 @pytest.mark.parametrize("n", range(2, 11))
 def test_disequilibrium3(n):
     """
-    Test that uniform ScalarDistributions have zero disequilibrium.
+    Test that uniform Distributions have zero disequilibrium.
     """
     d = uniform(n)
     assert disequilibrium(d) == pytest.approx(0)
@@ -57,9 +57,9 @@ def test_disequilibrium4(n):
 @pytest.mark.parametrize("n", range(2, 11))
 def test_disequilibrium5(n):
     """
-    Test that peaked ScalarDistributions have non-zero disequilibrium.
+    Test that peaked Distributions have non-zero disequilibrium.
     """
-    d = ScalarDistribution([1] + [0] * (n - 1))
+    d = Distribution([1] + [0] * (n - 1))
     assert disequilibrium(d) >= 0
 
 
@@ -68,7 +68,7 @@ def test_disequilibrium6(n):
     """
     Test that peaked Distributions have non-zero disequilibrium.
     """
-    d = ScalarDistribution([1] + [0] * (n - 1))
+    d = Distribution([1] + [0] * (n - 1))
     d.make_dense()
     d = Distribution.from_distribution(d)
     assert disequilibrium(d) >= 0
@@ -106,9 +106,9 @@ def test_LMPR_complexity3(n):
 @pytest.mark.parametrize("n", range(2, 11))
 def test_LMPR_complexity4(n):
     """
-    Test that peaked ScalarDistributions have zero complexity.
+    Test that peaked Distributions have zero complexity.
     """
-    d = ScalarDistribution([1] + [0] * (n - 1))
+    d = Distribution([1] + [0] * (n - 1))
     assert LMPR_complexity(d) == pytest.approx(0)
 
 
@@ -117,7 +117,7 @@ def test_LMPR_complexity5(n):
     """
     Test that peaked Distributions have zero complexity.
     """
-    d = ScalarDistribution([1] + [0] * (n - 1))
+    d = Distribution([1] + [0] * (n - 1))
     d.make_dense()
     d = Distribution.from_distribution(d)
     assert LMPR_complexity(d) == pytest.approx(0)

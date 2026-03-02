@@ -2,7 +2,7 @@
 Some standard discrete distribution.
 """
 
-from .. import ScalarDistribution
+from .. import Distribution
 from ..math.misc import combinations as C
 from ..math.misc import is_integer, is_number
 
@@ -29,7 +29,7 @@ def bernoulli(p):
 
     Returns
     -------
-    d : ScalarDistribution
+    d : Distribution
         The Bernoulli distribution with probability `p`.
 
     Raises
@@ -59,7 +59,7 @@ def binomial(n, p):
 
     Returns
     -------
-    d : ScalarDistribution
+    d : Distribution
         The binomial distribution describes the number of successes in `n`
         trials (identically and independently distributed draws) each with
         probability of success `p`.
@@ -77,7 +77,7 @@ def binomial(n, p):
     pp = lambda n, k: C(n, k) * p**k * (1 - p) ** (n - k)
     outcomes = list(range(n + 1))
     pmf = [pp(n, k) for k in outcomes]
-    return ScalarDistribution(outcomes, pmf)
+    return Distribution(outcomes, pmf)
 
 
 def hypergeometric(N, K, n):
@@ -98,7 +98,7 @@ def hypergeometric(N, K, n):
 
     Returns
     -------
-    d : ScalarDistribution
+    d : Distribution
         The hypergeometric distribution of a population of size `N` with `K`
         successes in the population, and `n` draws are made, without
         replacement, from that population. P(k) is the probability of k
@@ -117,7 +117,7 @@ def hypergeometric(N, K, n):
         raise ValueError(f"{n} is not a positive integer.")
     outcomes = list(range(max(0, n + K - N), min(K, n) + 1))
     pmf = [C(K, k) * C(N - K, n - k) / C(N, n) for k in outcomes]
-    return ScalarDistribution(outcomes, pmf)
+    return Distribution(outcomes, pmf)
 
 
 def uniform(a, b=None):
@@ -138,7 +138,7 @@ def uniform(a, b=None):
 
     Returns
     -------
-    d : ScalarDistribution
+    d : Distribution
         The uniform distribution from `a` to `b`-1.
 
     Raises
@@ -161,4 +161,4 @@ def uniform(a, b=None):
             raise ValueError(msg.format(a, b))
     outcomes = list(range(a, b))
     pmf = [1 / (b - a)] * (b - a)
-    return ScalarDistribution(outcomes, pmf)
+    return Distribution(outcomes, pmf)

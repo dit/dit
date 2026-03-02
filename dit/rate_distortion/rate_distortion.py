@@ -47,12 +47,7 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
         bound : int, None
             The bound on the size of the statistic. If None, use the size of X.
         rv_mode : str, None
-            Specifies how to interpret `rvs` and `crvs`. Valid options are:
-            {'indices', 'names'}. If equal to 'indices', then the elements of
-            `crvs` and `rvs` are interpreted as random variable indices. If
-            equal to 'names', the the elements are interpreted as random
-            variable names. If `None`, then the value of `dist._rv_mode` is
-            consulted, which defaults to 'indices'.
+            Deprecated. Kept for signature compatibility.
         """
         if rv is None:
             rv = list(flatten(dist.rvs))
@@ -64,7 +59,7 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
         except TypeError:
             pass
 
-        super().__init__(dist=dist, rvs=[rv], crvs=crvs, rv_mode=rv_mode)
+        super().__init__(dist=dist, rvs=[rv], crvs=crvs)
         self._alpha = alpha
         self._beta = beta
 
@@ -185,20 +180,15 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
                 The indices to condition on. If None, use none.
             bound : int, None
                 Bound the size of the compressed variable.
-            rv_mode : str, None
-                Specifies how to interpret `rvs` and `crvs`. Valid options are:
-                {'indices', 'names'}. If equal to 'indices', then the elements of
-                `crvs` and `rvs` are interpreted as random variable indices. If
-                equal to 'names', the the elements are interpreted as random
-                variable names. If `None`, then the value of `dist._rv_mode` is
-                consulted, which defaults to 'indices'.
+        rv_mode : str, None
+            Deprecated. Kept for signature compatibility.
 
-            Returns
-            -------
-            result : RateDistortionResult
+        Returns
+        -------
+        result : RateDistortionResult
                 The optimal rate-distortion pair.
             """
-            rd = cls(dist, beta=beta, rv=rv, crvs=crvs, bound=bound, rv_mode=rv_mode)
+            rd = cls(dist, beta=beta, rv=rv, crvs=crvs, bound=bound)
             rd.optimize()
             pmf = rd.construct_joint(rd._optima)
             result = RateDistortionResult(rd.rate(pmf), rd.distortion(pmf))

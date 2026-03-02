@@ -32,12 +32,7 @@ def residual_entropy(dist, rvs=None, crvs=None, p=1.0, rv_mode=None):
     p : float
         The p-norm to utilize
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If equal
-        to 'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted, which
-        defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -50,11 +45,11 @@ def residual_entropy(dist, rvs=None, crvs=None, p=1.0, rv_mode=None):
         Raised if `dist` is not a joint distribution or if `rvs` or `crvs`
         contain non-existant random variables.
     """
-    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
+    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
 
     others = lambda rv, rvs: set(set().union(*rvs)) - set(rv)
 
-    R = sum(H(dist, rv, others(rv, rvs).union(crvs), rv_mode=rv_mode) ** p for rv in rvs) ** (1 / p)
+    R = sum(H(dist, rv, others(rv, rvs).union(crvs)) ** p for rv in rvs) ** (1 / p)
 
     return R
 

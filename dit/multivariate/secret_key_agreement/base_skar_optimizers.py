@@ -19,7 +19,7 @@ import numpy as np
 from ...algorithms import BaseAuxVarOptimizer
 from ...exceptions import ditException
 from ...math import prod
-from ...npdist import Distribution
+from ... import Distribution
 from ...utils import unitful
 from .._backend import _make_backend_subclass
 
@@ -55,12 +55,7 @@ class OneWaySKARMixin:
         rv_z : iterable
             The variables to consider `Z`.
         rv_mode : str, None
-            Specifies how to interpret `rvs` and `crvs`. Valid options are:
-            {'indices', 'names'}. If equal to 'indices', then the elements of
-            `crvs` and `rvs` are interpreted as random variable indices. If
-            equal to 'names', the the elements are interpreted as random
-            variable names. If `None`, then the value of `dist._rv_mode` is
-            consulted, which defaults to 'indices'.
+            Deprecated. Kept for signature compatibility.
         bound_u : int, None
             Specifies a bound on the size of the auxiliary random variable. If
             None, then the theoretical bound is used.
@@ -68,7 +63,7 @@ class OneWaySKARMixin:
             Specifies a bound on the size of the auxiliary random variable. If
             None, then the theoretical bound is used.
         """
-        super().__init__(dist, [rv_x, rv_y], rv_z, rv_mode=rv_mode)
+        super().__init__(dist, [rv_x, rv_y], rv_z)
 
         theoretical_bound_u = self._get_u_bound()
         bound_u = min(bound_u, theoretical_bound_u) if bound_u else theoretical_bound_u
@@ -138,18 +133,13 @@ class IntrinsicMIMixin:
             Specifies a bound on the size of the auxiliary random variable. If None,
             then the theoretical bound is used.
         rv_mode : str, None
-            Specifies how to interpret `rvs` and `crvs`. Valid options are:
-            {'indices', 'names'}. If equal to 'indices', then the elements of
-            `crvs` and `rvs` are interpreted as random variable indices. If
-            equal to 'names', the the elements are interpreted as random
-            variable names. If `None`, then the value of `dist._rv_mode` is
-            consulted, which defaults to 'indices'.
+            Deprecated. Kept for signature compatibility.
         """
         if not crvs:
             msg = "Intrinsic mutual informations require a conditional variable."
             raise ditException(msg)
 
-        super().__init__(dist, rvs, crvs, rv_mode=rv_mode)
+        super().__init__(dist, rvs, crvs)
 
         crv_index = len(self._shape) - 1
         crv_size = self._shape[crv_index]
@@ -190,7 +180,7 @@ class IntrinsicMIMixin:
         @unitful
         def intrinsic(dist, rvs=None, crvs=None, niter=None, bound=None, rv_mode=None, backend="numpy"):
             actual_cls = _make_backend_subclass(cls, backend)
-            opt = actual_cls(dist, rvs=rvs, crvs=crvs, rv_mode=rv_mode, bound=bound)
+            opt = actual_cls(dist, rvs=rvs, crvs=crvs, bound=bound)
             opt.optimize(niter=niter)
             val = opt.objective(opt._optima)
             return float(val.detach().cpu().item()) if hasattr(val, "detach") else float(val)
@@ -259,18 +249,13 @@ class MoreIntrinsicMIMixin:
             Specifies a bound on the size of the auxiliary random variable. If None,
             then the theoretical bound is used.
         rv_mode : str, None
-            Specifies how to interpret `rvs` and `crvs`. Valid options are:
-            {'indices', 'names'}. If equal to 'indices', then the elements of
-            `crvs` and `rvs` are interpreted as random variable indices. If
-            equal to 'names', the the elements are interpreted as random
-            variable names. If `None`, then the value of `dist._rv_mode` is
-            consulted, which defaults to 'indices'.
+            Deprecated. Kept for signature compatibility.
         """
         if not crvs:
             msg = "Intrinsic mutual informations require a conditional variable."
             raise ditException(msg)
 
-        super().__init__(dist, rvs, crvs, rv_mode=rv_mode)
+        super().__init__(dist, rvs, crvs)
 
         theoretical_bound = prod(self._shape)
         bound = min([bound, theoretical_bound]) if bound else theoretical_bound
@@ -311,7 +296,7 @@ class MoreIntrinsicMIMixin:
             actual_cls = _make_backend_subclass(cls, backend)
             candidates = []
             for bound in bounds:
-                opt = actual_cls(dist, rvs=rvs, crvs=crvs, bound=bound, rv_mode=rv_mode)
+                opt = actual_cls(dist, rvs=rvs, crvs=crvs, bound=bound)
                 opt.optimize(niter=niter)
                 val = opt.objective(opt._optima)
                 val = float(val.detach().cpu().item()) if hasattr(val, "detach") else float(val)
@@ -388,18 +373,13 @@ class InnerTwoPartIMIMixin:
             Specifies a bound on the size of the V auxiliary random variable. If
             None, then the theoretical bound is used.
         rv_mode : str, None
-            Specifies how to interpret `rvs` and `crvs`. Valid options are:
-            {'indices', 'names'}. If equal to 'indices', then the elements of
-            `crvs` and `rvs` are interpreted as random variable indices. If
-            equal to 'names', the the elements are interpreted as random
-            variable names. If `None`, then the value of `dist._rv_mode` is
-            consulted, which defaults to 'indices'.
+            Deprecated. Kept for signature compatibility.
         """
         if not crvs:
             msg = "Intrinsic mutual informations require a conditional variable."
             raise ditException(msg)
 
-        super().__init__(dist, rvs + [j], crvs, rv_mode=rv_mode)
+        super().__init__(dist, rvs + [j], crvs)
 
         theoretical_bound_u = prod(self._shape[rv] for rv in self._rvs)
         bound_u = min([bound_u, theoretical_bound_u]) if bound_u else theoretical_bound_u
@@ -492,18 +472,13 @@ class TwoPartIMIMixin:
             Specifies a bound on the size of the V auxiliary random variable. If
             None, then the theoretical bound is used.
         rv_mode : str, None
-            Specifies how to interpret `rvs` and `crvs`. Valid options are:
-            {'indices', 'names'}. If equal to 'indices', then the elements of
-            `crvs` and `rvs` are interpreted as random variable indices. If
-            equal to 'names', the the elements are interpreted as random
-            variable names. If `None`, then the value of `dist._rv_mode` is
-            consulted, which defaults to 'indices'.
+            Deprecated. Kept for signature compatibility.
         """
         if not crvs:
             msg = "Intrinsic mutual informations require a conditional variable."
             raise ditException(msg)
 
-        super().__init__(dist, rvs, crvs, rv_mode=rv_mode)
+        super().__init__(dist, rvs, crvs)
 
         theoretical_bound_j = prod(self._shape)
         bound_j = min([bound_j, theoretical_bound_j]) if bound_j else theoretical_bound_j
@@ -596,7 +571,7 @@ class TwoPartIMIMixin:
             actual_cls = _make_backend_subclass(cls, backend)
             candidates = []
             for b_j, b_u, b_v in bounds:
-                opt = actual_cls(dist, rvs=rvs, crvs=crvs, bound_j=b_j, bound_u=b_u, bound_v=b_v, rv_mode=rv_mode)
+                opt = actual_cls(dist, rvs=rvs, crvs=crvs, bound_j=b_j, bound_u=b_u, bound_v=b_v)
                 opt._backend = backend
                 opt.optimize(niter=niter)
                 val = opt.objective(opt._optima)

@@ -29,12 +29,7 @@ def tse_complexity(dist, rvs=None, crvs=None, rv_mode=None):
         The indexes of the random variables to condition on. If None, then no
         variables are condition on.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If equal
-        to 'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted, which
-        defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -47,9 +42,9 @@ def tse_complexity(dist, rvs=None, crvs=None, rv_mode=None):
         Raised if `dist` is not a joint distribution or if `rvs` or `crvs`
         contain non-existant random variables.
     """
-    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
+    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
 
-    joint = H(dist, set().union(*rvs), crvs, rv_mode=rv_mode)
+    joint = H(dist, set().union(*rvs), crvs)
     N = len(rvs)
 
     def sub_entropies(k):
@@ -57,7 +52,7 @@ def tse_complexity(dist, rvs=None, crvs=None, rv_mode=None):
         Compute the average entropy of all subsets of `rvs` of size `k`.
         """
         sub_rvs = (set().union(*rv) for rv in combinations(rvs, k))
-        subH = sum(H(dist, rv, crvs, rv_mode=rv_mode) for rv in sub_rvs)
+        subH = sum(H(dist, rv, crvs) for rv in sub_rvs)
         subH /= nCk(N, k)
         return subH
 

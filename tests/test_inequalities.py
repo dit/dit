@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 from hypothesis import given, settings
 
-from dit import ScalarDistribution as SD
+from dit import Distribution
 from dit.divergences import (
     chernoff_information,
     hellinger_distance,
@@ -62,17 +62,15 @@ def test_fanos_inequality(dist):
     """
     H(X|Y) <= hb(P_e) + P_e log(|X| - 1)
     """
-    dist1 = SD.from_distribution(dist.marginal([0]))
-    dist2 = SD.from_distribution(dist.marginal([1]))
-
     ce = H(dist, [0], [1])
 
-    X = len(set().union(dist1.outcomes, dist2.outcomes))
+    dist1 = dist.marginal([0])
+    X = len(dist1.alphabet[0])
 
-    eq_dist = dist1 == dist2
-    P_e = eq_dist[False] if False in eq_dist.outcomes else 0
+    P_correct = sum(p for o, p in dist.zipped() if o[0] == o[1])
+    P_e = 1 - P_correct
 
-    hb = H(SD([P_e, 1 - P_e]))
+    hb = H(Distribution([P_e, 1 - P_e]))
 
     assert ce <= hb + P_e * np.log2(X - 1) + epsilon
 

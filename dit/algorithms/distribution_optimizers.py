@@ -11,7 +11,7 @@ from debtcollector import removals
 from ..distconst import product_distribution
 from ..helpers import RV_MODES
 from ..multivariate import coinformation as I
-from ..npdist import Distribution
+from .. import Distribution
 from ..utils import flatten
 from .maxentropy import marginal_constraints_generic
 from .optimization import BaseConvexOptimizer, BaseNonConvexOptimizer, BaseOptimizer
@@ -73,21 +73,16 @@ class BaseDistOptimizer(BaseOptimizer):
             The list of sets of variables whose marginals will be constrained to
             match the given distribution.
         rv_mode : str, None
-            Specifies how to interpret `rvs` and `crvs`. Valid options are:
-            {'indices', 'names'}. If equal to 'indices', then the elements of
-            `crvs` and `rvs` are interpreted as random variable indices. If
-            equal to 'names', the the elements are interpreted as random
-            variable names. If `None`, then the value of `dist._rv_mode` is
-            consulted, which defaults to 'indices'.
+            Deprecated. Kept for signature compatibility.
         """
-        super().__init__(dist, dist.rvs, crvs=[], rv_mode="indices")
+        super().__init__(dist, dist.rvs, crvs=[])
 
         # TODO: actually make this class support crvs?
         self._all_vars = self._rvs
 
         self.dist = prepare_dist(dist)
         self._vpmf = self.dist.pmf.copy()
-        self._A, self._b = marginal_constraints_generic(self.dist, marginals, rv_mode)
+        self._A, self._b = marginal_constraints_generic(self.dist, marginals)
         self._shape = [len(alpha) for alpha in self.dist.alphabet]
         self._free = infer_free_values(self._A, self._b)
         self.constraints = [
@@ -228,7 +223,9 @@ class BaseDistOptimizer(BaseOptimizer):
         if sparse:
             new_dist.make_sparse()
 
-        new_dist.set_rv_names(self.dist.get_rv_names())
+        names = self.dist.get_rv_names()
+        if names is not None:
+            new_dist.set_rv_names(names)
 
         return new_dist
 
@@ -475,14 +472,9 @@ class BROJABivariateOptimizer(MaxCoInfoOptimizer):
         target : list
             The target variables.
         rv_mode : str, None
-            Specifies how to interpret `rvs` and `crvs`. Valid options are:
-            {'indices', 'names'}. If equal to 'indices', then the elements of
-            `crvs` and `rvs` are interpreted as random variable indices. If
-            equal to 'names', the the elements are interpreted as random
-            variable names. If `None`, then the value of `dist._rv_mode` is
-            consulted, which defaults to 'indices'.
+            Deprecated. Kept for signature compatibility.
         """
-        dist = broja_prepare_dist(dist, sources, target, rv_mode)
+        dist = broja_prepare_dist(dist, sources, target)
         super().__init__(dist, [[0, 2], [1, 2]])
 
         extra_free = broja_extra_constraints(self.dist, 2).free
@@ -508,19 +500,14 @@ def maxent_dist(dist, rvs, x0=None, maxiter=1000, sparse=True, rv_mode=None):
     sparse : bool
         Whether the returned distribution should be sparse or dense.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If
-        equal to 'names', the the elements are interpreted as random
-        variable names. If `None`, then the value of `dist._rv_mode` is
-        consulted, which defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
     me : Distribution
         The maximum entropy distribution.
     """
-    meo = MaxEntOptimizer(dist, rvs, rv_mode)
+    meo = MaxEntOptimizer(dist, rvs)
     meo.optimize(x0=x0, maxiter=maxiter)
     dist = meo.construct_dist(sparse=sparse)
     return dist
@@ -566,15 +553,13 @@ def marginal_maxent_dists(dist, k_max=None):
         if k in [0, 1, n_variables]:
             continue
 
-        rv_mode = dist._rv_mode
-
-        if rv_mode in [RV_MODES.NAMES, "names"]:
-            variables = dist.get_rv_names()
+        variables = dist.get_rv_names()
+        if variables is not None:
             rvs = list(combinations(variables, k))
         else:
             rvs = list(combinations(range(n_variables), k))
 
-        dists.append(maxent_dist(dist, rvs, rv_mode=rv_mode))
+        dists.append(maxent_dist(dist, rvs))
 
     # To match the all-way marginal is to match itself. Again, this is a time
     # savings decision, even though the optimization should be fast.
@@ -606,12 +591,7 @@ def pid_broja(dist, sources, target, niter=10, return_opt=False, rv_mode=None):
         If True, return the distribution resulting from the optimization.
         Defaults to False.
     rv_mode : str, None
-        Specifies how to interpret `sources` and `target`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If
-        equal to 'names', the the elements are interpreted as random
-        variable names. If `None`, then the value of `dist._rv_mode` is
-        consulted, which defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -621,7 +601,7 @@ def pid_broja(dist, sources, target, niter=10, return_opt=False, rv_mode=None):
         The distribution resulting from the optimization. Note that var [0]
         is sources[0], [1] is sources[1] and [2] is target.
     """
-    broja = BROJABivariateOptimizer(dist, sources, target, rv_mode)
+    broja = BROJABivariateOptimizer(dist, sources, target)
     broja.optimize(niter=niter)
     opt_dist = broja.construct_dist()
     r = -broja.objective(broja._optima)

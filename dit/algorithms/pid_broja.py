@@ -48,12 +48,7 @@ def prepare_dist(dist, sources, target, rv_mode=None):
     target : list
         The random variables in `dist` that define the target.
     rv_mode : str, None
-        Specifies how to interpret the elements of each source and the target.
-        Valid options are: {'indices', 'names'}. If equal to 'indices', then
-        the elements of each source and the target are interpreted as random
-        variable indices. If equal to 'names', the the elements are interpreted
-        as random variable names. If `None`, then the value of `dist._rv_mode`
-        is consulted.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -68,7 +63,7 @@ def prepare_dist(dist, sources, target, rv_mode=None):
     # Simplify the distribution by removing irrelevant rvs and giving each
     # source their own singleton index. Similarly for the target rvs.
     rvs = sources + [target]
-    d = dist.coalesce(rvs, rv_mode=rv_mode)
+    d = dist.coalesce(rvs)
 
     # Fix sample space and make dense.
     d = dit.algorithms.optutil.prepare_dist(d)
@@ -369,12 +364,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
             from `dist`. For the calculation of unique information, we use k=2.
             Note that these marginals include the target random variable.
         rv_mode : str, None
-            Specifies how to interpret the elements of each source and the
-            target. Valid options are: {'indices', 'names'}. If equal to
-            'indices', then the elements of each source and the target are
-            interpreted as random variable indices. If equal to 'names', the
-            elements are interpreted as random variable names. If `None`, then
-            the value of `dist._rv_mode` is consulted.
+            Deprecated. Kept for signature compatibility.
         extra_constraints : bool
             When possible, additional constraints beyond the required marginal
             constraints are added to the optimization problem. These exist
@@ -405,7 +395,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
         self.dist_original = dist
         self._params = Bunch(sources=sources, target=target, rv_mode=rv_mode)
 
-        self.dist = prepare_dist(dist, sources, target, rv_mode=rv_mode)
+        self.dist = prepare_dist(dist, sources, target)
         self.k = k
         self.extra_constraints = extra_constraints
         self.source_marginal = source_marginal
@@ -770,12 +760,7 @@ def k_synergy(
         The size of the marginals that are constrained to equal marginals
         from `dist`. For the calculation of unique information, we use k=2.
     rv_mode : str, None
-        Specifies how to interpret the elements of each source and the
-        target. Valid options are: {'indices', 'names'}. If equal to
-        'indices', then the elements of each source and the target are
-        interpreted as random variable indices. If equal to 'names', the
-        elements are interpreted as random variable names. If `None`, then
-        the value of `dist._rv_mode` is consulted.
+        Deprecated. Kept for signature compatibility.
     extra_constraints : bool
         When possible, additional constraints beyond the required marginal
         constraints are added to the optimization problem. These exist
@@ -813,7 +798,6 @@ def k_synergy(
         sources,
         target,
         k=k,
-        rv_mode=rv_mode,
         extra_constraints=extra_constraints,
         source_marginal=True,
         tol=tol,
@@ -850,12 +834,7 @@ def k_informations(
         The size of the marginals that are constrained to equal marginals
         from `dist`. For the calculation of unique information, we use `k = 2`.
     rv_mode : str, None
-        Specifies how to interpret the elements of each source and the
-        target. Valid options are: {'indices', 'names'}. If equal to
-        'indices', then the elements of each source and the target are
-        interpreted as random variable indices. If equal to 'names', the
-        elements are interpreted as random variable names. If `None`, then
-        the value of `dist._rv_mode` is consulted.
+        Deprecated. Kept for signature compatibility.
     extra_constraints : bool
         When possible, additional constraints beyond the required marginal
         constraints are added to the optimization problem. These exist
@@ -888,7 +867,6 @@ def k_informations(
         sources,
         target,
         k=1,
-        rv_mode=rv_mode,
         extra_constraints=extra_constraints,
         source_marginal=True,
         tol=tol,
@@ -933,12 +911,7 @@ def unique_informations(
         The size of the marginals that are constrained to equal marginals
         from `dist`. For the calculation of unique information, we use k=2.
     rv_mode : str, None
-        Specifies how to interpret the elements of each source and the
-        target. Valid options are: {'indices', 'names'}. If equal to
-        'indices', then the elements of each source and the target are
-        interpreted as random variable indices. If equal to 'names', the
-        elements are interpreted as random variable names. If `None`, then
-        the value of `dist._rv_mode` is consulted.
+        Deprecated. Kept for signature compatibility.
     extra_constraints : bool
         When possible, additional constraints beyond the required marginal
         constraints are added to the optimization problem. These exist
@@ -980,7 +953,6 @@ def unique_informations(
         sources,
         target,
         k=k,
-        rv_mode=rv_mode,
         extra_constraints=extra_constraints,
         tol=tol,
         prng=prng,

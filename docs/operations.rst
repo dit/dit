@@ -145,7 +145,7 @@ Where :math:`\min` is understood to be minimizing with respect to the entropy.
 
    @doctest
    In [12]: print(join(d, ['XY']))
-   Class:    ScalarDistribution
+   Class:    Distribution
    Alphabet: (0, 1, 2, 3)
    Base:     linear
 
@@ -181,7 +181,7 @@ Where :math:`\max` is understood to be maximizing with respect to the entropy.
 
    @doctest
    In [17]: print(meet(d2, ['X', 'Y']))
-   Class:    ScalarDistribution
+   Class:    Distribution
    Alphabet: (0, 1, 2)
    Base:     linear
 

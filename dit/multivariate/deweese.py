@@ -49,12 +49,7 @@ def deweese_constructor(mmi):
             Whether to return the distribution containing the
             variable functions or not. Defaults to False.
         rv_mode : str, None
-            Specifies how to interpret `rvs` and `crvs`. Valid options are:
-            {{'indices', 'names'}}. If equal to 'indices', then the elements of
-            `crvs` and `rvs` are interpreted as random variable indices. If
-            equal to 'names', the the elements are interpreted as random
-            variable names. If `None`, then the value of `dist._rv_mode` is
-            consulted, which defaults to 'indices'.
+            Deprecated. Kept for signature compatibility.
 
         Returns
         -------
@@ -64,7 +59,7 @@ def deweese_constructor(mmi):
             The distribution with the functions achieving `val`.
             Only returned if `return_opt` is True.
         """
-        rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
+        rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
 
         dist = dist.coalesce(rvs + [crvs])
 
@@ -132,14 +127,9 @@ class BaseDeWeeseOptimizer(BaseAuxVarOptimizer):
             Whether the functions to optimize over should be
             deterministic or not. Defaults to False.
         rv_mode : str, None
-            Specifies how to interpret `rvs` and `crvs`. Valid options are:
-            {{'indices', 'names'}}. If equal to 'indices', then the elements of
-            `crvs` and `rvs` are interpreted as random variable indices. If
-            equal to 'names', the the elements are interpreted as random
-            variable names. If `None`, then the value of `dist._rv_mode` is
-            consulted, which defaults to 'indices'.
+            Deprecated. Kept for signature compatibility.
         """
-        super().__init__(dist, rvs=rvs, crvs=crvs, rv_mode=rv_mode)
+        super().__init__(dist, rvs=rvs, crvs=crvs)
         self._construct_auxvars([({rv}, size) for rv, size in zip(self._rvs, self._shape, strict=False)])
 
         if deterministic:
@@ -180,20 +170,15 @@ class BaseDeWeeseOptimizer(BaseAuxVarOptimizer):
             deterministic : bool
                 Whether the functions to optimize over should be
                 deterministic or not. Defaults to False.
-            rv_mode : str, None
-                Specifies how to interpret `rvs` and `crvs`. Valid options are:
-                {{'indices', 'names'}}. If equal to 'indices', then the elements of
-                `crvs` and `rvs` are interpreted as random variable indices. If
-                equal to 'names', the the elements are interpreted as random
-                variable names. If `None`, then the value of `dist._rv_mode` is
-                consulted, which defaults to 'indices'.
+        rv_mode : str, None
+            Deprecated. Kept for signature compatibility.
 
-            Returns
-            -------
-            val : float
+        Returns
+        -------
+        val : float
                 The value of the DeWeese {name}.
             """
-            opt = cls(dist, rvs=rvs, crvs=crvs, rv_mode=rv_mode, deterministic=deterministic)
+            opt = cls(dist, rvs=rvs, crvs=crvs, deterministic=deterministic)
             opt.optimize(niter=niter)
             return cls._sign * opt.objective(opt._optima)
 

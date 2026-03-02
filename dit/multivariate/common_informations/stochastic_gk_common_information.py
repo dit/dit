@@ -40,14 +40,9 @@ class StochasticGKCommonInformation(BaseAuxVarOptimizer):
         bound : int
             Place an artificial bound on the size of W.
         rv_mode : str, None
-            Specifies how to interpret `rvs` and `crvs`. Valid options are:
-            {'indices', 'names'}. If equal to 'indices', then the elements of
-            `crvs` and `rvs` are interpreted as random variable indices. If
-            equal to 'names', the the elements are interpreted as random
-            variable names. If `None`, then the value of `dist._rv_mode` is
-            consulted, which defaults to 'indices'.
+            Deprecated. Kept for signature compatibility.
         """
-        super().__init__(dist, rvs=rvs, crvs=crvs, rv_mode=rv_mode)
+        super().__init__(dist, rvs=rvs, crvs=crvs)
 
         theoretical_bound = self.compute_bound()
         bound = min(bound, theoretical_bound) if bound else theoretical_bound
@@ -157,25 +152,20 @@ def stochastic_gk_common_information(
         A single list of indexes specifying the random variables to condition
         on. If None, then no variables are conditioned on.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If equal
-        to 'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted, which
-        defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
     F : float
         The functional common information.
     """
-    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
+    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
 
-    # dtc = dual_total_correlation(dist, rvs, crvs, rv_mode)
+    # dtc = dual_total_correlation(dist, rvs, crvs)
     # ent = entropy(dist, rvs, crvs, rv_mode)
     # if np.isclose(dtc, ent):
     #     return dtc
 
-    sgkci = StochasticGKCommonInformation(dist, rvs, crvs, bound, rv_mode)
+    sgkci = StochasticGKCommonInformation(dist, rvs, crvs, bound)
     sgkci.optimize(niter=niter, maxiter=maxiter, polish=polish)
     return -sgkci.objective(sgkci._optima)

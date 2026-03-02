@@ -58,7 +58,7 @@ def test_H5(i):
 
 @pytest.mark.parametrize("i", range(2, 10))
 def test_H6(i):
-    """Test H for uniform distributions using ScalarDistributions"""
+    """Test H for uniform distributions using scalar distributions"""
     d = uniform(i)
     assert H(d) == pytest.approx(np.log2(i))
 

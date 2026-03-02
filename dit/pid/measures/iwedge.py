@@ -39,6 +39,6 @@ class PID_GK(BasePID):
             The value of I_wedge.
         """
         d = d.coalesce(sources + (target,))
-        d = Distribution(d.outcomes, d.pmf, sample_space=d.outcomes)
-        d = insert_meet(d, -1, d.rvs[:-1])
+        d = Distribution(d.outcomes, d.pmf)
+        d = insert_meet(d, -1, d.rvs[:-1], support_only=True)
         return coinformation(d, [d.rvs[-2], d.rvs[-1]])

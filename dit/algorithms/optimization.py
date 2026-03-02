@@ -20,7 +20,7 @@ from ..distconst import insert_rvf, modify_outcomes
 from ..exceptions import OptimizationException, ditException
 from ..helpers import flatten, normalize_rvs, parse_rvs
 from ..math import prod, sample_simplex
-from ..npdist import Distribution
+from .. import Distribution
 from ..utils import partitions, powerset
 from ..utils.optimization import (
     BasinHoppingCallBack,
@@ -60,21 +60,16 @@ class BaseOptimizer(metaclass=ABCMeta):
         crvs : iterable
             The variables to be conditioned on.
         rv_mode : str, None
-            Specifies how to interpret `rvs` and `crvs`. Valid options are:
-            {'indices', 'names'}. If equal to 'indices', then the elements of
-            `crvs` and `rvs` are interpreted as random variable indices. If
-            equal to 'names', the the elements are interpreted as random
-            variable names. If `None`, then the value of `dist._rv_mode` is
-            consulted, which defaults to 'indices'.
+            Deprecated. Kept for signature compatibility.
         """
-        rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
+        rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
         self._dist = dist.copy(base="linear")
 
         self._alphabet = self._dist.alphabet
         self._original_shape = list(map(len, self._dist.alphabet))
 
-        self._true_rvs = [parse_rvs(self._dist, rv, rv_mode=rv_mode)[1] for rv in rvs]
-        self._true_crvs = parse_rvs(self._dist, crvs, rv_mode=rv_mode)[1]
+        self._true_rvs = [parse_rvs(self._dist, rv)[1] for rv in rvs]
+        self._true_crvs = parse_rvs(self._dist, crvs)[1]
         self._dist = modify_outcomes(self._dist, tuple)
 
         # compress all random variables down to single vars
@@ -284,7 +279,10 @@ class BaseOptimizer(metaclass=ABCMeta):
             pmf_x = pmf_xy.sum(axis=idx_x, keepdims=True)
             pmf_y = pmf_xy.sum(axis=idx_y, keepdims=True)
 
-            mi = np.nansum(pmf_xy * np.log2(pmf_xy / (pmf_x * pmf_y)))
+            with np.errstate(divide="ignore", invalid="ignore"):
+                ratio = pmf_xy / (pmf_x * pmf_y)
+                log_ratio = np.where(pmf_xy > 0, np.log2(np.maximum(ratio, 1e-300)), 0.0)
+            mi = np.nansum(pmf_xy * log_ratio)
 
             return mi
 
@@ -335,7 +333,10 @@ class BaseOptimizer(metaclass=ABCMeta):
             pmf_yz = pmf_xyz.sum(axis=idx_yz, keepdims=True)
             pmf_z = pmf_xz.sum(axis=idx_z, keepdims=True)
 
-            cmi = np.nansum(pmf_xyz * np.log2(pmf_z * pmf_xyz / pmf_xz / pmf_yz))
+            with np.errstate(divide="ignore", invalid="ignore"):
+                ratio = pmf_z * pmf_xyz / pmf_xz / pmf_yz
+                log_ratio = np.where(pmf_xyz > 0, np.log2(np.maximum(ratio, 1e-300)), 0.0)
+            cmi = np.nansum(pmf_xyz * log_ratio)
 
             return cmi
 
@@ -384,9 +385,10 @@ class BaseOptimizer(metaclass=ABCMeta):
             pmf_crvs = pmf_joint.sum(axis=idx_crvs, keepdims=True)
             pmf_subrvs = [pmf_joint.sum(axis=idx, keepdims=True) for idx in idx_subrvs] + [pmf_joint, pmf_crvs]
 
-            pmf_ci = reduce(np.multiply, [pmf**p for pmf, p in zip(pmf_subrvs, power, strict=True)])
-
-            ci = np.nansum(pmf_joint * np.log2(pmf_ci))
+            with np.errstate(divide="ignore", invalid="ignore"):
+                pmf_ci = reduce(np.multiply, [pmf**p for pmf, p in zip(pmf_subrvs, power, strict=True)])
+                log_ci = np.where(pmf_joint > 0, np.log2(np.maximum(pmf_ci, 1e-300)), 0.0)
+            ci = np.nansum(pmf_joint * log_ci)
 
             return ci
 

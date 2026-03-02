@@ -42,12 +42,7 @@ class InformationBottleneck(BaseAuxVarOptimizer):
         bound : int, None
             The bound on the size of the statistic. If None, use the size of X.
         rv_mode : str, None
-            Specifies how to interpret `rvs` and `crvs`. Valid options are:
-            {'indices', 'names'}. If equal to 'indices', then the elements of
-            `crvs` and `rvs` are interpreted as random variable indices. If
-            equal to 'names', the the elements are interpreted as random
-            variable names. If `None`, then the value of `dist._rv_mode` is
-            consulted, which defaults to 'indices'.
+            Deprecated. Kept for signature compatibility.
         """
         if rvs is None:
             rvs = dist.rvs
@@ -56,7 +51,7 @@ class InformationBottleneck(BaseAuxVarOptimizer):
             msg = "The information bottleneck is only defined for two variables."
             raise ditException(msg)
 
-        super().__init__(dist=dist, rvs=rvs, crvs=crvs, rv_mode=rv_mode)
+        super().__init__(dist=dist, rvs=rvs, crvs=crvs)
         if not 0.0 <= alpha <= 1.0:
             msg = "alpha must be in [0.0, 1.0]."
             raise ditException(msg)
@@ -223,12 +218,7 @@ class InformationBottleneck(BaseAuxVarOptimizer):
             bound : int, None
                 The bound on the size of the statistic. If None, use the size of X.
             rv_mode : str, None
-                Specifies how to interpret `rvs` and `crvs`. Valid options are:
-                {'indices', 'names'}. If equal to 'indices', then the elements of
-                `crvs` and `rvs` are interpreted as random variable indices. If
-                equal to 'names', the the elements are interpreted as random
-                variable names. If `None`, then the value of `dist._rv_mode` is
-                consulted, which defaults to 'indices'.
+                Deprecated. Kept for signature compatibility.
             """
             ib = cls(
                 dist=dist,
@@ -237,7 +227,6 @@ class InformationBottleneck(BaseAuxVarOptimizer):
                 rvs=rvs,
                 crvs=crvs,
                 bound=bound,
-                rv_mode=rv_mode,
             )
             ib.optimize()
             pmf = ib.construct_joint(ib._optima)
@@ -280,12 +269,7 @@ class InformationBottleneckDivergence(InformationBottleneck):
         bound : int, None
             The bound on the size of the statistic. If None, use the size of X.
         rv_mode : str, None
-            Specifies how to interpret `rvs` and `crvs`. Valid options are:
-            {'indices', 'names'}. If equal to 'indices', then the elements of
-            `crvs` and `rvs` are interpreted as random variable indices. If
-            equal to 'names', the the elements are interpreted as random
-            variable names. If `None`, then the value of `dist._rv_mode` is
-            consulted, which defaults to 'indices'.
+            Deprecated. Kept for signature compatibility.
         """
         self._divergence = divergence
         super().__init__(
@@ -295,7 +279,6 @@ class InformationBottleneckDivergence(InformationBottleneck):
             rvs=rvs,
             crvs=crvs,
             bound=bound,
-            rv_mode=rv_mode,
         )
         self._default_hops *= 2
 

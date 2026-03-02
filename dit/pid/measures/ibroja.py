@@ -32,11 +32,11 @@ class BROJAOptimizer(BaseDistOptimizer, BaseConvexOptimizer):
         target : iterable
             The target variable.
         rv_mode : bool
-            Unused, provided for compatibility with parent class.
+            Deprecated. Kept for signature compatibility.
         """
         dist = dist.coalesce((source,) + (sum(others, ()),) + (target,))
         constraints = [[0, 2], [1, 2]]
-        super().__init__(dist, marginals=constraints, rv_mode=rv_mode)
+        super().__init__(dist, marginals=constraints)
         self._source = {0}
         self._others = {1}
         self._target = {2}

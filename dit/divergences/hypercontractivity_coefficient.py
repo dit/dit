@@ -43,17 +43,12 @@ class HypercontractivityCoefficient(BaseAuxVarOptimizer):
             Specifies a bound on the size of the auxiliary random variable. If None,
             then the theoretical bound is used.
         rv_mode : str, None
-            Specifies how to interpret `rvs` and `crvs`. Valid options are:
-            {'indices', 'names'}. If equal to 'indices', then the elements of
-            `crvs` and `rvs` are interpreted as random variable indices. If
-            equal to 'names', the the elements are interpreted as random
-            variable names. If `None`, then the value of `dist._rv_mode` is
-            consulted, which defaults to 'indices'.
+            Deprecated. Kept for signature compatibility.
         """
         self._x = {0}
         self._y = {1}
         self._u = {3}
-        super().__init__(dist, [rv_x, rv_y], [], rv_mode=rv_mode)
+        super().__init__(dist, [rv_x, rv_y], [])
 
         theoretical_bound = self._full_shape[self._proxy_vars[0]] + 1
         bound = min(bound, theoretical_bound) if bound else theoretical_bound
@@ -113,19 +108,14 @@ def hypercontractivity_coefficient(dist, rvs, bound=None, niter=None, rv_mode=No
     niter : int, None
         The number of basin-hopping steps to perform. If None, use the default.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If
-        equal to 'names', the the elements are interpreted as random
-        variable names. If `None`, then the value of `dist._rv_mode` is
-        consulted, which defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
     hc : float
         The hypercontractivity coefficient.
     """
-    rvs, _, rv_mode = normalize_rvs(dist, rvs, None, rv_mode)
+    rvs, _, rv_mode = normalize_rvs(dist, rvs, None)
 
     if len(rvs) != 2:
         msg = f"Hypercontractivity coefficient can only be computed for 2 variables, not {len(rvs)}."
@@ -137,6 +127,6 @@ def hypercontractivity_coefficient(dist, rvs, bound=None, niter=None, rv_mode=No
     elif np.isclose(entropy(dist, rvs[1], rvs[0]), 0.0):
         return 1.0
     else:
-        hc = HypercontractivityCoefficient(dist, rvs[0], rvs[1], bound=bound, rv_mode=rv_mode)
+        hc = HypercontractivityCoefficient(dist, rvs[0], rvs[1], bound=bound)
         hc.optimize(niter=niter)
         return -hc.objective(hc._optima)

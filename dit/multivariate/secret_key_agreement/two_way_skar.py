@@ -34,12 +34,7 @@ def _two_way_skar_bounds_iter(dist, rvs=None, crvs=None, rv_mode=None, backend="
     crvs : iterable
         The indices to consider as Z (Eve).
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If
-        equal to 'names', the the elements are interpreted as random
-        variable names. If `None`, then the value of `dist._rv_mode` is
-        consulted, which defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
     backend : str
         The optimization backend. One of ``'numpy'`` (default),
         ``'jax'``, or ``'torch'``.
@@ -53,32 +48,32 @@ def _two_way_skar_bounds_iter(dist, rvs=None, crvs=None, rv_mode=None, backend="
     """
     bound_func = lambda i, x, y: [x, y][i % 2]
 
-    lower = no_communication_skar(dist, rvs[0], rvs[1], crvs, rv_mode=rv_mode)
-    upper = intrinsic_mutual_information(dist, rvs, crvs, rv_mode=rv_mode, backend=backend)
+    lower = no_communication_skar(dist, rvs[0], rvs[1], crvs)
+    upper = intrinsic_mutual_information(dist, rvs, crvs, backend=backend)
     yield lower, upper
-    new_lower = necessary_intrinsic_mutual_information(dist, rvs, crvs, rv_mode=rv_mode, backend=backend)
+    new_lower = necessary_intrinsic_mutual_information(dist, rvs, crvs, backend=backend)
     lower = max([lower, new_lower])
     yield lower, upper
-    new_upper = minimal_intrinsic_mutual_information(dist, rvs, crvs, rv_mode=rv_mode, backend=backend)
+    new_upper = minimal_intrinsic_mutual_information(dist, rvs, crvs, backend=backend)
     upper = min([upper, new_upper])
     yield lower, upper
     new_lower = interactive_intrinsic_mutual_information(
-        dist, rvs, crvs, bound_func=bound_func, rounds=2, rv_mode=rv_mode, backend=backend
+        dist, rvs, crvs, bound_func=bound_func, rounds=2, backend=backend
     )
     lower = max([lower, new_lower])
     yield lower, upper
     new_lower = interactive_intrinsic_mutual_information(
-        dist, rvs, crvs, bound_func=bound_func, rounds=3, rv_mode=rv_mode, backend=backend
+        dist, rvs, crvs, bound_func=bound_func, rounds=3, backend=backend
     )
     lower = max([lower, new_lower])
     yield lower, upper
     new_lower = interactive_intrinsic_mutual_information(
-        dist, rvs, crvs, bound_func=bound_func, rounds=4, rv_mode=rv_mode, backend=backend
+        dist, rvs, crvs, bound_func=bound_func, rounds=4, backend=backend
     )
     lower = max([lower, new_lower])
     yield lower, upper
     new_upper = two_part_intrinsic_mutual_information(
-        dist, rvs, crvs, bound_j=2, bound_u=2, bound_v=2, rv_mode=rv_mode, backend=backend
+        dist, rvs, crvs, bound_j=2, bound_u=2, bound_v=2, backend=backend
     )
     upper = min([upper, new_upper])
     yield lower, upper
@@ -97,12 +92,7 @@ def two_way_skar_bounds(dist, rvs, crvs, rv_mode=None, backend="numpy"):
     crvs : iterable
         The indices to consider as Z (Eve).
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If
-        equal to 'names', the the elements are interpreted as random
-        variable names. If `None`, then the value of `dist._rv_mode` is
-        consulted, which defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
     backend : str
         The optimization backend. One of ``'numpy'`` (default),
         ``'jax'``, or ``'torch'``.
@@ -134,12 +124,7 @@ def two_way_skar(dist, rvs, crvs, rv_mode=None, backend="numpy"):
     crvs : iterable
         The indices to consider as Z (Eve).
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If
-        equal to 'names', the the elements are interpreted as random
-        variable names. If `None`, then the value of `dist._rv_mode` is
-        consulted, which defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
     backend : str
         The optimization backend. One of ``'numpy'`` (default),
         ``'jax'``, or ``'torch'``.

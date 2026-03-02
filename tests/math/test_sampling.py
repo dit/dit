@@ -16,13 +16,13 @@ def test_sample1():
     d = dit.example_dists.Xor()
     dit.math.prng.seed(0)
     x = module.sample(d)
-    assert x == "101"
+    assert x == ("1", "0", "1")
 
     # with log dist
     dit.math.prng.seed(0)
     d.set_base(3.5)
     x = module.sample(d)
-    assert x == "101"
+    assert x == ("1", "0", "1")
 
 
 def test_sample2():
@@ -30,14 +30,14 @@ def test_sample2():
     d = dit.example_dists.Xor()
     dit.math.prng.seed(0)
     x = module.sample(d, prng=dit.math.prng)
-    assert x == "101"
+    assert x == ("1", "0", "1")
 
 
 def test_sample3():
     # Specified rand number
     d = dit.example_dists.Xor()
     x = module.sample(d, rand=0.3)
-    assert x == "011"
+    assert x == ("0", "1", "1")
 
 
 def test_sample4():
@@ -45,7 +45,7 @@ def test_sample4():
     d = dit.example_dists.Xor()
     dit.math.prng.seed(0)
     x = module.sample(d, 6)
-    assert x == ["101", "101", "101", "101", "011", "101"]
+    assert x == [("1", "0", "1"), ("1", "0", "1"), ("1", "0", "1"), ("1", "0", "1"), ("0", "1", "1"), ("1", "0", "1")]
 
 
 def test_sample5():

@@ -69,20 +69,15 @@ def copy_mutual_information(dist, X, Y, rv_mode=None):
     Y : iterable
         The indicies to consider as Y.
     rv_mode : str, None
-        Specifies how to interpret ``crvs`` and ``rvs``. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements
-        of ``crvs`` and ``rvs`` are interpreted as random variable indices.
-        If equal to 'names', the the elements are interpreted as random
-        varible names. If ``None``, then the value of ``self._rv_mode`` is
-        consulted, which defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
     Icopy : float
         The copy mutual information of x.
     """
-    p_Y = dist.marginal(Y, rv_mode=rv_mode)
-    marg, cdists = dist.condition_on(X, rvs=Y, rv_mode=rv_mode)
+    p_Y = dist.marginal(Y)
+    marg, cdists = dist.condition_on(X, rvs=Y)
     return sum(
         marg[x] * specific_copy_mutual_information(cdist, p_Y, x)
         for x, cdist in zip(marg.outcomes, cdists, strict=True)

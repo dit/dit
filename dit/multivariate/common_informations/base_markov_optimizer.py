@@ -90,14 +90,9 @@ class MarkovVarMixin:
             Place an artificial bound on the size of W. If None, the
             theoretical bound from :meth:`compute_bound` is used.
         rv_mode : str, None
-            Specifies how to interpret ``rvs`` and ``crvs``. Valid options are:
-            ``{'indices', 'names'}``. If equal to ``'indices'``, then the
-            elements of ``crvs`` and ``rvs`` are interpreted as random variable
-            indices. If equal to ``'names'``, the elements are interpreted as
-            random variable names. If ``None``, then the value of
-            ``dist._rv_mode`` is consulted, which defaults to ``'indices'``.
+            Deprecated. Kept for signature compatibility.
         """
-        super().__init__(dist, rvs=rvs, crvs=crvs, rv_mode=rv_mode)
+        super().__init__(dist, rvs=rvs, crvs=crvs)
 
         theoretical_bound = self.compute_bound()
         bound = min(bound, theoretical_bound) if bound else theoretical_bound
@@ -239,8 +234,8 @@ class MarkovVarMixin:
         def common_info(
             dist, rvs=None, crvs=None, niter=None, maxiter=1000, polish=1e-6, bound=None, rv_mode=None, backend="numpy"
         ):
-            dtc = dual_total_correlation(dist, rvs, crvs, rv_mode)
-            ent = entropy(dist, rvs, crvs, rv_mode)
+            dtc = dual_total_correlation(dist, rvs, crvs)
+            ent = entropy(dist, rvs, crvs)
             if np.isclose(dtc, ent):
                 # Common informations are bound between the dual total
                 # correlation and the joint entropy. Therefore, if the two
@@ -248,7 +243,7 @@ class MarkovVarMixin:
                 return dtc
 
             actual_cls = _make_backend_subclass(cls, backend)
-            ci = actual_cls(dist, rvs, crvs, bound, rv_mode)
+            ci = actual_cls(dist, rvs, crvs, bound)
             ci.optimize(niter=niter, maxiter=maxiter, polish=polish)
             val = ci.objective(ci._optima)
             return float(val.detach().cpu().item()) if hasattr(val, "detach") else float(val)
@@ -281,12 +276,7 @@ class MarkovVarMixin:
         bound : int
             Bound the size of the Markov variable.
         rv_mode : str, None
-            Specifies how to interpret ``rvs`` and ``crvs``. Valid options are:
-            {{'indices', 'names'}}. If equal to ``'indices'``, then the elements
-            of ``crvs`` and ``rvs`` are interpreted as random variable indices.
-            If equal to ``'names'``, the elements are interpreted as random
-            variable names. If ``None``, then the value of ``dist._rv_mode`` is
-            consulted, which defaults to ``'indices'``.
+            Deprecated. Kept for signature compatibility.
         backend : str
             The optimization backend to use. One of ``'numpy'`` (default),
             ``'jax'``, or ``'torch'``.

@@ -4,7 +4,7 @@ Compute the Gacs-Korner common information
 
 from ...algorithms import insert_meet
 from ...helpers import normalize_rvs, parse_rvs
-from ...npdist import Distribution
+from ... import Distribution
 from ...shannon import conditional_entropy as H
 from ...utils import unitful
 
@@ -29,12 +29,7 @@ def gk_common_information(dist, rvs=None, crvs=None, rv_mode=None):
         The indexes of the random variables to condition the common information
         by. If none, than there is no conditioning.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If equal
-        to 'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted, which
-        defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -47,16 +42,18 @@ def gk_common_information(dist, rvs=None, crvs=None, rv_mode=None):
         Raised if `rvs` or `crvs` contain non-existant random variables.
 
     """
-    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
-    crvs = parse_rvs(dist, crvs, rv_mode)[1]
+    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
+    crvs = parse_rvs(dist, crvs)[1]
 
     outcomes, pmf = zip(*dist.zipped(mode="patoms"), strict=True)
-    # The GK-common information is sensitive to zeros in the sample space.
-    # Here, we make sure to remove them.
-    d = Distribution(outcomes, pmf, sample_space=outcomes)
-    d.set_rv_names(dist.get_rv_names())
+    d = Distribution(outcomes, pmf)
+    names = dist.get_rv_names()
+    if names is not None:
+        d.set_rv_names(names)
 
-    d2 = insert_meet(d, -1, rvs, rv_mode=rv_mode)
+    # support_only=True restricts the sigma algebra to the support,
+    # which is essential for GK common information correctness.
+    d2 = insert_meet(d, -1, rvs, support_only=True)
 
     common = [d2.outcome_length() - 1]
 

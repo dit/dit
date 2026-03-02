@@ -49,7 +49,11 @@ constructor_map = {
 
 class RV_Mode:  # noqa: N801
     """
-    Class to manage how rvs and crvs are specified and interpreted.
+    Legacy class kept for backward compatibility.
+
+    With Distribution as the sole distribution class, RVs are always
+    addressed by name.  Integer indices are auto-resolved to names by
+    ``Distribution._resolve_rv_names``.
     """
 
     INDICES = 0
@@ -60,28 +64,15 @@ class RV_Mode:  # noqa: N801
         "indices": INDICES,
         "names": NAMES,
         None: None,
-        # Deprecated stuff:
         True: NAMES,
         False: INDICES,
     }
 
-    # Temporary until we can convert everything to using: rv_mode
-    _deprecated = [True, False]
-
     def __getitem__(self, item):
         try:
-            mode = self._mapping[item]
+            return self._mapping[item]
         except KeyError as err:
             raise KeyError("Invalid value for `rv_mode`") from err
-
-        if item in self._deprecated:
-            dep = self._deprecated[self._deprecated.index(item)]
-            if type(item) is type(dep):
-                msg = f"Deprecated value for `rv_mode`: {item!r}."
-                msg += " See docstring for new conventions."
-                warnings.warn(msg, DeprecationWarning, stacklevel=2)
-
-        return mode
 
 
 RV_MODES = RV_Mode()
@@ -141,7 +132,7 @@ def construct_alphabets(outcomes):
     except TypeError as err:
         raise ditException(
             "At least one element in `outcomes` does not implement __len__. "
-            "Distribution.from_ndarray or ScalarDistribution may help "
+            "Distribution.from_ndarray may help "
             "resolve this."
         ) from err
     else:
@@ -211,7 +202,7 @@ def get_product_func(klass):
     return product
 
 
-def normalize_rvs(dist, rvs, crvs, rv_mode):
+def normalize_rvs(dist, rvs, crvs, rv_mode=None):
     """
     Perform common tasks useful for multivariate information measures.
 
@@ -223,13 +214,9 @@ def normalize_rvs(dist, rvs, crvs, rv_mode):
         List of random variables to use in this measure.
     crvs : list, None
         List of random variables to condition on.
-    rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If equal
-        to 'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted, which
-        defaults to 'indices'.
+    rv_mode : ignored
+        Deprecated, kept for signature compatibility. Integer indices
+        are auto-resolved to dimension names.
 
     Returns
     -------
@@ -237,112 +224,86 @@ def normalize_rvs(dist, rvs, crvs, rv_mode):
         The explicit random variables to use.
     crvs : list
         The explicit random variables to condition on.
-    rv_mode : bool
-        The value of rv_mode that should be used.
+    rv_mode : None
+        Always None (kept for signature compatibility).
 
     Raises
     ------
     ditException
         Raised if `dist` is not a joint distribution.
     """
-    if dist.is_joint():
-        if rvs is None:
-            # Set so that each random variable is its own group.
-            rvs = [[i] for i in range(dist.outcome_length())]
-            rv_mode = RV_MODES.INDICES
-        crvs = [] if crvs is None else list(flatten(crvs))
-    else:
-        msg = "The information measure requires a joint distribution."
-        raise ditException(msg)
+    if rvs is None:
+        rvs = [[i] for i in range(dist.outcome_length())]
+    crvs = [] if crvs is None else list(flatten(crvs))
 
     return rvs, crvs, rv_mode
 
 
 def parse_rvs(dist, rvs, rv_mode=None, unique=True, sort=True):
     """
-    Returns the indices of the random variables in `rvs`.
+    Resolve random variable specs to (names, indices) tuples.
+
+    Integers are auto-resolved to dimension names via the distribution's
+    dims ordering.  Strings are treated as dimension names.
 
     Parameters
     ----------
-    dist : joint distribution
-        The joint distribution.
+    dist : distribution
+        The distribution.
     rvs : list
-        The list of random variables. This is either a list of random
-        variable indexes or a list of random variable names.
-    rv_mode : str, None
-        Specifies how to interpret the elements of `rvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `rvs` are interpreted as random variable indices. If equal to 'names',
-        the the elements are interpreted as random variable names. If `None`,
-        then the value of `dist._rv_mode` is consulted.
+        Random variable identifiers (names or integer indices).
+    rv_mode : ignored
+        Deprecated.  Kept for signature compatibility.
     unique : bool
-        If `True`, then require that no random variable is repeated in `rvs`.
-        If there are any duplicates, an exception is raised. If `False`, random
-        variables can be repeated.
+        If True, require no duplicates.
     sort : bool
-        If `True`, then the output is sorted by the random variable indexes.
+        If True, sort output by index.
 
     Returns
     -------
-    rvs : tuple
-        A new tuple of the specified random variables, possibly sorted.
-    indices : tuple
-        The corresponding indices of the random variables, possibly sorted.
-
-    Raises
-    ------
-    ditException
-        If `rvs` cannot be converted properly into indexes.
-
+    rvs : tuple of str
+        Dimension names.
+    indices : tuple of int
+        Corresponding dimension indices.
     """
-    if rv_mode is None:
-        rv_mode = dist._rv_mode
-    rv_mode = RV_MODES[rv_mode]
-
-    # Quick check for the empty set. Interpretation: no random variables.
     if len(rvs) == 0:
         return (), ()
 
-    # Make sure all random variables are unique.
-    if unique and len(set(rvs)) != len(rvs):
+    # Resolve to dimension names. Objects without _resolve_rv_names
+    # (e.g. SampleSpace) treat rvs as integer indices directly.
+    if hasattr(dist, '_resolve_rv_names'):
+        names = list(dist._resolve_rv_names(list(rvs)))
+    else:
+        names = list(rvs)
+
+    if unique and len(set(names)) != len(names):
         msg = "`rvs` contained duplicates."
         raise ditException(msg)
 
-    if rv_mode == RV_MODES.NAMES:
-        # Then `rvs` contains random variable names.
-        # We convert these to indexes.
-
-        if dist._rvs is None:
-            raise ditException("There are no random variable names to use.")
-
-        indexes = []
-        for rv in rvs:
-            if rv in dist._rvs:
-                indexes.append(dist._rvs[rv])
-
-        if len(indexes) != len(rvs):
-            msg = "`rvs` contains invalid random variable names."
+    # Convert names to indices
+    if hasattr(dist, 'dims'):
+        dim_list = list(dist.dims)
+        try:
+            indexes = [dim_list.index(n) for n in names]
+        except ValueError:
+            msg = f"`rvs` contains invalid random variables: {names}"
             raise ditException(msg)
     else:
-        # Then `rvs` contained the set of indexes.
-        indexes = rvs
+        # Legacy path for SampleSpace: names ARE indices
+        indexes = list(names)
 
-    # Make sure all indexes are valid, even if there are duplicates.
     all_indexes = set(range(dist.outcome_length()))
     good_indexes = all_indexes.intersection(indexes)
     if len(good_indexes) != len(set(indexes)):
-        msg = "`rvs` contains invalid random variables, {0}, {1} {2}."
-        msg = msg.format(indexes, good_indexes, rv_mode)
+        msg = f"`rvs` contains invalid random variables: {names}"
         raise ditException(msg)
 
-    # Sort the random variable names (or indexes) by their index.
-    out = zip(rvs, indexes, strict=True)
+    out = list(zip(names, indexes, strict=True))
     if sort:
-        out = list(out)
         out.sort(key=itemgetter(1))
-    rvs, indexes = list(zip(*out, strict=True))
+    names_out, indexes_out = list(zip(*out, strict=True))
 
-    return rvs, indexes
+    return names_out, indexes_out
 
 
 def reorder(outcomes, pmf, sample_space, index=None):

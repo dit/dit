@@ -52,9 +52,6 @@ def test_distribution_from_bayesnet_names():
     d3 = dit.distribution_from_bayesnet(x, ["A", "B", "C"])
     assert d.is_approx_equal(d2)
 
-    # Test with a non-Cartesian product distribution
-    dd = x.nodes["B"]["dist"]
-    dd._sample_space = dit.SampleSpace(list(dd.sample_space()))
     d3 = dit.distribution_from_bayesnet(x)
     assert d.is_approx_equal(d3)
 

@@ -36,6 +36,7 @@ dependencies = [
     "numpy>=1.22",
     "PLTable",
     "scipy>=1.7",
+    "xarray",
 ]
 
 [project.urls]
@@ -62,9 +63,6 @@ jax = [
 torch = [
     "torch",
 ]
-xarray = [
-    "xarray",
-]
 optional = [
     "colorama",
     "matplotlib",
@@ -84,7 +82,6 @@ dev = [
     "dit[docs]",
     "dit[jax]",
     "dit[torch]",
-    "dit[xarray]",
     "ruff",
     "ty",
 ]

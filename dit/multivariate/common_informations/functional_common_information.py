@@ -33,27 +33,22 @@ def functional_markov_chain_naive(dist, rvs=None, crvs=None, rv_mode=None):  # p
         A single list of indexes specifying the random variables to condition
         on. If None, then no variables are conditioned on.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If equal
-        to 'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted, which
-        defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
     d : Distribution
         The distribution `dist` with the additional variable added to the end.
     """
-    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
+    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
     outcomes = dist.outcomes
     bf = RVFunctions(dist)
     f = [len(dist.rvs)]
     parts = partitions(outcomes)
     dists = [insert_rvf(dist, bf.from_partition(part)) for part in parts]
-    B = lambda d: dual_total_correlation(d, rvs, crvs + f, rv_mode)
+    B = lambda d: dual_total_correlation(d, rvs, crvs + f)
     dists = [d for d in dists if np.isclose(B(d), 0)]
-    return min(dists, key=lambda d: entropy(d, rvs=f, rv_mode=rv_mode))
+    return min(dists, key=lambda d: entropy(d, rvs=f))
 
 
 def functional_markov_chain(dist, rvs=None, crvs=None, rv_mode=None):
@@ -73,12 +68,7 @@ def functional_markov_chain(dist, rvs=None, crvs=None, rv_mode=None):
         A single list of indexes specifying the random variables to condition
         on. If None, then no variables are conditioned on.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If equal
-        to 'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted, which
-        defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -93,16 +83,17 @@ def functional_markov_chain(dist, rvs=None, crvs=None, rv_mode=None):
     to whether a method to directly construct this variable exists (as it does
     with the GK common variable, minimal sufficient statistic, etc).
     """
-    optimal_b = dual_total_correlation(dist, rvs, crvs, rv_mode)
+    optimal_b = dual_total_correlation(dist, rvs, crvs)
 
     rv_names = dist.get_rv_names()
     dist = modify_outcomes(dist, tuple)
-    dist.set_rv_names(rv_names)
+    if rv_names is not None:
+        dist.set_rv_names(rv_names)
 
-    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
+    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
 
-    rvs = [parse_rvs(dist, rv, rv_mode)[1] for rv in rvs]
-    crvs = parse_rvs(dist, crvs, rv_mode)[1]
+    rvs = [parse_rvs(dist, rv)[1] for rv in rvs]
+    crvs = parse_rvs(dist, crvs)[1]
 
     part = frozenset(frozenset([o]) for o in dist.outcomes)  # make copy
 
@@ -110,8 +101,8 @@ def functional_markov_chain(dist, rvs=None, crvs=None, rv_mode=None):
 
     W = (dist.outcome_length(),)
 
-    H = lambda d: entropy(d, W, rv_mode=rv_mode)
-    B = lambda d: dual_total_correlation(d, rvs, crvs + W, rv_mode)
+    H = lambda d: entropy(d, W)
+    B = lambda d: dual_total_correlation(d, rvs, crvs + W)
 
     initial = insert_rvf(dist, bf.from_partition(part))
     optimal = (H(initial), initial)
@@ -166,22 +157,17 @@ def functional_common_information(dist, rvs=None, crvs=None, rv_mode=None):
         A single list of indexes specifying the random variables to condition
         on. If None, then no variables are conditioned on.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If equal
-        to 'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted, which
-        defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
     F : float
         The functional common information.
     """
-    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
+    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
 
-    dtc = dual_total_correlation(dist, rvs, crvs, rv_mode)
-    ent = entropy(dist, rvs, crvs, rv_mode)
+    dtc = dual_total_correlation(dist, rvs, crvs)
+    ent = entropy(dist, rvs, crvs)
     if np.isclose(dtc, ent):
         return dtc
 

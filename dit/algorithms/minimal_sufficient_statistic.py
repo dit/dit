@@ -37,7 +37,8 @@ def partial_match(first, second, places):
         Whether `first` and `second` match or not.
 
     """
-    return tuple(first[i] for i in places) == tuple(second)
+    second = second if isinstance(second, tuple) else (second,)
+    return tuple(first[i] for i in places) == second
 
 
 def mss_sigalg(dist, rvs, about=None, rv_mode=None):
@@ -56,11 +57,7 @@ def mss_sigalg(dist, rvs, about=None, rv_mode=None):
         A list of random variables for which the minimal sufficient static will
         retain all information about.
     rv_mode : str, None
-        Specifies how to interpret the elements of `rvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `rvs` are interpreted as random variable indices. If equal to 'names',
-        the the elements are interpreted as random variable names. If `None`,
-        then the value of `dist._rv_mode` is consulted.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -77,11 +74,11 @@ def mss_sigalg(dist, rvs, about=None, rv_mode=None):
                frozenset({'000', '011', '101', '110'})})
 
     """
-    mapping = parse_rvs(dist, rvs, rv_mode=rv_mode)[1]
+    mapping = parse_rvs(dist, rvs)[1]
 
     partition = defaultdict(list)
 
-    md, cds = dist.condition_on(rvs=about, crvs=rvs, rv_mode=rv_mode)
+    md, cds = dist.condition_on(rvs=about, crvs=rvs)
 
     for marg, cd in zip(md.outcomes, cds, strict=True):
         matches = [o for o in dist.outcomes if partial_match(o, marg, mapping)]
@@ -116,11 +113,7 @@ def insert_mss(dist, idx, rvs, about=None, rv_mode=None):
         A list of random variables for which the minimal sufficient static will
         retain all information about.
     rv_mode : str, None
-        Specifies how to interpret the elements of `rvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `rvs` are interpreted as random variable indices. If equal to 'names',
-        the the elements are interpreted as random variable names. If `None`,
-        then the value of `dist._rv_mode` is consulted.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -145,7 +138,7 @@ def insert_mss(dist, idx, rvs, about=None, rv_mode=None):
     1101   0.25
 
     """
-    mss_sa = mss_sigalg(dist, rvs, about, rv_mode)
+    mss_sa = mss_sigalg(dist, rvs, about)
     new_dist = insert_rv(dist, idx, mss_sa)
     return pruned_samplespace(new_dist)
 
@@ -163,11 +156,7 @@ def mss(dist, rvs, about=None, rv_mode=None, int_outcomes=True):
         A list of random variables for which the minimal sufficient static will
         retain all information about.
     rv_mode : str, None
-        Specifies how to interpret the elements of `rvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of `rvs`
-        are interpreted as random variable indices. If equal to 'names', the the
-        elements are interpreted as random variable names. If `None`, then the
-        value of `dist._rv_mode` is consulted.
+        Deprecated. Kept for signature compatibility.
     int_outcomes : bool
         If `True`, then the outcomes of the minimal sufficient statistic are
         relabeled as integers instead of as the atoms of the induced
@@ -175,14 +164,14 @@ def mss(dist, rvs, about=None, rv_mode=None, int_outcomes=True):
 
     Returns
     -------
-    d : ScalarDistribution
+    d : Distribution
         The distribution of the minimal sufficient statistic.
 
     Examples
     --------
     >>> d = Xor()
     >>> print(mss(d, [0], [1, 2]))
-    Class:    ScalarDistribution
+    Class:    Distribution
     Alphabet: (0, 1)
     Base:     linear
     x   p(x)
@@ -190,7 +179,7 @@ def mss(dist, rvs, about=None, rv_mode=None, int_outcomes=True):
     1   0.5
 
     """
-    mss_sa = mss_sigalg(dist, rvs, about, rv_mode)
+    mss_sa = mss_sigalg(dist, rvs, about)
     d = dist_from_induced_sigalg(dist, mss_sa, int_outcomes)
     return d
 
@@ -219,7 +208,7 @@ def insert_joint_mss(dist, idx, rvs=None, rv_mode=None):
         then the value of `dist._rv_mode` is consulted.
 
     """
-    rvs, _, rv_mode = normalize_rvs(dist, rvs, None, rv_mode)
+    rvs, _, _ = normalize_rvs(dist, rvs, None)
 
     d = dist.copy()
     l1 = d.outcome_length()
@@ -228,7 +217,7 @@ def insert_joint_mss(dist, idx, rvs=None, rv_mode=None):
 
     for rv in rvs:
         about = list(flatten(rvs - {rv}))
-        d = insert_mss(d, -1, rvs=list(rv), about=about, rv_mode=rv_mode)
+        d = insert_mss(d, -1, rvs=list(rv), about=about)
 
     l2 = d.outcome_length()
 
@@ -258,14 +247,10 @@ def info_trim(dist, rvs=None, rv_mode=None):
         A list of random variables to be compressed into minimal sufficient
         statistics.
     rv_mode : str, None
-        Specifies how to interpret the elements of `rvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `rvs` are interpreted as random variable indices. If equal to 'names',
-        the the elements are interpreted as random variable names. If `None`,
-        then the value of `dist._rv_mode` is consulted.
+        Deprecated. Kept for signature compatibility.
 
     """
-    rvs, _, rv_mode = normalize_rvs(dist, rvs, None, rv_mode)
+    rvs, _, _ = normalize_rvs(dist, rvs, None)
 
     d = dist.copy()
 
@@ -273,7 +258,7 @@ def info_trim(dist, rvs=None, rv_mode=None):
 
     for rv in rvs:
         about = list(flatten(rvs2 - {tuple(rv)}))
-        d = insert_mss(d, -1, rvs=tuple(rv), about=about, rv_mode=rv_mode)
+        d = insert_mss(d, -1, rvs=tuple(rv), about=about)
 
     d = pruned_samplespace(d.marginalize(list(flatten(rvs))))
 

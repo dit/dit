@@ -5,11 +5,11 @@ Tests for dit.multivariate.coinformation.
 import pytest
 
 from dit import Distribution as D
-from dit import ScalarDistribution as SD
+from dit import Distribution
 from dit.example_dists import n_mod_m
-from dit.exceptions import ditException
 from dit.multivariate import coinformation as I
 from dit.multivariate import entropy as H
+from dit.shannon import entropy
 
 
 def test_coi1():
@@ -68,7 +68,6 @@ def test_coi7():
 
 
 def test_coi8():
-    """Test that I fails on ScalarDistributions"""
-    d = SD([1 / 3] * 3)
-    with pytest.raises(ditException):
-        I(d)
+    """Test that I works on 1-D (scalar) distributions"""
+    d = Distribution([1 / 3] * 3)
+    assert I(d) == pytest.approx(entropy(d))

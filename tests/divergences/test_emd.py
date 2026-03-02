@@ -7,7 +7,7 @@ import warnings
 import numpy as np
 import pytest
 
-from dit import Distribution, ScalarDistribution
+from dit import Distribution
 from dit.divergences.earth_movers_distance import earth_movers_distance, earth_movers_distance_pmf
 
 
@@ -30,8 +30,8 @@ def test_emd_pmf1(p, q, emd):
 
 def test_emd1():
     """ """
-    sd1 = ScalarDistribution([0, 1, 2], [1 / 3] * 3)
-    sd2 = ScalarDistribution([0, 1, 2], [1, 0, 0], trim=False)
+    sd1 = Distribution([0, 1, 2], [1 / 3] * 3)
+    sd2 = Distribution([0, 1, 2], [1, 0, 0], trim=False)
     emd = earth_movers_distance(sd1, sd2)
     assert emd == pytest.approx(1.0)
 

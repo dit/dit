@@ -9,13 +9,11 @@ from random import randint
 
 import numpy as np
 
-from .distribution import BaseDistribution
 from .exceptions import ditException
 from .helpers import parse_rvs
-from .npdist import Distribution
-from .npscalardist import ScalarDistribution
 from .utils import digits, powerset
 from .validate import validate_pmf
+from .distribution import Distribution
 
 __all__ = (
     "mixture_distribution",
@@ -173,8 +171,6 @@ def noisy(dist, noise=1 / 2):
         The noisy distribution.
     """
     fuzz = uniform(list(product(*dist.alphabet)))
-    if isinstance(dist.outcomes[0], str):
-        fuzz = modify_outcomes(fuzz, lambda o: "".join(o))
     fuzzy = mixture_distribution([dist, fuzz], [1 - noise, noise], merge=True)
     return fuzzy
 
@@ -196,14 +192,13 @@ def erasure(dist, epsilon=1 / 2):
     erased : Distribution
         The erased distribution.
     """
-    ctor = dist._outcome_ctor
     outcomes = defaultdict(float)
     n = dist.outcome_length()
 
     for outcome, prob in dist.zipped():
-        for o in product(*zip(outcome, "_" * n, strict=True)):
+        for o in product(*zip(outcome, ("_",) * n, strict=True)):
             count = o.count("_")
-            outcomes[ctor(o)] += prob * epsilon**count * (1 - epsilon) ** (n - count)
+            outcomes[tuple(o)] += prob * epsilon**count * (1 - epsilon) ** (n - count)
 
     return Distribution(outcomes)
 
@@ -214,7 +209,7 @@ def modify_outcomes(dist, ctor):
 
     Parameters
     ----------
-    dist : Distribution, ScalarDistribution
+    dist : Distribution, Distribution
         The distribution to be modified.
 
     ctor : callable
@@ -223,7 +218,7 @@ def modify_outcomes(dist, ctor):
 
     Returns
     -------
-    d : Distribution, ScalarDistribution
+    d : Distribution, Distribution
         The modified distribution.
 
     Examples
@@ -410,22 +405,23 @@ def simplex_grid(length, subdivisions, using=None, inplace=False):
     if using is tuple:
         for pmf in gen:
             yield pmf
-    elif not isinstance(using, BaseDistribution):
+    elif not isinstance(using, Distribution):
         for pmf in gen:
             yield using(pmf)
     else:
+        using.make_dense()
         if length != len(using.pmf):
             raise Exception("`length` must match the length of pmf")
 
         if inplace:
             d = using
             for pmf in gen:
-                d.pmf[:] = pmf
+                d.pmf = pmf
                 yield d
         else:
             for pmf in gen:
                 d = using.copy()
-                d.pmf[:] = pmf
+                d.pmf = pmf
                 yield d
 
 
@@ -441,7 +437,7 @@ def uniform_scalar_distribution(n, base=None):
 
     Returns
     -------
-    d : ScalarDistribution
+    d : Distribution
         A uniform scalar distribution.
 
     """
@@ -453,7 +449,7 @@ def uniform_scalar_distribution(n, base=None):
         outcomes = tuple(range(n))
 
     pmf = [1 / nOutcomes] * nOutcomes
-    d = ScalarDistribution(outcomes, pmf, base="linear")
+    d = Distribution(outcomes, pmf, base="linear")
 
     # Maybe we should use ditParams['base'] when base is None?
     if base is not None:
@@ -679,14 +675,19 @@ class RVFunctions:
         >>> d.outcomes
         ('0000', '0110', '1011', '1101')
         """
-        if not isinstance(d, Distribution):
+        if not isinstance(d, (Distribution,)):
             raise ditException("`d` must be a Distribution instance.")
-        try:
-            d.outcomes[0] + ""
-        except TypeError:
-            is_int = True
+        if not d.is_joint():
+            raise ditException("`d` must be a joint distribution.")
+        first = d.outcomes[0]
+        if isinstance(first, tuple):
+            is_int = len(first) > 0 and isinstance(first[0], (int, float, np.integer, np.floating))
         else:
-            is_int = False
+            try:
+                first + ""
+                is_int = False
+            except TypeError:
+                is_int = True
 
         self.is_int = is_int
         self.L = d.outcome_length()
@@ -837,13 +838,7 @@ class RVFunctions:
         alphabet += letters.upper()
 
         n = len(partition)
-        if self.outcome_class is str:
-            if n > len(alphabet):
-                msg = "Number of outcomes is too large."
-                raise NotImplementedError(msg)
-            vals = alphabet[:n]
-        else:
-            vals = range(n)
+        vals = range(n)
 
         mapping = {}
         # Probably could do this more efficiently.
@@ -896,18 +891,13 @@ class RVFunctions:
         outcomes = [template.format(int(h, base), self.L) for h in hexes]
         if self.is_int:
             outcomes = [tuple(map(int, o)) for o in outcomes]
+        else:
+            outcomes = [tuple(o) for o in outcomes]
         outcomes = set(outcomes)
 
-        if self.is_int:
-
-            def func(outcome):
-                result = outcome in outcomes
-                return (int(result),)
-        else:
-
-            def func(outcome):
-                result = outcome in outcomes
-                return str(int(result))
+        def func(outcome):
+            result = tuple(outcome) in outcomes
+            return (int(result),)
 
         return func
 
@@ -920,22 +910,11 @@ def product_distribution(dist, rvs=None, rv_mode=None, base=None):
     ----------
     dist : distribution
         The original distribution.
-
     rvs : sequence
         A sequence whose elements are also sequences.  Each inner sequence
         defines the marginal distribution used to create the new distribution.
-        The inner sequences must be pairwise mutually exclusive, but not every
-        random variable in the original distribution must be specified. If
-        `None`, then a product distribution of one-way marginals is
-        constructed.
-
-    rv_mode : str, None
-        Specifies how to interpret the elements of `rvs`. Valid options
-        are: {'indices', 'names'}. If equal to 'indices', then the elements
-        of `rvs` are interpreted as random variable indices. If equal to
-        'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted.
-
+    rv_mode : ignored
+        Deprecated.  Kept for signature compatibility.
     base : float, 'linear', 'e'
         The desired base for the distribution probabilities.
 
@@ -943,11 +922,6 @@ def product_distribution(dist, rvs=None, rv_mode=None, base=None):
     -------
     d : Distribution
         The product distribution.
-
-    Examples
-    --------
-    >>> d = dit.example_dists.Xor()
-    >>> pd = product_distribution(d, [(0,), (1,), (2,)])
     """
     if not dist.is_joint():
         raise Exception("A joint distribution is required.")
@@ -960,16 +934,14 @@ def product_distribution(dist, rvs=None, rv_mode=None, base=None):
         indexes = [[i] for i in names]
 
     else:
-        # We do not allow repeats and want to keep the order.
-        # Use argument [1] since we don't need the names.
-        parse = lambda rv: parse_rvs(dist, rv, rv_mode=rv_mode, unique=True, sort=False)[1]
+        parse = lambda rv: parse_rvs(dist, rv, unique=True, sort=False)[1]
         indexes = [parse(rv) for rv in rvs]
 
     all_indexes = [idx for index_list in indexes for idx in index_list]
     if len(all_indexes) != len(set(all_indexes)):
         raise Exception("The elements of `rvs` have nonzero intersection.")
 
-    marginals = [dist.marginal(index_list, rv_mode=rv_mode) for index_list in indexes]
+    marginals = [dist.marginal(index_list) for index_list in indexes]
     ctor = dist._outcome_ctor
     ops = dist.ops
 
@@ -1073,16 +1045,16 @@ def _combine_scalar_dists(d1, d2, op):
 
     Parameters
     ----------
-    d1 : ScalarDistribution
+    d1 : Distribution
         The first distribution
-    d2 : ScalarDistribution
+    d2 : Distribution
         The second distribution
     op : function
         Function used to combine outcomes
 
     Returns
     -------
-    d : ScalarDistribution
+    d : Distribution
         The two distributions combined via `op`
     """
     # Copy to make sure we don't lose precision when converting.
@@ -1092,7 +1064,7 @@ def _combine_scalar_dists(d1, d2, op):
     for (o1, p1), (o2, p2) in product(d1.zipped(), d2.zipped()):
         dist[op(o1, o2)] += d1.ops.mult(p1, p2)
 
-    return ScalarDistribution(*zip(*dist.items(), strict=True), base=d1.get_base())
+    return Distribution(*zip(*dist.items(), strict=True), base=d1.get_base())
 
 
 class DistributionEnumerator:

@@ -567,6 +567,7 @@ dependencies = [
     { name = "numpy" },
     { name = "pltable" },
     { name = "scipy" },
+    { name = "xarray" },
 ]
 
 [package.optional-dependencies]
@@ -594,7 +595,6 @@ dev = [
     { name = "sphinx", version = "9.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "torch" },
     { name = "ty" },
-    { name = "xarray" },
 ]
 docs = [
     { name = "ipython" },
@@ -627,9 +627,6 @@ test = [
 torch = [
     { name = "torch" },
 ]
-xarray = [
-    { name = "xarray" },
-]
 
 [package.metadata]
 requires-dist = [
@@ -641,7 +638,6 @@ requires-dist = [
     { name = "dit", extras = ["optional"], marker = "extra == 'dev'" },
     { name = "dit", extras = ["test"], marker = "extra == 'dev'" },
     { name = "dit", extras = ["torch"], marker = "extra == 'dev'" },
-    { name = "dit", extras = ["xarray"], marker = "extra == 'dev'" },
     { name = "hypothesis", marker = "extra == 'test'", specifier = ">=6.0" },
     { name = "hypothesis", extras = ["numpy"], marker = "extra == 'test'" },
     { name = "ipython", marker = "extra == 'docs'" },
@@ -670,9 +666,9 @@ requires-dist = [
     { name = "sphinx", marker = "extra == 'docs'" },
     { name = "torch", marker = "extra == 'torch'" },
     { name = "ty", marker = "extra == 'dev'" },
-    { name = "xarray", marker = "extra == 'xarray'" },
+    { name = "xarray" },
 ]
-provides-extras = ["test", "jax", "torch", "xarray", "optional", "docs", "dev"]
+provides-extras = ["test", "jax", "torch", "optional", "docs", "dev"]
 
 [[package]]
 name = "docutils"

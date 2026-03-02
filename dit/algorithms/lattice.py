@@ -12,7 +12,7 @@ induced sigma-algebras, we are equivalently considering all possible partitions
 of the sample space.
 
 Relationship to Intersection Information based on Common Randomness
---------------------------------------------------------------------
+-------------------------------------------------------------------
 In general, the meet and join operators are defined with respect to information
 equivalence, which in turn, derives from the notions of informationally
 richer/poorer. In this module, richer and poorer correspond to refinements and
@@ -54,7 +54,7 @@ from collections import defaultdict
 
 import dit
 
-from ..helpers import RV_MODES, parse_rvs
+from ..helpers import parse_rvs
 from ..math import atom_set, sigma_algebra
 from ..utils import quasilexico_key
 
@@ -81,7 +81,7 @@ def sigma_algebra_sort(sigalg):
     return sigalg
 
 
-def induced_sigalg(dist, rvs, rv_mode=None):
+def induced_sigalg(dist, rvs, rv_mode=None, support_only=False):
     """
     Returns the induced sigma-algebra of the random variable defined by `rvs`.
 
@@ -93,11 +93,11 @@ def induced_sigalg(dist, rvs, rv_mode=None):
         The indexes of the random variable used to calculate the induced
         sigma algebra.
     rv_mode : str, None
-        Specifies how to interpret the elements of `rvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `rvs` are interpreted as random variable indices. If equal to 'names',
-        the the elements are interpreted as random variable names. If `None`,
-        then the value of `dist._rv_mode` is consulted.
+        Deprecated. Kept for signature compatibility.
+    support_only : bool
+        If True, only partition outcomes in the support (non-zero probability).
+        This is needed for algorithms like GK common information where the
+        sample space should be restricted to the support.
 
     Returns
     -------
@@ -105,27 +105,16 @@ def induced_sigalg(dist, rvs, rv_mode=None):
         The induced sigma-algebra.
 
     """
-    # This is brute force and ugly.
-    #
-    # Implementation:
-    #   1) Find induced atoms from atoms of new sigma-algebra:
-    #           X^{-1}(A) = { w : X(w) \in A }
-    #       where A = \{a\} and a is a nonzero outcome in the marginal.
-    #   2) Generate sigma algebra from induced atoms.
-    #
-    # Step 2 may not be necessary.
-    #
-    indexes = parse_rvs(dist, rvs, rv_mode=rv_mode, unique=True, sort=True)[1]
+    indexes = parse_rvs(dist, rvs, unique=True, sort=True)[1]
 
-    # This creates a mapping from new outcomes (defined by rvs) to the
-    # original outcomes which map to those new outcomes. This defines a
-    # partition of the original outcomes.
     d = defaultdict(list)
     ctor = dist._outcome_ctor
-    for outcome, _ in dist.zipped(mode="atoms"):
-        # Build a list of inner outcomes. "c" stands for "constructed".
-        # We need to iterate over all atoms, not just those in pmf since
-        # we are trying to partition the sample space.
+    if support_only:
+        iterator = ((o, p) for o, p in dist.zipped(mode="atoms")
+                    if not dist.ops.is_null_exact(p))
+    else:
+        iterator = dist.zipped(mode="atoms")
+    for outcome, _ in iterator:
         c_outcome = ctor([outcome[i] for i in indexes])
         d[c_outcome].append(outcome)
 
@@ -134,7 +123,7 @@ def induced_sigalg(dist, rvs, rv_mode=None):
     return F
 
 
-def join_sigalg(dist, rvs, rv_mode=None):
+def join_sigalg(dist, rvs, rv_mode=None, support_only=False):
     """
     Returns the sigma-algebra of the join of random variables defined by `rvs`.
 
@@ -148,11 +137,9 @@ def join_sigalg(dist, rvs, rv_mode=None):
         series of unique indexes.  Multiple random variables can use the same
         index. For example, [[0, 1], [1, 2]].
     rv_mode : str, None
-        Specifies how to interpret the elements of `rvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `rvs` are interpreted as random variable indices. If equal to 'names',
-        the the elements are interpreted as random variable names. If `None`,
-        then the value of `dist._rv_mode` is consulted.
+        Deprecated. Kept for signature compatibility.
+    support_only : bool
+        If True, only consider outcomes with non-zero probability.
 
     Returns
     -------
@@ -160,21 +147,18 @@ def join_sigalg(dist, rvs, rv_mode=None):
         The induced sigma-algebra of the join.
 
     """
-    # We require unique indexes within each random variable and want the
-    # indexes in distribution order. We don't need the names.
-    parse = lambda rv: parse_rvs(dist, rv, rv_mode=rv_mode, unique=False, sort=True)[1]
+    parse = lambda rv: parse_rvs(dist, rv, unique=False, sort=True)[1]
     indexes = [parse(rv) for rv in rvs]
 
-    sigalgs = [induced_sigalg(dist, rv, rv_mode=RV_MODES.INDICES) for rv in indexes]
+    sigalgs = [induced_sigalg(dist, rv, support_only=support_only) for rv in indexes]
 
     # \sigma( X join Y ) = \sigma( \sigma(X) \cup \sigma(Y) )
-    # Union all the sigma algebras.
     union_sa = frozenset().union(*sigalgs)
     jsa = sigma_algebra(union_sa)
     return jsa
 
 
-def meet_sigalg(dist, rvs, rv_mode=None):
+def meet_sigalg(dist, rvs, rv_mode=None, support_only=False):
     """
     Returns the sigma-algebra of the meet of random variables defined by `rvs`.
 
@@ -188,11 +172,9 @@ def meet_sigalg(dist, rvs, rv_mode=None):
         series of unique indexes.  Multiple random variables can use the same
         index. For example, [[0,1],[1,2]].
     rv_mode : str, None
-        Specifies how to interpret the elements of `rvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `rvs` are interpreted as random variable indices. If equal to 'names',
-        the the elements are interpreted as random variable names. If `None`,
-        then the value of `dist._rv_mode` is consulted.
+        Deprecated. Kept for signature compatibility.
+    support_only : bool
+        If True, only consider outcomes with non-zero probability.
 
     Returns
     -------
@@ -200,15 +182,12 @@ def meet_sigalg(dist, rvs, rv_mode=None):
         The induced sigma-algebra of the meet.
 
     """
-    # We require unique indexes within each random variable and want the
-    # indexes in distribution order. We don't need the names.
-    parse = lambda rv: parse_rvs(dist, rv, rv_mode=rv_mode, unique=False, sort=True)[1]
+    parse = lambda rv: parse_rvs(dist, rv, unique=False, sort=True)[1]
     indexes = [parse(rv) for rv in rvs]
 
-    sigalgs = [induced_sigalg(dist, rv, rv_mode=RV_MODES.INDICES) for rv in indexes]
+    sigalgs = [induced_sigalg(dist, rv, support_only=support_only) for rv in indexes]
 
     # \sigma( X meet Y ) = \sigma(X) \cap \sigma(Y) )
-    # Intersect all the sigma algebras.
     first_sa = sigalgs[0]
     msa = first_sa.intersection(*sigalgs[1:])
     return msa
@@ -233,11 +212,11 @@ def dist_from_induced_sigalg(dist, sigalg, int_outcomes=True):
 
     Returns
     -------
-    d : ScalarDistribution
+    d : Distribution
         The distribution of the induced sigma algebra.
 
     """
-    from dit import ScalarDistribution
+    from dit import Distribution
 
     atoms = atom_set(sigalg)
     if int_outcomes:
@@ -247,7 +226,7 @@ def dist_from_induced_sigalg(dist, sigalg, int_outcomes=True):
     pmf = [dist.event_probability(atom) for atom in atoms]
     outcomes = range(len(atoms)) if int_outcomes else [tuple(sorted(atom)) for atom in atoms]
 
-    d = ScalarDistribution(outcomes, pmf, base=dist.get_base())
+    d = Distribution(outcomes, pmf, base=dist.get_base())
     return d
 
 
@@ -265,18 +244,14 @@ def join(dist, rvs, rv_mode=None, int_outcomes=True):
         series of unique indexes.  Multiple random variables can use the same
         index. For example, [[0, 1], [1, 2]].
     rv_mode : str, None
-        Specifies how to interpret the elements of `rvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `rvs` are interpreted as random variable indices. If equal to 'names',
-        the the elements are interpreted as random variable names. If `None`,
-        then the value of `dist._rv_mode` is consulted.
+        Deprecated. Kept for signature compatibility.
     int_outcomes : bool
         If `True`, then the outcomes of the join are relabeled as integers
         instead of as the atoms of the induced sigma-algebra.
 
     Returns
     -------
-    d : ScalarDistribution
+    d : Distribution
         The distribution of the join.
 
     """
@@ -299,18 +274,14 @@ def meet(dist, rvs, rv_mode=None, int_outcomes=True):
         series of unique indexes.  Multiple random variables can use the same
         index. For example, [[0, 1], [1, 2]].
     rv_mode : str, None
-        Specifies how to interpret the elements of `rvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `rvs` are interpreted as random variable indices. If equal to 'names',
-        the the elements are interpreted as random variable names. If `None`,
-        then the value of `dist._rv_mode` is consulted.
+        Deprecated. Kept for signature compatibility.
     int_outcomes : bool
         If `True`, then the outcomes of the meet are relabeled as integers
         instead of as the atoms of the induced sigma-algebra.
 
     Returns
     -------
-    d : ScalarDistribution
+    d : Distribution
         The distribution of the meet.
 
     """
@@ -390,7 +361,7 @@ def insert_rv(dist, idx, sigalg):
     return d
 
 
-def insert_join(dist, idx, rvs, rv_mode=None):
+def insert_join(dist, idx, rvs, rv_mode=None, support_only=False):
     """
     Returns a new distribution with the join inserted at index `idx`.
 
@@ -422,12 +393,12 @@ def insert_join(dist, idx, rvs, rv_mode=None):
         The new distribution with the join at index `idx`.
 
     """
-    jsa = join_sigalg(dist, rvs, rv_mode)
+    jsa = join_sigalg(dist, rvs, rv_mode, support_only=support_only)
     d = insert_rv(dist, idx, jsa)
     return d
 
 
-def insert_meet(dist, idx, rvs, rv_mode=None):
+def insert_meet(dist, idx, rvs, rv_mode=None, support_only=False):
     """
     Returns a new distribution with the meet inserted at index `idx`.
 
@@ -459,6 +430,6 @@ def insert_meet(dist, idx, rvs, rv_mode=None):
         The new distribution with the meet at index `idx`.
 
     """
-    msa = meet_sigalg(dist, rvs, rv_mode)
+    msa = meet_sigalg(dist, rvs, rv_mode, support_only=support_only)
     d = insert_rv(dist, idx, msa)
     return d

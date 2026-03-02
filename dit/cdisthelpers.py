@@ -4,8 +4,6 @@ Helper functions related to conditional distributions.
 
 import numpy as np
 
-import dit
-
 from .exceptions import ditException
 from .helpers import copypmf
 
@@ -15,29 +13,9 @@ __all__ = ("joint_from_factors",)
 def cdist_array(cdists, base="linear", mode="asis"):
     """
     Returns a 2D array for P(Y|X). Rows are X, columns are Y.
-
     """
     dists = [copypmf(d, base=base, mode=mode) for d in cdists]
     return np.vstack(dists)
-
-
-def mask_is_complementary(mask1, mask2):
-    """
-    Returns ``True`` if the masks for d1 and d2 are complementary.
-
-    """
-    mask1_comp = tuple(not b for b in mask1)
-    return mask1_comp == mask2
-
-
-def outcome_iter(outcome_X, outcome_Y, mask_Y):
-    it_X = iter(outcome_X)
-    it_Y = iter(outcome_Y)
-    for mask in mask_Y:
-        if mask:
-            yield next(it_X)
-        else:
-            yield next(it_Y)
 
 
 def joint_from_factors(mdist, cdists, strict=True):
@@ -48,90 +26,52 @@ def joint_from_factors(mdist, cdists, strict=True):
     ----------
     mdist : Distribution
         The marginal distribution P(X).
-    cdists : list
+    cdists : list of Distribution
         The list of conditional distributions P(Y|X=x).
     strict : bool
-        If ``True``, then the ordering of the random variables is inferred
-        from the masks on each distribution. If the masks are not compatible,
-        meaning that one is not the elementwise complement of the other, then
-        an exception is raised. If ``False``, then the distributions are
-        combined such that all of X appears before all of Y. Effectively, the
-        existing masks are ignored in that situation.
+        If True, require that the marginal and conditional masks are
+        complementary.  If False, concatenate X before Y.
 
     Returns
     -------
     d : Distribution
         The joint distribution P(X,Y).
-
-    Raises
-    ------
-    ditException
-        When ``strict=True`` and the masks for ``mdist`` and ``cdists`` are
-        not compatible with each other.
-
-    Examples
-    --------
-    >>> d = dit.random_distribution(5, 2)
-    >>> d.set_rv_names('ABCDE')
-    >>> pBD, pACEgBD = d.condition_on('BD')
-    >>> pABCDE = dit.joint_from_factors(pBD, pACEgBD)
-    >>> pABCDE.is_approx_equal(d)
-    True
-
     """
-    # We assume that the mask is the same each dist in cdists.
-    cdist_mask = cdists[0]._mask
+    from .distribution import Distribution
 
-    # Raise exception if mdist and cdists are not compatible.
-    compatible = mask_is_complementary(mdist._mask, cdists[0]._mask)
-    if strict and not compatible:
-        msg = "Incompatible masks for ``mdist`` and ``cdists``."
-        raise ditException(msg)
+    mdist_lin = mdist.copy(base="linear")
+    mdist_lin.make_sparse()
+    X_outcomes = mdist_lin.outcomes
+    X_pmf = mdist_lin.pmf
 
-    if not compatible:
-        cdist_mask = [True] * mdist.outcome_length()
-        cdist_mask.extend([False] * cdists[0].outcome_length())
+    if len(X_outcomes) != len(cdists):
+        raise ditException("len(mdist) != len(cdists)")
 
-    # Make sure mdist has the proper number of outcomes.
-    YgX_pmf = cdist_array(cdists)
-    if len(mdist) != YgX_pmf.shape[0]:
-        # Maybe it is not trim.
-        mdist = mdist.copy(base="linear")
-        mdist.make_sparse()
-        if len(mdist) != YgX_pmf.shape[0]:
-            msg = "len(mdist) != len(cdists)"
-            raise ditException(msg)
-        else:
-            X_outcomes = mdist.outcomes
-            X_pmf = mdist.pmf
-    else:
-        # Note this could be non-trim and sparse. If so, then an entire row
-        # of carr might be turned to zeros. Nothing wrong with that, except
-        # it means that the marginal did not come from the distribution that
-        # cdists was obtained from, since d.condition_on() only returns
-        # conditional distriutions whose condition has positive probability.
-        X_outcomes = mdist.outcomes
-        X_pmf = copypmf(mdist, base="linear", mode="asis")
-
-    # The joint probabilities
-    XY_pmf = YgX_pmf * X_pmf[:, np.newaxis]
-
-    ctor = cdists[0]._outcome_ctor
-    # We can't use NumPy for the outcomes, since an array of tuples is
-    # automatically turned into a 2D array. We could initialize as a 1D
-    # object array, but we'd still have to populate through for loops.
-    # So we might as well avoid NumPy here.
+    # Build joint outcome/probability pairs by combining X outcomes with Y|X outcomes
     outcomes = []
-    for i, X in enumerate(X_outcomes):
-        tmp = [ctor(outcome_iter(X, Y, cdist_mask)) for Y in cdists[i].outcomes]
-        outcomes.extend(tmp)
+    pmf = []
+    for i, x_outcome in enumerate(X_outcomes):
+        cd = cdists[i]
+        cd_lin = cd.copy(base="linear")
+        cd_lin.make_dense()
+        for y_outcome, y_prob in zip(cd_lin.outcomes, cd_lin.pmf, strict=True):
+            joint_outcome = tuple(x_outcome) + tuple(y_outcome)
+            joint_prob = float(X_pmf[i]) * float(y_prob)
+            outcomes.append(joint_outcome)
+            pmf.append(joint_prob)
 
-    d = dit.Distribution(outcomes, list(XY_pmf.flat), sparse=True, trim=False)
+    d = Distribution(outcomes, pmf)
 
-    X_rv_names = mdist.get_rv_names()
-    Y_rv_names = cdists[0].get_rv_names()
-    if X_rv_names and Y_rv_names:
-        rv_names = outcome_iter(X_rv_names, Y_rv_names, cdist_mask)
-        d.set_rv_names(list(rv_names))
+    # Assign rv_names if both marginal and conditionals have them
+    x_names = list(mdist.get_rv_names()) if mdist.get_rv_names() else None
+    y_names = list(cdists[0].get_rv_names()) if cdists[0].get_rv_names() else None
+    if x_names and y_names:
+        # Deduplicate names: if Y names overlap with X names, prefix them
+        new_y_names = []
+        for yn in y_names:
+            if yn in x_names:
+                yn = f"{yn}_Y"
+            new_y_names.append(yn)
+        d.set_rv_names(x_names + new_y_names)
 
     return d

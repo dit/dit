@@ -12,7 +12,27 @@ from .minimal_sufficient_statistic import *
 from .optimization import *
 from .distribution_optimizers import *
 from .prune_expand import expanded_samplespace, pruned_samplespace
-from .stats import central_moment, mean, median, mode, standard_deviation, standard_moment
+from .stats import (
+    cdf,
+    central_moment,
+    correlation,
+    covariance,
+    expectation,
+    iqr,
+    kurtosis,
+    maximum,
+    mean,
+    median,
+    minimum,
+    mode,
+    percentile,
+    quantile,
+    range_,
+    skewness,
+    standard_deviation,
+    standard_moment,
+    variance,
+)
 
 # Don't expose anything yet.
 # from . import pid_broja

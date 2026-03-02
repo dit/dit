@@ -25,16 +25,11 @@ def no_communication_skar(dist, rv_x, rv_y, rv_z, rv_mode=None):
     rv_z : iterable
         The indices to consider as the Z variable, Eve.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If
-        equal to 'names', the the elements are interpreted as random
-        variable names. If `None`, then the value of `dist._rv_mode` is
-        consulted, which defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
     skar : float
         The no-communication secret key agreement rate.
     """
-    return gk_common_information(dist, [rv_x, rv_y], rv_z, rv_mode=rv_mode)
+    return gk_common_information(dist, [rv_x, rv_y], rv_z)

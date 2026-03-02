@@ -5,9 +5,6 @@ Import several functions as shorthand.
 from dit import (
     Distribution as D,
 )
-from dit import (
-    ScalarDistribution as SD,
-)
 from dit.algorithms import channel_capacity_joint as CC
 from dit.divergences import (
     cross_entropy as xH,
@@ -72,8 +69,7 @@ from dit.other import (
 
 # distribution types
 _dists = (
-    "D",  # a joint distribution
-    "SD",  # a scalar distribution
+    "D",  # a distribution
 )
 
 # measures directly computed from i-diagrams

@@ -50,7 +50,7 @@ def test_channel_capacity_rvnames():
     epsilon = 0.01
     pXY = BEC_joint(epsilon)
     pXY.set_rv_names("XY")
-    pX, pYgX = pXY.condition_on("X")
+    pX, pYgX = pXY.condition_on(["X"])
     cc, pXopt = channel_capacity(pYgX, pX)
 
     # Verify channel capacity.
@@ -95,7 +95,7 @@ def test_bad_marginal():
     epsilon = 0.01
     pXY = BEC_joint(epsilon)
     pXY.set_rv_names("XY")
-    pX, pYgX = pXY.condition_on("X")
+    pX, pYgX = pXY.condition_on(["X"])
     pX["0"] = 0
     # Now make its length disagree with the number of cdists.
     pX.make_sparse()
@@ -120,3 +120,59 @@ def test_channel_capacity_joint2():
     m = Distribution(["0", "1"], [2 / 5, 3 / 5])
     _, marg = channel_capacity_joint(gm, [0], [1], marginal=True)
     assert marg.is_approx_equal(m, atol=1e-3)
+
+
+# ── Distribution tests ─────────────────────────────────────────────────
+
+from dit.distribution import Distribution
+
+
+def BEC_joint_xr(epsilon):
+    """Build the BEC joint distribution as an Distribution."""
+    pXY = BEC_joint(epsilon)
+    pXY.set_rv_names("XY")
+    return pXY
+
+
+def test_channel_capacity_distribution():
+    epsilon = 0.3
+    pXY = BEC_joint_xr(epsilon)
+    pX, pYgX = pXY.condition_on(["X"])
+    cc, pXopt_pmf = channel_capacity(pYgX)
+
+    assert np.allclose(cc, 1 - epsilon)
+    assert np.allclose(pXopt_pmf, [0.5, 0.5])
+
+
+def test_channel_capacity_distribution_with_marginal():
+    epsilon = 0.3
+    pXY = BEC_joint_xr(epsilon)
+    pX, pYgX = pXY.condition_on(["X"])
+    pX = pXY.marginal("X")
+    cc, pXopt = channel_capacity(pYgX, pX)
+
+    assert np.allclose(cc, 1 - epsilon)
+    assert isinstance(pXopt, Distribution)
+    assert np.allclose(pXopt.data.values, [0.5, 0.5])
+
+
+def test_channel_capacity_distribution_not_conditional():
+    pXY = BEC_joint_xr(0.3)
+    with pytest.raises(ditException):
+        channel_capacity(pXY)
+
+
+def test_channel_capacity_joint_distribution():
+    gm = Distribution(["00", "01", "10"], [1 / 3] * 3)
+    gm.set_rv_names("XY")
+    cc = channel_capacity_joint(gm, ["X"], ["Y"])
+    assert cc == pytest.approx(0.3219280796196524)
+
+
+def test_channel_capacity_joint_distribution_marginal():
+    gm = Distribution(["00", "01", "10"], [1 / 3] * 3)
+    gm.set_rv_names("XY")
+    cc, marg = channel_capacity_joint(gm, ["X"], ["Y"], marginal=True)
+    assert cc == pytest.approx(0.3219280796196524)
+    assert isinstance(marg, Distribution)
+    assert np.allclose(marg.data.values, [2 / 5, 3 / 5], atol=1e-3)

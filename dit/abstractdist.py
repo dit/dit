@@ -291,12 +291,10 @@ def brute_marginal_array(d, rvs, rv_mode=None):
 
     TODO: Expand this to construct arrays for coalescings as well.
     """
-    from dit.helpers import RV_MODES, parse_rvs
+    from dit.helpers import parse_rvs
 
-    # We need to filter the indexes for duplicates, etc. So that we can be
-    # sure that when we query the joint outcome, we have the right indexes.
-    rvs, indexes = parse_rvs(d, rvs, rv_mode, unique=True, sort=True)
-    marginal = d.marginal(indexes, rv_mode=RV_MODES.INDICES)
+    rvs, indexes = parse_rvs(d, rvs, unique=True, sort=True)
+    marginal = d.marginal(indexes)
 
     shape = (len(marginal._sample_space), len(d._sample_space))
     arr = np.zeros(shape, dtype=bool)
@@ -337,7 +335,7 @@ def get_abstract_dist(dist):
             n_elements = np.prod(list(map(len, dist.alphabet)))
 
             def parameter_array(self, indexes, cache=None):
-                return brute_marginal_array(dist, indexes, rv_mode="indexes")
+                return brute_marginal_array(dist, indexes)
 
         d = D()
 

@@ -73,7 +73,7 @@ class PID_Prec(BasePID):
         """
         pjoint = d.coalesce(list(sources) + [target])
         target_rvndx = len(pjoint.rvs) - 1
-        pY = pjoint.marginal([target_rvndx], rv_mode="indices")
+        pY = pjoint.marginal([target_rvndx])
         probs_y = np.array([pY[y] for y in pjoint.alphabet[target_rvndx]])
         n_y = len(pY)
 
@@ -150,7 +150,6 @@ class PID_Prec(BasePID):
                     rvndx,
                     target_rvndx,
                 ],
-                rv_mode="indices",
             )
             for q in range(n_q):
                 for y_ix, y in enumerate(pjoint.alphabet[target_rvndx]):

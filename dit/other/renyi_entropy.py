@@ -26,12 +26,7 @@ def renyi_entropy(dist, order, rvs=None, rv_mode=None):
         of. If None, then the Renyi entropy is calculated over all random
         variables.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If equal
-        to 'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted, which
-        defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -51,8 +46,8 @@ def renyi_entropy(dist, order, rvs=None, rv_mode=None):
         raise ValueError(msg)
 
     if dist.is_joint and rvs is not None:
-        rvs = list(flatten(normalize_rvs(dist, rvs, None, rv_mode)[0]))
-        dist = dist.marginal(rvs, rv_mode)
+        rvs = list(flatten(normalize_rvs(dist, rvs, None)[0]))
+        dist = dist.marginal(rvs)
 
     pmf = dist.pmf
 
@@ -83,12 +78,7 @@ def sibson_mutual_information_pmf(p_xy, order):
         of. If None, then the Renyi entropy is calculated over all random
         variables.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If equal
-        to 'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted, which
-        defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -135,12 +125,7 @@ def sibson_mutual_information(dist, order, rvs=None, rv_mode=None):
         of. If None, then the Renyi entropy is calculated over all random
         variables.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If equal
-        to 'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted, which
-        defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -160,8 +145,8 @@ def sibson_mutual_information(dist, order, rvs=None, rv_mode=None):
         raise ValueError(msg)
 
     if dist.is_joint and rvs is not None:
-        rvs = list(flatten(normalize_rvs(dist, rvs, None, rv_mode)[0]))
-        dist = dist.marginal(rvs, rv_mode)
+        rvs = list(flatten(normalize_rvs(dist, rvs, None)[0]))
+        dist = dist.marginal(rvs)
 
     pmf = dist.pmf
 

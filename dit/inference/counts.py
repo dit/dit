@@ -143,6 +143,18 @@ except ImportError:  # no cython
 
         words, _, counts, _ = counts_from_data(d, L, 0)
 
+        # Flatten nested-tuple words: ((0,), (1,)) -> (0, 1)
+        def _flatten_word(w):
+            flat = []
+            for elem in w:
+                if isinstance(elem, tuple):
+                    flat.extend(elem)
+                else:
+                    flat.append(elem)
+            return tuple(flat)
+
+        words = [_flatten_word(w) for w in words]
+
         # We turn the counts to probabilities
         pmf = counts / counts.sum()
 
@@ -152,7 +164,7 @@ except ImportError:  # no cython
 
         if L == 1:
             with contextlib.suppress(ditException):
-                dist = modify_outcomes(dist, lambda o: o[0])
+                dist = modify_outcomes(dist, lambda o: o[0] if isinstance(o, tuple) else o)
 
         return dist
 

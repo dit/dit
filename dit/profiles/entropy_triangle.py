@@ -8,7 +8,7 @@ Artificial Intelligent Systems. Springer International Publishing, 2016.
 from abc import ABCMeta, abstractmethod
 
 from ..distconst import product_distribution, uniform_like
-from ..distribution import BaseDistribution
+from ..distribution import Distribution
 from ..multivariate import dual_total_correlation, entropy, residual_entropy, total_correlation
 
 __all__ = (
@@ -55,7 +55,7 @@ class BaseEntropyTriangle(metaclass=ABCMeta):
             The list of distributions to plot on the entropy triangle. If a
             single distribution is provided, it alone will be computed.
         """
-        if isinstance(dists, BaseDistribution):
+        if isinstance(dists, Distribution):
             self.dists = [dists]
         else:
             self.dists = dists

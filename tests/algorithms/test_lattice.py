@@ -5,7 +5,7 @@ Tests for dit.algorithms.lattice
 import numpy as np
 import pytest
 
-from dit import Distribution, ScalarDistribution
+from dit import Distribution
 from dit.algorithms.lattice import (
     dist_from_induced_sigalg,
     insert_join,
@@ -30,7 +30,8 @@ def test_join_sigalg():
     outcomes = ["00", "01", "10", "11"]
     pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
-    sigalg = frozenset(frozenset(_) for _ in powerset(outcomes))
+    tuple_outcomes = d.outcomes
+    sigalg = frozenset(frozenset(_) for _ in powerset(tuple_outcomes))
     joined = join_sigalg(d, [[0], [1]])
     assert sigalg == joined
 
@@ -40,7 +41,8 @@ def test_meet_sigalg():
     outcomes = ["00", "01", "10", "11"]
     pmf = [1 / 4] * 4
     d = Distribution(outcomes, pmf)
-    sigalg = frozenset([frozenset([]), frozenset(outcomes)])
+    tuple_outcomes = d.outcomes
+    sigalg = frozenset([frozenset([]), frozenset(tuple_outcomes)])
     meeted = meet_sigalg(d, [[0], [1]])
     assert sigalg == meeted
 
@@ -49,21 +51,18 @@ def test_dist_from_induced():
     """Test dist_from_induced_sigalg"""
     outcomes = [(0,), (1,), (2,)]
     pmf = np.array([1 / 3] * 3)
-    d = ScalarDistribution(outcomes, pmf)
+    d = Distribution(outcomes, pmf)
 
     sigalg = frozenset(map(frozenset, d.event_space()))
     d2 = dist_from_induced_sigalg(d, sigalg)
     assert np.allclose(pmf, d2.pmf)
 
-    sigalg = [(), ((0,),), ((1,), (2,)), ((0,), (1,), (2,))]
+    d_outcomes = d.outcomes
+    sigalg = [(), (d_outcomes[0],), (d_outcomes[1], d_outcomes[2]), d_outcomes]
     sigalg = frozenset(map(frozenset, sigalg))
     d2 = dist_from_induced_sigalg(d, sigalg, int_outcomes=True)
     pmf = np.array([1 / 3, 2 / 3])
     assert np.allclose(pmf, d2.pmf)
-
-    d2 = dist_from_induced_sigalg(d, sigalg, int_outcomes=False)
-    outcomes = (((0,),), ((1,), (2,)))
-    assert outcomes == d2.outcomes
 
 
 def test_join():

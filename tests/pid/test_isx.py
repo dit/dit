@@ -190,17 +190,17 @@ def test_pid_sx_pnt_unq_pointwise_values():
     unq_0 = ((0,),)
     unq_1 = ((1,),)
 
-    # outcomes '101','202' carry unique info from source 0
-    assert pid.get_pw_pi(unq_0)["101"] == pytest.approx(1.0, abs=1e-10)
-    assert pid.get_pw_pi(unq_0)["202"] == pytest.approx(1.0, abs=1e-10)
-    assert pid.get_pw_pi(unq_0)["011"] == pytest.approx(0.0, abs=1e-10)
-    assert pid.get_pw_pi(unq_0)["022"] == pytest.approx(0.0, abs=1e-10)
+    # outcomes ('1','0','1'), ('2','0','2') carry unique info from source 0
+    assert pid.get_pw_pi(unq_0)[('1', '0', '1')] == pytest.approx(1.0, abs=1e-10)
+    assert pid.get_pw_pi(unq_0)[('2', '0', '2')] == pytest.approx(1.0, abs=1e-10)
+    assert pid.get_pw_pi(unq_0)[('0', '1', '1')] == pytest.approx(0.0, abs=1e-10)
+    assert pid.get_pw_pi(unq_0)[('0', '2', '2')] == pytest.approx(0.0, abs=1e-10)
 
-    # outcomes '011','022' carry unique info from source 1
-    assert pid.get_pw_pi(unq_1)["011"] == pytest.approx(1.0, abs=1e-10)
-    assert pid.get_pw_pi(unq_1)["022"] == pytest.approx(1.0, abs=1e-10)
-    assert pid.get_pw_pi(unq_1)["101"] == pytest.approx(0.0, abs=1e-10)
-    assert pid.get_pw_pi(unq_1)["202"] == pytest.approx(0.0, abs=1e-10)
+    # outcomes ('0','1','1'), ('0','2','2') carry unique info from source 1
+    assert pid.get_pw_pi(unq_1)[('0', '1', '1')] == pytest.approx(1.0, abs=1e-10)
+    assert pid.get_pw_pi(unq_1)[('0', '2', '2')] == pytest.approx(1.0, abs=1e-10)
+    assert pid.get_pw_pi(unq_1)[('1', '0', '1')] == pytest.approx(0.0, abs=1e-10)
+    assert pid.get_pw_pi(unq_1)[('2', '0', '2')] == pytest.approx(0.0, abs=1e-10)
 
 
 def test_pid_sx_pw_to_string():

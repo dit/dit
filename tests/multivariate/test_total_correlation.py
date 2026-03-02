@@ -5,9 +5,8 @@ Tests for dit.multivariate.total_correlation.
 import pytest
 
 from dit import Distribution as D
-from dit import ScalarDistribution as SD
+from dit import Distribution
 from dit.example_dists import n_mod_m
-from dit.exceptions import ditException
 from dit.multivariate import total_correlation as T
 from dit.shannon import mutual_information as I
 
@@ -70,7 +69,6 @@ def test_tc7():
 
 
 def test_tc8():
-    """Test that T fails on SDs"""
-    d = SD([1 / 3] * 3)
-    with pytest.raises(ditException):
-        T(d)
+    """Test that T works on 1-D (scalar) distributions, returning 0"""
+    d = Distribution([1 / 3] * 3)
+    assert T(d) == pytest.approx(0.0)

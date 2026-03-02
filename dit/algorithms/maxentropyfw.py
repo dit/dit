@@ -108,8 +108,6 @@ def initial_point(dist, k, A=None, b=None, isolated=None, **kwargs):
         raise ValueError(msg)
 
     rvs = list(combinations(range(n_variables), k))
-    kwargs["rv_mode"] = "indices"
-
     return initial_point_generic(dist, rvs, A, b, isolated, **kwargs)
 
 
@@ -166,9 +164,9 @@ def marginal_maxent_generic(dist, rvs, **kwargs):
     verbose = kwargs.get("verbose", False)
     fw_logger = basic_logger("dit.maxentropy", verbose)
 
-    rv_mode = kwargs.pop("rv_mode", None)
+    kwargs.pop("rv_mode", None)
 
-    A, b = marginal_constraints_generic(dist, rvs, rv_mode)
+    A, b = marginal_constraints_generic(dist, rvs)
 
     # Reduce the size of A so that only nonzero elements are searched.
     # Also make it full rank.
@@ -226,18 +224,15 @@ def marginal_maxent(dist, k, **kwargs):
         msg = msg.format(k, n_variables)
         raise ValueError(msg)
 
-    rv_mode = kwargs.pop("rv_mode", None)
+    kwargs.pop("rv_mode", None)
 
-    if rv_mode is None:
-        rv_mode = dist._rv_mode
+    rv_mode = dist._rv_mode
 
-    if rv_mode in [RV_MODES.NAMES, "names"]:
-        variables = dist.get_rv_names()
+    variables = dist.get_rv_names()
+    if variables is not None:
         rvs = list(combinations(variables, k))
     else:
         rvs = list(combinations(range(n_variables), k))
-
-    kwargs["rv_mode"] = rv_mode
 
     return marginal_maxent_generic(dist, rvs, **kwargs)
 

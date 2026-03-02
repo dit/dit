@@ -5,6 +5,7 @@ This can be important when calculating meet and join random variables. It
 is also important for the calculations of various PID quantities.
 """
 
+from dit.exceptions import InvalidOutcome
 from dit.samplespace import CartesianProduct, SampleSpace, ScalarSampleSpace
 
 __all__ = (
@@ -46,8 +47,12 @@ def pruned_samplespace(d, sample_space=None):
             outcomes.append(o)
             pmf.append(p)
 
-    sample_space = SampleSpace(outcomes) if d.is_joint() else ScalarSampleSpace(outcomes)
-    pd = d.__class__(outcomes, pmf, sample_space=sample_space, base=d.get_base())
+    # For numerical 1-D distributions, outcomes come back as bare values;
+    # wrap them in 1-tuples for the constructor.
+    if outcomes and not isinstance(outcomes[0], tuple):
+        outcomes = [(o,) for o in outcomes]
+
+    pd = d.__class__(outcomes, pmf, base=d.get_base())
     return pd
 
 
@@ -56,9 +61,7 @@ def expanded_samplespace(d, alphabets=None, union=True):
     Returns a new distribution with an expanded sample space.
 
     Expand the sample space so that it is the Cartesian product of the
-    alphabets for each random variable. Note, only the effective alphabet of
-    each random variable is used. So if one index in an outcome only has the
-    value 1, then its alphabet is `[1]`, and not `[0, 1]` for example.
+    alphabets for each random variable.
 
     Parameters
     ----------
@@ -80,17 +83,12 @@ def expanded_samplespace(d, alphabets=None, union=True):
     ed : distribution
         The distribution with an expanded sample space.
 
-    Notes
-    -----
-    The default constructor for Distribution will create a Cartesian product
-    sample space if not sample space is provided.
-
     """
+    import itertools
+
     joint = d.is_joint()
 
     if alphabets is None:
-        # Note, we sort the alphabets now, so we are possibly changing the
-        # order of the original sample space.
         alphabets = list(map(sorted, d.alphabet))
     elif joint and len(alphabets) != d.outcome_length():
         L = len(alphabets)
@@ -101,7 +99,32 @@ def expanded_samplespace(d, alphabets=None, union=True):
         alphabet = sorted(alphabet)
         alphabets = [alphabet] * len(alphabets)
 
-    sample_space = CartesianProduct(alphabets, d._product) if joint else ScalarSampleSpace(alphabets)
+    # Validate that all existing outcomes can be represented
+    for o in d.outcomes:
+        o_tuple = o if isinstance(o, tuple) else (o,)
+        if joint:
+            for i, v in enumerate(o_tuple):
+                if v not in alphabets[i]:
+                    raise InvalidOutcome(v, "not in expanded alphabet")
+        else:
+            if o_tuple[0] not in alphabets:
+                raise InvalidOutcome(o, "not in expanded alphabet")
 
-    ed = d.__class__(d.outcomes, d.pmf, sample_space=sample_space, base=d.get_base())
+    # Build the new distribution by constructing the full sample space
+    if joint:
+        new_ss = list(itertools.product(*alphabets))
+    else:
+        new_ss = [(v,) for v in alphabets]
+
+    # Map old outcomes to probabilities
+    old_probs = dict(d.zipped())
+    outcomes = []
+    pmf = []
+    for o in new_ss:
+        lookup = o[0] if d._unwrap_scalar else o
+        p = old_probs.get(lookup, 0.0)
+        outcomes.append(o)
+        pmf.append(p)
+
+    ed = d.__class__(outcomes, pmf, base=d.get_base(), trim=False)
     return ed

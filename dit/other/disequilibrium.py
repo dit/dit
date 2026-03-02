@@ -6,7 +6,6 @@ P.W. Lamberti, M.T. Martin, A. Plastino, O.A. Rosso.
 import numpy as np
 
 from ..divergences.pmf import jensen_shannon_divergence as JSD
-from ..helpers import RV_MODES
 from ..shannon import entropy
 
 __all__ = (
@@ -27,26 +26,17 @@ def disequilibrium(dist, rvs=None, rv_mode=None):
     rvs : list, None
         The indexes of the random variable used to calculate the diseqilibrium.
         If None, then the disequilibrium is calculated over all random
-        variables. This should remain `None` for ScalarDistributions.
+        variables. This should remain `None` for scalar distributions.
     rv_mode : str, None
-        Specifies how to interpret the elements of `rvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `rvs` are interpreted as random variable indices. If equal to 'names',
-        the the elements are interpreted as random variable names. If `None`,
-        then the value of `dist._rv_mode` is consulted.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
     D : float
         The disequilibrium.
     """
-    if dist.is_joint():
-        if rvs is None:
-            # Set to entropy of entire distribution
-            rvs = list(range(dist.outcome_length()))
-            rv_mode = RV_MODES.INDICES
-
-        d = dist.marginal(rvs, rv_mode=rv_mode)
+    if rvs is not None:
+        d = dist.marginal(rvs)
     else:
         d = dist
 
@@ -76,13 +66,9 @@ def LMPR_complexity(dist, rvs=None, rv_mode=None):
     rvs : list, None
         The indexes of the random variable used to calculate the LMPR
         complexity. If None, then the LMPR complexity is calculated over all
-        random variables. This should remain `None` for ScalarDistributions.
+        random variables. This should remain `None` for scalar distributions.
     rv_mode : str, None
-        Specifies how to interpret the elements of `rvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `rvs` are interpreted as random variable indices. If equal to 'names',
-        the the elements are interpreted as random variable names. If `None`,
-        then the value of `dist._rv_mode` is consulted.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -91,6 +77,6 @@ def LMPR_complexity(dist, rvs=None, rv_mode=None):
     """
     d = dist.copy()
     d.make_dense()
-    D = disequilibrium(d, rvs, rv_mode)
-    H = entropy(d, rvs, rv_mode) / np.log2(len(d.outcomes))
+    D = disequilibrium(d, rvs)
+    H = entropy(d, rvs) / np.log2(len(d.outcomes))
     return D * H

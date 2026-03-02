@@ -19,9 +19,9 @@ The cumulative residual entropy :cite:`Rao2004` is an alternative to the differe
 
    In [1]: from dit.other import cumulative_residual_entropy
 
-   In [2]: d1 = dit.ScalarDistribution([1, 2, 3, 4, 5, 6], [1/6]*6)
+   In [2]: d1 = dit.Distribution([1, 2, 3, 4, 5, 6], [1/6]*6)
 
-   In [3]: d2 = dit.ScalarDistribution([1, 2, 3, 4, 5, 100], [1/6]*6)
+   In [3]: d2 = dit.Distribution([1, 2, 3, 4, 5, 100], [1/6]*6)
 
    @doctest float
    In [4]: cumulative_residual_entropy(d1)
@@ -48,7 +48,7 @@ The genearlized form of the cumulative residual entropy integrates over the inti
    In [7]: generalized_cumulative_residual_entropy(d1)
    Out[7]: 2.0683182557028439
 
-   In [8]: d3 = dit.ScalarDistribution([-2, -1, 0, 1, 2], [1/5]*5)
+   In [8]: d3 = dit.Distribution([-2, -1, 0, 1, 2], [1/5]*5)
 
    @doctest float
    In [9]: cumulative_residual_entropy(d3)

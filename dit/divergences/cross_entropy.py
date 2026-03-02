@@ -48,12 +48,7 @@ def get_pmfs_like(d1, d2, rvs, rv_mode=None):
     rvs : list, None
         The random variables to get the pmf for.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If equal
-        to 'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted, which
-        defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -62,8 +57,8 @@ def get_pmfs_like(d1, d2, rvs, rv_mode=None):
     qs : ndarray
         A matching pmf from d2.
     """
-    dp = d1.marginal(rvs, rv_mode)
-    dq = d2.marginal(rvs, rv_mode)
+    dp = d1.marginal(rvs)
+    dq = d2.marginal(rvs)
     ps = dp.pmf
     qs = np.asarray([get_prob(dq, o) for o in dp.outcomes])
     return ps, qs
@@ -85,12 +80,7 @@ def cross_entropy(dist1, dist2, rvs=None, crvs=None, rv_mode=None):
         between. If None, then the cross entropy is calculated over all random
         variables.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If equal
-        to 'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted, which
-        defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -103,15 +93,15 @@ def cross_entropy(dist1, dist2, rvs=None, crvs=None, rv_mode=None):
         Raised if either `dist1` or `dist2` doesn't have `rvs` or, if `rvs` is
         None, if `dist2` has an outcome length different than `dist1`.
     """
-    rvs, crvs, rv_mode = normalize_rvs(dist1, rvs, crvs, rv_mode)
+    rvs, crvs, rv_mode = normalize_rvs(dist1, rvs, crvs)
     rvs, crvs = list(flatten(rvs)), list(flatten(crvs))
-    normalize_rvs(dist2, rvs, crvs, rv_mode)
+    normalize_rvs(dist2, rvs, crvs)
 
-    p1s, q1s = get_pmfs_like(dist1, dist2, rvs + crvs, rv_mode)
+    p1s, q1s = get_pmfs_like(dist1, dist2, rvs + crvs)
     xh = -np.nansum(p1s * np.log2(q1s))
 
     if crvs:
-        p2s, q2s = get_pmfs_like(dist1, dist2, crvs, rv_mode)
+        p2s, q2s = get_pmfs_like(dist1, dist2, crvs)
         xh2 = -np.nansum(p2s * np.log2(q2s))
         xh -= xh2
 

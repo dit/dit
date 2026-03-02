@@ -21,9 +21,9 @@ That is, it is the entropy of the mixture minus the mixture of the entropy. This
 
    In [1]: from dit.divergences import jensen_shannon_divergence
 
-   In [2]: X = dit.ScalarDistribution(['red', 'blue'], [1/2, 1/2])
+   In [2]: X = dit.Distribution(['red', 'blue'], [1/2, 1/2])
 
-   In [3]: Y = dit.ScalarDistribution(['blue', 'green'], [1/2, 1/2])
+   In [3]: Y = dit.Distribution(['blue', 'green'], [1/2, 1/2])
 
    @doctest float
    In [4]: jensen_shannon_divergence([X, Y])
@@ -33,7 +33,7 @@ That is, it is the entropy of the mixture minus the mixture of the entropy. This
    In [5]: jensen_shannon_divergence([X, Y], [3/4, 1/4])
    Out[5]: 0.40563906222956647
 
-   In [13]: Z = dit.ScalarDistribution(['blue', 'yellow'], [1/2, 1/2])
+   In [13]: Z = dit.Distribution(['blue', 'yellow'], [1/2, 1/2])
 
    @doctest float
    In [14]: jensen_shannon_divergence([X, Y, Z])

@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from dit import Distribution as D
-from dit import ScalarDistribution as SD
+from dit import Distribution
 from dit.shannon import conditional_entropy as CH
 from dit.shannon import entropy as H
 from dit.shannon import entropy_pmf
@@ -28,7 +28,7 @@ def test_entropy_pmf2d():
 
 def test_H1():
     """Test the entropy of a fair coin"""
-    d = SD([1 / 2, 1 / 2])
+    d = Distribution([1 / 2, 1 / 2])
     assert H(d) == pytest.approx(1.0)
 
 
@@ -50,7 +50,7 @@ def test_H3():
 
 def test_H4():
     """Test entropy in base 10"""
-    d = SD([1 / 10] * 10)
+    d = Distribution([1 / 10] * 10)
     d.set_base(10)
     assert H(d) == pytest.approx(1.0)
 

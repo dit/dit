@@ -42,7 +42,7 @@ from operator import mul
 import numpy as np
 
 from .exceptions import InvalidOutcome
-from .helpers import RV_MODES, construct_alphabets, get_outcome_ctor, get_product_func, parse_rvs
+from .helpers import construct_alphabets, get_outcome_ctor, get_product_func, parse_rvs
 from .utils import OrderedDict
 
 __all__ = (
@@ -187,7 +187,7 @@ class SampleSpace(ScalarSampleSpace):
 
         """
         # We allow repeats and want to keep the order. We don't need the names.
-        parse = lambda rv: parse_rvs(self, rv, rv_mode=RV_MODES.INDICES, unique=False, sort=False)[1]
+        parse = lambda rv: parse_rvs(self, rv, unique=False, sort=False)[1]
         indexes = [parse(rv) for rv in rvs]
 
         # Determine how new outcomes are constructed.
@@ -223,8 +223,7 @@ class SampleSpace(ScalarSampleSpace):
         """
         # For marginals, we must have unique indexes. Additionally, we do
         # not allow the order of the random variables to change. So we sort.
-        rv_mode = RV_MODES.INDICES
-        rvs, indexes = parse_rvs(self, rvs, rv_mode, unique=True, sort=True)
+        rvs, indexes = parse_rvs(self, rvs, unique=True, sort=True)
 
         # Marginalization is a special case of coalescing where there is only
         # one new random variable and it is composed of a strict subset of
@@ -248,8 +247,7 @@ class SampleSpace(ScalarSampleSpace):
             A new sample space with indexes in `rvs` marginalized away.
 
         """
-        rv_mode = RV_MODES.INDICES
-        rvs, indexes = parse_rvs(self, rvs, rv_mode=rv_mode)
+        rvs, indexes = parse_rvs(self, rvs)
         indexes = set(indexes)
         all_indexes = range(self.outcome_length())
         marginal_indexes = [i for i in all_indexes if i not in indexes]
@@ -431,8 +429,7 @@ class CartesianProduct(SampleSpace):
 
         """
         # We allow repeats and want to keep the order. We don't need the names.
-        rv_mode = RV_MODES.INDICES
-        parse = lambda rv: parse_rvs(self, rv, rv_mode=rv_mode, unique=False, sort=False)[1]
+        parse = lambda rv: parse_rvs(self, rv, unique=False, sort=False)[1]
         indexes = [parse(rv) for rv in rvs]
 
         alphabets_i = [[self.alphabets[i] for i in idx] for idx in indexes]

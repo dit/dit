@@ -39,14 +39,15 @@ def dist_from_timeseries(observations, history_length=1, base="linear"):
 
     d = distribution_from_data(observations, L=history_length + 1, base=base)
 
-    def f(o):
-        if history_length > 0:
-            pasts = tuple(tuple(_[i] for _ in o[:-1]) for i in range(num_ts))
-            presents = tuple(o[-1])
-        else:
-            pasts = ()
-            presents = o
-        return pasts + presents
+    if history_length > 0 and num_ts > 1:
+        # Reorder from time-interleaved (v1_t0, v2_t0, v1_t1, v2_t1, ...)
+        # to variable-grouped (v1_t0, v1_t1, ..., v2_t0, v2_t1, ..., presents)
+        def f(o):
+            steps = [o[i * num_ts:(i + 1) * num_ts] for i in range(history_length + 1)]
+            pasts = tuple(steps[t][v] for v in range(num_ts) for t in range(history_length))
+            presents = steps[-1]
+            return pasts + presents
 
-    d = modify_outcomes(d, lambda o: f(o))
+        d = modify_outcomes(d, f)
+
     return d

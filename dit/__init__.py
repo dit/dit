@@ -12,20 +12,18 @@ Python package for sigma-algebras defined on finite sets.
 
 __version__ = "1.5"
 
-# Order is important!
 from loguru import logger as _logger
+
+from .distribution import Distribution
+
+from .helpers import copypmf
+from .params import ditParams
+from .samplespace import CartesianProduct, SampleSpace, ScalarSampleSpace
 
 from .algorithms import expanded_samplespace, pruned_samplespace
 from .bgm import *
 from .cdisthelpers import joint_from_factors
 from .distconst import *
-from .helpers import copypmf
-from .npdist import Distribution
-from .npscalardist import ScalarDistribution
-from .params import ditParams
-
-# Order does not matter for these
-from .samplespace import CartesianProduct, SampleSpace, ScalarSampleSpace
 
 _logger.disable("dit")
 

@@ -33,12 +33,7 @@ def cohesion(dist, k, rvs=None, crvs=None, rv_mode=None):
         A single list of indexes specifying the random variables to condition
         on. If None, then no variables are conditioned on.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If equal
-        to 'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted, which
-        defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -51,10 +46,10 @@ def cohesion(dist, k, rvs=None, crvs=None, rv_mode=None):
         Raised if `dist` is not a joint distribution or if `rvs` or `crvs`
         contain non-existant random variables.
     """
-    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
+    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
 
-    one = sum(H(dist, set().union(*rv_), crvs, rv_mode=rv_mode) for rv_ in combinations(rvs, k))
-    two = H(dist, set().union(*rvs), crvs, rv_mode=rv_mode)
+    one = sum(H(dist, set().union(*rv_), crvs) for rv_ in combinations(rvs, k))
+    two = H(dist, set().union(*rvs), crvs)
     C = one - multinomial(len(rvs) - 1, [k - 1, len(rvs) - k]) * two
 
     return C

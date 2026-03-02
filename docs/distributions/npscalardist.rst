@@ -1,13 +1,13 @@
 .. npscalardist.rst
 .. py:module:: dit.npscalardist
 
-Numpy-based ScalarDistribution
-==============================
+Numpy-based Distribution
+========================
 
-ScalarDistributions are used to represent distributions over real numbers, for example a six-sided die or the number of heads when flipping 100 coins.
+Distributions are used to represent distributions over real numbers, for example a six-sided die or the number of heads when flipping 100 coins.
 
-Playing with ScalarDistributions
---------------------------------
+Playing with Distributions
+--------------------------
 
 First we will enable two optional features: printing fractions by default, and using :func:`__str__` as :func:`__repr__`. Be careful using either of these options, they can incur significant performance hits on some distributions.
 
@@ -25,7 +25,7 @@ We next construct a six-sided die:
 
    @doctest
    In [4]: d6
-   Class:    ScalarDistribution
+   Class:    Distribution
    Alphabet: (1, 2, 3, 4, 5, 6)
    Base:     linear
 
@@ -43,7 +43,7 @@ We can perform standard mathematical operations with scalars, such as adding, su
 
    @doctest
    In [5]: d6 + 3
-   Class:    ScalarDistribution
+   Class:    Distribution
    Alphabet: (4, 5, 6, 7, 8, 9)
    Base:     linear
 
@@ -57,7 +57,7 @@ We can perform standard mathematical operations with scalars, such as adding, su
 
    @doctest
    In [6]: d6 - 1
-   Class:    ScalarDistribution
+   Class:    Distribution
    Alphabet: (0, 1, 2, 3, 4, 5)
    Base:     linear
 
@@ -71,7 +71,7 @@ We can perform standard mathematical operations with scalars, such as adding, su
 
    @doctest
    In [7]: 10 - d6
-   Class:    ScalarDistribution
+   Class:    Distribution
    Alphabet: (4, 5, 6, 7, 8, 9)
    Base:     linear
 
@@ -85,7 +85,7 @@ We can perform standard mathematical operations with scalars, such as adding, su
 
    @doctest
    In [8]: 2 * d6
-   Class:    ScalarDistribution
+   Class:    Distribution
    Alphabet: (2, 4, 6, 8, 10, 12)
    Base:     linear
 
@@ -99,7 +99,7 @@ We can perform standard mathematical operations with scalars, such as adding, su
 
    @doctest
    In [9]: d6 % 2
-   Class:    ScalarDistribution
+   Class:    Distribution
    Alphabet: (0, 1)
    Base:     linear
 
@@ -117,7 +117,7 @@ Furthermore, we can perform such operations with two distributions:
 
    @doctest
    In [11]: d6 + d6
-   Class:    ScalarDistribution
+   Class:    Distribution
    Alphabet: (2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
    Base:     linear
 
@@ -136,7 +136,7 @@ Furthermore, we can perform such operations with two distributions:
 
    @doctest
    In [12]: (d6 + d6) % 4
-   Class:    ScalarDistribution
+   Class:    Distribution
    Alphabet: (0, 1, 2, 3)
    Base:     linear
 
@@ -148,7 +148,7 @@ Furthermore, we can perform such operations with two distributions:
 
    @doctest
    In [13]: d6 // d6
-   Class:    ScalarDistribution
+   Class:    Distribution
    Alphabet: (0, 1, 2, 3, 4, 5, 6)
    Base:     linear
 
@@ -163,7 +163,7 @@ Furthermore, we can perform such operations with two distributions:
 
    @doctest
    In [14]:  d6 % (d6 % 2 + 1)
-   Class:    ScalarDistribution
+   Class:    Distribution
    Alphabet: (0, 1)
    Base:     linear
 
@@ -171,7 +171,7 @@ Furthermore, we can perform such operations with two distributions:
    0   3/4
    1   1/4
 
-There are also statistical functions which can be applied to :class:`~dit.ScalarDistributions`:
+There are also statistical functions which can be applied to :class:`~dit.Distributions`:
 
 .. ipython::
 
@@ -187,7 +187,7 @@ There are also statistical functions which can be applied to :class:`~dit.Scalar
 
    @doctest
    In [19]: d
-   Class:    ScalarDistribution
+   Class:    Distribution
    Alphabet: (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
    Base:     linear
 
@@ -220,4 +220,4 @@ There are also statistical functions which can be applied to :class:`~dit.Scalar
 API
 ---
 
-.. automethod:: ScalarDistribution.__init__
+.. automethod:: Distribution.__init__

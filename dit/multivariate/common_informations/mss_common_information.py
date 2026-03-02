@@ -31,24 +31,19 @@ def mss_common_information(dist, rvs=None, crvs=None, rv_mode=None):
     crvs : list, None
         The random variables to condition the joint minimal sufficient statistic on. If None, then no random variables are conditioned on.
     rv_mode : str, None
-        Specifies how to interpret `rvs` and `crvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `crvs` and `rvs` are interpreted as random variable indices. If equal
-        to 'names', the the elements are interpreted as random variable names.
-        If `None`, then the value of `dist._rv_mode` is consulted, which
-        defaults to 'indices'.
+        Deprecated. Kept for signature compatibility.
 
     """
     dist = deepcopy(dist)
     dist.make_sparse()
-    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs, rv_mode)
+    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
 
-    dtc = dual_total_correlation(dist, rvs, crvs, rv_mode)
-    ent = entropy(dist, rvs, crvs, rv_mode)
+    dtc = dual_total_correlation(dist, rvs, crvs)
+    ent = entropy(dist, rvs, crvs)
     if np.isclose(dtc, ent):
         return dtc
 
-    d = insert_joint_mss(dist, -1, rvs, rv_mode)
+    d = insert_joint_mss(dist, -1, rvs)
 
-    M = entropy(d, [d.outcome_length() - 1], crvs, rv_mode)
+    M = entropy(d, [d.outcome_length() - 1], crvs)
     return M
