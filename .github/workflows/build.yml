@@ -45,7 +45,7 @@ jobs:
           echo "LIB=$env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\lib;$env:LIB" >> $env:GITHUB_ENV
 
       - name: Install package and dependencies
-        run: uv sync --extra test --extra optional --extra xarray
+        run: uv sync --extra test --extra optional
 
       - name: Run tests
         run: uv run pytest
