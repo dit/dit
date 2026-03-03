@@ -2,7 +2,7 @@
 Distributions illustrating three types of dependency among two variables.
 """
 
-from .. import Distribution
+from ..distribution import Distribution
 
 __all__ = (
     "stacked",

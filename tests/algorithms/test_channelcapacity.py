@@ -124,8 +124,6 @@ def test_channel_capacity_joint2():
 
 # ── Distribution tests ─────────────────────────────────────────────────
 
-from dit.distribution import Distribution
-
 
 def BEC_joint_xr(epsilon):
     """Build the BEC joint distribution as an Distribution."""

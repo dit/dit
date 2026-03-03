@@ -3,8 +3,8 @@ Compute the Gacs-Korner common information
 """
 
 from ...algorithms import insert_meet
+from ...distribution import Distribution
 from ...helpers import normalize_rvs, parse_rvs
-from ... import Distribution
 from ...shannon import conditional_entropy as H
 from ...utils import unitful
 
@@ -12,7 +12,7 @@ __all__ = ("gk_common_information",)
 
 
 @unitful
-def gk_common_information(dist, rvs=None, crvs=None, rv_mode=None):
+def gk_common_information(dist, rvs=None, crvs=None):
     """
     Calculates the Gacs-Korner common information K[X1:X2...] over the random
     variables in `rvs`.
@@ -28,8 +28,6 @@ def gk_common_information(dist, rvs=None, crvs=None, rv_mode=None):
     crvs : list, None
         The indexes of the random variables to condition the common information
         by. If none, than there is no conditioning.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -42,7 +40,7 @@ def gk_common_information(dist, rvs=None, crvs=None, rv_mode=None):
         Raised if `rvs` or `crvs` contain non-existant random variables.
 
     """
-    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
+    rvs, crvs = normalize_rvs(dist, rvs, crvs)
     crvs = parse_rvs(dist, crvs)[1]
 
     outcomes, pmf = zip(*dist.zipped(mode="patoms"), strict=True)

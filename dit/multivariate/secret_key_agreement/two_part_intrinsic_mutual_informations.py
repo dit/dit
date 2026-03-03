@@ -2,7 +2,7 @@
 The tightest known upper bound on two-way secret key agreement rate.
 """
 
-from ... import Distribution
+from ...distribution import Distribution
 from .base_skar_optimizers import BaseTwoPartIntrinsicMutualInformation
 
 __all__ = (

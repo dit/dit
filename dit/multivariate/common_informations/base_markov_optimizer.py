@@ -70,7 +70,7 @@ class MarkovVarMixin:
     name = ""
     description = ""
 
-    def __init__(self, dist, rvs=None, crvs=None, bound=None, rv_mode=None):
+    def __init__(self, dist, rvs=None, crvs=None, bound=None):
         """
         Initialize the optimizer.
 
@@ -89,8 +89,6 @@ class MarkovVarMixin:
         bound : int, None
             Place an artificial bound on the size of W. If None, the
             theoretical bound from :meth:`compute_bound` is used.
-        rv_mode : str, None
-            Deprecated. Kept for signature compatibility.
         """
         super().__init__(dist, rvs=rvs, crvs=crvs)
 
@@ -232,7 +230,7 @@ class MarkovVarMixin:
 
         @unitful
         def common_info(
-            dist, rvs=None, crvs=None, niter=None, maxiter=1000, polish=1e-6, bound=None, rv_mode=None, backend="numpy"
+            dist, rvs=None, crvs=None, niter=None, maxiter=1000, polish=1e-6, bound=None, backend="numpy"
         ):
             dtc = dual_total_correlation(dist, rvs, crvs)
             ent = entropy(dist, rvs, crvs)
@@ -275,8 +273,6 @@ class MarkovVarMixin:
             False, don't polish.
         bound : int
             Bound the size of the Markov variable.
-        rv_mode : str, None
-            Deprecated. Kept for signature compatibility.
         backend : str
             The optimization backend to use. One of ``'numpy'`` (default),
             ``'jax'``, or ``'torch'``.

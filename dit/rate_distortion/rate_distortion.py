@@ -30,7 +30,7 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
 
     _shotgun = 10
 
-    def __init__(self, dist, beta, alpha=1.0, rv=None, crvs=None, bound=None, rv_mode=None):
+    def __init__(self, dist, beta, alpha=1.0, rv=None, crvs=None, bound=None):
         """
         Initialize the bottleneck.
 
@@ -46,8 +46,6 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
             The random variables to condition on.
         bound : int, None
             The bound on the size of the statistic. If None, use the size of X.
-        rv_mode : str, None
-            Deprecated. Kept for signature compatibility.
         """
         if rv is None:
             rv = list(flatten(dist.rvs))
@@ -164,7 +162,7 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
         Construct a functional form of the optimizer.
         """
 
-        def rate_distortion(dist, beta=0.0, rv=None, crvs=None, bound=None, rv_mode=None):
+        def rate_distortion(dist, beta=0.0, rv=None, crvs=None, bound=None):
             """
             Compute a rate-distortion point.
 
@@ -180,8 +178,6 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
                 The indices to condition on. If None, use none.
             bound : int, None
                 Bound the size of the compressed variable.
-        rv_mode : str, None
-            Deprecated. Kept for signature compatibility.
 
         Returns
         -------

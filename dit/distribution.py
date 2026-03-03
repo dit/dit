@@ -226,9 +226,9 @@ class Distribution:
 
             # Build alphabet from sample_space if provided, else from outcomes
             if sample_space is not None:
-                from .samplespace import CartesianProduct as _CP
+                from .samplespace import CartesianProduct
 
-                if isinstance(sample_space, _CP):
+                if isinstance(sample_space, CartesianProduct):
                     alphabets = [sorted(a) for a in sample_space.alphabets]
                 else:
                     ss_list = list(sample_space)
@@ -281,9 +281,6 @@ class Distribution:
         if self.free_vars & self.given_vars:
             raise ValueError(f"free_vars and given_vars must be disjoint. Overlap: {self.free_vars & self.given_vars}")
 
-        # Compatibility with dit.Distribution API (used by parse_rvs, etc.)
-        self._rv_mode = "names"
-        self._rvs = {name: i for i, name in enumerate(self.dims)}
         self._outcome_class = tuple
         self._outcome_ctor = tuple
         self._sparse = sparse
@@ -1279,7 +1276,7 @@ class Distribution:
     # Core probability operations
     # ─────────────────────────────────────────────────────────────────────
 
-    def _resolve_rv_names(self, rvs, rv_mode=None):
+    def _resolve_rv_names(self, rvs):
         """
         Resolve a list of RV specs (indices or names) to dimension names.
 
@@ -1291,8 +1288,6 @@ class Distribution:
         rvs : list
             Random variable identifiers -- integers (indices) or strings
             (dimension names).
-        rv_mode : ignored
-            Deprecated.  Kept for signature compatibility.
 
         Returns
         -------
@@ -1301,13 +1296,13 @@ class Distribution:
         if rvs and all(isinstance(r, (int, np.integer)) for r in rvs):
             try:
                 return [self.dims[i] for i in rvs]
-            except IndexError:
+            except IndexError as err:
                 from .exceptions import ditException
-                raise ditException(f"RV index out of range: {rvs} for {len(self.dims)} dims")
+                raise ditException(f"RV index out of range: {rvs} for {len(self.dims)} dims") from err
 
         return list(rvs)
 
-    def marginal(self, *args, rv_mode=None):
+    def marginal(self, *args):
         """
         Marginalise to keep only the specified free variables.
 
@@ -1323,20 +1318,11 @@ class Distribution:
         *args : str, or a single list/tuple
             The free variable names to keep. Integer indices are
             auto-resolved to dimension names.
-        rv_mode : ignored
-            Deprecated.  Kept for signature compatibility.
 
         Returns
         -------
         result : Distribution
         """
-        # Handle positional rv_mode: marginal(rvs, rv_mode)
-        if (
-            len(args) == 2
-            and isinstance(args[0], (list, tuple, frozenset, set))
-            and not isinstance(args[1], str)
-        ):
-            args = (args[0],)
 
         if len(args) == 1 and isinstance(args[0], (list, tuple, frozenset, set, range)):
             keep_vars = self._resolve_rv_names(list(args[0]))
@@ -1371,7 +1357,7 @@ class Distribution:
         result._rv_names_set = self._rv_names_set
         return result
 
-    def marginalize(self, *args, rv_mode=None):
+    def marginalize(self, *args):
         """
         Marginalise out (remove) the specified free variables.
 
@@ -1384,19 +1370,11 @@ class Distribution:
         ----------
         *args : str, or a single list/tuple
             The free variable names to remove.
-        rv_mode : ignored
-            Deprecated.  Kept for signature compatibility.
 
         Returns
         -------
         result : Distribution
         """
-        if (
-            len(args) == 2
-            and isinstance(args[0], (list, tuple, frozenset, set))
-            and not isinstance(args[1], str)
-        ):
-            args = (args[0],)
 
         if len(args) == 1 and isinstance(args[0], (list, tuple, frozenset, set)):
             drop_vars = self._resolve_rv_names(list(args[0]))
@@ -1410,7 +1388,7 @@ class Distribution:
         keep = self.free_vars - drop
         return self.marginal(*keep)
 
-    def coalesce(self, rvs, rv_mode=None, extract=False):
+    def coalesce(self, rvs, extract=False):
         """
         Return a new distribution after coalescing random variables.
 
@@ -1424,8 +1402,6 @@ class Distribution:
         ----------
         rvs : sequence of sequences
             Each inner sequence contains variable names (or integer indices).
-        rv_mode : ignored
-            Deprecated.  Kept for signature compatibility.
         extract : bool
             If ``True`` and ``len(rvs) == 1``, the single group's values
             are used directly as outcomes instead of being wrapped in
@@ -1453,10 +1429,7 @@ class Distribution:
             if p == 0:
                 continue
             inner = [tuple(dim_val[name] for name in grp) for grp in groups]
-            if len(groups) == 1 and extract:
-                key = inner[0]
-            else:
-                key = tuple(inner)
+            key = inner[0] if len(groups) == 1 and extract else tuple(inner)
             accum[key] += p
 
         if not accum:
@@ -1483,7 +1456,7 @@ class Distribution:
             """Convert a tuple to a compact string label."""
             return ",".join(str(v.item() if hasattr(v, "item") else v) for v in t)
 
-        alphabets_raw = [sorted(set(o[i] for o in outcomes)) for i in range(n_vars)]
+        alphabets_raw = [sorted({o[i] for o in outcomes}) for i in range(n_vars)]
         alphabets_str = [[_label(t) for t in alpha] for alpha in alphabets_raw]
         coords = {name: alpha for name, alpha in zip(rv_names, alphabets_str, strict=True)}
 
@@ -1496,7 +1469,7 @@ class Distribution:
         data = xr.DataArray(arr, dims=rv_names, coords=coords)
         return Distribution(data, free_vars=set(rv_names), given_vars=set())
 
-    def condition_on(self, *cond_vars, rvs=None, crvs=None, rv_mode=None):
+    def condition_on(self, *cond_vars, rvs=None, crvs=None):
         """
         Condition on the specified free variables.
 
@@ -1524,8 +1497,6 @@ class Distribution:
             Variables to keep in the conditional (dit-compat API).
         crvs : list, optional
             Variables to condition on (dit-compat API).
-        rv_mode : ignored
-            Deprecated.  Kept for signature compatibility.
 
         Returns
         -------
@@ -2220,10 +2191,7 @@ class Distribution:
 
         if self.alphabet != other.alphabet:
             return False
-        for outcome in self.outcomes:
-            if not np.isclose(self[outcome], other[outcome], atol=atol):
-                return False
-        return True
+        return all(np.isclose(self[outcome], other[outcome], atol=atol) for outcome in self.outcomes)
 
     def normalize(self):
         """

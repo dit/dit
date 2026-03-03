@@ -2,8 +2,8 @@
 Example bivariate distributions. The last index is designed to be the output.
 """
 
-from ... import Distribution
 from ...distconst import erasure, uniform
+from ...distribution import Distribution
 from ...example_dists import jeff
 
 __all__ = (

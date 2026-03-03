@@ -11,7 +11,7 @@ from ..utils import flatten
 __all__ = ("renyi_entropy",)
 
 
-def renyi_entropy(dist, order, rvs=None, rv_mode=None):
+def renyi_entropy(dist, order, rvs=None):
     """
     Compute the Renyi entropy of order `order`.
 
@@ -25,8 +25,6 @@ def renyi_entropy(dist, order, rvs=None, rv_mode=None):
         The indexes of the random variable used to calculate the Renyi entropy
         of. If None, then the Renyi entropy is calculated over all random
         variables.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -77,8 +75,6 @@ def sibson_mutual_information_pmf(p_xy, order):
         The indexes of the random variable used to calculate the Renyi entropy
         of. If None, then the Renyi entropy is calculated over all random
         variables.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -110,7 +106,7 @@ def sibson_mutual_information_pmf(p_xy, order):
     return H_a
 
 
-def sibson_mutual_information(dist, order, rvs=None, rv_mode=None):
+def sibson_mutual_information(dist, order, rvs=None):
     """
     Compute the Sibson mutual information of order `order`.
 
@@ -124,8 +120,6 @@ def sibson_mutual_information(dist, order, rvs=None, rv_mode=None):
         The indexes of the random variable used to calculate the Renyi entropy
         of. If None, then the Renyi entropy is calculated over all random
         variables.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------

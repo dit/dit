@@ -2,7 +2,7 @@
 Miscellaneous distributions illustrating particular phenomena.
 """
 
-from .. import Distribution
+from ..distribution import Distribution
 
 __all__ = ("gk_pos_i_neg",)
 

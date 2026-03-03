@@ -12,7 +12,7 @@ __all__ = ("interaction_information",)
 
 
 @unitful
-def interaction_information(dist, rvs=None, crvs=None, rv_mode=None):
+def interaction_information(dist, rvs=None, crvs=None):
     """
     Calculates the interaction information.
 
@@ -27,8 +27,6 @@ def interaction_information(dist, rvs=None, crvs=None, rv_mode=None):
     crvs : list, None
         The indexes of the random variables to condition on. If None, then no
         variables are condition on.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -41,7 +39,7 @@ def interaction_information(dist, rvs=None, crvs=None, rv_mode=None):
         Raised if `dist` is not a joint distribution or if `rvs` or `crvs`
         contain non-existant random variables.
     """
-    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
+    rvs, crvs = normalize_rvs(dist, rvs, crvs)
 
     II = (-1) ** len(rvs) * coinformation(dist, rvs, crvs)
 

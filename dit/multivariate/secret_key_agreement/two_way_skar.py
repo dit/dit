@@ -21,7 +21,7 @@ __all__ = (
 )
 
 
-def _two_way_skar_bounds_iter(dist, rvs=None, crvs=None, rv_mode=None, backend="numpy"):
+def _two_way_skar_bounds_iter(dist, rvs=None, crvs=None, backend="numpy"):
     """
     Iteratively compute tighter bounds on the two way secret key agreement rate.
 
@@ -33,8 +33,6 @@ def _two_way_skar_bounds_iter(dist, rvs=None, crvs=None, rv_mode=None, backend="
         The indices to consider as X (Alice) and Y (Bob).
     crvs : iterable
         The indices to consider as Z (Eve).
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
     backend : str
         The optimization backend. One of ``'numpy'`` (default),
         ``'jax'``, or ``'torch'``.
@@ -79,7 +77,7 @@ def _two_way_skar_bounds_iter(dist, rvs=None, crvs=None, rv_mode=None, backend="
     yield lower, upper
 
 
-def two_way_skar_bounds(dist, rvs, crvs, rv_mode=None, backend="numpy"):
+def two_way_skar_bounds(dist, rvs, crvs, backend="numpy"):
     """
     Iteratively compute tighter bounds on the two way secret key agreement rate.
 
@@ -91,8 +89,6 @@ def two_way_skar_bounds(dist, rvs, crvs, rv_mode=None, backend="numpy"):
         The indices to consider as X (Alice) and Y (Bob).
     crvs : iterable
         The indices to consider as Z (Eve).
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
     backend : str
         The optimization backend. One of ``'numpy'`` (default),
         ``'jax'``, or ``'torch'``.
@@ -104,13 +100,13 @@ def two_way_skar_bounds(dist, rvs, crvs, rv_mode=None, backend="numpy"):
     upper : float
         The best upper bound.
     """
-    for lower, upper in _two_way_skar_bounds_iter(dist, rvs, crvs, rv_mode, backend=backend):
+    for lower, upper in _two_way_skar_bounds_iter(dist, rvs, crvs, backend=backend):
         if np.isclose(lower, upper, atol=1e-6):
             return lower, upper
     return lower, upper
 
 
-def two_way_skar(dist, rvs, crvs, rv_mode=None, backend="numpy"):
+def two_way_skar(dist, rvs, crvs, backend="numpy"):
     """
     Compute the two way secret key agreement rate. Returns nan if it can not be
     definitively determined.
@@ -123,8 +119,6 @@ def two_way_skar(dist, rvs, crvs, rv_mode=None, backend="numpy"):
         The indices to consider as X (Alice) and Y (Bob).
     crvs : iterable
         The indices to consider as Z (Eve).
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
     backend : str
         The optimization backend. One of ``'numpy'`` (default),
         ``'jax'``, or ``'torch'``.
@@ -134,7 +128,7 @@ def two_way_skar(dist, rvs, crvs, rv_mode=None, backend="numpy"):
     skar : float
         The two way secret key agreement rate.
     """
-    lower, upper = two_way_skar_bounds(dist, rvs, crvs, rv_mode, backend=backend)
+    lower, upper = two_way_skar_bounds(dist, rvs, crvs, backend=backend)
     if np.isclose(lower, upper, atol=1e-6):
         return lower
     else:

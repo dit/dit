@@ -3,7 +3,6 @@ Helper non-public API functions for distributions.
 """
 
 import itertools
-import warnings
 from operator import itemgetter
 
 import numpy as np
@@ -13,7 +12,6 @@ from .math.misc import is_number
 from .utils import flatten, product_maker
 
 __all__ = (
-    "RV_Mode",
     "construct_alphabets",
     "copypmf",
     "get_outcome_ctor",
@@ -46,36 +44,6 @@ constructor_map = {
     str: str_outcome_ctor,
 }
 
-
-class RV_Mode:  # noqa: N801
-    """
-    Legacy class kept for backward compatibility.
-
-    With Distribution as the sole distribution class, RVs are always
-    addressed by name.  Integer indices are auto-resolved to names by
-    ``Distribution._resolve_rv_names``.
-    """
-
-    INDICES = 0
-    NAMES = 1
-
-    _mapping = {
-        "indexes": INDICES,
-        "indices": INDICES,
-        "names": NAMES,
-        None: None,
-        True: NAMES,
-        False: INDICES,
-    }
-
-    def __getitem__(self, item):
-        try:
-            return self._mapping[item]
-        except KeyError as err:
-            raise KeyError("Invalid value for `rv_mode`") from err
-
-
-RV_MODES = RV_Mode()
 
 
 def construct_alphabets(outcomes):
@@ -202,7 +170,7 @@ def get_product_func(klass):
     return product
 
 
-def normalize_rvs(dist, rvs, crvs, rv_mode=None):
+def normalize_rvs(dist, rvs, crvs):
     """
     Perform common tasks useful for multivariate information measures.
 
@@ -214,9 +182,6 @@ def normalize_rvs(dist, rvs, crvs, rv_mode=None):
         List of random variables to use in this measure.
     crvs : list, None
         List of random variables to condition on.
-    rv_mode : ignored
-        Deprecated, kept for signature compatibility. Integer indices
-        are auto-resolved to dimension names.
 
     Returns
     -------
@@ -224,22 +189,15 @@ def normalize_rvs(dist, rvs, crvs, rv_mode=None):
         The explicit random variables to use.
     crvs : list
         The explicit random variables to condition on.
-    rv_mode : None
-        Always None (kept for signature compatibility).
-
-    Raises
-    ------
-    ditException
-        Raised if `dist` is not a joint distribution.
     """
     if rvs is None:
         rvs = [[i] for i in range(dist.outcome_length())]
     crvs = [] if crvs is None else list(flatten(crvs))
 
-    return rvs, crvs, rv_mode
+    return rvs, crvs
 
 
-def parse_rvs(dist, rvs, rv_mode=None, unique=True, sort=True):
+def parse_rvs(dist, rvs, unique=True, sort=True):
     """
     Resolve random variable specs to (names, indices) tuples.
 
@@ -252,8 +210,6 @@ def parse_rvs(dist, rvs, rv_mode=None, unique=True, sort=True):
         The distribution.
     rvs : list
         Random variable identifiers (names or integer indices).
-    rv_mode : ignored
-        Deprecated.  Kept for signature compatibility.
     unique : bool
         If True, require no duplicates.
     sort : bool
@@ -269,12 +225,7 @@ def parse_rvs(dist, rvs, rv_mode=None, unique=True, sort=True):
     if len(rvs) == 0:
         return (), ()
 
-    # Resolve to dimension names. Objects without _resolve_rv_names
-    # (e.g. SampleSpace) treat rvs as integer indices directly.
-    if hasattr(dist, '_resolve_rv_names'):
-        names = list(dist._resolve_rv_names(list(rvs)))
-    else:
-        names = list(rvs)
+    names = list(dist._resolve_rv_names(list(rvs))) if hasattr(dist, '_resolve_rv_names') else list(rvs)
 
     if unique and len(set(names)) != len(names):
         msg = "`rvs` contained duplicates."
@@ -285,9 +236,9 @@ def parse_rvs(dist, rvs, rv_mode=None, unique=True, sort=True):
         dim_list = list(dist.dims)
         try:
             indexes = [dim_list.index(n) for n in names]
-        except ValueError:
+        except ValueError as err:
             msg = f"`rvs` contains invalid random variables: {names}"
-            raise ditException(msg)
+            raise ditException(msg) from err
     else:
         # Legacy path for SampleSpace: names ARE indices
         indexes = list(names)

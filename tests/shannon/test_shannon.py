@@ -5,8 +5,8 @@ Tests for dit.shannon.shannon.
 import numpy as np
 import pytest
 
-from dit import Distribution as D
 from dit import Distribution
+from dit import Distribution as D
 from dit.shannon import conditional_entropy as CH
 from dit.shannon import entropy as H
 from dit.shannon import entropy_pmf

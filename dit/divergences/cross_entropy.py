@@ -34,7 +34,7 @@ def get_prob(d, o):
     return p
 
 
-def get_pmfs_like(d1, d2, rvs, rv_mode=None):
+def get_pmfs_like(d1, d2, rvs):
     """
     Get the pmf from `d1` for `rvs`, and the pmf from `d2` for the events in
     `d1`
@@ -47,8 +47,6 @@ def get_pmfs_like(d1, d2, rvs, rv_mode=None):
         The distribution to get the pmf for, with the outcomes from `d1`.
     rvs : list, None
         The random variables to get the pmf for.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -65,7 +63,7 @@ def get_pmfs_like(d1, d2, rvs, rv_mode=None):
 
 
 @unitful
-def cross_entropy(dist1, dist2, rvs=None, crvs=None, rv_mode=None):
+def cross_entropy(dist1, dist2, rvs=None, crvs=None):
     """
     The cross entropy between `dist1` and `dist2`.
 
@@ -79,8 +77,6 @@ def cross_entropy(dist1, dist2, rvs=None, crvs=None, rv_mode=None):
         The indexes of the random variable used to calculate the cross entropy
         between. If None, then the cross entropy is calculated over all random
         variables.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -93,7 +89,7 @@ def cross_entropy(dist1, dist2, rvs=None, crvs=None, rv_mode=None):
         Raised if either `dist1` or `dist2` doesn't have `rvs` or, if `rvs` is
         None, if `dist2` has an outcome length different than `dist1`.
     """
-    rvs, crvs, rv_mode = normalize_rvs(dist1, rvs, crvs)
+    rvs, crvs = normalize_rvs(dist1, rvs, crvs)
     rvs, crvs = list(flatten(rvs)), list(flatten(crvs))
     normalize_rvs(dist2, rvs, crvs)
 

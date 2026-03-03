@@ -10,7 +10,7 @@ __all__ = ("total_correlation",)
 
 
 @unitful
-def total_correlation(dist, rvs=None, crvs=None, rv_mode=None):
+def total_correlation(dist, rvs=None, crvs=None):
     """
     Computes the total correlation, also known as either the multi-information
     or the integration.
@@ -27,8 +27,6 @@ def total_correlation(dist, rvs=None, crvs=None, rv_mode=None):
     crvs : list, None
         A single list of indexes specifying the random variables to condition
         on. If None, then no variables are conditioned on.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -49,7 +47,7 @@ def total_correlation(dist, rvs=None, crvs=None, rv_mode=None):
         Raised if `dist` is not a joint distribution or if `rvs` or `crvs`
         contain non-existant random variables.
     """
-    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
+    rvs, crvs = normalize_rvs(dist, rvs, crvs)
 
     one = sum(H(dist, rv, crvs) for rv in rvs)
     two = H(dist, set().union(*rvs), crvs)

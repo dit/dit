@@ -14,7 +14,7 @@ __all__ = ("cohesion",)
 
 
 @unitful
-def cohesion(dist, k, rvs=None, crvs=None, rv_mode=None):
+def cohesion(dist, k, rvs=None, crvs=None):
     """
     Computes the k-cohesion.
 
@@ -32,8 +32,6 @@ def cohesion(dist, k, rvs=None, crvs=None, rv_mode=None):
     crvs : list, None
         A single list of indexes specifying the random variables to condition
         on. If None, then no variables are conditioned on.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -46,7 +44,7 @@ def cohesion(dist, k, rvs=None, crvs=None, rv_mode=None):
         Raised if `dist` is not a joint distribution or if `rvs` or `crvs`
         contain non-existant random variables.
     """
-    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
+    rvs, crvs = normalize_rvs(dist, rvs, crvs)
 
     one = sum(H(dist, set().union(*rv_), crvs) for rv_ in combinations(rvs, k))
     two = H(dist, set().union(*rvs), crvs)

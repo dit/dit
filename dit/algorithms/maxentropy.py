@@ -30,7 +30,7 @@ from loguru import logger
 import dit
 from dit.abstractdist import AbstractDenseDistribution, get_abstract_dist
 
-from ..helpers import RV_MODES, parse_rvs
+from ..helpers import parse_rvs
 from ..utils import flatten
 from .optutil import Bunch, CVXOPT_Template, as_full_rank, prepare_dist
 
@@ -125,7 +125,7 @@ def isolate_zeros(dist, k):
     return variables
 
 
-def marginal_constraints_generic(dist, rvs, rv_mode=None, with_normalization=True):
+def marginal_constraints_generic(dist, rvs, with_normalization=True):
     """
     Returns :math:`A` and :math:`b` in :math:`A x = b`, for a system of marginal
     constraints.
@@ -143,9 +143,6 @@ def marginal_constraints_generic(dist, rvs, rv_mode=None, with_normalization=Tru
         `dist`. The inner sequences need not be pairwise mutually exclusive
         with one another. A random variable can only appear once within
         each inner sequence, but it can occur in multiple inner sequences.
-
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
     """
     assert dist.is_dense()
     assert dist.get_base() == "linear"
@@ -222,8 +219,6 @@ def marginal_constraints(dist, m, with_normalization=True):
         msg += " with only {1} random variables."
         msg = msg.format(m, n_variables)
         raise ValueError(msg)
-
-    rv_mode = dist._rv_mode
 
     variables = dist.get_rv_names()
     if variables is not None:

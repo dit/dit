@@ -5,7 +5,7 @@ The I_proj measure as proposed by Harder et al.
 import numpy as np
 from scipy.optimize import minimize
 
-from ... import Distribution
+from ...distribution import Distribution
 from ...divergences.pmf import relative_entropy
 from ...exceptions import ditException
 from ..pid import BaseBivariatePID

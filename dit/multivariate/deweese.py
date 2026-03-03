@@ -33,7 +33,7 @@ def deweese_constructor(mmi):
     """
 
     @unitful
-    def deweese(dist, rvs=None, crvs=None, return_opt=False, rv_mode=None):
+    def deweese(dist, rvs=None, crvs=None, return_opt=False):
         """
         Compute the DeWeese form of {name}.
 
@@ -48,8 +48,6 @@ def deweese_constructor(mmi):
         return_opt : bool
             Whether to return the distribution containing the
             variable functions or not. Defaults to False.
-        rv_mode : str, None
-            Deprecated. Kept for signature compatibility.
 
         Returns
         -------
@@ -59,7 +57,7 @@ def deweese_constructor(mmi):
             The distribution with the functions achieving `val`.
             Only returned if `return_opt` is True.
         """
-        rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
+        rvs, crvs = normalize_rvs(dist, rvs, crvs)
 
         dist = dist.coalesce(rvs + [crvs])
 
@@ -111,7 +109,7 @@ class BaseDeWeeseOptimizer(BaseAuxVarOptimizer):
     _sign = -1
     _shotgun = 5
 
-    def __init__(self, dist, rvs=None, crvs=None, deterministic=False, rv_mode=None):
+    def __init__(self, dist, rvs=None, crvs=None, deterministic=False):
         """
         Initialize the optimizer.
 
@@ -126,8 +124,6 @@ class BaseDeWeeseOptimizer(BaseAuxVarOptimizer):
         deterministic : bool
             Whether the functions to optimize over should be
             deterministic or not. Defaults to False.
-        rv_mode : str, None
-            Deprecated. Kept for signature compatibility.
         """
         super().__init__(dist, rvs=rvs, crvs=crvs)
         self._construct_auxvars([({rv}, size) for rv, size in zip(self._rvs, self._shape, strict=False)])
@@ -153,7 +149,7 @@ class BaseDeWeeseOptimizer(BaseAuxVarOptimizer):
         """
 
         @unitful
-        def function(dist, rvs=None, crvs=None, niter=None, deterministic=False, rv_mode=None):
+        def function(dist, rvs=None, crvs=None, niter=None, deterministic=False):
             """
             Compute the DeWeese {name}.
 
@@ -167,11 +163,9 @@ class BaseDeWeeseOptimizer(BaseAuxVarOptimizer):
                 The variables to condition on. If None, none.
             niter : int, None
                 If specified, the number of optimization steps to perform.
-            deterministic : bool
-                Whether the functions to optimize over should be
-                deterministic or not. Defaults to False.
-        rv_mode : str, None
-            Deprecated. Kept for signature compatibility.
+        deterministic : bool
+            Whether the functions to optimize over should be
+            deterministic or not. Defaults to False.
 
         Returns
         -------

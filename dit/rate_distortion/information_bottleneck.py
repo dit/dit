@@ -21,7 +21,7 @@ class InformationBottleneck(BaseAuxVarOptimizer):
 
     _shotgun = 10
 
-    def __init__(self, dist, beta, alpha=1.0, rvs=None, crvs=None, bound=None, rv_mode=None):
+    def __init__(self, dist, beta, alpha=1.0, rvs=None, crvs=None, bound=None):
         """
         Initialize the bottleneck.
 
@@ -41,8 +41,6 @@ class InformationBottleneck(BaseAuxVarOptimizer):
             The random variables to condition on.
         bound : int, None
             The bound on the size of the statistic. If None, use the size of X.
-        rv_mode : str, None
-            Deprecated. Kept for signature compatibility.
         """
         if rvs is None:
             rvs = dist.rvs
@@ -197,7 +195,7 @@ class InformationBottleneck(BaseAuxVarOptimizer):
             The function which performs this optimization.
         """
 
-        def information_bottleneck(dist, beta, alpha=1.0, rvs=None, crvs=None, bound=None, rv_mode=None):
+        def information_bottleneck(dist, beta, alpha=1.0, rvs=None, crvs=None, bound=None):
             """
             Compute an information bottleneck point.
 
@@ -217,8 +215,6 @@ class InformationBottleneck(BaseAuxVarOptimizer):
                 The random variables to condition on.
             bound : int, None
                 The bound on the size of the statistic. If None, use the size of X.
-            rv_mode : str, None
-                Deprecated. Kept for signature compatibility.
             """
             ib = cls(
                 dist=dist,
@@ -244,7 +240,7 @@ class InformationBottleneckDivergence(InformationBottleneck):
     """
 
     def __init__(
-        self, dist, beta, alpha=1.0, divergence=relative_entropy, rvs=None, crvs=None, bound=None, rv_mode=None
+        self, dist, beta, alpha=1.0, divergence=relative_entropy, rvs=None, crvs=None, bound=None
     ):
         """
         Initialize the optimizer.
@@ -268,8 +264,6 @@ class InformationBottleneckDivergence(InformationBottleneck):
             The random variables to condition on.
         bound : int, None
             The bound on the size of the statistic. If None, use the size of X.
-        rv_mode : str, None
-            Deprecated. Kept for signature compatibility.
         """
         self._divergence = divergence
         super().__init__(

@@ -8,7 +8,7 @@ from .total_correlation import total_correlation
 __all__ = ("o_information",)
 
 
-def o_information(dist, rvs=None, crvs=None, rv_mode=None):
+def o_information(dist, rvs=None, crvs=None):
     """
     Computes the O-information, defined as the total correlation minus the dual
     total correlation.
@@ -25,8 +25,6 @@ def o_information(dist, rvs=None, crvs=None, rv_mode=None):
     crvs : list, None
         A single list of indexes specifying the random variables to condition
         on. If None, then no variables are conditioned on.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------

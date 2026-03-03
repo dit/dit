@@ -2,8 +2,8 @@
 The I_wedge measure, as proposed by Griffith et al.
 """
 
-from ... import Distribution
 from ...algorithms import insert_meet
+from ...distribution import Distribution
 from ...multivariate import coinformation
 from ..pid import BasePID
 

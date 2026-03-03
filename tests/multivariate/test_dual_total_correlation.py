@@ -4,8 +4,8 @@ Tests for dit.multivariate.dual_total_correlation.
 
 import pytest
 
-from dit import Distribution as D
 from dit import Distribution
+from dit import Distribution as D
 from dit.example_dists import n_mod_m
 from dit.multivariate import dual_total_correlation as B
 from dit.multivariate import generalized_dual_total_correlation as GB

@@ -9,9 +9,8 @@ import numpy as np
 from debtcollector import removals
 
 from ..distconst import product_distribution
-from ..helpers import RV_MODES
+from ..distribution import Distribution
 from ..multivariate import coinformation as I
-from .. import Distribution
 from ..utils import flatten
 from .maxentropy import marginal_constraints_generic
 from .optimization import BaseConvexOptimizer, BaseNonConvexOptimizer, BaseOptimizer
@@ -60,7 +59,7 @@ class BaseDistOptimizer(BaseOptimizer):
 
     construct_initial = BaseOptimizer.construct_uniform_initial
 
-    def __init__(self, dist, marginals, rv_mode=None):
+    def __init__(self, dist, marginals):
         """
         Initialize the optimizer.
 
@@ -72,8 +71,6 @@ class BaseDistOptimizer(BaseOptimizer):
         marginals : list, None
             The list of sets of variables whose marginals will be constrained to
             match the given distribution.
-        rv_mode : str, None
-            Deprecated. Kept for signature compatibility.
         """
         super().__init__(dist, dist.rvs, crvs=[])
 
@@ -458,7 +455,7 @@ class BROJABivariateOptimizer(MaxCoInfoOptimizer):
     convex.
     """
 
-    def __init__(self, dist, sources, target, rv_mode=None):
+    def __init__(self, dist, sources, target):
         """
         Initialize the optimizer.
 
@@ -471,8 +468,6 @@ class BROJABivariateOptimizer(MaxCoInfoOptimizer):
             List of two source sets of variables.
         target : list
             The target variables.
-        rv_mode : str, None
-            Deprecated. Kept for signature compatibility.
         """
         dist = broja_prepare_dist(dist, sources, target)
         super().__init__(dist, [[0, 2], [1, 2]])
@@ -482,7 +477,7 @@ class BROJABivariateOptimizer(MaxCoInfoOptimizer):
         self._optvec_size = len(self._free)
 
 
-def maxent_dist(dist, rvs, x0=None, maxiter=1000, sparse=True, rv_mode=None):
+def maxent_dist(dist, rvs, x0=None, maxiter=1000, sparse=True):
     """
     Return the maximum entropy distribution consistent with the marginals from
     `dist` specified in `rvs`.
@@ -499,8 +494,6 @@ def maxent_dist(dist, rvs, x0=None, maxiter=1000, sparse=True, rv_mode=None):
         The number of optimization iterations to perform.
     sparse : bool
         Whether the returned distribution should be sparse or dense.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -554,10 +547,7 @@ def marginal_maxent_dists(dist, k_max=None):
             continue
 
         variables = dist.get_rv_names()
-        if variables is not None:
-            rvs = list(combinations(variables, k))
-        else:
-            rvs = list(combinations(range(n_variables), k))
+        rvs = list(combinations(variables, k)) if variables is not None else list(combinations(range(n_variables), k))
 
         dists.append(maxent_dist(dist, rvs))
 
@@ -573,7 +563,7 @@ PID = namedtuple("PID", ["R", "U0", "U1", "S"])
 
 
 @removals.remove(message="Please see dit.pid.PID_BROJA.", version="1.0.0.dev8")
-def pid_broja(dist, sources, target, niter=10, return_opt=False, rv_mode=None):
+def pid_broja(dist, sources, target, niter=10, return_opt=False):
     """
     Compute the BROJA partial information decomposition.
 
@@ -590,8 +580,6 @@ def pid_broja(dist, sources, target, niter=10, return_opt=False, rv_mode=None):
     return_opt : bool
         If True, return the distribution resulting from the optimization.
         Defaults to False.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------

@@ -9,11 +9,11 @@ from random import randint
 
 import numpy as np
 
+from .distribution import Distribution
 from .exceptions import ditException
 from .helpers import parse_rvs
 from .utils import digits, powerset
 from .validate import validate_pmf
-from .distribution import Distribution
 
 __all__ = (
     "mixture_distribution",
@@ -889,10 +889,7 @@ class RVFunctions:
         base = 16
         template = "{0:0{1}b}"
         outcomes = [template.format(int(h, base), self.L) for h in hexes]
-        if self.is_int:
-            outcomes = [tuple(map(int, o)) for o in outcomes]
-        else:
-            outcomes = [tuple(o) for o in outcomes]
+        outcomes = [tuple(map(int, o)) for o in outcomes] if self.is_int else [tuple(o) for o in outcomes]
         outcomes = set(outcomes)
 
         def func(outcome):
@@ -902,7 +899,7 @@ class RVFunctions:
         return func
 
 
-def product_distribution(dist, rvs=None, rv_mode=None, base=None):
+def product_distribution(dist, rvs=None, base=None):
     """
     Returns a new distribution which is the product of marginals.
 
@@ -913,8 +910,6 @@ def product_distribution(dist, rvs=None, rv_mode=None, base=None):
     rvs : sequence
         A sequence whose elements are also sequences.  Each inner sequence
         defines the marginal distribution used to create the new distribution.
-    rv_mode : ignored
-        Deprecated.  Kept for signature compatibility.
     base : float, 'linear', 'e'
         The desired base for the distribution probabilities.
 

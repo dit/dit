@@ -133,7 +133,8 @@ except ImportError:  # no cython
             value of `dit.ditParams['base']` is used.
 
         """
-        from dit import Distribution, ditParams
+        from dit.distribution import Distribution
+        from dit.params import ditParams
 
         with contextlib.suppress(TypeError):
             d = list(map(tuple, d))

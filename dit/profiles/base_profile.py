@@ -6,7 +6,7 @@ from abc import ABCMeta, abstractmethod
 
 import numpy as np
 
-from .. import Distribution
+from ..distribution import Distribution
 from ..params import ditParams
 from ..utils import build_table
 

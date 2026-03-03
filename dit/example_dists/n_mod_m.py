@@ -5,8 +5,8 @@ the i'th symbol be the sum mod m of the others.
 
 from itertools import product
 
-from ..math.misc import is_integer
 from ..distribution import Distribution
+from ..math.misc import is_integer
 
 __all__ = ("n_mod_m",)
 

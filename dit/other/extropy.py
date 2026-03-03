@@ -9,7 +9,7 @@ from ..math.ops import get_ops
 __all__ = ("extropy",)
 
 
-def extropy(dist, rvs=None, rv_mode=None):
+def extropy(dist, rvs=None):
     """
     Returns the extropy J[X] over the random variables in `rvs`.
 
@@ -25,8 +25,6 @@ def extropy(dist, rvs=None, rv_mode=None):
         The indexes of the random variable used to calculate the extropy.
         If None, then the extropy is calculated over all random variables.
         This should remain `None` for scalar distributions.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -46,10 +44,7 @@ def extropy(dist, rvs=None, rv_mode=None):
         dist = dit.Distribution([dist, 1 - dist])
         rvs = None
 
-    if rvs is not None:
-        d = dist.marginal(rvs)
-    else:
-        d = dist
+    d = dist.marginal(rvs) if rvs is not None else dist
 
     pmf = d.pmf
     if d.is_log():

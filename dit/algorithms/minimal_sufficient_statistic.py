@@ -41,7 +41,7 @@ def partial_match(first, second, places):
     return tuple(first[i] for i in places) == second
 
 
-def mss_sigalg(dist, rvs, about=None, rv_mode=None):
+def mss_sigalg(dist, rvs, about=None):
     """
     Construct the sigma algebra for the minimal sufficient statistic of `rvs`
     about `about`.
@@ -56,8 +56,6 @@ def mss_sigalg(dist, rvs, about=None, rv_mode=None):
     about : list
         A list of random variables for which the minimal sufficient static will
         retain all information about.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -94,7 +92,7 @@ def mss_sigalg(dist, rvs, about=None, rv_mode=None):
     return mss_sa
 
 
-def insert_mss(dist, idx, rvs, about=None, rv_mode=None):
+def insert_mss(dist, idx, rvs, about=None):
     """
     Inserts the minimal sufficient statistic of `rvs` about `about` into `dist`
     at index `idx`.
@@ -112,8 +110,6 @@ def insert_mss(dist, idx, rvs, about=None, rv_mode=None):
     about : list
         A list of random variables for which the minimal sufficient static will
         retain all information about.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -143,7 +139,7 @@ def insert_mss(dist, idx, rvs, about=None, rv_mode=None):
     return pruned_samplespace(new_dist)
 
 
-def mss(dist, rvs, about=None, rv_mode=None, int_outcomes=True):
+def mss(dist, rvs, about=None, int_outcomes=True):
     """
     Parameters
     ----------
@@ -155,8 +151,6 @@ def mss(dist, rvs, about=None, rv_mode=None, int_outcomes=True):
     about : list
         A list of random variables for which the minimal sufficient static will
         retain all information about.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
     int_outcomes : bool
         If `True`, then the outcomes of the minimal sufficient statistic are
         relabeled as integers instead of as the atoms of the induced
@@ -184,7 +178,7 @@ def mss(dist, rvs, about=None, rv_mode=None, int_outcomes=True):
     return d
 
 
-def insert_joint_mss(dist, idx, rvs=None, rv_mode=None):
+def insert_joint_mss(dist, idx, rvs=None):
     """
     Returns a new distribution with the join of the minimal sufficient statistic
     of each random variable in `rvs` about all the other variables.
@@ -200,15 +194,9 @@ def insert_joint_mss(dist, idx, rvs=None, rv_mode=None):
     rvs : list
         A list of random variables to be compressed into a joint minimal
         sufficient statistic.
-    rv_mode : str, None
-        Specifies how to interpret the elements of `rvs`. Valid options are:
-        {'indices', 'names'}. If equal to 'indices', then the elements of
-        `rvs` are interpreted as random variable indices. If equal to 'names',
-        the the elements are interpreted as random variable names. If `None`,
-        then the value of `dist._rv_mode` is consulted.
 
     """
-    rvs, _, _ = normalize_rvs(dist, rvs, None)
+    rvs, _ = normalize_rvs(dist, rvs, None)
 
     d = dist.copy()
     l1 = d.outcome_length()
@@ -233,7 +221,7 @@ def insert_joint_mss(dist, idx, rvs=None, rv_mode=None):
     return d
 
 
-def info_trim(dist, rvs=None, rv_mode=None):
+def info_trim(dist, rvs=None):
     """
     Returns a new distribution with the minimal sufficient statistics
     of each random variable in `rvs` about all the other variables.
@@ -246,11 +234,9 @@ def info_trim(dist, rvs=None, rv_mode=None):
     rvs : list
         A list of random variables to be compressed into minimal sufficient
         statistics.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     """
-    rvs, _, _ = normalize_rvs(dist, rvs, None)
+    rvs, _ = normalize_rvs(dist, rvs, None)
 
     d = dist.copy()
 

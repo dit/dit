@@ -16,7 +16,7 @@ from ..entropy import entropy
 __all__ = ("functional_common_information",)
 
 
-def functional_markov_chain_naive(dist, rvs=None, crvs=None, rv_mode=None):  # pragma: no cover
+def functional_markov_chain_naive(dist, rvs=None, crvs=None):  # pragma: no cover
     """
     Add the smallest function of `dist` which renders `rvs` independent.
 
@@ -32,15 +32,13 @@ def functional_markov_chain_naive(dist, rvs=None, crvs=None, rv_mode=None):  # p
     crvs : list, None
         A single list of indexes specifying the random variables to condition
         on. If None, then no variables are conditioned on.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
     d : Distribution
         The distribution `dist` with the additional variable added to the end.
     """
-    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
+    rvs, crvs = normalize_rvs(dist, rvs, crvs)
     outcomes = dist.outcomes
     bf = RVFunctions(dist)
     f = [len(dist.rvs)]
@@ -51,7 +49,7 @@ def functional_markov_chain_naive(dist, rvs=None, crvs=None, rv_mode=None):  # p
     return min(dists, key=lambda d: entropy(d, rvs=f))
 
 
-def functional_markov_chain(dist, rvs=None, crvs=None, rv_mode=None):
+def functional_markov_chain(dist, rvs=None, crvs=None):
     """
     Add the smallest function of `dist` which renders `rvs` independent.
 
@@ -67,8 +65,6 @@ def functional_markov_chain(dist, rvs=None, crvs=None, rv_mode=None):
     crvs : list, None
         A single list of indexes specifying the random variables to condition
         on. If None, then no variables are conditioned on.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -90,7 +86,7 @@ def functional_markov_chain(dist, rvs=None, crvs=None, rv_mode=None):
     if rv_names is not None:
         dist.set_rv_names(rv_names)
 
-    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
+    rvs, crvs = normalize_rvs(dist, rvs, crvs)
 
     rvs = [parse_rvs(dist, rv)[1] for rv in rvs]
     crvs = parse_rvs(dist, crvs)[1]
@@ -137,7 +133,7 @@ def functional_markov_chain(dist, rvs=None, crvs=None, rv_mode=None):
 
 
 @unitful
-def functional_common_information(dist, rvs=None, crvs=None, rv_mode=None):
+def functional_common_information(dist, rvs=None, crvs=None):
     """
     Compute the functional common information, F, of `dist`. It is the entropy
     of the smallest random variable W such that all the variables in `rvs` are
@@ -156,20 +152,18 @@ def functional_common_information(dist, rvs=None, crvs=None, rv_mode=None):
     crvs : list, None
         A single list of indexes specifying the random variables to condition
         on. If None, then no variables are conditioned on.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
     F : float
         The functional common information.
     """
-    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
+    rvs, crvs = normalize_rvs(dist, rvs, crvs)
 
     dtc = dual_total_correlation(dist, rvs, crvs)
     ent = entropy(dist, rvs, crvs)
     if np.isclose(dtc, ent):
         return dtc
 
-    d = functional_markov_chain(dist, rvs, crvs, rv_mode)
+    d = functional_markov_chain(dist, rvs, crvs)
     return entropy(d, [dist.outcome_length()])

@@ -10,7 +10,6 @@ import pytest
 from dit import Distribution as D
 from dit.algorithms import (
     cdf,
-    central_moment,
     correlation,
     covariance,
     expectation,
@@ -30,7 +29,6 @@ from dit.algorithms import (
     variance,
 )
 from dit.example_dists import binomial
-
 
 # ── expectation ──────────────────────────────────────────────────────────
 

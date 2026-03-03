@@ -17,7 +17,7 @@ class BROJAOptimizer(BaseDistOptimizer, BaseConvexOptimizer):
     maximizing the coinformation.
     """
 
-    def __init__(self, dist, source, others, target, rv_mode=None):
+    def __init__(self, dist, source, others, target):
         """
         Initialize the optimizer.
 
@@ -31,8 +31,6 @@ class BROJAOptimizer(BaseDistOptimizer, BaseConvexOptimizer):
             The other source variables.
         target : iterable
             The target variable.
-        rv_mode : bool
-            Deprecated. Kept for signature compatibility.
         """
         dist = dist.coalesce((source,) + (sum(others, ()),) + (target,))
         constraints = [[0, 2], [1, 2]]

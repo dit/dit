@@ -5,8 +5,8 @@ Tests for dit.other.extropy.
 import numpy as np
 import pytest
 
-from dit import Distribution as D
 from dit import Distribution
+from dit import Distribution as D
 from dit.other import extropy as J
 from dit.shannon import entropy as H
 

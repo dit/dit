@@ -68,7 +68,7 @@ class OneWaySKAR(BaseOneWaySKAR):
 
 
 @unitful
-def one_way_skar(dist, X, Y, Z, rv_mode=None, niter=None, bound_u=None, bound_v=None, backend="numpy"):
+def one_way_skar(dist, X, Y, Z, niter=None, bound_u=None, bound_v=None, backend="numpy"):
     """
     Compute the secret key agreement rate constrained to one-way communication.
 
@@ -82,8 +82,6 @@ def one_way_skar(dist, X, Y, Z, rv_mode=None, niter=None, bound_u=None, bound_v=
         The indices to consider as the Y variable, Bob.
     Z : iterable
         The indices to consider as the Z variable, Eve.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
     niter : int, None
         The number of hops to perform during optimization.
     bound_u : int, None

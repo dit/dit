@@ -14,7 +14,7 @@ __all__ = ("coupling_metric",)
 
 
 @unitful
-def residual_entropy(dist, rvs=None, crvs=None, p=1.0, rv_mode=None):
+def residual_entropy(dist, rvs=None, crvs=None, p=1.0):
     """
     Compute the residual entropy.
 
@@ -31,8 +31,6 @@ def residual_entropy(dist, rvs=None, crvs=None, p=1.0, rv_mode=None):
         variables are condition on.
     p : float
         The p-norm to utilize
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -45,7 +43,7 @@ def residual_entropy(dist, rvs=None, crvs=None, p=1.0, rv_mode=None):
         Raised if `dist` is not a joint distribution or if `rvs` or `crvs`
         contain non-existant random variables.
     """
-    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
+    rvs, crvs = normalize_rvs(dist, rvs, crvs)
 
     others = lambda rv, rvs: set(set().union(*rvs)) - set(rv)
 

@@ -74,7 +74,7 @@ def maximum_correlation_pmf(pXY):
     return rho_max
 
 
-def maximum_correlation(dist, rvs=None, crvs=None, rv_mode=None):
+def maximum_correlation(dist, rvs=None, crvs=None):
     """
     Compute the (conditional) maximum or Renyi correlation between two variables:
 
@@ -94,15 +94,13 @@ def maximum_correlation(dist, rvs=None, crvs=None, rv_mode=None):
     crvs : list, None
         A single list of indexes specifying the random variables to
         condition on. If None, then no variables are conditioned on.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
     rho_max : float; -1 <= rho_max <= 1
         The conditional maximum correlation between `rvs` given `crvs`.
     """
-    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
+    rvs, crvs = normalize_rvs(dist, rvs, crvs)
 
     if len(rvs) != 2:
         msg = f"Maximum correlation can only be computed for 2 variables, not {len(rvs)}."

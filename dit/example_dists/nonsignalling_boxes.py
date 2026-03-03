@@ -4,7 +4,7 @@ Canonical non-signalling boxes.
 
 from itertools import product
 
-from dit import Distribution
+from dit.distribution import Distribution
 
 __all__ = ("pr_box",)
 

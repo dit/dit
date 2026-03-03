@@ -11,7 +11,7 @@ from ..utils import flatten
 __all__ = ("tsallis_entropy",)
 
 
-def tsallis_entropy(dist, order, rvs=None, rv_mode=None):
+def tsallis_entropy(dist, order, rvs=None):
     """
     Compute the Tsallis entropy of order `order`.
 
@@ -25,8 +25,6 @@ def tsallis_entropy(dist, order, rvs=None, rv_mode=None):
         The indexes of the random variable used to calculate the Tsallis entropy
         of. If None, then the Tsallis entropy is calculated over all random
         variables.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------

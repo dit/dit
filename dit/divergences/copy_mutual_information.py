@@ -55,7 +55,7 @@ def specific_copy_mutual_information(p_Y_g_x, p_Y, x):
         return 0
 
 
-def copy_mutual_information(dist, X, Y, rv_mode=None):
+def copy_mutual_information(dist, X, Y):
     """
     Computes the copy mutual information. Roughly, it is the
     portion of the mutual information which results from :math:`X = Y`.
@@ -68,8 +68,6 @@ def copy_mutual_information(dist, X, Y, rv_mode=None):
         The indicies to consider as X.
     Y : iterable
         The indicies to consider as Y.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------

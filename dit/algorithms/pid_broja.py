@@ -27,7 +27,7 @@ __all__ = (
 )
 
 
-def prepare_dist(dist, sources, target, rv_mode=None):
+def prepare_dist(dist, sources, target):
     """
     Prepares a ``dit`` distribution for the optimization process.
 
@@ -47,8 +47,6 @@ def prepare_dist(dist, sources, target, rv_mode=None):
         random variables in `dist` that define a source.
     target : list
         The random variables in `dist` that define the target.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -340,7 +338,6 @@ class MaximumConditionalEntropy(CVXOPT_Template):
         sources,
         target,
         k=2,
-        rv_mode=None,
         extra_constraints=True,
         source_marginal=False,
         tol=None,
@@ -363,8 +360,6 @@ class MaximumConditionalEntropy(CVXOPT_Template):
             The size of the marginals that are constrained to equal marginals
             from `dist`. For the calculation of unique information, we use k=2.
             Note that these marginals include the target random variable.
-        rv_mode : str, None
-            Deprecated. Kept for signature compatibility.
         extra_constraints : bool
             When possible, additional constraints beyond the required marginal
             constraints are added to the optimization problem. These exist
@@ -393,7 +388,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
         # Store the original parameters in case we want to construct an
         # "uncoalesced" distribution from the optimial distribution.
         self.dist_original = dist
-        self._params = Bunch(sources=sources, target=target, rv_mode=rv_mode)
+        self._params = Bunch(sources=sources, target=target)
 
         self.dist = prepare_dist(dist, sources, target)
         self.k = k
@@ -736,7 +731,7 @@ def demo():
 
 @removals.remove(message="Please see dit.pid.PID_BROJA.", version="1.0.1")
 def k_synergy(
-    d, sources, target, k=2, rv_mode=None, extra_constraints=True, tol=None, prng=None, verbose=None
+    d, sources, target, k=2, extra_constraints=True, tol=None, prng=None, verbose=None
 ):  # pragma: no cover
     """
     Returns the `k`-synergy.
@@ -759,8 +754,6 @@ def k_synergy(
     k : int
         The size of the marginals that are constrained to equal marginals
         from `dist`. For the calculation of unique information, we use k=2.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
     extra_constraints : bool
         When possible, additional constraints beyond the required marginal
         constraints are added to the optimization problem. These exist
@@ -815,7 +808,7 @@ def k_synergy(
 
 @removals.remove(message="Please see dit.pid.PID_BROJA.", version="1.0.1")
 def k_informations(
-    d, sources, target, rv_mode=None, extra_constraints=True, tol=None, prng=None, verbose=None
+    d, sources, target, extra_constraints=True, tol=None, prng=None, verbose=None
 ):  # pragma: no cover
     """
     Returns the amount of :math:`I[sources:target]` captured by matching `k`-way
@@ -833,8 +826,6 @@ def k_informations(
     k : int
         The size of the marginals that are constrained to equal marginals
         from `dist`. For the calculation of unique information, we use `k = 2`.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
     extra_constraints : bool
         When possible, additional constraints beyond the required marginal
         constraints are added to the optimization problem. These exist
@@ -893,7 +884,7 @@ def k_informations(
 
 @removals.remove(message="Please see dit.pid.PID_BROJA.", version="1.0.1")
 def unique_informations(
-    d, sources, target, k=2, rv_mode=None, extra_constraints=True, tol=None, prng=None, verbose=None
+    d, sources, target, k=2, extra_constraints=True, tol=None, prng=None, verbose=None
 ):  # pragma: no cover
     """
     Returns the unique information each source has about the target.
@@ -910,8 +901,6 @@ def unique_informations(
     k : int
         The size of the marginals that are constrained to equal marginals
         from `dist`. For the calculation of unique information, we use k=2.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
     extra_constraints : bool
         When possible, additional constraints beyond the required marginal
         constraints are added to the optimization problem. These exist

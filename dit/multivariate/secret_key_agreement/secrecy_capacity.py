@@ -28,7 +28,7 @@ class SecrecyCapacity(OneWaySKAR):
 
 
 @unitful
-def secrecy_capacity(dist, X, Y, Z, rv_mode=None, niter=None, bound_u=None, backend="numpy"):
+def secrecy_capacity(dist, X, Y, Z, niter=None, bound_u=None, backend="numpy"):
     """
     The rate at which X and Y can agree upon a key over the channel p(YZ|X)
     while Z eavesdrops, and no public communication.
@@ -43,8 +43,6 @@ def secrecy_capacity(dist, X, Y, Z, rv_mode=None, niter=None, bound_u=None, back
         The indices to consider as the Y variable, Bob.
     Z : iterable
         The indices to consider as the Z variable, Eve.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
     niter : int, None
         The number of hops to perform during optimization.
     bound_u : int, None

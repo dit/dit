@@ -30,7 +30,7 @@ def entropy_pmf(pmf):
     return np.nansum(-pmf * np.log2(pmf), axis=-1)
 
 
-def entropy(dist, rvs=None, rv_mode=None):
+def entropy(dist, rvs=None):
     """
     Returns the entropy H[X] over the random variables in `rvs`.
 
@@ -47,8 +47,6 @@ def entropy(dist, rvs=None, rv_mode=None):
         The indexes of the random variable used to calculate the entropy.
         If None, then the entropy is calculated over all random variables.
         This should remain `None` for scalar distributions.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -67,10 +65,7 @@ def entropy(dist, rvs=None, rv_mode=None):
 
         dist = dit.Distribution([dist, 1 - dist])
 
-    if rvs is not None:
-        d = dist.marginal(rvs)
-    else:
-        d = dist
+    d = dist.marginal(rvs) if rvs is not None else dist
 
     pmf = d.pmf
     if d.is_log():
@@ -85,7 +80,7 @@ def entropy(dist, rvs=None, rv_mode=None):
     return H
 
 
-def conditional_entropy(dist, rvs_X, rvs_Y, rv_mode=None):
+def conditional_entropy(dist, rvs_X, rvs_Y):
     """
     Returns the conditional entropy of H[X|Y].
 
@@ -100,8 +95,6 @@ def conditional_entropy(dist, rvs_X, rvs_Y, rv_mode=None):
         The indexes of the random variables defining X.
     rvs_Y : list, None
         The indexes of the random variables defining Y.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -120,7 +113,7 @@ def conditional_entropy(dist, rvs_X, rvs_Y, rv_mode=None):
     return H_XgY
 
 
-def mutual_information(dist, rvs_X, rvs_Y, rv_mode=None):
+def mutual_information(dist, rvs_X, rvs_Y):
     """
     Returns the mutual information I[X:Y].
 
@@ -135,8 +128,6 @@ def mutual_information(dist, rvs_X, rvs_Y, rv_mode=None):
         The indexes of the random variables defining X.
     rvs_Y : list, None
         The indexes of the random variables defining Y.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------

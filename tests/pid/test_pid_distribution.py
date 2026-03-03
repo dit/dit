@@ -7,8 +7,8 @@ PID, and verifies the results match the Distribution-based computation.
 
 import pytest
 
-from dit.pid.distributions import bivariates
 from dit.distribution import Distribution
+from dit.pid.distributions import bivariates
 
 
 def _to_xr(d):

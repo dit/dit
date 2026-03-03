@@ -14,7 +14,7 @@ __all__ = (
 )
 
 
-def disequilibrium(dist, rvs=None, rv_mode=None):
+def disequilibrium(dist, rvs=None):
     """
     Compute the (normalized) disequilibrium as measured the Jensen-Shannon
     divergence from an equilibrium distribution.
@@ -27,18 +27,13 @@ def disequilibrium(dist, rvs=None, rv_mode=None):
         The indexes of the random variable used to calculate the diseqilibrium.
         If None, then the disequilibrium is calculated over all random
         variables. This should remain `None` for scalar distributions.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
     D : float
         The disequilibrium.
     """
-    if rvs is not None:
-        d = dist.marginal(rvs)
-    else:
-        d = dist
+    d = dist.marginal(rvs) if rvs is not None else dist
 
     d = d.copy(base="linear")
     d.make_dense()
@@ -55,7 +50,7 @@ def disequilibrium(dist, rvs=None, rv_mode=None):
     return D
 
 
-def LMPR_complexity(dist, rvs=None, rv_mode=None):
+def LMPR_complexity(dist, rvs=None):
     """
     Compute the LMPR complexity.
 
@@ -66,9 +61,7 @@ def LMPR_complexity(dist, rvs=None, rv_mode=None):
     rvs : list, None
         The indexes of the random variable used to calculate the LMPR
         complexity. If None, then the LMPR complexity is calculated over all
-        random variables. This should remain `None` for scalar distributions.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
+        variables. This should remain `None` for scalar distributions.
 
     Returns
     -------

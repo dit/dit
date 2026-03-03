@@ -14,7 +14,7 @@ __all__ = (
 )
 
 
-def lower_intrinsic_mutual_information_directed(dist, X, Y, Z, rv_mode=None):
+def lower_intrinsic_mutual_information_directed(dist, X, Y, Z):
     """
     A lower bound on the secrecy capacity:
         I[X:Y] - I[X:Z]
@@ -29,8 +29,6 @@ def lower_intrinsic_mutual_information_directed(dist, X, Y, Z, rv_mode=None):
         The variables representing Bob.
     Z : iterable
         The variables representing Eve.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -42,7 +40,7 @@ def lower_intrinsic_mutual_information_directed(dist, X, Y, Z, rv_mode=None):
     return max(0.0, a - b)
 
 
-def lower_intrinsic_mutual_information(dist, rvs, crvs, rv_mode=None):
+def lower_intrinsic_mutual_information(dist, rvs, crvs):
     """
     Compute a trivial lower-bound on the secret key agreement rate.
 
@@ -54,8 +52,6 @@ def lower_intrinsic_mutual_information(dist, rvs, crvs, rv_mode=None):
         The variables representing the agents to agree upon a key.
     crvs : iterable
         The variable representing the eavesdropper.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -67,7 +63,7 @@ def lower_intrinsic_mutual_information(dist, rvs, crvs, rv_mode=None):
     return max([a, b])
 
 
-def upper_intrinsic_total_correlation(dist, rvs, crvs, rv_mode=None):
+def upper_intrinsic_total_correlation(dist, rvs, crvs):
     """
     Compute a trivial upper-bound on the secret key agreement rate.
 
@@ -79,8 +75,6 @@ def upper_intrinsic_total_correlation(dist, rvs, crvs, rv_mode=None):
         The variables representing the agents to agree upon a key.
     crvs : iterable
         The variable representing the eavesdropper.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -92,7 +86,7 @@ def upper_intrinsic_total_correlation(dist, rvs, crvs, rv_mode=None):
     return min([a, b])
 
 
-def upper_intrinsic_dual_total_correlation(dist, rvs, crvs, rv_mode=None):
+def upper_intrinsic_dual_total_correlation(dist, rvs, crvs):
     """
     Compute a trivial upper-bound on the secret key agreement rate.
 
@@ -104,8 +98,6 @@ def upper_intrinsic_dual_total_correlation(dist, rvs, crvs, rv_mode=None):
         The variables representing the agents to agree upon a key.
     crvs : iterable
         The variable representing the eavesdropper.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -117,7 +109,7 @@ def upper_intrinsic_dual_total_correlation(dist, rvs, crvs, rv_mode=None):
     return min([a, b])
 
 
-def upper_intrinsic_caekl_mutual_information(dist, rvs, crvs, rv_mode=None):
+def upper_intrinsic_caekl_mutual_information(dist, rvs, crvs):
     """
     Compute a trivial upper-bound on the secret key agreement rate.
 
@@ -129,8 +121,6 @@ def upper_intrinsic_caekl_mutual_information(dist, rvs, crvs, rv_mode=None):
         The variables representing the agents to agree upon a key.
     crvs : iterable
         The variable representing the eavesdropper.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------

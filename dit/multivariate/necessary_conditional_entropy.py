@@ -12,7 +12,7 @@ __all__ = ("necessary_conditional_entropy",)
 
 
 @unitful
-def necessary_conditional_entropy(dist, rvs=None, crvs=None, rv_mode=None):
+def necessary_conditional_entropy(dist, rvs=None, crvs=None):
     """
     Calculates the necessary conditional entropy :math:`\\H[X \\dagger Y]`.
     This is the entropy of the minimal sufficient statistic of X about Y, given
@@ -30,8 +30,6 @@ def necessary_conditional_entropy(dist, rvs=None, crvs=None, rv_mode=None):
     crvs : list, None
         The indexes of the random variables to condition on. If None, then no
         variables are conditioned on.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -47,7 +45,7 @@ def necessary_conditional_entropy(dist, rvs=None, crvs=None, rv_mode=None):
     -------
 
     """
-    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
+    rvs, crvs = normalize_rvs(dist, rvs, crvs)
     rvs = list(flatten(rvs))
     d = insert_mss(dist, -1, rvs, about=crvs)
     H = entropy(d, [dist.outcome_length()], crvs)

@@ -941,15 +941,6 @@ class TestEdgeCases:
 class TestCompatAttributes:
     """Tests for Tier 1 compatibility attributes."""
 
-    def test_rvs_mapping(self):
-        p = _make_pxy()
-        assert p._rvs == {"X": 0, "Y": 1}
-
-    def test_rvs_mapping_after_rename(self):
-        p = _make_pxy()
-        p.set_rv_names(["A", "B"])
-        assert p._rvs == {"A": 0, "B": 1}
-
     def test_outcome_class_and_ctor(self):
         p = _make_pxy()
         assert p._outcome_class is tuple
@@ -1030,7 +1021,7 @@ class TestRvsProperty:
         c = p.condition_on("Z")
         rvs = c.rvs
         # Z is given, so only X and Y should appear
-        assert [[0], [1]] == rvs
+        assert rvs == [[0], [1]]
 
 
 class TestMask:

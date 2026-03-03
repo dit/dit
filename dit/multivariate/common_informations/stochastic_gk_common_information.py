@@ -21,7 +21,7 @@ class StochasticGKCommonInformation(BaseAuxVarOptimizer):
     name = ""
     description = ""
 
-    def __init__(self, dist, rvs=None, crvs=None, bound=None, rv_mode=None):
+    def __init__(self, dist, rvs=None, crvs=None, bound=None):
         """
         Initialize the optimizer.
 
@@ -39,8 +39,6 @@ class StochasticGKCommonInformation(BaseAuxVarOptimizer):
             condition on. If None, then no variables are conditioned on.
         bound : int
             Place an artificial bound on the size of W.
-        rv_mode : str, None
-            Deprecated. Kept for signature compatibility.
         """
         super().__init__(dist, rvs=rvs, crvs=crvs)
 
@@ -131,7 +129,7 @@ class StochasticGKCommonInformation(BaseAuxVarOptimizer):
 
 @unitful
 def stochastic_gk_common_information(
-    dist, rvs=None, crvs=None, niter=None, maxiter=1000, polish=1e-6, bound=None, rv_mode=None
+    dist, rvs=None, crvs=None, niter=None, maxiter=1000, polish=1e-6, bound=None
 ):
     """
     Compute the functional common information, F, of `dist`. It is the entropy
@@ -151,18 +149,16 @@ def stochastic_gk_common_information(
     crvs : list, None
         A single list of indexes specifying the random variables to condition
         on. If None, then no variables are conditioned on.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
     F : float
         The functional common information.
     """
-    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
+    rvs, crvs = normalize_rvs(dist, rvs, crvs)
 
     # dtc = dual_total_correlation(dist, rvs, crvs)
-    # ent = entropy(dist, rvs, crvs, rv_mode)
+    # ent = entropy(dist, rvs, crvs)
     # if np.isclose(dtc, ent):
     #     return dtc
 

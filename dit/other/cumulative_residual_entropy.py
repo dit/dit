@@ -6,7 +6,7 @@ cumulative residual entropy.
 import numpy as np
 from boltons.iterutils import pairwise
 
-from .. import Distribution
+from ..distribution import Distribution
 from ..helpers import numerical_test
 
 __all__ = (
@@ -128,7 +128,7 @@ def cumulative_residual_entropy(dist, extract=False):
     return generalized_cumulative_residual_entropy(abs_dist, extract)
 
 
-def conditional_cumulative_residual_entropy(dist, rv, crvs=None, rv_mode=None):
+def conditional_cumulative_residual_entropy(dist, rv, crvs=None):
     """
     Returns the conditional cumulative residual entropy.
 
@@ -144,8 +144,6 @@ def conditional_cumulative_residual_entropy(dist, rv, crvs=None, rv_mode=None):
     crvs : list, None
         The random variables to condition on. If `None`, nothing is conditioned
         on.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -178,7 +176,7 @@ def conditional_cumulative_residual_entropy(dist, rv, crvs=None, rv_mode=None):
     return ccre
 
 
-def conditional_generalized_cumulative_residual_entropy(dist, rv, crvs=None, rv_mode=None):
+def conditional_generalized_cumulative_residual_entropy(dist, rv, crvs=None):
     """
     Returns the conditional cumulative residual entropy.
 
@@ -194,8 +192,6 @@ def conditional_generalized_cumulative_residual_entropy(dist, rv, crvs=None, rv_
     crvs : list, None
         The random variables to condition on. If `None`, nothing is conditioned
         on.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------

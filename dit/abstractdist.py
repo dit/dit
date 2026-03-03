@@ -279,7 +279,7 @@ def distribution_constraint(indexes1, indexes2, distribution):
     return A, b
 
 
-def brute_marginal_array(d, rvs, rv_mode=None):
+def brute_marginal_array(d, rvs):
     """A brute force computation of the marginal array.
 
     The parameter array tells which elements of the joint pmf must be summed

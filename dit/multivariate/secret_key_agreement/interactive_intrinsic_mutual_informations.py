@@ -21,7 +21,7 @@ class InteractiveSKARMixin:
     Must be composed with a ``BaseAuxVarOptimizer``-compatible base class.
     """
 
-    def __init__(self, dist, rv_x=None, rv_y=None, rv_z=None, rounds=2, bound_func=None, rv_mode=None):
+    def __init__(self, dist, rv_x=None, rv_y=None, rv_z=None, rounds=2, bound_func=None):
         """
         Initialize the optimizer.
 
@@ -39,8 +39,6 @@ class InteractiveSKARMixin:
             The number of communication rounds to utilize. Defaults to 2.
         bound_func : func
             A function over i, |X|, |Y| which returns the bound on variable U_i.
-        rv_mode : str, None
-            Deprecated. Kept for signature compatibility.
         """
         super().__init__(dist, [rv_x, rv_y], rv_z)
 
@@ -134,7 +132,7 @@ class InteractiveSKAR(InteractiveSKARMixin, BaseAuxVarOptimizer):
 
 @unitful
 def interactive_intrinsic_mutual_information(
-    dist, rvs=None, crvs=None, rounds=2, bound_func=None, niter=None, rv_mode=None, backend="numpy"
+    dist, rvs=None, crvs=None, rounds=2, bound_func=None, niter=None, backend="numpy"
 ):
     """
     Compute a lower bound on the secret key agreement rate based on
@@ -154,8 +152,6 @@ def interactive_intrinsic_mutual_information(
         A function over i, |X|, |Y| which returns the bound on variable U_i.
     niter : int, None
         The number of hops to perform during optimization.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
     backend : str
         The optimization backend. One of ``'numpy'`` (default),
         ``'jax'``, or ``'torch'``.

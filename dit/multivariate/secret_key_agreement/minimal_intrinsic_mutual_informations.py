@@ -2,7 +2,7 @@
 An upper bound on the two-way secret key agreement rate.
 """
 
-from ... import Distribution
+from ...distribution import Distribution
 from .base_skar_optimizers import BaseMinimalIntrinsicMutualInformation
 
 __all__ = (

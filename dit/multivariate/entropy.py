@@ -12,7 +12,7 @@ __all__ = ("entropy",)
 
 
 @unitful
-def entropy(dist, rvs=None, crvs=None, rv_mode=None):
+def entropy(dist, rvs=None, crvs=None):
     """
     Calculates the conditional joint entropy.
 
@@ -26,8 +26,6 @@ def entropy(dist, rvs=None, crvs=None, rv_mode=None):
     crvs : list, None
         The indexes of the random variables to condition on. If None, then no
         variables are conditioned on.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -54,7 +52,7 @@ def entropy(dist, rvs=None, crvs=None, rv_mode=None):
 
     We can do this using random variables indexes too.
 
-    >>> dit.multivariate.entropy(d, [0,1,2], rv_mode='indexes')
+    >>> dit.multivariate.entropy(d, [0,1,2])
     2.0
 
     The joint entropy H[X,Z] is given by:
@@ -70,7 +68,7 @@ def entropy(dist, rvs=None, crvs=None, rv_mode=None):
 
     """
     if rvs is not None or crvs is not None:
-        rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
+        rvs, crvs = normalize_rvs(dist, rvs, crvs)
         rvs = list(flatten(rvs))
         H = conditional_entropy(dist, rvs, crvs)
     else:

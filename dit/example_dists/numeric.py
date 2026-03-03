@@ -2,7 +2,7 @@
 Some standard discrete distribution.
 """
 
-from .. import Distribution
+from ..distribution import Distribution
 from ..math.misc import combinations as C
 from ..math.misc import is_integer, is_number
 

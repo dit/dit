@@ -10,7 +10,7 @@ __all__ = ("coinformation",)
 
 
 @unitful
-def coinformation(dist, rvs=None, crvs=None, rv_mode=None):
+def coinformation(dist, rvs=None, crvs=None):
     """
     Calculates the coinformation.
 
@@ -25,8 +25,6 @@ def coinformation(dist, rvs=None, crvs=None, rv_mode=None):
     crvs : list, None
         The indexes of the random variables to condition on. If None, then no
         variables are condition on.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -63,7 +61,7 @@ def coinformation(dist, rvs=None, crvs=None, rv_mode=None):
     The reason this works is that list('XYZ') == ['X', 'Y', 'Z']. If we want
     to use random variable indexes, we need to have explicit groupings:
 
-    >>> dit.multivariate.coinformation(d, [[0], [1], [2]], rv_mode='indexes')
+    >>> dit.multivariate.coinformation(d, [[0], [1], [2]])
     -1.0
 
 
@@ -74,7 +72,7 @@ def coinformation(dist, rvs=None, crvs=None, rv_mode=None):
 
     Using indexes, this looks like:
 
-    >>> dit.multivariate.coinformation(d, [[0, 1], [2]], rv_mode='indexes')
+    >>> dit.multivariate.coinformation(d, [[0, 1], [2]])
 
 
 
@@ -105,7 +103,7 @@ def coinformation(dist, rvs=None, crvs=None, rv_mode=None):
 
     >>> rvs = [[0], [1]]
     >>> crvs = [[2]] # broken
-    >>> dit.multivariate.coinformation(d, rvs, crvs, rv_mode='indexes')
+    >>> dit.multivariate.coinformation(d, rvs, crvs)
     1.0
 
     For the conditional random variables, groupings have no effect, so you
@@ -113,7 +111,7 @@ def coinformation(dist, rvs=None, crvs=None, rv_mode=None):
 
     >>> rvs = [[0], [1]]
     >>> crvs = [2]
-    >>> dit.multivariate.coinformation(d, rvs, crvs, rv_mode='indexes')
+    >>> dit.multivariate.coinformation(d, rvs, crvs)
     1.0
 
 
@@ -123,20 +121,20 @@ def coinformation(dist, rvs=None, crvs=None, rv_mode=None):
 
     >>> rvs = [[2]]
     >>> crvs = [[0], [1]] # broken
-    >>> dit.multivariate.coinformation(d, rvs, crvs, rv_mode='indexes')
+    >>> dit.multivariate.coinformation(d, rvs, crvs)
     0.0
 
     >>> crvs = [[0, 1]] # broken
-    >>> dit.multivariate.coinformation(d, rvs, crvs, rv_mode='indexes')
+    >>> dit.multivariate.coinformation(d, rvs, crvs)
     0.0
 
     >>> crvs = [0, 1]
-    >>> dit.multivariate.coinformation(d, rvs, crvs, rv_mode='indexes')
+    >>> dit.multivariate.coinformation(d, rvs, crvs)
     0.0
 
     >>> rvs = 'Z'
     >>> crvs = 'XY'
-    >>> dit.multivariate.coinformation(d, rvs, crvs, rv_mode='indexes')
+    >>> dit.multivariate.coinformation(d, rvs, crvs)
     0.0
 
     Note that [[0], [1]] says to condition on two groups. But conditioning
@@ -147,7 +145,7 @@ def coinformation(dist, rvs=None, crvs=None, rv_mode=None):
     be treated the same as ['XY'].
 
     """
-    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
+    rvs, crvs = normalize_rvs(dist, rvs, crvs)
 
     def entropy(rvs, dist=dist, crvs=crvs):
         """

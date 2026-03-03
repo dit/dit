@@ -16,7 +16,7 @@ __all__ = ("mss_common_information",)
 
 
 @unitful
-def mss_common_information(dist, rvs=None, crvs=None, rv_mode=None):
+def mss_common_information(dist, rvs=None, crvs=None):
     """
     Compute the minimal sufficient statistic common information, which is the
     entropy of the join of the minimal sufficent statistic of each variable
@@ -30,13 +30,11 @@ def mss_common_information(dist, rvs=None, crvs=None, rv_mode=None):
         The random variables to compute the joint minimal sufficient statistic of. If None, all random variables are used.
     crvs : list, None
         The random variables to condition the joint minimal sufficient statistic on. If None, then no random variables are conditioned on.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     """
     dist = deepcopy(dist)
     dist.make_sparse()
-    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
+    rvs, crvs = normalize_rvs(dist, rvs, crvs)
 
     dtc = dual_total_correlation(dist, rvs, crvs)
     ent = entropy(dist, rvs, crvs)

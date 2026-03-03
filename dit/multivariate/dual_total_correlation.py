@@ -17,7 +17,7 @@ __all__ = (
 
 
 @unitful
-def dual_total_correlation(dist, rvs=None, crvs=None, rv_mode=None):
+def dual_total_correlation(dist, rvs=None, crvs=None):
     """
     Calculates the dual total correlation, also known as the binding
     information.
@@ -33,8 +33,6 @@ def dual_total_correlation(dist, rvs=None, crvs=None, rv_mode=None):
     crvs : list, None
         The indexes of the random variables to condition on. If None, then no
         variables are condition on.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -47,7 +45,7 @@ def dual_total_correlation(dist, rvs=None, crvs=None, rv_mode=None):
         Raised if `dist` is not a joint distribution or if `rvs` or `crvs`
         contain non-existant random variables.
     """
-    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
+    rvs, crvs = normalize_rvs(dist, rvs, crvs)
 
     others = lambda rv, rvs: set(set().union(*rvs)) - set(rv)
 
@@ -59,7 +57,7 @@ def dual_total_correlation(dist, rvs=None, crvs=None, rv_mode=None):
 
 
 @unitful
-def residual_entropy(dist, rvs=None, crvs=None, rv_mode=None):
+def residual_entropy(dist, rvs=None, crvs=None):
     """
     Compute the residual entropy.
 
@@ -74,8 +72,6 @@ def residual_entropy(dist, rvs=None, crvs=None, rv_mode=None):
     crvs : list, None
         The indexes of the random variables to condition on. If None, then no
         variables are condition on.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -88,7 +84,7 @@ def residual_entropy(dist, rvs=None, crvs=None, rv_mode=None):
         Raised if `dist` is not a joint distribution or if `rvs` or `crvs`
         contain non-existant random variables.
     """
-    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
+    rvs, crvs = normalize_rvs(dist, rvs, crvs)
 
     others = lambda rv, rvs: set(set().union(*rvs)) - set(rv)
 
@@ -98,7 +94,7 @@ def residual_entropy(dist, rvs=None, crvs=None, rv_mode=None):
 
 
 @unitful
-def generalized_dual_total_correlation(dist, order, rvs=None, crvs=None, rv_mode=None):
+def generalized_dual_total_correlation(dist, order, rvs=None, crvs=None):
     """
     Compute the generalized dual total correlation. It is the sum of all
     co-informations (conditioned or not) over at least `order` variables.
@@ -117,8 +113,6 @@ def generalized_dual_total_correlation(dist, order, rvs=None, crvs=None, rv_mode
     crvs : list, None
         The indexes of the random variables to condition on. If None, then no
         variables are condition on.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -133,7 +127,7 @@ def generalized_dual_total_correlation(dist, order, rvs=None, crvs=None, rv_mode
     """
     from ..profiles import ShannonPartition
 
-    rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
+    rvs, crvs = normalize_rvs(dist, rvs, crvs)
 
     rvs = {tuple(rv) for rv in rvs}
     crvs = set(crvs)

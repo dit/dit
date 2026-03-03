@@ -17,9 +17,9 @@ from abc import abstractmethod
 import numpy as np
 
 from ...algorithms import BaseAuxVarOptimizer
+from ...distribution import Distribution
 from ...exceptions import ditException
 from ...math import prod
-from ... import Distribution
 from ...utils import unitful
 from .._backend import _make_backend_subclass
 
@@ -40,7 +40,7 @@ class OneWaySKARMixin:
     Must be composed with a ``BaseAuxVarOptimizer``-compatible base class.
     """
 
-    def __init__(self, dist, rv_x=None, rv_y=None, rv_z=None, rv_mode=None, bound_u=None, bound_v=None):
+    def __init__(self, dist, rv_x=None, rv_y=None, rv_z=None, bound_u=None, bound_v=None):
         """
         Initialize the optimizer.
 
@@ -54,8 +54,6 @@ class OneWaySKARMixin:
             The variables to consider `Y`.
         rv_z : iterable
             The variables to consider `Z`.
-        rv_mode : str, None
-            Deprecated. Kept for signature compatibility.
         bound_u : int, None
             Specifies a bound on the size of the auxiliary random variable. If
             None, then the theoretical bound is used.
@@ -113,7 +111,7 @@ class IntrinsicMIMixin:
 
     name = ""
 
-    def __init__(self, dist, rvs=None, crvs=None, bound=None, rv_mode=None):
+    def __init__(self, dist, rvs=None, crvs=None, bound=None):
         """
         Initialize the optimizer.
 
@@ -132,8 +130,6 @@ class IntrinsicMIMixin:
         bound : int, None
             Specifies a bound on the size of the auxiliary random variable. If None,
             then the theoretical bound is used.
-        rv_mode : str, None
-            Deprecated. Kept for signature compatibility.
         """
         if not crvs:
             msg = "Intrinsic mutual informations require a conditional variable."
@@ -178,7 +174,7 @@ class IntrinsicMIMixin:
         """
 
         @unitful
-        def intrinsic(dist, rvs=None, crvs=None, niter=None, bound=None, rv_mode=None, backend="numpy"):
+        def intrinsic(dist, rvs=None, crvs=None, niter=None, bound=None, backend="numpy"):
             actual_cls = _make_backend_subclass(cls, backend)
             opt = actual_cls(dist, rvs=rvs, crvs=crvs, bound=bound)
             opt.optimize(niter=niter)
@@ -205,13 +201,6 @@ class IntrinsicMIMixin:
         bound : int, None
             Bound on the size of the auxiliary variable. If None, use the
             theoretical bound.
-        rv_mode : str, None
-            Specifies how to interpret `rvs` and `crvs`. Valid options are:
-            {{'indices', 'names'}}. If equal to 'indices', then the elements of
-            `crvs` and `rvs` are interpreted as random variable indices. If
-            equal to 'names', the the elements are interpreted as random
-            variable names. If `None`, then the value of `dist._rv_mode` is
-            consulted, which defaults to 'indices'.
         backend : str
             The optimization backend. One of ``'numpy'`` (default),
             ``'jax'``, or ``'torch'``.
@@ -229,7 +218,7 @@ class MoreIntrinsicMIMixin:
 
     name = ""
 
-    def __init__(self, dist, rvs=None, crvs=None, bound=None, rv_mode=None):
+    def __init__(self, dist, rvs=None, crvs=None, bound=None):
         """
         Initialize the optimizer.
 
@@ -248,8 +237,6 @@ class MoreIntrinsicMIMixin:
         bound : int, None
             Specifies a bound on the size of the auxiliary random variable. If None,
             then the theoretical bound is used.
-        rv_mode : str, None
-            Deprecated. Kept for signature compatibility.
         """
         if not crvs:
             msg = "Intrinsic mutual informations require a conditional variable."
@@ -289,7 +276,7 @@ class MoreIntrinsicMIMixin:
         """
 
         @unitful
-        def intrinsic(dist, rvs=None, crvs=None, niter=None, bounds=None, rv_mode=None, backend="numpy"):
+        def intrinsic(dist, rvs=None, crvs=None, niter=None, bounds=None, backend="numpy"):
             if bounds is None:
                 bounds = (2, 3, 4, None)
 
@@ -323,13 +310,6 @@ class MoreIntrinsicMIMixin:
             bounds : [int], None
                 Bounds on the size of the auxiliary variable. If None, use the
                 theoretical bound. This is used to better sample smaller subspaces.
-            rv_mode : str, None
-                Specifies how to interpret `rvs` and `crvs`. Valid options are:
-                {{'indices', 'names'}}. If equal to 'indices', then the elements of
-                `crvs` and `rvs` are interpreted as random variable indices. If
-                equal to 'names', the the elements are interpreted as random
-                variable names. If `None`, then the value of `dist._rv_mode` is
-                consulted, which defaults to 'indices'.
             backend : str
                 The optimization backend. One of ``'numpy'`` (default),
                 ``'jax'``, or ``'torch'``.
@@ -347,7 +327,7 @@ class InnerTwoPartIMIMixin:
 
     name = ""
 
-    def __init__(self, dist, rvs=None, crvs=None, j=None, bound_u=None, bound_v=None, rv_mode=None):
+    def __init__(self, dist, rvs=None, crvs=None, j=None, bound_u=None, bound_v=None):
         """
         Initialize the optimizer.
 
@@ -372,8 +352,6 @@ class InnerTwoPartIMIMixin:
         bound_v : int, None
             Specifies a bound on the size of the V auxiliary random variable. If
             None, then the theoretical bound is used.
-        rv_mode : str, None
-            Deprecated. Kept for signature compatibility.
         """
         if not crvs:
             msg = "Intrinsic mutual informations require a conditional variable."
@@ -446,7 +424,7 @@ class TwoPartIMIMixin:
 
     name = ""
 
-    def __init__(self, dist, rvs=None, crvs=None, bound_j=None, bound_u=None, bound_v=None, rv_mode=None):
+    def __init__(self, dist, rvs=None, crvs=None, bound_j=None, bound_u=None, bound_v=None):
         """
         Initialize the optimizer.
 
@@ -471,8 +449,6 @@ class TwoPartIMIMixin:
         bound_v : int, None
             Specifies a bound on the size of the V auxiliary random variable. If
             None, then the theoretical bound is used.
-        rv_mode : str, None
-            Deprecated. Kept for signature compatibility.
         """
         if not crvs:
             msg = "Intrinsic mutual informations require a conditional variable."
@@ -560,7 +536,6 @@ class TwoPartIMIMixin:
             bound_j=None,
             bound_u=None,
             bound_v=None,
-            rv_mode=None,
             backend="numpy",
         ):
             bounds = {
@@ -606,13 +581,6 @@ class TwoPartIMIMixin:
             bound_v : int, None
                 Specifies a bound on the size of the V auxiliary random
                 variable. If None, then the theoretical bound is used.
-            rv_mode : str, None
-                Specifies how to interpret `rvs` and `crvs`. Valid options are:
-                {{'indices', 'names'}}. If equal to 'indices', then the elements
-                of `crvs` and `rvs` are interpreted as random variable indices.
-                If equal to 'names', the the elements are interpreted as random
-                variable names. If `None`, then the value of `dist._rv_mode` is
-                consulted, which defaults to 'indices'.
             backend : str
                 The optimization backend. One of ``'numpy'`` (default),
                 ``'jax'``, or ``'torch'``.

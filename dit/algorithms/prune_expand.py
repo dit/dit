@@ -6,7 +6,6 @@ is also important for the calculations of various PID quantities.
 """
 
 from dit.exceptions import InvalidOutcome
-from dit.samplespace import CartesianProduct, SampleSpace, ScalarSampleSpace
 
 __all__ = (
     "expanded_samplespace",
@@ -111,10 +110,7 @@ def expanded_samplespace(d, alphabets=None, union=True):
                 raise InvalidOutcome(o, "not in expanded alphabet")
 
     # Build the new distribution by constructing the full sample space
-    if joint:
-        new_ss = list(itertools.product(*alphabets))
-    else:
-        new_ss = [(v,) for v in alphabets]
+    new_ss = list(itertools.product(*alphabets)) if joint else [(v,) for v in alphabets]
 
     # Map old outcomes to probabilities
     old_probs = dict(d.zipped())

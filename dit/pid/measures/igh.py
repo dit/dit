@@ -17,7 +17,7 @@ class GHOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
 
     construct_initial = BaseAuxVarOptimizer.construct_copy_initial
 
-    def __init__(self, dist, sources, target, bound=None, rv_mode=None):
+    def __init__(self, dist, sources, target, bound=None):
         """
         Initialize the optimizer.
 
@@ -36,8 +36,6 @@ class GHOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
         bound : int, None
             Specifies a bound on the size of the auxiliary random variable. If None,
             then the theoretical bound is used.
-        rv_mode : str, None
-            Deprecated. Kept for signature compatibility.
         """
         super().__init__(dist, sources, target)
 

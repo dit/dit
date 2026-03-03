@@ -27,7 +27,7 @@ class HypercontractivityCoefficient(BaseAuxVarOptimizer):
 
     _shotgun = 5
 
-    def __init__(self, dist, rv_x=None, rv_y=None, bound=None, rv_mode=None):
+    def __init__(self, dist, rv_x=None, rv_y=None, bound=None):
         """
         Initialize the optimizer.
 
@@ -42,8 +42,6 @@ class HypercontractivityCoefficient(BaseAuxVarOptimizer):
         bound : int, None
             Specifies a bound on the size of the auxiliary random variable. If None,
             then the theoretical bound is used.
-        rv_mode : str, None
-            Deprecated. Kept for signature compatibility.
         """
         self._x = {0}
         self._y = {1}
@@ -89,7 +87,7 @@ class HypercontractivityCoefficient(BaseAuxVarOptimizer):
         return objective
 
 
-def hypercontractivity_coefficient(dist, rvs, bound=None, niter=None, rv_mode=None):
+def hypercontractivity_coefficient(dist, rvs, bound=None, niter=None):
     """
     Computes the hypercontractivity coefficient:
 
@@ -107,15 +105,13 @@ def hypercontractivity_coefficient(dist, rvs, bound=None, niter=None, rv_mode=No
         An external bound on the size of `U`. If None, :math:`|U| <= |X|+1`.
     niter : int, None
         The number of basin-hopping steps to perform. If None, use the default.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
     hc : float
         The hypercontractivity coefficient.
     """
-    rvs, _, rv_mode = normalize_rvs(dist, rvs, None)
+    rvs, _ = normalize_rvs(dist, rvs, None)
 
     if len(rvs) != 2:
         msg = f"Hypercontractivity coefficient can only be computed for 2 variables, not {len(rvs)}."

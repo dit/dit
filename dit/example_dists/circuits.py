@@ -3,7 +3,7 @@ Distributions based on circuits with independent inputs.
 """
 
 import dit
-from dit import Distribution
+from dit.distribution import Distribution
 
 __all__ = (
     "And",

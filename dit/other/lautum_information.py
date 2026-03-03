@@ -9,7 +9,7 @@ from dit.helpers import normalize_rvs
 __all__ = ("lautum_information",)
 
 
-def lautum_information(dist, rvs=None, crvs=None, rv_mode=None):
+def lautum_information(dist, rvs=None, crvs=None):
     """
     Computes the lautum information.
 
@@ -25,8 +25,6 @@ def lautum_information(dist, rvs=None, crvs=None, rv_mode=None):
     crvs : list, None
         A single list of indexes specifying the random variables to condition
         on. If None, then no variables are conditioned on.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -49,7 +47,7 @@ def lautum_information(dist, rvs=None, crvs=None, rv_mode=None):
         Raised if `dist` is not a joint distribution or if `rvs` or `crvs`
         contain non-existent random variables.
     """
-    rvs, crvs, _ = normalize_rvs(dist, rvs, crvs)
+    rvs, crvs = normalize_rvs(dist, rvs, crvs)
 
     pd = product_distribution(dist, rvs=rvs + [crvs])
     L = kullback_leibler_divergence(pd, dist, rvs=rvs, crvs=crvs)

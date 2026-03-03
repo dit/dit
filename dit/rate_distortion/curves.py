@@ -4,8 +4,8 @@ Objects to compute single rate-distortion curves.
 
 import numpy as np
 
-from .. import Distribution
 from ..algorithms.minimal_sufficient_statistic import mss
+from ..distribution import Distribution
 from ..exceptions import ditException
 from ..multivariate import entropy, total_correlation
 from ..utils import flatten
@@ -291,7 +291,6 @@ class IBCurve:
         dist,
         rvs=None,
         crvs=None,
-        rv_mode=None,
         beta_min=0.0,
         beta_max=15.0,
         beta_num=101,
@@ -311,8 +310,6 @@ class IBCurve:
             If None, use [0], [1].
         crvs : iterable, None
             The random variables to condition on.
-        rv_mode : str, None
-            Deprecated. Kept for signature compatibility.
         beta_min : float
             The minimum beta value for the curve. Defaults to 0.
         beta_max : float, None

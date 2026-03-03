@@ -4,8 +4,8 @@ Tests for dit.multivariate.total_correlation.
 
 import pytest
 
-from dit import Distribution as D
 from dit import Distribution
+from dit import Distribution as D
 from dit.example_dists import n_mod_m
 from dit.multivariate import total_correlation as T
 from dit.shannon import mutual_information as I

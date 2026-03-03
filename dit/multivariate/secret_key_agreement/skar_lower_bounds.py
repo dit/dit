@@ -13,7 +13,7 @@ __all__ = (
 
 
 @unitful
-def secrecy_capacity_skar(dist, rvs=None, crvs=None, rv_mode=None, niter=None, bound_u=None, backend="numpy"):
+def secrecy_capacity_skar(dist, rvs=None, crvs=None, niter=None, bound_u=None, backend="numpy"):
     """
     The rate at which X and Y can agree upon a key with Z eavesdropping,
     and no public communication.
@@ -26,8 +26,6 @@ def secrecy_capacity_skar(dist, rvs=None, crvs=None, rv_mode=None, niter=None, b
         The indices of the random variables agreeing upon a secret key.
     crvs : iterable
         The indices of the eavesdropper.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
     niter : int, None
         The number of hops to perform during optimization.
     bound_u : int, None
@@ -49,7 +47,7 @@ def secrecy_capacity_skar(dist, rvs=None, crvs=None, rv_mode=None, niter=None, b
 
 @unitful
 def necessary_intrinsic_mutual_information(
-    dist, rvs, crvs, rv_mode=None, niter=None, bound_u=None, bound_v=None, backend="numpy"
+    dist, rvs, crvs, niter=None, bound_u=None, bound_v=None, backend="numpy"
 ):
     """
     Compute a non-trivial lower bound on secret key agreement rate.
@@ -62,8 +60,6 @@ def necessary_intrinsic_mutual_information(
         The indices of the random variables agreeing upon a secret key.
     crvs : iterable
         The indices of the eavesdropper.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
     niter : int, None
         The number of hops to perform during optimization.
     bound_u : int, None

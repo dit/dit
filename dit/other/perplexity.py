@@ -8,7 +8,7 @@ from ..utils.misc import flatten
 __all__ = ("perplexity",)
 
 
-def perplexity(dist, rvs=None, crvs=None, rv_mode=None):
+def perplexity(dist, rvs=None, crvs=None):
     """
     Parameters
     ----------
@@ -20,8 +20,6 @@ def perplexity(dist, rvs=None, crvs=None, rv_mode=None):
     crvs : list, None
         The indexes of the random variables to condition on. If None, then no
         variables are condition on.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------

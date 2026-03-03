@@ -9,7 +9,7 @@ __all__ = ("no_communication_skar",)
 
 
 @unitful
-def no_communication_skar(dist, rv_x, rv_y, rv_z, rv_mode=None):
+def no_communication_skar(dist, rv_x, rv_y, rv_z):
     """
     The rate at which X and Y can agree upon a key with Z eavesdropping,
     and no public communication.
@@ -24,8 +24,6 @@ def no_communication_skar(dist, rv_x, rv_y, rv_z, rv_mode=None):
         The indices to consider as the Y variable, Bob.
     rv_z : iterable
         The indices to consider as the Z variable, Eve.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------

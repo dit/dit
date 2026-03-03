@@ -25,7 +25,7 @@ __all__ = (
 ## Crooks: http://threeplusone.com/on_information.pdf
 
 
-def double_power_sum(dist1, dist2, exp1=1, exp2=1, rvs=None, rv_mode=None):
+def double_power_sum(dist1, dist2, exp1=1, exp2=1, rvs=None):
     """
     A common generalization of the sums needed to compute the Hellinger
     and alpha divergences below.
@@ -42,8 +42,6 @@ def double_power_sum(dist1, dist2, exp1=1, exp2=1, rvs=None, rv_mode=None):
     rvs : list, None
         The indexes of the random variable used to calculate the sum.
         If None, then the sum is calculated over all random variables.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -56,7 +54,7 @@ def double_power_sum(dist1, dist2, exp1=1, exp2=1, rvs=None, rv_mode=None):
         Raised if either `dist1` or `dist2` doesn't have `rvs` or, if `rvs` is
         None, if `dist2` has an outcome length different than `dist1`.
     """
-    rvs, _, rv_mode = normalize_rvs(dist1, rvs, None)
+    rvs, _ = normalize_rvs(dist1, rvs, None)
     rvs = list(flatten(rvs))
     normalize_rvs(dist2, rvs, None)
 
@@ -66,7 +64,7 @@ def double_power_sum(dist1, dist2, exp1=1, exp2=1, rvs=None, rv_mode=None):
     return div
 
 
-def hellinger_sum(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
+def hellinger_sum(dist1, dist2, alpha=1.0, rvs=None):
     """
     The Hellinger sum/integral of `dist1` and `dist2`, used to define other
     divergences.
@@ -82,8 +80,6 @@ def hellinger_sum(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
     rvs : list, None
         The indexes of the random variable used to calculate the sum.
         If None, then the sum is calculated over all random variables.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -99,7 +95,7 @@ def hellinger_sum(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
     return double_power_sum(dist1, dist2, alpha, 1 - alpha, rvs=rvs)
 
 
-def hellinger_divergence(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
+def hellinger_divergence(dist1, dist2, alpha=1.0, rvs=None):
     # http://mitran-lab.amath.unc.edu:8082/subversion/grants/Proposals/2013/DOE-DataCentric/biblio/LieseVajdaDivergencesInforTheory.pdf
     """
     The Hellinger divergence of `dist1` and `dist2`.
@@ -116,8 +112,6 @@ def hellinger_divergence(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
         The indexes of the random variable used to calculate the
         Hellinger divergence between. If None, then the Hellinger
         divergence is calculated over all random variables.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -136,7 +130,7 @@ def hellinger_divergence(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
     return (s - 1) / (alpha - 1)
 
 
-def tsallis_divergence(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
+def tsallis_divergence(dist1, dist2, alpha=1.0, rvs=None):
     """
     The Tsallis divergence of `dist1` and `dist2`.
 
@@ -152,8 +146,6 @@ def tsallis_divergence(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
         The indexes of the random variable used to calculate the
         Tsallis divergence between. If None, then the Tsallis
         divergence is calculated over all random variables.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -175,7 +167,7 @@ def tsallis_divergence(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
     return div
 
 
-def renyi_divergence(dist1, dist2, alpha=1, rvs=None, rv_mode=None):
+def renyi_divergence(dist1, dist2, alpha=1, rvs=None):
     """
     The Renyi divergence of `dist1` and `dist2`.
 
@@ -191,8 +183,6 @@ def renyi_divergence(dist1, dist2, alpha=1, rvs=None, rv_mode=None):
         The indexes of the random variable used to calculate the
         Renyi divergence between. If None, then the Renyi
         divergence is calculated over all random variables.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -214,7 +204,7 @@ def renyi_divergence(dist1, dist2, alpha=1, rvs=None, rv_mode=None):
     return div
 
 
-def alpha_divergence(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
+def alpha_divergence(dist1, dist2, alpha=1.0, rvs=None):
     """
     The alpha divergence of `dist1` and `dist2`, as used in Information
     Geometry. Note there is more than one inequivalent definition of
@@ -233,8 +223,6 @@ def alpha_divergence(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
         The indexes of the random variable used to calculate the
         alpha divergence between. If None, then the alpha
         divergence is calculated over all random variables.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -255,7 +243,7 @@ def alpha_divergence(dist1, dist2, alpha=1.0, rvs=None, rv_mode=None):
     return 4 * (1 - s) / (1 - alpha * alpha)
 
 
-def f_divergence(dist1, dist2, f, rvs=None, rv_mode=None):
+def f_divergence(dist1, dist2, f, rvs=None):
     """
     The Csiszar f-divergence of `dist1` and `dist2`. Note that it is typically
     more accurate to use a specialized divergence function when available
@@ -273,8 +261,6 @@ def f_divergence(dist1, dist2, f, rvs=None, rv_mode=None):
         The indexes of the random variable used to calculate the
         f-divergence between. If None, then the
         f-divergence is calculated over all random variables.
-    rv_mode : str, None
-        Deprecated. Kept for signature compatibility.
 
     Returns
     -------
@@ -285,9 +271,9 @@ def f_divergence(dist1, dist2, f, rvs=None, rv_mode=None):
     ------
     ditException
         Raised if either `dist1` or `dist2` doesn't have `rvs` or, if `rvs` is
-        None, if `dist2` has an outcome length different than `dist1`.
+        None,         if `dist2` has an outcome length different than `dist1`.
     """
-    rvs, _, rv_mode = normalize_rvs(dist1, rvs, None)
+    rvs, _ = normalize_rvs(dist1, rvs, None)
     rvs = list(flatten(rvs))
     normalize_rvs(dist2, rvs, None)
 

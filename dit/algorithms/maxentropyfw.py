@@ -14,7 +14,6 @@ from debtcollector import removals
 from loguru import logger
 
 import dit
-from dit.helpers import RV_MODES
 from dit.utils import basic_logger
 
 from .frankwolfe import frank_wolfe
@@ -164,8 +163,6 @@ def marginal_maxent_generic(dist, rvs, **kwargs):
     verbose = kwargs.get("verbose", False)
     fw_logger = basic_logger("dit.maxentropy", verbose)
 
-    kwargs.pop("rv_mode", None)
-
     A, b = marginal_constraints_generic(dist, rvs)
 
     # Reduce the size of A so that only nonzero elements are searched.
@@ -224,15 +221,8 @@ def marginal_maxent(dist, k, **kwargs):
         msg = msg.format(k, n_variables)
         raise ValueError(msg)
 
-    kwargs.pop("rv_mode", None)
-
-    rv_mode = dist._rv_mode
-
     variables = dist.get_rv_names()
-    if variables is not None:
-        rvs = list(combinations(variables, k))
-    else:
-        rvs = list(combinations(range(n_variables), k))
+    rvs = list(combinations(variables, k)) if variables is not None else list(combinations(range(n_variables), k))
 
     return marginal_maxent_generic(dist, rvs, **kwargs)
 

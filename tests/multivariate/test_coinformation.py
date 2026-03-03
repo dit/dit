@@ -4,8 +4,8 @@ Tests for dit.multivariate.coinformation.
 
 import pytest
 
-from dit import Distribution as D
 from dit import Distribution
+from dit import Distribution as D
 from dit.example_dists import n_mod_m
 from dit.multivariate import coinformation as I
 from dit.multivariate import entropy as H

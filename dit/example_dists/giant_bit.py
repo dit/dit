@@ -4,7 +4,7 @@ Giant bit type distributions.
 
 from itertools import product
 
-from .. import Distribution
+from ..distribution import Distribution
 
 __all__ = (
     "giant_bit",

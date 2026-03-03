@@ -59,10 +59,10 @@ from scipy.optimize import Bounds, basinhopping, differential_evolution, minimiz
 
 from ..algorithms.channelcapacity import channel_capacity
 from ..distconst import insert_rvf, modify_outcomes
+from ..distribution import Distribution
 from ..exceptions import OptimizationException, ditException
 from ..helpers import flatten, normalize_rvs, parse_rvs
 from ..math import prod, sample_simplex
-from .. import Distribution
 from ..utils import partitions, powerset
 from ..utils.optimization import (
     BasinHoppingCallBack,
@@ -131,7 +131,7 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
     # Whether to use autodiff for jacobians
     _use_autodiff = True
 
-    def __init__(self, dist, rvs=None, crvs=None, rv_mode=None):
+    def __init__(self, dist, rvs=None, crvs=None):
         """
         Initialize the optimizer.
 
@@ -143,12 +143,10 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
             The variables of interest.
         crvs : iterable
             The variables to be conditioned on.
-        rv_mode : str, None
-            Deprecated. Kept for signature compatibility.
         """
         _check_jax()
 
-        rvs, crvs, rv_mode = normalize_rvs(dist, rvs, crvs)
+        rvs, crvs = normalize_rvs(dist, rvs, crvs)
         self._dist = dist.copy(base="linear")
 
         self._alphabet = self._dist.alphabet

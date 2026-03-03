@@ -3,7 +3,7 @@ Distributions useful for illustrating the behavior of the various intrinsic
 measures.
 """
 
-from .. import Distribution
+from ..distribution import Distribution
 
 __all__ = (
     "intrinsic_1",

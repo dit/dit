@@ -117,7 +117,7 @@ def channel_capacity(cdists, marginal=None, rtol=None, atol=None):
 
 
 @unitful
-def channel_capacity_joint(dist, input_, output, marginal=False, rv_mode=None):
+def channel_capacity_joint(dist, input_, output, marginal=False):
     """
     Compute the channel capacity from ``input_`` to ``output``.
 
@@ -131,8 +131,6 @@ def channel_capacity_joint(dist, input_, output, marginal=False, rv_mode=None):
         The random variables that are the output of the channel.
     marginal : bool
         Whether to return the marginal distribution. Defaults to False.
-    rv_mode : ignored
-        Deprecated.  Kept for signature compatibility.
     """
     input_names = list(dist._resolve_rv_names(list(input_)))
     output_names = list(dist._resolve_rv_names(list(output)))
