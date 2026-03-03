@@ -46,9 +46,7 @@ def secrecy_capacity_skar(dist, rvs=None, crvs=None, niter=None, bound_u=None, b
 
 
 @unitful
-def necessary_intrinsic_mutual_information(
-    dist, rvs, crvs, niter=None, bound_u=None, bound_v=None, backend="numpy"
-):
+def necessary_intrinsic_mutual_information(dist, rvs, crvs, niter=None, bound_u=None, bound_v=None, backend="numpy"):
     """
     Compute a non-trivial lower bound on secret key agreement rate.
 
@@ -77,11 +75,7 @@ def necessary_intrinsic_mutual_information(
     nimi : float
         The necessary intrinsic mutual information.
     """
-    a = one_way_skar(
-        dist, rvs[0], rvs[1], crvs, niter=niter, bound_u=bound_u, bound_v=bound_v, backend=backend
-    )
-    b = one_way_skar(
-        dist, rvs[1], rvs[0], crvs, niter=niter, bound_u=bound_u, bound_v=bound_v, backend=backend
-    )
+    a = one_way_skar(dist, rvs[0], rvs[1], crvs, niter=niter, bound_u=bound_u, bound_v=bound_v, backend=backend)
+    b = one_way_skar(dist, rvs[1], rvs[0], crvs, niter=niter, bound_u=bound_u, bound_v=bound_v, backend=backend)
 
     return max([a, b])

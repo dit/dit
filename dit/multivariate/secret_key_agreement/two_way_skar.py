@@ -70,9 +70,7 @@ def _two_way_skar_bounds_iter(dist, rvs=None, crvs=None, backend="numpy"):
     )
     lower = max([lower, new_lower])
     yield lower, upper
-    new_upper = two_part_intrinsic_mutual_information(
-        dist, rvs, crvs, bound_j=2, bound_u=2, bound_v=2, backend=backend
-    )
+    new_upper = two_part_intrinsic_mutual_information(dist, rvs, crvs, bound_j=2, bound_u=2, bound_v=2, backend=backend)
     upper = min([upper, new_upper])
     yield lower, upper
 

@@ -251,7 +251,7 @@ def test_rvfunctions1():
     bf = dit.RVFunctions(d)
     d = dit.insert_rvf(d, bf.xor([0, 1]))
     d = dit.insert_rvf(d, bf.xor([1, 2]))
-    assert d.outcomes == (('0', '0', '0', '0'), ('0', '1', '1', '0'), ('1', '0', '1', '1'), ('1', '1', '0', '1'))
+    assert d.outcomes == (("0", "0", "0", "0"), ("0", "1", "1", "0"), ("1", "0", "1", "1"), ("1", "1", "0", "1"))
 
 
 def test_rvfunctions2():
@@ -271,9 +271,14 @@ def test_rvfunctions3():
     bf = dit.RVFunctions(d)
     d = dit.insert_rvf(d, bf.from_hexes("27"))
     expected = (
-        ('0', '0', '0', 0), ('0', '0', '1', 0), ('0', '1', '0', 1),
-        ('0', '1', '1', 0), ('1', '0', '0', 0), ('1', '0', '1', 0),
-        ('1', '1', '0', 0), ('1', '1', '1', 1),
+        ("0", "0", "0", 0),
+        ("0", "0", "1", 0),
+        ("0", "1", "0", 1),
+        ("0", "1", "1", 0),
+        ("1", "0", "0", 0),
+        ("1", "0", "1", 0),
+        ("1", "1", "0", 0),
+        ("1", "1", "1", 1),
     )
     assert d.outcomes == expected
 
@@ -346,16 +351,21 @@ def test_insert_rvf2():
 
     # We are also inserting two times simultaneously.
     d2 = dit.insert_rvf(d, [xor, xor])
-    outcomes = (('0', '0', '0', '0', '0', '0'), ('0', '1', '1', '1', '1', '1'), ('1', '0', '1', '1', '1', '1'), ('1', '1', '0', '0', '0', '0'))
+    outcomes = (
+        ("0", "0", "0", "0", "0", "0"),
+        ("0", "1", "1", "1", "1", "1"),
+        ("1", "0", "1", "1", "1", "1"),
+        ("1", "1", "0", "0", "0", "0"),
+    )
     assert d2.outcomes == outcomes
 
 
 def test_RVFunctions_from_mapping1():
-    d = dit.Distribution([('0', '0'), ('0', '1'), ('1', '0'), ('1', '1')], [1 / 4] * 4)
+    d = dit.Distribution([("0", "0"), ("0", "1"), ("1", "0"), ("1", "1")], [1 / 4] * 4)
     bf = dit.RVFunctions(d)
-    mapping = {('0', '0'): '0', ('0', '1'): '1', ('1', '0'): '1', ('1', '1'): '0'}
+    mapping = {("0", "0"): "0", ("0", "1"): "1", ("1", "0"): "1", ("1", "1"): "0"}
     d = dit.insert_rvf(d, bf.from_mapping(mapping))
-    outcomes = (('0', '0', '0'), ('0', '1', '1'), ('1', '0', '1'), ('1', '1', '0'))
+    outcomes = (("0", "0", "0"), ("0", "1", "1"), ("1", "0", "1"), ("1", "1", "0"))
     assert d.outcomes == outcomes
 
 
@@ -369,11 +379,11 @@ def test_RVFunctions_from_mapping2():
 
 
 def test_RVFunctions_from_partition():
-    d = dit.Distribution([('0', '0'), ('0', '1'), ('1', '0'), ('1', '1')], [1 / 4] * 4)
+    d = dit.Distribution([("0", "0"), ("0", "1"), ("1", "0"), ("1", "1")], [1 / 4] * 4)
     bf = dit.RVFunctions(d)
-    partition = ((('0', '0'), ('1', '1')), (('0', '1'), ('1', '0')))
+    partition = ((("0", "0"), ("1", "1")), (("0", "1"), ("1", "0")))
     d = dit.insert_rvf(d, bf.from_partition(partition))
-    outcomes = (('0', '0', 0), ('0', '1', 1), ('1', '0', 1), ('1', '1', 0))
+    outcomes = (("0", "0", 0), ("0", "1", 1), ("1", "0", 1), ("1", "1", 0))
     assert d.outcomes == outcomes
 
 
@@ -451,7 +461,7 @@ def test_random_dist_structure(d):
 def test_coarsegrain():
     d = dit.example_dists.Xor()
     d2 = dit.modify_outcomes(d, lambda x: "1" if "1" in x else "0")
-    assert d2.outcomes == (('0',), ('1',))
+    assert d2.outcomes == (("0",), ("1",))
     assert np.allclose(d2.pmf, [0.25, 0.75])
 
 

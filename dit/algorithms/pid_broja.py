@@ -730,9 +730,7 @@ def demo():
 
 
 @removals.remove(message="Please see dit.pid.PID_BROJA.", version="1.0.1")
-def k_synergy(
-    d, sources, target, k=2, extra_constraints=True, tol=None, prng=None, verbose=None
-):  # pragma: no cover
+def k_synergy(d, sources, target, k=2, extra_constraints=True, tol=None, prng=None, verbose=None):  # pragma: no cover
     """
     Returns the `k`-synergy.
 
@@ -807,9 +805,7 @@ def k_synergy(
 
 
 @removals.remove(message="Please see dit.pid.PID_BROJA.", version="1.0.1")
-def k_informations(
-    d, sources, target, extra_constraints=True, tol=None, prng=None, verbose=None
-):  # pragma: no cover
+def k_informations(d, sources, target, extra_constraints=True, tol=None, prng=None, verbose=None):  # pragma: no cover
     """
     Returns the amount of :math:`I[sources:target]` captured by matching `k`-way
     marginals that include the target and the source marginal distribution.

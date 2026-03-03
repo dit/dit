@@ -43,7 +43,7 @@ def dist_from_timeseries(observations, history_length=1, base="linear"):
         # Reorder from time-interleaved (v1_t0, v2_t0, v1_t1, v2_t1, ...)
         # to variable-grouped (v1_t0, v1_t1, ..., v2_t0, v2_t1, ..., presents)
         def f(o):
-            steps = [o[i * num_ts:(i + 1) * num_ts] for i in range(history_length + 1)]
+            steps = [o[i * num_ts : (i + 1) * num_ts] for i in range(history_length + 1)]
             pasts = tuple(steps[t][v] for v in range(num_ts) for t in range(history_length))
             presents = steps[-1]
             return pasts + presents

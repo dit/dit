@@ -128,9 +128,7 @@ class StochasticGKCommonInformation(BaseAuxVarOptimizer):
 
 
 @unitful
-def stochastic_gk_common_information(
-    dist, rvs=None, crvs=None, niter=None, maxiter=1000, polish=1e-6, bound=None
-):
+def stochastic_gk_common_information(dist, rvs=None, crvs=None, niter=None, maxiter=1000, polish=1e-6, bound=None):
     """
     Compute the functional common information, F, of `dist`. It is the entropy
     of the smallest random variable W such that all the variables in `rvs` are

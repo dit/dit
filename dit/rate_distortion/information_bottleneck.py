@@ -239,9 +239,7 @@ class InformationBottleneckDivergence(InformationBottleneck):
     D( p(Y|x) || q(Y|t) ) for an arbitrary divergence measure D.
     """
 
-    def __init__(
-        self, dist, beta, alpha=1.0, divergence=relative_entropy, rvs=None, crvs=None, bound=None
-    ):
+    def __init__(self, dist, beta, alpha=1.0, divergence=relative_entropy, rvs=None, crvs=None, bound=None):
         """
         Initialize the optimizer.
 

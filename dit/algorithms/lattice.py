@@ -108,8 +108,7 @@ def induced_sigalg(dist, rvs, support_only=False):
     d = defaultdict(list)
     ctor = dist._outcome_ctor
     if support_only:
-        iterator = ((o, p) for o, p in dist.zipped(mode="atoms")
-                    if not dist.ops.is_null_exact(p))
+        iterator = ((o, p) for o, p in dist.zipped(mode="atoms") if not dist.ops.is_null_exact(p))
     else:
         iterator = dist.zipped(mode="atoms")
     for outcome, _ in iterator:

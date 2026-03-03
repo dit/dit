@@ -229,9 +229,7 @@ class MarkovVarMixin:
         """
 
         @unitful
-        def common_info(
-            dist, rvs=None, crvs=None, niter=None, maxiter=1000, polish=1e-6, bound=None, backend="numpy"
-        ):
+        def common_info(dist, rvs=None, crvs=None, niter=None, maxiter=1000, polish=1e-6, bound=None, backend="numpy"):
             dtc = dual_total_correlation(dist, rvs, crvs)
             ent = entropy(dist, rvs, crvs)
             if np.isclose(dtc, ent):

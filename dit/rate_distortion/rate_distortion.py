@@ -164,25 +164,25 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
 
         def rate_distortion(dist, beta=0.0, rv=None, crvs=None, bound=None):
             """
-            Compute a rate-distortion point.
+                Compute a rate-distortion point.
 
-            Parameters
-            ----------
-            dist : Distribution
-                The distribution of interest.
-            beta : float
-                The beta value to optimize with.
-            rv : iterable, None
-                The indices to consider. If None, use all.
-            crvs : iterable, None
-                The indices to condition on. If None, use none.
-            bound : int, None
-                Bound the size of the compressed variable.
+                Parameters
+                ----------
+                dist : Distribution
+                    The distribution of interest.
+                beta : float
+                    The beta value to optimize with.
+                rv : iterable, None
+                    The indices to consider. If None, use all.
+                crvs : iterable, None
+                    The indices to condition on. If None, use none.
+                bound : int, None
+                    Bound the size of the compressed variable.
 
-        Returns
-        -------
-        result : RateDistortionResult
-                The optimal rate-distortion pair.
+            Returns
+            -------
+            result : RateDistortionResult
+                    The optimal rate-distortion pair.
             """
             rd = cls(dist, beta=beta, rv=rv, crvs=crvs, bound=bound)
             rd.optimize()

@@ -397,12 +397,11 @@ class Distribution:
 
         This mirrors ``dit.Distribution.alphabet``.
         """
+
         def _native(v):
-            return v.item() if hasattr(v, 'item') else v
-        return tuple(
-            tuple(_native(v) for v in self.data.coords[d].values)
-            for d in self.data.dims
-        )
+            return v.item() if hasattr(v, "item") else v
+
+        return tuple(tuple(_native(v) for v in self.data.coords[d].values) for d in self.data.dims)
 
     @property
     def outcomes(self):
@@ -423,7 +422,7 @@ class Distribution:
 
         def _native(v):
             """Convert numpy scalar to Python native type."""
-            return v.item() if hasattr(v, 'item') else v
+            return v.item() if hasattr(v, "item") else v
 
         def _wrap(combo):
             if self._unwrap_scalar:
@@ -653,9 +652,10 @@ class Distribution:
         :meth:`variance` are well-defined.
         """
         import numbers
+
         for dim in self.dims:
             for v in self.data.coords[dim].values:
-                val = v.item() if hasattr(v, 'item') else v
+                val = v.item() if hasattr(v, "item") else v
                 if not isinstance(val, numbers.Number):
                     return False
         return True
@@ -757,7 +757,7 @@ class Distribution:
         """
         from .samplespace import CartesianProduct
 
-        if hasattr(self, '_sample_space_override'):
+        if hasattr(self, "_sample_space_override"):
             return self._sample_space_override
         alphabets = [list(self.data.coords[d].values) for d in self.dims]
         return CartesianProduct(alphabets)
@@ -824,7 +824,7 @@ class Distribution:
         arr = self._linear_data()
 
         def _native(v):
-            return v.item() if hasattr(v, 'item') else v
+            return v.item() if hasattr(v, "item") else v
 
         for combo in itertools.product(*coord_vals):
             sel = {d: v for d, v in zip(dims, combo, strict=True)}
@@ -1298,6 +1298,7 @@ class Distribution:
                 return [self.dims[i] for i in rvs]
             except IndexError as err:
                 from .exceptions import ditException
+
                 raise ditException(f"RV index out of range: {rvs} for {len(self.dims)} dims") from err
 
         return list(rvs)
@@ -1333,6 +1334,7 @@ class Distribution:
         invalid = keep - self.free_vars
         if invalid:
             from .exceptions import ditException
+
             raise ditException(
                 f"Cannot keep {invalid}: not free variables. Free: {self.free_vars}, given: {self.given_vars}"
             )
@@ -2030,6 +2032,7 @@ class Distribution:
                 return float(self.data.sel(sel))
             except KeyError:
                 pass
+
             # Coalesced distributions have string coords; key elements may
             # be tuples from Distribution-style outcome construction.
             def _serialize(v):

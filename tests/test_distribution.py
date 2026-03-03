@@ -360,6 +360,7 @@ class TestMarginal:
 
     def test_marginal_invalid_var(self):
         from dit.exceptions import ditException
+
         p = _make_pxy()
         with pytest.raises(ditException, match="not free"):
             p.marginal("Z")
@@ -635,6 +636,7 @@ class TestSelection:
 
     def test_getitem_invalid(self):
         from dit.exceptions import InvalidOutcome
+
         p = _make_pxy()
         with pytest.raises(InvalidOutcome):
             p[42]
@@ -906,11 +908,11 @@ class TestEdgeCases:
         assert p.is_numerical()
 
     def test_is_numerical_string_coords(self):
-        d = Distribution([('a', 'b'), ('c', 'd')], [0.5, 0.5])
+        d = Distribution([("a", "b"), ("c", "d")], [0.5, 0.5])
         assert not d.is_numerical()
 
     def test_is_numerical_mixed(self):
-        d = Distribution([(0, 'a'), (1, 'b')], [0.5, 0.5])
+        d = Distribution([(0, "a"), (1, "b")], [0.5, 0.5])
         assert not d.is_numerical()
 
     def test_is_joint_multi_dim(self):
@@ -918,21 +920,20 @@ class TestEdgeCases:
         assert p.is_joint()
 
     def test_is_joint_single_dim_numerical(self):
-        d = Distribution([(0,), (1,), (2,)], [1/3, 1/3, 1/3])
+        d = Distribution([(0,), (1,), (2,)], [1 / 3, 1 / 3, 1 / 3])
         assert not d.is_joint()
 
     def test_is_joint_single_dim_string(self):
-        d = Distribution([('a',), ('b',)], [0.5, 0.5])
+        d = Distribution([("a",), ("b",)], [0.5, 0.5])
         assert not d.is_joint()
 
     def test_unwrap_scalar_numerical(self):
-        d = Distribution([(0,), (1,), (2,)], [1/3, 1/3, 1/3])
+        d = Distribution([(0,), (1,), (2,)], [1 / 3, 1 / 3, 1 / 3])
         assert d.outcomes == (0, 1, 2)
 
     def test_unwrap_scalar_string(self):
-        d = Distribution([('a',), ('b',)], [0.5, 0.5])
-        assert d.outcomes == (('a',), ('b',))
-
+        d = Distribution([("a",), ("b",)], [0.5, 0.5])
+        assert d.outcomes == (("a",), ("b",))
 
 
 # ─── Compatibility Additions ─────────────────────────────────────────────

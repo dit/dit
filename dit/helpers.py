@@ -45,7 +45,6 @@ constructor_map = {
 }
 
 
-
 def construct_alphabets(outcomes):
     """
     Construct minimal alphabets for each random variable.
@@ -225,14 +224,14 @@ def parse_rvs(dist, rvs, unique=True, sort=True):
     if len(rvs) == 0:
         return (), ()
 
-    names = list(dist._resolve_rv_names(list(rvs))) if hasattr(dist, '_resolve_rv_names') else list(rvs)
+    names = list(dist._resolve_rv_names(list(rvs))) if hasattr(dist, "_resolve_rv_names") else list(rvs)
 
     if unique and len(set(names)) != len(names):
         msg = "`rvs` contained duplicates."
         raise ditException(msg)
 
     # Convert names to indices
-    if hasattr(dist, 'dims'):
+    if hasattr(dist, "dims"):
         dim_list = list(dist.dims)
         try:
             indexes = [dim_list.index(n) for n in names]
