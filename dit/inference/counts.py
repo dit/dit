@@ -165,7 +165,8 @@ except ImportError:  # no cython
 
         if L == 1:
             with contextlib.suppress(ditException):
-                dist = modify_outcomes(dist, lambda o: o[0] if isinstance(o, tuple) else o)
+                # Only unwrap 1-tuples (e.g. (0,) -> 0), not multi-variable outcomes (e.g. (0,1,0))
+                dist = modify_outcomes(dist, lambda o: o[0] if isinstance(o, tuple) and len(o) == 1 else o)
 
         return dist
 

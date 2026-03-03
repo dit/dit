@@ -494,7 +494,8 @@ def distribution_from_data(d, L, trim=True, base=None):
 
     if L == 1:
         try:
-            dist = modify_outcomes(dist, lambda o: o[0])
+            # Only unwrap 1-tuples (e.g. (0,) -> 0), not multi-variable outcomes (e.g. (0,1,0))
+            dist = modify_outcomes(dist, lambda o: o[0] if len(o) == 1 else o)
         except ditException:
             pass
 
