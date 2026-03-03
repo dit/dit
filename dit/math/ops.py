@@ -634,7 +634,8 @@ class LogOperations(Operations):
         self.log = log_func(base)
         # Note: When base < 1, zero == +inf. When base > 1, zero == -inf.
         self.one = self.log(1)
-        self.zero = self.log(0)
+        with np.errstate(divide="ignore"):
+            self.zero = self.log(0)
 
         # Update the add methods.
         set_add(self)
