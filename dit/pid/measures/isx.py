@@ -51,11 +51,12 @@ class PID_SX(BasePointwisePID):
 
         pw = {}
         for outcome in dist.outcomes:
-            plus = -np.log2(_prob_union(dist_marg, outcome, sources))
-            minus = -np.log2(
-                _prob_union(dist, outcome, tuple(s + target for s in sources))
-                / dist_target[tuple(outcome[t] for t in target)]
-            )
+            with np.errstate(invalid="ignore"):
+                plus = -np.log2(_prob_union(dist_marg, outcome, sources))
+                minus = -np.log2(
+                    _prob_union(dist, outcome, tuple(s + target for s in sources))
+                    / dist_target[tuple(outcome[t] for t in target)]
+                )
             pw[outcome] = plus - minus
 
         return pw
@@ -79,10 +80,11 @@ class PID_SX(BasePointwisePID):
         plus_dict = {}
         minus_dict = {}
         for outcome in dist.outcomes:
-            plus_dict[outcome] = -np.log2(_prob_union(dist_marg, outcome, sources))
-            minus_dict[outcome] = -np.log2(
-                _prob_union(dist, outcome, tuple(s + target for s in sources))
-                / dist_target[tuple(outcome[t] for t in target)]
-            )
+            with np.errstate(invalid="ignore"):
+                plus_dict[outcome] = -np.log2(_prob_union(dist_marg, outcome, sources))
+                minus_dict[outcome] = -np.log2(
+                    _prob_union(dist, outcome, tuple(s + target for s in sources))
+                    / dist_target[tuple(outcome[t] for t in target)]
+                )
 
         return plus_dict, minus_dict
