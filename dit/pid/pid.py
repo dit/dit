@@ -502,7 +502,9 @@ class BasePointwisePID(BasePID):
         joint distribution.
         """
         pw = cls._pointwise_measure(dist, sources, target, **kwargs)
-        return np.nansum([dist[outcome] * val for outcome, val in pw.items()])
+        # Always weight by linear probabilities regardless of the distribution's base
+        linear = dist.copy(base="linear") if dist.is_log() else dist
+        return np.nansum([linear[outcome] * val for outcome, val in pw.items()])
 
     # ------------------------------------------------------------------
     # Computation
