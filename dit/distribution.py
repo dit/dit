@@ -874,12 +874,14 @@ class Distribution:
         new_base = new_ops.base
 
         if old_base == "linear" and new_base != "linear":
-            values = new_ops.log(values)
+            with np.errstate(divide="ignore"):
+                values = new_ops.log(values)
         elif old_base != "linear" and new_base == "linear":
             values = old_ops.exp(values)
         elif old_base != "linear" and new_base != "linear":
             values = old_ops.exp(values)
-            values = new_ops.log(values)
+            with np.errstate(divide="ignore"):
+                values = new_ops.log(values)
 
         self.data = xr.DataArray(values, dims=self.data.dims, coords=self.data.coords)
         self.ops = new_ops

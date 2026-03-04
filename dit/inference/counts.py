@@ -136,8 +136,9 @@ except ImportError:  # no cython
         from dit.distribution import Distribution
         from dit.params import ditParams
 
-        with contextlib.suppress(TypeError):
-            d = list(map(tuple, d))
+        # Normalize data: ensure list, convert 2D rows to tuples for hashability
+        d = np.asarray(d)
+        d = d.tolist() if d.ndim == 1 else [tuple(row) for row in d]
 
         if base is None:
             base = ditParams["base"]
