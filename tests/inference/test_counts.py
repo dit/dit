@@ -21,6 +21,19 @@ def test_dfd():
     assert d2.is_approx_equal(d2_)
 
 
+def test_dfd_zero_probability_events():
+    """
+    Events that never occur in the data should get p=0, not p=1.
+    """
+    # data=[0,1] has one window (0,1); (0,0), (1,0), (1,1) never occur
+    data = [0, 1]
+    d = distribution_from_data(data, L=2, trim=False, base="linear")
+    assert d[(0, 0)] == 0.0
+    assert d[(0, 1)] == 1.0
+    assert d[(1, 0)] == 0.0
+    assert d[(1, 1)] == 0.0
+
+
 def test_dfd_three_variables():
     """
     With shape (N, 3) and L=1, should get a 3-variable distribution, not just first column.

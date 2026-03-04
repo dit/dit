@@ -142,22 +142,32 @@ except ImportError:  # no cython
         if base is None:
             base = ditParams["base"]
 
-        words, _, counts, _ = counts_from_data(d, L, 0)
+        # Build alphabet from all symbols in the data (1D: scalars, 2D: rows)
+        alphabet = tuple(sorted(set(d)))
+
+        # Count observed words using sliding windows
+        word_counts = Counter(windowed_iter(d, L))
+
+        # Build full distribution over all possible words (including zero-count)
+        all_words = list(product(alphabet, repeat=L))
+        counts_arr = np.array(
+            [word_counts.get(w, 0) for w in all_words],
+            dtype=float,
+        )
+        total = counts_arr.sum()
+        pmf = counts_arr / total if total > 0 else np.zeros_like(counts_arr)
 
         # Flatten nested-tuple words: ((0,), (1,)) -> (0, 1)
         def _flatten_word(w):
             flat = []
             for elem in w:
-                if isinstance(elem, tuple):
+                if isinstance(elem, tuple) and len(elem) != 1:
                     flat.extend(elem)
                 else:
-                    flat.append(elem)
+                    flat.append(elem[0] if isinstance(elem, tuple) else elem)
             return tuple(flat)
 
-        words = [_flatten_word(w) for w in words]
-
-        # We turn the counts to probabilities
-        pmf = counts / counts.sum()
+        words = [_flatten_word(w) for w in all_words]
 
         dist = Distribution(words, pmf, trim=trim)
 
