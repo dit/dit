@@ -170,14 +170,19 @@ except ImportError:  # no cython
 
         words = [_flatten_word(w) for w in all_words]
 
-        dist = Distribution(words, pmf, trim=trim)
-
-        dist.set_base(base)
+        # Always build in linear space so zero probabilities are stored as 0.
+        # set_base will then correctly convert 0 -> -inf for log bases.
+        dist = Distribution(words, pmf, trim=trim, base="linear")
 
         if L == 1:
             with contextlib.suppress(ditException):
                 # Only unwrap 1-tuples (e.g. (0,) -> 0), not multi-variable outcomes (e.g. (0,1,0))
                 dist = modify_outcomes(dist, lambda o: o[0] if isinstance(o, tuple) and len(o) == 1 else o)
+
+        # Call set_base after modify_outcomes: modify_outcomes creates a new Distribution
+        # with base from the original; if we converted to log first, it would use np.zeros
+        # for unfilled positions, giving 0 instead of -inf in log space (which becomes p=1).
+        dist.set_base(base)
 
         return dist
 

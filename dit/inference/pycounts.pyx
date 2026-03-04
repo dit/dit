@@ -490,7 +490,8 @@ def distribution_from_data(d, L, trim=True, base=None):
     pmf = cProbs[0]
 
     futures = list(product(alphabet, repeat=fLength))
-    dist = Distribution(futures, pmf, trim=trim)
+    # Build in linear space so 0 -> -inf when converting to log (not 0 -> 1)
+    dist = Distribution(futures, pmf, trim=trim, base="linear")
 
     if L == 1:
         try:
@@ -499,6 +500,7 @@ def distribution_from_data(d, L, trim=True, base=None):
         except ditException:
             pass
 
+    # Call set_base after modify_outcomes so unfilled positions stay 0 (not 0 in log space)
     if base is not None:
         dist.set_base(base)
     return dist
