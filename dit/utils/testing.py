@@ -12,10 +12,111 @@ from ..distribution import Distribution
 from .optimization import colon
 
 __all__ = (
+    "channel_pairs",
+    "degraded_channel_pairs",
     "distributions",
     "distribution_structures",
     "markov_chains",
 )
+
+
+@composite
+def channel_pairs(draw, input_size=(2, 4), output_y_size=(2, 4), output_z_size=(2, 4)):
+    """
+    Generate a pair of stochastic matrices (mu, kappa) with a common
+    input alphabet.
+
+    Parameters
+    ----------
+    draw : function
+        Hypothesis sampling function.
+    input_size : int or (int, int)
+        Size (or range) of the input alphabet |S|.
+    output_y_size : int or (int, int)
+        Size (or range) of the kappa output alphabet |Y|.
+    output_z_size : int or (int, int)
+        Size (or range) of the mu output alphabet |Z|.
+
+    Returns
+    -------
+    mu : ndarray, shape (|S|, |Z|)
+        Channel P(Z|S).
+    kappa : ndarray, shape (|S|, |Y|)
+        Channel P(Y|S).
+    """
+    def _unpack(x):
+        try:
+            len(x)
+            return x
+        except TypeError:
+            return (x, x)
+
+    n_s = draw(integers(*_unpack(input_size)))
+    n_y = draw(integers(*_unpack(output_y_size)))
+    n_z = draw(integers(*_unpack(output_z_size)))
+
+    mu_raw = draw(arrays(np.float64, shape=(n_s, n_z), elements=floats(0, 1)))
+    kappa_raw = draw(arrays(np.float64, shape=(n_s, n_y), elements=floats(0, 1)))
+
+    for row in mu_raw:
+        assume(row.sum() > 0)
+    for row in kappa_raw:
+        assume(row.sum() > 0)
+
+    mu = mu_raw / mu_raw.sum(axis=1, keepdims=True)
+    kappa = kappa_raw / kappa_raw.sum(axis=1, keepdims=True)
+
+    return mu, kappa
+
+
+@composite
+def degraded_channel_pairs(draw, input_size=(2, 4), output_z_size=(2, 4), output_y_size=(2, 4)):
+    """
+    Generate (mu, kappa) where kappa = lambda . mu for a random lambda,
+    so that ``mu`` output-degrades to ``kappa`` (Blackwell order holds).
+
+    Parameters
+    ----------
+    draw : function
+        Hypothesis sampling function.
+    input_size : int or (int, int)
+        Size (or range) of the input alphabet |S|.
+    output_z_size : int or (int, int)
+        Size (or range) of the mu output alphabet |Z|.
+    output_y_size : int or (int, int)
+        Size (or range) of the kappa output alphabet |Y|.
+
+    Returns
+    -------
+    mu : ndarray, shape (|S|, |Z|)
+        The dominating channel.
+    kappa : ndarray, shape (|S|, |Y|)
+        The degraded channel, kappa = mu @ lam.
+    """
+    def _unpack(x):
+        try:
+            len(x)
+            return x
+        except TypeError:
+            return (x, x)
+
+    n_s = draw(integers(*_unpack(input_size)))
+    n_z = draw(integers(*_unpack(output_z_size)))
+    n_y = draw(integers(*_unpack(output_y_size)))
+
+    mu_raw = draw(arrays(np.float64, shape=(n_s, n_z), elements=floats(0, 1)))
+    lam_raw = draw(arrays(np.float64, shape=(n_z, n_y), elements=floats(0, 1)))
+
+    for row in mu_raw:
+        assume(row.sum() > 0)
+    for row in lam_raw:
+        assume(row.sum() > 0)
+
+    mu = mu_raw / mu_raw.sum(axis=1, keepdims=True)
+    lam = lam_raw / lam_raw.sum(axis=1, keepdims=True)
+    kappa = mu @ lam
+
+    return mu, kappa
 
 
 @composite
