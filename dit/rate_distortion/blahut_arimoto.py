@@ -191,14 +191,14 @@ def blahut_arimoto_ib(p_xy, beta, divergence=relative_entropy, max_iters=100, re
         :math:`d(x, t) = D[ p(Y|x) || q(Y|t) ]`
         """
         q_y_t = next_q_y_t(q_t_x)
-        distortions = np.asarray([divergence(a, b) for a in p_y_x for b in q_y_t]).reshape(q_y_t.shape)
+        distortions = np.asarray([divergence(a, b) for a in p_y_x for b in q_y_t]).reshape(len(p_y_x), len(q_y_t))
         return distortions
 
     rd, q_xt = blahut_arimoto(p_x=p_x, beta=beta, distortion=distortion, max_iters=max_iters, restarts=restarts)
 
     sums = q_xt.sum(axis=1, keepdims=True)
     q_t_x = q_xt / sums
-    q_t_x[np.isnan(q_t_x)] = 1 / np.array(q_t_x.shape)[sums.flatten() == 0]
+    q_t_x[np.isnan(q_t_x)] = 1 / q_t_x.shape[1]
 
     q_xyt = p_xy[:, :, np.newaxis] * q_t_x[:, np.newaxis, :]
 
