@@ -8,3 +8,4 @@ from .entropy_triangle import *
 from .information_partitions import *
 from .marginal_utility_of_information import *
 from .schneidman import *
+from .shapley_info_decomposition import *
