@@ -13,6 +13,20 @@ from ..utils import build_table
 __all__ = ("BaseProfile",)
 
 
+_BASE_UNITS = {
+    "linear": "bits",
+    2: "bits",
+    "e": "nats",
+    10: "dits",
+}
+
+
+def _unit_for_base(dist):
+    """Map a distribution's probability base to a human-readable unit name."""
+    base = dist.get_base(numerical=False)
+    return _BASE_UNITS.get(base, f"log_{base} units")
+
+
 profile_docstring = """
 {name}
 
@@ -87,8 +101,14 @@ class BaseProfile(metaclass=ABCMeta):
             The distribution to compute the profile for.
         """
         super().__init__()
+        base = dist.get_base(numerical=False) if dist.is_log() else "linear"
         outcomes, pmf = zip(*dist.zipped(mode="atoms"), strict=True)
         self.dist = Distribution(outcomes, pmf)
+        if base != "linear":
+            self.dist.set_base(base)
+        unit = _unit_for_base(self.dist)
+        self.unit = unit
+        self.ylabel = f"information [{unit}]"
         self._compute()
 
     @abstractmethod

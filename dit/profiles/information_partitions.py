@@ -17,6 +17,7 @@ from ..other import extropy
 from ..params import ditParams
 from ..shannon import entropy
 from ..utils import build_table
+from .base_profile import _unit_for_base
 
 __all__ = (
     "ShannonPartition",
@@ -41,6 +42,7 @@ class BaseInformationPartition(metaclass=ABCMeta):
             The distribution to partition.
         """
         self.dist = dist
+        self.unit = _unit_for_base(dist)
         self._partition()
 
     @staticmethod
