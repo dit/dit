@@ -5,11 +5,14 @@ Some standard discrete distribution.
 from ..distribution import Distribution
 from ..math.misc import combinations as C
 from ..math.misc import is_integer, is_number
+from ..math.misc import multinomial as M
+from ..math.misc import prod
 
 __all__ = (
     "bernoulli",
     "binomial",
     "hypergeometric",
+    "multinomial",
     "uniform",
 )
 
@@ -118,6 +121,72 @@ def hypergeometric(N, K, n):
     outcomes = list(range(max(0, n + K - N), min(K, n) + 1))
     pmf = [C(K, k) * C(N - K, n - k) / C(N, n) for k in outcomes]
     return Distribution(outcomes, pmf)
+
+
+def multinomial(n, ps):
+    """
+    The multinomial distribution:
+
+    .. math::
+        f(x_1, \\ldots, x_k; n, p_1, \\ldots, p_k) =
+        \\frac{n!}{x_1! \\cdots x_k!} p_1^{x_1} \\cdots p_k^{x_k}
+
+    describes the counts of outcomes in `n` i.i.d. draws from a categorical
+    distribution with category probabilities `ps`.
+
+    Parameters
+    ----------
+    n : int
+        A non-negative integer, the number of trials.
+    ps : sequence of float
+        The probabilities of each category. Must sum to 1 and contain at
+        least two elements.
+
+    Returns
+    -------
+    d : Distribution
+        The multinomial distribution over count-vector outcomes. Each outcome
+        is a tuple ``(x_1, ..., x_k)`` of non-negative integers summing to
+        `n`.
+
+    Raises
+    ------
+    ValueError
+        Raised if `n` is not a non-negative integer.
+        Raised if any element of `ps` is not a valid probability.
+        Raised if `ps` does not sum to 1.
+        Raised if `ps` has fewer than 2 elements.
+    """
+    if not is_integer(n) or n < 0:
+        raise ValueError(f"{n} is not a positive integer.")
+
+    ps = list(ps)
+
+    if len(ps) < 2:
+        raise ValueError("ps must have at least 2 categories.")
+
+    for p in ps:
+        if not is_number(p) or not 0 <= p <= 1:
+            raise ValueError(f"{p} is not a valid probability.")
+
+    if abs(sum(ps) - 1) > 1e-9:
+        raise ValueError(f"ps must sum to 1, got {sum(ps)}.")
+
+    k = len(ps)
+    outcomes = list(_compositions(n, k))
+    pmf = [M(n, xs) * prod(p ** x for p, x in zip(ps, xs, strict=True))
+           for xs in outcomes]
+    return Distribution(outcomes, pmf)
+
+
+def _compositions(n, k):
+    """Yield all compositions of `n` into `k` non-negative parts."""
+    if k == 1:
+        yield (n,)
+        return
+    for i in range(n + 1):
+        for rest in _compositions(n - i, k - 1):
+            yield (i,) + rest
 
 
 def uniform(a, b=None):
