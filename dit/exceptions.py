@@ -51,7 +51,7 @@ class IncompatibleDistribution(ditException):
         """
         msg = "The distribution is not compatible."
         args = (msg,) + args
-        super().__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class InvalidBase(ditException):
@@ -71,7 +71,7 @@ class InvalidBase(ditException):
         if args:
             msg = f"{args[0]} is not a valid logarithm base."
             args = (msg,) + args
-        super().__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class InvalidDistribution(ditException):
@@ -109,7 +109,7 @@ class InvalidOutcome(ditException):
             else:
                 msg = f"Outcomes {bad} are not in the sample space."
         args = (msg,) + args
-        super().__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class InvalidNormalization(ditException):
@@ -127,7 +127,7 @@ class InvalidNormalization(ditException):
         msg = f"Bad normalization: {args[0]!r}"
         self.summation = args[0]
         args = (msg,) + args
-        super().__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class InvalidProbability(ditException):
@@ -157,7 +157,7 @@ class InvalidProbability(ditException):
             msg = "Probabilities {0} are not in {1} (base: {2!r})."
         msg = msg.format(prob, bounds, ops.base)
         args = (msg,) + args
-        super().__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
 
 class OptimizationException(ditException):
