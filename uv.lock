@@ -16,6 +16,9 @@ resolution-markers = [
     "python_full_version < '3.12' and sys_platform != 'emscripten' and sys_platform != 'win32'",
 ]
 
+[manifest]
+overrides = [{ name = "pycddlib", marker = "sys_platform == 'never'" }]
+
 [[package]]
 name = "alabaster"
 version = "1.0.0"
@@ -582,6 +585,7 @@ dev = [
     { name = "numdifftools" },
     { name = "optimistix" },
     { name = "pint" },
+    { name = "pycddlib-standalone" },
     { name = "pypoman" },
     { name = "pytest" },
     { name = "pytest-cov" },
@@ -613,6 +617,7 @@ optional = [
     { name = "matplotlib" },
     { name = "numdifftools" },
     { name = "pint" },
+    { name = "pycddlib-standalone" },
     { name = "pypoman" },
     { name = "scikit-learn" },
 ]
@@ -653,6 +658,7 @@ requires-dist = [
     { name = "optimistix", marker = "extra == 'jax'" },
     { name = "pint", marker = "extra == 'optional'" },
     { name = "pltable" },
+    { name = "pycddlib-standalone", marker = "extra == 'optional'" },
     { name = "pypoman", marker = "extra == 'optional'" },
     { name = "pytest", marker = "extra == 'test'", specifier = ">=7.0" },
     { name = "pytest-cov", marker = "extra == 'test'" },
@@ -1964,11 +1970,12 @@ name = "pycddlib"
 version = "3.0.2"
 source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/d2/25/85e2e17491a4d51f796f7212a13cef7d6d3b2967dfba104627a465224f06/pycddlib-3.0.2.tar.gz", hash = "sha256:50f43f039818ab97c8cb44345eed9a365dae66789ce11cc8c95a74134a8907a7", size = 31621, upload-time = "2025-01-13T10:18:41.869Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/79/7b/22ac48d619262b854fd529006dac00daac900308a83c404e586475c425b9/pycddlib-3.0.2-cp311-cp311-win_amd64.whl", hash = "sha256:b9b91009aa37c8148c6c74027ad56f3904c34eefb8ed1b25d14d46f6749b1123", size = 354828, upload-time = "2025-01-13T10:18:31.438Z" },
-    { url = "https://files.pythonhosted.org/packages/95/5f/2c75a27084adccb3312d9db9046daa2e82e6918e40835008122e6edead10/pycddlib-3.0.2-cp312-cp312-win_amd64.whl", hash = "sha256:a86b727397ff40b740f487d66ed64bd75eae3f76788f7ce1af9cc6f24da330d2", size = 354923, upload-time = "2025-01-13T10:18:34.914Z" },
-    { url = "https://files.pythonhosted.org/packages/83/8f/5356fcce6a101c3af56bb465e603f49958304d649b939a36487d1f31a3cb/pycddlib-3.0.2-cp313-cp313-win_amd64.whl", hash = "sha256:d22c9525aa2b271efde3a04306979d59513a663e320c60ece068d1d1ecede12d", size = 353982, upload-time = "2025-01-13T10:18:37.59Z" },
-]
+
+[[package]]
+name = "pycddlib-standalone"
+version = "3.0.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/0a/95/ebccc84c3f397f4bcb36d94128076f39d7aee4d5e52184576846b538f602/pycddlib_standalone-3.0.0.tar.gz", hash = "sha256:28a3cba479a720257741ca72fd3048f9064351a6b1d8c8443c57258d4dc4a74e", size = 90981, upload-time = "2024-10-04T11:22:16.33Z" }
 
 [[package]]
 name = "pycparser"
@@ -2005,7 +2012,7 @@ dependencies = [
     { name = "cvxopt" },
     { name = "matplotlib" },
     { name = "numpy" },
-    { name = "pycddlib" },
+    { name = "pycddlib", marker = "sys_platform == 'never'" },
     { name = "scipy" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/73/aa/e138a986e6146f84f8ea77ef0d6fccbda7b502617e83e368a4677dc801dc/pypoman-1.2.0.tar.gz", hash = "sha256:8c88e335d87457724aaa631df6259300283096bedfbbe091474d4d5fc8ee20f7", size = 35748, upload-time = "2025-01-06T14:09:46.739Z" }

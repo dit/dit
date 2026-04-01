@@ -68,6 +68,7 @@ optional = [
     "matplotlib",
     "numdifftools",
     "pint",
+    "pycddlib-standalone",
     "pypoman",
     "scikit-learn",
 ]
@@ -85,6 +86,11 @@ dev = [
     "ruff",
     "ty",
 ]
+
+# ── uv ──────────────────────────────────────────────────────────────────
+
+[tool.uv]
+override-dependencies = ["pycddlib; sys_platform == 'never'"]
 
 # ── Build configuration ─────────────────────────────────────────────────
 
