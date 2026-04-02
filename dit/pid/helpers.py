@@ -37,7 +37,9 @@ def compare_measures(dist, pids=__all_pids, inputs=None, output=None, name="", d
     """
     pids = [pid(dist.copy(), inputs, output) for pid in pids]
     names = [pid.name for pid in pids]
-    table = build_table(field_names=([name] + names), title=getattr(dist, "name", ""))
+    dist_name = getattr(dist, "name", "")
+    title = f"PID Comparison | {dist_name}" if dist_name else "PID Comparison"
+    table = build_table(field_names=([name] + names), title=title)
     for name in names:
         table.float_format[name] = f" {digits + 2}.{digits}"
     nodes = sorted(pids[0]._lattice, key=sort_key(pids[0]._lattice))
@@ -87,7 +89,10 @@ def pointwise_pid_table(dist, sources=None, target=None, pid_class=None, digits=
             node_columns += [f"{label} pi+", f"{label} pi-"]
 
     columns = ["event", "p"] + node_columns
-    table = build_table(columns, title=getattr(dist, "name", ""))
+    dist_name = getattr(dist, "name", "")
+    base_title = f"{pid._name} (pointwise)"
+    title = f"{base_title} | {dist_name}" if dist_name else base_title
+    table = build_table(columns, title=title)
     for col in columns[1:]:
         table.float_format[col] = f"{digits + 2}.{digits}"
 

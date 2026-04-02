@@ -319,7 +319,9 @@ class BasePID(metaclass=ABCMeta):
         red_string = self._red_string
         pi_string = self._pi_string
 
-        table = build_table([self.name, red_string, pi_string], title=getattr(self._dist, "name", ""))
+        dist_name = getattr(self._dist, "name", "")
+        title = f"{self._name} | {dist_name}" if dist_name else self._name
+        table = build_table([self.name, red_string, pi_string], title=title)
 
         table.float_format[red_string] = f"{digits + 2}.{digits}"
         table.float_format[pi_string] = f"{digits + 2}.{digits}"
@@ -625,7 +627,10 @@ class BasePointwisePID(BasePID):
         columns = [self._name, "outcome", red_string, pi_string]
         if parts:
             columns += ["pi+", "pi-"]
-        table = build_table(columns, title=getattr(self._dist, "name", ""))
+        dist_name = getattr(self._dist, "name", "")
+        base_title = f"{self._name} (pointwise)"
+        title = f"{base_title} | {dist_name}" if dist_name else base_title
+        table = build_table(columns, title=title)
         table.float_format[red_string] = f"{digits + 2}.{digits}"
         table.float_format[pi_string] = f"{digits + 2}.{digits}"
         if parts:

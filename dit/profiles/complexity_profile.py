@@ -16,6 +16,8 @@ __all__ = ("ComplexityProfile",)
 class ComplexityProfile(BaseProfile):  # noqa: D101
     __doc__ = profile_docstring.format(name="ComplexityProfile", static_attributes="", attributes="", methods="")
 
+    _name = "Complexity Profile"
+
     def _compute(self):
         """
         Compute the complexity profile.
