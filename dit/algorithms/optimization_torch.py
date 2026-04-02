@@ -38,7 +38,7 @@ except ImportError:
     Tensor = None
 
 from boltons.iterutils import pairwise
-from scipy.optimize import Bounds, basinhopping, differential_evolution, minimize, shgo
+from scipy.optimize import Bounds, basinhopping, brute, differential_evolution, dual_annealing, minimize, shgo
 
 from ..algorithms.channelcapacity import channel_capacity
 from ..distconst import insert_rvf, modify_outcomes
@@ -1623,6 +1623,76 @@ class BaseNonConvexTorchOptimizer(BaseTorchOptimizer):
 
         if result.success:  # pragma: no cover
             return result
+
+    def _optimization_dual_annealing(self, x0, minimizer_kwargs, niter):
+        """
+        Perform a non-convex optimization using scipy.optimize.dual_annealing.
+
+        Parameters
+        ----------
+        x0 : ndarray, None
+            Initial optimization vector. If None, use a random vector.
+        minimizer_kwargs : dict
+            A dictionary of keyword arguments to pass to the local minimizer.
+        niter : int
+            The maximum number of global iterations.
+
+        Returns
+        -------
+        result : OptimizeResult, None
+            The result of the optimization. Returns None if the optimization failed.
+        """
+        if niter is None:
+            niter = self._default_hops
+
+        result = dual_annealing(
+            func=self.objective,
+            bounds=minimizer_kwargs["bounds"],
+            minimizer_kwargs=minimizer_kwargs,
+            maxiter=niter,
+            x0=x0,
+        )
+
+        if result.success:
+            return result
+
+    def _optimization_brute(self, x0, minimizer_kwargs, niter):
+        """
+        Perform a non-convex optimization using scipy.optimize.brute,
+        a brute-force grid search over the parameter space.
+
+        Parameters
+        ----------
+        x0 : ndarray, None
+            Initial optimization vector (unused; kept for interface consistency).
+        minimizer_kwargs : dict
+            A dictionary of keyword arguments to pass to the optimizer.
+        niter : int
+            The number of grid points per dimension.
+
+        Returns
+        -------
+        result : OptimizeResult, None
+            The result of the optimization. Returns None if the optimization failed.
+        """
+        from scipy.optimize import OptimizeResult
+
+        if niter is None:
+            niter = self._default_hops
+
+        ranges = [slice(0, 1, 1 / niter) for _ in minimizer_kwargs["bounds"]]
+
+        x0_result = brute(
+            func=self.objective,
+            ranges=ranges,
+            finish=minimize,
+        )
+
+        return OptimizeResult({
+            "x": x0_result,
+            "fun": self.objective(x0_result),
+            "success": True,
+        })
 
     _optimization_backend = _optimization_basinhopping
 

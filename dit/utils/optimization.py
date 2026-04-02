@@ -209,13 +209,12 @@ def accept_test(**kwargs):
 
 def basinhop_status(res):
     """
-    Determine whether an optimization result was successful or not, working
-    around differences in scipy < 0.17.0 and scipy >= 0.17.0.
+    Determine whether an optimization result was successful or not.
 
     Parameters
     ----------
     res : OptimizeResult
-        The result to parse
+        The result to parse.
 
     Returns
     -------
