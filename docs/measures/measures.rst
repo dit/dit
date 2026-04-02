@@ -21,7 +21,7 @@ This next group of measures can not be represented on information diagrams, and 
 
    other/other
 
-There are also measures of "distance" or divergence between two (and im some cases, more) distribution:
+There are also measures of "distance" or divergence between two (and in some cases, more) distributions:
 
 .. toctree::
    :maxdepth: 2

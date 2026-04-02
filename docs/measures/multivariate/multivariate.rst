@@ -5,7 +5,7 @@
 Multivariate
 ************
 
-Multivariate measures of information generally attempt to capture some global property of a joint distribution. For example, they might attempt to quantify how much information is shared among the random variables, or quantify how "non-indpendent" in the joint distribution is.
+Multivariate measures of information generally attempt to capture some global property of a joint distribution. For example, they might attempt to quantify how much information is shared among the random variables, or quantify how "non-independent" the joint distribution is.
 
 Total Information
 =================
@@ -52,7 +52,7 @@ It is perhaps illustrative to consider how each of these measures behaves on two
 
 Common Informations
 ===================
-These measures all somehow measure shared information, but do not equal the mutual information in the bivaraite case.
+These measures all somehow measure shared information, but do not equal the mutual information in the bivariate case.
 
 .. toctree::
    :maxdepth: 1

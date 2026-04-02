@@ -33,6 +33,3 @@ To install specific optional extras:
 
   # PyTorch optimization backend
   pip install "dit[torch]"
-
-  # xarray-based distributions
-  pip install "dit[xarray]"

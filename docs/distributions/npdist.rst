@@ -1,8 +1,7 @@
 .. npdist.rst
-.. py:module:: dit.npdist
 
-Numpy-based Distribution
-========================
+Joint Distributions
+===================
 
 The primary method of constructing a distribution is by supplying both the
 outcomes and the probability mass function:

@@ -104,3 +104,27 @@ jobs:
 
       - name: Type check with ty
         run: uv run ty check
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      - name: Install Python
+        run: uv python install 3.12
+
+      - name: Install package
+        run: uv sync --extra docs
+
+      - name: Build docs
+        run: uv run sphinx-build -W --keep-going -b html docs docs/_build/html
+
+      - name: Check links
+        run: uv run sphinx-build -b linkcheck docs docs/_build/linkcheck
+        continue-on-error: true

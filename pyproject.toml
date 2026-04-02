@@ -73,9 +73,13 @@ optional = [
     "scikit-learn",
 ]
 docs = [
+    "hypothesis",
     "ipython",
+    "matplotlib",
     "nbconvert",
     "sphinx",
+    "sphinx-rtd-theme",
+    "sphinxcontrib-bibtex",
 ]
 dev = [
     "dit[test]",

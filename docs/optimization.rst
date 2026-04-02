@@ -1,5 +1,5 @@
 .. optimization.rst
-.. py:module:: dit.algorithms.scipy_optimizers
+.. py:module:: dit.algorithms.distribution_optimizers
 
 ************
 Optimization
