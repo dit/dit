@@ -4,6 +4,7 @@ The Wyner common information.
 
 import numpy as np
 
+from ..dual_total_correlation import dual_total_correlation
 from .base_markov_optimizer import MarkovVarOptimizer
 
 __all__ = ("wyner_common_information",)
@@ -17,6 +18,10 @@ class WynerCommonInformation(MarkovVarOptimizer):
 
     name = "wyner"
     description = "min I[X:V] such that V renders all X_i independent"
+
+    def __init__(self, dist, rvs=None, crvs=None, bound=None):
+        self._objective_bound = dual_total_correlation(dist, rvs, crvs)
+        super().__init__(dist, rvs=rvs, crvs=crvs, bound=bound)
 
     def compute_bound(self):
         """

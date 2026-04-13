@@ -143,6 +143,8 @@ class IntrinsicMIMixin:
 
         self._construct_auxvars([({crv_index}, bound)])
 
+        self._objective_bound = 0.0
+
     def optimize(self, *args, **kwargs):
         """
         Perform the optimization.
@@ -453,6 +455,10 @@ class TwoPartIMIMixin:
         if not crvs:
             msg = "Intrinsic mutual informations require a conditional variable."
             raise ditException(msg)
+
+        from .skar_lower_bounds import necessary_intrinsic_mutual_information
+
+        self._objective_bound = necessary_intrinsic_mutual_information(dist, rvs, crvs)
 
         super().__init__(dist, rvs, crvs)
 

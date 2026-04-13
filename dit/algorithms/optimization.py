@@ -29,6 +29,7 @@ from ..utils.optimization import (
     accept_test,
     basinhop_status,
     colon,
+    make_bound_callback,
 )
 
 __all__ = (
@@ -94,6 +95,8 @@ class BaseOptimizer(metaclass=ABCMeta):
         self._proxy_vars = tuple(range(self._n, self._n + len(rvs) + 1))
 
         self._additional_options = {}
+        if not hasattr(self, '_objective_bound'):
+            self._objective_bound = None
 
         self.constraints = []
 
@@ -761,7 +764,11 @@ class BaseOptimizer(metaclass=ABCMeta):
         if maxiter:
             minimizer_kwargs["options"]["maxiter"] = maxiter
 
-        self._callback = BasinHoppingCallBack(minimizer_kwargs.get("constraints", {}), icb)
+        self._callback = BasinHoppingCallBack(
+            minimizer_kwargs.get("constraints", {}),
+            icb,
+            objective_bound=self._objective_bound,
+        )
 
         result = self._optimization_backend(x0, minimizer_kwargs, niter)
 
@@ -807,6 +814,9 @@ class BaseOptimizer(metaclass=ABCMeta):
         if niter is None:
             niter = self._default_hops
 
+        bound = self._objective_bound
+        atol = 1e-8
+
         results = []
 
         if x0 is not None:
@@ -814,6 +824,9 @@ class BaseOptimizer(metaclass=ABCMeta):
             res = minimize(fun=self.objective, x0=x0.flatten(), **minimizer_kwargs)
             if res.success:
                 results.append(res)
+                if bound is not None and res.fun <= bound + atol:
+                    logger.debug("Shotgun early stop: objective {f} reached bound {b}", f=res.fun, b=bound)
+                    return res
             niter -= 1
 
         ics = (self.construct_random_initial() for _ in range(niter))
@@ -822,6 +835,9 @@ class BaseOptimizer(metaclass=ABCMeta):
             res = minimize(fun=self.objective, x0=initial.flatten(), **minimizer_kwargs)
             if res.success:
                 results.append(res)
+                if bound is not None and res.fun <= bound + atol:
+                    logger.debug("Shotgun early stop: objective {f} reached bound {b}", f=res.fun, b=bound)
+                    return res
 
         try:
             result = min(results, key=lambda r: self.objective(r.x))
@@ -993,12 +1009,23 @@ class BaseNonConvexOptimizer(BaseOptimizer):
         if niter is None:
             niter = self._default_hops
 
+        bound = self._objective_bound
+        atol = 1e-8
+
+        def callback(xk, convergence=0):
+            f = self.objective(xk)
+            if bound is not None and f <= bound + atol:
+                logger.debug("DiffEvo early stop: objective {f} reached bound {b}", f=f, b=bound)
+                return True
+            return False
+
         result = differential_evolution(
             func=self.objective,
             bounds=minimizer_kwargs["bounds"],
             maxiter=minimizer_kwargs["options"]["maxiter"],
             popsize=niter,
             tol=minimizer_kwargs["options"]["ftol"],
+            callback=callback,
         )
 
         if result.success:
@@ -1057,12 +1084,17 @@ class BaseNonConvexOptimizer(BaseOptimizer):
         if niter is None:
             niter = self._default_hops
 
+        callback = None
+        if self._objective_bound is not None:
+            callback = make_bound_callback(self._objective_bound)
+
         result = dual_annealing(
             func=self.objective,
             bounds=minimizer_kwargs["bounds"],
             minimizer_kwargs=minimizer_kwargs,
             maxiter=niter,
             x0=x0,
+            callback=callback,
         )
 
         if result.success:

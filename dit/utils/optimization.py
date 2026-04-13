@@ -18,6 +18,7 @@ __all__ = (
     "accept_test",
     "basinhop_status",
     "colon",
+    "make_bound_callback",
     "memoize_optvec",
 )
 
@@ -91,16 +92,26 @@ class BasinHoppingCallBack:
     This will be unneccessary once this PR if complete: https://github.com/scipy/scipy/pull/7819
     """
 
-    def __init__(self, constraints, icb=None):
+    def __init__(self, constraints, icb=None, objective_bound=None, atol=1e-8):
         """
         Parameters
         ----------
-        optimizer : MarkovVarOptimizer
-            The optimizer to track the optimization of.
+        constraints : list
+            The optimization constraints.
+        icb : BasinHoppingInnerCallBack, None
+            A callback object for recording the full path.
+        objective_bound : float, None
+            Lower bound on the objective value. If the objective reaches this
+            bound (within *atol*), the callback returns True to halt basin
+            hopping early.
+        atol : float
+            Absolute tolerance for the bound check.
         """
         self.eq_constraints = [c["fun"] for c in constraints if c["type"] == "eq"]
         self.ineq_constraints = [c["fun"] for c in constraints if c["type"] == "ineq"]
         self.icb = icb
+        self.objective_bound = objective_bound
+        self.atol = atol
         self.eq_candidates = []
         self.ineq_candidates = []
 
@@ -113,6 +124,12 @@ class BasinHoppingCallBack:
         f : float
             Current value of the objective.
         accept : bool
+
+        Returns
+        -------
+        stop : bool
+            True if the objective has reached its lower bound and the
+            optimization should halt.
         """
         x = x.copy()
 
@@ -131,6 +148,14 @@ class BasinHoppingCallBack:
 
         if self.icb:  # pragma: no cover
             self.icb.jumped(len(self.icb.positions))
+
+        if self.objective_bound is not None and f <= self.objective_bound + self.atol:
+            logger.debug(
+                "Early stop: objective {f} reached bound {b}",
+                f=f,
+                b=self.objective_bound,
+            )
+            return True
 
     def minimum(self, cutoff=1e-7):
         """
@@ -190,6 +215,41 @@ class Uniquifier:
             return self.chars[self.mapping[item]]
         else:
             return self.mapping[item]
+
+
+def make_bound_callback(objective_bound, atol=1e-8):
+    """
+    Create a lightweight callback that halts optimization when the objective
+    reaches *objective_bound*.
+
+    The returned callable accepts ``(x, f, *args, **kwargs)`` so it works with
+    both ``dual_annealing`` (which passes ``x, f, context``) and
+    ``differential_evolution`` (which passes ``xk, convergence=...``).
+
+    Parameters
+    ----------
+    objective_bound : float
+        Lower bound on the objective value.
+    atol : float
+        Absolute tolerance for the bound check.
+
+    Returns
+    -------
+    callback : callable
+        A callback that returns True when the bound is reached.
+    """
+
+    def callback(x, f=None, *args, **kwargs):
+        if f is not None and f <= objective_bound + atol:
+            logger.debug(
+                "Early stop: objective {f} reached bound {b}",
+                f=f,
+                b=objective_bound,
+            )
+            return True
+        return False
+
+    return callback
 
 
 def accept_test(**kwargs):

@@ -40,6 +40,10 @@ class InteractiveSKARMixin:
         bound_func : func
             A function over i, |X|, |Y| which returns the bound on variable U_i.
         """
+        from .intrinsic_mutual_informations import intrinsic_total_correlation
+
+        self._objective_bound = -intrinsic_total_correlation(dist, [rv_x, rv_y], rv_z)
+
         super().__init__(dist, [rv_x, rv_y], rv_z)
 
         self._rounds = rounds

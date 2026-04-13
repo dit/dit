@@ -6,6 +6,7 @@ from itertools import combinations
 
 import numpy as np
 
+from ..dual_total_correlation import dual_total_correlation
 from .base_markov_optimizer import MarkovVarOptimizer
 
 __all__ = ("exact_common_information",)
@@ -19,6 +20,10 @@ class ExactCommonInformation(MarkovVarOptimizer):
 
     name = "exact"
     description = "min H[V] where V renders all `rvs` independent"
+
+    def __init__(self, dist, rvs=None, crvs=None, bound=None):
+        self._objective_bound = dual_total_correlation(dist, rvs, crvs)
+        super().__init__(dist, rvs=rvs, crvs=crvs, bound=bound)
 
     def compute_bound(self):
         """

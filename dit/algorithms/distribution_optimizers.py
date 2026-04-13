@@ -232,6 +232,10 @@ class MaxEntOptimizer(BaseDistOptimizer, BaseConvexOptimizer):
     Compute maximum entropy distributions.
     """
 
+    def __init__(self, dist, marginals):
+        super().__init__(dist, marginals)
+        self._objective_bound = -np.log2(np.prod(self._shape))
+
     def _objective(self):
         """
         Compute the negative entropy.
@@ -267,6 +271,10 @@ class MinEntOptimizer(BaseDistOptimizer, BaseNonConvexOptimizer):
     """
     Compute minimum entropy distributions.
     """
+
+    def __init__(self, dist, marginals):
+        super().__init__(dist, marginals)
+        self._objective_bound = 0.0
 
     def _objective(self):
         """
