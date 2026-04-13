@@ -9,13 +9,17 @@ from ...algorithms import BaseAuxVarOptimizer
 from ...helpers import normalize_rvs
 from ...utils import unitful
 
-__all__ = ("StochasticGKCommonInformation",)
+__all__ = (
+    "StochasticGKCommonInformation",
+    "stochastic_gk_common_information",
+)
 
 
 class StochasticGKCommonInformation(BaseAuxVarOptimizer):
     """
-    Abstract base class for constructing auxiliary variables which render a set
-    of variables conditionally independent.
+    Compute the stochastic Gacs-Korner common information: the maximum
+    I(X_i; Z) over stochastic variables Z satisfying p(Z|X_i) = p(Z|X_j)
+    for all jointly occurring (X_i, X_j).
     """
 
     name = ""
@@ -81,11 +85,11 @@ class StochasticGKCommonInformation(BaseAuxVarOptimizer):
         idxs = [idx for idx, support in np.ndenumerate(~np.isclose(rv_joint, 0.0)) if support]
 
         marginals = []
-        for rv in self._rvs:
+        for rv in sorted(self._rvs):
             others = tuple(self._rvs - {rv})
             p_xyz = joint.sum(axis=others)
             p_xy = p_xyz.sum(axis=2, keepdims=True)
-            p_z_g_xy = p_xyz / p_xy
+            p_z_g_xy = np.where(p_xy > 0, p_xyz / p_xy, 0.0)
             marginals.append(p_z_g_xy)
 
         delta = 0
@@ -130,28 +134,30 @@ class StochasticGKCommonInformation(BaseAuxVarOptimizer):
 @unitful
 def stochastic_gk_common_information(dist, rvs=None, crvs=None, niter=None, maxiter=1000, polish=1e-6, bound=None):
     """
-    Compute the functional common information, F, of `dist`. It is the entropy
-    of the smallest random variable W such that all the variables in `rvs` are
-    rendered independent conditioned on W, and W is a function of `rvs`.
+    Compute the stochastic Gacs-Korner common information of `dist`. This is
+    the maximum I(X_i; Z) over stochastic variables Z satisfying
+    p(Z|X_i) = p(Z|X_j) for all jointly occurring (X_i, X_j). When Z is
+    restricted to deterministic functions, this recovers the classical
+    Gacs-Korner common information.
 
     Parameters
     ----------
     dist : Distribution
-        The distribution from which the functional common information is
-        computed.
+        The distribution from which the stochastic Gacs-Korner common
+        information is computed.
     rvs : list, None
         A list of lists. Each inner list specifies the indexes of the random
-        variables used to calculate the total correlation. If None, then the
-        total correlation is calculated over all random variables, which is
-        equivalent to passing `rvs=dist.rvs`.
+        variables used to calculate the common information. If None, then it
+        is calculated over all random variables, which is equivalent to
+        passing `rvs=dist.rvs`.
     crvs : list, None
         A single list of indexes specifying the random variables to condition
         on. If None, then no variables are conditioned on.
 
     Returns
     -------
-    F : float
-        The functional common information.
+    SGK : float
+        The stochastic Gacs-Korner common information.
     """
     rvs, crvs = normalize_rvs(dist, rvs, crvs)
 
