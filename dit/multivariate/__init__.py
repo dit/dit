@@ -11,6 +11,7 @@ from .deweese import *
 from .dual_total_correlation import *
 from .entropy import *
 from .interaction_information import *
+from .logarithmic_decomposition import *
 from .o_information import *
 from .secret_key_agreement import *
 from .total_correlation import *
