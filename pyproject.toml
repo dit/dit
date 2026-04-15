@@ -48,7 +48,7 @@ Documentation = "http://docs.dit.io"
 test = [
     "hypothesis>=6.0",
     "hypothesis[numpy]",
-    "pytest>=7.0",
+    "pytest>=9.0.3",
     "pytest-cov",
     "pytest-rerunfailures",
     "pytest-sugar",
