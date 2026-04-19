@@ -16,3 +16,4 @@ from .o_information import *
 from .secret_key_agreement import *
 from .total_correlation import *
 from .tse_complexity import *
+from .union_information import *

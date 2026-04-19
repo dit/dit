@@ -7,13 +7,11 @@ https://arxiv.org/abs/1702.01591
 from itertools import combinations
 
 import numpy as np
-from lattices.lattices import free_distributive_lattice
 
 from .. import modify_outcomes
 from ..algorithms import maxent_dist
-from ..multivariate import entropy
 from ..utils import flatten, powerset
-from .pid import BasePID, _transform
+from .ped import BasePED
 
 __all__ = (
     "PED_CS",
@@ -62,7 +60,7 @@ def h_cs(d, sources, target=None):
     return hcs
 
 
-class PED_CS(BasePID):
+class PED_CS(BasePED):
     """
     The change in surprisal partial entropy decomposition, as defined by Ince (2017).
 
@@ -71,28 +69,3 @@ class PED_CS(BasePID):
 
     _name = "H_cs"
     _measure = staticmethod(h_cs)
-    _red_string = "H_r"
-    _pi_string = "H_d"
-
-    def __init__(self, dist, sources=None, **kwargs):
-        """
-        Parameters
-        ----------
-        dist : Distribution
-            The distribution to compute the decomposition on.
-        sources : iter of iters, None
-            The set of variables to include. If None, `dist.rvs` is used.
-        """
-        self._dist = dist
-
-        if sources is None:
-            sources = dist.rvs
-
-        self._kwargs = kwargs
-        self._sources = tuple(map(tuple, sources))
-        self._target = None
-        self._lattice = _transform(free_distributive_lattice(self._sources))
-        self._total = entropy(self._dist, rvs=self._sources)
-        self._reds = {}
-        self._pis = {}
-        self._compute()
