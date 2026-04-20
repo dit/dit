@@ -30,7 +30,7 @@ from ..math import prod
 from ..multivariate import coinformation
 from ..utils import build_table, flatten
 
-__all__ = ("SynDisc",)
+__all__ = ("ModifiedSynDisc", "SynDisc")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -566,3 +566,56 @@ class SynDisc:
     def __str__(self):
         """Return the table representation."""
         return self.to_string()
+
+
+class ModifiedSynDisc(SynDisc):
+    """
+    Modified synergistic disclosure decomposition.
+
+    Gutknecht, Makkeh & Wibral (2023), "From Babel to Boole: The Logical
+    Organization of Information Decompositions", arXiv:2306.00734v2.
+
+    Identical to SynDisc except that singleton constraint nodes (|alpha| = 1)
+    use conditional mutual information I(T : a^C | a) instead of the
+    optimization-based synergistic disclosure.  This enforces the PID
+    consistency condition: for every source collection a, the sum of atoms
+    whose parthood distribution assigns 1 to a equals I(a : T).
+
+    Parameters
+    ----------
+    dist : Distribution
+        The joint distribution over sources and target.
+    sources : iter of iters, None
+        The source variable groups. If None, all variables except the last
+        are treated as individual sources.
+    target : iter, None
+        The target variable. If None, the last variable is used.
+    niter : int, None
+        Number of basin-hopping restarts per lattice node.
+    bound : int, None
+        Cardinality bound on the auxiliary variable V.
+    """
+
+    _name = "S_msd"
+
+    def _compute_s_alpha(self, node):
+        """
+        Compute the modified synergistic disclosure for a lattice node.
+
+        For singleton constraints (|alpha| = 1), returns I(T : a^C | a)
+        rather than the optimization-based S_alpha.  All other nodes
+        delegate to the parent implementation.
+        """
+        if len(node) == 1:
+            all_sources_constrained = (
+                set(node[0]) == set().union(*self._sources)
+            )
+            if all_sources_constrained:
+                return 0.0
+
+            source_mi = coinformation(
+                self._dist, [list(node[0]), list(self._target)]
+            )
+            return self._total - source_mi
+
+        return super()._compute_s_alpha(node)
