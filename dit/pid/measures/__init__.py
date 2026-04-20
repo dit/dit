@@ -8,6 +8,7 @@ from .ict import PID_CT
 from .idep import PID_RA, PID_dep
 from .igh import PID_GH
 from .iig import PID_IG
+from .iipid import PID_IPID
 from .imes import PID_MES
 from .imin import PID_WB
 from .immi import PID_MMI
@@ -40,5 +41,6 @@ __all_pids = [
     PID_Prec,
     PID_CT,
     PID_IG,
+    PID_IPID,
     PID_RDR,
 ]
