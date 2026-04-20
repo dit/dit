@@ -5,6 +5,8 @@ All the measures.
 from .ibroja import PID_BROJA
 from .iccs import PID_CCS
 from .ict import PID_CT
+from .idelta import PID_Delta
+from .ideltalambda import PID_DeltaLambda
 from .idep import PID_RA, PID_dep
 from .igh import PID_GH
 from .iig import PID_IG
@@ -42,5 +44,7 @@ __all_pids = [
     PID_CT,
     PID_IG,
     PID_IPID,
+    PID_Delta,
+    PID_DeltaLambda,
     PID_RDR,
 ]
