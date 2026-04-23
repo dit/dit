@@ -81,19 +81,51 @@ __all__ = (
 )
 
 
+_JAX_CONFIGURED = False
+
+
 def _check_jax():
     """
     Raise an error if JAX is not available.  Also enables 64-bit precision
-    which is required for scipy's SLSQP solver.
+    which is required for scipy's SLSQP solver, and wires up a persistent
+    XLA compilation cache so repeated process launches (e.g. the benchmark
+    harness) don't pay JIT compile time on every invocation.
 
     Raises
     ------
     ImportError
         If JAX is not installed.
     """
+    global _JAX_CONFIGURED  # noqa: PLW0603
+
     if not JAX_AVAILABLE:
         raise ImportError("JAX is required for this module. Install with: pip install jax jaxlib")
+
     jax.config.update("jax_enable_x64", True)
+
+    if _JAX_CONFIGURED:
+        return
+
+    import os
+    from pathlib import Path
+
+    cache_dir = os.environ.get("DIT_JAX_CACHE_DIR") or str(Path.home() / ".cache" / "dit-jax")
+    try:
+        Path(cache_dir).mkdir(parents=True, exist_ok=True)
+        jax.config.update("jax_compilation_cache_dir", cache_dir)
+        # Cache every compile, regardless of size or duration: for the
+        # small problems the benchmarks hit, per-trial compile time is
+        # much larger than per-trial execution time, so even "tiny"
+        # compiles are worth persisting.
+        with contextlib.suppress(Exception):
+            jax.config.update("jax_persistent_cache_min_entry_size_bytes", 0)
+        with contextlib.suppress(Exception):
+            jax.config.update("jax_persistent_cache_min_compile_time_secs", 0.0)
+    except Exception:  # pragma: no cover
+        # Failing to configure the cache should never break optimization.
+        pass
+
+    _JAX_CONFIGURED = True
 
 
 # SVD singular values using JAX
@@ -182,9 +214,6 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         self._additional_options = {}
 
         self.constraints = []
-
-        # Cache for JIT-compiled functions
-        self._jit_cache = {}
 
     ###########################################################################
     # Required methods in subclasses
@@ -879,33 +908,6 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         return total_variation
 
     ###########################################################################
-    # Optimization methods.
-
-    def _build_jacobian(self):
-        """
-        Build the Jacobian function for the objective using JAX autodiff.
-
-        Returns
-        -------
-        jac : callable or None
-            The Jacobian function, or None if autodiff is disabled.
-        """
-        if not self._use_autodiff or not JAX_AVAILABLE:
-            return None
-
-        try:
-            obj = self.objective
-        except AttributeError:
-            return None
-
-        def jac_wrapper(x):
-            x_jax = jnp.array(x)
-            g = grad(lambda x: float(obj(x)))(x_jax)
-            return np.array(g)
-
-        return jac_wrapper
-
-    ###########################################################################
     # slsqp-jax native optimization helpers
 
     def _build_slsqp_jax_solver(self, x0_size, maxiter=None):
@@ -1046,12 +1048,19 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         """
         Build ``minimizer_kwargs`` for scipy-based optimization (fallback path).
 
+        When JAX autodiff is available, the objective gradient and each
+        constraint jacobian are wired in via ``jax.grad`` / ``jax.jacobian``
+        (both JIT-compiled).  This avoids scipy falling back to
+        ``O(n)`` finite-difference probes per SLSQP step.
+
         Returns
         -------
         minimizer_kwargs : dict
         icb : BasinHoppingInnerCallBack or None
         """
         icb = BasinHoppingInnerCallBack() if callback else None
+
+        use_autodiff = self._use_autodiff and JAX_AVAILABLE
 
         def _np_objective(x):
             val = self._jax_raw_objective(x)
@@ -1065,7 +1074,17 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
                 val = _f(x)
                 return float(np.asarray(val))
 
-            wrapped_constraints.append({**const, "fun": _np_const_fun})
+            new_const = {**const, "fun": _np_const_fun}
+
+            if use_autodiff:
+                _raw_jac = jit(jacobian(_raw_fun))
+
+                def _np_const_jac(x, _j=_raw_jac):
+                    return np.asarray(_j(x), dtype=np.float64)
+
+                new_const["jac"] = _np_const_jac
+
+            wrapped_constraints.append(new_const)
 
         minimizer_kwargs = {
             "bounds": [(0, 1)] * x0.size,
@@ -1074,7 +1093,14 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
             "options": {},
         }
 
-        if not (self._use_autodiff and JAX_AVAILABLE):
+        if use_autodiff:
+            grad_fn = self._jax_grad_objective
+
+            def _np_grad(x):
+                return np.asarray(grad_fn(x), dtype=np.float64)
+
+            minimizer_kwargs["jac"] = _np_grad
+        else:
             try:  # pragma: no cover
                 import numdifftools as ndt
 
@@ -1136,9 +1162,28 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         logger.info("Starting JAX optimization: dim={dim}, niter={niter}", dim=x0.size, niter=niter)
 
         # Store raw (JAX-native) objective and constraints for both native
-        # and fallback paths.
-        self._jax_raw_objective = self.objective
-        self._jax_raw_constraints = list(self.constraints)
+        # and fallback paths.  The per-primitive information-theoretic
+        # helpers (``_h``, ``_mutual_information``, ...) are already JIT'd,
+        # but the *composition* performed by subclass ``_objective``
+        # methods is pure Python.  Wrapping the final objective and each
+        # constraint in ``jit`` here lets XLA fuse the whole graph and
+        # eliminates per-primitive dispatch overhead.  The autodiff
+        # gradient is then compiled on top of the fused graph as a single
+        # kernel, so scipy's SLSQP gets cheap exact gradients.
+        raw_objective = self.objective
+        raw_constraints = list(self.constraints)
+
+        if self._use_jit and JAX_AVAILABLE:
+            raw_objective = jit(raw_objective)
+            raw_constraints = [{**c, "fun": jit(c["fun"])} for c in raw_constraints]
+
+        self._jax_raw_objective = raw_objective
+        self._jax_raw_constraints = raw_constraints
+
+        if self._use_autodiff and JAX_AVAILABLE:
+            self._jax_grad_objective = jit(grad(raw_objective))
+        else:
+            self._jax_grad_objective = None
 
         # For very large problems, slsqp-jax JIT compilation is
         # prohibitively slow. Fall back to scipy for those cases.
@@ -1279,7 +1324,6 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         if maxiter:
             max_steps = maxiter
 
-        @jit
         def _solve_one(x0_i):
             sol = optx.minimise(
                 obj_fn,
@@ -1291,25 +1335,58 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
             )
             return sol.value, obj_fn(sol.value, None)[0]
 
-        # Run each start through the JIT-compiled solver.
-        # First call triggers XLA compilation; subsequent calls reuse it.
+        _solve_one_jit = jit(_solve_one)
+
+        # Try to run all starts as one batched XLA program via vmap.
+        # This lets XLA parallelize across starts and amortizes compile
+        # time into a single pay-per-(niter-shape) cost.  Not every
+        # solver/constraint combo is vmap-safe (e.g. data-dependent
+        # control flow inside custom solvers), so fall back to the
+        # sequential JIT path on failure.
         results = []
-        for i, s in enumerate(starts):
-            logger.debug("Shotgun (slsqp-jax): start {i}/{n}", i=i + 1, n=len(starts))
+        starts_arr = jnp.stack(starts)
+
+        use_vmap = getattr(type(self), "_shotgun_vmap_ok", None)
+        if use_vmap is not False:
             try:
-                x_opt, fun_val = _solve_one(s)
-                x_opt = np.asarray(x_opt, dtype=np.float64)
-                fun_val = float(np.asarray(fun_val))
-                results.append(
-                    OptimizeResult(
-                        x=x_opt,
-                        fun=fun_val,
-                        success=True,
-                        message="slsqp-jax sequential",
+                batched = jit(vmap(_solve_one))(starts_arr)
+                xs_batch, fs_batch = batched
+                xs_np = np.asarray(xs_batch, dtype=np.float64)
+                fs_np = np.asarray(fs_batch, dtype=np.float64)
+                for i in range(xs_np.shape[0]):
+                    results.append(
+                        OptimizeResult(
+                            x=xs_np[i],
+                            fun=float(fs_np[i]),
+                            success=True,
+                            message="slsqp-jax vmap",
+                        )
                     )
-                )
+                type(self)._shotgun_vmap_ok = True
             except Exception as e:
-                logger.debug("slsqp-jax start {i} failed: {e}", i=i, e=e)
+                logger.debug("slsqp-jax vmap path failed ({e}); falling back to sequential", e=e)
+                type(self)._shotgun_vmap_ok = False
+                results = []
+
+        if not results:
+            # Sequential JIT-compiled path (first call triggers XLA
+            # compilation; subsequent calls reuse it).
+            for i, s in enumerate(starts):
+                logger.debug("Shotgun (slsqp-jax): start {i}/{n}", i=i + 1, n=len(starts))
+                try:
+                    x_opt, fun_val = _solve_one_jit(s)
+                    x_opt = np.asarray(x_opt, dtype=np.float64)
+                    fun_val = float(np.asarray(fun_val))
+                    results.append(
+                        OptimizeResult(
+                            x=x_opt,
+                            fun=fun_val,
+                            success=True,
+                            message="slsqp-jax sequential",
+                        )
+                    )
+                except Exception as e:
+                    logger.debug("slsqp-jax start {i} failed: {e}", i=i, e=e)
 
         if not results:  # pragma: no cover
             return None
@@ -1388,7 +1465,11 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         ub = np.array([0.0 if np.isclose(x, 0) else 1.0 for x in x0])
         feasible = np.array([True for _ in x0])
 
-        # Wrap constraints for scipy (return numpy scalars)
+        use_autodiff = self._use_autodiff and JAX_AVAILABLE
+
+        # Wrap constraints for scipy (return numpy scalars), attaching an
+        # autodiff Jacobian when JAX is available so polishing SLSQP
+        # doesn't fall back to finite differences.
         raw_constraints = getattr(self, "_jax_raw_constraints", self.constraints)
         wrapped_constraints = []
         for const in raw_constraints:
@@ -1398,7 +1479,17 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
                 val = _f(x)
                 return float(np.asarray(val))
 
-            wrapped_constraints.append({**const, "fun": _np_const_fun})
+            new_const = {**const, "fun": _np_const_fun}
+
+            if use_autodiff:
+                _raw_jac = jit(jacobian(_raw_fun))
+
+                def _np_const_jac(x, _j=_raw_jac):
+                    return np.asarray(_j(x), dtype=np.float64)
+
+                new_const["jac"] = _np_const_jac
+
+            wrapped_constraints.append(new_const)
 
         minimizer_kwargs = {
             "bounds": Bounds(lb, ub, feasible),
@@ -1407,7 +1498,17 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
             "constraints": wrapped_constraints,
         }
 
-        if not (self._use_autodiff and JAX_AVAILABLE):
+        if use_autodiff:
+            grad_fn = getattr(self, "_jax_grad_objective", None)
+            if grad_fn is None:
+                grad_fn = jit(grad(self._jax_raw_objective))
+                self._jax_grad_objective = grad_fn
+
+            def _np_grad(x):
+                return np.asarray(grad_fn(x), dtype=np.float64)
+
+            minimizer_kwargs["jac"] = _np_grad
+        else:
             try:  # pragma: no cover
                 import numdifftools as ndt
 
@@ -1774,10 +1875,10 @@ class BaseAuxVarJaxOptimizer(BaseNonConvexJaxOptimizer):
             The joint distribution resulting from the distribution passed
             in and the optimization vector.
         """
-        x = jnp.array(x)
+        x = jnp.asarray(x)
         joint = self._pmf
 
-        channels = self._construct_channels(x.copy())
+        channels = self._construct_channels(x)
 
         for channel, slc in zip(channels, self._slices, strict=True):
             joint = joint[..., jnp.newaxis] * channel[slc]
@@ -1799,9 +1900,9 @@ class BaseAuxVarJaxOptimizer(BaseNonConvexJaxOptimizer):
             The joint distribution resulting from the distribution passed
             in and the optimization vector.
         """
-        x = jnp.array(x)
+        x = jnp.asarray(x)
         _, _, shape, mask, _ = self._aux_vars[0]
-        channel = x.copy().reshape(shape)
+        channel = x.reshape(shape)
         channel = channel / channel.sum(axis=-1, keepdims=True)
         channel = jnp.where(jnp.isnan(channel), mask, channel)
 
@@ -1824,10 +1925,10 @@ class BaseAuxVarJaxOptimizer(BaseNonConvexJaxOptimizer):
             The joint distribution resulting from the distribution passed
             in and the optimization vector.
         """
-        x = jnp.array(x)
+        x = jnp.asarray(x)
         joint = self._full_pmf
 
-        channels = self._construct_channels(x.copy())
+        channels = self._construct_channels(x)
 
         for channel, slc in zip(channels, self._full_slices, strict=True):
             joint = joint[..., jnp.newaxis] * channel[slc]
