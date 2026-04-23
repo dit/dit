@@ -33,7 +33,7 @@ Consider the binary symmetric channel. With probabilities :math:`\leq \frac{1}{2
 
    In [8]: plt.plot(ps, cmis, ls='-', lw=2, label='$I_{copy}$');
 
-   In [9]: plt.plot(ps, [mi - cmi for mi, cmi in zip(mis, cmis), ls='-', lw=2, label='$I_{tran}$');
+   In [9]: plt.plot(ps, [mi - cmi for mi, cmi in zip(mis, cmis)], ls='-', lw=2, label='$I_{tran}$');
 
    In [10]: plt.xlabel(r'Probability of error $p$');
 

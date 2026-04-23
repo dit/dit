@@ -214,8 +214,13 @@ class Distribution:
 
             # Detect scalar outcomes (int, float, etc.) and wrap in 1-tuples
             # so they fit into xarray's coordinate system.
+            # Variable-length strings (e.g. ['red', 'blue']) are treated as
+            # opaque scalar outcomes rather than character-decomposed.
             try:
                 n = len(outcomes[0])
+                if isinstance(outcomes[0], str) and any(len(o) != n for o in outcomes):
+                    outcomes = [(o,) for o in outcomes]
+                    n = 1
             except TypeError:
                 outcomes = [(o,) for o in outcomes]
                 n = 1
@@ -819,13 +824,29 @@ class Distribution:
         outcome : scalar or tuple
         probability : float
         """
+        from .samplespace import CartesianProduct
+
         dims = list(self.data.dims)
-        coord_vals = [self.data.coords[d].values for d in dims]
         arr = self._linear_data()
 
         def _native(v):
             return v.item() if hasattr(v, "item") else v
 
+        # If an explicit, non-Cartesian sample space has been installed
+        # (e.g. by pruned_samplespace), iterate it directly so that callers
+        # such as induced_sigalg see only the restricted sample space.
+        override = getattr(self, "_sample_space_override", None)
+        if override is not None and not isinstance(override, CartesianProduct):
+            for outcome in override:
+                o_tuple = outcome if isinstance(outcome, tuple) else (outcome,)
+                sel = {d: v for d, v in zip(dims, o_tuple, strict=True)}
+                p = float(arr.sel(sel))
+                if mode == "atoms" or p > 0:
+                    o = _native(o_tuple[0]) if self._unwrap_scalar else tuple(_native(v) for v in o_tuple)
+                    yield o, p
+            return
+
+        coord_vals = [self.data.coords[d].values for d in dims]
         for combo in itertools.product(*coord_vals):
             sel = {d: v for d, v in zip(dims, combo, strict=True)}
             p = float(arr.sel(sel))
@@ -964,19 +985,26 @@ class Distribution:
             outcomes = [str(o) for o in outcomes]
 
         max_length = max(map(len, outcomes)) if outcomes else 0
-        free = ",".join(dim for dim in self.dims if dim in self.free_vars)
-        given = ",".join(dim for dim in self.dims if dim in self.given_vars)
-        if given:
-            plabel = f"{free}|{given}"
-        elif free:
-            plabel = free
-        else:
+        if self._unwrap_scalar:
             plabel = "x"
+        else:
+            free = ",".join(dim for dim in self.dims if dim in self.free_vars)
+            given = ",".join(dim for dim in self.dims if dim in self.given_vars)
+            if given:
+                plabel = f"{free}|{given}"
+            elif free:
+                plabel = free
+            else:
+                plabel = "x"
         pstr = f"log p({plabel})" if d.is_log() else f"p({plabel})"
         base = d.get_base()
 
+        alpha_display = self._native_alphabet(self.alphabet)
+        if self._unwrap_scalar and len(alpha_display) == 1:
+            alpha_display = alpha_display[0]
+
         headers = ["Class: ", "Alphabet: ", "Base: "]
-        vals = [self.__class__.__name__, self._native_alphabet(self.alphabet), base]
+        vals = [self.__class__.__name__, alpha_display, base]
         L = max(map(len, headers))
         for head, val in zip(headers, vals, strict=True):
             s.write(f"{head.ljust(L)}{val}\n")
@@ -1625,6 +1653,47 @@ class Distribution:
         return slices
 
     # ─────────────────────────────────────────────────────────────────────
+    # Outcome-transforming arithmetic (scalar distributions)
+    # ─────────────────────────────────────────────────────────────────────
+
+    def _apply_outcome_fn(self, fn):
+        """Apply *fn* to each outcome, summing probabilities of collisions.
+
+        Used for unary transformations of scalar (1-D numerical) distributions,
+        e.g. ``d6 % 2`` maps each die face through ``lambda o: o % 2``.
+        """
+        from collections import defaultdict
+
+        new_probs = defaultdict(float)
+        for o, p in self.zipped():
+            new_o = fn(o)
+            if isinstance(new_o, (bool, np.bool_)):
+                new_o = int(new_o)
+            new_probs[new_o] += p
+        outcomes = sorted(new_probs.keys())
+        pmf = [new_probs[o] for o in outcomes]
+        return Distribution(outcomes, pmf)
+
+    def _combine_independent(self, other, fn):
+        """Combine two independent scalar distributions through *fn*.
+
+        Computes the full cross-product, applying *fn(o1, o2)* to every
+        pair of outcomes and summing the resulting probabilities.
+        """
+        from collections import defaultdict
+
+        new_probs = defaultdict(float)
+        for o1, p1 in self.zipped():
+            for o2, p2 in other.zipped():
+                new_o = fn(o1, o2)
+                if isinstance(new_o, (bool, np.bool_)):
+                    new_o = int(new_o)
+                new_probs[new_o] += p1 * p2
+        outcomes = sorted(new_probs.keys())
+        pmf = [new_probs[o] for o in outcomes]
+        return Distribution(outcomes, pmf)
+
+    # ─────────────────────────────────────────────────────────────────────
     # Arithmetic
     # ─────────────────────────────────────────────────────────────────────
 
@@ -1632,7 +1701,11 @@ class Distribution:
         """
         Multiply two distributions.
 
-        Core operation enabling the chain rule and partial application:
+        For scalar (1-D numerical) distributions, this transforms outcomes:
+        ``d6 * 2`` yields a distribution over ``{2, 4, 6, 8, 10, 12}``, and
+        ``d6 * d6`` yields the product of two independent copies.
+
+        For named-variable distributions, this implements the chain rule:
 
         - ``p(X,Y) * p(Z|X,Y)  = p(X,Y,Z)``
         - ``p(X) * p(Y|X)      = p(X,Y)``
@@ -1647,12 +1720,11 @@ class Distribution:
         Returns
         -------
         result : Distribution
-            The product distribution. For scalar multiplication, a scaled
-            copy with the same free/given structure.
+            The product distribution.
 
         Notes
         -----
-        Distribution multiplication rules:
+        Distribution multiplication rules (named-variable mode):
 
         - ``free_A`` and ``free_B`` must be disjoint
         - ``given_B`` must be a subset of ``all_A``
@@ -1660,6 +1732,8 @@ class Distribution:
         - ``result_given = (given_A | given_B) - result_free``
         """
         if isinstance(other, (int, float, np.number)):
+            if self._unwrap_scalar:
+                return self._apply_outcome_fn(lambda o: o * other)
             return Distribution(
                 self.data * other,
                 free_vars=self.free_vars,
@@ -1669,6 +1743,9 @@ class Distribution:
 
         if not isinstance(other, Distribution):
             return NotImplemented
+
+        if self._unwrap_scalar and other._unwrap_scalar:
+            return self._combine_independent(other, lambda a, b: a * b)
 
         # Validate
         free_overlap = self.free_vars & other.free_vars
@@ -1717,6 +1794,8 @@ class Distribution:
             Scaled distribution, or NotImplemented if other is not a scalar.
         """
         if isinstance(other, (int, float, np.number)):
+            if self._unwrap_scalar:
+                return self._apply_outcome_fn(lambda o: other * o)
             return self.__mul__(other)
         return NotImplemented
 
@@ -1774,17 +1853,26 @@ class Distribution:
 
     def __add__(self, other):
         """
-        Element-wise addition of distributions (for convex combinations).
+        Add a scalar or distribution.
 
-        Both distributions must share the same sample space. The result
-        is **not** automatically normalised.
+        For scalar (1-D numerical) distributions, this transforms outcomes:
+        ``d6 + 3`` shifts outcomes, ``d6 + d6`` is convolution (sum of
+        two independent copies).
+
+        For named-variable distributions, this is element-wise addition
+        of probabilities (for convex combinations). The result is **not**
+        automatically normalised.
         """
         if isinstance(other, (int, float, np.number)):
+            if self._unwrap_scalar:
+                return self._apply_outcome_fn(lambda o: o + other)
             if other == 0:
                 return self.copy()
             return NotImplemented
         if not isinstance(other, Distribution):
             return NotImplemented
+        if self._unwrap_scalar and other._unwrap_scalar:
+            return self._combine_independent(other, lambda a, b: a + b)
         new_data = self.data + other.data
         return Distribution(
             new_data,
@@ -1795,14 +1883,28 @@ class Distribution:
 
     def __radd__(self, other):
         """Right-addition (supports ``sum(dists)`` starting from 0)."""
-        if isinstance(other, (int, float, np.number)) and other == 0:
-            return self.copy()
+        if isinstance(other, (int, float, np.number)):
+            if self._unwrap_scalar:
+                return self._apply_outcome_fn(lambda o: other + o)
+            if other == 0:
+                return self.copy()
         return self.__add__(other)
 
     def __sub__(self, other):
-        """Element-wise subtraction of distributions."""
+        """Subtract a scalar or distribution.
+
+        For scalar distributions, transforms outcomes (``d6 - 1`` shifts
+        outcomes down). For named-variable distributions, element-wise
+        probability subtraction.
+        """
+        if isinstance(other, (int, float, np.number)):
+            if self._unwrap_scalar:
+                return self._apply_outcome_fn(lambda o: o - other)
+            return NotImplemented
         if not isinstance(other, Distribution):
             return NotImplemented
+        if self._unwrap_scalar and other._unwrap_scalar:
+            return self._combine_independent(other, lambda a, b: a - b)
         new_data = self.data - other.data
         return Distribution(
             new_data,
@@ -1810,6 +1912,12 @@ class Distribution:
             given_vars=self.given_vars,
             base=self.ops.base,
         )
+
+    def __rsub__(self, other):
+        """Right-subtraction: ``scalar - dist`` (e.g. ``10 - d6``)."""
+        if isinstance(other, (int, float, np.number)) and self._unwrap_scalar:
+            return self._apply_outcome_fn(lambda o: other - o)
+        return NotImplemented
 
     def __matmul__(self, other):
         """
@@ -1831,6 +1939,94 @@ class Distribution:
         outcomes = sorted(dist.keys())
         pmf = [dist[o] for o in outcomes]
         return Distribution(outcomes, pmf, base=self.get_base())
+
+    # ── Outcome-transforming operators (scalar distributions) ──────
+
+    def __mod__(self, other):
+        """Modulo: ``d6 % 2`` or ``d6 % d6``."""
+        if isinstance(other, (int, float, np.number)):
+            if self._unwrap_scalar:
+                return self._apply_outcome_fn(lambda o: o % other)
+            return NotImplemented
+        if isinstance(other, Distribution) and self._unwrap_scalar and other._unwrap_scalar:
+            return self._combine_independent(other, lambda a, b: a % b)
+        return NotImplemented
+
+    def __rmod__(self, other):
+        """Right-modulo: ``scalar % dist``."""
+        if isinstance(other, (int, float, np.number)) and self._unwrap_scalar:
+            return self._apply_outcome_fn(lambda o: other % o)
+        return NotImplemented
+
+    def __floordiv__(self, other):
+        """Floor division: ``d6 // 2`` or ``d6 // d6``."""
+        if isinstance(other, (int, float, np.number)):
+            if self._unwrap_scalar:
+                return self._apply_outcome_fn(lambda o: o // other)
+            return NotImplemented
+        if isinstance(other, Distribution) and self._unwrap_scalar and other._unwrap_scalar:
+            return self._combine_independent(other, lambda a, b: a // b)
+        return NotImplemented
+
+    def __rfloordiv__(self, other):
+        """Right floor-division: ``scalar // dist``."""
+        if isinstance(other, (int, float, np.number)) and self._unwrap_scalar:
+            return self._apply_outcome_fn(lambda o: other // o)
+        return NotImplemented
+
+    def __pow__(self, other):
+        """Power: ``d6 ** 2`` or ``d6 ** d6``."""
+        if isinstance(other, (int, float, np.number)):
+            if self._unwrap_scalar:
+                return self._apply_outcome_fn(lambda o: o ** other)
+            return NotImplemented
+        if isinstance(other, Distribution) and self._unwrap_scalar and other._unwrap_scalar:
+            return self._combine_independent(other, lambda a, b: a ** b)
+        return NotImplemented
+
+    def __rpow__(self, other):
+        """Right power: ``scalar ** dist``."""
+        if isinstance(other, (int, float, np.number)) and self._unwrap_scalar:
+            return self._apply_outcome_fn(lambda o: other ** o)
+        return NotImplemented
+
+    def __le__(self, other):
+        if isinstance(other, (int, float, np.number)) and self._unwrap_scalar:
+            return self._apply_outcome_fn(lambda o: int(o <= other))
+        if isinstance(other, Distribution) and self._unwrap_scalar and other._unwrap_scalar:
+            return self._combine_independent(other, lambda a, b: int(a <= b))
+        return NotImplemented
+
+    def __lt__(self, other):
+        if isinstance(other, (int, float, np.number)) and self._unwrap_scalar:
+            return self._apply_outcome_fn(lambda o: int(o < other))
+        if isinstance(other, Distribution) and self._unwrap_scalar and other._unwrap_scalar:
+            return self._combine_independent(other, lambda a, b: int(a < b))
+        return NotImplemented
+
+    def __ge__(self, other):
+        if isinstance(other, (int, float, np.number)) and self._unwrap_scalar:
+            return self._apply_outcome_fn(lambda o: int(o >= other))
+        if isinstance(other, Distribution) and self._unwrap_scalar and other._unwrap_scalar:
+            return self._combine_independent(other, lambda a, b: int(a >= b))
+        return NotImplemented
+
+    def __gt__(self, other):
+        if isinstance(other, (int, float, np.number)) and self._unwrap_scalar:
+            return self._apply_outcome_fn(lambda o: int(o > other))
+        if isinstance(other, Distribution) and self._unwrap_scalar and other._unwrap_scalar:
+            return self._combine_independent(other, lambda a, b: int(a > b))
+        return NotImplemented
+
+    def __neg__(self):
+        if self._unwrap_scalar:
+            return self._apply_outcome_fn(lambda o: -o)
+        return NotImplemented
+
+    def __abs__(self):
+        if self._unwrap_scalar:
+            return self._apply_outcome_fn(lambda o: abs(o))
+        return NotImplemented
 
     # ── Classmethods ──────────────────────────────────────────────────
 
@@ -2236,6 +2432,14 @@ class Distribution:
         ------
         outcome : tuple
         """
+        from .samplespace import CartesianProduct
+
+        override = getattr(self, "_sample_space_override", None)
+        if override is not None and not isinstance(override, CartesianProduct):
+            for outcome in override:
+                yield outcome if isinstance(outcome, tuple) else (outcome,)
+            return
+
         dims = list(self.data.dims)
         coord_vals = [self.data.coords[d].values for d in dims]
         for combo in itertools.product(*coord_vals):

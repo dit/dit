@@ -29,6 +29,7 @@ bibtex_bibfiles = ["references.bib"]
 ipython_mplbackend = "agg"
 ipython_execlines = [
     "import numpy as np",
+    "np.set_printoptions(legacy='1.25')",
     "import matplotlib.pyplot as plt",
     'plt.rcParams["figure.figsize"] = (8, 6)',
     'plt.rcParams["savefig.facecolor"] = (1, 1, 1, 0)',

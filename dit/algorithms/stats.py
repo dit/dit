@@ -35,6 +35,13 @@ __all__ = (
 # ── Core moments ──────────────────────────────────────────────────────────
 
 
+def _scalar(val):
+    """Convert 0-d numpy scalars to plain Python float."""
+    if isinstance(val, np.generic) and val.ndim == 0:
+        return float(val)
+    return val
+
+
 def expectation(dist, f=None):
     """
     Compute E[f(X)] for an arbitrary callable *f*.
@@ -58,7 +65,7 @@ def expectation(dist, f=None):
     outcomes, pmf = zip(*dist.zipped(mode="patoms"), strict=True)
     pmf = np.asarray(pmf)
     vals = np.asarray(outcomes) if f is None else np.asarray([f(o) for o in outcomes])
-    return np.average(vals, axis=0, weights=pmf)
+    return _scalar(np.average(vals, axis=0, weights=pmf))
 
 
 def mean(dist):
@@ -98,7 +105,7 @@ def central_moment(dist, n):
     pmf = np.asarray(pmf)
     terms = np.asarray([(np.asarray(o) - mu) ** n for o in outcomes])
     terms[np.isnan(terms)] = 0
-    return np.average(terms, axis=0, weights=pmf)
+    return _scalar(np.average(terms, axis=0, weights=pmf))
 
 
 def standard_moment(dist, n):
@@ -145,7 +152,7 @@ def standard_deviation(dist):
     -------
     std : ndarray
     """
-    return np.sqrt(variance(dist))
+    return _scalar(np.sqrt(variance(dist)))
 
 
 def skewness(dist):
@@ -295,7 +302,7 @@ def quantile(dist, q):
         result[idx] = (g + ge) / 2
 
     if d == 1:
-        return result[0]
+        return float(result[0])
     return result
 
 

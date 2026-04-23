@@ -2,7 +2,7 @@
 The Kullback-Leibler divergence.
 """
 
-from ..multivariate import entropy
+from ..multivariate.entropy import entropy
 from .cross_entropy import cross_entropy
 
 __all__ = (

@@ -52,6 +52,19 @@ def pruned_samplespace(d, sample_space=None):
         outcomes = [(o,) for o in outcomes]
 
     pd = d.__class__(outcomes, pmf, base=d.get_base())
+
+    # Install a concrete (non-Cartesian) sample space on the pruned
+    # distribution so that downstream operations like ``induced_sigalg``
+    # see only the pruned support rather than the full Cartesian product
+    # of per-dim alphabets. This restores the old dit semantics where
+    # ``pruned_samplespace`` materially restricts the effective sample
+    # space (e.g. so ``insert_meet`` produces correct atoms on
+    # distributions like ``RdnXor`` without ``support_only=True``).
+    if outcomes:
+        from ..samplespace import SampleSpace
+
+        pd._sample_space = SampleSpace(list(outcomes))
+
     return pd
 
 
