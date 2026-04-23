@@ -120,10 +120,10 @@ addopts = [
     "--durations=25",
     "--durations-min=1.0",
     "--reruns=1",
-    "-m", "not very_slow",
+    "-m", "not slow and not very_slow",
 ]
 markers = [
-    "slow: mark that the test may take several minutes to complete.",
+    "slow: mark that the test may take several minutes to complete. Excluded by default.",
     "very_slow: mark that the test is extremely slow (e.g. torch optimization backend). Excluded by default.",
     "cython: mark that a test requires cython compiled extensions.",
 ]
