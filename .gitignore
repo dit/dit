@@ -38,6 +38,9 @@ dit/math/_*.html
 # vscode
 .vscode
 
+# cursor
+.cursor/
+
 # vim
 *.swp
 *.swo
