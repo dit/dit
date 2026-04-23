@@ -1978,16 +1978,16 @@ class Distribution:
         """Power: ``d6 ** 2`` or ``d6 ** d6``."""
         if isinstance(other, (int, float, np.number)):
             if self._unwrap_scalar:
-                return self._apply_outcome_fn(lambda o: o ** other)
+                return self._apply_outcome_fn(lambda o: o**other)
             return NotImplemented
         if isinstance(other, Distribution) and self._unwrap_scalar and other._unwrap_scalar:
-            return self._combine_independent(other, lambda a, b: a ** b)
+            return self._combine_independent(other, lambda a, b: a**b)
         return NotImplemented
 
     def __rpow__(self, other):
         """Right power: ``scalar ** dist``."""
         if isinstance(other, (int, float, np.number)) and self._unwrap_scalar:
-            return self._apply_outcome_fn(lambda o: other ** o)
+            return self._apply_outcome_fn(lambda o: other**o)
         return NotImplemented
 
     def __le__(self, other):
