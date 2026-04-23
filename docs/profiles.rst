@@ -304,6 +304,8 @@ We can plot these same distributions on a slightly different entropy triangle as
    @savefig entropy_triangle2_example.png width=500 align=center
    In [33]: EntropyTriangle2(dists).draw();
 
+.. _dependency decomposition:
+
 Dependency Decomposition
 ========================
 

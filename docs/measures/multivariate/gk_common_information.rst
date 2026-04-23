@@ -1,6 +1,8 @@
 .. gk_common_information.rst
 .. py:module:: dit.multivariate.common_informations.gk_common_information
 
+.. _gács-körner common information:
+
 ******************************
 Gács-Körner Common Information
 ******************************

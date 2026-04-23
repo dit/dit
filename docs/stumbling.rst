@@ -16,6 +16,8 @@ information theory is simply richer and more nuanced than our intuitions would
 like, or if it is simply inadequate for the jobs it has been tasked with.
 
 
+.. _necessity of common informations:
+
 Necessity of Common Informations
 --------------------------------
 
@@ -127,6 +129,8 @@ underlying reality does not due to null probabilities. In this way, Bayesian
 methods can systematically mislead a practitioner regarding the structural
 independencies in a system.
 
+
+.. _shannon-like information measures are insensitive to structural differences:
 
 Shannon-like Information Measures Are Insensitive to Structural Differences
 ---------------------------------------------------------------------------

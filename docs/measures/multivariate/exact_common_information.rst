@@ -1,6 +1,8 @@
 .. exact_common_information.rst
 .. py:module:: dit.multivariate.common_informations.exact_common_information
 
+.. _exact common information:
+
 ************************
 Exact Common Information
 ************************

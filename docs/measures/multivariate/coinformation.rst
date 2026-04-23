@@ -1,6 +1,8 @@
 .. coinformation.rst
 .. py:module:: dit.multivariate.coinformation
 
+.. _coinformation:
+
 **************
 Co-Information
 **************
@@ -52,7 +54,7 @@ Meaning that the co-information is positive for both the most redundant distribu
 
 .. note::
 
-   Correctly measuring redundancy and synergy is an ongoing problem. See :cite:`Griffith2013` and references therein for the current status of the problem.
+   Correctly measuring redundancy and synergy is an ongoing problem. See :cite:`griffith2014quantifying` and references therein for the current status of the problem.
 
 
 Visualization

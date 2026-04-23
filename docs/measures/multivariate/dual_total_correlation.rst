@@ -1,6 +1,9 @@
 .. dual_total_correlation.rst
 .. py:module:: dit.multivariate.dual_total_correlation
 
+.. _dual_total_correlation:
+.. _dual total correlation:
+
 **********************
 Dual Total Correlation
 **********************

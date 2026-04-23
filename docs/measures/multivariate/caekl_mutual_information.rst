@@ -1,6 +1,8 @@
 .. caekl_mutual_information.rst
 .. py:module:: dit.multivariate.caekl_mutual_information
 
+.. _caekl_mutual_information:
+
 ************************
 CAEKL Mutual Information
 ************************

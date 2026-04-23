@@ -50,6 +50,8 @@ It is perhaps illustrative to consider how each of these measures behaves on two
 +-----------+---+----------------+-----------+---+---+----------------+----+---+-----------+-----------------------+
 
 
+.. _common informations:
+
 Common Informations
 ===================
 These measures all somehow measure shared information, but do not equal the mutual information in the bivariate case.

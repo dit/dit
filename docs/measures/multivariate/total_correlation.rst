@@ -1,6 +1,9 @@
 .. total_correlation.rst
 .. py:module:: dit.multivariate.total_correlation
 
+.. _total_correlation:
+.. _total correlation:
+
 *****************
 Total Correlation
 *****************

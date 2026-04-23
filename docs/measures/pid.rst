@@ -373,7 +373,7 @@ James et al :cite:`james2017unique` have developed a method of quantifying uniqu
 :math:`\Ipm{\bullet}`
 ---------------------
 
-Also taking a pointwise view, Finn & Lizier's :math:`\Ipm{\bullet}` :cite:`finn2017` instead splits the pointwise mutual information into two components:
+Also taking a pointwise view, Finn & Lizier's :math:`\Ipm{\bullet}` :cite:`finn2018pointwise` instead splits the pointwise mutual information into two components:
 
 .. math::
 
@@ -428,6 +428,10 @@ Taking a functional perspective as in :math:`\Iwedge`, :math:`\Irav` defines biv
    \Irav{X_{0:2} : Y} = \max_f\left(\I{X_0\!:\!X_1\!:\!Y\!:\!f(X_0,X_1)}
 
 This measure is designed to exploit the conflation of synergy and redundancy in the three variable coinformation: :math:`\I{X_0\!:\!X_1\!:\!Y} = R - S`.
+
+.. note::
+
+   TODO: reference. No canonical publication for :math:`\Irav{\bullet}` has been identified in the ``dit`` source; a citation should be added if/when the origin paper is confirmed.
 
 .. ipython::
 
@@ -487,12 +491,113 @@ Drawing from the reconstructability analysis work of Zwick :cite:`zwick2004overv
 The measure of Mages & Rohner :cite:`mages2023measure` can be interpreted as a pointwise version of :math:`\Ibroja{\bullet}` to provide a non-negative partial information decomposition for an arbitrary number of sources.
 It obtains its operational interpretation from valuating the reachable decision regions (achievable type I/II error pairs) for each state of the target variable.
 
+.. py:module:: dit.pid.ict
+:math:`\Ict{\bullet}`
+---------------------
+
+Sigtermans :cite:`sigtermans2020path` proposes a bivariate redundancy measure based on causal tensors and path-based information flow between the two sources and the target.
+
+.. py:module:: dit.pid.ideg
+:math:`\Ideg{\bullet}`
+----------------------
+
+The degradation intersection information of Kolchinsky :cite:`kolchinsky2022novel` (further developed by Gomes & Figueiredo :cite:`gomes2023orders`) defines redundancy as the maximum mutual information carried by a channel that is a Blackwell degradation of every source channel:
+
+.. math::
+
+   \Ideg{X_{0:n} \to Y} = \max_{Q :\; Q \preceq_d X_i \;\forall i} \I{Q : Y}
+
+.. py:module:: dit.pid.idelta
+:math:`\Idelta{\bullet}`
+------------------------
+
+The :math:`\delta`-PID of Banerjee, Olbrich, Jost & Rauh :cite:`banerjee2018unique` quantifies unique information via the *weighted output KL deficiency*, the cost of approximating one source channel from the other via output randomization:
+
+.. math::
+
+   \delta(Y : X_0 \setminus X_1) = \inf_{P(X_0'|X_1)} \mathbb{E}_{Y}\!\left[ \DKL{P(X_0|Y) \;\|\; P(X_0'|X_1) \circ P(X_1|Y)} \right]
+
+Redundancy is then min-symmetrized across the two sources.
+
+.. py:module:: dit.pid.ideltalambda
+:math:`\IdeltaLambda{\bullet}`
+------------------------------
+
+Venkatesh, Gurushankar & Schamberg :cite:`venkatesh2023capturing` introduce a Lagrangian generalization that smoothly interpolates between the :math:`\delta`-PID of :cite:`banerjee2018unique` and the BROJA PID of :cite:`bertschinger2014quantifying`:
+
+.. math::
+
+   \delta_{\lambda}(Y : X_0 \setminus X_1) = \inf_{P(X_0'|X_1 Y)} \mathbb{E}_{Y}\!\left[\DKL{P(X_0|Y) \;\|\; P(X_0'|Y)}\right] + \lambda \, \I{Y : X_0' | X_1}
+
+As :math:`\lambda \to \infty` the measure recovers :math:`\Idelta{\bullet}`; as :math:`\lambda \to 0` it recovers :math:`\Ibroja{\bullet}`.
+
+.. py:module:: dit.pid.igh
+:math:`\Igh{\bullet}`
+---------------------
+
+The redundancy measure of Griffith & Ho :cite:`griffith2014intersection` constructs a shared-information quantity via an auxiliary-variable optimization over channels from the joint sources to an intersection variable.
+
+.. note::
+
+   TODO: confirm the canonical Griffith & Ho reference. The implementation in ``dit`` only identifies the authors; :cite:`griffith2014intersection` is used here as the best match among published Griffith papers in the PID literature.
+
+.. py:module:: dit.pid.iig
+:math:`\Iig{\bullet}`
+---------------------
+
+Niu & Quinn :cite:`niu2019measure` propose an information-geometric PID: the synergy is defined as the KL divergence from the true joint distribution to the nearest distribution satisfying :math:`X_0 - X_1 - Y` or :math:`X_1 - X_0 - Y` Markov chains, minimized over a convex mixture of the two.
+
+.. py:module:: dit.pid.iipid
+:math:`\Iipid{\bullet}`
+-----------------------
+
+The I-PID of Venkatesh, Gurushankar & Schamberg :cite:`venkatesh2023capturing` defines unique information via an *information deficiency* that maximizes the mutual-information gap attainable by a Markov test channel :math:`T - Y - (X_0, X_1)`:
+
+.. math::
+
+   \delta_I(Y : X_0 \setminus X_1) = \sup_{P(T|Y)} \left[ \I{T : X_0} - \I{T : X_1} \right]
+
+Redundancy is obtained by min-symmetrization, analogously to :math:`\Idelta{\bullet}`.
+
+.. py:module:: dit.pid.imc
+:math:`\Imc{\bullet}`
+---------------------
+
+The more-capable intersection information of Gomes & Figueiredo :cite:`gomes2023orders` (building on :cite:`kolchinsky2022novel`) replaces the Blackwell-degradation order in :math:`\Ideg{\bullet}` with the weaker *more-capable* channel preorder:
+
+.. math::
+
+   \Imc{X_{0:n} \to Y} = \max_{Q :\; Q \preceq_{\mathrm{mc}} X_i \;\forall i} \I{Q : Y}
+
+where :math:`Q \preceq_{\mathrm{mc}} X_i` iff :math:`\I{Q : Y} \leq \I{X_i : Y}` for every input distribution on :math:`Y`.
+
+.. py:module:: dit.pid.imes
+:math:`\Imes{\bullet}`
+----------------------
+
+:math:`\Imes{\bullet}` is a maximum-entropy PID inspired by BROJA's "``*``" marginal-consistency assumption.
+
+.. note::
+
+   TODO: reference. No canonical publication has been identified for :math:`\Imes{\bullet}` in the ``dit`` source; the measure is described only as "inspired by BROJA's ``*`` assumption".
+
+.. py:module:: dit.pid.iprec
+:math:`\Iprec{\bullet}`
+-----------------------
+
+Kolchinsky :cite:`kolchinsky2022novel` defines a redundancy measure using the Blackwell precedence order on channels:
+
+.. math::
+
+   \Iprec{X_{0:n} \to Y} = \min_{s_{Q|Y}} \I{Y : Q} \quad \text{s.t.} \quad s_{Q|Y} \preceq p_{X_i|Y} \;\;\forall i
+
+The constraint set is a convex polytope and the objective is convex, so the optimum lies at a vertex.
 
 .. py:module:: dit.pid.iskar
 Secret Key Agreement Rates
 --------------------------
 
-One can associate :ref:`Secret Key Agreement` rates with unique informations by considering the rate at which one source and the target can agree upon a secret key while the other source eavesdrops. This results in four possibilities:
+One can associate :ref:`Secret Key Agreement` rates with unique informations :cite:`banerjee2015synergy` by considering the rate at which one source and the target can agree upon a secret key while the other source eavesdrops. This results in four possibilities:
 - neither source nor target communicate
 - only the source communicates
 - only the target communicates

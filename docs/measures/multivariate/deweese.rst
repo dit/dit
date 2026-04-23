@@ -1,11 +1,17 @@
 .. deweese.rst
 .. py:module:: dit.multivariate.deweese
 
+.. _deweese coinformation:
+
 *********************
 DeWeese-like Measures
 *********************
 
-Mike DeWeese has introduced a family of multivariate information measures based on a multivariate extension of the data processing inequality. The general idea is the following: local modification of a single variable can not increase the amount of correlation or dependence it has with the other variables. Consider, however, the triadic distribution:
+Mike DeWeese has introduced a family of multivariate information measures based on a multivariate extension of the data processing inequality :cite:`james2017unique`. The general idea is the following: local modification of a single variable can not increase the amount of correlation or dependence it has with the other variables. Consider, however, the triadic distribution:
+
+.. note::
+
+   TODO: confirm the canonical reference for Mike DeWeese's construction. The formulation appears in :cite:`james2017unique`, but a standalone DeWeese publication may exist.
 
 .. ipython::
 

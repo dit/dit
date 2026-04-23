@@ -1,6 +1,8 @@
 .. secret_keys.rst
 .. py:module:: dit.multivariate.secret_key_agreement
 
+.. _secret key agreement:
+
 ********************
 Secret Key Agreement
 ********************
@@ -144,6 +146,9 @@ The secret key agreement rate is trivially upper bounded by:
    \min\{ \I{X : Y}, \I{X : Y | Z} \}
 
 .. py:module:: dit.multivariate.secret_key_agreement.intrinsic_mutual_informations
+
+.. _intrinsic mutual information:
+
 Intrinsic Mutual Information
 ****************************
 
@@ -156,6 +161,9 @@ The :py:func:`intrinsic_mutual_information` :cite:`maurer1997intrinsic` is defin
 It is straightforward to see that :math:`p(\overline{z} | z)` being a constant achieves :math:`\I{X : Y}`, and :math:`p(\overline{z} | z)` being the identity achieves :math:`\I{X : Y | Z}`.
 
 .. py:module:: dit.multivariate.secret_key_agreement.reduced_intrinsic_mutual_informations
+
+.. _reduced intrinsic mutual information:
+
 Reduced Intrinsic Mutual Information
 ************************************
 
