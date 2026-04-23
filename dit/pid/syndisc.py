@@ -104,13 +104,16 @@ def _transform_constraint(lattice):
     tuple_lattice : Lattice
         The lattice with tuple-of-tuples nodes.
     """
+
     def tuplefy(n):
         if not n:
             return ()
-        return tuple(sorted(
-            (tuple(sorted(sum(_, ()))) for _ in n),
-            key=lambda tup: (len(tup), tup),
-        ))
+        return tuple(
+            sorted(
+                (tuple(sorted(sum(_, ()))) for _ in n),
+                key=lambda tup: (len(tup), tup),
+            )
+        )
 
     def freeze(n):
         if not n:
@@ -185,11 +188,13 @@ class SyndiscOptimizer(BaseAuxVarOptimizer):
             indices = set(subgroup)
             self._mi_subgroups[key] = self._mutual_information(self._arvs, indices)
 
-        for key, mi_fn in self._mi_subgroups.items():
-            self.constraints.append({
-                "type": "eq",
-                "fun": lambda x, fn=mi_fn: self._squared_mi(x, fn),
-            })
+        for _key, mi_fn in self._mi_subgroups.items():
+            self.constraints.append(
+                {
+                    "type": "eq",
+                    "fun": lambda x, fn=mi_fn: self._squared_mi(x, fn),
+                }
+            )
 
         self._default_hops = 5
 
@@ -318,13 +323,9 @@ class SynDisc:
         self._niter = niter
         self._bound = bound
 
-        self._lattice = _transform_constraint(
-            _build_constraint_lattice(self._sources)
-        )
+        self._lattice = _transform_constraint(_build_constraint_lattice(self._sources))
 
-        self._total = coinformation(
-            self._dist, [list(flatten(self._sources)), self._target]
-        )
+        self._total = coinformation(self._dist, [list(flatten(self._sources)), self._target])
 
         self._synergies = {}
         self._atoms = {}
@@ -356,10 +357,7 @@ class SynDisc:
         if not any(alpha):
             return self._total
 
-        all_sources_constrained = (
-            len(alpha) == 1
-            and set(alpha[0]) == set(range(len(self._sources)))
-        )
+        all_sources_constrained = len(alpha) == 1 and set(alpha[0]) == set(range(len(self._sources)))
         if all_sources_constrained:
             return 0.0
 
@@ -409,9 +407,7 @@ class SynDisc:
         atom : float
         """
         if node not in self._atoms:
-            desc_sum = sum(
-                self.get_atom(n) for n in self._lattice.descendants(node)
-            )
+            desc_sum = sum(self.get_atom(n) for n in self._lattice.descendants(node))
             self._atoms[node] = float(self.get_synergy(node) - desc_sum)
         return self._atoms[node]
 
@@ -508,12 +504,7 @@ class SynDisc:
         table.float_format[a_str] = f"{digits + 2}.{digits}"
 
         for node in self._lattice:
-            if not node:
-                node_label = "{}"
-            else:
-                node_label = "".join(
-                    "{{{}}}".format(":".join(map(str, n))) for n in node
-                )
+            node_label = "{}" if not node else "".join("{{{}}}".format(":".join(map(str, n))) for n in node)
             s_val = self.get_synergy(node)
             a_val = self.get_atom(node)
             if np.isclose(0, s_val, atol=10 ** -(digits - 1), rtol=10 ** -(digits - 1)):
@@ -607,15 +598,11 @@ class ModifiedSynDisc(SynDisc):
         delegate to the parent implementation.
         """
         if len(node) == 1:
-            all_sources_constrained = (
-                set(node[0]) == set().union(*self._sources)
-            )
+            all_sources_constrained = set(node[0]) == set().union(*self._sources)
             if all_sources_constrained:
                 return 0.0
 
-            source_mi = coinformation(
-                self._dist, [list(node[0]), list(self._target)]
-            )
+            source_mi = coinformation(self._dist, [list(node[0]), list(self._target)])
             return self._total - source_mi
 
         return super()._compute_s_alpha(node)

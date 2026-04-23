@@ -95,9 +95,7 @@ class ShapleyDependencyDecomposition:
     def _compute(self, maxiter=None):
         """Build the input lattice, split distributions, and Shapley values."""
         source_labels = list(range(len(self._sources)))
-        source_idx_map = {
-            i: frozenset(self._sources[i]) for i in source_labels
-        }
+        source_idx_map = {i: frozenset(self._sources[i]) for i in source_labels}
         all_source_indices = frozenset().union(*source_idx_map.values())
         target_indices = frozenset(self._target)
 
@@ -106,7 +104,10 @@ class ShapleyDependencyDecomposition:
         constraint_map = {}
         for node in self._lattice:
             constraint_map[node] = _node_to_constraint(
-                node, source_idx_map, all_source_indices, target_indices,
+                node,
+                source_idx_map,
+                all_source_indices,
+                target_indices,
             )
 
         self._dists = {}
@@ -117,7 +118,10 @@ class ShapleyDependencyDecomposition:
             except IndexError:
                 x0 = None
             self._dists[node] = maxent_dist(
-                self._dist, constraint_map[node], x0=x0, sparse=False,
+                self._dist,
+                constraint_map[node],
+                x0=x0,
+                sparse=False,
                 maxiter=maxiter if maxiter is not None else 1000,
             )
 
@@ -133,9 +137,7 @@ class ShapleyDependencyDecomposition:
                 predictor = b - a
                 gain = self._entropies[a] - self._entropies[b]
                 info_diffs[predictor].append(gain)
-        self.contributions = {
-            pred: float(np.mean(vals)) for pred, vals in info_diffs.items()
-        }
+        self.contributions = {pred: float(np.mean(vals)) for pred, vals in info_diffs.items()}
 
     def __getitem__(self, item):
         """

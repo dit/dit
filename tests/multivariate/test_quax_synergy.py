@@ -9,10 +9,10 @@ from dit import Distribution
 from dit.example_dists import And, Xor
 from dit.multivariate import max_synergistic_entropy, quax_synergy
 
-
 # ---------------------------------------------------------------------------
 # max_synergistic_entropy (analytical, no optimisation)
 # ---------------------------------------------------------------------------
+
 
 def test_mse_two_independent_bits():
     """H(X1,X2) - max(H(X1), H(X2)) = 2 - 1 = 1 for two fair bits."""
@@ -55,6 +55,7 @@ def test_mse_unequal_marginals():
 # ---------------------------------------------------------------------------
 # quax_synergy (optimisation-based)
 # ---------------------------------------------------------------------------
+
 
 def test_synergy_single_source():
     """With a single source, synergy is always 0 (Eq. 10)."""

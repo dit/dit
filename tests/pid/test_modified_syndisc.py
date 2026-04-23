@@ -14,7 +14,6 @@ import pytest
 from dit.multivariate import coinformation
 from dit.pid.distributions import bivariates
 from dit.pid.syndisc import ModifiedSynDisc
-from dit.utils import flatten
 
 
 def _source_mi(dist, source, target):
@@ -49,14 +48,8 @@ def test_consistency_condition(name):
 
     for source in msd._sources:
         expected = _source_mi(d, source, msd._target)
-        actual = sum(
-            msd.get_atom(node)
-            for node in msd._lattice
-            if _is_accessible(node, source)
-        )
-        assert actual == pytest.approx(expected, abs=1e-3), (
-            f"Consistency failed for {name!r}, source {source}"
-        )
+        actual = sum(msd.get_atom(node) for node in msd._lattice if _is_accessible(node, source))
+        assert actual == pytest.approx(expected, abs=1e-3), f"Consistency failed for {name!r}, source {source}"
 
 
 # ─────────────────────────────────────────────────────────────────────────────

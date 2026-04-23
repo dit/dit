@@ -7,7 +7,7 @@ not just specific examples.
 
 import numpy as np
 import pytest
-from hypothesis import given, settings, assume
+from hypothesis import assume, given, settings
 
 from dit.channelorder.deficiency import (
     le_cam_deficiency,

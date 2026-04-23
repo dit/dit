@@ -4,9 +4,8 @@ Some standard discrete distribution.
 
 from ..distribution import Distribution
 from ..math.misc import combinations as C
-from ..math.misc import is_integer, is_number
+from ..math.misc import is_integer, is_number, prod
 from ..math.misc import multinomial as M
-from ..math.misc import prod
 
 __all__ = (
     "bernoulli",
@@ -174,8 +173,7 @@ def multinomial(n, ps):
 
     k = len(ps)
     outcomes = list(_compositions(n, k))
-    pmf = [M(n, xs) * prod(p ** x for p, x in zip(ps, xs, strict=True))
-           for xs in outcomes]
+    pmf = [M(n, xs) * prod(p**x for p, x in zip(ps, xs, strict=True)) for xs in outcomes]
     return Distribution(outcomes, pmf)
 
 

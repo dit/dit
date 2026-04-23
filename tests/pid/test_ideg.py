@@ -88,16 +88,13 @@ def test_pid_deg_leq_mmi():
     """
     I_d^∩ ≤ I_MMI for all distributions (paper eq. 8-9).
     """
-    for name in ["and", "sum", "redundant", "synergy", "unique 1",
-                  "diff", "reduced or", "cat"]:
+    for name in ["and", "sum", "redundant", "synergy", "unique 1", "diff", "reduced or", "cat"]:
         d = bivariates[name]
         deg = PID_Deg(d, ((0,), (1,)), (2,))
         mmi = PID_MMI(d, ((0,), (1,)), (2,))
         r_deg = deg[((0,), (1,))]
         r_mmi = mmi[((0,), (1,))]
-        assert r_deg <= r_mmi + 1e-3, (
-            f"I_d^∩ > I_MMI on '{name}': {r_deg:.4f} > {r_mmi:.4f}"
-        )
+        assert r_deg <= r_mmi + 1e-3, f"I_d^∩ > I_MMI on '{name}': {r_deg:.4f} > {r_mmi:.4f}"
 
 
 @pytest.mark.flaky(reruns=5)

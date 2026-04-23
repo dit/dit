@@ -6,7 +6,6 @@ information-theoretic constructions.
 """
 
 import numpy as np
-import pytest
 
 from dit.channelorder.orderings import (
     blackwell_order_joint,
@@ -17,20 +16,17 @@ from dit.channelorder.orderings import (
     is_shannon_included,
 )
 
-
 # ── Helper channel constructors ────────────────────────────────────────────
 
 
 def bsc(p):
     """Binary symmetric channel with crossover probability *p*."""
-    return np.array([[1 - p, p],
-                     [p, 1 - p]])
+    return np.array([[1 - p, p], [p, 1 - p]])
 
 
 def bec(eps):
     """Binary erasure channel with erasure probability *eps*.  Output alphabet {0, 1, e}."""
-    return np.array([[1 - eps, 0, eps],
-                     [0, 1 - eps, eps]])
+    return np.array([[1 - eps, 0, eps], [0, 1 - eps, eps]])
 
 
 def identity(n):
@@ -79,6 +75,7 @@ class TestOutputDegraded:
 
     def test_alias(self):
         from dit.channelorder.orderings import is_blackwell_sufficient
+
         assert is_blackwell_sufficient is is_output_degraded
 
 
@@ -116,6 +113,7 @@ class TestBscBecHierarchy:
       - 4p(1-p) < eps <= h(p)≈0.469: Z more capable than Y, not less noisy
       - h(p) < eps: none of the orderings hold
     """
+
     p = 0.1
 
     def test_regime_1_output_degraded(self):
@@ -179,12 +177,11 @@ class TestShannonInclusion:
 class TestBlackwellJoint:
     def test_markov_chain(self):
         from dit import Distribution
+
         # S-Z-Y Markov chain: Z is more informative about S than Y
         d = Distribution(
-            [(0, 0, 0), (0, 0, 1), (0, 1, 0), (0, 1, 1),
-             (1, 0, 0), (1, 0, 1), (1, 1, 0), (1, 1, 1)],
-            [0.25, 0.15, 0.05, 0.05,
-             0.05, 0.05, 0.15, 0.25],
+            [(0, 0, 0), (0, 0, 1), (0, 1, 0), (0, 1, 1), (1, 0, 0), (1, 0, 1), (1, 1, 0), (1, 1, 1)],
+            [0.25, 0.15, 0.05, 0.05, 0.05, 0.05, 0.15, 0.25],
             rv_names=["S", "Z", "Y"],
         )
         # P(Y|S) should be output-degraded from P(Z|S) if S-Z-Y
@@ -192,6 +189,7 @@ class TestBlackwellJoint:
         # constructed so that it holds.
         # Actually, let's build a proper Markov chain:
         import numpy as np
+
         ps = np.array([0.5, 0.5])
         pz_given_s = np.array([[0.8, 0.2], [0.2, 0.8]])
         py_given_z = np.array([[0.7, 0.3], [0.3, 0.7]])

@@ -154,17 +154,19 @@ def _macros_to_latex(macros, renew):
 
 
 latex_elements = {
-    "preamble": "\n".join([
-        r"\usepackage{amsmath}",
-        r"\usepackage{amssymb}",
-        r"\usepackage{nicefrac}",
-        r"\usepackage{scalerel}",
-        "",
-        _macros_to_latex(_MACROS, _LATEX_RENEW),
-        "",
-        r"\DeclareMathOperator*{\meetop}{\scalerel*{\meet}{\textstyle\sum}}",
-        r"\DeclareMathOperator*{\joinop}{\scalerel*{\join}{\textstyle\sum}}",
-    ]),
+    "preamble": "\n".join(
+        [
+            r"\usepackage{amsmath}",
+            r"\usepackage{amssymb}",
+            r"\usepackage{nicefrac}",
+            r"\usepackage{scalerel}",
+            "",
+            _macros_to_latex(_MACROS, _LATEX_RENEW),
+            "",
+            r"\DeclareMathOperator*{\meetop}{\scalerel*{\meet}{\textstyle\sum}}",
+            r"\DeclareMathOperator*{\joinop}{\scalerel*{\join}{\textstyle\sum}}",
+        ]
+    ),
 }
 
 latex_documents = [

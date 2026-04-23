@@ -89,8 +89,7 @@ def test_pid_mc_ordering():
     """
     I_d^∩ ≤ I_mc^∩ ≤ I_MMI for all distributions (paper eqs. 8-9).
     """
-    for name in ["and", "sum", "redundant", "synergy", "unique 1",
-                  "diff", "reduced or", "cat"]:
+    for name in ["and", "sum", "redundant", "synergy", "unique 1", "diff", "reduced or", "cat"]:
         d = bivariates[name]
         deg = PID_Deg(d, ((0,), (1,)), (2,))
         mc = PID_MC(d, ((0,), (1,)), (2,))
@@ -100,12 +99,8 @@ def test_pid_mc_ordering():
         r_mc = mc[((0,), (1,))]
         r_mmi = mmi[((0,), (1,))]
 
-        assert r_deg <= r_mc + 1e-3, (
-            f"I_d^∩ > I_mc^∩ on '{name}': {r_deg:.4f} > {r_mc:.4f}"
-        )
-        assert r_mc <= r_mmi + 1e-3, (
-            f"I_mc^∩ > I_MMI on '{name}': {r_mc:.4f} > {r_mmi:.4f}"
-        )
+        assert r_deg <= r_mc + 1e-3, f"I_d^∩ > I_mc^∩ on '{name}': {r_deg:.4f} > {r_mc:.4f}"
+        assert r_mc <= r_mmi + 1e-3, f"I_mc^∩ > I_MMI on '{name}': {r_mc:.4f} > {r_mmi:.4f}"
 
 
 @pytest.mark.flaky(reruns=5)

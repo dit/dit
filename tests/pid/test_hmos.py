@@ -59,9 +59,7 @@ class TestPEDMOS:
         d = D(["00", "01", "10", "11"], [1 / 4] * 4)
         ped = PED_MOS(d)
         for atom in ped._lattice:
-            if atom == ((0,), (1,)):
-                assert ped[atom] == pytest.approx(1.0)
-            elif atom == ((0, 1),):
+            if atom == ((0,), (1,)) or atom == ((0, 1),):
                 assert ped[atom] == pytest.approx(1.0)
             else:
                 assert ped[atom] == pytest.approx(0.0)

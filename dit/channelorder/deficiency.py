@@ -18,7 +18,7 @@ References
 import numpy as np
 from scipy.optimize import linprog, minimize
 
-from ._utils import channel_matrix, channels_from_joint, reverse_channels_from_joint
+from ._utils import channel_matrix, channels_from_joint
 
 __all__ = (
     "le_cam_deficiency",
@@ -130,8 +130,7 @@ def le_cam_deficiency(mu, kappa):
 
     bounds = [(0, None)] * n_lam + [(0, None)] + [(0, None)] * n_t
 
-    res = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq,
-                  bounds=bounds, method="highs")
+    res = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=bounds, method="highs")
 
     if res.success:
         return max(0.0, res.fun)
@@ -209,8 +208,7 @@ def weighted_le_cam_deficiency(mu, kappa, pi):
 
     bounds = [(0, None)] * n_lam + [(0, None)] * n_t
 
-    res = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq,
-                  bounds=bounds, method="highs")
+    res = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=bounds, method="highs")
 
     if res.success:
         return max(0.0, res.fun)
@@ -241,8 +239,7 @@ def le_cam_distance(mu, kappa):
     -------
     float
     """
-    return max(le_cam_deficiency(mu, kappa),
-               le_cam_deficiency(kappa, mu))
+    return max(le_cam_deficiency(mu, kappa), le_cam_deficiency(kappa, mu))
 
 
 # ── KL deficiencies ───────────────────────────────────────────────────────
@@ -443,7 +440,7 @@ def _params_to_stochastic(params, n_rows, n_cols):
     """
     mat = np.zeros((n_rows, n_cols))
     for r in range(n_rows):
-        logits = params[r * n_cols:(r + 1) * n_cols]
+        logits = params[r * n_cols : (r + 1) * n_cols]
         x = logits - logits.max()
         e = np.exp(x)
         mat[r] = e / e.sum()
@@ -459,8 +456,7 @@ def _optimize_over_stochastic(objective, n_rows, n_cols, nstarts=15):
     best = np.inf
     for _ in range(nstarts):
         x0 = np.random.randn(n_params) * 0.3
-        res = minimize(objective, x0, method="L-BFGS-B",
-                       options={"maxiter": 500})
+        res = minimize(objective, x0, method="L-BFGS-B", options={"maxiter": 500})
         if res.fun < best:
             best = res.fun
     return max(0.0, best)

@@ -35,7 +35,7 @@ def _compute_marginal_surprisals(d, sources):
     """
     marginals = [d.marginal(list(src)) for src in sources]
     result = []
-    for src, marg in zip(sources, marginals):
+    for src, marg in zip(sources, marginals, strict=True):
         src_surprisals = {}
         for outcome in d.outcomes:
             marg_outcome = tuple(outcome[i] for i in src)

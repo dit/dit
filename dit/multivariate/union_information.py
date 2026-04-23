@@ -54,7 +54,7 @@ def _pointwise_surprisals(dist, rvs):
         probs.append(p)
 
         row = []
-        for rv, marg in zip(rvs, marginals):
+        for rv, marg in zip(rvs, marginals, strict=True):
             idx = list(flatten(rv))
             marg_outcome = tuple(outcome[i] for i in idx)
             if len(marg_outcome) == 1:
@@ -93,7 +93,7 @@ def union_entropy(dist, rvs=None, crvs=None):
     if crvs:
         raise NotImplementedError("Conditioning is not supported for union_entropy")
     _, probs, surprisals = _pointwise_surprisals(dist, rvs)
-    return sum(p * max(row) for p, row in zip(probs, surprisals))
+    return sum(p * max(row) for p, row in zip(probs, surprisals, strict=True))
 
 
 @unitful
@@ -123,7 +123,7 @@ def intersection_entropy(dist, rvs=None, crvs=None):
     if crvs:
         raise NotImplementedError("Conditioning is not supported for intersection_entropy")
     _, probs, surprisals = _pointwise_surprisals(dist, rvs)
-    return sum(p * min(row) for p, row in zip(probs, surprisals))
+    return sum(p * min(row) for p, row in zip(probs, surprisals, strict=True))
 
 
 @unitful
@@ -160,7 +160,7 @@ def synergistic_entropy(dist, rvs=None, crvs=None):
     H_joint = shannon_entropy(dist, all_idx)
 
     _, probs, surprisals = _pointwise_surprisals(dist, rvs)
-    H_union = sum(p * max(row) for p, row in zip(probs, surprisals))
+    H_union = sum(p * max(row) for p, row in zip(probs, surprisals, strict=True))
 
     return H_joint - H_union
 
@@ -202,4 +202,4 @@ def unique_entropy(dist, rvs=None, crvs=None):
         raise ValueError(f"unique_entropy requires exactly 2 rv groups, got {len(rvs)}")
 
     _, probs, surprisals = _pointwise_surprisals(dist, rvs)
-    return sum(p * max(row[0] - row[1], 0) for p, row in zip(probs, surprisals))
+    return sum(p * max(row[0] - row[1], 0) for p, row in zip(probs, surprisals, strict=True))

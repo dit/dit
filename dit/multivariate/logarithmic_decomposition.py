@@ -20,7 +20,6 @@ References
 from __future__ import annotations
 
 import itertools
-from functools import lru_cache
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -128,15 +127,15 @@ class LogarithmicDecomposition:
 
         outcomes = dist.outcomes
         pmf = dist.pmf
-        if hasattr(dist, 'is_log') and dist.is_log():
+        if hasattr(dist, "is_log") and dist.is_log():
             base = dist.get_base(numerical=True)
-            pmf = base ** pmf
+            pmf = base**pmf
 
         self._outcome_list = list(outcomes)
         self._prob = {o: float(p) for o, p in zip(outcomes, pmf, strict=True)}
 
         self._omega = frozenset(outcomes)
-        self._dims = dist.dims if hasattr(dist, 'dims') else tuple(range(dist.outcome_length()))
+        self._dims = dist.dims if hasattr(dist, "dims") else tuple(range(dist.outcome_length()))
         self._outcome_length = dist.outcome_length()
 
         self._atoms_cache: set[frozenset] | None = None
@@ -208,10 +207,7 @@ class LogarithmicDecomposition:
             return self._measure_cache[atom]
 
         probs = tuple(self._prob.get(o, 0.0) for o in atom)
-        if any(p <= 0 for p in probs):
-            val = 0.0
-        else:
-            val = _interior_loss(probs)
+        val = 0.0 if any(p <= 0 for p in probs) else _interior_loss(probs)
 
         self._measure_cache[atom] = val
         return val
@@ -441,9 +437,9 @@ class LogarithmicDecomposition:
         rows = []
         for atom in sorted(self.atoms, key=lambda a: (len(a), sorted(a))):
             row = {
-                'atom': atom,
-                'degree': len(atom),
-                'measure': self.measure(atom),
+                "atom": atom,
+                "degree": len(atom),
+                "measure": self.measure(atom),
             }
             for rv in rvs_groups:
                 label = f"Delta({rv})"

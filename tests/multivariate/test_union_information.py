@@ -113,7 +113,7 @@ class TestDecompositions:
         Huq0 = unique_entropy(d, [[0], [1]])
         Huq1 = unique_entropy(d, [[1], [0]])
         Hs = synergistic_entropy(d, [[0], [1]])
-        assert H == pytest.approx(Hi + Huq0 + Huq1 + Hs)
+        assert pytest.approx(Hi + Huq0 + Huq1 + Hs) == H
 
     def test_mutual_info_identity(self):
         """I(X;Y) = H(XuY) - H(X+Y) [Eq. 43]"""
@@ -121,7 +121,7 @@ class TestDecompositions:
         I = coinformation(d, [[0], [1]])
         Hi = intersection_entropy(d, [[0], [1]])
         Hs = synergistic_entropy(d, [[0], [1]])
-        assert I == pytest.approx(Hi - Hs)
+        assert pytest.approx(Hi - Hs) == I
 
     def test_joint_entropy_decomposition_asymmetric(self):
         """Test decomposition on an asymmetric distribution."""
@@ -131,14 +131,14 @@ class TestDecompositions:
         Huq0 = unique_entropy(d, [[0], [1]])
         Huq1 = unique_entropy(d, [[1], [0]])
         Hs = synergistic_entropy(d, [[0], [1]])
-        assert H == pytest.approx(Hi + Huq0 + Huq1 + Hs)
+        assert pytest.approx(Hi + Huq0 + Huq1 + Hs) == H
 
     def test_mutual_info_identity_asymmetric(self):
         d = D(["00", "01", "10", "11", "20", "21"], [0.1, 0.2, 0.15, 0.25, 0.05, 0.25])
         I = coinformation(d, [[0], [1]])
         Hi = intersection_entropy(d, [[0], [1]])
         Hs = synergistic_entropy(d, [[0], [1]])
-        assert I == pytest.approx(Hi - Hs)
+        assert pytest.approx(Hi - Hs) == I
 
     def test_union_plus_synergy_equals_joint(self):
         """H(X,Y) = H(XtY) + H(X+Y) [Eq. 39-40]"""
@@ -146,7 +146,7 @@ class TestDecompositions:
         H = entropy(d)
         Hu = union_entropy(d, [[0], [1]])
         Hs = synergistic_entropy(d, [[0], [1]])
-        assert H == pytest.approx(Hu + Hs)
+        assert pytest.approx(Hu + Hs) == H
 
     def test_conditioning_not_supported(self):
         d = D(["000", "001", "010", "011", "100", "101", "110", "111"], [1 / 8] * 8)

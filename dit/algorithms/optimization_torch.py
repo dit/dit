@@ -1688,11 +1688,13 @@ class BaseNonConvexTorchOptimizer(BaseTorchOptimizer):
             finish=minimize,
         )
 
-        return OptimizeResult({
-            "x": x0_result,
-            "fun": self.objective(x0_result),
-            "success": True,
-        })
+        return OptimizeResult(
+            {
+                "x": x0_result,
+                "fun": self.objective(x0_result),
+                "success": True,
+            }
+        )
 
     _optimization_backend = _optimization_basinhopping
 

@@ -44,6 +44,7 @@ def channel_pairs(draw, input_size=(2, 4), output_y_size=(2, 4), output_z_size=(
     kappa : ndarray, shape (|S|, |Y|)
         Channel P(Y|S).
     """
+
     def _unpack(x):
         try:
             len(x)
@@ -93,6 +94,7 @@ def degraded_channel_pairs(draw, input_size=(2, 4), output_z_size=(2, 4), output
     kappa : ndarray, shape (|S|, |Y|)
         The degraded channel, kappa = mu @ lam.
     """
+
     def _unpack(x):
         try:
             len(x)

@@ -9,7 +9,6 @@ import pytest
 from dit.pid.distributions import bivariates
 from dit.pid.syndisc import SynDisc
 
-
 # ─────────────────────────────────────────────────────────────────────────────
 # Table 1: XOR (synergy)
 # ─────────────────────────────────────────────────────────────────────────────
@@ -157,6 +156,7 @@ def test_backbone_xor():
 def test_self_synergy_tbc():
     """Two independent fair coins: self-synergy S_{01}(X->X) = 1 bit."""
     from dit.distconst import uniform
+
     d = uniform(["00", "01", "10", "11"])
     sd = SynDisc(d, sources=[[0], [1]], target=[0, 1])
     assert sd[((0,), (1,))] == pytest.approx(1.0, abs=1e-3)

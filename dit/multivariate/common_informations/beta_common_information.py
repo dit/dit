@@ -75,8 +75,8 @@ def _conditional_maxcorr_from_3d(pXY_Z):
 
     # P(x,y|z) for live z, shape (n_live, dx, dy)
     pxy_gz = pXY_Z[:, :, live].transpose(2, 0, 1) / pZ[live, np.newaxis, np.newaxis]
-    px_gz = pxy_gz.sum(axis=2, keepdims=True)   # (n_live, dx, 1)
-    py_gz = pxy_gz.sum(axis=1, keepdims=True)   # (n_live, 1, dy)
+    px_gz = pxy_gz.sum(axis=2, keepdims=True)  # (n_live, dx, 1)
+    py_gz = pxy_gz.sum(axis=1, keepdims=True)  # (n_live, 1, dy)
 
     with np.errstate(divide="ignore", invalid="ignore"):
         Q_batch = pxy_gz / (np.sqrt(px_gz) * np.sqrt(py_gz))

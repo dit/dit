@@ -15,7 +15,6 @@ from dit.channelorder.deficiency import (
     weighted_output_kl_deficiency_joint,
 )
 
-
 # ── Helpers ────────────────────────────────────────────────────────────────
 
 
@@ -157,6 +156,7 @@ class TestWeightedInputKLDeficiency:
 class TestJointConvenience:
     def test_weighted_output_kl_joint(self):
         from dit import Distribution
+
         # Build a simple joint where S-Z-Y is a Markov chain
         ps = np.array([0.5, 0.5])
         pz_given_s = np.array([[0.9, 0.1], [0.1, 0.9]])

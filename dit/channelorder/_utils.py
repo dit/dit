@@ -57,10 +57,7 @@ def channel_matrix(channel):
     if isinstance(channel, list):
         return cdist_array(channel, base="linear", mode="dense")
 
-    raise ditException(
-        "channel must be a 2D array, a list of distributions, "
-        "or a conditional Distribution"
-    )
+    raise ditException("channel must be a 2D array, a list of distributions, or a conditional Distribution")
 
 
 def channels_from_joint(dist, S, Y, Z):

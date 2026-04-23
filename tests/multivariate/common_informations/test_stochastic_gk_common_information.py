@@ -14,11 +14,12 @@ from dit import Distribution
 from dit.multivariate import gk_common_information as K
 from dit.multivariate.common_informations.stochastic_gk_common_information import (
     StochasticGKCommonInformation,
+)
+from dit.multivariate.common_informations.stochastic_gk_common_information import (
     stochastic_gk_common_information as SGK,
 )
 from dit.shannon import mutual_information as I
 from dit.utils.testing import distributions
-
 
 # ---------------------------------------------------------------------------
 # Analytic tests against known GK values

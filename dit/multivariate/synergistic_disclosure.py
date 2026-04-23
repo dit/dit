@@ -11,9 +11,6 @@ Provides standalone functions for computing:
 - Self-synergy S_alpha(X -> X)
 """
 
-import numpy as np
-
-from ..helpers import normalize_rvs
 from ..utils import flatten, unitful
 
 __all__ = (
@@ -60,12 +57,17 @@ def synergistic_disclosure(dist, sources, target, alpha, niter=None, bound=None)
 
     if not alpha_tuples:
         from .coinformation import coinformation
+
         return coinformation(dist, [list(flatten(sources)), list(target)])
 
     flat_sources = [list(s) for s in sources]
     try:
         opt = SyndiscOptimizer(
-            dist, flat_sources, list(target), alpha_tuples, bound=bound,
+            dist,
+            flat_sources,
+            list(target),
+            alpha_tuples,
+            bound=bound,
         )
         opt.optimize(niter=niter)
         val = opt.synergistic_disclosure(opt._optima)
@@ -145,21 +147,25 @@ def modified_synergistic_disclosure(dist, sources, target, alpha, niter=None, bo
 
     if not alpha_tuples:
         from .coinformation import coinformation
+
         return coinformation(dist, [list(flatten(sources)), list(target)])
 
     if len(alpha_tuples) == 1:
         from .coinformation import coinformation
 
-        constrained_vars = list(
-            flatten(sources[i] for i in alpha_tuples[0])
-        )
+        constrained_vars = list(flatten(sources[i] for i in alpha_tuples[0]))
         all_source_vars = list(flatten(sources))
         total = coinformation(dist, [all_source_vars, list(target)])
         source_mi = coinformation(dist, [constrained_vars, list(target)])
         return total - source_mi
 
     return synergistic_disclosure(
-        dist, sources, target, alpha, niter=niter, bound=bound,
+        dist,
+        sources,
+        target,
+        alpha,
+        niter=niter,
+        bound=bound,
     )
 
 
@@ -198,13 +204,14 @@ def self_synergy(dist, sources=None, alpha=None, niter=None, bound=None):
 
     from ..pid.syndisc import SyndiscOptimizer
 
-    if alpha is None:
-        alpha = tuple((i,) for i in range(len(flat_sources)))
-    else:
-        alpha = tuple(tuple(a) for a in alpha)
+    alpha = tuple((i,) for i in range(len(flat_sources))) if alpha is None else tuple(tuple(a) for a in alpha)
 
     opt = SyndiscOptimizer(
-        dist, flat_sources, target, alpha, bound=bound,
+        dist,
+        flat_sources,
+        target,
+        alpha,
+        bound=bound,
     )
     opt.optimize(niter=niter)
     val = opt.synergistic_disclosure(opt._optima)

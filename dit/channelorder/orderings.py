@@ -103,8 +103,7 @@ def is_output_degraded(mu, kappa, atol=1e-8):
     c = np.zeros(n_vars)
     bounds = [(0, None)] * n_vars
 
-    res = linprog(c, A_eq=A_eq, b_eq=b_eq, bounds=bounds,
-                  method="highs", options={"presolve": True})
+    res = linprog(c, A_eq=A_eq, b_eq=b_eq, bounds=bounds, method="highs", options={"presolve": True})
 
     return res.success and res.status == 0
 
@@ -152,8 +151,7 @@ def is_input_degraded(mu_bar, kappa_bar, atol=1e-8):
         b_eq = np.append(kappa_bar[y], 1.0)
         c = np.zeros(n_z)
         bounds = [(0, None)] * n_z
-        res = linprog(c, A_eq=A_eq, b_eq=b_eq, bounds=bounds,
-                      method="highs", options={"presolve": True})
+        res = linprog(c, A_eq=A_eq, b_eq=b_eq, bounds=bounds, method="highs", options={"presolve": True})
         if not (res.success and res.status == 0):
             return False
 
@@ -304,7 +302,7 @@ def is_less_noisy(mu, kappa, atol=1e-8):
         total_mi_z = 0.0
         offset = n_u
         for u in range(n_u):
-            pi_s_given_u = _softmax(params[offset:offset + n_s])
+            pi_s_given_u = _softmax(params[offset : offset + n_s])
             offset += n_s
             total_mi_y += pi_u[u] * _mi_from_channel(pi_s_given_u, kappa)
             total_mi_z += pi_u[u] * _mi_from_channel(pi_s_given_u, mu)
@@ -318,7 +316,7 @@ def is_less_noisy(mu, kappa, atol=1e-8):
         pi_s_rows = []
         offset2 = n_u
         for u in range(n_u):
-            row = _softmax(params[offset2:offset2 + n_s])
+            row = _softmax(params[offset2 : offset2 + n_s])
             pi_s_rows.append(row)
             pi_s_overall += pi_u[u] * row
             offset2 += n_s
@@ -409,19 +407,19 @@ def is_shannon_included(mu, kappa, atol=1e-8, niter=None):
         #   k * n_sp * n_s logits for alpha_i  (pre-channels, rows of size n_s)
         #   k * n_z * n_y logits for beta_i   (post-channels, rows of size n_y)
         offset = 0
-        g = _softmax(params[offset:offset + k])
+        g = _softmax(params[offset : offset + k])
         offset += k
 
         alpha = np.zeros((k, n_sp, n_s))
         for i in range(k):
             for sp in range(n_sp):
-                alpha[i, sp] = _softmax(params[offset:offset + n_s])
+                alpha[i, sp] = _softmax(params[offset : offset + n_s])
                 offset += n_s
 
         beta = np.zeros((k, n_z, n_y))
         for i in range(k):
             for z in range(n_z):
-                beta[i, z] = _softmax(params[offset:offset + n_y])
+                beta[i, z] = _softmax(params[offset : offset + n_y])
                 offset += n_y
 
         # kappa_hat[sp, y] = Σ_i g[i] Σ_{s,z} beta_i[z,y] mu[s,z] alpha_i[sp,s]
@@ -439,8 +437,7 @@ def is_shannon_included(mu, kappa, atol=1e-8, niter=None):
     best_res = np.inf
     for _ in range(niter):
         x0 = np.random.randn(n_params) * 0.3
-        res = minimize(residual, x0, method="L-BFGS-B",
-                       options={"maxiter": 500})
+        res = minimize(residual, x0, method="L-BFGS-B", options={"maxiter": 500})
         if res.fun < best_res:
             best_res = res.fun
         if best_res < atol:

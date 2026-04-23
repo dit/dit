@@ -32,7 +32,7 @@ def _params_to_stochastic(params, n_rows, n_cols):
     """Map unconstrained params to a row-stochastic matrix via softmax."""
     mat = np.zeros((n_rows, n_cols))
     for r in range(n_rows):
-        logits = params[r * n_cols:(r + 1) * n_cols]
+        logits = params[r * n_cols : (r + 1) * n_cols]
         x = logits - logits.max()
         e = np.exp(x)
         mat[r] = e / e.sum()
@@ -92,35 +92,34 @@ def _degradation_ii(channels, pi_t, bound=None, niter=None):
             k_qs = []
             for i in range(n_sources):
                 lam = _params_to_stochastic(
-                    params[offset:offset + _sizes[i] * _nq], _sizes[i], _nq,
+                    params[offset : offset + _sizes[i] * _nq],
+                    _sizes[i],
+                    _nq,
                 )
                 offset += _sizes[i] * _nq
                 k_qs.append(channels[i] @ lam)
 
             k_q = k_qs[0]
-            penalty = sum(
-                np.sum((k_qs[i] - k_q) ** 2) for i in range(1, n_sources)
-            )
+            penalty = sum(np.sum((k_qs[i] - k_q) ** 2) for i in range(1, n_sources))
             return -_mi_bits(pi_t, k_q) + penalty_weight * penalty
 
         for _ in range(niter):
             x0 = np.random.randn(n_params) * 0.5
-            res = minimize(_neg_obj, x0, method="L-BFGS-B",
-                           options={"maxiter": 500})
+            res = minimize(_neg_obj, x0, method="L-BFGS-B", options={"maxiter": 500})
 
             # Verify feasibility and record MI
             offset = 0
             k_qs = []
             for i in range(n_sources):
                 lam = _params_to_stochastic(
-                    res.x[offset:offset + sizes[i] * n_q], sizes[i], n_q,
+                    res.x[offset : offset + sizes[i] * n_q],
+                    sizes[i],
+                    n_q,
                 )
                 offset += sizes[i] * n_q
                 k_qs.append(channels[i] @ lam)
 
-            penalty = sum(
-                np.sum((k_qs[i] - k_qs[0]) ** 2) for i in range(1, n_sources)
-            )
+            penalty = sum(np.sum((k_qs[i] - k_qs[0]) ** 2) for i in range(1, n_sources))
             if penalty < 1e-6:
                 mi = _mi_bits(pi_t, k_qs[0])
                 if mi > best_mi:
@@ -174,9 +173,15 @@ class PID_Deg(BaseBivariatePID):
         src_a, src_b, tgt = d_coal.dims
 
         kappa_a, kappa_b, pi_t = channels_from_joint(
-            d_coal, [tgt], [src_a], [src_b],
+            d_coal,
+            [tgt],
+            [src_a],
+            [src_b],
         )
 
         return _degradation_ii(
-            [kappa_a, kappa_b], pi_t, bound=bound, niter=niter,
+            [kappa_a, kappa_b],
+            pi_t,
+            bound=bound,
+            niter=niter,
         )

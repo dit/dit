@@ -14,12 +14,11 @@ This measure is *not* a PID synergy: synergistic and individual
 information can coexist in Y simultaneously.
 """
 
-import numpy as np
-
 from ..algorithms import BaseAuxVarOptimizer
 from ..helpers import normalize_rvs
 from ..math import prod
-from ..shannon import conditional_entropy, entropy as shannon_entropy
+from ..shannon import conditional_entropy
+from ..shannon import entropy as shannon_entropy
 from ..utils import flatten, unitful
 
 __all__ = (
@@ -70,10 +69,12 @@ class SRVOptimizer(BaseAuxVarOptimizer):
 
         for i in sorted(self._source_indices):
             mi_i = self._mi_closures["per_source"][i]
-            self.constraints.append({
-                "type": "eq",
-                "fun": lambda x, mi_fn=mi_i: self._squared_mi(x, mi_fn),
-            })
+            self.constraints.append(
+                {
+                    "type": "eq",
+                    "fun": lambda x, mi_fn=mi_i: self._squared_mi(x, mi_fn),
+                }
+            )
 
         self._default_hops = 5
 
@@ -90,10 +91,7 @@ class SRVOptimizer(BaseAuxVarOptimizer):
         return {
             "joint": self._mutual_information(self._arvs, self._source_indices),
             "target": self._mutual_information(self._target_index, self._arvs),
-            "per_source": {
-                i: self._mutual_information(self._arvs, {i})
-                for i in sorted(self._source_indices)
-            },
+            "per_source": {i: self._mutual_information(self._arvs, {i}) for i in sorted(self._source_indices)},
         }
 
     def compute_bound(self):
@@ -152,8 +150,7 @@ class SRVOptimizer(BaseAuxVarOptimizer):
 
 
 @unitful
-def quax_synergy(dist, sources, target, crvs=None, niter=None, maxiter=1000,
-                 polish=1e-6, bound=None):
+def quax_synergy(dist, sources, target, crvs=None, niter=None, maxiter=1000, polish=1e-6, bound=None):
     """
     Compute the synergistic information I_syn(sources -> target) as
     defined by Quax, Har-Shemesh & Sloot (2017).

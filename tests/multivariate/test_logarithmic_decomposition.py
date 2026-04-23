@@ -6,23 +6,23 @@ Validates against known examples from:
   [2] Down & Mediano, arXiv:2409.04845 (algebraic / fixed-parity)
 """
 
-import pytest
 import numpy as np
+import pytest
 
 import dit
+from dit.multivariate import coinformation
 from dit.multivariate.logarithmic_decomposition import (
     LogarithmicDecomposition,
-    logarithmic_decomposition,
-    _loss,
     _interior_loss,
+    _loss,
+    logarithmic_decomposition,
 )
 from dit.shannon import entropy as shannon_entropy
-from dit.multivariate import coinformation
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _close(a, b, tol=1e-9):
     return abs(a - b) < tol
@@ -31,6 +31,7 @@ def _close(a, b, tol=1e-9):
 # ---------------------------------------------------------------------------
 # Low-level: loss and interior loss
 # ---------------------------------------------------------------------------
+
 
 class TestLoss:
     """Tests for the total loss L(p1,...,pn)."""
@@ -81,7 +82,7 @@ class TestInteriorLoss:
             n = np.random.randint(2, 7)
             probs = tuple(np.random.dirichlet(np.ones(n)))
             mu = _interior_loss(probs)
-            assert (-1)**n * mu >= -1e-12
+            assert (-1) ** n * mu >= -1e-12
 
     def test_magnitude_decreases(self):
         """Corollary 19: |mu(p1,...,pn,tau)| < |mu(p1,...,pn-1)| for n>=3."""
@@ -100,8 +101,8 @@ class TestInteriorLoss:
 # LogarithmicDecomposition: basic structure
 # ---------------------------------------------------------------------------
 
-class TestStructure:
 
+class TestStructure:
     @pytest.fixture
     def xor_ld(self):
         d = dit.example_dists.Xor()
@@ -128,16 +129,14 @@ class TestStructure:
 # Entropy consistency
 # ---------------------------------------------------------------------------
 
+
 class TestEntropyConsistency:
     """H(X) via LD must match dit.shannon.entropy."""
 
     def _check_entropy(self, dist, rvs=None):
         ld = LogarithmicDecomposition(dist)
         h_ld = ld.entropy(rvs)
-        if rvs is None:
-            rvs_shannon = None
-        else:
-            rvs_shannon = rvs
+        rvs_shannon = None if rvs is None else rvs
         h_shannon = shannon_entropy(dist, rvs_shannon)
         assert _close(h_ld, h_shannon), f"LD={h_ld}, Shannon={h_shannon}"
 
@@ -150,8 +149,7 @@ class TestEntropyConsistency:
             self._check_entropy(d, [i])
 
     def test_binary_symmetric(self):
-        d = dit.Distribution([(0, 0), (0, 1), (1, 0), (1, 1)],
-                             [0.25, 0.25, 0.25, 0.25])
+        d = dit.Distribution([(0, 0), (0, 1), (1, 0), (1, 1)], [0.25, 0.25, 0.25, 0.25])
         self._check_entropy(d)
         self._check_entropy(d, [0])
         self._check_entropy(d, [1])
@@ -181,6 +179,7 @@ class TestEntropyConsistency:
 # ---------------------------------------------------------------------------
 # Co-information consistency
 # ---------------------------------------------------------------------------
+
 
 class TestCoinformationConsistency:
     """Co-information via LD must match dit.multivariate.coinformation."""
@@ -219,8 +218,7 @@ class TestCoinformationConsistency:
         self._check_coinfo(d, [[0], [1], [2]])
 
     def test_independent_binary(self):
-        d = dit.Distribution([(0, 0), (0, 1), (1, 0), (1, 1)],
-                             [0.25, 0.25, 0.25, 0.25])
+        d = dit.Distribution([(0, 0), (0, 1), (1, 0), (1, 1)], [0.25, 0.25, 0.25, 0.25])
         self._check_coinfo(d, [[0], [1]])
 
 
@@ -228,8 +226,8 @@ class TestCoinformationConsistency:
 # XOR gate specifics
 # ---------------------------------------------------------------------------
 
-class TestXorGate:
 
+class TestXorGate:
     @pytest.fixture
     def xor_ld(self):
         return LogarithmicDecomposition(dit.example_dists.Xor())
@@ -251,8 +249,8 @@ class TestXorGate:
 # OR gate co-information structure (Example 25 from paper 2)
 # ---------------------------------------------------------------------------
 
-class TestOrGate:
 
+class TestOrGate:
     @pytest.fixture
     def or_ld(self):
         d = dit.Distribution(
@@ -270,8 +268,8 @@ class TestOrGate:
 # Sign property (Theorem 18 of paper 1)
 # ---------------------------------------------------------------------------
 
-class TestSignProperty:
 
+class TestSignProperty:
     def test_all_atoms_correct_sign(self):
         d = dit.Distribution(
             [(0, 0, 0), (0, 1, 1), (1, 0, 1), (1, 1, 1)],
@@ -282,9 +280,7 @@ class TestSignProperty:
             mu = ld.measure(atom)
             n = ld.degree(atom)
             if abs(mu) > 1e-15:
-                assert (-1)**n * mu > -1e-15, (
-                    f"atom {atom} (deg {n}): mu={mu}, sign wrong"
-                )
+                assert (-1) ** n * mu > -1e-15, f"atom {atom} (deg {n}): mu={mu}, sign wrong"
 
     def test_sign_xor(self):
         d = dit.example_dists.Xor()
@@ -293,15 +289,15 @@ class TestSignProperty:
             mu = ld.measure(atom)
             n = ld.degree(atom)
             if abs(mu) > 1e-15:
-                assert (-1)**n * mu > -1e-15
+                assert (-1) ** n * mu > -1e-15
 
 
 # ---------------------------------------------------------------------------
 # Dyadic vs Triadic distinction (Theorem 63 of paper 1)
 # ---------------------------------------------------------------------------
 
-class TestDyadicTriadic:
 
+class TestDyadicTriadic:
     def test_r2_distinguishes(self):
         """
         mu(R2(Delta_X ∩ Delta_Y ∩ Delta_Z)) = 0 for dyadic, = 1 for triadic.
@@ -314,17 +310,15 @@ class TestDyadicTriadic:
             co_content = ld.content([0]) & ld.content([1]) & ld.content([2])
             r2 = ld.r_n(co_content, 2)
             val = ld.measure_set(r2)
-            assert _close(val, expected), (
-                f"{label}: R2 measure = {val}, expected {expected}"
-            )
+            assert _close(val, expected), f"{label}: R2 measure = {val}, expected {expected}"
 
 
 # ---------------------------------------------------------------------------
 # Ideal generators
 # ---------------------------------------------------------------------------
 
-class TestGenerators:
 
+class TestGenerators:
     def test_generators_simple(self):
         a = frozenset({1, 2})
         b = frozenset({1, 2, 3})
@@ -366,8 +360,8 @@ class TestGenerators:
 # R_n filter
 # ---------------------------------------------------------------------------
 
-class TestRn:
 
+class TestRn:
     def test_r_n_basic(self):
         a2 = frozenset({1, 2})
         a3 = frozenset({1, 2, 3})
@@ -389,27 +383,26 @@ class TestRn:
 # Atom table
 # ---------------------------------------------------------------------------
 
-class TestAtomTable:
 
+class TestAtomTable:
     def test_table_rows(self):
-        d = dit.Distribution([(0, 0), (0, 1), (1, 0), (1, 1)],
-                             [0.25, 0.25, 0.25, 0.25])
+        d = dit.Distribution([(0, 0), (0, 1), (1, 0), (1, 1)], [0.25, 0.25, 0.25, 0.25])
         ld = LogarithmicDecomposition(d)
         table = ld.atom_table()
         # 4 outcomes -> 11 atoms
         assert len(table) == 11
         for row in table:
-            assert 'atom' in row
-            assert 'degree' in row
-            assert 'measure' in row
+            assert "atom" in row
+            assert "degree" in row
+            assert "measure" in row
 
 
 # ---------------------------------------------------------------------------
 # Convenience function
 # ---------------------------------------------------------------------------
 
-class TestConvenience:
 
+class TestConvenience:
     def test_logarithmic_decomposition_func(self):
         d = dit.example_dists.Xor()
         ld = logarithmic_decomposition(d)

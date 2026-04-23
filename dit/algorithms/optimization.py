@@ -95,7 +95,7 @@ class BaseOptimizer(metaclass=ABCMeta):
         self._proxy_vars = tuple(range(self._n, self._n + len(rvs) + 1))
 
         self._additional_options = {}
-        if not hasattr(self, '_objective_bound'):
+        if not hasattr(self, "_objective_bound"):
             self._objective_bound = None
 
         self.constraints = []
@@ -1132,11 +1132,13 @@ class BaseNonConvexOptimizer(BaseOptimizer):
             finish=minimize,
         )
 
-        return OptimizeResult({
-            "x": x0_result,
-            "fun": self.objective(x0_result),
-            "success": True,
-        })
+        return OptimizeResult(
+            {
+                "x": x0_result,
+                "fun": self.objective(x0_result),
+                "success": True,
+            }
+        )
 
     _optimization_backend = _optimization_basinhopping
 

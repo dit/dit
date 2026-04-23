@@ -15,12 +15,14 @@ from dit.multivariate.common_informations.beta_common_information import (
     _conditional_maxcorr_from_3d,
     _max_pairwise_maxcorr,
     _maxcorr_from_2d,
+)
+from dit.multivariate.common_informations.beta_common_information import (
     beta_common_information as C_beta,
 )
 from dit.utils.testing import distributions
 
-
 # ── Distributions used across tests ──────────────────────────────────────
+
 
 def dsbs(p0):
     """Doubly symmetric binary source with crossover probability p0."""
@@ -47,10 +49,12 @@ class TestMaxcorrHelpers:
 
     def test_maxcorr_2d_dsbs(self):
         p0 = 0.2
-        pmf = np.array([
-            [0.5 * (1 - p0), 0.5 * p0],
-            [0.5 * p0, 0.5 * (1 - p0)],
-        ])
+        pmf = np.array(
+            [
+                [0.5 * (1 - p0), 0.5 * p0],
+                [0.5 * p0, 0.5 * (1 - p0)],
+            ]
+        )
         assert _maxcorr_from_2d(pmf) == pytest.approx(1 - 2 * p0, abs=1e-10)
 
     def test_maxcorr_2d_degenerate(self):

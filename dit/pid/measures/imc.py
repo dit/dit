@@ -36,7 +36,7 @@ def _params_to_stochastic(params, n_rows, n_cols):
     """Map unconstrained params to a row-stochastic matrix via softmax."""
     mat = np.zeros((n_rows, n_cols))
     for r in range(n_rows):
-        logits = params[r * n_cols:(r + 1) * n_cols]
+        logits = params[r * n_cols : (r + 1) * n_cols]
         x = logits - logits.max()
         e = np.exp(x)
         mat[r] = e / e.sum()
@@ -95,8 +95,7 @@ def _constraint_distributions(n_t, n_interior, rng):
     return np.vstack(pts)
 
 
-def _more_capable_ii(channels, pi_t, n_q=None, n_samples=None, niter=None,
-                     seed=None):
+def _more_capable_ii(channels, pi_t, n_q=None, n_samples=None, niter=None, seed=None):
     """
     Compute I_mc^∩ via discretized more-capable constraints.
 
@@ -164,9 +163,11 @@ def _more_capable_ii(channels, pi_t, n_q=None, n_samples=None, niter=None,
 
     constraint_list = []
     for k_idx in range(len(sampled_pi)):
+
         def _con(params, _k=k_idx):
             k_q = _params_to_stochastic(params, n_t, n_q)
             return mi_bounds[_k] - _mi_bits(sampled_pi[_k], k_q)
+
         constraint_list.append({"type": "ineq", "fun": _con})
 
     # Initial points: near each source channel, plus random
@@ -176,16 +177,16 @@ def _more_capable_ii(channels, pi_t, n_q=None, n_samples=None, niter=None,
             init_points.append(np.log(ch + 1e-10).ravel())
         elif ch.shape[1] < n_q:
             padded = np.full((n_t, n_q), 1e-10)
-            padded[:, :ch.shape[1]] = ch
+            padded[:, : ch.shape[1]] = ch
             init_points.append(np.log(padded + 1e-10).ravel())
     for _ in range(max(1, niter - len(init_points))):
         init_points.append(rng.standard_normal(n_params) * 0.5)
 
     for x0 in init_points:
         try:
-            res = minimize(_objective, x0, method="SLSQP",
-                           constraints=constraint_list,
-                           options={"maxiter": 300, "ftol": 1e-12})
+            res = minimize(
+                _objective, x0, method="SLSQP", constraints=constraint_list, options={"maxiter": 300, "ftol": 1e-12}
+            )
             k_q = _params_to_stochastic(res.x, n_t, n_q)
             _check_and_update(k_q)
         except Exception:
@@ -245,10 +246,16 @@ class PID_MC(BaseBivariatePID):
         src_a, src_b, tgt = d_coal.dims
 
         kappa_a, kappa_b, pi_t = channels_from_joint(
-            d_coal, [tgt], [src_a], [src_b],
+            d_coal,
+            [tgt],
+            [src_a],
+            [src_b],
         )
 
         return _more_capable_ii(
-            [kappa_a, kappa_b], pi_t,
-            n_samples=n_samples, niter=niter, seed=seed,
+            [kappa_a, kappa_b],
+            pi_t,
+            n_samples=n_samples,
+            niter=niter,
+            seed=seed,
         )

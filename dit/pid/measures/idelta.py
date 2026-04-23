@@ -17,8 +17,8 @@ References
 
 import numpy as np
 
-from ...channelorder.deficiency import weighted_output_kl_deficiency
 from ...channelorder._utils import channels_from_joint
+from ...channelorder.deficiency import weighted_output_kl_deficiency
 from ...multivariate import coinformation
 from ..pid import BaseBivariatePID
 

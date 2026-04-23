@@ -74,6 +74,7 @@ def pointwise_pid_table(dist, sources=None, target=None, pid_class=None, digits=
     """
     if pid_class is None:
         from .measures.isx import PID_SX
+
         pid_class = PID_SX
 
     pid = pid_class(dist, sources, target, pointwise=True)
@@ -96,10 +97,7 @@ def pointwise_pid_table(dist, sources=None, target=None, pid_class=None, digits=
     for col in columns[1:]:
         table.float_format[col] = f"{digits + 2}.{digits}"
 
-    linear_probs = {
-        o: dist.ops.exp(dist[o]) if dist.is_log() else dist[o]
-        for o in dist.outcomes
-    }
+    linear_probs = {o: dist.ops.exp(dist[o]) if dist.is_log() else dist[o] for o in dist.outcomes}
 
     for outcome in dist.outcomes:
         p = linear_probs[outcome]

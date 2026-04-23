@@ -139,10 +139,8 @@ class PID_IPID(BaseBivariatePID):
         """
         source_a, source_b = sources
 
-        delta_ab = _information_deficiency(d, source_a, source_b, target,
-                                           bound=bound, niter=niter)
-        delta_ba = _information_deficiency(d, source_b, source_a, target,
-                                           bound=bound, niter=niter)
+        delta_ab = _information_deficiency(d, source_a, source_b, target, bound=bound, niter=niter)
+        delta_ba = _information_deficiency(d, source_b, source_a, target, bound=bound, niter=niter)
 
         mi_a = coinformation(d, [source_a, target])
         mi_b = coinformation(d, [source_b, target])

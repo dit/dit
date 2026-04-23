@@ -12,7 +12,6 @@ from dit.multivariate.synergistic_disclosure import (
 )
 from dit.pid.distributions import bivariates
 
-
 # ─────────────────────────────────────────────────────────────────────────────
 # synergistic_disclosure
 # ─────────────────────────────────────────────────────────────────────────────

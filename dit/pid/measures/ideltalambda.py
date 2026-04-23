@@ -84,13 +84,10 @@ class DeltaLambdaOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
         """
         Minimize E_M[D_KL(P(X|M) || P(X'|M))] + lambda * I(M; X' | Y).
         """
-        cmi_func = self._conditional_mutual_information(
-            self._aux_rv, self._target_rv, self._other_rv
-        )
+        cmi_func = self._conditional_mutual_information(self._aux_rv, self._target_rv, self._other_rv)
         lam = self._lam
         source_axis = 0
         other_axis = 1
-        target_axis = 2
         aux_axis = 3
 
         def objective(self, x):
@@ -205,10 +202,8 @@ class PID_DeltaLambda(BaseBivariatePID):
         """
         source_a, source_b = sources
 
-        delta_ab = _delta_lambda(d, source_a, source_b, target,
-                                 lam=lam, bound=bound, niter=niter)
-        delta_ba = _delta_lambda(d, source_b, source_a, target,
-                                 lam=lam, bound=bound, niter=niter)
+        delta_ab = _delta_lambda(d, source_a, source_b, target, lam=lam, bound=bound, niter=niter)
+        delta_ba = _delta_lambda(d, source_b, source_a, target, lam=lam, bound=bound, niter=niter)
 
         mi_a = coinformation(d, [source_a, target])
         mi_b = coinformation(d, [source_b, target])
