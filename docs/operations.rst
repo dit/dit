@@ -13,7 +13,7 @@ There are several operations possible on joint random variables. Let's consider 
    In [2]: d.set_rv_names('XYZ')
 
 
-.. py:module:: dit.npdist
+.. py:currentmodule:: dit
 
 Marginal
 ========
@@ -23,28 +23,26 @@ Marginal
 .. ipython::
    :doctest:
 
-   In [3]: print(d.marginal('XY'))
+   In [3]: print(d.marginal(['X', 'Y']))
    Class:          Distribution
    Alphabet:       ('0', '1') for all rvs
    Base:           linear
    Outcome Class:  str
    Outcome Length: 2
    RV Names:       ('X', 'Y')
-
    x    p(x)
    00   1/4
    01   1/4
    10   1/4
    11   1/4
 
-   In [4]: print(d.marginalize('XY'))
+   In [4]: print(d.marginalize(['X', 'Y']))
    Class:          Distribution
    Alphabet:       ('0', '1') for all rvs
    Base:           linear
    Outcome Class:  str
    Outcome Length: 1
    RV Names:       ('Z',)
-
    x   p(x)
    0   1/2
    1   1/2
@@ -59,7 +57,7 @@ We can also condition on a subset of random variables:
 
 .. ipython::
 
-   In [5]: marginal, cdists = d.condition_on('XY')
+   In [5]: marginal, cdists = d.condition_on(['X', 'Y'], rvs=['Z'])
 
    @doctest
    In [6]: print(marginal)
@@ -69,7 +67,6 @@ We can also condition on a subset of random variables:
    Outcome Class:  str
    Outcome Length: 2
    RV Names:       ('X', 'Y')
-
    x    p(x)
    00   1/4
    01   1/4
@@ -84,7 +81,6 @@ We can also condition on a subset of random variables:
    Outcome Class:  str
    Outcome Length: 1
    RV Names:       ('Z',)
-
    x   p(x)
    0   1
 
@@ -96,7 +92,6 @@ We can also condition on a subset of random variables:
    Outcome Class:  str
    Outcome Length: 1
    RV Names:       ('Z',)
-
    x   p(x)
    1   1
 
@@ -108,7 +103,6 @@ We can also condition on a subset of random variables:
    Outcome Class:  str
    Outcome Length: 1
    RV Names:       ('Z',)
-
    x   p(x)
    1   1
 
@@ -120,7 +114,6 @@ We can also condition on a subset of random variables:
    Outcome Class:  str
    Outcome Length: 1
    RV Names:       ('Z',)
-
    x   p(x)
    0   1
 
@@ -148,7 +141,6 @@ Where :math:`\min` is understood to be minimizing with respect to the entropy.
    Class:    Distribution
    Alphabet: (0, 1, 2, 3)
    Base:     linear
-
    x   p(x)
    0   1/4
    1   1/4
@@ -184,7 +176,6 @@ Where :math:`\max` is understood to be maximizing with respect to the entropy.
    Class:    Distribution
    Alphabet: (0, 1, 2)
    Base:     linear
-
    x   p(x)
    0   1/4
    1   1/4
@@ -219,7 +210,6 @@ This method constructs the minimal sufficient statistic of :math:`X` about
    Outcome Class:  str
    Outcome Length: 3
    RV Names:       None
-
    x     p(x)
    002   1/8
    012   1/8

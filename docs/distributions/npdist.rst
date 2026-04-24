@@ -1,5 +1,7 @@
 .. npdist.rst
 
+.. py:currentmodule:: dit
+
 Joint Distributions
 ===================
 
@@ -24,7 +26,6 @@ outcomes and the probability mass function:
    Outcome Class:  str
    Outcome Length: 3
    RV Names:       None
-
    x     p(x)
    000   0.25
    011   0.25
@@ -48,7 +49,6 @@ outcomes to probabilities:
    Outcome Class:  str
    Outcome Length: 3
    RV Names:       None
-
    x     p(x)
    000   0.25
    011   0.25
@@ -71,7 +71,6 @@ Yet a third method is via an ndarray:
     Outcome Class:  tuple
     Outcome Length: 2
     RV Names:       None
-
     x       p(x)
     (0, 0)  0.5
     (0, 1)  0.25

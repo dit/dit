@@ -21,7 +21,6 @@ What if you'd like to find a distribution that has a particular property? For ex
    Outcome Class:  tuple
    Outcome Length: 3
    RV Names:       None
-
    x           p(x)
    (0, 0, 0)   0.25
    (0, 1, 1)   0.25

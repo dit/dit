@@ -24,7 +24,6 @@ Mike DeWeese has introduced a family of multivariate information measures based 
    Outcome Class:  str
    Outcome Length: 3
    RV Names:       None
-
    x     p(x)
    000   1/8
    022   1/8

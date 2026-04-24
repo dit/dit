@@ -91,6 +91,8 @@ class BaseEntropyTriangle(metaclass=ABCMeta):
         color : str
             The color of marker to use.
         """
+        import warnings
+
         import ternary
 
         if ax is None:
@@ -112,7 +114,13 @@ class BaseEntropyTriangle(metaclass=ABCMeta):
             ax.ticks(axis="lbr", multiple=0.1, linewidth=1)
             ax.clear_matplotlib_ticks()
 
-        ax.scatter(self.points, marker=marker, color=color)
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message="No data for colormapping provided via 'c'.*",
+                category=UserWarning,
+            )
+            ax.scatter(self.points, marker=marker, color=color)
         ax._redraw_labels()
 
         return ax

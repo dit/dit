@@ -63,7 +63,6 @@ So, the Gács-Körner common information is 1.5 bits. But what is the common ran
    Outcome Class:  str
    Outcome Length: 3
    RV Names:       None
-
    x     p(x)
    002   0.125
    012   0.125

@@ -1,5 +1,7 @@
 .. npscalardist.rst
 
+.. py:currentmodule:: dit
+
 Scalar Distributions
 ====================
 
@@ -27,7 +29,6 @@ We next construct a six-sided die:
    Class:    Distribution
    Alphabet: (1, 2, 3, 4, 5, 6)
    Base:     linear
-
    x   p(x)
    1   1/6
    2   1/6
@@ -45,7 +46,6 @@ We can perform standard mathematical operations with scalars, such as adding, su
    Class:    Distribution
    Alphabet: (4, 5, 6, 7, 8, 9)
    Base:     linear
-
    x   p(x)
    4   1/6
    5   1/6
@@ -59,7 +59,6 @@ We can perform standard mathematical operations with scalars, such as adding, su
    Class:    Distribution
    Alphabet: (0, 1, 2, 3, 4, 5)
    Base:     linear
-
    x   p(x)
    0   1/6
    1   1/6
@@ -73,7 +72,6 @@ We can perform standard mathematical operations with scalars, such as adding, su
    Class:    Distribution
    Alphabet: (4, 5, 6, 7, 8, 9)
    Base:     linear
-
    x   p(x)
    4   1/6
    5   1/6
@@ -87,7 +85,6 @@ We can perform standard mathematical operations with scalars, such as adding, su
    Class:    Distribution
    Alphabet: (2, 4, 6, 8, 10, 12)
    Base:     linear
-
    x    p(x)
    2    1/6
    4    1/6
@@ -101,7 +98,6 @@ We can perform standard mathematical operations with scalars, such as adding, su
    Class:    Distribution
    Alphabet: (0, 1)
    Base:     linear
-
    x   p(x)
    0   1/2
    1   1/2
@@ -119,7 +115,6 @@ Furthermore, we can perform such operations with two distributions:
    Class:    Distribution
    Alphabet: (2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
    Base:     linear
-
    x    p(x)
    2    1/36
    3    1/18
@@ -138,7 +133,6 @@ Furthermore, we can perform such operations with two distributions:
    Class:    Distribution
    Alphabet: (0, 1, 2, 3)
    Base:     linear
-
    x   p(x)
    0   1/4
    1   2/9
@@ -150,7 +144,6 @@ Furthermore, we can perform such operations with two distributions:
    Class:    Distribution
    Alphabet: (0, 1, 2, 3, 4, 5, 6)
    Base:     linear
-
    x   p(x)
    0   5/12
    1   1/3
@@ -165,7 +158,6 @@ Furthermore, we can perform such operations with two distributions:
    Class:    Distribution
    Alphabet: (0, 1)
    Base:     linear
-
    x   p(x)
    0   3/4
    1   1/4
@@ -189,7 +181,6 @@ There are also statistical functions which can be applied to :class:`~dit.Distri
    Class:    Distribution
    Alphabet: (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
    Base:     linear
-
    x    p(x)
    0    409/23585
    1    4302/49615
@@ -220,3 +211,4 @@ API
 ---
 
 .. automethod:: Distribution.__init__
+   :no-index:

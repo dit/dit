@@ -946,7 +946,11 @@ def product_distribution(dist, rvs=None, base=None):
         outcome = []
         prob = []
         for pair in pairs:
-            outcome.extend(pair[0])
+            value = pair[0]
+            if isinstance(value, (str, bytes)) or not hasattr(value, "__iter__"):
+                outcome.append(value)
+            else:
+                outcome.extend(value)
             prob.append(pair[1])
         outcomes.append(ctor(outcome))
         pmf.append(ops.mult_reduce(prob))

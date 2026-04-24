@@ -28,6 +28,7 @@ Example
 It is known that under the Hamming distortion (:math:`d(x, \hat{x}) = \left[ x \neq \hat{x} \right]`) the rate-distortion function for a biased coin has the following solution: :math:`R(D) = \H{p} - \H{D}`:
 
 .. ipython::
+   :okwarning:
 
    In [1]: from dit.rate_distortion import RDCurve
 

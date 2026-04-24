@@ -35,6 +35,7 @@ Intuitively, this means there exists some procedure such that, for every :math:`
 There are three general classes of secret key agreement rates, depending on which parties are permitted to communicate. We discuss them below.
 
 .. py:module:: dit.multivariate.secret_key_agreement.no_communication
+
 No Communication
 ================
 
@@ -47,6 +48,7 @@ In the case that neither Alice nor Bob are permitted communication, the no-commu
 where :math:`X \meet Y` is the :ref:`Gács-Körner Common Information` variable.
 
 .. py:module:: dit.multivariate.secret_key_agreement.secrecy_capacity
+
 Secrecy Capacity
 ----------------
 
@@ -58,6 +60,7 @@ In this case we arrive at a maximum secret-key agreement rate known as the *secr
    \operatorname{S_C}[X \rightarrow Y || Z] = \displaystyle \max_{U - X - YZ} \I{U : Y} - \I{U : Z}
 
 .. py:module:: dit.multivariate.secret_key_agreement.one_way_skar
+
 One-Way Communication
 =====================
 
@@ -68,6 +71,7 @@ If only Alice is allowed to publicly broadcast information, the secret key agree
    \operatorname{S}[X \rightarrow Y || Z] = \displaystyle \max_{V - U - X - YZ} \I{U : Y | V} - \I{U : Z | V}
 
 .. py:module:: dit.multivariate.secret_key_agreement.two_way_skar
+
 Two-Way Communication
 =====================
 
@@ -79,6 +83,7 @@ Lower Bounds
 The first few lower bounds on two-way secret key agreement rate are simply symmetrized forms of the more restricted secret key agreement rates.
 
 .. py:module:: dit.multivariate.secret_key_agreement.trivial_bounds
+
 Lower Intrinsic Mutual Information
 **********************************
 
@@ -94,6 +99,7 @@ The first lower bound on the secret key agreement rate is known in ``dit`` as th
       \end{cases}
 
 .. py:module:: dit.multivariate.secret_key_agreement.skar_lower_bounds
+
 Secrecy Capacity
 ****************
 
@@ -123,6 +129,7 @@ A tighter bound is given by the :py:func:`necessary_intrinsic_mutual_information
       \end{cases}
 
 .. py:module:: dit.multivariate.secret_key_agreement.interactive_intrinsic_mutual_informations
+
 Interactive Intrinsic Mutual Information
 ****************************************
 
@@ -137,6 +144,8 @@ Upper Bounds
 ------------
 
 .. py:module:: dit.multivariate.secret_key_agreement.trivial_bounds
+   :no-index:
+
 Upper Intrinsic Mutual Information
 ***********************************
 The secret key agreement rate is trivially upper bounded by:
@@ -176,6 +185,7 @@ This bound can be improved, producing the :py:func:`reduced_intrinsic_mutual_inf
 This bound improves upon the :ref:`Intrinsic Mutual Information` when a small amount of information, :math:`U`, can result in a larger decrease in the amount of information shared between :math:`X` and :math:`Y` given :math:`Z` and :math:`U`.
 
 .. py:module:: dit.multivariate.secret_key_agreement.minimal_intrinsic_mutual_informations
+
 Minimal Intrinsic Mutual Information
 ************************************
 
@@ -185,7 +195,8 @@ The :ref:`Reduced Intrinsic Mutual Information` can be further reduced into the 
 
    \I{X : Y \downarrow\downarrow\downarrow Z} = \min_{U} \I{X : Y | U} + \I{XY : U | Z}
 
-.. py:module dit.multivariate.secret_key_agreement.two_part_intrinsic_mutual_informations
+.. py:module:: dit.multivariate.secret_key_agreement.two_part_intrinsic_mutual_informations
+
 Two-Part Intrinsic Mutual Information
 *************************************
 
@@ -246,7 +257,6 @@ First, we consider the distribution ``intrinsic_1``:
    Outcome Class:  str
    Outcome Length: 3
    RV Names:       None
-
    x     p(x)
    000   1/8
    011   1/8
@@ -284,7 +294,6 @@ Next, let's consider the distribution ``intrinsic_2``:
    Outcome Class:  str
    Outcome Length: 3
    RV Names:       None
-
    x     p(x)
    000   1/8
    011   1/8

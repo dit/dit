@@ -26,7 +26,6 @@ It is often useful to construct a distribution :math:`d^\prime` which is consist
     Outcome Class:  str
     Outcome Length: 3
     RV Names:       None
-
     x     p(x)
     000   0.125
     001   0.125
@@ -58,7 +57,6 @@ The first is maximum entropy distributions with specific fixed marginals. It enc
     Outcome Class:  str
     Outcome Length: 3
     RV Names:       None
-
     x     p(x)
     000   0.125
     001   0.125

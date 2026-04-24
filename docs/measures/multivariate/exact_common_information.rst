@@ -33,7 +33,6 @@ Kumar **et. al.** :cite:`kumar2014exact` have shown that the exact common inform
    Outcome Class:  tuple
    Outcome Length: 4
    RV Names:       None
-
    x              p(x)
    (0, 0, 0, 0)   1/9
    (0, 0, 0, 1)   1/9

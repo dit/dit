@@ -255,7 +255,6 @@ consists of exactly one distribution: the ``and`` distribution!
    Outcome Class:  str
    Outcome Length: 3
    RV Names:       None
-
    x     p(x)
    000   1/4
    010   1/4
@@ -276,7 +275,6 @@ consists of exactly one distribution: the ``and`` distribution!
    Outcome Class:  str
    Outcome Length: 3
    RV Names:       None
-
    x     p(x)
    000   1/4
    010   1/4

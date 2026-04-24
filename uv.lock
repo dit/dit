@@ -592,6 +592,7 @@ dev = [
     { name = "pytest-rerunfailures" },
     { name = "pytest-sugar" },
     { name = "pytest-xdist" },
+    { name = "python-ternary" },
     { name = "ruff" },
     { name = "scikit-learn" },
     { name = "slsqp-jax" },
@@ -603,10 +604,17 @@ dev = [
     { name = "ty" },
 ]
 docs = [
+    { name = "colorama" },
     { name = "hypothesis" },
     { name = "ipython" },
     { name = "matplotlib" },
     { name = "nbconvert" },
+    { name = "numdifftools" },
+    { name = "pint" },
+    { name = "pycddlib-standalone" },
+    { name = "pypoman" },
+    { name = "python-ternary" },
+    { name = "scikit-learn" },
     { name = "sphinx", version = "9.0.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "sphinx", version = "9.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "sphinx-rtd-theme" },
@@ -647,6 +655,7 @@ requires-dist = [
     { name = "dit", extras = ["docs"], marker = "extra == 'dev'" },
     { name = "dit", extras = ["jax"], marker = "extra == 'dev'" },
     { name = "dit", extras = ["optional"], marker = "extra == 'dev'" },
+    { name = "dit", extras = ["optional"], marker = "extra == 'docs'" },
     { name = "dit", extras = ["test"], marker = "extra == 'dev'" },
     { name = "dit", extras = ["torch"], marker = "extra == 'dev'" },
     { name = "hypothesis", marker = "extra == 'docs'" },
@@ -673,6 +682,7 @@ requires-dist = [
     { name = "pytest-rerunfailures", marker = "extra == 'test'" },
     { name = "pytest-sugar", marker = "extra == 'test'" },
     { name = "pytest-xdist", marker = "extra == 'test'" },
+    { name = "python-ternary", marker = "extra == 'docs'" },
     { name = "ruff", marker = "extra == 'dev'" },
     { name = "scikit-learn", marker = "extra == 'optional'" },
     { name = "scipy", specifier = ">=1.7" },
@@ -2144,6 +2154,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/66/c0/0c8b6ad9f17a802ee498c46e004a0eb49bc148f2fd230864601a86dcf6db/python-dateutil-2.9.0.post0.tar.gz", hash = "sha256:37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3", size = 342432, upload-time = "2024-03-01T18:36:20.211Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ec/57/56b9bcc3c9c6a792fcbaf139543cee77261f3651ca9da0c93f5c1221264b/python_dateutil-2.9.0.post0-py2.py3-none-any.whl", hash = "sha256:a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427", size = 229892, upload-time = "2024-03-01T18:36:18.57Z" },
+]
+
+[[package]]
+name = "python-ternary"
+version = "1.0.8"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "matplotlib" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/4f/37/fd1861f29024c0f6a4b50118ecf6f1a152f34f2403551a55b4ca4d532a18/python-ternary-1.0.8.tar.gz", hash = "sha256:41e7313db74ab2e24280797ed8073eccad4006429dfd87f6e66e7feba2aa64cd", size = 7579244, upload-time = "2021-02-17T18:39:31.862Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/28/80/d13b4d626fd2ea59fc8f3d771ca132f30b60ef0f51cb4f81b35e370ab7e3/python_ternary-1.0.8-py3-none-any.whl", hash = "sha256:80241526ee521e29bb7291fdb239c8cdf99c0e6d6471f4c67f36d5fbbfdd0485", size = 18412, upload-time = "2021-02-17T18:38:15.593Z" },
 ]
 
 [[package]]

@@ -25,7 +25,6 @@ It is often desirable to determine how a set of inputs influence the behavior of
    Outcome Class:  str
    Outcome Length: 3
    RV Names:       None
-
    x     p(x)
    000   1/4
    011   1/4
@@ -45,7 +44,6 @@ We can see from inspection that either input (the first two indexes) is independ
    Outcome Class:  str
    Outcome Length: 3
    RV Names:       None
-
    x     p(x)
    000   1/2
    111   1/2
@@ -168,6 +166,7 @@ We now turn our attention a variety of methods proposed to flesh out this partia
    In [11]: from dit.pid import *
 
 .. py:module:: dit.pid.imin
+
 :math:`\Imin{\bullet}`
 ----------------------
 
@@ -196,6 +195,7 @@ However, this measure has been criticized for acting in an unintuitive manner :c
 We have constructed a distribution whose inputs are independent random bits, and whose output is the concatenation of those inputs. Intuitively, the output should then be informed by one bit of unique information from :math:`X_0` and one bit of unique information from :math:`X_1`. However, :math:`\Imin{\bullet}` assesses that there is one bit of redundant information, and one bit of synergistic information. This is because :math:`\Imin{\bullet}` quantifies redundancy as the least amount of information one can learn about an output given any single input. Here, however, the one bit we learn from :math:`X_0` is, in a sense, orthogonal from the one bit we learn from :math:`X_1`. This observation has lead to much of the follow-on work.
 
 .. py:module:: dit.pid.immi
+
 :math:`\Immi{\bullet}`
 ----------------------
 
@@ -208,6 +208,7 @@ One potential measure of redundancy is the *minimum mutual information* :cite:`b
 This measure, though crude, is known to be correct for multivariate gaussian variables :cite:`olbrich2015information`.
 
 .. py:module:: dit.pid.iwedge
+
 :math:`\Iwedge{\bullet}`
 ------------------------
 
@@ -224,6 +225,7 @@ That is, redundancy is the information the :ref:`Gács-Körner Common Informatio
    This measure can result in a negative PID.
 
 .. py:module:: dit.pid.iproj
+
 :math:`\Iproj{\bullet}`
 -----------------------
 
@@ -248,6 +250,7 @@ where
 where :math:`C_{cl}(\bullet)` denotes closure. Intuitively, this measures seeks to quantify redundancy as the minimum of how much :math:`p(Y | X_0)` can be expressed when :math:`X_0` is projected on to :math:`X_1`, and vice versa.
 
 .. py:module:: dit.pid.ibroja
+
 :math:`\Ibroja{\bullet}`
 ------------------------
 
@@ -275,7 +278,6 @@ The BROJA measure has recently been criticized for behaving in an unintuitive ma
    Outcome Class:  str
    Outcome Length: 3
    RV Names:       None
-
    x     p(x)
    000   1/2
    011   1/4
@@ -294,11 +296,12 @@ The BROJA measure has recently been criticized for behaving in an unintuitive ma
 We see that in this instance BROJA assigns no partial information to either unique information. However, it is not difficult to argue that in the case that either input is a 1, that input then has unique information regarding the output.
 
 :math:`\Iproj{\bullet}` and :math:`\Ibroja{\bullet}` are Distinct
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In the BROJA paper :cite:`bertschinger2014quantifying` the only example given where their decomposition differs from that of Harder et al. is the :py:func:`dit.example_dists.summed_dice`. We can find a simpler example where they differ using hypothesis:
 
 .. ipython::
+   :okexcept:
 
    In [17]: from hypothesis import find
 
@@ -312,7 +315,6 @@ In the BROJA paper :cite:`bertschinger2014quantifying` the only example given wh
    Outcome Class:  tuple
    Outcome Length: 3
    RV Names:       None
-
    x           p(x)
    (0, 0, 0)   0.25
    (0, 0, 1)   0.25
@@ -320,6 +322,7 @@ In the BROJA paper :cite:`bertschinger2014quantifying` the only example given wh
    (1, 0, 0)   0.25
 
 .. py:module:: dit.pid.iccs
+
 :math:`\Iccs{\bullet}`
 ----------------------
 
@@ -351,6 +354,7 @@ This decomposition also displays an interesting phenomena, that of *subadditive 
    This measure can result in a negative PID.
 
 .. py:module:: dit.pid.idep
+
 :math:`\Idep{\bullet}`
 ----------------------
 
@@ -370,6 +374,7 @@ James et al :cite:`james2017unique` have developed a method of quantifying uniqu
    ╚════════╧════════╧════════╝
 
 .. py:module:: dit.pid.ipm
+
 :math:`\Ipm{\bullet}`
 ---------------------
 
@@ -383,7 +388,7 @@ They then define two partial information lattices, one quantified locally by :ma
 
 .. ipython::
 
-   In [22]: PID_PM(bivariates['pnt. unq'])
+   In [22]: PID_PM(bivariates['pnt. unq.'])
    Out[22]:
    ╔════════╤════════╤════════╗
    ║ I_pm   │  I_r   │   pi   ║
@@ -399,6 +404,7 @@ They then define two partial information lattices, one quantified locally by :ma
    This measure can result in a negative PID.
 
 .. py:module:: dit.pid.isx
+
 :math:`\Isx{\bullet}`
 ---------------------
 Shared Exclusions PID (:math:`I^{\mathrm{sx}}`) by Makkeh et al.
@@ -418,6 +424,7 @@ For large datasets with up to five source variables, refer to the reference impl
    This measure can result in a negative PID.
 
 .. py:module:: dit.pid.irav
+
 :math:`\Irav{\bullet}`
 ----------------------
 
@@ -435,7 +442,7 @@ This measure is designed to exploit the conflation of synergy and redundancy in 
 
 .. ipython::
 
-   In [23]: PID_RAV(bivariates['pnt. unq'])
+   In [23]: PID_RAV(bivariates['pnt. unq.'])
    Out[23]:
    ╔════════╤════════╤════════╗
    ║ I_pm   │  I_r   │   pi   ║
@@ -448,6 +455,7 @@ This measure is designed to exploit the conflation of synergy and redundancy in 
 
 
 .. py:module:: dit.pid.irr
+
 :math:`\Irr{\bullet}`
 ---------------------
 
@@ -463,7 +471,7 @@ In order to combine :math:`\Immi{\bullet}` with the coinformation, Goodwell and 
 
 .. ipython::
 
-   In [24]: PID_RR(bivariates['pnt. unq'])
+   In [24]: PID_RR(bivariates['pnt. unq.'])
    Out[24]:
    ╔════════╤════════╤════════╗
    ║ I_rr   │  I_r   │   pi   ║
@@ -475,6 +483,7 @@ In order to combine :math:`\Immi{\bullet}` with the coinformation, Goodwell and 
    ╚════════╧════════╧════════╝
 
 .. py:module:: dit.pid.ira
+
 :math:`\Ira{\bullet}`
 ---------------------
 
@@ -485,6 +494,7 @@ Drawing from the reconstructability analysis work of Zwick :cite:`zwick2004overv
    This measure can result in a negative PID.
 
 .. py:module:: dit.pid.irdr
+
 :math:`\Irdr{\bullet}`
 ----------------------
 
@@ -492,12 +502,14 @@ The measure of Mages & Rohner :cite:`mages2023measure` can be interpreted as a p
 It obtains its operational interpretation from valuating the reachable decision regions (achievable type I/II error pairs) for each state of the target variable.
 
 .. py:module:: dit.pid.ict
+
 :math:`\Ict{\bullet}`
 ---------------------
 
 Sigtermans :cite:`sigtermans2020path` proposes a bivariate redundancy measure based on causal tensors and path-based information flow between the two sources and the target.
 
 .. py:module:: dit.pid.ideg
+
 :math:`\Ideg{\bullet}`
 ----------------------
 
@@ -508,6 +520,7 @@ The degradation intersection information of Kolchinsky :cite:`kolchinsky2022nove
    \Ideg{X_{0:n} \to Y} = \max_{Q :\; Q \preceq_d X_i \;\forall i} \I{Q : Y}
 
 .. py:module:: dit.pid.idelta
+
 :math:`\Idelta{\bullet}`
 ------------------------
 
@@ -520,6 +533,7 @@ The :math:`\delta`-PID of Banerjee, Olbrich, Jost & Rauh :cite:`banerjee2018uniq
 Redundancy is then min-symmetrized across the two sources.
 
 .. py:module:: dit.pid.ideltalambda
+
 :math:`\IdeltaLambda{\bullet}`
 ------------------------------
 
@@ -532,6 +546,7 @@ Venkatesh, Gurushankar & Schamberg :cite:`venkatesh2023capturing` introduce a La
 As :math:`\lambda \to \infty` the measure recovers :math:`\Idelta{\bullet}`; as :math:`\lambda \to 0` it recovers :math:`\Ibroja{\bullet}`.
 
 .. py:module:: dit.pid.igh
+
 :math:`\Igh{\bullet}`
 ---------------------
 
@@ -542,12 +557,14 @@ The redundancy measure of Griffith & Ho :cite:`griffith2014intersection` constru
    TODO: confirm the canonical Griffith & Ho reference. The implementation in ``dit`` only identifies the authors; :cite:`griffith2014intersection` is used here as the best match among published Griffith papers in the PID literature.
 
 .. py:module:: dit.pid.iig
+
 :math:`\Iig{\bullet}`
 ---------------------
 
 Niu & Quinn :cite:`niu2019measure` propose an information-geometric PID: the synergy is defined as the KL divergence from the true joint distribution to the nearest distribution satisfying :math:`X_0 - X_1 - Y` or :math:`X_1 - X_0 - Y` Markov chains, minimized over a convex mixture of the two.
 
 .. py:module:: dit.pid.iipid
+
 :math:`\Iipid{\bullet}`
 -----------------------
 
@@ -560,6 +577,7 @@ The I-PID of Venkatesh, Gurushankar & Schamberg :cite:`venkatesh2023capturing` d
 Redundancy is obtained by min-symmetrization, analogously to :math:`\Idelta{\bullet}`.
 
 .. py:module:: dit.pid.imc
+
 :math:`\Imc{\bullet}`
 ---------------------
 
@@ -572,6 +590,7 @@ The more-capable intersection information of Gomes & Figueiredo :cite:`gomes2023
 where :math:`Q \preceq_{\mathrm{mc}} X_i` iff :math:`\I{Q : Y} \leq \I{X_i : Y}` for every input distribution on :math:`Y`.
 
 .. py:module:: dit.pid.imes
+
 :math:`\Imes{\bullet}`
 ----------------------
 
@@ -582,6 +601,7 @@ where :math:`Q \preceq_{\mathrm{mc}} X_i` iff :math:`\I{Q : Y} \leq \I{X_i : Y}`
    TODO: reference. No canonical publication has been identified for :math:`\Imes{\bullet}` in the ``dit`` source; the measure is described only as "inspired by BROJA's ``*`` assumption".
 
 .. py:module:: dit.pid.iprec
+
 :math:`\Iprec{\bullet}`
 -----------------------
 
@@ -594,6 +614,7 @@ Kolchinsky :cite:`kolchinsky2022novel` defines a redundancy measure using the Bl
 The constraint set is a convex polytope and the objective is convex, so the optimum lies at a vertex.
 
 .. py:module:: dit.pid.iskar
+
 Secret Key Agreement Rates
 --------------------------
 
@@ -604,7 +625,7 @@ One can associate :ref:`Secret Key Agreement` rates with unique informations :ci
 - both the source and the target communicate
 
 No Communication
-~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^
 
 .. math::
 
@@ -616,17 +637,17 @@ No Communication
 
 
 One-Way Communication
-~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^
 
 Camel
-^^^^^
+~~~~~
 
 .. math::
 
    \Ipart{X_i \rightarrow Y \setminus X_j} = \operatorname{S}[X_i \rightarrow Y || X_j]
 
 Elephant
-^^^^^^^^
+~~~~~~~~
 
 .. math::
 
@@ -638,7 +659,7 @@ Elephant
 
 
 Two-Way Communication
-~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^
 
 .. math::
 
@@ -659,6 +680,7 @@ Ince :cite:`ince2017partial` proposed applying the PID framework to decompose mu
    \I{X_0 : X_1} = \Hpart{\left\{X_0\right\}, \left\{X_1\right\}} - \Hpart{\left\{X_0,X_1\right\}}
 
 .. py:module:: dit.pid.hcs
+
 :math:`\Hcs{\bullet}`
 ---------------------
 

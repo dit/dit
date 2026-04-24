@@ -151,18 +151,18 @@ class BaseDeWeeseOptimizer(BaseAuxVarOptimizer):
         @unitful
         def function(dist, rvs=None, crvs=None, niter=None, deterministic=False):
             """
-                Compute the DeWeese {name}.
+            Compute the DeWeese {name}.
 
-                Parameters
-                ----------
-                dist : Distribution
-                    The distribution of interest.
-                rvs : iter of iters, None
-                    The random variables of interest. If None, use all.
-                crvs : iter, None
-                    The variables to condition on. If None, none.
-                niter : int, None
-                    If specified, the number of optimization steps to perform.
+            Parameters
+            ----------
+            dist : Distribution
+                The distribution of interest.
+            rvs : iter of iters, None
+                The random variables of interest. If None, use all.
+            crvs : iter, None
+                The variables to condition on. If None, none.
+            niter : int, None
+                If specified, the number of optimization steps to perform.
             deterministic : bool
                 Whether the functions to optimize over should be
                 deterministic or not. Defaults to False.
@@ -170,7 +170,7 @@ class BaseDeWeeseOptimizer(BaseAuxVarOptimizer):
             Returns
             -------
             val : float
-                    The value of the DeWeese {name}.
+                The value of the DeWeese {name}.
             """
             opt = cls(dist, rvs=rvs, crvs=crvs, deterministic=deterministic)
             opt.optimize(niter=niter)

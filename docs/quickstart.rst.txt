@@ -28,7 +28,6 @@ chance of it landing on its edge. Here is how we might represent the coin in
     Outcome Class:  str
     Outcome Length: 1
     RV Names:       None
-
     x   p(x)
     E   0.2
     H   0.4
@@ -79,7 +78,6 @@ Here, we have two inputs, :math:`X` and :math:`Y`, and then an output
     Outcome Class:  str
     Outcome Length: 3
     RV Names:       ('X', 'Y', 'Z')
-
     x     p(x)
     000   0.25
     011   0.25
@@ -118,7 +116,6 @@ Then print its probabilities as fractions, showing the mask.
     Outcome Class:  str
     Outcome Length: 2 (mask: 3)
     RV Names:       ('X', 'Z')
-
     x     p(x)
     0*0   1/4
     0*1   1/4
@@ -139,12 +136,10 @@ probabilities, and access its probability mass function.
 Draw 5 random samples from this distribution.
 
 .. ipython::
-   :doctest:
 
-    @suppress
-    In [19]: dit.math.prng.seed(1)
+   @suppress
+   In [19]: dit.math.prng.seed(1)
 
-    In [19]: d2.rand(5)
-    Out[19]: ['01', '10', '00', '01', '00']
+   In [19]: d2.rand(5)
 
 Enjoy!

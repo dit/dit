@@ -73,6 +73,7 @@ optional = [
     "scikit-learn",
 ]
 docs = [
+    "dit[optional]",
     "hypothesis",
     "ipython",
     "matplotlib",
@@ -80,6 +81,7 @@ docs = [
     "sphinx",
     "sphinx-rtd-theme",
     "sphinxcontrib-bibtex",
+    "python-ternary",
 ]
 dev = [
     "dit[test]",
