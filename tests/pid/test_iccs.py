@@ -76,6 +76,8 @@ def test_pid_ccs4():
     d = bivariates["gband"]
     pid = PID_CCS(d)
     string = """\
++--------------------------+
+|          I_ccs           |
 +--------+--------+--------+
 | I_ccs  |  I_r   |   pi   |
 +--------+--------+--------+

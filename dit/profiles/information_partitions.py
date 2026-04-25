@@ -42,8 +42,18 @@ class BaseInformationPartition(metaclass=ABCMeta):
             The distribution to partition.
         """
         self.dist = dist
-        self.unit = _unit_for_base(dist)
+        self.unit = self._compute_unit(dist)
         self._partition()
+
+    @staticmethod
+    def _compute_unit(dist):
+        """
+        Return the unit label used when rendering this partition.
+
+        Subclasses whose measure uses a fixed unit (e.g. extropy) should
+        override this to return a constant.
+        """
+        return _unit_for_base(dist)
 
     @staticmethod
     @abstractmethod
@@ -206,6 +216,13 @@ class ExtropyPartition(BaseInformationPartition):
     _measure = staticmethod(extropy)
     _name = "Extropy Partition"
     unit = "exits"
+
+    @staticmethod
+    def _compute_unit(dist):
+        """
+        Extropy is always reported in "exits" regardless of the distribution's base.
+        """
+        return "exits"
 
     @staticmethod
     def _symbol(rvs, crvs):
