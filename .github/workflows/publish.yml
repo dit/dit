@@ -2,25 +2,63 @@ name: Publish
 
 on:
   release:
-    types: [created]
+    types: [published]
 
 jobs:
-  publish:
+  build:
+    name: Build distributions
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write  # required for trusted publishing
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v8.1.0
         with:
           version: "latest"
 
       - name: Build package
         run: uv build
 
+      - name: Verify built version matches release tag
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME#v}"
+          built=$(ls dist/dit-*.tar.gz | sed -E 's|.*/dit-(.+)\.tar\.gz|\1|')
+          echo "tag=$tag built=$built"
+          [ "$tag" = "$built" ] || { echo "::error::Built version $built != tag $tag"; exit 1; }
+
+      - name: Upload dist artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/dit
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - name: Download dist artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          attestations: true
+
+      - name: Attach distributions to GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*

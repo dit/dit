@@ -21,6 +21,7 @@ dit/math/_*.html
 
 # ignore coverage information
 .coverage*
+coverage.xml
 
 # ignore project files for various IDEs
 

@@ -1,12 +1,12 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 # ── Project metadata (PEP 621) ──────────────────────────────────────────
 
 [project]
 name = "dit"
-version = "1.5"
+dynamic = ["version"]
 description = "Python package for information theory on discrete random variables."
 readme = "README.rst"
 license = "BSD-3-Clause"
@@ -99,6 +99,9 @@ dev = [
 override-dependencies = ["pycddlib; sys_platform == 'never'"]
 
 # ── Build configuration ─────────────────────────────────────────────────
+
+[tool.hatch.version]
+source = "vcs"
 
 [tool.hatch.build.targets.sdist]
 include = [
