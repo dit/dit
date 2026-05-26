@@ -21,6 +21,9 @@ from dit.multivariate import (
     gk_common_information as K,
 )
 from dit.multivariate import (
+    kamath_common_information as U,
+)
+from dit.multivariate import (
     mss_common_information as M,
 )
 from dit.multivariate import (
@@ -47,13 +50,15 @@ def test_cis1(dist, backend):
     c = C(dist, niter=100, backend=backend)
     g = G(dist, niter=100, backend=backend)
     f = F(dist)
+    u = U(dist)
     m = M(dist)
     assert k <= j + epsilon
     assert j <= b + epsilon
     assert b <= c + epsilon
     assert c <= g + epsilon
     assert g <= f + epsilon
-    assert f <= m + epsilon
+    assert f <= u + epsilon
+    assert u <= m + epsilon
 
 
 @pytest.mark.slow
@@ -71,10 +76,12 @@ def test_cis2(dist, backend):
     c = C(dist, niter=100, backend=backend)
     g = G(dist, niter=100, backend=backend)
     f = F(dist)
+    u = U(dist)
     m = M(dist)
     assert k <= j + epsilon
     assert j <= b + epsilon
     assert b <= c + epsilon
     assert c <= g + epsilon
     assert g <= f + epsilon
-    assert f <= m + epsilon
+    assert f <= u + epsilon
+    assert u <= m + epsilon

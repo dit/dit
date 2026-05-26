@@ -63,6 +63,7 @@ These measures all somehow measure shared information, but do not equal the mutu
    wyner_common_information
    exact_common_information
    functional_common_information
+   kamath_common_information
    mss_common_information
 
 Ordering
@@ -77,6 +78,7 @@ The common information measures (together with the :doc:`dual_total_correlation`
                \leq \C{X_{0:n}}
                \leq \G{X_{0:n}}
                \leq \F{X_{0:n}}
+               \leq U(X_{0:n})
                \leq \M{X_{0:n}}
 
 Others
