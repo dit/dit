@@ -64,6 +64,7 @@ These measures all somehow measure shared information, but do not equal the mutu
    exact_common_information
    functional_common_information
    kamath_common_information
+   maxent_function
    mss_common_information
 
 Ordering
