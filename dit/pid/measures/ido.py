@@ -56,11 +56,7 @@ def _intervened_joint(p_xyz):
         p_xi_given_y = np.where(p_y[None, :] > 0, p_xi_y / p_y[None, :], 0.0)
         p_y_given_xj = np.where(p_xj[:, None] > 0, p_xj_y / p_xj[:, None], 0.0)
 
-    return (
-        p_xj[None, :, None]
-        * p_y_given_xj[None, :, :]
-        * p_xi_given_y[:, None, :]
-    )
+    return p_xj[None, :, None] * p_y_given_xj[None, :, :] * p_xi_given_y[:, None, :]
 
 
 def _mi_from_joint(q_ab):

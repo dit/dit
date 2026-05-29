@@ -17,7 +17,7 @@ Kamath and Anantharam show this quantity has a strikingly simple closed form. De
 
 The asymmetric quantity :math:`\Phi^X_Y` is exactly the **minimal sufficient statistic** of :math:`Y` about :math:`X` (Kamath & Anantharam 2010, Lemma 3.5(5)) — two values of :math:`Y` collapse iff they induce the same conditional distribution over :math:`X`. So :math:`G(Y \to X)` is the entropy of the partition of the alphabet of :math:`Y` into "conditional-distribution-equivalent" classes.
 
-For :math:`n > 2` random variables, ``dit`` generalizes :math:`U` analogously to how :ref:`mss_common_information` extends:
+For :math:`n > 2` random variables, ``dit`` generalizes :math:`U` analogously to how :doc:`mss_common_information` extends:
 
 .. math::
 
@@ -47,7 +47,7 @@ with rows indexed by :math:`X \in \{a, b, c\}` and columns by :math:`Y \in \{\al
 
    In [2]: from dit.multivariate import kamath_common_information as U
 
-   In [3]: from dit.multivariate import directed_kamath_common_information as G
+   In [3]: from dit.multivariate import directed_kamath_common_information as G_dir
 
    In [4]: outcomes = ['aα', 'bβ', 'bγ', 'bδ', 'cβ', 'cγ', 'cδ']
 
@@ -56,11 +56,11 @@ with rows indexed by :math:`X \in \{a, b, c\}` and columns by :math:`Y \in \{\al
    In [6]: d = D(outcomes, pmf)
 
    @doctest float
-   In [7]: G(d, rvs=[1], about=[0])
+   In [7]: G_dir(d, rvs=[1], about=[0])
    Out[7]: 1.0414647631411194
 
    @doctest float
-   In [8]: G(d, rvs=[0], about=[1])
+   In [8]: G_dir(d, rvs=[0], about=[1])
    Out[8]: 1.3712481855145016
 
    @doctest float
