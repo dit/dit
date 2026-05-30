@@ -300,6 +300,7 @@ We can also plot all four on the same entropy triangle:
 We can plot these same distributions on a slightly different entropy triangle as well, :class:`EntropyTriangle2`, one comparing the :doc:`measures/multivariate/residual_entropy`, :doc:`measures/multivariate/total_correlation`, and :doc:`measures/multivariate/dual_total_correlation`:
 
 .. ipython::
+   :okwarning:
 
    @savefig entropy_triangle2_example.png width=500 align=center
    In [33]: EntropyTriangle2(dists).draw();
