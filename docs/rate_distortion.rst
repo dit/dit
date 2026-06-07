@@ -115,6 +115,11 @@ We can also find them utilizing the total variation:
 
    The spiky behavior at low :math:`\beta` values is due to numerical imprecision.
 
+See Also
+========
+
+The :doc:`gray_wyner` extends rate-distortion ideas to a one-encoder, many-decoder network, and recovers the :doc:`common informations <measures/multivariate/multivariate>` as operating points.
+
 APIs
 ====
 

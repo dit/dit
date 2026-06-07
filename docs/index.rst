@@ -37,6 +37,7 @@ Contents:
    measures/measures
    profiles
    rate_distortion
+   gray_wyner
    measures/pid
    stumbling
    zreferences
