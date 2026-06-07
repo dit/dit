@@ -42,6 +42,7 @@ __all__ = (
     # Use version provided by maxentropyfw.py
     # 'marginal_maxent_dists',
     "moment_maxent_dists",
+    "degrees_of_freedom",
 )
 
 
@@ -239,6 +240,70 @@ def marginal_constraint_rank(dist, m):
     A, b = marginal_constraints(dist, m)
     _, _, rank = as_full_rank(A, b)
     return rank
+
+
+def marginal_constraint_rank_generic(dist, rvs):
+    """
+    Returns the rank of the marginal constraint matrix for an arbitrary set of
+    marginals.
+
+    Parameters
+    ----------
+    dist : distribution
+        The distribution used to calculate the marginal constraints.
+    rvs : sequence
+        A sequence whose elements are also sequences. Each inner sequence
+        specifies a marginal distribution as a set of random variables from
+        `dist`.
+
+    Returns
+    -------
+    rank : int
+        The rank of the marginal constraint matrix, including the normalization
+        constraint.
+    """
+    dist = prepare_dist(dist)
+
+    A, _ = marginal_constraints_generic(dist, rvs)
+    return int(np.linalg.matrix_rank(A))
+
+
+def degrees_of_freedom(dist, structure=None):
+    """
+    Returns the degrees of freedom of a marginal model: the number of free
+    parameters needed to specify the maximum entropy distribution consistent
+    with the marginals in `structure`.
+
+    This is the "complexity" of a reconstructability-analysis model. It is the
+    rank of the marginal constraint matrix (which includes the normalization
+    constraint) minus one for that normalization constraint.
+
+    Parameters
+    ----------
+    dist : distribution
+        The distribution defining the sample space and the marginal values.
+    structure : sequence, None
+        A sequence whose elements are also sequences, each specifying a marginal
+        (a "projection") to constrain, e.g. ``[[0, 1], [1, 2]]`` for ``AB:BC``.
+        If None, the independence model (each variable on its own) is used.
+
+    Returns
+    -------
+    df : int
+        The degrees of freedom of the model.
+
+    Examples
+    --------
+    >>> d = dit.uniform_distribution(3, 2)
+    >>> dit.algorithms.degrees_of_freedom(d, [[0, 1], [2]])
+    4
+    >>> dit.algorithms.degrees_of_freedom(d, [[0, 1], [1, 2]])
+    5
+    """
+    if structure is None:
+        structure = [[v] for v in range(dist.outcome_length())]
+
+    return marginal_constraint_rank_generic(dist, structure) - 1
 
 
 def moment(f, pmf, center=0, n=1):

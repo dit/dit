@@ -93,3 +93,4 @@ These measures quantify other aspects of a joint distribution.
    tse_complexity
    necessary_conditional_entropy
    delta_gamma
+   transmission

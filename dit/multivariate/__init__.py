@@ -18,5 +18,6 @@ from .quax_synergy import *
 from .secret_key_agreement import *
 from .synergistic_disclosure import *
 from .total_correlation import *
+from .transmission import *
 from .tse_complexity import *
 from .union_information import *

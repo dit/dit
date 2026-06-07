@@ -12,7 +12,9 @@ import numpy as np
 from boltons.iterutils import pairwise_iter
 from lattices.lattices import dependency_lattice, powerset_lattice
 
-from ..algorithms import maxent_dist
+from ..algorithms import degrees_of_freedom, maxent_dist
+from ..divergences import kullback_leibler_divergence
+from ..multivariate.transmission import transmission
 from ..other import extropy
 from ..params import ditParams
 from ..shannon import entropy
@@ -306,7 +308,16 @@ class DependencyDecomposition:
         atoms = defaultdict(dict)
         for name, measure in self.measures.items():
             for node in self._lattice:
-                atoms[node][name] = measure(dists[node])
+                if measure is degrees_of_freedom:
+                    # Model complexity is a property of the structure (node),
+                    # not recoverable from the reconstructed distribution alone.
+                    atoms[node][name] = degrees_of_freedom(self.dist, node)
+                elif measure is transmission:
+                    # The node's reconstruction is already in `dists`; reuse it
+                    # rather than recomputing the maxent distribution.
+                    atoms[node][name] = kullback_leibler_divergence(self.dist, dists[node])
+                else:
+                    atoms[node][name] = measure(dists[node])
 
         self.atoms = atoms
 

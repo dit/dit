@@ -12,6 +12,7 @@ from ..distconst import product_distribution
 from ..distribution import Distribution
 from ..multivariate import coinformation as I
 from ..utils import flatten
+from .ipf import ipf_dist
 from .maxentropy import marginal_constraints_generic
 from .optimization import BaseConvexOptimizer, BaseNonConvexOptimizer, BaseOptimizer
 from .optutil import prepare_dist
@@ -485,7 +486,7 @@ class BROJABivariateOptimizer(MaxCoInfoOptimizer):
         self._optvec_size = len(self._free)
 
 
-def maxent_dist(dist, rvs, x0=None, maxiter=1000, sparse=True):
+def maxent_dist(dist, rvs, x0=None, maxiter=1000, sparse=True, method="ipf"):
     """
     Return the maximum entropy distribution consistent with the marginals from
     `dist` specified in `rvs`.
@@ -497,21 +498,52 @@ def maxent_dist(dist, rvs, x0=None, maxiter=1000, sparse=True):
     rvs : list of lists
         The marginals from `dist` to constrain.
     x0 : np.ndarray
-        Initial condition for the optimizer.
+        Initial condition for the scipy optimizer. Ignored when `method` is
+        'ipf', which always starts from the uniform distribution.
     maxiter : int
-        The number of optimization iterations to perform.
+        The number of optimization iterations to perform. Used only by the
+        scipy optimizer; IPF uses its own convergence tolerance.
     sparse : bool
         Whether the returned distribution should be sparse or dense.
+    method : str
+        The algorithm used to compute the maximum entropy distribution. 'ipf'
+        (the default) uses Iterative Proportional Fitting, which is typically
+        far faster than the convex optimizer. IPF converges only linearly on
+        cyclic structures with induced structural zeros, so when it fails to
+        converge within its iteration budget this falls back to the scipy
+        optimizer to preserve accuracy. 'scipy' (also accepts 'slsqp') forces
+        the scipy convex optimizer.
 
     Returns
     -------
     me : Distribution
         The maximum entropy distribution.
     """
-    meo = MaxEntOptimizer(dist, rvs)
-    meo.optimize(x0=x0, maxiter=maxiter)
-    dist = meo.construct_dist(sparse=sparse)
-    return dist
+    if method == "ipf":
+        # Easy structures (acyclic, or well-conditioned cyclic) converge well
+        # within this budget; structures that stall here converge only linearly
+        # and are handled exactly by the scipy fallback below, so there is no
+        # point spending IPF's full default budget on them. Run IPF densely so a
+        # stalled iterate can be reused as a warm start for the fallback.
+        me, converged = ipf_dist(dist, rvs, maxiter=1000, sparse=False, return_status=True)
+        if converged:
+            if sparse:
+                me.make_sparse()
+            return me
+        # IPF stalled (typically a cyclic structure with induced structural
+        # zeros); warm-start the convex optimizer from IPF's near-converged
+        # iterate (a full pmf vector, which the optimizer restricts to its free
+        # indices) for an exact answer in fewer steps.
+        x0 = me.pmf
+        method = "scipy"
+
+    if method in ("scipy", "slsqp"):
+        meo = MaxEntOptimizer(dist, rvs)
+        meo.optimize(x0=x0, maxiter=maxiter)
+        return meo.construct_dist(sparse=sparse)
+
+    msg = f"Unknown method {method!r}; expected 'ipf', 'scipy', or 'slsqp'."
+    raise ValueError(msg)
 
 
 def marginal_maxent_dists(dist, k_max=None):

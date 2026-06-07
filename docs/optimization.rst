@@ -75,6 +75,34 @@ The second constructs several maximum entropy distributions, each with all subse
 
 where ``k0`` is the maxent dist corresponding the same alphabets as ``xor``; ``k1`` fixes :math:`p(x_0)`, :math:`p(x_1)`, and :math:`p(x_2)`; ``k2`` fixes :math:`p(x_0, x_1)`, :math:`p(x_0, x_2)`, and :math:`p(x_1, x_2)` (as in the ``maxent_dist`` example above), and finally ``k3`` fixes :math:`p(x_0, x_1, x_2)` (e.g. is the distribution we started with).
 
+=================================
+Maximum Entropy Solver (IPF)
+=================================
+
+By default, ``maxent_dist`` computes the maximum entropy distribution using `Iterative Proportional Fitting <https://en.wikipedia.org/wiki/Iterative_proportional_fitting>`_ (IPF), the classic algorithm from reconstructability analysis and log-linear modeling. Starting from the uniform distribution, IPF cyclically rescales the working distribution so each constrained marginal matches the data, iterating until convergence. It is typically far faster than the general scipy convex optimizer. IPF converges only linearly on cyclic structures with induced structural zeros, however, so when it fails to converge within its iteration budget ``maxent_dist`` automatically falls back to the scipy optimizer to preserve accuracy. The scipy backend can also be requested explicitly via ``method='scipy'``:
+
+.. ipython::
+
+    In [10]: print(maxent_dist(xor, [[0,1], [0,2], [1,2]], method='scipy'))
+
+=============================
+Reconstructability Analysis
+=============================
+
+The maximum entropy reconstruction underlies reconstructability analysis, which decomposes a distribution into a *structure* of marginals and assesses each structure by two quantities: its error (:doc:`transmission </measures/multivariate/transmission>`, the information lost relative to the data) and its complexity (degrees of freedom, the number of free parameters). The dependency decomposition (see :doc:`profiles`) evaluates these over the whole lattice of structures, yielding the "decomposition spectrum":
+
+.. ipython::
+
+    In [11]: from dit.algorithms import degrees_of_freedom
+
+    In [12]: from dit.multivariate import transmission
+
+    In [13]: from dit.profiles import DependencyDecomposition
+
+    In [14]: from dit.multivariate import entropy
+
+    In [15]: print(DependencyDecomposition(xor, measures={'H': entropy, 'T': transmission, 'df': degrees_of_freedom}))
+
 =====================
 Optimization Backends
 =====================
