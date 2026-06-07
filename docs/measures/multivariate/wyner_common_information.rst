@@ -11,6 +11,8 @@ The Wyner common information :cite:`wyner1975common,liu2010common` measures the 
 
    \C{X_{0:n} | Y_{0:m}} = \min_{\ind X_{0:n} \mid Y_{0:m}, V} \I{X_{0:n} : V | Y_{0:m}}
 
+Operationally, it is the smallest common rate on the minimum sum-rate face of the :doc:`/gray_wyner`; its lossy generalization is the lossy common information.
+
 Binary Symmetric Erasure Channel
 ================================
 
