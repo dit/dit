@@ -15,6 +15,9 @@ omit =
     dit/rate_distortion/plotting.py
     # don't cover table generation
     dit/pid/helplers.py
+    # JAX/Torch optimization backends are only exercised by very_slow tests
+    */dit/algorithms/optimization_jax.py
+    */dit/algorithms/optimization_torch.py
 
 [report]
 # Regexes for lines to exclude from consideration
@@ -67,6 +70,9 @@ omit =
     dit/rate_distortion/plotting.py
     # don't cover table generation
     dit/pid/helplers.py
+    # JAX/Torch optimization backends are only exercised by very_slow tests
+    */dit/algorithms/optimization_jax.py
+    */dit/algorithms/optimization_torch.py
 
 ignore_errors = True
 
