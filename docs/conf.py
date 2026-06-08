@@ -30,6 +30,10 @@ ipython_mplbackend = "agg"
 ipython_execlines = [
     "import numpy as np",
     "np.set_printoptions(legacy='1.25')",
+    # Seed the global RNG so the stochastic optimizers exercised in @doctest
+    # blocks (e.g. intrinsic_mutual_information) converge reproducibly and the
+    # -W build does not flake on an unlucky basin-hopping trajectory.
+    "np.random.seed(0)",
     "import matplotlib.pyplot as plt",
     'plt.rcParams["figure.figsize"] = (8, 6)',
     'plt.rcParams["savefig.facecolor"] = (1, 1, 1, 0)',

@@ -1277,3 +1277,147 @@ class TestDitDivergenceCompat:
         q = Distribution.from_array(arr, ["X", "Y", "Z"], [[0, 1], [0, 1], [0, 1]])
         xh = cross_entropy(p, q)
         assert xh > 0
+
+
+class TestPmfVectorized:
+    """
+    The vectorized :attr:`Distribution.pmf` / sparse :attr:`outcomes` must match
+    the per-outcome ``.sel`` semantics they replaced: ``pmf`` aligns elementwise
+    with ``outcomes`` and reports values in the current base, for sparse, dense,
+    log-space, scalar, and string-coordinate distributions.
+    """
+
+    def _reference_pmf(self, d):
+        """Per-outcome ``.sel`` gather (the original, slow implementation)."""
+        dims = list(d.data.dims)
+        probs = []
+        for o in d.outcomes:
+            key = (o,) if d._unwrap_scalar else o
+            sel = {dim: v for dim, v in zip(dims, key, strict=True)}
+            probs.append(float(d.data.sel(sel)))
+        return np.array(probs)
+
+    @pytest.mark.parametrize(
+        "factory",
+        [
+            lambda: Distribution(["00", "01", "10", "11"], [0.1, 0.2, 0.3, 0.4]),
+            lambda: Distribution(["000", "011", "101", "110"], [0.25] * 4),
+            lambda: Distribution(["0", "1", "2"], [0.2, 0.3, 0.5]),
+            lambda: Distribution(["aa", "ab", "ba", "bb"], [0.4, 0.1, 0.1, 0.4]),
+        ],
+        ids=["joint", "sparse_xor_like", "scalar", "string_coords"],
+    )
+    def test_pmf_matches_reference(self, factory):
+        d = factory()
+        np.testing.assert_array_equal(np.asarray(d.pmf), self._reference_pmf(d))
+
+    def test_pmf_dense_and_log(self):
+        d = Distribution(["00", "01", "10", "11"], [0.1, 0.2, 0.3, 0.4])
+        dense = d.copy()
+        dense.make_dense()
+        np.testing.assert_array_equal(np.asarray(dense.pmf), self._reference_pmf(dense))
+
+        log = d.copy()
+        log.set_base(2)
+        np.testing.assert_array_equal(np.asarray(log.pmf), self._reference_pmf(log))
+        # log-space pmf is the log of the linear pmf for the same outcomes.
+        np.testing.assert_allclose(np.asarray(log.pmf), np.log2(np.asarray(d.pmf)))
+
+    def test_pmf_outcomes_aligned(self):
+        d = Distribution(["000", "011", "101", "110"], [0.1, 0.2, 0.3, 0.4])
+        pmf = np.asarray(d.pmf)
+        assert len(pmf) == len(d.outcomes)
+        np.testing.assert_allclose(pmf.sum(), 1.0)
+
+
+class TestSelLoopVectorized:
+    """
+    The vectorized per-outcome methods (``__getitem__``, ``zipped``,
+    ``event_probability``, ``coalesce``, conditional ``entropy``) replaced
+    per-outcome ``.sel`` loops. These regression tests pin each against an
+    independent ground truth derived directly from the construction values,
+    so they catch divergence without depending on the old implementation.
+    """
+
+    OUTCOMES = ["00", "01", "10", "11"]
+    PROBS = [0.1, 0.2, 0.3, 0.4]
+
+    def _dist(self):
+        return Distribution(self.OUTCOMES, self.PROBS)
+
+    def _truth(self):
+        return dict(zip(self.OUTCOMES, self.PROBS, strict=True))
+
+    def test_getitem_fast_path(self):
+        d = self._dist()
+        truth = self._truth()
+        for outcome, p in truth.items():
+            assert np.isclose(d[tuple(outcome)], p)
+            assert np.isclose(d[outcome], p)  # string-key form
+
+    def test_getitem_invalid_outcome(self):
+        from dit.exceptions import InvalidOutcome
+
+        d = self._dist()
+        with pytest.raises(InvalidOutcome):
+            _ = d[("0", "2")]
+
+    def test_getitem_log_base(self):
+        d = self._dist()
+        d.set_base(2)
+        for outcome, p in self._truth().items():
+            np.testing.assert_allclose(d[tuple(outcome)], np.log2(p))
+
+    def test_zipped_pmf_and_atoms(self):
+        # Dense distribution with an explicit zero exercises both modes.
+        d = Distribution(["00", "01", "10", "11"], [0.5, 0.0, 0.2, 0.3])
+        d.make_dense()
+        pmf = {o: p for o, p in d.zipped(mode="pmf")}
+        atoms = {o: p for o, p in d.zipped(mode="atoms")}
+        assert ("0", "1") not in pmf  # zero excluded from pmf mode
+        assert ("0", "1") in atoms  # zero retained in atoms mode
+        np.testing.assert_allclose(atoms[("0", "1")], 0.0)
+        np.testing.assert_allclose(pmf[("1", "0")], 0.2)
+
+    def test_event_probability(self):
+        d = self._dist()
+        truth = self._truth()
+        event = [("0", "0"), ("1", "1")]
+        expected = truth["00"] + truth["11"]
+        np.testing.assert_allclose(d.event_probability(event), expected)
+
+    def test_coalesce_roundtrip_and_marginal(self):
+        d = self._dist()
+        # Regroup into ((X0,X1),) -- one combined variable; total mass preserved.
+        c = d.coalesce([["X0", "X1"]])
+        np.testing.assert_allclose(np.asarray(c.pmf).sum(), 1.0)
+
+        # Marginal over the second variable must match summing the joint.
+        c2 = d.coalesce([["X0"], ["X1"]])
+        truth = self._truth()
+        p_y = {"0": 0.0, "1": 0.0}
+        for outcome, p in truth.items():
+            p_y[outcome[1]] += p
+        got_y = {}
+        for (_x, y), p in c2.zipped():
+            got_y[y] = got_y.get(y, 0.0) + p
+        for y, p in p_y.items():
+            np.testing.assert_allclose(got_y[y], p)
+
+    def test_conditional_entropy(self):
+        d = self._dist()
+        cond = d.condition_on("X1")  # p(X0 | X1)
+
+        # Independent ground truth: average per-Y-slice entropy of p(X|Y=y).
+        truth = self._truth()
+        joint = np.array([[truth["00"], truth["01"]], [truth["10"], truth["11"]]])
+        slice_h = []
+        for j in range(joint.shape[1]):
+            col = joint[:, j]
+            if col.sum() <= 0:
+                continue
+            p = col / col.sum()
+            p = p[p > 0]
+            slice_h.append(float(-np.sum(p * np.log2(p))))
+        expected = sum(slice_h) / len(slice_h)
+        np.testing.assert_allclose(cond.entropy(), expected)

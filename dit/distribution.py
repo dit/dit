@@ -436,14 +436,10 @@ class Distribution:
 
         if not self._sparse:
             return tuple(_wrap(combo) for combo in itertools.product(*coord_vals))
-        arr = self._linear_data()
-        outs = []
-        for combo in itertools.product(*coord_vals):
-            sel = {d: v for d, v in zip(dims, combo, strict=True)}
-            p = float(arr.sel(sel))
-            if p > 0:
-                outs.append(_wrap(combo))
-        return tuple(outs)
+        # The flattened linear array is in C-order, matching itertools.product
+        # over the per-dimension coordinate values; keep the positive cells.
+        mask = np.asarray(self._linear_data().values).ravel() > 0
+        return tuple(_wrap(combo) for combo, keep in zip(itertools.product(*coord_vals), mask, strict=True) if keep)
 
     @property
     def pmf(self):
@@ -453,13 +449,14 @@ class Distribution:
         Returns values in the current base (log if the distribution is in
         log space, linear otherwise), matching ``dit.Distribution.pmf``.
         """
-        dims = list(self.data.dims)
-        probs = []
-        for o in self.outcomes:
-            key = (o,) if self._unwrap_scalar else o
-            sel = {d: v for d, v in zip(dims, key, strict=True)}
-            probs.append(float(self.data.sel(sel)))
-        return np.array(probs)
+        # ``data.values`` is already in the current base; its C-order ravel
+        # aligns with :attr:`outcomes`. Gather directly rather than doing a
+        # per-outcome xarray ``.sel`` (which dominates measure computations).
+        values = np.asarray(self.data.values).ravel()
+        if not self._sparse:
+            return values.astype(float, copy=True)
+        mask = np.asarray(self._linear_data().values).ravel() > 0
+        return values[mask].astype(float, copy=True)
 
     @pmf.setter
     def pmf(self, value):
@@ -517,6 +514,29 @@ class Distribution:
                 coords=self.data.coords,
             )
         return self.data
+
+    def _linear_values_flat(self):
+        """
+        The dense linear-probability array raveled in C-order.
+
+        The ravel aligns elementwise with ``itertools.product(*coord_vals)``
+        (coords taken in ``self.data.dims`` order), so per-outcome ``.sel``
+        loops can be replaced by a zip against this array.
+        """
+        return np.asarray(self._linear_data().values).ravel()
+
+    def _coord_index_maps(self):
+        """
+        Per-dimension ``{coordinate_value: index}`` maps (in ``dims`` order).
+
+        Enables point lookups by native-typed outcome value without an xarray
+        ``.sel`` (which carries heavy per-call overhead).
+        """
+
+        def _native(v):
+            return v.item() if hasattr(v, "item") else v
+
+        return [{_native(v): i for i, v in enumerate(self.data.coords[d].values)} for d in self.data.dims]
 
     def outcome_length(self):
         """
@@ -847,9 +867,9 @@ class Distribution:
             return
 
         coord_vals = [self.data.coords[d].values for d in dims]
-        for combo in itertools.product(*coord_vals):
-            sel = {d: v for d, v in zip(dims, combo, strict=True)}
-            p = float(arr.sel(sel))
+        values = np.asarray(arr.values).ravel()
+        for combo, p in zip(itertools.product(*coord_vals), values, strict=True):
+            p = float(p)
             if mode == "atoms" or p > 0:
                 o = _native(combo[0]) if self._unwrap_scalar else tuple(_native(v) for v in combo)
                 yield o, p
@@ -1146,15 +1166,15 @@ class Distribution:
         s.write("\n")
 
         dims = list(self.data.dims)
-        arr = self._linear_data()
 
         # Gather all rows (non-zero for joint, all for conditional)
         rows = []
         coord_vals = [self.data.coords[d].values for d in dims]
-        for combo in itertools.product(*coord_vals):
-            sel = {d: v for d, v in zip(dims, combo, strict=True)}
-            p = float(arr.sel(sel))
-            if p > 0 or not self._is_unconditional():
+        values = self._linear_values_flat()
+        keep_all = not self._is_unconditional()
+        for combo, p in zip(itertools.product(*coord_vals), values, strict=True):
+            p = float(p)
+            if p > 0 or keep_all:
                 rows.append((combo, p))
 
         if not rows:
@@ -1220,15 +1240,15 @@ class Distribution:
         )
 
         dims = list(self.data.dims)
-        arr = self._linear_data()
 
         # Gather rows
         rows = []
         coord_vals = [self.data.coords[d].values for d in dims]
-        for combo in itertools.product(*coord_vals):
-            sel = {d: v for d, v in zip(dims, combo, strict=True)}
-            p = float(arr.sel(sel))
-            if p > 0 or not self._is_unconditional():
+        values = self._linear_values_flat()
+        keep_all = not self._is_unconditional()
+        for combo, p in zip(itertools.product(*coord_vals), values, strict=True):
+            p = float(p)
+            if p > 0 or keep_all:
                 rows.append((combo, p))
 
         prob_header = "p" if self._is_unconditional() else "p(·|·)"
@@ -1450,16 +1470,16 @@ class Distribution:
         if len(groups) > 1 and extract:
             raise ValueError("Cannot extract with more than one rv group")
 
-        lin = self._linear_data()
         dims = list(self.data.dims)
         coord_vals = [self.data.coords[d].values for d in dims]
+        values = self._linear_values_flat()
 
         accum = defaultdict(float)
-        for combo in itertools.product(*coord_vals):
-            dim_val = {d: v for d, v in zip(dims, combo, strict=True)}
-            p = float(lin.sel(dim_val))
+        for combo, p in zip(itertools.product(*coord_vals), values, strict=True):
+            p = float(p)
             if p == 0:
                 continue
+            dim_val = {d: v for d, v in zip(dims, combo, strict=True)}
             inner = [tuple(dim_val[name] for name in grp) for grp in groups]
             key = inner[0] if len(groups) == 1 and extract else tuple(inner)
             accum[key] += p
@@ -1636,12 +1656,13 @@ class Distribution:
         conditional_data = xr.where(marginal_data > 0, lin / marginal_data, 0.0)
 
         cond_coords = [self.data.coords[d].values for d in cond_names]
+        marg_vals = np.asarray(marginal_data.transpose(*cond_names).values).ravel()
         slices = []
-        for combo in itertools.product(*cond_coords):
-            sel = dict(zip(cond_names, combo, strict=True))
-            marg_p = float(marginal_data.sel(sel))
+        for combo, marg_p in zip(itertools.product(*cond_coords), marg_vals, strict=True):
+            marg_p = float(marg_p)
             if marg_p <= 0:
                 continue
+            sel = dict(zip(cond_names, combo, strict=True))
             sliced = conditional_data.sel(sel)
             if sliced.ndim == 0:
                 sliced = sliced.expand_dims(keep_names)
@@ -2100,21 +2121,20 @@ class Distribution:
             p = p[p > 0]
             return float(-np.sum(p * np.log(p)) / log_b)
         else:
-            # Average per-slice entropy over given variable assignments
+            # Average per-slice entropy over given variable assignments.
+            # Move the given dims to the front, flatten each slice to a row, and
+            # compute -sum p log p per row; average over non-empty slices.
             given_dims = list(self.given_vars)
-            coord_vals = [lin.coords[d].values for d in given_dims]
-            total_h = 0.0
-            n_slices = 0
-            for combo in itertools.product(*coord_vals):
-                sel = {d: v for d, v in zip(given_dims, combo, strict=True)}
-                slc = lin.sel(sel).values.ravel()
-                slc = slc[slc > 0]
-                if len(slc) > 0:
-                    total_h += float(-np.sum(slc * np.log(slc)) / log_b)
-                    n_slices += 1
+            arr = lin.transpose(*given_dims, ...)
+            n_given = int(np.prod(arr.shape[: len(given_dims)])) if given_dims else 1
+            mat = np.asarray(arr.values).reshape(n_given, -1)
+            with np.errstate(divide="ignore", invalid="ignore"):
+                contrib = np.where(mat > 0, -mat * np.log(mat), 0.0).sum(axis=1) / log_b
+            nonempty = (mat > 0).any(axis=1)
+            n_slices = int(nonempty.sum())
             if n_slices == 0:
                 return 0.0
-            return total_h / n_slices
+            return float(contrib[nonempty].sum() / n_slices)
 
     def mutual_information(self, var_x, var_y, base=2):
         """
@@ -2225,6 +2245,18 @@ class Distribution:
             except KeyError as exc:
                 raise InvalidOutcome(msg=f"Outcome {key!r} is not in the sample space.") from exc
         if isinstance(key, tuple) and len(key) == len(self.data.dims):
+            # Fast path: resolve the multi-index via coord->index maps and read
+            # the cell directly, avoiding xarray ``.sel`` overhead. Falls back
+            # to the original ``.sel`` logic (incl. coalesced string coords) on
+            # any miss, preserving error semantics exactly.
+            cmaps = self._coord_index_maps()
+            try:
+                idx = tuple(cmap[v] for cmap, v in zip(cmaps, key, strict=True))
+            except (KeyError, TypeError):
+                idx = None
+            if idx is not None:
+                return float(np.asarray(self.data.values)[idx])
+
             sel = dict(zip(self.data.dims, key, strict=True))
             try:
                 return float(self.data.sel(sel))
@@ -2458,12 +2490,12 @@ class Distribution:
         -------
         p : float
         """
-        dims = list(self.data.dims)
-        lin = self._linear_data()
+        grid = np.asarray(self._linear_data().values)
+        cmaps = self._coord_index_maps()
         total = 0.0
         for outcome in event:
             if not isinstance(outcome, tuple):
                 outcome = (outcome,)
-            sel = {d: v for d, v in zip(dims, outcome, strict=True)}
-            total += float(lin.sel(sel))
+            idx = tuple(cmap[v] for cmap, v in zip(cmaps, outcome, strict=True))
+            total += float(grid[idx])
         return total

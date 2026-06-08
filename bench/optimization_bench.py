@@ -31,6 +31,7 @@ from dit.multivariate import (
 from dit.multivariate.secret_key_agreement import (
     intrinsic_dual_total_correlation,
     intrinsic_total_correlation,
+    minimal_intrinsic_total_correlation,
 )
 
 SEED = 0
@@ -108,6 +109,12 @@ def _build_cases(backend):
 
     cases.append(("intrinsic_dual_total_correlation", idtc))
 
+    # --- minimal intrinsic TC (aux-var optimizer, analytic gradient) ---
+    def mintc():
+        return float(minimal_intrinsic_total_correlation(_skar_dist(), [[0], [1]], [2]))
+
+    cases.append(("minimal_intrinsic_total_correlation", mintc))
+
     def stochastic_gk():
         return float(stochastic_gk_common_information(dit.example_dists.Xor(), [[0], [1]], [2]))
 
@@ -142,6 +149,21 @@ def _build_cases(backend):
         return float(sum(uniques.values()))
 
     cases.append(("pid_broja_3source", ibroja3))
+
+    # --- full 3-source PID_BROJA lattice ---
+    # The whole decomposition (not just the per-source sweep); dominated by the
+    # core Distribution.pmf path that the vectorized gather sped up.
+    def ibroja3_full():
+        from dit.pid.measures.ibroja import PID_BROJA
+
+        d = dit.Distribution(
+            ["0000", "0111", "1011", "1101", "1110", "0001", "0010", "0100"],
+            [0.15, 0.15, 0.15, 0.15, 0.15, 0.0833, 0.0833, 0.0834],
+        )
+        pid = PID_BROJA(d, [[0], [1], [2]], [3])
+        return float(pid._pis[((0,), (1,), (2,))])
+
+    cases.append(("pid_broja_3source_full", ibroja3_full))
 
     # --- rate-distortion (residual entropy, analytic gradient) ---
     def rd():

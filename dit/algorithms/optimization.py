@@ -135,7 +135,7 @@ def parallel_sweep(func, items, *, base_seed=None):
     n_jobs = _resolve_n_jobs(n)
 
     if n_jobs <= 1:
-        return [func(item, rng) for item, rng in zip(items, rngs)]
+        return [func(item, rng) for item, rng in zip(items, rngs, strict=True)]
 
     def _run(args):
         item, rng = args
@@ -146,7 +146,7 @@ def parallel_sweep(func, items, *, base_seed=None):
             _sweep_state.active = False
 
     with ThreadPoolExecutor(max_workers=n_jobs) as executor:
-        return list(executor.map(_run, zip(items, rngs)))
+        return list(executor.map(_run, zip(items, rngs, strict=True)))
 
 
 class BaseOptimizer(metaclass=ABCMeta):
@@ -1520,7 +1520,10 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
 
         for part, auxvar in zip(parts, self._aux_vars, strict=True):
             channel = part.reshape(auxvar.shape)
-            channel /= channel.sum(axis=(-1,), keepdims=True)
+            # A zero-sum row gives ``0/0 = nan``; the ``np.where`` below replaces
+            # those with the mask, so silence the spurious numpy divide warning.
+            with np.errstate(divide="ignore", invalid="ignore"):
+                channel /= channel.sum(axis=(-1,), keepdims=True)
             channel = np.where(np.isnan(channel), auxvar.mask, channel)
             # channel[np.isnan(channel)] = auxvar.mask[np.isnan(channel)]
 

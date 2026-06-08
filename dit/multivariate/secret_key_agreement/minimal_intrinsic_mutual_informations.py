@@ -37,6 +37,16 @@ class MinimalIntrinsicTotalCorrelation(BaseMinimalIntrinsicMutualInformation):
         """
         return self._total_correlation(rvs, crvs)
 
+    def _objective_gradient(self):
+        """Gradient of ``T[X:Y:...|U] + I[XY:U|Z]`` w.r.t. the joint."""
+        tc_grad = self._total_correlation_grad(self._rvs, self._arvs)
+        cmi_grad = self._conditional_mutual_information_grad(self._rvs, self._arvs, self._crvs)
+
+        def grad(pmf):
+            return tc_grad(pmf) + cmi_grad(pmf)
+
+        return grad
+
 
 minimal_intrinsic_total_correlation = MinimalIntrinsicTotalCorrelation.functional()
 
@@ -65,6 +75,16 @@ class MinimalIntrinsicDualTotalCorrelation(BaseMinimalIntrinsicMutualInformation
             The dual total correlation.
         """
         return self._dual_total_correlation(rvs, crvs)
+
+    def _objective_gradient(self):
+        """Gradient of ``B[X:Y:...|U] + I[XY:U|Z]`` w.r.t. the joint."""
+        dtc_grad = self._dual_total_correlation_grad(self._rvs, self._arvs)
+        cmi_grad = self._conditional_mutual_information_grad(self._rvs, self._arvs, self._crvs)
+
+        def grad(pmf):
+            return dtc_grad(pmf) + cmi_grad(pmf)
+
+        return grad
 
 
 minimal_intrinsic_dual_total_correlation = MinimalIntrinsicDualTotalCorrelation.functional()

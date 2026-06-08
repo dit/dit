@@ -50,7 +50,10 @@ def cross_entropy_pmf(p, q=None):
     p = np.asarray(p)
     q = np.asarray(q)
 
-    return -np.nansum(p * np.log2(q))
+    # Zeros in ``q`` give ``log2(0) = -inf`` and ``0 * -inf = nan``; ``nansum``
+    # intentionally drops those terms, so silence the spurious numpy warnings.
+    with np.errstate(divide="ignore", invalid="ignore"):
+        return -np.nansum(p * np.log2(q))
 
 
 entropy_pmf = cross_entropy_pmf
@@ -82,7 +85,8 @@ def cross_entropy(d1, d2, pmf_only=True):
 
     pmf1 = dit.copypmf(d1, base="linear", mode=mode)
     pmf2 = dit.copypmf(d2, base="linear", mode=mode)
-    return -np.nansum(pmf1 * np.log2(pmf2))
+    with np.errstate(divide="ignore", invalid="ignore"):
+        return -np.nansum(pmf1 * np.log2(pmf2))
 
 
 def relative_entropy(d1, d2):

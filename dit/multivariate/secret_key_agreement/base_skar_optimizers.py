@@ -696,19 +696,40 @@ class BaseReducedIntrinsicMutualInformation(BaseMoreIntrinsicMutualInformation):
     def measure():
         pass
 
-    def _objective(self, x):  # pragma: no cover
+    # Maximum number of distinct inner-solve results to memoize per thread.
+    _inner_cache_size = 64
+
+    def _inner_cache_dict(self):
+        """Return this thread's inner-solve cache (thread-local, see construct_joint cache)."""
+        store = self.__dict__.get("_inner_cache")
+        if store is None:
+            store = self._inner_cache = threading.local()
+        cache = getattr(store, "cache", None)
+        if cache is None:
+            cache = store.cache = {}
+        return cache
+
+    def _inner_cache_lookup(self, joint_np):
+        """Return ``(key, cached_value_or_None)`` for the marginalized joint."""
+        cache = self._inner_cache_dict()
+        key = joint_np.tobytes()
+        return key, cache.get(key)
+
+    def _inner_cache_store(self, key, value):
+        """Store *value* under *key*, evicting the oldest entry when full."""
+        cache = self._inner_cache_dict()
+        if len(cache) >= self._inner_cache_size:
+            cache.pop(next(iter(cache)))
+        cache[key] = value
+
+    def _objective(self):
         """
         Minimize :math:`I[X:Y \\downarrow ZU] + H[U]`
 
-        Parameters
-        ----------
-        x : ndarray
-            An optimization vector.
-
         Returns
         -------
-        obj : float
-            The value of the objective function.
+        obj : func
+            The objective function.
         """
         h = self._entropy(self._arvs)
 
@@ -728,9 +749,16 @@ class BaseReducedIntrinsicMutualInformation(BaseMoreIntrinsicMutualInformation):
             """
             pmf = self.construct_joint(x)
 
-            # I[X:Y \downarrow ZU]
-            d = Distribution.from_ndarray(pmf)
-            a = self.measure(dist=d, rvs=[[rv] for rv in self._rvs], crvs=self._crvs | self._arvs)
+            # I[X:Y \downarrow ZU] — a full nested optimization. Memoize on the
+            # joint bytes so a repeated outer iterate reuses the inner solve.
+            joint_np = pmf.detach().cpu().numpy() if hasattr(pmf, "detach") else np.asarray(pmf)
+            cache_key, cached = self._inner_cache_lookup(joint_np)
+            if cached is not None:
+                a = cached
+            else:
+                d = Distribution.from_ndarray(pmf)
+                a = self.measure(dist=d, rvs=[[rv] for rv in self._rvs], crvs=self._crvs | self._arvs)
+                self._inner_cache_store(cache_key, a)
 
             # H[U]
             b = h(pmf)

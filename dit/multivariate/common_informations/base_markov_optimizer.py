@@ -304,7 +304,9 @@ class MinimizingMarkovVarMixin:
     :class:`MarkovVarMixin`.
     """
 
-    def optimize(self, x0=None, niter=None, maxiter=None, polish=1e-6, callback=False, minimize=True, min_niter=15, rng=None):
+    def optimize(
+        self, x0=None, niter=None, maxiter=None, polish=1e-6, callback=False, minimize=True, min_niter=15, rng=None
+    ):
         """
         Run the optimization, optionally with auxiliary variable minimization.
 
