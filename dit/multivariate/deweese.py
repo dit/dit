@@ -189,6 +189,11 @@ class DeWeeseCoInformation(BaseDeWeeseOptimizer):
 
     name = "coinformation"
 
+    def _objective_gradient(self):
+        """Gradient of the ``-I[arvs | crvs]`` objective w.r.t. the joint."""
+        grad = self._coinformation_grad(rvs=self._arvs, crvs=self._crvs)
+        return lambda pmf: -grad(pmf)
+
     def _objective(self):
         """
         The conditional co-information.
@@ -231,6 +236,11 @@ class DeWeeseTotalCorrelation(BaseDeWeeseOptimizer):
 
     name = "total correlation"
 
+    def _objective_gradient(self):
+        """Gradient of the ``-T[arvs | crvs]`` objective w.r.t. the joint."""
+        grad = self._total_correlation_grad(rvs=self._arvs, crvs=self._crvs)
+        return lambda pmf: -grad(pmf)
+
     def _objective(self):
         """
         The conditional total correlation.
@@ -272,6 +282,11 @@ class DeWeeseDualTotalCorrelation(BaseDeWeeseOptimizer):
     """
 
     name = "dual total correlation"
+
+    def _objective_gradient(self):
+        """Gradient of the ``-B[arvs | crvs]`` objective w.r.t. the joint."""
+        grad = self._dual_total_correlation_grad(rvs=self._arvs, crvs=self._crvs)
+        return lambda pmf: -grad(pmf)
 
     def _objective(self):
         """

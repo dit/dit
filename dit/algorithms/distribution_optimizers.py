@@ -87,6 +87,7 @@ class BaseDistOptimizer(BaseOptimizer):
             {
                 "type": "eq",
                 "fun": self.constraint_match_marginals,
+                "jac": self.constraint_match_marginals_jac,
             },
         ]
         self._optvec_size = len(self._free)
@@ -100,7 +101,7 @@ class BaseDistOptimizer(BaseOptimizer):
             }
         }
 
-    def optimize(self, x0=None, niter=None, maxiter=None, polish=1e-8, callback=False):
+    def optimize(self, x0=None, niter=None, maxiter=None, polish=1e-8, callback=False, rng=None):
         """
         Optimize this distribution w.r.t. the objective.
 
@@ -119,6 +120,9 @@ class BaseDistOptimizer(BaseOptimizer):
             Whether to use a callback to track the performance of the optimization.
             Generally, this should be False as it adds some significant time to the
             optimization.
+        rng : np.random.Generator, None
+            An optional random number generator for RNG isolation. When None
+            (default), the global ``np.random`` state is used.
 
         Returns
         -------
@@ -132,7 +136,7 @@ class BaseDistOptimizer(BaseOptimizer):
                 # if a full pmf vector was passed in, restrict it to the free
                 # indices:
                 x0 = x0[self._free]
-            result = super().optimize(x0=x0, niter=niter, maxiter=maxiter, polish=polish, callback=callback)
+            result = super().optimize(x0=x0, niter=niter, maxiter=maxiter, polish=polish, callback=callback, rng=rng)
             return result
 
     def construct_vector(self, x):
@@ -189,6 +193,55 @@ class BaseDistOptimizer(BaseOptimizer):
         pmf = self.construct_vector(x)
         return sum((np.dot(self._A, pmf) - self._b) ** 2)
 
+    def constraint_match_marginals_jac(self, x):
+        """
+        Exact gradient of :meth:`constraint_match_marginals` w.r.t. the free
+        optimization variables.
+
+        The constraint is :math:`c(x) = \\sum_k (A p(x) - b)_k^2` where the free
+        entries of the pmf ``p`` are ``x``. Hence
+        :math:`\\nabla_p c = 2 A^\\top (A p - b)` and the gradient w.r.t. ``x``
+        is that vector restricted to the free indices. This is a smooth
+        quadratic with no singularities, so it is exact everywhere and replaces
+        SciPy's finite-difference jacobian for the constraint.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            An optimization vector.
+
+        Returns
+        -------
+        jac : np.ndarray
+            The gradient, of length ``len(x)``.
+        """
+        pmf = self.construct_vector(x)
+        grad_full = 2 * self._A.T @ (self._A @ pmf - self._b)
+        return grad_full[self._free]
+
+    def _jacobian(self, x):
+        """
+        Exact gradient of the objective w.r.t. the free optimization variables.
+
+        The parametrization is linear (the free entries of the pmf *are* ``x``),
+        so the objective gradient is just the measure's pmf-gradient (supplied
+        by :meth:`_objective_gradient`) restricted to the free indices. Wired
+        into SciPy only when the subclass defines ``_objective_gradient``;
+        otherwise the optimizer falls back to finite differences.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            An optimization vector.
+
+        Returns
+        -------
+        jac : np.ndarray
+            The gradient, of length ``len(x)``.
+        """
+        grad = self._objective_gradient()(self.construct_joint(x))
+        return grad.ravel()[self._free]
+
     def construct_dist(self, x=None, cutoff=1e-6, sparse=True):
         """
         Construct the optimal distribution.
@@ -237,6 +290,11 @@ class MaxEntOptimizer(BaseDistOptimizer, BaseConvexOptimizer):
         super().__init__(dist, marginals)
         self._objective_bound = -np.log2(np.prod(self._shape))
 
+    def _objective_gradient(self):
+        """Gradient of the ``-H`` objective w.r.t. the pmf."""
+        entropy_grad = self._entropy_grad(self._rvs)
+        return lambda pmf: -entropy_grad(pmf)
+
     def _objective(self):
         """
         Compute the negative entropy.
@@ -277,6 +335,10 @@ class MinEntOptimizer(BaseDistOptimizer, BaseNonConvexOptimizer):
         super().__init__(dist, marginals)
         self._objective_bound = 0.0
 
+    def _objective_gradient(self):
+        """Gradient of the ``+H`` objective w.r.t. the pmf."""
+        return self._entropy_grad(self._rvs)
+
     def _objective(self):
         """
         Compute the entropy.
@@ -312,6 +374,11 @@ class MaxCoInfoOptimizer(BaseDistOptimizer, BaseNonConvexOptimizer):
     """
     Compute maximum co-information distributions.
     """
+
+    def _objective_gradient(self):
+        """Gradient of the ``-I`` objective w.r.t. the pmf."""
+        coinformation_grad = self._coinformation_grad(self._rvs)
+        return lambda pmf: -coinformation_grad(pmf)
 
     def _objective(self):
         """
@@ -349,6 +416,10 @@ class MinCoInfoOptimizer(BaseDistOptimizer, BaseNonConvexOptimizer):
     Compute minimum co-information distributions.
     """
 
+    def _objective_gradient(self):
+        """Gradient of the ``+I`` objective w.r.t. the pmf."""
+        return self._coinformation_grad(self._rvs)
+
     def _objective(self):
         """
         Compute the co-information.
@@ -385,6 +456,11 @@ class MaxDualTotalCorrelationOptimizer(BaseDistOptimizer, BaseNonConvexOptimizer
     Compute maximum dual total correlation distributions.
     """
 
+    def _objective_gradient(self):
+        """Gradient of the ``-B`` objective w.r.t. the pmf."""
+        dtc_grad = self._dual_total_correlation_grad(self._rvs)
+        return lambda pmf: -dtc_grad(pmf)
+
     def _objective(self):
         """
         Compute the negative dual total correlation.
@@ -420,6 +496,10 @@ class MinDualTotalCorrelationOptimizer(BaseDistOptimizer, BaseNonConvexOptimizer
     """
     Compute minimum dual total correlation distributions.
     """
+
+    def _objective_gradient(self):
+        """Gradient of the ``+B`` objective w.r.t. the pmf."""
+        return self._dual_total_correlation_grad(self._rvs)
 
     def _objective(self):
         """

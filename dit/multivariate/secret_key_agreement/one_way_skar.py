@@ -4,6 +4,7 @@ agree upon a secret key with Eve eavesdropping, if only Alice is permitted
 to publicly communicate.
 """
 
+from ...algorithms.optimization import parallel_sweep
 from ...utils import unitful
 from .._backend import _make_backend_subclass
 from .base_skar_optimizers import BaseOneWaySKAR
@@ -28,6 +29,12 @@ class OneWaySKAR(BaseOneWaySKAR):
         |V| <= |X|^2
         """
         return self._shape[0] ** 2
+
+    def _objective_gradient(self):
+        """Gradient of the ``-(I[U:Y|V] - I[U:Z|V])`` objective w.r.t. the joint."""
+        grad_a = self._conditional_mutual_information_grad(self._u, self._y, self._v)
+        grad_b = self._conditional_mutual_information_grad(self._u, self._z, self._v)
+        return lambda pmf: -(grad_a(pmf) - grad_b(pmf))
 
     def _objective(self):
         """
@@ -100,10 +107,12 @@ def one_way_skar(dist, X, Y, Z, niter=None, bound_u=None, bound_v=None, backend=
         The necessary intrinsic mutual information.
     """
     actual_cls = _make_backend_subclass(OneWaySKAR, backend)
-    values = []
-    for bound in {1, 2, 3, bound_v}:
+
+    def _run(bound, rng):
         nimi = actual_cls(dist, X, Y, Z, bound_u=bound_u, bound_v=bound)
-        nimi.optimize(niter=niter)
-        values.append(-nimi.objective(nimi._optima))
+        nimi.optimize(niter=niter, rng=rng)
+        return -nimi.objective(nimi._optima)
+
+    values = parallel_sweep(_run, sorted({1, 2, 3, bound_v}, key=lambda b: (b is None, b)))
 
     return max(values)

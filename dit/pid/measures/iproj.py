@@ -5,6 +5,7 @@ The I_proj measure as proposed by Harder et al.
 import numpy as np
 from scipy.optimize import minimize
 
+from ...algorithms.optimization import parallel_sweep
 from ...distribution import Distribution
 from ...divergences.pmf import relative_entropy
 from ...exceptions import ditException
@@ -175,9 +176,10 @@ def projected_information(dist, X, Y, Z):
     p_z = dist.marginal(Z)
     p_x, p_z_xs = dist.condition_on(rvs=Z, crvs=X)
 
+    projections = parallel_sweep(lambda p_z_x, rng: min_dkl(p_z_x, domain), p_z_xs)
+
     vals = []
-    for x, p_z_x in zip(p_x.outcomes, p_z_xs, strict=True):
-        p_proj_z = min_dkl(p_z_x, domain)
+    for x, p_proj_z in zip(p_x.outcomes, projections, strict=True):
         for z in p_z.outcomes:
             vals.append(p_xz[(x, z)] * np.log2(p_proj_z[z] / p_z[z]))
     val = np.nansum(vals)

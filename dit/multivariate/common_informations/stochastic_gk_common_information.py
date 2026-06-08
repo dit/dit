@@ -100,6 +100,11 @@ class StochasticGKCommonInformation(BaseAuxVarOptimizer):
 
         return 100 * delta
 
+    def _objective_gradient(self):
+        """Gradient of the ``-I[rv_i : W | crvs]`` objective w.r.t. the joint."""
+        grad = self._conditional_mutual_information_grad({min(self._rvs)}, self._arvs, self._crvs)
+        return lambda pmf: -grad(pmf)
+
     def _objective(self):
         """
         The mutual information between the auxiliary random variable and `rvs`.

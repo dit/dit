@@ -8,6 +8,7 @@ two-dimensional projection of the Gray-Wyner rate region most often drawn.
 
 import numpy as np
 
+from ...algorithms.optimization import parallel_sweep
 from ...multivariate import entropy
 from ...utils import flatten
 from .network import GrayWynerNetwork
@@ -115,14 +116,13 @@ class GrayWynerCurve:
         maxiter : int
             Inner optimizer iterations.
         """
-        r0s = []
-        private_totals = []
-
-        for s in self.betas:
+        def _run(s, rng):
             lambdas = [1.0] + [float(s)] * self.n
-            point = self._network.rate_point(lambdas, niter=niter, maxiter=maxiter)
-            r0s.append(point.common)
-            private_totals.append(sum(point.private))
+            return self._network.rate_point(lambdas, niter=niter, maxiter=maxiter, rng=rng)
+
+        points = parallel_sweep(_run, list(self.betas))
+        r0s = [point.common for point in points]
+        private_totals = [sum(point.private) for point in points]
 
         self.r0s = np.asarray(r0s)
         self.private_totals = np.asarray(private_totals)

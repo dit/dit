@@ -37,6 +37,13 @@ class WynerCommonInformation(MarkovVarOptimizer):
 
         return bound
 
+    # NOTE: an exact ``_objective_gradient`` (the CMI gradient) is intentionally
+    # *not* wired here. It is correct (matches finite differences to ~1e-7), but
+    # on the Wyner CMI landscape SciPy's basin-hopping SLSQP does many more inner
+    # iterations with an exact gradient than with finite differences, making the
+    # solve ~3x slower. The closely-related ExactCommonInformation (entropy
+    # objective) does benefit and keeps its analytic gradient.
+
     def _objective(self):
         """
         The mutual information between the auxiliary random variable and `rvs`.

@@ -3,8 +3,11 @@ Base class for optimization.
 """
 
 import contextlib
+import os
+import threading
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple
+from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from functools import reduce
 from string import ascii_letters, digits
@@ -37,10 +40,113 @@ __all__ = (
     "BaseConvexOptimizer",
     "BaseNonConvexOptimizer",
     "BaseAuxVarOptimizer",
+    "parallel_sweep",
 )
 
 
 svdvals = lambda m: np.linalg.svd(m, compute_uv=False)
+
+
+# Thread-local flag marking that the current thread is executing inside a
+# ``parallel_sweep`` worker. Used as a nesting guard so that only the outermost
+# sweep fans out across threads; any inner parallelism (e.g. the shotgun
+# restarts) runs serially within the worker to avoid CPU oversubscription.
+_sweep_state = threading.local()
+
+
+def _in_sweep():
+    """Whether the current thread is already inside a ``parallel_sweep`` worker."""
+    return getattr(_sweep_state, "active", False)
+
+
+def _resolve_n_jobs(n_tasks):
+    """
+    Determine how many worker threads to use for an embarrassingly-parallel
+    batch of *n_tasks* independent local minimizations.
+
+    Controlled by the ``DIT_OPT_JOBS`` environment variable:
+
+    * unset or ``0`` → automatic (``min(n_tasks, os.cpu_count())``)
+    * ``1``          → serial (disables parallelism)
+    * ``k > 1``      → use exactly ``k`` workers (capped at ``n_tasks``)
+
+    Always returns ``1`` when called from within a ``parallel_sweep`` worker, so
+    nested parallelism collapses to serial execution.
+
+    Returns
+    -------
+    n_jobs : int
+        The number of worker threads (``1`` means run serially).
+    """
+    if n_tasks <= 1:
+        return 1
+    if _in_sweep():
+        return 1
+    raw = os.environ.get("DIT_OPT_JOBS", "0")
+    try:
+        requested = int(raw)
+    except ValueError:  # pragma: no cover
+        requested = 0
+    if requested == 1:
+        return 1
+    if requested > 1:
+        return min(requested, n_tasks)
+    return min(n_tasks, os.cpu_count() or 1)
+
+
+def parallel_sweep(func, items, *, base_seed=None):
+    """
+    Run ``func(item, rng)`` for each item in *items*, in parallel when safe.
+
+    Each task gets its own ``numpy.random.Generator`` seeded deterministically
+    (from *base_seed*, or a single draw from the global ``np.random`` state when
+    *base_seed* is None) so that workers never race the global RNG and results
+    are reproducible with respect to a seeded ``np.random``. The serial and
+    parallel paths consume the *same* per-task generators, so a sweep produces
+    identical results regardless of ``DIT_OPT_JOBS``.
+
+    Results are returned in input order, so ``max`` / ``min`` / ``append`` over
+    them stay deterministic.
+
+    Parameters
+    ----------
+    func : callable
+        Called as ``func(item, rng)`` where ``rng`` is a ``Generator``.
+    items : iterable
+        The independent work items.
+    base_seed : int, None
+        Seed offset for the per-task generators. If None, a seed is drawn once
+        (serially) from the global ``np.random`` state.
+
+    Returns
+    -------
+    results : list
+        ``[func(item, rng) for item in items]`` in input order.
+    """
+    items = list(items)
+    n = len(items)
+    if n == 0:
+        return []
+
+    if base_seed is None:
+        base_seed = int(np.random.randint(0, 2**31 - 1))
+    rngs = [np.random.default_rng(base_seed + i) for i in range(n)]
+
+    n_jobs = _resolve_n_jobs(n)
+
+    if n_jobs <= 1:
+        return [func(item, rng) for item, rng in zip(items, rngs)]
+
+    def _run(args):
+        item, rng = args
+        _sweep_state.active = True
+        try:
+            return func(item, rng)
+        finally:
+            _sweep_state.active = False
+
+    with ThreadPoolExecutor(max_workers=n_jobs) as executor:
+        return list(executor.map(_run, zip(items, rngs)))
 
 
 class BaseOptimizer(metaclass=ABCMeta):
@@ -97,6 +203,10 @@ class BaseOptimizer(metaclass=ABCMeta):
         self._additional_options = {}
         if not hasattr(self, "_objective_bound"):
             self._objective_bound = None
+
+        # Optional per-call random generator for RNG isolation in parallel
+        # outer sweeps. None means use the global ``np.random`` state.
+        self._rng = None
 
         self.constraints = []
 
@@ -160,7 +270,7 @@ class BaseOptimizer(metaclass=ABCMeta):
         x : np.ndarray
             A random optimization vector.
         """
-        vec = sample_simplex(self._optvec_size)
+        vec = sample_simplex(self._optvec_size, rng=self._rng)
         return vec
 
     def construct_uniform_initial(self):
@@ -497,6 +607,151 @@ class BaseOptimizer(metaclass=ABCMeta):
 
         return dual_total_correlation
 
+    ###########################################################################
+    # Analytic gradients of the objective building blocks.
+    #
+    # Every measure above is a signed sum of marginal entropies
+    # ``sum_k s_k H(M_k(pmf))``. The exact pmf-gradient of one marginal entropy
+    # ``H(M(pmf))`` (where ``M`` sums ``pmf`` over the axes ``idx``) is
+    #
+    #     d H(M(pmf)) / d pmf_i = -(log2(M(pmf))[cell(i)] + 1/ln2),
+    #
+    # i.e. ``-(log2(marginal) + 1/ln2)`` broadcast back to the full shape (each
+    # full cell takes the value of its marginal cell). So each measure's
+    # gradient builder mirrors the corresponding factory's ``idx_*``/sign setup
+    # and returns the matching signed sum. These are exact (validated against
+    # SciPy finite differences); the ``1/ln2`` constants are real.
+
+    _objective_gradient = None
+
+    def _marginal_entropy_grad(self, pmf, idx):
+        """
+        Full-shape gradient of ``H(M(pmf))`` w.r.t. ``pmf``, where ``M`` sums
+        ``pmf`` over the axes ``idx``.
+
+        Parameters
+        ----------
+        pmf : np.ndarray
+            The joint probability distribution.
+        idx : tuple
+            The axes summed out to form the marginal.
+
+        Returns
+        -------
+        grad : np.ndarray
+            ``-(log2(marginal) + 1/ln2)``, broadcastable against ``pmf``.
+        """
+        marginal = pmf.sum(axis=idx, keepdims=True)
+        with np.errstate(divide="ignore"):
+            return -(np.log2(np.maximum(marginal, 1e-300)) + 1.0 / np.log(2))
+
+    @staticmethod
+    def _full_grad(g, pmf):
+        """Broadcast a (possibly reduced) gradient to a contiguous full-shape array."""
+        return np.ascontiguousarray(np.broadcast_to(g, pmf.shape))
+
+    def _entropy_grad(self, rvs, crvs=None):
+        """Gradient builder for :meth:`_entropy`."""
+        if crvs is None:
+            crvs = set()
+        idx_joint = tuple(self._all_vars - (rvs | crvs))
+        idx_crvs = tuple(self._all_vars - crvs)
+
+        def grad(pmf):
+            g = self._marginal_entropy_grad(pmf, idx_joint) - self._marginal_entropy_grad(pmf, idx_crvs)
+            return self._full_grad(g, pmf)
+
+        return grad
+
+    def _mutual_information_grad(self, rv_x, rv_y):
+        """Gradient builder for :meth:`_mutual_information`."""
+        idx_xy = tuple(self._all_vars - (rv_x | rv_y))
+        idx_x = tuple(self._all_vars - rv_x)
+        idx_y = tuple(self._all_vars - rv_y)
+
+        def grad(pmf):
+            g = (
+                self._marginal_entropy_grad(pmf, idx_x)
+                + self._marginal_entropy_grad(pmf, idx_y)
+                - self._marginal_entropy_grad(pmf, idx_xy)
+            )
+            return self._full_grad(g, pmf)
+
+        return grad
+
+    def _conditional_mutual_information_grad(self, rv_x, rv_y, rv_z):
+        """Gradient builder for :meth:`_conditional_mutual_information`."""
+        if not rv_z:
+            return self._mutual_information_grad(rv_x=rv_x, rv_y=rv_y)
+
+        idx_xyz = tuple(self._all_vars - (rv_x | rv_y | rv_z))
+        idx_xz = tuple(self._all_vars - (rv_x | rv_z))
+        idx_yz = tuple(self._all_vars - (rv_y | rv_z))
+        idx_z = tuple(self._all_vars - rv_z)
+
+        def grad(pmf):
+            g = (
+                self._marginal_entropy_grad(pmf, idx_xz)
+                + self._marginal_entropy_grad(pmf, idx_yz)
+                - self._marginal_entropy_grad(pmf, idx_xyz)
+                - self._marginal_entropy_grad(pmf, idx_z)
+            )
+            return self._full_grad(g, pmf)
+
+        return grad
+
+    def _coinformation_grad(self, rvs, crvs=None):
+        """Gradient builder for :meth:`_coinformation`."""
+        if crvs is None:
+            crvs = set()
+        idx_joint = tuple(self._all_vars - (rvs | crvs))
+        idx_crvs = tuple(self._all_vars - crvs)
+        idx_subrvs = [tuple(self._all_vars - set(ss)) for ss in sorted(powerset(rvs), key=len)[1:-1]]
+        power = [(-1) ** len(ss) for ss in sorted(powerset(rvs), key=len)[1:-1]]
+        power += [(-1) ** len(rvs)]
+        power += [-sum(power)]
+        idxs = idx_subrvs + [idx_joint, idx_crvs]
+
+        def grad(pmf):
+            # coinformation == -sum_k power_k H(marginal_k); differentiate term by term.
+            g = -sum(p * self._marginal_entropy_grad(pmf, idx) for p, idx in zip(power, idxs, strict=True))
+            return self._full_grad(g, pmf)
+
+        return grad
+
+    def _total_correlation_grad(self, rvs, crvs=None):
+        """Gradient builder for :meth:`_total_correlation`."""
+        if crvs is None:
+            crvs = set()
+        idx_joint = tuple(self._all_vars - (rvs | crvs))
+        idx_margs = [tuple(self._all_vars - ({rv} | crvs)) for rv in rvs]
+        idx_crvs = tuple(self._all_vars - crvs)
+        n = len(rvs) - 1
+
+        def grad(pmf):
+            g = sum(self._marginal_entropy_grad(pmf, marg) for marg in idx_margs)
+            g = g - self._marginal_entropy_grad(pmf, idx_joint) - n * self._marginal_entropy_grad(pmf, idx_crvs)
+            return self._full_grad(g, pmf)
+
+        return grad
+
+    def _dual_total_correlation_grad(self, rvs, crvs=None):
+        """Gradient builder for :meth:`_dual_total_correlation`."""
+        if crvs is None:
+            crvs = set()
+        idx_joint = tuple(self._all_vars - (rvs | crvs))
+        idx_margs = [tuple(self._all_vars - ((rvs - {rv}) | crvs)) for rv in rvs]
+        idx_crvs = tuple(self._all_vars - crvs)
+        n = len(rvs) - 1
+
+        def grad(pmf):
+            # dtc == sum_i H(marg_i) - n H(joint) - H(crvs).
+            g = sum(self._marginal_entropy_grad(pmf, marg) for marg in idx_margs)
+            g = g - n * self._marginal_entropy_grad(pmf, idx_joint) - self._marginal_entropy_grad(pmf, idx_crvs)
+            return self._full_grad(g, pmf)
+
+        return grad
+
     def _caekl_mutual_information(self, rvs, crvs=None):
         """
         Compute the CAEKL mutual information.
@@ -701,7 +956,26 @@ class BaseOptimizer(metaclass=ABCMeta):
     ###########################################################################
     # Optimization methods.
 
-    def optimize(self, x0=None, niter=None, maxiter=None, polish=1e-6, callback=False):
+    def _apply_analytic_jacobians(self, minimizer_kwargs):
+        """
+        Wire an analytic objective gradient into *minimizer_kwargs* when the
+        subclass provides one.
+
+        A subclass opts in to exact gradients by defining an
+        ``_objective_gradient()`` factory (returning ``grad(pmf)``); the
+        matching ``_jacobian(x)`` defined on the optimizer base then composes it
+        with the parametrization Jacobian. Analytic *constraint* jacobians are
+        supplied directly by the subclass via a ``'jac'`` entry in each
+        constraint dict, which SciPy picks up automatically. Anything not
+        provided falls back to SciPy's internal finite differences, so this is
+        always safe.
+        """
+        if getattr(self, "_objective_gradient", None) is not None:
+            jac = getattr(self, "_jacobian", None)
+            if callable(jac):
+                minimizer_kwargs["jac"] = jac
+
+    def optimize(self, x0=None, niter=None, maxiter=None, polish=1e-6, callback=False, rng=None):
         """
         Perform the optimization.
 
@@ -720,12 +994,20 @@ class BaseOptimizer(metaclass=ABCMeta):
             Whether to use a callback to track the performance of the optimization.
             Generally, this should be False as it adds some significant time to the
             optimization.
+        rng : np.random.Generator, None
+            An optional random number generator used for all randomness in this
+            optimization (random initial conditions and the basin-hopping step).
+            When None (default), the global ``np.random`` state is used,
+            preserving backwards-compatible behavior. Supplying a per-task
+            generator isolates parallel outer sweeps from one another.
 
         Returns
         -------
         result : OptimizeResult
             The result of the optimization.
         """
+        self._rng = rng
+
         try:
             callable(self.objective)
         except AttributeError:
@@ -744,17 +1026,7 @@ class BaseOptimizer(metaclass=ABCMeta):
             "options": {},
         }
 
-        try:  # pragma: no cover
-            if callable(self._jacobian):
-                minimizer_kwargs["jac"] = self._jacobian
-            else:  # compute jacobians for objective, constraints using numdifftools
-                import numdifftools as ndt
-
-                minimizer_kwargs["jac"] = ndt.Jacobian(self.objective)
-                for const in minimizer_kwargs["constraints"]:
-                    const["jac"] = ndt.Jacobian(const["fun"])
-        except AttributeError:
-            pass
+        self._apply_analytic_jacobians(minimizer_kwargs)
 
         additions = deepcopy(self._additional_options)
         options = additions.pop("options", {})
@@ -809,7 +1081,6 @@ class BaseOptimizer(metaclass=ABCMeta):
         TODO
         ----
          * Rather than random initial conditions, use latin hypercube sampling.
-         * Make parallel in some fashion (threads, processes).
         """
         if niter is None:
             niter = self._default_hops
@@ -829,18 +1100,39 @@ class BaseOptimizer(metaclass=ABCMeta):
                     return res
             niter -= 1
 
-        ics = (self.construct_random_initial() for _ in range(niter))
-        for i, initial in enumerate(ics):
-            logger.debug("Shotgun: random initial condition {i}/{niter}", i=i + 1, niter=niter)
-            res = minimize(fun=self.objective, x0=initial.flatten(), **minimizer_kwargs)
-            if res.success:
-                results.append(res)
-                if bound is not None and res.fun <= bound + atol:
-                    logger.debug("Shotgun early stop: objective {f} reached bound {b}", f=res.fun, b=bound)
-                    return res
+        # Generate all random initial conditions up front (serially) so the
+        # global RNG state is consumed deterministically regardless of whether
+        # the subsequent local minimizations run serially or in parallel.
+        ics = [self.construct_random_initial() for _ in range(max(niter, 0))]
+
+        # When a lower bound on the objective is known we keep the serial path
+        # so we can stop hopping the instant the bound is reached. Otherwise the
+        # starts are independent and run concurrently; numpy releases the GIL
+        # for the heavy array work inside each ``minimize`` call.
+        n_jobs = 1 if bound is not None else _resolve_n_jobs(len(ics))
+
+        if n_jobs > 1:
+            logger.debug("Shotgun: minimizing {n} starts across {j} threads", n=len(ics), j=n_jobs)
+
+            def _run(initial):
+                return minimize(fun=self.objective, x0=initial.flatten(), **minimizer_kwargs)
+
+            with ThreadPoolExecutor(max_workers=n_jobs) as executor:
+                for res in executor.map(_run, ics):
+                    if res.success:
+                        results.append(res)
+        else:
+            for i, initial in enumerate(ics):
+                logger.debug("Shotgun: random initial condition {i}/{niter}", i=i + 1, niter=len(ics))
+                res = minimize(fun=self.objective, x0=initial.flatten(), **minimizer_kwargs)
+                if res.success:
+                    results.append(res)
+                    if bound is not None and res.fun <= bound + atol:
+                        logger.debug("Shotgun early stop: objective {f} reached bound {b}", f=res.fun, b=bound)
+                        return res
 
         try:
-            result = min(results, key=lambda r: self.objective(r.x))
+            result = min(results, key=lambda r: r.fun)
         except ValueError:  # pragma: no cover
             result = None
 
@@ -874,17 +1166,7 @@ class BaseOptimizer(metaclass=ABCMeta):
             "constraints": self.constraints,
         }
 
-        try:  # pragma: no cover
-            if callable(self._jacobian):
-                minimizer_kwargs["jac"] = self._jacobian
-            else:  # compute jacobians for objective, constraints using numdifftools
-                import numdifftools as ndt
-
-                minimizer_kwargs["jac"] = ndt.Jacobian(self.objective)
-                for const in minimizer_kwargs["constraints"]:
-                    const["jac"] = ndt.Jacobian(const["fun"])
-        except AttributeError:
-            pass
+        self._apply_analytic_jacobians(minimizer_kwargs)
 
         if np.allclose(lb, ub):
             self._optima = x0
@@ -968,6 +1250,10 @@ class BaseNonConvexOptimizer(BaseOptimizer):
         else:
             res_shotgun = None
 
+        bh_kwargs = {}
+        if self._rng is not None:
+            bh_kwargs["rng"] = self._rng
+
         result = basinhopping(
             func=self.objective,
             x0=x0,
@@ -975,6 +1261,7 @@ class BaseNonConvexOptimizer(BaseOptimizer):
             niter=niter,
             accept_test=accept_test,
             callback=self._callback,
+            **bh_kwargs,
         )
 
         success, msg = basinhop_status(result)
@@ -1019,6 +1306,10 @@ class BaseNonConvexOptimizer(BaseOptimizer):
                 return True
             return False
 
+        de_kwargs = {}
+        if self._rng is not None:
+            de_kwargs["rng"] = self._rng
+
         result = differential_evolution(
             func=self.objective,
             bounds=minimizer_kwargs["bounds"],
@@ -1026,6 +1317,7 @@ class BaseNonConvexOptimizer(BaseOptimizer):
             popsize=niter,
             tol=minimizer_kwargs["options"]["ftol"],
             callback=callback,
+            **de_kwargs,
         )
 
         if result.success:
@@ -1088,6 +1380,10 @@ class BaseNonConvexOptimizer(BaseOptimizer):
         if self._objective_bound is not None:
             callback = make_bound_callback(self._objective_bound)
 
+        da_kwargs = {}
+        if self._rng is not None:
+            da_kwargs["rng"] = self._rng
+
         result = dual_annealing(
             func=self.objective,
             bounds=minimizer_kwargs["bounds"],
@@ -1095,6 +1391,7 @@ class BaseNonConvexOptimizer(BaseOptimizer):
             maxiter=niter,
             x0=x0,
             callback=callback,
+            **da_kwargs,
         )
 
         if result.success:
@@ -1229,6 +1526,53 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
 
             yield channel
 
+    # Maximum number of distinct optimization vectors to memoize the joint for.
+    # During a single SLSQP iteration scipy evaluates the objective and every
+    # constraint (plus their finite-difference perturbations) at the *same*
+    # points; memoizing lets the objective and constraints share one build of
+    # the joint instead of recomputing it. Keyed on the exact bytes of ``x`` so
+    # the cache can only ever return an identical result (correctness is never
+    # affected; only the hit rate depends on caller behaviour).
+    _joint_cache_size = 64
+
+    def _joint_cache_dict(self):
+        """
+        Return this thread's joint cache.
+
+        The cache is thread-local so that the parallel shotgun
+        (:meth:`_optimize_shotgun`) — where independent minimizations run on
+        separate threads sharing one optimizer instance — never mutates a dict
+        concurrently. Sharing only needs to happen *within* a single
+        minimization (objective and constraints at the same point), which all
+        executes on one thread.
+        """
+        store = self.__dict__.get("_joint_cache")
+        if store is None:
+            store = self._joint_cache = threading.local()
+        cache = getattr(store, "cache", None)
+        if cache is None:
+            cache = store.cache = {}
+        return cache
+
+    def _joint_cache_lookup(self, x):
+        """
+        Return ``(key, cached_joint_or_None)`` for optimization vector *x*.
+
+        The returned ``key`` should be passed to :meth:`_joint_cache_store`
+        once the joint has been built (on a cache miss).
+        """
+        cache = self._joint_cache_dict()
+        key = x.tobytes()
+        return key, cache.get(key)
+
+    def _joint_cache_store(self, key, joint):
+        """Store *joint* under *key*, evicting the oldest entry when full."""
+        cache = self._joint_cache_dict()
+        if len(cache) >= self._joint_cache_size:
+            # FIFO eviction: drop the oldest inserted key.
+            cache.pop(next(iter(cache)))
+        cache[key] = joint
+
     def construct_joint(self, x):
         """
         Construct the joint distribution.
@@ -1244,6 +1588,10 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
             The joint distribution resulting from the distribution passed
             in and the optimization vector.
         """
+        key, joint = self._joint_cache_lookup(x)
+        if joint is not None:
+            return joint
+
         joint = self._pmf
 
         channels = self._construct_channels(x.copy())
@@ -1251,6 +1599,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
         for channel, slc in zip(channels, self._slices, strict=True):
             joint = joint[..., np.newaxis] * channel[slc]
 
+        self._joint_cache_store(key, joint)
         return joint
 
     def _construct_joint_single(self, x):
@@ -1268,6 +1617,10 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
             The joint distribution resulting from the distribution passed
             in and the optimization vector.
         """
+        key, joint = self._joint_cache_lookup(x)
+        if joint is not None:
+            return joint
+
         _, _, shape, mask, _ = self._aux_vars[0]
         channel = x.copy().reshape(shape)
         channel /= channel.sum(axis=-1, keepdims=True)
@@ -1276,6 +1629,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
 
         joint = self._pmf[..., np.newaxis] * channel[self._slices[0]]
 
+        self._joint_cache_store(key, joint)
         return joint
 
     def construct_full_joint(self, x):
@@ -1303,6 +1657,117 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
         return joint
 
     ###########################################################################
+    # Analytic objective gradient (reverse-mode through construct_joint).
+
+    def _construct_joint_vjp(self, x, g):
+        """
+        Vector-Jacobian product through :meth:`construct_joint`.
+
+        Given ``g = d(objective)/d(joint)`` (same shape as the joint), return
+        ``d(objective)/dx`` by back-propagating through the broadcast channel
+        products and the per-channel normalization. This is exact reverse-mode
+        differentiation of the forward construction (validated against finite
+        differences).
+
+        Parameters
+        ----------
+        x : np.ndarray
+            An optimization vector.
+        g : np.ndarray
+            The gradient of the objective w.r.t. the joint, same shape as the
+            output of :meth:`construct_joint`.
+
+        Returns
+        -------
+        grad : np.ndarray
+            The objective gradient w.r.t. ``x``, of length ``len(x)``.
+        """
+        x = x.copy()
+        channels = list(self._construct_channels(x))
+
+        # Forward pass, recording the running joint before each channel multiply.
+        prev_joints = []
+        joint = self._pmf
+        for channel, slc in zip(channels, self._slices, strict=True):
+            prev_joints.append(joint)
+            joint = joint[..., np.newaxis] * channel[slc]
+
+        # Reverse pass.
+        grads = [None] * len(channels)
+        for k in reversed(range(len(channels))):
+            channel = channels[k]
+            slc = self._slices[k]
+            channel_b = channel[slc]
+
+            # d/d(channel[slc]); sum the broadcast (newaxis) axes back to channel shape.
+            g_channel_b = g * prev_joints[k][..., np.newaxis]
+            newaxis_axes = tuple(ax for ax, s in enumerate(slc) if s is np.newaxis)
+            g_channel = g_channel_b.sum(axis=newaxis_axes).reshape(channel.shape)
+
+            # propagate to the previous joint (sum out the newest auxiliary axis).
+            g = (g * channel_b).sum(axis=-1)
+
+            # back-prop the channel through normalization + nan-mask to its slice of x.
+            a, b = self._parts[k]
+            grads[k] = self._channel_vjp(x[a:b], channel, g_channel)
+
+        return np.concatenate(grads) if grads else np.zeros_like(x)
+
+    @staticmethod
+    def _channel_vjp(part, channel, g_channel):
+        """
+        Back-propagate a channel gradient through ``c = normalize(reshape(part))``.
+
+        For an unnormalized row ``r`` with sum ``s`` and normalized row
+        ``c = r/s``, ``d c_j / d r_i = (delta_ij - c_j)/s``, so
+        ``dL/dr_i = (g_i - sum_j g_j c_j)/s``. Rows whose sum is zero were
+        replaced by the constant uniform mask in the forward pass and so receive
+        zero gradient.
+
+        Parameters
+        ----------
+        part : np.ndarray
+            The slice of ``x`` parametrizing this channel.
+        channel : np.ndarray
+            The normalized channel (post nan-mask).
+        g_channel : np.ndarray
+            The gradient w.r.t. the channel, same shape as ``channel``.
+
+        Returns
+        -------
+        grad : np.ndarray
+            The gradient w.r.t. ``part``, of length ``len(part)``.
+        """
+        raw = part.reshape(channel.shape)
+        s = raw.sum(axis=-1, keepdims=True)
+        inner = (g_channel * channel).sum(axis=-1, keepdims=True)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            g_raw = np.where(s > 0, (g_channel - inner) / np.where(s > 0, s, 1.0), 0.0)
+        return g_raw.ravel()
+
+    def _jacobian(self, x):
+        """
+        Exact objective gradient w.r.t. ``x`` for auxiliary-variable optimizers.
+
+        Composes the measure pmf-gradient (:meth:`_objective_gradient`) with the
+        :meth:`_construct_joint_vjp` back-propagation through the channel
+        parametrization. Wired into SciPy only when the subclass defines
+        ``_objective_gradient``; otherwise finite differences are used.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            An optimization vector.
+
+        Returns
+        -------
+        jac : np.ndarray
+            The objective gradient, of length ``len(x)``.
+        """
+        g = self._objective_gradient()(self.construct_joint(x))
+        return self._construct_joint_vjp(x, np.asarray(g, dtype=float))
+
+    ###########################################################################
     # Various initial conditions
 
     def construct_random_initial(self):
@@ -1316,7 +1781,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
         """
         vecs = []
         for av in self._aux_vars:
-            vec = sample_simplex(av.shape[-1], prod(av.shape[:-1]))
+            vec = sample_simplex(av.shape[-1], prod(av.shape[:-1]), rng=self._rng)
             vecs.append(vec.ravel())
         return np.concatenate(vecs, axis=0)
 
@@ -1562,10 +2027,23 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
 
         sign = +1 if minmax == "min" else -1
 
+        # The post-process optimizes a *different* objective than the main one,
+        # so the main ``_objective_gradient`` (if any) does not apply. Install
+        # the gradient that matches the active post-process objective: the exact
+        # entropy gradient for the entropy style, or finite differences (None)
+        # for the channel-capacity style.
         if style == "channel":
             objective = objective_channelcapacity
+            pp_objective_gradient = None
         elif style == "entropy":
             objective = objective_entropy
+            entropy_grad = self._entropy_grad(self._arvs)
+
+            def pp_objective_gradient():
+                def grad(pmf):
+                    return sign * entropy_grad(pmf)
+
+                return grad
         else:
             msg = f"Style {style} is not understood."
             raise OptimizationException(msg)
@@ -1605,7 +2083,19 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
 
         self.__old_objective, self.objective = self.objective, objective
 
-        self.optimize(x0=self._optima.copy(), niter=niter, maxiter=maxiter)
+        # Temporarily swap in the post-process gradient (instance attribute
+        # shadows the class-level ``_objective_gradient``), restoring afterward.
+        _missing = object()
+        saved_grad = self.__dict__.get("_objective_gradient", _missing)
+        self._objective_gradient = pp_objective_gradient
+
+        try:
+            self.optimize(x0=self._optima.copy(), niter=niter, maxiter=maxiter)
+        finally:
+            if saved_grad is _missing:
+                del self._objective_gradient
+            else:
+                self._objective_gradient = saved_grad
 
         # and remove them again.
         self.constraints = self.constraints[:-1]

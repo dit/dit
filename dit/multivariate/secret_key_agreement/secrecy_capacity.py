@@ -28,7 +28,7 @@ class SecrecyCapacity(OneWaySKAR):
 
 
 @unitful
-def secrecy_capacity(dist, X, Y, Z, niter=None, bound_u=None, backend="numpy"):
+def secrecy_capacity(dist, X, Y, Z, niter=None, bound_u=None, backend="numpy", rng=None):
     """
     The rate at which X and Y can agree upon a key over the channel p(YZ|X)
     while Z eavesdrops, and no public communication.
@@ -59,7 +59,7 @@ def secrecy_capacity(dist, X, Y, Z, niter=None, bound_u=None, backend="numpy"):
     """
     actual_cls = _make_backend_subclass(SecrecyCapacity, backend)
     sc = actual_cls(dist, X, Y, Z, bound_u=bound_u)
-    sc.optimize(niter=niter)
+    sc.optimize(niter=niter, rng=rng)
     value = -sc.objective(sc._optima)
 
     return value

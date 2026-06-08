@@ -1248,7 +1248,7 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
 
         return grad_func
 
-    def optimize(self, x0=None, niter=None, maxiter=None, polish=1e-6, callback=False):
+    def optimize(self, x0=None, niter=None, maxiter=None, polish=1e-6, callback=False, rng=None):
         """
         Perform the optimization.
 

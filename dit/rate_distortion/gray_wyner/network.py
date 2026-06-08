@@ -8,6 +8,7 @@ that live at its corners.
 
 import numpy as np
 
+from ...algorithms.optimization import parallel_sweep
 from ...exceptions import ditException
 from ...utils import flatten, unitful
 from .optimizer import GrayWynerOptimizer
@@ -51,7 +52,7 @@ class GrayWynerNetwork:
 
         self._lossless = bounds is None or all(b <= 0 for b in bounds)
 
-    def rate_point(self, lambdas, niter=None, maxiter=1000, polish=1e-6):
+    def rate_point(self, lambdas, niter=None, maxiter=1000, polish=1e-6, rng=None):
         """
         Compute the Gray-Wyner rate point supporting a weight vector.
 
@@ -80,7 +81,7 @@ class GrayWynerNetwork:
             bounds=self.bounds,
             bound=self.bound,
         )
-        opt.optimize(niter=niter, maxiter=maxiter, polish=polish)
+        opt.optimize(niter=niter, maxiter=maxiter, polish=polish, rng=rng)
         return opt.rates()
 
     def region(self, num=20, niter=None, maxiter=1000, seed=None):
@@ -114,9 +115,10 @@ class GrayWynerNetwork:
         weights = list(np.eye(dim))  # vertices: pure common, pure each private
         weights += list(rng.dirichlet(np.ones(dim), size=num))
 
-        points = []
-        for w in weights:
-            points.append(self.rate_point(w, niter=niter, maxiter=maxiter))
+        points = parallel_sweep(
+            lambda w, task_rng: self.rate_point(w, niter=niter, maxiter=maxiter, rng=task_rng),
+            weights,
+        )
         return points
 
     def corner_points(self, niter=None, maxiter=1000):

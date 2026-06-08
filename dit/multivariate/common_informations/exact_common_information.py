@@ -45,6 +45,10 @@ class ExactCommonInformation(MarkovVarOptimizer):
 
         return min([bound_1, bound_2])
 
+    def _objective_gradient(self):
+        """Gradient of the ``H[W | crvs]`` objective w.r.t. the joint."""
+        return self._entropy_grad(self._W, self._crvs)
+
     def _objective(self):
         """
         The entropy of the auxiliary random variable.

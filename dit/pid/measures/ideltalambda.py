@@ -24,7 +24,7 @@ References
 
 import numpy as np
 
-from ...algorithms.optimization import BaseAuxVarOptimizer, BaseConvexOptimizer
+from ...algorithms.optimization import BaseAuxVarOptimizer, BaseConvexOptimizer, parallel_sweep
 from ...multivariate import coinformation
 from ..pid import BaseBivariatePID
 
@@ -80,6 +80,49 @@ class DeltaLambdaOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
         self._target_rv = {2}
         self._aux_rv = self._arvs
 
+    def _objective_gradient(self):
+        """
+        Analytic gradient of the delta-lambda objective w.r.t. the joint.
+
+        The Lagrangian is ``kl + lam * I(X':M|Y)`` where
+        ``kl = sum_{a,m} A[a,m] (log2 A[a,m] - log2 B[m,a])`` with
+        ``A = p(X, M)`` (sum over Y, X') and ``B = p(X', M)`` (sum over X, Y).
+        Differentiating term by term:
+
+        * ``d kl / d A[a,m] = log2 A[a,m] - log2 B[m,a] + 1/ln2``
+        * ``d kl / d B[m,a] = -A[a,m] / (B[m,a] * ln2)``
+
+        and ``A`` / ``B`` are linear marginals of the joint, so each cell's
+        gradient is the appropriate broadcast of those two terms. The CMI term
+        reuses the standard conditional-MI gradient builder.
+        """
+        cmi_g = self._conditional_mutual_information_grad(self._aux_rv, self._target_rv, self._other_rv)
+        lam = self._lam
+        ln2 = np.log(2)
+
+        def grad(pmf):
+            # A = p(X, M): sum over Y(1), X'(3) -> (|X|, |M|)
+            A = pmf.sum(axis=(1, 3))
+            # B = p(X', M): sum over X(0), Y(1) -> (|M|, |X'|)
+            B = pmf.sum(axis=(0, 1))
+
+            with np.errstate(divide="ignore"):
+                log_A = np.log2(np.maximum(A, 1e-300))          # (|X|, |M|)
+                log_B_aligned = np.log2(np.maximum(B, 1e-300)).T  # (|X'|=|X|, |M|)
+
+            # contribution flowing through A[x, m], broadcast over Y and X'.
+            a_term = log_A - log_B_aligned + 1.0 / ln2           # (|X|, |M|)
+            g_a = a_term.reshape(A.shape[0], 1, A.shape[1], 1)
+
+            # contribution flowing through B[m, x'], broadcast over X and Y.
+            b_term = -A.T / (np.maximum(B, 1e-300) * ln2)        # (|M|, |X'|)
+            g_b = b_term.reshape(1, 1, B.shape[0], B.shape[1])
+
+            kl_grad = np.broadcast_to(g_a, pmf.shape) + np.broadcast_to(g_b, pmf.shape)
+            return np.ascontiguousarray(kl_grad) + lam * cmi_g(pmf)
+
+        return grad
+
     def _objective(self):
         """
         Minimize E_M[D_KL(P(X|M) || P(X'|M))] + lambda * I(M; X' | Y).
@@ -118,7 +161,7 @@ class DeltaLambdaOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
         return objective
 
 
-def _delta_lambda(d, source, other, target, lam=1.0, bound=None, niter=None):
+def _delta_lambda(d, source, other, target, lam=1.0, bound=None, niter=None, rng=None):
     """
     Compute the generalized deficiency delta_lambda(M : source \\ other).
 
@@ -145,7 +188,7 @@ def _delta_lambda(d, source, other, target, lam=1.0, bound=None, niter=None):
         The generalized deficiency (non-negative).
     """
     opt = DeltaLambdaOptimizer(d, source, other, target, lam=lam, bound=bound)
-    opt.optimize(niter=niter)
+    opt.optimize(niter=niter, rng=rng)
     return max(opt.objective(opt._optima), 0.0)
 
 
@@ -202,8 +245,13 @@ class PID_DeltaLambda(BaseBivariatePID):
         """
         source_a, source_b = sources
 
-        delta_ab = _delta_lambda(d, source_a, source_b, target, lam=lam, bound=bound, niter=niter)
-        delta_ba = _delta_lambda(d, source_b, source_a, target, lam=lam, bound=bound, niter=niter)
+        def _run(args, rng):
+            src, oth = args
+            return _delta_lambda(d, src, oth, target, lam=lam, bound=bound, niter=niter, rng=rng)
+
+        delta_ab, delta_ba = parallel_sweep(
+            _run, [(source_a, source_b), (source_b, source_a)]
+        )
 
         mi_a = coinformation(d, [source_a, target])
         mi_b = coinformation(d, [source_b, target])

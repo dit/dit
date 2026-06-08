@@ -113,6 +113,42 @@ class InformationBottleneck(BaseAuxVarOptimizer):
 
         return distortion
 
+    def _objective_gradient(self):
+        """
+        Analytic gradient of the information-bottleneck objective w.r.t. the
+        joint, matching the alpha-branch selected by :meth:`_objective`.
+
+        The distortion ``I[X:Y|Z] - I[Y:T|Z]`` has a constant first term, so its
+        gradient is ``-grad I[Y:T|Z]``.
+        """
+        beta = self._beta
+        relevance_g = self._conditional_mutual_information_grad(self._y, self._t, self._z)
+
+        def distortion_g(pmf):
+            return -relevance_g(pmf)
+
+        if np.isclose(self._alpha, 1.0):
+            complexity_g = self._conditional_mutual_information_grad(self._x, self._t, self._z)
+
+            def grad(pmf):
+                return complexity_g(pmf) + beta * distortion_g(pmf)
+
+        elif np.isclose(self._alpha, 0.0):
+            entropy_g = self._entropy_grad(self._t, self._z)
+
+            def grad(pmf):
+                return entropy_g(pmf) + beta * distortion_g(pmf)
+
+        else:
+            entropy_g = self._entropy_grad(self._t, self._z)
+            other_g = self._entropy_grad(self._t, self._x | self._z)
+            alpha = self._alpha
+
+            def grad(pmf):
+                return entropy_g(pmf) - alpha * other_g(pmf) + beta * distortion_g(pmf)
+
+        return grad
+
     def _objective(self):
         """
         Compute the appropriate objective.
@@ -273,6 +309,10 @@ class InformationBottleneckDivergence(InformationBottleneck):
             bound=bound,
         )
         self._default_hops *= 2
+
+    # The general-divergence distortion is not covered by the standard
+    # gradient builders, so fall back to finite differences here.
+    _objective_gradient = None
 
     def _distortion(self):
         """

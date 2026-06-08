@@ -18,6 +18,10 @@ class IntrinsicTotalCorrelation(BaseIntrinsicMutualInformation):
 
     name = "total correlation"
 
+    def _objective_gradient(self):
+        """Gradient of the ``T[X:Y:...|Z]`` objective w.r.t. the joint."""
+        return self._total_correlation_grad(self._rvs, self._arvs)
+
     def _objective(self):
         """
         The total correlation.
@@ -58,6 +62,10 @@ class IntrinsicDualTotalCorrelation(BaseIntrinsicMutualInformation):
     """
 
     name = "dual total correlation"
+
+    def _objective_gradient(self):
+        """Gradient of the ``B[X:Y:...|Z]`` objective w.r.t. the joint."""
+        return self._dual_total_correlation_grad(self._rvs, self._arvs)
 
     def _objective(self):
         """

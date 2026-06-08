@@ -6,6 +6,7 @@ and source and the target, given the other sources. It turns out that these uniq
 are inconsistent, in that they produce differing redundancy values.
 """
 
+from ...algorithms.optimization import parallel_sweep
 from ...multivariate.secret_key_agreement import (
     no_communication_skar,
     one_way_skar,
@@ -53,12 +54,15 @@ class PID_SKAR_nw(BaseUniquePID):
         i_skar_nw : dict
             The value of I_SKAR_nw for each individual source.
         """
-        uniques = {}
-        for source in sources:
+        def _run(source, rng):
             others = list(sources)
             others.remove(source)
             others = list(flatten(others))
-            uniques[source] = no_communication_skar(d, source, target, others)
+            return no_communication_skar(d, source, target, others)
+
+        uniques = {}
+        for source, value in zip(sources, parallel_sweep(_run, sources), strict=True):
+            uniques[source] = value
         return uniques
 
 

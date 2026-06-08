@@ -2,8 +2,11 @@
 The Blahut-Arimoto algorithm for solving the rate-distortion problem.
 """
 
+from concurrent.futures import ThreadPoolExecutor
+
 import numpy as np
 
+from ..algorithms.optimization import _resolve_n_jobs
 from ..divergences.pmf import relative_entropy
 from ..math.sampling import sample_simplex
 from .distortions import hamming_distortion
@@ -126,7 +129,11 @@ def blahut_arimoto(p_x, beta, distortion=hamming_distortion, max_iters=100, rest
         The distribution p(x, y) which achieves the optimal rate, distortion.
     """
     n = len(p_x)
-    candidates = []
+
+    # Pre-generate all initial conditions serially so the global RNG state is
+    # consumed deterministically regardless of whether the subsequent (pure,
+    # RNG-free) ``_blahut_arimoto`` calls run serially or across threads.
+    inits = []
     for i in range(restarts):
         if i == 0:
             q_y_x = np.ones((n, n)) / n
@@ -135,9 +142,17 @@ def blahut_arimoto(p_x, beta, distortion=hamming_distortion, max_iters=100, rest
             q_y_x[0, :] = 1
         else:
             q_y_x = sample_simplex(n, n)
+        inits.append(q_y_x)
 
-        result = _blahut_arimoto(p_x=p_x, beta=beta, q_y_x=q_y_x, distortion=distortion, max_iters=max_iters)
-        candidates.append(result)
+    def _run(q_y_x):
+        return _blahut_arimoto(p_x=p_x, beta=beta, q_y_x=q_y_x, distortion=distortion, max_iters=max_iters)
+
+    n_jobs = _resolve_n_jobs(len(inits))
+    if n_jobs > 1:
+        with ThreadPoolExecutor(max_workers=n_jobs) as executor:
+            candidates = list(executor.map(_run, inits))
+    else:
+        candidates = [_run(q_y_x) for q_y_x in inits]
 
     rd = min(candidates, key=lambda result: result[0].rate + beta * result[0].distortion)
     return rd

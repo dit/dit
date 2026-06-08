@@ -12,11 +12,13 @@ while preserving the mixin logic — ``super()`` inside the mixin resolves to
 whichever backend base is composed with it.
 """
 
+import threading
 from abc import abstractmethod
 
 import numpy as np
 
 from ...algorithms import BaseAuxVarOptimizer
+from ...algorithms.optimization import parallel_sweep
 from ...distribution import Distribution
 from ...exceptions import ditException
 from ...math import prod
@@ -283,13 +285,14 @@ class MoreIntrinsicMIMixin:
                 bounds = (2, 3, 4, None)
 
             actual_cls = _make_backend_subclass(cls, backend)
-            candidates = []
-            for bound in bounds:
+
+            def _run(bound, rng):
                 opt = actual_cls(dist, rvs=rvs, crvs=crvs, bound=bound)
-                opt.optimize(niter=niter)
+                opt.optimize(niter=niter, rng=rng)
                 val = opt.objective(opt._optima)
-                val = float(val.detach().cpu().item()) if hasattr(val, "detach") else float(val)
-                candidates.append(val)
+                return float(val.detach().cpu().item()) if hasattr(val, "detach") else float(val)
+
+            candidates = parallel_sweep(_run, bounds)
             return min(candidates)
 
         intrinsic.__doc__ = f"""
@@ -471,6 +474,32 @@ class TwoPartIMIMixin:
         self._bound_u = bound_u
         self._bound_v = bound_v
 
+    # Maximum number of distinct inner-solve results to memoize per thread.
+    _inner_cache_size = 64
+
+    def _inner_cache_dict(self):
+        """Return this thread's inner-solve cache (thread-local, see construct_joint cache)."""
+        store = self.__dict__.get("_inner_cache")
+        if store is None:
+            store = self._inner_cache = threading.local()
+        cache = getattr(store, "cache", None)
+        if cache is None:
+            cache = store.cache = {}
+        return cache
+
+    def _inner_cache_lookup(self, joint_np):
+        """Return ``(key, cached_value_or_None)`` for the marginalized joint."""
+        cache = self._inner_cache_dict()
+        key = joint_np.tobytes()
+        return key, cache.get(key)
+
+    def _inner_cache_store(self, key, value):
+        """Store *value* under *key*, evicting the oldest entry when full."""
+        cache = self._inner_cache_dict()
+        if len(cache) >= self._inner_cache_size:
+            cache.pop(next(iter(cache)))
+        cache[key] = value
+
     def _objective(self):
         """
         Mimimize :math:`max(I[X:Y|J] + I[U:J|V] - I[U:Z|V])`, or its
@@ -503,23 +532,33 @@ class TwoPartIMIMixin:
             """
             joint = self.construct_joint(x)
             joint_np = joint.detach().cpu().numpy() if hasattr(joint, "detach") else np.asarray(joint)
-            outcomes, pmf = zip(*[(o, p) for o, p in np.ndenumerate(joint_np)], strict=True)
-            dist = Distribution(outcomes, pmf)
 
-            inner_cls = _make_backend_subclass(
-                InnerTwoPartIntrinsicMutualInformation,
-                getattr(self, "_backend", "numpy"),
-            )
-            inner = inner_cls(
-                dist=dist,
-                rvs=[[rv] for rv in self._rvs],
-                crvs=self._crvs,
-                j=self._j,
-                bound_u=self._bound_u,
-                bound_v=self._bound_v,
-            )
-            inner.optimize()
-            opt = -inner.objective(inner._optima)
+            # The inner two-part solve depends only on the marginalized joint, so
+            # memoize its (scalar) result keyed on the joint bytes. This skips a
+            # full inner optimization whenever an outer iterate revisits the same
+            # joint (thread-local, mirroring the construct_joint cache).
+            cache_key, cached = self._inner_cache_lookup(joint_np)
+            if cached is not None:
+                opt = cached
+            else:
+                outcomes, pmf = zip(*[(o, p) for o, p in np.ndenumerate(joint_np)], strict=True)
+                dist = Distribution(outcomes, pmf)
+
+                inner_cls = _make_backend_subclass(
+                    InnerTwoPartIntrinsicMutualInformation,
+                    getattr(self, "_backend", "numpy"),
+                )
+                inner = inner_cls(
+                    dist=dist,
+                    rvs=[[rv] for rv in self._rvs],
+                    crvs=self._crvs,
+                    j=self._j,
+                    bound_u=self._bound_u,
+                    bound_v=self._bound_v,
+                )
+                inner.optimize(rng=self._rng)
+                opt = -inner.objective(inner._optima)
+                self._inner_cache_store(cache_key, opt)
 
             a = mmi(joint)
 
@@ -550,14 +589,16 @@ class TwoPartIMIMixin:
             }
 
             actual_cls = _make_backend_subclass(cls, backend)
-            candidates = []
-            for b_j, b_u, b_v in bounds:
+
+            def _run(triple, rng):
+                b_j, b_u, b_v = triple
                 opt = actual_cls(dist, rvs=rvs, crvs=crvs, bound_j=b_j, bound_u=b_u, bound_v=b_v)
                 opt._backend = backend
-                opt.optimize(niter=niter)
+                opt.optimize(niter=niter, rng=rng)
                 val = opt.objective(opt._optima)
-                val = float(val.detach().cpu().item()) if hasattr(val, "detach") else float(val)
-                candidates.append(val)
+                return float(val.detach().cpu().item()) if hasattr(val, "detach") else float(val)
+
+            candidates = parallel_sweep(_run, sorted(bounds, key=lambda t: tuple((c is None, c) for c in t)))
 
             return min(candidates)
 

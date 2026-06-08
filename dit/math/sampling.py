@@ -73,7 +73,7 @@ def sample(dist, size=None, rand=None, prng=None):
     return s
 
 
-def sample_simplex(dim, num_samples=1):
+def sample_simplex(dim, num_samples=1, rng=None):
     """
     Sample uniformly from the simplex.
 
@@ -83,6 +83,9 @@ def sample_simplex(dim, num_samples=1):
         The dimension of the simplex to sample from.
     num_samples : int
         The number of samples to generate.
+    rng : np.random.Generator, None
+        An optional random number generator to draw from. If None (default),
+        the global ``np.random`` state is used (backwards-compatible).
 
     Returns
     -------
@@ -90,7 +93,8 @@ def sample_simplex(dim, num_samples=1):
         A matrix of shape (`num_samples`, `dim`), where each pmf[i] is a sample
         from the simplex.
     """
-    cmf = np.sort(np.random.random((num_samples, dim - 1)))
+    draw = np.random.random if rng is None else rng.random
+    cmf = np.sort(draw((num_samples, dim - 1)))
     cmf = np.vstack([np.zeros(num_samples), cmf.T, np.ones(num_samples)]).T
     pmf = np.diff(cmf)
     return pmf

@@ -2,6 +2,7 @@
 Two lower bounds on the two-way secret key agreement rate.
 """
 
+from ...algorithms.optimization import parallel_sweep
 from ...utils import unitful
 from .one_way_skar import one_way_skar
 from .secrecy_capacity import secrecy_capacity
@@ -40,9 +41,12 @@ def secrecy_capacity_skar(dist, rvs=None, crvs=None, niter=None, bound_u=None, b
     sc : float
         The secrecy capacity.
     """
-    a = secrecy_capacity(dist, rvs[0], rvs[1], crvs, niter=niter, bound_u=bound_u, backend=backend)
-    b = secrecy_capacity(dist, rvs[1], rvs[0], crvs, niter=niter, bound_u=bound_u, backend=backend)
-    return max([a, b])
+    def _run(roles, rng):
+        x, y = roles
+        return secrecy_capacity(dist, x, y, crvs, niter=niter, bound_u=bound_u, backend=backend, rng=rng)
+
+    values = parallel_sweep(_run, [(rvs[0], rvs[1]), (rvs[1], rvs[0])])
+    return max(values)
 
 
 @unitful

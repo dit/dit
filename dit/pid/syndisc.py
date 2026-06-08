@@ -26,6 +26,7 @@ from lattices import Lattice
 from lattices.lattices import free_distributive_lattice
 
 from ..algorithms import BaseAuxVarOptimizer
+from ..algorithms.optimization import parallel_sweep
 from ..math import prod
 from ..multivariate import coinformation
 from ..utils import build_table, flatten
@@ -334,8 +335,10 @@ class SynDisc:
 
     def _compute(self):
         """Evaluate S_alpha at every lattice node, then Mobius-invert."""
-        for node in self._lattice:
-            self.get_synergy(node)
+        nodes = [node for node in self._lattice if node not in self._synergies]
+        results = parallel_sweep(lambda node, rng: float(self._compute_s_alpha(node, rng=rng)), nodes)
+        for node, val in zip(nodes, results, strict=True):
+            self._synergies[node] = val
         self._compute_mobius_inversion()
 
     def _compute_mobius_inversion(self):
@@ -343,7 +346,7 @@ class SynDisc:
         for node in reversed(list(self._lattice)):
             self.get_atom(node)
 
-    def _compute_s_alpha(self, node):
+    def _compute_s_alpha(self, node, rng=None):
         """
         Compute S_alpha(X -> Y) for a given lattice node.
 
@@ -370,7 +373,7 @@ class SynDisc:
                 alpha,
                 bound=self._bound,
             )
-            opt.optimize(niter=self._niter)
+            opt.optimize(niter=self._niter, rng=rng)
             val = opt.synergistic_disclosure(opt._optima)
             return max(val, 0.0)
         except Exception:

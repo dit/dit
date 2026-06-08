@@ -111,6 +111,15 @@ class SRVOptimizer(BaseAuxVarOptimizer):
         pmf = self.construct_joint(x)
         return mi_fn(pmf) ** 2
 
+    # NOTE: An exact gradient of ``-I(S:X) + w * sum_i I(S:X_i)^2`` is available
+    # (``-grad I(S:X) + w * sum_i 2 I_i grad I_i``, composed from
+    # ``_mutual_information_grad``; FD-validated to a relative error of ~1e-10).
+    # It is intentionally *not* wired: the large penalty weight (500) makes the
+    # exact gradient drive SLSQP into many more inner iterations, yielding a
+    # ~4x wall-clock regression for identical converged values. Per the
+    # established discipline (wire only on a net speedup), this objective stays
+    # on finite differences. (Same precedent as the Wyner / GH gradients.)
+
     def _objective(self):
         """
         Minimise -I(S : X_joint) with a quadratic penalty for violating

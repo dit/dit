@@ -144,6 +144,46 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
         else:
             return grd_objective
 
+    def _lagrangian_grad(self, distortion_grad):
+        """
+        Compose the analytic gradient of the rate-distortion Lagrangian from the
+        rate/entropy gradient builders and a subclass-supplied distortion
+        gradient, matching the alpha-branch selected by :meth:`_objective`.
+
+        Parameters
+        ----------
+        distortion_grad : callable
+            ``grad(pmf)`` for the distortion term, in full-joint shape.
+
+        Returns
+        -------
+        grad : callable
+            ``grad(pmf)`` for the full Lagrangian.
+        """
+        beta = self._beta
+
+        if np.isclose(self._alpha, 1.0):
+            rate_g = self._conditional_mutual_information_grad(self._x, self._t, self._z)
+
+            def grad(pmf):
+                return rate_g(pmf) + beta * distortion_grad(pmf)
+
+        elif np.isclose(self._alpha, 0.0):
+            entropy_g = self._entropy_grad(self._t, self._z)
+
+            def grad(pmf):
+                return entropy_g(pmf) + beta * distortion_grad(pmf)
+
+        else:
+            entropy_g = self._entropy_grad(self._t, self._z)
+            other_g = self._entropy_grad(self._t, self._x | self._z)
+            alpha = self._alpha
+
+            def grad(pmf):
+                return entropy_g(pmf) - alpha * other_g(pmf) + beta * distortion_grad(pmf)
+
+        return grad
+
     @abstractmethod
     def _distortion(self):
         """
@@ -200,6 +240,31 @@ class RateDistortionHamming(BaseRateDistortion):
 
     _optimization_backend = BaseRateDistortion._optimize_shotgun
 
+    def _distortion_grad(self):
+        """
+        Gradient builder for the (linear) Hamming distortion
+        ``D = sum_{x,t} hamming[x,t] * p(x, t)``.
+
+        Since ``D`` is linear in the joint, ``dD/dp[..., x, ..., t, ...] =
+        hamming[x, t]``, i.e. ``hamming`` broadcast across the summed-out axes.
+        """
+        hamming = 1 - np.eye(self._shape[0], self._shape[2])
+        x_ax = next(iter(self._x))
+        t_ax = next(iter(self._t))
+
+        def grad(pmf):
+            reshaper = [1] * pmf.ndim
+            reshaper[x_ax] = self._shape[0]
+            reshaper[t_ax] = self._shape[2]
+            g = hamming.reshape(reshaper)
+            return np.ascontiguousarray(np.broadcast_to(g, pmf.shape))
+
+        return grad
+
+    def _objective_gradient(self):
+        """Analytic gradient of the rate-distortion Lagrangian w.r.t. the joint."""
+        return self._lagrangian_grad(self._distortion_grad())
+
     def _distortion(self):
         """
         Construct the distortion function.
@@ -237,6 +302,23 @@ class RateDistortionResidualEntropy(BaseRateDistortion):
     """
     Rate distortion optimizer based around the residual entropy distortion.
     """
+
+    def _distortion_grad(self):
+        """
+        Gradient builder for the residual-entropy distortion
+        ``D = H[X, T | Z] - I[X : T | Z]``.
+        """
+        h_g = self._entropy_grad(self._x | self._t, self._z)
+        i_g = self._conditional_mutual_information_grad(self._x, self._t, self._z)
+
+        def grad(pmf):
+            return h_g(pmf) - i_g(pmf)
+
+        return grad
+
+    def _objective_gradient(self):
+        """Analytic gradient of the rate-distortion Lagrangian w.r.t. the joint."""
+        return self._lagrangian_grad(self._distortion_grad())
 
     def _distortion(self):
         """

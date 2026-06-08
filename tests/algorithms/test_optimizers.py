@@ -4,12 +4,17 @@ Tests for dit.algorithms.optimizers
 
 import warnings
 from itertools import product
+from types import MethodType
 
+import numpy as np
 import pytest
+from scipy.optimize import approx_fprime
 
 from dit.algorithms import maxent_dist, pid_broja
 from dit.algorithms.distribution_optimizers import (
+    MaxCoInfoOptimizer,
     MaxDualTotalCorrelationOptimizer,
+    MaxEntOptimizer,
     MinCoInfoOptimizer,
     MinDualTotalCorrelationOptimizer,
     MinEntOptimizer,
@@ -79,6 +84,110 @@ def test_minent_1():
     meo.optimize()
     dp = meo.construct_dist()
     assert H(dp) == pytest.approx(1, abs=1e-4)
+
+
+@pytest.mark.parametrize(
+    "Optimizer",
+    [
+        MaxEntOptimizer,
+        MinEntOptimizer,
+        MaxCoInfoOptimizer,
+        MinCoInfoOptimizer,
+        MaxDualTotalCorrelationOptimizer,
+        MinDualTotalCorrelationOptimizer,
+    ],
+)
+def test_analytic_gradients_match_fd(Optimizer):
+    """
+    The analytic objective gradient (``_jacobian``) and the analytic constraint
+    jacobian (``constraint_match_marginals_jac``) of every linear distribution
+    optimizer must agree with SciPy's finite-difference gradients to within the
+    finite-difference step error.
+    """
+    np.random.seed(0)
+    d = uniform(["{:04b}".format(i) for i in range(16)])
+    opt = Optimizer(d, [[0, 1], [1, 2], [2, 3]])
+    opt.objective = MethodType(opt._objective(), opt)
+
+    for _ in range(5):
+        # Blend the random simplex point toward uniform so every free
+        # probability stays well away from the 0 boundary (where the analytic
+        # gradient intentionally floors and finite differences are unreliable).
+        x = np.asarray(opt.construct_random_initial()).ravel()
+        x = 0.5 * x + 0.5 / x.size
+
+        obj_an = opt._jacobian(x)
+        obj_fd = approx_fprime(x, lambda v: float(opt.objective(v)), 1e-7)
+        assert obj_an == pytest.approx(obj_fd, abs=1e-3)
+
+        con_an = opt.constraint_match_marginals_jac(x)
+        con_fd = approx_fprime(x, lambda v: float(opt.constraint_match_marginals(v)), 1e-7)
+        assert con_an == pytest.approx(con_fd, abs=1e-5)
+
+
+def _auxvar_gradient_cases():
+    """Build (label, optimizer) pairs for every analytic-gradient aux-var optimizer."""
+    from dit.multivariate.common_informations.exact_common_information import ExactCommonInformation
+    from dit.multivariate.common_informations.stochastic_gk_common_information import (
+        StochasticGKCommonInformation,
+    )
+    from dit.multivariate.deweese import (
+        DeWeeseCoInformation,
+        DeWeeseDualTotalCorrelation,
+        DeWeeseTotalCorrelation,
+    )
+    from dit.multivariate.secret_key_agreement.intrinsic_mutual_informations import (
+        IntrinsicDualTotalCorrelation,
+        IntrinsicTotalCorrelation,
+    )
+    from dit.multivariate.secret_key_agreement.one_way_skar import OneWaySKAR
+    from dit.pid.measures.ideltalambda import DeltaLambdaOptimizer
+    from dit.rate_distortion.information_bottleneck import InformationBottleneck
+    from dit.rate_distortion.rate_distortion import (
+        RateDistortionHamming,
+        RateDistortionResidualEntropy,
+    )
+
+    xor = Xor()
+    skar_dist = uniform(["000", "011", "101", "110"])
+    rd_dist = uniform(["000", "011", "101", "110", "001", "010"])
+    return [
+        ("exact", ExactCommonInformation(xor, [[0], [1]], [2])),
+        ("stochastic_gk", StochasticGKCommonInformation(xor, [[0], [1]], [2])),
+        ("intrinsic_tc", IntrinsicTotalCorrelation(xor, [[0], [1]], [2], bound=2)),
+        ("intrinsic_dtc", IntrinsicDualTotalCorrelation(xor, [[0], [1]], [2], bound=2)),
+        ("deweese_tc", DeWeeseTotalCorrelation(xor, [[0], [1], [2]], [])),
+        ("deweese_coi", DeWeeseCoInformation(xor, [[0], [1], [2]], [])),
+        ("deweese_dtc", DeWeeseDualTotalCorrelation(xor, [[0], [1], [2]], [])),
+        ("one_way_skar", OneWaySKAR(skar_dist, [0], [1], [2], bound_u=2, bound_v=2)),
+        ("rd_residual", RateDistortionResidualEntropy(rd_dist, beta=1.5, rv=[0], crvs=[1])),
+        ("rd_hamming", RateDistortionHamming(rd_dist, beta=1.5, rv=[0], crvs=[1])),
+        ("information_bottleneck", InformationBottleneck(rd_dist, beta=2.0, rvs=[[0], [1]], crvs=[2])),
+        ("delta_lambda", DeltaLambdaOptimizer(xor, [0], [1], [2], lam=1.0)),
+    ]
+
+
+@pytest.mark.parametrize("label,opt", _auxvar_gradient_cases(), ids=lambda v: v if isinstance(v, str) else "")
+def test_auxvar_analytic_gradients_match_fd(label, opt):
+    """
+    The analytic objective gradient of every wired auxiliary-variable optimizer
+    (the ``construct_joint`` VJP composed with the measure pmf-gradient) must
+    agree with SciPy's finite-difference gradient at interior points.
+    """
+    np.random.seed(0)
+    opt.objective = MethodType(opt._objective(), opt)
+
+    worst = 0.0
+    for _ in range(6):
+        # Blend two random channel parametrizations to stay in the interior.
+        x = np.asarray(opt.construct_random_initial()).ravel()
+        x = 0.7 * x + 0.3 * np.asarray(opt.construct_random_initial()).ravel()
+
+        an = opt._jacobian(x)
+        fd = approx_fprime(x, lambda v: float(opt.objective(v)), 1e-7)
+        worst = max(worst, float(np.max(np.abs(an - fd))))
+
+    assert worst < 1e-3, f"{label}: analytic vs FD gradient mismatch {worst:.2e}"
 
 
 def test_mincoinfo_1():

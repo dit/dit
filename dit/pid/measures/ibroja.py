@@ -4,6 +4,7 @@ The I_BROJA unique measure, as proposed by the BROJA team.
 
 from ...algorithms import BaseConvexOptimizer
 from ...algorithms.distribution_optimizers import BaseDistOptimizer, BROJABivariateOptimizer
+from ...algorithms.optimization import parallel_sweep
 from ...multivariate import coinformation
 from ..pid import BaseUniquePID
 
@@ -38,6 +39,10 @@ class BROJAOptimizer(BaseDistOptimizer, BaseConvexOptimizer):
         self._source = {0}
         self._others = {1}
         self._target = {2}
+
+    def _objective_gradient(self):
+        """Gradient of the ``I[source : target | others]`` objective w.r.t. the joint."""
+        return self._conditional_mutual_information_grad(self._source, self._target, self._others)
 
     def _objective(self):
         """
@@ -115,12 +120,15 @@ class PID_BROJA(BaseUniquePID):
             uniques[sources[0]] = coinformation(opt_dist, [[0], [2]], [1])
             uniques[sources[1]] = coinformation(opt_dist, [[1], [2]], [0])
         else:
-            for source in sources:
+            def _run(source, rng):
                 others = sum((i for i in sources if i != source), ())
                 dm = d.coalesce([source, others, target])
                 broja = BROJAOptimizer(dm, (0,), ((1,),), (2,))
-                broja.optimize(niter=1, maxiter=maxiter)
+                broja.optimize(niter=1, maxiter=maxiter, rng=rng)
                 d_opt = broja.construct_dist()
-                uniques[source] = coinformation(d_opt, [[0], [2]], [1])
+                return coinformation(d_opt, [[0], [2]], [1])
+
+            for source, value in zip(sources, parallel_sweep(_run, sources), strict=True):
+                uniques[source] = value
 
         return uniques

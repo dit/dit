@@ -174,6 +174,20 @@ class MarkovVarMixin:
 
         return joint
 
+    def _construct_joint_vjp(self, x, g):
+        """
+        Back-propagate through the Markov ``construct_joint``.
+
+        :meth:`construct_joint` applies two ``moveaxis(1, -1)`` permutations
+        after the base construction, so the incoming joint-gradient ``g`` is in
+        the permuted layout. Undo those permutations (each ``moveaxis`` is its
+        own inverse via ``moveaxis(-1, 1)``, applied in reverse order) before
+        delegating to the base VJP.
+        """
+        g = _moveaxis(g, -1, 1)  # undo the W move
+        g = _moveaxis(g, -1, 1)  # undo the crvs move
+        return super()._construct_joint_vjp(x, g)
+
     def construct_full_joint(self, x):
         """
         Construct the joint distribution.
@@ -290,7 +304,7 @@ class MinimizingMarkovVarMixin:
     :class:`MarkovVarMixin`.
     """
 
-    def optimize(self, x0=None, niter=None, maxiter=None, polish=1e-6, callback=False, minimize=True, min_niter=15):
+    def optimize(self, x0=None, niter=None, maxiter=None, polish=1e-6, callback=False, minimize=True, min_niter=15, rng=None):
         """
         Run the optimization, optionally with auxiliary variable minimization.
 
@@ -317,7 +331,7 @@ class MinimizingMarkovVarMixin:
             common variable.
         """
         # call the normal optimizer
-        super().optimize(x0=x0, niter=niter, maxiter=maxiter, polish=False, callback=callback)
+        super().optimize(x0=x0, niter=niter, maxiter=maxiter, polish=False, callback=callback, rng=rng)
         if minimize:
             # minimize the entropy of W
             self._post_process(style="entropy", minmax="min", niter=min_niter, maxiter=maxiter)
