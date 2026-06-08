@@ -128,6 +128,14 @@ class TestWeightedOutputKLDeficiency:
         kl = weighted_output_kl_deficiency(mu, kappa, pi)
         assert tv <= np.sqrt(np.log(2) / 2 * kl) + 1e-5
 
+    def test_zero_weight_input_ignored(self):
+        # An input with zero weight is skipped, so the result matches the
+        # deficiency computed over the supported inputs only.
+        mu = bsc(0.1)
+        kappa = bsc(0.3)
+        d = weighted_output_kl_deficiency(mu, kappa, np.array([1.0, 0.0]))
+        assert d >= -1e-10
+
 
 # ── Weighted input KL deficiency ──────────────────────────────────────────
 
@@ -148,6 +156,13 @@ class TestWeightedInputKLDeficiency:
         pi_y = np.array([0.5, 0.5])
         d = weighted_input_kl_deficiency(mu_bar, kappa_bar, pi_y)
         assert d == pytest.approx(0.0, abs=1e-4)
+
+    def test_zero_weight_output_ignored(self):
+        # An output with zero weight is skipped during the inner sum.
+        mu_bar = np.array([[0.7, 0.3], [0.2, 0.8]])
+        kappa_bar = np.array([[0.6, 0.4], [0.4, 0.6]])
+        d = weighted_input_kl_deficiency(mu_bar, kappa_bar, np.array([1.0, 0.0]))
+        assert d >= -1e-10
 
 
 # ── Joint distribution convenience ────────────────────────────────────────
