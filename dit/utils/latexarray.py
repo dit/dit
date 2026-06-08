@@ -264,7 +264,7 @@ def to_pdf(a, exact=False, decimals=3, line="p(x) = \\left[\n{0}\n\\right]", sho
         # to call it with.
         cmd = rf"pdfcrop --debug {pdfpath} {pdffobj.name}"
         with open(os.devnull, "w") as fp:
-            subprocess.call(cmd, stdout=fp)  # noqa: S603
+            subprocess.call(cmd, stdout=fp, shell=True)  # noqa: S602
 
         # Open the PDF
         if show:

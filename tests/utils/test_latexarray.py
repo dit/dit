@@ -2,7 +2,7 @@
 Tests for dit.utils.latexarray.
 """
 
-import os
+import shutil
 
 import numpy as np
 import pytest
@@ -64,14 +64,11 @@ def test_to_latex_exact2():
     assert y == y_
 
 
-@pytest.mark.xfail
+@pytest.mark.skipif(
+    shutil.which("pdflatex") is None or shutil.which("pdfcrop") is None,
+    reason="requires pdflatex and pdfcrop",
+)
 def test_to_pdf():
-    import subprocess  # noqa: S404
-
-    with open(os.devnull, "w") as fp:
-        error = subprocess.call("pdflatex --help", stdout=fp, stderr=fp)  # noqa: S603, S607
-        error |= subprocess.call("pdfcrop --help", stdout=fp, stderr=fp)  # noqa: S603, S607
-
     x = 0.1
     # This generates a temporary file...
     la.to_pdf(x, show=False)
