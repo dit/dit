@@ -303,7 +303,10 @@ class BaseOptimizer(metaclass=ABCMeta):
         h : float
             The entropy.
         """
-        return -np.nansum(p * np.log2(p))
+        # ``p`` may contain zeros; ``0 * log2(0)`` is handled by ``nansum`` but
+        # numpy still warns on the ``log2(0)``/``0 * -inf`` intermediates.
+        with np.errstate(divide="ignore", invalid="ignore"):
+            return -np.nansum(p * np.log2(p))
 
     def _entropy(self, rvs, crvs=None):
         """
@@ -444,7 +447,7 @@ class BaseOptimizer(metaclass=ABCMeta):
             pmf_yz = pmf_xyz.sum(axis=idx_yz, keepdims=True)
             pmf_z = pmf_xz.sum(axis=idx_z, keepdims=True)
 
-            with np.errstate(divide="ignore", invalid="ignore"):
+            with np.errstate(divide="ignore", invalid="ignore", over="ignore"):
                 ratio = pmf_z * pmf_xyz / pmf_xz / pmf_yz
                 log_ratio = np.where(pmf_xyz > 0, np.log2(np.maximum(ratio, 1e-300)), 0.0)
             cmi = np.nansum(pmf_xyz * log_ratio)
@@ -848,7 +851,9 @@ class BaseOptimizer(metaclass=ABCMeta):
             pmf_x = pmf.sum(axis=idx_x)[:, np.newaxis]
             pmf_y = pmf.sum(axis=idx_y)[np.newaxis, :]
 
-            Q = pmf_xy / (np.sqrt(pmf_x) * np.sqrt(pmf_y))
+            # Zero marginals give ``0/0 = nan``; replaced just below.
+            with np.errstate(divide="ignore", invalid="ignore"):
+                Q = pmf_xy / (np.sqrt(pmf_x) * np.sqrt(pmf_y))
             Q[np.isnan(Q)] = 0
 
             mc = svdvals(Q)[1]
@@ -897,7 +902,9 @@ class BaseOptimizer(metaclass=ABCMeta):
             p_xz = pmf.sum(axis=idx_xz)[:, np.newaxis, :]
             p_yz = pmf.sum(axis=idx_yz)[np.newaxis, :, :]
 
-            Q = np.where(p_xyz, p_xyz / (np.sqrt(p_xz * p_yz)), 0)
+            # Zero marginals give ``0/0 = nan``; the ``np.where`` mask drops them.
+            with np.errstate(divide="ignore", invalid="ignore"):
+                Q = np.where(p_xyz, p_xyz / (np.sqrt(p_xz * p_yz)), 0)
 
             cmc = max(svdvals(np.squeeze(m))[1] for m in np.dsplit(Q, Q.shape[2]))
 
@@ -1626,8 +1633,10 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
 
         _, _, shape, mask, _ = self._aux_vars[0]
         channel = x.copy().reshape(shape)
-        channel /= channel.sum(axis=-1, keepdims=True)
-        # channel[np.isnan(channel)] = mask[np.isnan(channel)]
+        # A zero-sum row gives ``0/0 = nan``; the ``np.where`` below replaces
+        # those with the mask, so silence the spurious numpy divide warning.
+        with np.errstate(divide="ignore", invalid="ignore"):
+            channel /= channel.sum(axis=-1, keepdims=True)
         channel = np.where(np.isnan(channel), mask, channel)
 
         joint = self._pmf[..., np.newaxis] * channel[self._slices[0]]

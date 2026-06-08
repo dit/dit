@@ -16,8 +16,7 @@ __all__ = (
 )
 
 
-@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.", version="1.0.1")
-def as_full_rank(A, b):
+def _as_full_rank(A, b):
     """
     From a linear system :math:`Ax = b`, return :math:`Bx = c` such that
     :math:`B` has full rank.
@@ -85,6 +84,12 @@ def as_full_rank(A, b):
     c = np.dot(U.transpose(), b)[:rank]
 
     return B, c, rank
+
+
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.", version="1.0.1")
+def as_full_rank(A, b):
+    """Deprecated public wrapper around :func:`_as_full_rank`."""
+    return _as_full_rank(A, b)
 
 
 @removals.removed_class(
@@ -261,10 +266,14 @@ class CVXOPT_Template:  # noqa: N801
         return out
 
 
-@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.", version="1.0.1")
-class Bunch:
+class _Bunch:
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
+
+
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.", version="1.0.1")
+class Bunch(_Bunch):
+    pass
 
 
 def prepare_dist(dist):

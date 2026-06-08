@@ -18,7 +18,7 @@ from ..abstractdist import get_abstract_dist
 from ..exceptions import ditException
 from ..utils import basic_logger
 from .frankwolfe import frank_wolfe
-from .optutil import Bunch, CVXOPT_Template, as_full_rank, op_runner
+from .optutil import CVXOPT_Template, _as_full_rank, _Bunch, op_runner
 
 __all__ = (
     "unique_informations",
@@ -302,7 +302,7 @@ def extra_constraints(dist, k):
     # all indexes   = nonzeros + zeros
     # fixed         = fixed_nonzeros + zeros
     # nonzero >= free
-    variables = Bunch(
+    variables = _Bunch(
         free=free,
         fixed=fixed_indexes,
         fixed_values=fixed_values,
@@ -388,7 +388,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
         # Store the original parameters in case we want to construct an
         # "uncoalesced" distribution from the optimial distribution.
         self.dist_original = dist
-        self._params = Bunch(sources=sources, target=target)
+        self._params = _Bunch(sources=sources, target=target)
 
         self.dist = prepare_dist(dist, sources, target)
         self.k = k
@@ -422,7 +422,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
             self.logger.warn(warn)
 
             indexes = np.arange(len(self.pmf))
-            variables = Bunch(free=indexes, fixed=[], fixed_values=[], fixed_nonzeros=[], zeros=[], nonzeros=indexes)
+            variables = _Bunch(free=indexes, fixed=[], fixed_values=[], fixed_nonzeros=[], zeros=[], nonzeros=indexes)
             self.vartypes = variables
             self.normalization = 1
 
@@ -492,7 +492,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
             b = None
         else:
             # print(Asmall[0], b[0])
-            Asmall, b, rank = as_full_rank(Asmall, b)
+            Asmall, b, rank = _as_full_rank(Asmall, b)
             # print(Asmall[0], b[0])
             if rank > Asmall.shape[1]:
                 msg = "More independent constraints than free parameters."

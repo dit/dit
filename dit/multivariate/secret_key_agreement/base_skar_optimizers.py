@@ -113,6 +113,14 @@ class IntrinsicMIMixin:
 
     name = ""
 
+    # The intrinsic measures are non-convex minimizations whose global optimum
+    # often requires a particular coarse-graining of the conditional variable.
+    # A single basin-hopping run from a random start lands in a local minimum
+    # too often (see flaky test_itc*). Use a multi-start "shotgun"; combined
+    # with ``_objective_bound = 0.0`` it early-stops as soon as the true optimum
+    # is reached, so the added starts cost little on the common zero cases.
+    _shotgun = 10
+
     def __init__(self, dist, rvs=None, crvs=None, bound=None):
         """
         Initialize the optimizer.

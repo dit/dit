@@ -8,7 +8,6 @@ import subprocess  # noqa: S404
 import tempfile
 
 import numpy as np
-import numpy.core.arrayprint as arrayprint
 from debtcollector import removals
 
 from .context import cd, named_tempfile, tempdir
@@ -25,22 +24,20 @@ __all__ = (
 #
 # Includes hack to prevent NumPy from removing trailing zeros.
 #
-@removals.remove(message="Please use np.core.arrayprint.printoptions", version="1.2.3")
 @contextlib.contextmanager
-def printoptions(strip_zeros=True, **kwargs):
+def _printoptions(strip_zeros=True, **kwargs):
+    """Temporarily set numpy print options, keeping trailing zeros by default."""
     if strip_zeros:
         kwargs["trim"] = "k"
-    origcall = arrayprint.FloatingFormat.__call__
+    with np.printoptions(**kwargs):
+        yield
 
-    def call(self, x):
-        return origcall.__call__(self, x)
 
-    arrayprint.FloatingFormat.__call__ = call
-    original = np.get_printoptions()
-    np.set_printoptions(**kwargs)
-    yield
-    np.set_printoptions(**original)
-    arrayprint.FloatingFormat.__call__ = origcall
+@removals.remove(message="Please use numpy.printoptions instead.", version="1.2.3")
+@contextlib.contextmanager
+def printoptions(strip_zeros=True, **kwargs):
+    with _printoptions(strip_zeros=strip_zeros, **kwargs):
+        yield
 
 
 def to_latex__numerical(a, decimals, tab):
@@ -88,7 +85,7 @@ def to_latex__numerical(a, decimals, tab):
         "strip_zeros": False,
         "threshold": nCols + 1,
     }
-    with printoptions(**options):
+    with _printoptions(**options):
         lines = []
         for row in array:
             # Strip [ and ], remove newlines, and split on whitespace

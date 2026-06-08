@@ -74,7 +74,10 @@ def _blahut_arimoto(p_x, beta, q_y_x, distortion, max_iters=100):
         """
         :math:`<dist> = \\sum_{x, t} q(x,t) * d(x,t)`
         """
-        d = np.matmul(p_x, (q_y_x * dist)).sum()
+        # ``q_y_x`` can contain zeros while ``dist`` contains infs (e.g. residual
+        # entropy distortion), giving ``0 * inf = nan`` intermediates.
+        with np.errstate(invalid="ignore"):
+            d = np.matmul(p_x, (q_y_x * dist)).sum()
         return d
 
     def next_rd(q_y, q_y_x):
@@ -96,7 +99,9 @@ def _blahut_arimoto(p_x, beta, q_y_x, distortion, max_iters=100):
         (q_y, q_y_x, d), prev_d = next_rd(q_y, q_y_x), d
 
     q = q_xy(q_y_x)
-    r = np.nansum(q * np.log2(q / (q.sum(axis=0, keepdims=True) * q.sum(axis=1, keepdims=True))))
+    # Zeros in ``q`` give ``log2(0)``/``0/0`` intermediates handled by ``nansum``.
+    with np.errstate(divide="ignore", invalid="ignore"):
+        r = np.nansum(q * np.log2(q / (q.sum(axis=0, keepdims=True) * q.sum(axis=1, keepdims=True))))
     result = RateDistortionResult(r, d)
 
     return result, q
