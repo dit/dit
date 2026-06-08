@@ -140,16 +140,57 @@ filterwarnings = [
 # ── Coverage ─────────────────────────────────────────────────────────────
 
 [tool.coverage.run]
+branch = true
 source = ["dit"]
-omit = ["dit/inference/pycounts*"]
+omit = [
+    "dit/inference/pycounts*",
+    # don't include tests
+    "*/tests/*",
+    # this is just convenience imports
+    "*/dit/abc.py",
+    # excluded due to testing difficulty
+    "*/dit/utils/logger.py",
+    # exclude hypothesis strategies, because they don't get covered
+    "*/dit/utils/testing.py",
+    # don't cover plotting code
+    "dit/rate_distortion/plotting.py",
+    # don't cover table generation
+    "dit/pid/helplers.py",
+    # JAX/Torch optimization backends are only exercised by very_slow tests
+    "*/dit/algorithms/optimization_jax.py",
+    "*/dit/algorithms/optimization_torch.py",
+]
 
 [tool.coverage.report]
 show_missing = true
+ignore_errors = true
 exclude_lines = [
     "pragma: no cover",
-    "if __name__ == .__main__.",
+    # debug-only code
+    "def __repr__",
+    "def _repr_html_",
+    "if self\\.debug",
+    # deprecated code
+    "@removals.remove",
+    # abstract code
+    "@abstractmethod",
+    # defensive assertions
+    "raise AssertionError",
     "raise NotImplementedError",
+    # non-runnable code
+    "if 0:",
+    "if __name__ == .__main__.:",
+    # fixtures
+    "def setup_module",
+    "def teardown_module",
+    # runtime errors
+    "except RuntimeError",
+    # skipped tests
+    "@pytest.mark.skip",
 ]
+
+[tool.coverage.html]
+directory = "coverage_html_report"
 
 # ── Ruff (replaces flake8 + isort) ──────────────────────────────────────
 
