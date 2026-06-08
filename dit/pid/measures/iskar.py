@@ -54,6 +54,7 @@ class PID_SKAR_nw(BaseUniquePID):
         i_skar_nw : dict
             The value of I_SKAR_nw for each individual source.
         """
+
         def _run(source, rng):
             others = list(sources)
             others.remove(source)

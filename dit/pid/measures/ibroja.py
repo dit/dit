@@ -5,10 +5,22 @@ The I_BROJA unique measure, as proposed by the BROJA team.
 from ...algorithms import BaseConvexOptimizer
 from ...algorithms.distribution_optimizers import BaseDistOptimizer, BROJABivariateOptimizer
 from ...algorithms.optimization import parallel_sweep
-from ...multivariate import coinformation
 from ..pid import BaseUniquePID
 
 __all__ = ("PID_BROJA",)
+
+
+def _optimized_pmf(opt, cutoff=1e-6):
+    """
+    The cutoff + renormalized joint pmf ndarray of a solved distribution
+    optimizer, matching what :meth:`construct_dist` produces but without
+    round-tripping through the (xarray-backed) :class:`Distribution`. Used to
+    read information measures off the optimum cheaply.
+    """
+    pmf = opt.construct_vector(opt._optima.copy())
+    pmf[pmf < cutoff] = 0
+    pmf /= pmf.sum()
+    return pmf.reshape(opt._shape)
 
 
 class BROJAOptimizer(BaseDistOptimizer, BaseConvexOptimizer):
@@ -116,17 +128,22 @@ class PID_BROJA(BaseUniquePID):
         if len(sources) == 2:
             broja = BROJABivariateOptimizer(d, list(sources), target)
             broja.optimize(niter=1, maxiter=maxiter)
-            opt_dist = broja.construct_dist()
-            uniques[sources[0]] = coinformation(opt_dist, [[0], [2]], [1])
-            uniques[sources[1]] = coinformation(opt_dist, [[1], [2]], [0])
+            pmf = _optimized_pmf(broja)
+            # I[source : target | other source], read directly off the joint
+            # ndarray rather than through the (xarray-backed) Distribution.
+            uniques[sources[0]] = float(broja._conditional_mutual_information({0}, {2}, {1})(pmf))
+            uniques[sources[1]] = float(broja._conditional_mutual_information({1}, {2}, {0})(pmf))
         else:
+
             def _run(source, rng):
                 others = sum((i for i in sources if i != source), ())
                 dm = d.coalesce([source, others, target])
                 broja = BROJAOptimizer(dm, (0,), ((1,),), (2,))
                 broja.optimize(niter=1, maxiter=maxiter, rng=rng)
-                d_opt = broja.construct_dist()
-                return coinformation(d_opt, [[0], [2]], [1])
+                pmf = _optimized_pmf(broja)
+                # I[source : target | others]
+                cmi = broja._conditional_mutual_information(broja._source, broja._target, broja._others)
+                return float(cmi(pmf))
 
             for source, value in zip(sources, parallel_sweep(_run, sources), strict=True):
                 uniques[source] = value

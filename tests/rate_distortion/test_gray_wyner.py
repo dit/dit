@@ -122,9 +122,7 @@ def test_lossy_wyner_decreasing():
     dm = [hamming_matrix(2), hamming_matrix(2)]
 
     c0 = float(lossy_wyner_common_information(d, niter=4, maxiter=400))
-    c_big = float(
-        lossy_wyner_common_information(d, bounds=[0.45, 0.45], distortions=dm, niter=5, maxiter=500)
-    )
+    c_big = float(lossy_wyner_common_information(d, bounds=[0.45, 0.45], distortions=dm, niter=5, maxiter=500))
     assert c_big < c0 - 0.1
 
 

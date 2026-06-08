@@ -107,15 +107,15 @@ class DeltaLambdaOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
             B = pmf.sum(axis=(0, 1))
 
             with np.errstate(divide="ignore"):
-                log_A = np.log2(np.maximum(A, 1e-300))          # (|X|, |M|)
+                log_A = np.log2(np.maximum(A, 1e-300))  # (|X|, |M|)
                 log_B_aligned = np.log2(np.maximum(B, 1e-300)).T  # (|X'|=|X|, |M|)
 
             # contribution flowing through A[x, m], broadcast over Y and X'.
-            a_term = log_A - log_B_aligned + 1.0 / ln2           # (|X|, |M|)
+            a_term = log_A - log_B_aligned + 1.0 / ln2  # (|X|, |M|)
             g_a = a_term.reshape(A.shape[0], 1, A.shape[1], 1)
 
             # contribution flowing through B[m, x'], broadcast over X and Y.
-            b_term = -A.T / (np.maximum(B, 1e-300) * ln2)        # (|M|, |X'|)
+            b_term = -A.T / (np.maximum(B, 1e-300) * ln2)  # (|M|, |X'|)
             g_b = b_term.reshape(1, 1, B.shape[0], B.shape[1])
 
             kl_grad = np.broadcast_to(g_a, pmf.shape) + np.broadcast_to(g_b, pmf.shape)
@@ -249,9 +249,7 @@ class PID_DeltaLambda(BaseBivariatePID):
             src, oth = args
             return _delta_lambda(d, src, oth, target, lam=lam, bound=bound, niter=niter, rng=rng)
 
-        delta_ab, delta_ba = parallel_sweep(
-            _run, [(source_a, source_b), (source_b, source_a)]
-        )
+        delta_ab, delta_ba = parallel_sweep(_run, [(source_a, source_b), (source_b, source_a)])
 
         mi_a = coinformation(d, [source_a, target])
         mi_b = coinformation(d, [source_b, target])

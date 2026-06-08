@@ -116,6 +116,7 @@ class GrayWynerCurve:
         maxiter : int
             Inner optimizer iterations.
         """
+
         def _run(s, rng):
             lambdas = [1.0] + [float(s)] * self.n
             return self._network.rate_point(lambdas, niter=niter, maxiter=maxiter, rng=rng)

@@ -9,7 +9,6 @@ that live at its corners.
 import numpy as np
 
 from ...algorithms.optimization import parallel_sweep
-from ...exceptions import ditException
 from ...utils import flatten, unitful
 from .optimizer import GrayWynerOptimizer
 

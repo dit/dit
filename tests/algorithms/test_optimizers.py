@@ -105,7 +105,7 @@ def test_analytic_gradients_match_fd(Optimizer):
     finite-difference step error.
     """
     np.random.seed(0)
-    d = uniform(["{:04b}".format(i) for i in range(16)])
+    d = uniform([f"{i:04b}" for i in range(16)])
     opt = Optimizer(d, [[0, 1], [1, 2], [2, 3]])
     opt.objective = MethodType(opt._objective(), opt)
 
@@ -140,6 +140,10 @@ def _auxvar_gradient_cases():
         IntrinsicDualTotalCorrelation,
         IntrinsicTotalCorrelation,
     )
+    from dit.multivariate.secret_key_agreement.minimal_intrinsic_mutual_informations import (
+        MinimalIntrinsicDualTotalCorrelation,
+        MinimalIntrinsicTotalCorrelation,
+    )
     from dit.multivariate.secret_key_agreement.one_way_skar import OneWaySKAR
     from dit.pid.measures.ideltalambda import DeltaLambdaOptimizer
     from dit.rate_distortion.information_bottleneck import InformationBottleneck
@@ -156,6 +160,8 @@ def _auxvar_gradient_cases():
         ("stochastic_gk", StochasticGKCommonInformation(xor, [[0], [1]], [2])),
         ("intrinsic_tc", IntrinsicTotalCorrelation(xor, [[0], [1]], [2], bound=2)),
         ("intrinsic_dtc", IntrinsicDualTotalCorrelation(xor, [[0], [1]], [2], bound=2)),
+        ("minimal_tc", MinimalIntrinsicTotalCorrelation(skar_dist, [[0], [1]], [2], bound=3)),
+        ("minimal_dtc", MinimalIntrinsicDualTotalCorrelation(skar_dist, [[0], [1]], [2], bound=3)),
         ("deweese_tc", DeWeeseTotalCorrelation(xor, [[0], [1], [2]], [])),
         ("deweese_coi", DeWeeseCoInformation(xor, [[0], [1], [2]], [])),
         ("deweese_dtc", DeWeeseDualTotalCorrelation(xor, [[0], [1], [2]], [])),

@@ -14,7 +14,6 @@ import pytest
 
 from dit import Distribution
 from dit.algorithms.optimization import _resolve_n_jobs, parallel_sweep
-from dit.example_dists import Xor
 
 
 @contextmanager

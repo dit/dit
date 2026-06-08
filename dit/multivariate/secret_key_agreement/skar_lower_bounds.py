@@ -41,6 +41,7 @@ def secrecy_capacity_skar(dist, rvs=None, crvs=None, niter=None, bound_u=None, b
     sc : float
         The secrecy capacity.
     """
+
     def _run(roles, rng):
         x, y = roles
         return secrecy_capacity(dist, x, y, crvs, niter=niter, bound_u=bound_u, backend=backend, rng=rng)
