@@ -457,11 +457,16 @@ def _optimize_over_stochastic(objective, n_rows, n_cols, nstarts=15):
     """
     Minimize ``objective(params)`` where ``params`` is mapped to a
     row-stochastic matrix via :func:`_params_to_stochastic`.
+
+    A fixed local RNG seeds the random restarts so the result is
+    reproducible (the multistart is a deterministic function of its inputs);
+    this keeps property tests that depend on these values from flaking.
     """
     n_params = n_rows * n_cols
+    rng = np.random.default_rng(0)
     best = np.inf
     for _ in range(nstarts):
-        x0 = np.random.randn(n_params) * 0.3
+        x0 = rng.standard_normal(n_params) * 0.3
         res = minimize(objective, x0, method="L-BFGS-B", options={"maxiter": 500})
         if res.fun < best:
             best = res.fun

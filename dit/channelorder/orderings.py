@@ -72,40 +72,66 @@ def is_output_degraded(mu, kappa, atol=1e-8):
     n_s, n_z = mu.shape
     _, n_y = kappa.shape
 
-    # We solve for the full lambda matrix (n_z x n_y), stacked as a
-    # vector of length n_z * n_y.  For each (s, y) we have the equality
-    # constraint:  Σ_z lambda(y|z) mu_s(z) = kappa_s(y).
-    # Plus: for each z, Σ_y lambda(y|z) = 1, lambda >= 0.
+    # We solve for the full lambda matrix (n_z x n_y), stacked as a vector of
+    # length n_z * n_y, plus a scalar slack t.  Rather than asking the LP
+    # whether the exact reproduction system is feasible (which is numerically
+    # brittle for near-degenerate channels -- e.g. a near-zero output column
+    # makes the equality system ill-conditioned and HiGHS may report a true
+    # degraded pair as infeasible), we minimise the worst-case reproduction
+    # error and declare degradedness when it falls within ``atol``:
+    #
+    #   min_{lambda, t} t
+    #   s.t.  |Σ_z lambda(y|z) mu_s(z) - kappa_s(y)| <= t   for all (s, y)
+    #         Σ_y lambda(y|z) = 1                           for all z
+    #         lambda >= 0, t >= 0.
+    #
+    # This LP is always feasible, so a genuine degraded pair reliably yields
+    # t* ~ 0 (output-degradedness is exactly ``le_cam_deficiency == 0``).
 
-    n_vars = n_z * n_y
-
-    # Equality constraints: A_eq @ x = b_eq
-    # (1) channel reproduction: n_s * n_y constraints
-    # (2) row-stochastic: n_z constraints
-    n_eq = n_s * n_y + n_z
-    A_eq = np.zeros((n_eq, n_vars))
-    b_eq = np.zeros(n_eq)
-
-    idx = 0
-    for s in range(n_s):
-        for y in range(n_y):
-            for z in range(n_z):
-                A_eq[idx, z * n_y + y] = mu[s, z]
-            b_eq[idx] = kappa[s, y]
-            idx += 1
-
-    for z in range(n_z):
-        for y in range(n_y):
-            A_eq[idx, z * n_y + y] = 1.0
-        b_eq[idx] = 1.0
-        idx += 1
+    n_vars = n_z * n_y + 1  # lambda, then t
+    idx_t = n_z * n_y
 
     c = np.zeros(n_vars)
+    c[idx_t] = 1.0
+
+    rows_ub = []
+    b_ub = []
+    for s in range(n_s):
+        for y in range(n_y):
+            row = np.zeros(n_vars)
+            for z in range(n_z):
+                row[z * n_y + y] = mu[s, z]
+            row[idx_t] = -1.0
+            rows_ub.append(row)  # Σ lambda mu - t <= kappa
+            b_ub.append(kappa[s, y])
+
+            row2 = np.zeros(n_vars)
+            for z in range(n_z):
+                row2[z * n_y + y] = -mu[s, z]
+            row2[idx_t] = -1.0
+            rows_ub.append(row2)  # -Σ lambda mu - t <= -kappa
+            b_ub.append(-kappa[s, y])
+
+    A_eq = np.zeros((n_z, n_vars))
+    b_eq = np.ones(n_z)
+    for z in range(n_z):
+        for y in range(n_y):
+            A_eq[z, z * n_y + y] = 1.0
+
     bounds = [(0, None)] * n_vars
 
-    res = linprog(c, A_eq=A_eq, b_eq=b_eq, bounds=bounds, method="highs", options={"presolve": True})
+    res = linprog(
+        c,
+        A_ub=np.array(rows_ub),
+        b_ub=np.array(b_ub),
+        A_eq=A_eq,
+        b_eq=b_eq,
+        bounds=bounds,
+        method="highs",
+        options={"presolve": True},
+    )
 
-    return res.success and res.status == 0
+    return bool(res.success) and res.fun <= atol
 
 
 is_blackwell_sufficient = is_output_degraded
@@ -143,16 +169,52 @@ def is_input_degraded(mu_bar, kappa_bar, atol=1e-8):
     if n_s != n_s2:
         raise ValueError("Channels must share the same output alphabet size")
 
-    # For each row kappa_bar[y], find weights w[z] >= 0, Σ_z w[z] = 1,
-    # such that kappa_bar[y] = Σ_z w[z] mu_bar[z].
+    # For each row kappa_bar[y], find weights w[z] >= 0, Σ_z w[z] = 1, such
+    # that kappa_bar[y] = Σ_z w[z] mu_bar[z].  As in :func:`is_output_degraded`,
+    # we minimise the worst-case residual (with a slack t) and accept the row
+    # when it falls within ``atol`` -- this is robust to the ill-conditioned
+    # equality systems that arise for near-degenerate reverse channels.
+    #
+    #   min_{w, t} t  s.t. |Σ_z w[z] mu_bar[z, s] - kappa_bar[y, s]| <= t,
+    #                      Σ_z w[z] = 1, w >= 0, t >= 0.
+    n_vars = n_z + 1
+    idx_t = n_z
+    c = np.zeros(n_vars)
+    c[idx_t] = 1.0
+
+    A_eq = np.zeros((1, n_vars))
+    A_eq[0, :n_z] = 1.0
+    b_eq = np.array([1.0])
+
+    bounds = [(0, None)] * n_vars
+
     for y in range(n_y):
-        # Equality: mu_bar.T @ w = kappa_bar[y]  and  1.T @ w = 1
-        A_eq = np.vstack([mu_bar.T, np.ones((1, n_z))])
-        b_eq = np.append(kappa_bar[y], 1.0)
-        c = np.zeros(n_z)
-        bounds = [(0, None)] * n_z
-        res = linprog(c, A_eq=A_eq, b_eq=b_eq, bounds=bounds, method="highs", options={"presolve": True})
-        if not (res.success and res.status == 0):
+        rows_ub = []
+        b_ub = []
+        for s in range(n_s):
+            row = np.zeros(n_vars)
+            row[:n_z] = mu_bar[:, s]
+            row[idx_t] = -1.0
+            rows_ub.append(row)
+            b_ub.append(kappa_bar[y, s])
+
+            row2 = np.zeros(n_vars)
+            row2[:n_z] = -mu_bar[:, s]
+            row2[idx_t] = -1.0
+            rows_ub.append(row2)
+            b_ub.append(-kappa_bar[y, s])
+
+        res = linprog(
+            c,
+            A_ub=np.array(rows_ub),
+            b_ub=np.array(b_ub),
+            A_eq=A_eq,
+            b_eq=b_eq,
+            bounds=bounds,
+            method="highs",
+            options={"presolve": True},
+        )
+        if not (bool(res.success) and res.fun <= atol):
             return False
 
     return True
@@ -340,9 +402,10 @@ def is_less_noisy(mu, kappa, atol=1e-8):
         return -(mi_uy - mi_uz)
 
     n_params = n_u + n_u * n_s
+    rng = np.random.default_rng(0)
     for _ in range(15):
-        x0 = np.random.randn(n_params) * 0.5
-        res = minimize(neg_gap_aux, x0, method="L-BFGS-B")
+        x0 = rng.standard_normal(n_params) * 0.5
+        res = minimize(neg_gap_aux, x0, method="L-BFGS-B", options={"maxiter": 500})
         val = -res.fun
         if val > best_gap:
             best_gap = val
@@ -435,8 +498,9 @@ def is_shannon_included(mu, kappa, atol=1e-8, niter=None):
     n_params = k + k * n_sp * n_s + k * n_z * n_y
 
     best_res = np.inf
+    rng = np.random.default_rng(0)
     for _ in range(niter):
-        x0 = np.random.randn(n_params) * 0.3
+        x0 = rng.standard_normal(n_params) * 0.3
         res = minimize(residual, x0, method="L-BFGS-B", options={"maxiter": 500})
         if res.fun < best_res:
             best_res = res.fun
@@ -493,9 +557,10 @@ def _multistart_simplex_opt(neg_func, n, nstarts=10):
     of ``-neg_func``.
     """
     best = np.inf
+    rng = np.random.default_rng(0)
     for _ in range(nstarts):
-        x0 = np.random.randn(n) * 0.5
-        res = minimize(neg_func, x0, method="L-BFGS-B")
+        x0 = rng.standard_normal(n) * 0.5
+        res = minimize(neg_func, x0, method="L-BFGS-B", options={"maxiter": 500})
         if res.fun < best:
             best = res.fun
     return -best
