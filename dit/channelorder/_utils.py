@@ -15,6 +15,13 @@ __all__ = (
     "reverse_channels_from_joint",
 )
 
+# Inputs whose marginal probability falls below this are treated as not
+# occurring. Their conditional channel rows are obtained by dividing the joint
+# by a ~zero marginal, which amplifies subnormal floating-point underflow into
+# meaningless (and order-breaking) rows, so they are dropped before any channel
+# comparison. Matches the "effectively zero" convention used in deficiency.py.
+_PROB_TOL = 1e-300
+
 
 def channel_matrix(channel):
     """
@@ -102,6 +109,10 @@ def channels_from_joint(dist, S, Y, Z):
     mu = cdist_array(cdists_z, base="linear", mode="dense")
     pi_s = np.array(marg_s.pmf, dtype=float)
 
+    keep = pi_s >= _PROB_TOL
+    if not keep.all():
+        kappa, mu, pi_s = kappa[keep], mu[keep], pi_s[keep]
+
     return kappa, mu, pi_s
 
 
@@ -149,6 +160,13 @@ def reverse_channels_from_joint(dist, S, Y, Z):
     mu_bar = cdist_array(cdists_s_given_z, base="linear", mode="dense")
     pi_y = np.array(marg_y.pmf, dtype=float)
     pi_z = np.array(marg_z.pmf, dtype=float)
+
+    keep_y = pi_y >= _PROB_TOL
+    if not keep_y.all():
+        kappa_bar, pi_y = kappa_bar[keep_y], pi_y[keep_y]
+    keep_z = pi_z >= _PROB_TOL
+    if not keep_z.all():
+        mu_bar, pi_z = mu_bar[keep_z], pi_z[keep_z]
 
     return kappa_bar, mu_bar, pi_y, pi_z
 
