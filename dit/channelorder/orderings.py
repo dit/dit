@@ -264,7 +264,7 @@ def _mi_from_channel(pi_s, ch):
     return mi
 
 
-def is_more_capable(mu, kappa, atol=1e-8):
+def is_more_capable(mu, kappa, atol=1e-6):
     """
     Check whether ``mu`` is more capable than ``kappa``.
 
@@ -279,6 +279,9 @@ def is_more_capable(mu, kappa, atol=1e-8):
         Channel ``P(Y|S)``.
     atol : float
         Tolerance: the order holds if max ``I(S;Y)-I(S;Z)`` <= atol.
+        Defaults to ``1e-6``, comfortably above the residual noise of the
+        non-convex multistart maximization and well below genuine order
+        violations.
 
     Returns
     -------
@@ -299,7 +302,7 @@ def is_more_capable(mu, kappa, atol=1e-8):
 # ── Less noisy order ───────────────────────────────────────────────────────
 
 
-def is_less_noisy(mu, kappa, atol=1e-8):
+def is_less_noisy(mu, kappa, atol=1e-6):
     """
     Check whether ``mu`` is less noisy than ``kappa``.
 
@@ -320,7 +323,7 @@ def is_less_noisy(mu, kappa, atol=1e-8):
     kappa : array_like
         Channel ``P(Y|S)``.
     atol : float
-        Tolerance.
+        Tolerance (default ``1e-6``; see :func:`is_more_capable`).
 
     Returns
     -------
