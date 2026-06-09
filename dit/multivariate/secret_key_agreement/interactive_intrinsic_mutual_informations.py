@@ -119,37 +119,17 @@ class InteractiveSKARMixin:
 
         return objective
 
-    def _objective_gradient(self):
-        """
-        Gradient of ``-max_i sum(values[i:])`` w.r.t. the joint.
-
-        The objective is a ``max`` over partial sums of CMI differences; the
-        gradient of the active (argmax) slice is a valid subgradient.
-        """
-        arvs = sorted(self._arvs)
-
-        def _terms(builder):
-            evens = [
-                (builder(self._y, {arvs[i]}, set(arvs[:i])), builder(self._crvs, {arvs[i]}, set(arvs[:i])))
-                for i in range(0, self._rounds, 2)
-            ]
-            odds = [
-                (builder(self._x, {arvs[i]}, set(arvs[:i])), builder(self._crvs, {arvs[i]}, set(arvs[:i])))
-                for i in range(1, self._rounds, 2)
-            ]
-            return [term for term in chain.from_iterable(zip_longest(evens, odds)) if term]
-
-        value_terms = _terms(self._conditional_mutual_information)
-        grad_terms = _terms(self._conditional_mutual_information_grad)
-
-        def grad(pmf):
-            values = [a(pmf) - b(pmf) for a, b in value_terms]
-            sums = [sum(values[i:]) for i in range(self._rounds)]
-            istar = max(range(self._rounds), key=lambda i: sums[i])
-            g = sum(ga(pmf) - gb(pmf) for ga, gb in grad_terms[istar:])
-            return -g
-
-        return grad
+    # NOTE: No analytic ``_objective_gradient`` is provided on purpose. The
+    # objective is ``-max_i sum(values[i:])`` -- a non-smooth maximum over
+    # partial sums of CMI differences. The argmax-slice gradient is only a
+    # subgradient, and feeding it to SLSQP makes the line search stall just
+    # short of the exact vertex optimum (e.g. returning 0.124xx instead of the
+    # true 0.125 on the symmetric "erase" distribution), so the lower bound
+    # never matches the tight upper bound and ``two_way_skar`` returns nan
+    # (flaky test_pid_tw1). Falling back to SciPy's finite differences reaches
+    # the exact optimum reliably; combined with the ``_objective_bound`` set in
+    # ``__init__`` the optimizer early-stops there. Do not re-add an analytic
+    # gradient for this non-smooth objective.
 
 
 # ── Backward-compatible composed class (numpy backend) ────────────────────
