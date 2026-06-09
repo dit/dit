@@ -237,9 +237,7 @@ def test_prob_union_computes_linear_pmf_when_omitted():
 
     d = bivariates["unique 1"]
     outcome = d.outcomes[0]
-    assert _prob_union(d, outcome, ((0,),)) == pytest.approx(
-        _prob_union(d, outcome, ((0,),), linear_pmf=d.pmf)
-    )
+    assert _prob_union(d, outcome, ((0,),)) == pytest.approx(_prob_union(d, outcome, ((0,),), linear_pmf=d.pmf))
 
 
 if __name__ == "__main__":

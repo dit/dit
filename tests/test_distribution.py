@@ -1516,9 +1516,7 @@ class TestScalarArithmetic:
         a = Distribution([("a",), ("b",)], [0.5, 0.5])
         b = Distribution([("x",), ("y",)], [0.5, 0.5])
         prod = a @ b
-        assert _as_dict(prod) == pytest.approx(
-            {("a", "x"): 0.25, ("a", "y"): 0.25, ("b", "x"): 0.25, ("b", "y"): 0.25}
-        )
+        assert _as_dict(prod) == pytest.approx({("a", "x"): 0.25, ("a", "y"): 0.25, ("b", "x"): 0.25, ("b", "y"): 0.25})
 
     def test_matmul_rejects_scalar(self):
         assert _d6().__matmul__(3) is NotImplemented
