@@ -99,6 +99,11 @@ dev = [
 [tool.uv]
 override-dependencies = ["pycddlib; sys_platform == 'never'"]
 
+[tool.uv.sources]
+# lattices 0.4.0 (adds Lattice.chains(), required by ShapleyDependencyDecomposition)
+# is tagged on GitHub but not yet on PyPI; install it from the tag until released.
+lattices = { git = "https://github.com/dit/lattices.git", tag = "v0.4.0" }
+
 # ── Build configuration ─────────────────────────────────────────────────
 
 [tool.hatch.version]
