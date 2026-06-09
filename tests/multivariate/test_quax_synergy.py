@@ -8,6 +8,7 @@ import pytest
 from dit import Distribution
 from dit.example_dists import And, Xor
 from dit.multivariate import max_synergistic_entropy, quax_synergy
+from dit.multivariate.quax_synergy import SRVOptimizer
 
 # ---------------------------------------------------------------------------
 # max_synergistic_entropy (analytical, no optimisation)
@@ -52,6 +53,12 @@ def test_mse_unequal_marginals():
     assert max_synergistic_entropy(d, [[0], [1]]) == pytest.approx(1.0)
 
 
+def test_mse_conditional():
+    """The conditional branch: given Z=X^Y, X and Y add no joint entropy."""
+    d = Distribution(["000", "011", "101", "110"], [1 / 4] * 4)
+    assert max_synergistic_entropy(d, [[0], [1]], crvs=[2]) == pytest.approx(0.0)
+
+
 # ---------------------------------------------------------------------------
 # quax_synergy (optimisation-based)
 # ---------------------------------------------------------------------------
@@ -62,6 +69,23 @@ def test_synergy_single_source():
     d = Distribution(["00", "01", "10", "11"], [1 / 4] * 4)
     val = quax_synergy(d, sources=[[0]], target=[1])
     assert val == pytest.approx(0.0, abs=1e-3)
+
+
+def test_srv_optimizer_smoke():
+    """Build the SRV optimizer and evaluate its objective once, no optimizing."""
+    d = Xor()
+    opt = SRVOptimizer(d, [[0], [1]], [2])
+    assert opt.compute_bound() == 5
+
+    x = opt.construct_random_initial()
+    assert np.isfinite(opt._objective()(opt, x))
+
+    isyn = opt.synergistic_information(x)
+    assert np.isfinite(isyn)
+    assert isyn >= -1e-9
+
+    for fn in opt._mi_closures["per_source"].values():
+        assert np.isfinite(opt._squared_mi(x, fn))
 
 
 @pytest.mark.slow
