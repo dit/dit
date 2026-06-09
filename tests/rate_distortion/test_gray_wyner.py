@@ -49,7 +49,7 @@ def test_unknown_attribute_raises():
     import dit.rate_distortion.gray_wyner as gw
 
     with pytest.raises(AttributeError, match="has no attribute"):
-        gw.NotARealAttribute
+        _ = gw.NotARealAttribute
 
 
 def test_corner_points_giant_bit():
