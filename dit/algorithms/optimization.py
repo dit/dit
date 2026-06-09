@@ -1141,10 +1141,12 @@ class BaseOptimizer(metaclass=ABCMeta):
         atol = 1e-8
 
         results = []
+        all_results = []
 
         if x0 is not None:
             logger.debug("Shotgun: trying provided initial condition")
             res = minimize(fun=self.objective, x0=x0.flatten(), **minimizer_kwargs)
+            all_results.append(res)
             if res.success:
                 results.append(res)
                 if bound is not None and res.fun <= bound + atol:
@@ -1171,12 +1173,14 @@ class BaseOptimizer(metaclass=ABCMeta):
 
             with ThreadPoolExecutor(max_workers=n_jobs) as executor:
                 for res in executor.map(_run, ics):
+                    all_results.append(res)
                     if res.success:
                         results.append(res)
         else:
             for i, initial in enumerate(ics):
                 logger.debug("Shotgun: random initial condition {i}/{niter}", i=i + 1, niter=len(ics))
                 res = minimize(fun=self.objective, x0=initial.flatten(), **minimizer_kwargs)
+                all_results.append(res)
                 if res.success:
                     results.append(res)
                     if bound is not None and res.fun <= bound + atol:
@@ -1185,10 +1189,60 @@ class BaseOptimizer(metaclass=ABCMeta):
 
         try:
             result = min(results, key=lambda r: r.fun)
-        except ValueError:  # pragma: no cover
-            result = None
+        except ValueError:
+            # No start reported success. SLSQP routinely flags success=False
+            # (e.g. "Positive directional derivative for linesearch") at a point
+            # that is nonetheless feasible and optimal, so discarding every such
+            # candidate would spuriously raise OptimizationException. Fall back
+            # to the lowest-objective feasible candidate before giving up.
+            result = self._best_feasible(all_results, minimizer_kwargs)
 
         return result
+
+    @staticmethod
+    def _best_feasible(results, minimizer_kwargs, ftol=1e-6):
+        """
+        Select the lowest-objective feasible result from a set of (possibly
+        unsuccessful) local minimizations.
+
+        Used as a fallback in :meth:`_optimize_shotgun` when no start reports
+        ``success``: SLSQP often returns ``success=False`` at a feasible
+        optimum, and treating those as total failures is what produces flaky
+        ``OptimizationException`` errors.
+
+        Parameters
+        ----------
+        results : list of OptimizeResult
+            Every local minimization attempted, regardless of ``success``.
+        minimizer_kwargs : dict
+            The kwargs passed to ``minimize``; its ``constraints`` are used to
+            judge feasibility.
+        ftol : float
+            Tolerance for constraint satisfaction.
+
+        Returns
+        -------
+        result : OptimizeResult, None
+            The best feasible result, or None if none are feasible.
+        """
+        constraints = minimizer_kwargs.get("constraints", ()) or ()
+        if isinstance(constraints, dict):
+            constraints = (constraints,)
+
+        def feasible(x):
+            for con in constraints:
+                value = np.atleast_1d(con["fun"](x))
+                violation = np.max(np.abs(value)) if con["type"] == "eq" else -np.min(value)
+                if violation > ftol:
+                    return False
+            return True
+
+        feasible_results = [r for r in results if r.x is not None and np.isfinite(r.fun) and feasible(r.x)]
+
+        try:
+            return min(feasible_results, key=lambda r: r.fun)
+        except ValueError:
+            return None
 
     def _polish(self, cutoff=1e-6):
         """
