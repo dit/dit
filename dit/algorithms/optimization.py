@@ -813,6 +813,51 @@ class BaseOptimizer(metaclass=ABCMeta):
 
         return caekl_mutual_information
 
+    def _caekl_mutual_information_grad(self, rvs, crvs=None):
+        """
+        Gradient builder for :meth:`_caekl_mutual_information`.
+
+        CAEKL is a ``min`` over partitions; the gradient of the active (argmin)
+        partition is a valid subgradient (the same trick used by the ``min``/
+        ``max`` objectives elsewhere). Differentiable except on the measure-zero
+        set where the argmin switches.
+        """
+        if crvs is None:
+            crvs = set()
+        parts = [p for p in partitions(rvs) if len(p) > 1]
+        idx_parts = {}
+        for part in parts:
+            for p in part:
+                if p not in idx_parts:
+                    idx_parts[p] = tuple(self._all_vars - (p | crvs))
+        part_norms = [len(part) - 1 for part in parts]
+        idx_joint = tuple(self._all_vars - (rvs | crvs))
+        idx_crvs = tuple(self._all_vars - crvs)
+
+        def grad(pmf):
+            # Recompute the candidates to find the active (argmin) partition.
+            pmf_joint = pmf.sum(axis=idx_joint, keepdims=True)
+            pmf_parts = {p: pmf_joint.sum(axis=idx, keepdims=True) for p, idx in idx_parts.items()}
+            pmf_crvs = pmf_joint.sum(axis=idx_crvs, keepdims=True)
+
+            h_crvs = self._h(pmf_crvs)
+            h_joint = self._h(pmf_joint) - h_crvs
+
+            pairs = list(zip(parts, part_norms, strict=True))
+            candidates = [(sum(self._h(pmf_parts[p]) - h_crvs for p in part) - h_joint) / norm for part, norm in pairs]
+
+            idx_min = min(range(len(candidates)), key=lambda i: candidates[i])
+            part, norm = pairs[idx_min]
+
+            # d/dpmf of (sum_p H(p) - (|part|-1) H(crvs) - H(joint)) / norm.
+            g = sum(self._marginal_entropy_grad(pmf, idx_parts[p]) for p in part)
+            g = g - (len(part) - 1) * self._marginal_entropy_grad(pmf, idx_crvs)
+            g = g - self._marginal_entropy_grad(pmf, idx_joint)
+            g = g / norm
+            return self._full_grad(g, pmf)
+
+        return grad
+
     def _maximum_correlation(self, rv_x, rv_y):
         """
         Compute the maximum correlation.

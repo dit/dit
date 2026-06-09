@@ -115,6 +115,16 @@ class MinimalIntrinsicCAEKLMutualInformation(BaseMinimalIntrinsicMutualInformati
         """
         return self._caekl_mutual_information(rvs, crvs)
 
+    def _objective_gradient(self):
+        """Gradient of ``J[X:Y:...|U] + I[XY:U|Z]`` w.r.t. the joint."""
+        caekl_grad = self._caekl_mutual_information_grad(self._rvs, self._arvs)
+        cmi_grad = self._conditional_mutual_information_grad(self._rvs, self._arvs, self._crvs)
+
+        def grad(pmf):
+            return caekl_grad(pmf) + cmi_grad(pmf)
+
+        return grad
+
 
 minimal_intrinsic_CAEKL_mutual_information = MinimalIntrinsicCAEKLMutualInformation.functional()
 
