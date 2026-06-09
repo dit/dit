@@ -34,3 +34,13 @@ def test_mui_profile(d, prof, width):
     mui = MUIProfile(d)
     assert mui.profile == prof
     assert np.allclose(mui.widths, width)
+
+
+def test_mui_profile_degenerate():
+    """
+    A deterministic distribution has no LP form, yielding a trivial profile.
+    """
+    d = Distribution(["0"], [1.0])
+    mui = MUIProfile(d)
+    assert mui.profile == {0.0: 0.0}
+    assert np.allclose(mui.widths, [0.0])
