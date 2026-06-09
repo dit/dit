@@ -136,11 +136,16 @@ def _auxvar_gradient_cases():
         DeWeeseDualTotalCorrelation,
         DeWeeseTotalCorrelation,
     )
+    from dit.multivariate.secret_key_agreement.base_skar_optimizers import (
+        InnerTwoPartIntrinsicMutualInformation,
+    )
+    from dit.multivariate.secret_key_agreement.interactive_intrinsic_mutual_informations import InteractiveSKAR
     from dit.multivariate.secret_key_agreement.intrinsic_mutual_informations import (
         IntrinsicDualTotalCorrelation,
         IntrinsicTotalCorrelation,
     )
     from dit.multivariate.secret_key_agreement.minimal_intrinsic_mutual_informations import (
+        MinimalIntrinsicCAEKLMutualInformation,
         MinimalIntrinsicDualTotalCorrelation,
         MinimalIntrinsicTotalCorrelation,
     )
@@ -154,6 +159,7 @@ def _auxvar_gradient_cases():
 
     xor = Xor()
     skar_dist = uniform(["000", "011", "101", "110"])
+    inner_dist = uniform(["0000", "0011", "0101", "0110", "1001", "1010", "1100", "1111"])
     rd_dist = uniform(["000", "011", "101", "110", "001", "010"])
     return [
         ("exact", ExactCommonInformation(xor, [[0], [1]], [2])),
@@ -162,6 +168,12 @@ def _auxvar_gradient_cases():
         ("intrinsic_dtc", IntrinsicDualTotalCorrelation(xor, [[0], [1]], [2], bound=2)),
         ("minimal_tc", MinimalIntrinsicTotalCorrelation(skar_dist, [[0], [1]], [2], bound=3)),
         ("minimal_dtc", MinimalIntrinsicDualTotalCorrelation(skar_dist, [[0], [1]], [2], bound=3)),
+        ("minimal_caekl", MinimalIntrinsicCAEKLMutualInformation(skar_dist, [[0], [1]], [2], bound=3)),
+        ("interactive_skar", InteractiveSKAR(skar_dist, rv_x=[0], rv_y=[1], rv_z=[2], rounds=3)),
+        (
+            "inner_two_part",
+            InnerTwoPartIntrinsicMutualInformation(inner_dist, rvs=[[0], [1]], crvs=[2], j=[3], bound_u=2, bound_v=2),
+        ),
         ("deweese_tc", DeWeeseTotalCorrelation(xor, [[0], [1], [2]], [])),
         ("deweese_coi", DeWeeseCoInformation(xor, [[0], [1], [2]], [])),
         ("deweese_dtc", DeWeeseDualTotalCorrelation(xor, [[0], [1], [2]], [])),

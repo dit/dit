@@ -419,6 +419,16 @@ class InnerTwoPartIMIMixin:
 
         return objective
 
+    def _objective_gradient(self):
+        """Gradient of ``-(I[U:J|V] - I[U:Z|V])`` w.r.t. the joint."""
+        cmi1_grad = self._conditional_mutual_information_grad(self._u, self._j, self._v)
+        cmi2_grad = self._conditional_mutual_information_grad(self._u, self._crvs, self._v)
+
+        def grad(pmf):
+            return -(cmi1_grad(pmf) - cmi2_grad(pmf))
+
+        return grad
+
 
 class TwoPartIMIMixin:
     """
