@@ -196,6 +196,63 @@ def test_auxvar_analytic_gradients_match_fd(label, opt):
     assert worst < 1e-3, f"{label}: analytic vs FD gradient mismatch {worst:.2e}"
 
 
+def test_igh_analytic_gradients_match_fd():
+    """
+    The GHOptimizer objective gradient (``_jacobian``) and the analytic
+    Markov-chain equality-constraint jacobian must both agree with SciPy's
+    finite-difference gradients at interior points.
+    """
+    from dit.pid.distributions import bivariates
+    from dit.pid.measures.igh import GHOptimizer
+
+    np.random.seed(0)
+    opt = GHOptimizer(bivariates["and"], [[0], [1]], [2])
+    opt.objective = MethodType(opt._objective(), opt)
+    con_fun = opt.constraint_markov_chains()
+    con_jac = opt.constraint_markov_chains_jac()
+
+    for _ in range(6):
+        x = np.asarray(opt.construct_random_initial()).ravel()
+        x = 0.7 * x + 0.3 * np.asarray(opt.construct_random_initial()).ravel()
+
+        obj_an = opt._jacobian(x)
+        obj_fd = approx_fprime(x, lambda v: float(opt.objective(v)), 1e-7)
+        assert obj_an == pytest.approx(obj_fd, abs=1e-3)
+
+        con_an = con_jac(x)
+        con_fd = approx_fprime(x, lambda v: float(con_fun(v)), 1e-7)
+        assert con_an == pytest.approx(con_fd, abs=1e-4)
+
+
+def test_imc_analytic_gradients_match_fd():
+    """
+    The ``imc`` objective/constraint jacobian building blocks (``_mi_grad_wrt_K``
+    composed with ``_softmax_vjp``) must agree with the finite-difference gradient
+    of ``params -> _mi_bits(pi, softmax(params))`` for both interior and
+    boundary (vertex/edge) input distributions.
+    """
+    from dit.pid.measures.imc import _mi_bits, _mi_grad_wrt_K, _params_to_stochastic, _softmax_vjp
+
+    rng = np.random.default_rng(0)
+    n_t, n_q = 3, 3
+    pis = [
+        np.array([0.5, 0.3, 0.2]),  # interior
+        np.array([1.0, 0.0, 0.0]),  # vertex (zeros in pi)
+        np.array([0.6, 0.4, 0.0]),  # edge (zero in pi)
+    ]
+    for pi in pis:
+        for _ in range(5):
+            params = rng.standard_normal(n_t * n_q)
+            k_q = _params_to_stochastic(params, n_t, n_q)
+            an = _softmax_vjp(k_q, _mi_grad_wrt_K(pi, k_q))
+            fd = approx_fprime(
+                params,
+                lambda v, _pi=pi: _mi_bits(_pi, _params_to_stochastic(v, n_t, n_q)),
+                1e-7,
+            )
+            assert an == pytest.approx(fd, abs=1e-5)
+
+
 def test_mincoinfo_1():
     """
     Test mincoinfo

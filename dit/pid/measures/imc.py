@@ -56,6 +56,33 @@ def _mi_bits(pi_t, ch):
     return mi
 
 
+def _mi_grad_wrt_K(pi_t, ch):
+    """
+    Gradient of :func:`_mi_bits` w.r.t. the channel ``ch``.
+
+    The ``-p log p`` terms cancel, leaving ``dI/dK[t, q] = pi[t] * log2(K[t,q]/p[q])``.
+    eps-guarded consistently with :func:`_mi_bits` (denominator only); ``ch`` from
+    softmax is strictly positive so the numerator never hits ``log2(0)``.
+    """
+    eps = 1e-300
+    p_out = pi_t @ ch
+    with np.errstate(divide="ignore", invalid="ignore"):
+        log_ratio = np.log2(ch / (p_out[None, :] + eps))
+    # Rows with pi[t] == 0 contribute nothing (and avoid 0 * -inf -> nan).
+    return np.where(pi_t[:, None] > 0, pi_t[:, None] * log_ratio, 0.0)
+
+
+def _softmax_vjp(ch, g):
+    """
+    Map an upstream gradient ``g = dObj/dK`` to the gradient w.r.t. the softmax
+    logits that produced ``ch`` (row-wise softmax via :func:`_params_to_stochastic`).
+
+    For ``y = softmax(z)``: ``dObj/dz = y * (g - sum_c g_c y_c)`` per row.
+    """
+    inner = (g * ch).sum(axis=1, keepdims=True)
+    return (ch * (g - inner)).ravel()
+
+
 def _sample_simplex(n_dim, n_samples, rng):
     """Draw n_samples points uniformly from the (n_dim-1)-simplex."""
     raw = rng.exponential(size=(n_samples, n_dim))
@@ -161,6 +188,10 @@ def _more_capable_ii(channels, pi_t, n_q=None, n_samples=None, niter=None, seed=
         k_q = _params_to_stochastic(params, n_t, n_q)
         return -_mi_bits(pi_t, k_q)
 
+    def _objective_jac(params):
+        k_q = _params_to_stochastic(params, n_t, n_q)
+        return _softmax_vjp(k_q, -_mi_grad_wrt_K(pi_t, k_q))
+
     constraint_list = []
     for k_idx in range(len(sampled_pi)):
 
@@ -168,7 +199,11 @@ def _more_capable_ii(channels, pi_t, n_q=None, n_samples=None, niter=None, seed=
             k_q = _params_to_stochastic(params, n_t, n_q)
             return mi_bounds[_k] - _mi_bits(sampled_pi[_k], k_q)
 
-        constraint_list.append({"type": "ineq", "fun": _con})
+        def _con_jac(params, _k=k_idx):
+            k_q = _params_to_stochastic(params, n_t, n_q)
+            return _softmax_vjp(k_q, -_mi_grad_wrt_K(sampled_pi[_k], k_q))
+
+        constraint_list.append({"type": "ineq", "fun": _con, "jac": _con_jac})
 
     # Initial points: near each source channel, plus random
     init_points = []
@@ -185,7 +220,12 @@ def _more_capable_ii(channels, pi_t, n_q=None, n_samples=None, niter=None, seed=
     for x0 in init_points:
         try:
             res = minimize(
-                _objective, x0, method="SLSQP", constraints=constraint_list, options={"maxiter": 300, "ftol": 1e-12}
+                _objective,
+                x0,
+                method="SLSQP",
+                jac=_objective_jac,
+                constraints=constraint_list,
+                options={"maxiter": 300, "ftol": 1e-12},
             )
             k_q = _params_to_stochastic(res.x, n_t, n_q)
             _check_and_update(k_q)
