@@ -766,6 +766,21 @@ class TestLogBase:
             atol=1e-10,
         )
 
+    def test_divide_in_log_space(self):
+        """p(X,Y) / p(X) in log space yields p(Y|X) in log space."""
+        p_xy = _make_pxy()
+        p_xy.set_base(2)
+        p_x = p_xy.marginal("X")
+        result = p_xy / p_x
+        assert result.is_log()
+        assert result.free_vars == frozenset({"Y"})
+        assert result.given_vars == frozenset({"X"})
+        np.testing.assert_allclose(
+            result.ops.exp(result.data.values),
+            np.array([[1 / 3, 2 / 3], [3 / 7, 4 / 7]]),
+            atol=1e-10,
+        )
+
     def test_outcomes_pmf_in_log(self):
         p = _make_pxy()
         outs_lin = p.outcomes
@@ -1507,6 +1522,15 @@ class TestScalarArithmetic:
 
     def test_matmul_rejects_scalar(self):
         assert _d6().__matmul__(3) is NotImplemented
+
+    def test_mul_scalar(self):
+        assert _as_dict(_d6() * 2) == pytest.approx(dict.fromkeys(range(2, 13, 2), 1 / 6))
+
+    def test_rmul_scalar(self):
+        assert _as_dict(2 * _d6()) == pytest.approx(dict.fromkeys(range(2, 13, 2), 1 / 6))
+
+    def test_mul_distribution(self):
+        assert _as_dict(_d2() * _d2()) == pytest.approx({1: 0.25, 2: 0.5, 4: 0.25})
 
     def test_add_scalar_shift(self):
         assert _as_dict(_d6() + 3) == pytest.approx(dict.fromkeys(range(4, 10), 1 / 6))
