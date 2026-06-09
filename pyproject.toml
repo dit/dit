@@ -154,8 +154,9 @@ omit = [
     "*/dit/utils/testing.py",
     # don't cover plotting code
     "dit/rate_distortion/plotting.py",
+    "*/dit/rate_distortion/gray_wyner/plotting.py",
     # don't cover table generation
-    "dit/pid/helplers.py",
+    "dit/pid/helpers.py",
     # JAX/Torch optimization backends are only exercised by very_slow tests
     "*/dit/algorithms/optimization_jax.py",
     "*/dit/algorithms/optimization_torch.py",
