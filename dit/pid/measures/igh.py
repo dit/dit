@@ -2,6 +2,8 @@
 The redundancy measure of Griffith & Ho.
 """
 
+import numpy as np
+
 from ...algorithms.optimization import BaseAuxVarOptimizer, BaseConvexOptimizer, OptimizationException
 from ...math import prod
 from ...shannon import entropy, mutual_information
@@ -52,6 +54,7 @@ class GHOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
                 {
                     "type": "eq",
                     "fun": self.constraint_markov_chains(),
+                    "jac": self.constraint_markov_chains_jac(),
                 },
             ]
 
@@ -79,6 +82,34 @@ class GHOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
             return sum(cmi(pmf) for cmi in cmis)
 
         return constraint
+
+    def constraint_markov_chains_jac(self):
+        """
+        Analytic Jacobian of :meth:`constraint_markov_chains` w.r.t. ``x``.
+
+        Composes the sum of conditional-mutual-information pmf-gradients with the
+        channel-parametrization VJP, mirroring :meth:`_jacobian`. Lets SLSQP
+        avoid finite-differencing the equality constraint.
+        """
+        cmi_grads = [self._conditional_mutual_information_grad(self._crvs, self._arvs, {rv}) for rv in self._rvs]
+
+        def jac(x):
+            pmf = self.construct_joint(x)
+            g = sum(cmi_grad(pmf) for cmi_grad in cmi_grads)
+            return self._construct_joint_vjp(x, np.asarray(g, dtype=float))
+
+        return jac
+
+    def _objective_gradient(self):
+        """
+        Analytic gradient of the ``-I[Q : Y]`` objective w.r.t. the joint.
+
+        Matches the objective ``mi = self._mutual_information(self._arvs,
+        self._crvs)`` in :meth:`_objective`; wired into SciPy via the base
+        :meth:`_jacobian`.
+        """
+        grad = self._mutual_information_grad(self._arvs, self._crvs)
+        return lambda pmf: -grad(pmf)
 
     def _objective(self):
         """
