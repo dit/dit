@@ -113,6 +113,14 @@ class IntrinsicMIMixin:
 
     name = ""
 
+    # The intrinsic measures are non-convex minimizations whose global optimum
+    # often requires a particular coarse-graining of the conditional variable.
+    # A single basin-hopping run from a random start lands in a local minimum
+    # too often (see flaky test_itc*). Use a multi-start "shotgun"; combined
+    # with ``_objective_bound = 0.0`` it early-stops as soon as the true optimum
+    # is reached, so the added starts cost little on the common zero cases.
+    _shotgun = 10
+
     def __init__(self, dist, rvs=None, crvs=None, bound=None):
         """
         Initialize the optimizer.
@@ -689,6 +697,32 @@ class BaseReducedIntrinsicMutualInformation(BaseMoreIntrinsicMutualInformation):
     """
 
     style = "reduced"
+
+    # The outer minimization over ``U`` is non-convex; a single basin-hopping
+    # run from a random start lands in a local minimum too often (returning,
+    # e.g., 0.337 where the true value is 0). The objective
+    # ``I[X:Y down ZU] + H[U]`` is non-negative, so ``_objective_bound = 0.0``
+    # lets the optimizer early-stop once the true optimum is reached, and
+    # :meth:`optimize` additionally tests the trivial-``U`` (constant) and copy
+    # initials -- the constant auxiliary reduces RIMI to the plain intrinsic MI,
+    # which is the optimum whenever a non-trivial ``U`` cannot help.
+    _objective_bound = 0.0
+
+    def optimize(self, *args, **kwargs):
+        """
+        Perform the optimization, then compare against the trivial-``U``
+        (constant) and copy initials and keep whichever yields the lowest
+        objective.
+        """
+        result = super().optimize(*args, **kwargs)
+
+        options = [
+            self.construct_constant_initial(),  # trivial auxiliary U
+            self.construct_copy_initial(),
+            result.x,  # found optima
+        ]
+
+        self._optima = min(options, key=lambda opt: self.objective(opt))
 
     @property
     @staticmethod

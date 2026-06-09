@@ -6,6 +6,7 @@ information-theoretic constructions.
 """
 
 import numpy as np
+import pytest
 
 from dit.channelorder.orderings import (
     blackwell_order_joint,
@@ -100,6 +101,12 @@ class TestInputDegraded:
         kappa_bar = np.array([[0.1, 0.1, 0.8]])
         assert not is_input_degraded(mu_bar, kappa_bar)
 
+    def test_mismatched_output_alphabet_raises(self):
+        mu_bar = np.array([[0.8, 0.2], [0.3, 0.7]])  # output alphabet size 2
+        kappa_bar = np.array([[0.5, 0.3, 0.2]])  # output alphabet size 3
+        with pytest.raises(ValueError, match="output alphabet"):
+            is_input_degraded(mu_bar, kappa_bar)
+
 
 # ── BSC/BEC broadcast channel (Example 2 from paper) ──────────────────────
 
@@ -169,6 +176,18 @@ class TestShannonInclusion:
     def test_self_inclusion(self):
         ch = bsc(0.2)
         assert is_shannon_included(ch, ch)
+
+    def test_different_alphabets_included(self):
+        # Different input alphabets (3 vs 2) forces the non-convex slow path.
+        # A constant channel is producible from any channel by post-processing
+        # to a fixed output distribution, so it is Shannon-included.
+        assert is_shannon_included(bsc(0.2), constant(3, 2))
+
+    def test_different_alphabets_not_included(self):
+        # A constant (output-independent) channel cannot reproduce the
+        # noiseless identity, so inclusion fails on the slow path. The result
+        # is False regardless of restart count, so a small niter keeps it fast.
+        assert not is_shannon_included(constant(2, 2), identity(3), niter=5)
 
 
 # ── Joint distribution convenience ─────────────────────────────────────────

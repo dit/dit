@@ -49,7 +49,7 @@ try:
         return wrapper
 
 
-except ImportError:
+except ImportError:  # pragma: no cover
 
     def unitful(f):
         """

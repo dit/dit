@@ -246,14 +246,20 @@ def le_cam_distance(mu, kappa):
 
 
 def _kl_divergence_vec(p, q):
-    """D(p || q) for probability vectors, returning +inf when needed."""
+    """
+    D(p || q) in bits for probability vectors, returning +inf when needed.
+
+    Uses base-2 logarithms to match dit's bit convention; this is what makes
+    the Pinsker bound ``TV <= sqrt(ln(2)/2 * D)`` hold (that constant is the
+    base-2 form of Pinsker's inequality).
+    """
     eps = 1e-300
     result = 0.0
     for i in range(len(p)):
         if p[i] > eps:
             if q[i] < eps:
                 return np.inf
-            result += p[i] * np.log(p[i] / q[i])
+            result += p[i] * np.log2(p[i] / q[i])
     return result
 
 
@@ -451,11 +457,16 @@ def _optimize_over_stochastic(objective, n_rows, n_cols, nstarts=15):
     """
     Minimize ``objective(params)`` where ``params`` is mapped to a
     row-stochastic matrix via :func:`_params_to_stochastic`.
+
+    A fixed local RNG seeds the random restarts so the result is
+    reproducible (the multistart is a deterministic function of its inputs);
+    this keeps property tests that depend on these values from flaking.
     """
     n_params = n_rows * n_cols
+    rng = np.random.default_rng(0)
     best = np.inf
     for _ in range(nstarts):
-        x0 = np.random.randn(n_params) * 0.3
+        x0 = rng.standard_normal(n_params) * 0.3
         res = minimize(objective, x0, method="L-BFGS-B", options={"maxiter": 500})
         if res.fun < best:
             best = res.fun

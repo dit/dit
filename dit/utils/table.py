@@ -4,7 +4,7 @@ import contextlib
 
 try:
     from prettytable import UNICODE_LINES, PrettyTable
-except ImportError:
+except ImportError:  # pragma: no cover
     from pltable import UNICODE_LINES, PrettyTable
 
 from ..params import ditParams

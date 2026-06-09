@@ -766,6 +766,21 @@ class TestLogBase:
             atol=1e-10,
         )
 
+    def test_divide_in_log_space(self):
+        """p(X,Y) / p(X) in log space yields p(Y|X) in log space."""
+        p_xy = _make_pxy()
+        p_xy.set_base(2)
+        p_x = p_xy.marginal("X")
+        result = p_xy / p_x
+        assert result.is_log()
+        assert result.free_vars == frozenset({"Y"})
+        assert result.given_vars == frozenset({"X"})
+        np.testing.assert_allclose(
+            result.ops.exp(result.data.values),
+            np.array([[1 / 3, 2 / 3], [3 / 7, 4 / 7]]),
+            atol=1e-10,
+        )
+
     def test_outcomes_pmf_in_log(self):
         p = _make_pxy()
         outs_lin = p.outcomes
@@ -1421,3 +1436,195 @@ class TestSelLoopVectorized:
             slice_h.append(float(-np.sum(p * np.log2(p))))
         expected = sum(slice_h) / len(slice_h)
         np.testing.assert_allclose(cond.entropy(), expected)
+
+
+# ─── Scalar arithmetic ────────────────────────────────────────────────────
+
+
+def _d6():
+    """A fair six-sided die as a 1-D numerical (scalar) distribution."""
+    return Distribution([(i,) for i in range(1, 7)], [1 / 6] * 6)
+
+
+def _d2():
+    """A fair two-sided die over {1, 2}."""
+    return Distribution([(1,), (2,)], [0.5, 0.5])
+
+
+def _as_dict(d):
+    return {o: p for o, p in zip(d.outcomes, d.pmf, strict=True)}
+
+
+class TestScalarArithmetic:
+    """Outcome-transforming operators on scalar (1-D numerical) distributions."""
+
+    def test_mod_scalar(self):
+        assert _as_dict(_d6() % 2) == pytest.approx({0: 0.5, 1: 0.5})
+
+    def test_rmod_scalar(self):
+        assert _as_dict(2 % _d6()) == pytest.approx({0: 1 / 3, 2: 2 / 3})
+
+    def test_floordiv_scalar(self):
+        assert _as_dict(_d6() // 2) == pytest.approx({0: 1 / 6, 1: 1 / 3, 2: 1 / 3, 3: 1 / 6})
+
+    def test_rfloordiv_scalar(self):
+        assert _as_dict(7 // _d6()) == pytest.approx({1: 0.5, 2: 1 / 6, 3: 1 / 6, 7: 1 / 6})
+
+    def test_pow_scalar(self):
+        assert _as_dict(_d6() ** 2) == pytest.approx({1: 1 / 6, 4: 1 / 6, 9: 1 / 6, 16: 1 / 6, 25: 1 / 6, 36: 1 / 6})
+
+    def test_rpow_scalar(self):
+        assert _as_dict(2 ** _d6()) == pytest.approx({2: 1 / 6, 4: 1 / 6, 8: 1 / 6, 16: 1 / 6, 32: 1 / 6, 64: 1 / 6})
+
+    def test_le_scalar(self):
+        assert _as_dict(_d6() <= 3) == pytest.approx({0: 0.5, 1: 0.5})
+
+    def test_lt_scalar(self):
+        assert _as_dict(_d6() < 3) == pytest.approx({0: 2 / 3, 1: 1 / 3})
+
+    def test_ge_scalar(self):
+        assert _as_dict(_d6() >= 3) == pytest.approx({0: 1 / 3, 1: 2 / 3})
+
+    def test_gt_scalar(self):
+        assert _as_dict(_d6() > 3) == pytest.approx({0: 0.5, 1: 0.5})
+
+    def test_neg(self):
+        assert _as_dict(-_d6()) == pytest.approx(dict.fromkeys((-i for i in range(1, 7)), 1 / 6))
+
+    def test_abs(self):
+        assert _as_dict(abs(-_d6())) == pytest.approx(dict.fromkeys(range(1, 7), 1 / 6))
+
+    def test_mod_dist(self):
+        assert _as_dict(_d2() % _d2()) == pytest.approx({0: 0.75, 1: 0.25})
+
+    def test_floordiv_dist(self):
+        assert _as_dict(_d2() // _d2()) == pytest.approx({0: 0.25, 1: 0.5, 2: 0.25})
+
+    def test_pow_dist(self):
+        assert _as_dict(_d2() ** _d2()) == pytest.approx({1: 0.5, 2: 0.25, 4: 0.25})
+
+    def test_le_dist(self):
+        assert _as_dict(_d2() <= _d2()) == pytest.approx({0: 0.25, 1: 0.75})
+
+    def test_scalar_ops_reject_nonscalar(self):
+        # Named-variable (non-scalar) distributions do not support these ops.
+        p = _make_pxy()
+        for result in (p.__mod__(2), p.__floordiv__(2), p.__pow__(2), p.__neg__(), p.__abs__()):
+            assert result is NotImplemented
+
+    def test_matmul(self):
+        a = Distribution([("a",), ("b",)], [0.5, 0.5])
+        b = Distribution([("x",), ("y",)], [0.5, 0.5])
+        prod = a @ b
+        assert _as_dict(prod) == pytest.approx({("a", "x"): 0.25, ("a", "y"): 0.25, ("b", "x"): 0.25, ("b", "y"): 0.25})
+
+    def test_matmul_rejects_scalar(self):
+        assert _d6().__matmul__(3) is NotImplemented
+
+    def test_mul_scalar(self):
+        assert _as_dict(_d6() * 2) == pytest.approx(dict.fromkeys(range(2, 13, 2), 1 / 6))
+
+    def test_rmul_scalar(self):
+        assert _as_dict(2 * _d6()) == pytest.approx(dict.fromkeys(range(2, 13, 2), 1 / 6))
+
+    def test_mul_distribution(self):
+        assert _as_dict(_d2() * _d2()) == pytest.approx({1: 0.25, 2: 0.5, 4: 0.25})
+
+    def test_add_scalar_shift(self):
+        assert _as_dict(_d6() + 3) == pytest.approx(dict.fromkeys(range(4, 10), 1 / 6))
+
+    def test_radd_scalar_shift(self):
+        assert _as_dict(3 + _d6()) == pytest.approx(dict.fromkeys(range(4, 10), 1 / 6))
+
+    def test_add_convolution(self):
+        assert _as_dict(_d2() + _d2()) == pytest.approx({2: 0.25, 3: 0.5, 4: 0.25})
+
+    def test_sum_starts_from_zero(self):
+        # sum() starts at 0, exercising __radd__ with other == 0.
+        total = sum([_d2(), _d2()])
+        assert _as_dict(total) == pytest.approx({2: 0.25, 3: 0.5, 4: 0.25})
+
+    def test_sub_scalar_shift(self):
+        assert _as_dict(_d6() - 1) == pytest.approx(dict.fromkeys(range(0, 6), 1 / 6))
+
+    def test_rsub_scalar(self):
+        assert _as_dict(10 - _d6()) == pytest.approx(dict.fromkeys(range(4, 10), 1 / 6))
+
+    def test_sub_distribution(self):
+        assert _as_dict(_d2() - _d2()) == pytest.approx({-1: 0.25, 0: 0.5, 1: 0.25})
+
+    def test_named_add_is_elementwise(self):
+        p = _make_pxy()
+        q = _make_pxy()
+        s = p + q
+        # Element-wise probability addition (not normalised): total is 2.
+        assert float(np.sum(s.pmf)) == pytest.approx(2.0)
+
+    def test_named_add_zero_returns_copy(self):
+        p = _make_pxy()
+        assert list((p + 0).pmf) == list(p.pmf)
+        assert list((0 + p).pmf) == list(p.pmf)
+
+    def test_named_add_nonscalar_nondist_not_implemented(self):
+        assert _make_pxy().__add__("foo") is NotImplemented
+
+    def test_named_add_nonzero_scalar_not_implemented(self):
+        assert _make_pxy().__add__(2) is NotImplemented
+
+    def test_named_sub_nonzero_scalar_not_implemented(self):
+        assert _make_pxy().__sub__(2) is NotImplemented
+
+    def test_rsub_rejects_nonscalar(self):
+        assert _make_pxy().__rsub__(2) is NotImplemented
+
+
+# ─── Display ──────────────────────────────────────────────────────────────
+
+
+class TestDisplay:
+    """Tests for the _to_string / _to_html rich-display helpers."""
+
+    def test_to_string_joint(self):
+        s = _make_pxy()._to_string()
+        assert "Class:     Distribution" in s
+        assert "Free vars:" in s
+        assert "(none)" in s  # unconditional
+
+    def test_to_string_digits(self):
+        s = _make_pxy()._to_string(digits=2)
+        assert "Distribution" in s
+
+    def test_to_string_conditional(self):
+        cond = Distribution.from_array(
+            np.array([[0.8, 0.2], [0.3, 0.7]]),
+            dim_names=["X", "Y"],
+            alphabets=[[0, 1], [0, 1]],
+            given_vars={"X"},
+        )
+        s = cond._to_string()
+        assert "p(·|·)" in s
+        assert "Given:" in s
+        assert "(none)" not in s
+
+    def test_to_html_joint(self):
+        html = _make_pxy()._to_html()
+        assert "<table" in html
+        assert "<td" in html
+
+    def test_repr_html_matches_to_html(self):
+        p = _make_pxy()
+        assert p._repr_html_() == p._to_html()
+
+    def test_to_html_conditional(self):
+        cond = Distribution.from_array(
+            np.array([[0.8, 0.2], [0.3, 0.7]]),
+            dim_names=["X", "Y"],
+            alphabets=[[0, 1], [0, 1]],
+            given_vars={"X"},
+        )
+        html = cond._to_html()
+        assert "p(·|·)" in html
+
+    def test_to_string_exact_fractions(self):
+        s = _make_pxy().to_string(exact=True)
+        assert "Distribution" in s

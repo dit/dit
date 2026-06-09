@@ -345,7 +345,7 @@ class CartesianProduct(SampleSpace):
             # the entire sample space. Let's just make this false.
             return False
 
-        return self._alphabets <= other._alphabets
+        return self.alphabets <= other.alphabets
 
     def __iter__(self):
         return self._product(*self.alphabets)

@@ -38,7 +38,7 @@ try:
     import xarray as xr
 
     XARRAY_AVAILABLE = True
-except ImportError:
+except ImportError:  # pragma: no cover
     XARRAY_AVAILABLE = False
 
 from .math import prng as _default_prng
@@ -49,7 +49,7 @@ __all__ = ("Distribution",)
 
 def _check_xarray():
     """Raise an error if xarray is not available."""
-    if not XARRAY_AVAILABLE:
+    if not XARRAY_AVAILABLE:  # pragma: no cover
         raise ImportError("xarray is required for Distribution. Install with: pip install xarray")
 
 

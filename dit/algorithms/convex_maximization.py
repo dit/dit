@@ -6,7 +6,7 @@ by a set of linear equalities and inequalities.
 import numpy as np
 import scipy
 
-from .optutil import as_full_rank
+from .optutil import _as_full_rank
 
 __all__ = ("maximize_convex_function",)
 
@@ -43,7 +43,7 @@ def maximize_convex_function(f, A_ineq, b_ineq, A_eq=None, b_eq=None):
     A_ineq = A_ineq.astype("float")
     b_ineq = b_ineq.astype("float")
 
-    A_ineq, b_ineq, _ = as_full_rank(A_ineq, b_ineq)
+    A_ineq, b_ineq, _ = _as_full_rank(A_ineq, b_ineq)
 
     if A_eq is not None:
         # pypoman doesn't support equality constraints. We remove equality
@@ -52,7 +52,7 @@ def maximize_convex_function(f, A_ineq, b_ineq, A_eq=None, b_eq=None):
         A_eq = A_eq.astype("float")
         b_eq = b_eq.astype("float")
 
-        A_eq, b_eq, _ = as_full_rank(A_eq, b_eq)
+        A_eq, b_eq, _ = _as_full_rank(A_eq, b_eq)
 
         # Get one solution that satisfies A x0 = b
         x0 = np.linalg.lstsq(A_eq, b_eq, rcond=None)[0]

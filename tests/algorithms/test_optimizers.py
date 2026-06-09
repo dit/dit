@@ -2,7 +2,6 @@
 Tests for dit.algorithms.optimizers
 """
 
-import warnings
 from itertools import product
 from types import MethodType
 
@@ -10,7 +9,7 @@ import numpy as np
 import pytest
 from scipy.optimize import approx_fprime
 
-from dit.algorithms import maxent_dist, pid_broja
+from dit.algorithms import maxent_dist
 from dit.algorithms.distribution_optimizers import (
     MaxCoInfoOptimizer,
     MaxDualTotalCorrelationOptimizer,
@@ -20,7 +19,7 @@ from dit.algorithms.distribution_optimizers import (
     MinEntOptimizer,
 )
 from dit.distconst import uniform
-from dit.example_dists import Rdn, Unq, Xor
+from dit.example_dists import Xor
 from dit.multivariate import coinformation as I
 from dit.multivariate import dual_total_correlation as B
 from dit.multivariate import entropy as H
@@ -262,25 +261,6 @@ def test_mincoinfo_1():
     mcio.optimize()
     dp = mcio.construct_dist()
     assert I(dp) == pytest.approx(-1, abs=1e-4)
-
-
-@pytest.mark.skip(reason="This method if deprecated.")
-@pytest.mark.parametrize(
-    ("dist", "vals"),
-    [
-        (Rdn(), (1, 0, 0, 0)),
-        (Unq(), (0, 1, 1, 0)),
-        (Xor(), (0, 0, 0, 1)),
-    ],
-)
-def test_broja_1(dist, vals):
-    """
-    Test broja.
-    """
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        pid = pid_broja(dist, [[0], [1]], [2])
-    assert pid == pytest.approx(vals, abs=1e-4)
 
 
 @pytest.mark.flaky(reruns=5)

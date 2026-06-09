@@ -31,8 +31,11 @@ def hamming_distortion(p_x, p_y_x):
 def residual_entropy_distortion(p_x, p_y_x):
     """ """
     p_xy = p_x[:, np.newaxis] * p_y_x
-    h_x_y = -np.log2(p_xy / p_xy.sum(axis=0, keepdims=True))
-    h_y_x = -np.log2(p_xy / p_xy.sum(axis=1, keepdims=True))
+    # Zero entries produce ``log2(0) = -inf`` and ``0/0 = nan`` intermediates;
+    # these are expected for degenerate conditionals, so silence the warnings.
+    with np.errstate(divide="ignore", invalid="ignore"):
+        h_x_y = -np.log2(p_xy / p_xy.sum(axis=0, keepdims=True))
+        h_y_x = -np.log2(p_xy / p_xy.sum(axis=1, keepdims=True))
     distortion = h_x_y + h_y_x
     return distortion
 

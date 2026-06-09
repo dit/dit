@@ -5,7 +5,7 @@ Tests for dit.pid.irav.
 import pytest
 
 from dit.pid.distributions import bivariates, trivariates
-from dit.pid.measures.irav import PID_RAV
+from dit.pid.measures.irav import PID_RAV, PID_RAV2
 
 
 def test_pid_rav1():
@@ -48,3 +48,36 @@ def test_pid_rav3():
             assert pid[atom] == pytest.approx(1.0)
         else:
             assert pid[atom] == pytest.approx(0.0)
+
+
+def test_pid_rav2_redundant():
+    """
+    PID_RAV2 (max corex O-information) on a purely redundant distribution.
+    """
+    pid = PID_RAV2(bivariates["redundant"], ((0,), (1,)), (2,))
+    assert pid[((0,), (1,))] == pytest.approx(1.0)
+    assert pid[((0,),)] == pytest.approx(0.0)
+    assert pid[((1,),)] == pytest.approx(0.0)
+    assert pid[((0, 1),)] == pytest.approx(0.0)
+
+
+def test_pid_rav2_synergy():
+    """
+    PID_RAV2 on a purely synergistic (XOR) distribution.
+    """
+    pid = PID_RAV2(bivariates["synergy"], ((0,), (1,)), (2,))
+    assert pid[((0, 1),)] == pytest.approx(1.0)
+    assert pid[((0,), (1,))] == pytest.approx(0.0)
+    assert pid[((0,),)] == pytest.approx(0.0)
+    assert pid[((1,),)] == pytest.approx(0.0)
+
+
+def test_pid_rav2_and():
+    """
+    PID_RAV2 on the AND gate exercises corex_o_information on every partition.
+    """
+    pid = PID_RAV2(bivariates["and"], ((0,), (1,)), (2,))
+    assert pid[((0,), (1,))] == pytest.approx(0.122556, abs=1e-5)
+    assert pid[((0,),)] == pytest.approx(0.188722, abs=1e-5)
+    assert pid[((1,),)] == pytest.approx(0.188722, abs=1e-5)
+    assert pid[((0, 1),)] == pytest.approx(0.311278, abs=1e-5)

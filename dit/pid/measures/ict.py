@@ -54,7 +54,7 @@ def i_triangle(d, source_0, source_1, target):
         return path_info_yxz
     elif direct_yz:
         return path_info_xyz
-    else:
+    else:  # pragma: no cover
         raise ditException("Something went wrong...")
 
 
