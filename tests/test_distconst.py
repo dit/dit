@@ -474,3 +474,35 @@ def test_noisy():
     print(d2)
     d3 = dit.Distribution(["00", "01", "10", "11"], [3 / 8, 1 / 8, 1 / 8, 3 / 8])
     assert d2.is_approx_equal(d3)
+
+
+@pytest.mark.parametrize(("n", "k", "expected"), [(1, 2, 2), (2, 2, 5)])
+def test_distribution_enumerator(n, k, expected):
+    """
+    DistributionEnumerator yields exactly the non-isomorphic uniform
+    distributions over ``n`` variables of cardinality ``k``.
+    """
+    from dit.distconst import DistributionEnumerator
+
+    dists = list(DistributionEnumerator(n, k))
+    assert len(dists) == expected
+    for d in dists:
+        assert d.outcome_length() == n
+        # Uniform: all probabilities equal.
+        assert np.allclose(d.pmf, d.pmf[0])
+
+
+def test_combine_scalar_dists():
+    """
+    _combine_scalar_dists treats the inputs as independent and combines their
+    outcomes with the supplied operator.
+    """
+    import operator
+
+    from dit.distconst import _combine_scalar_dists
+
+    d1 = dit.Distribution([(1,), (2,)], [0.5, 0.5])
+    d2 = dit.Distribution([(0,), (1,)], [0.5, 0.5])
+    combined = _combine_scalar_dists(d1, d2, operator.add)
+    result = {o: p for o, p in zip(combined.outcomes, combined.pmf, strict=True)}
+    assert result == pytest.approx({1: 0.25, 2: 0.5, 3: 0.25})

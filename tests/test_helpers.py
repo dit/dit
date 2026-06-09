@@ -2,11 +2,45 @@
 Tests for dit.helpers.
 """
 
+import numpy as np
 import pytest
 
 from dit import Distribution
 from dit.exceptions import InvalidOutcome, ditException
-from dit.helpers import construct_alphabets, numerical_test, parse_rvs, reorder
+from dit.helpers import construct_alphabets, copypmf, numerical_test, parse_rvs, reorder
+
+
+def _dist_with_null():
+    d = Distribution(["0", "1", "2"], [0.5, 0.5, 0.0])
+    d.make_dense()
+    return d
+
+
+def test_copypmf_sparse_drops_nulls():
+    assert np.allclose(copypmf(_dist_with_null(), mode="sparse"), [0.5, 0.5])
+
+
+def test_copypmf_dense_keeps_nulls():
+    assert np.allclose(copypmf(_dist_with_null(), mode="dense"), [0.5, 0.5, 0.0])
+
+
+def test_copypmf_log_to_log_base_change():
+    d = _dist_with_null()
+    d.set_base(2)
+    converted = copypmf(d, base="e")
+    assert converted[0] == pytest.approx(np.log(0.5))
+
+
+def test_copypmf_log_to_linear():
+    d = _dist_with_null()
+    d.set_base(2)
+    assert np.allclose(copypmf(d, base="linear"), [0.5, 0.5, 0.0])
+
+
+def test_copypmf_linear_to_log():
+    converted = copypmf(_dist_with_null(), base=2)
+    assert converted[0] == pytest.approx(-1.0)
+    assert np.isneginf(converted[2])
 
 
 def test_construct_alphabets1():
