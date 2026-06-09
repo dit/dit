@@ -129,3 +129,56 @@ def test_nested():
     assert list(ss2) == [(0, "11"), (0, "10"), (0, "01"), (0, "00")]
     ss2.sort()
     assert list(ss2) == [(0, "00"), (0, "01"), (0, "10"), (0, "11")]
+
+
+class TestSampleSpaceComparisons:
+    """Equality and ordering on SampleSpace."""
+
+    def _ss(self, outcomes):
+        return SampleSpace(outcomes, dit.helpers.get_product_func(str))
+
+    def test_eq(self):
+        assert self._ss(["00", "01"]) == self._ss(["00", "01"])
+        assert self._ss(["00", "01"]) != self._ss(["00", "10"])
+
+    def test_eq_other_type(self):
+        assert self._ss(["00", "01"]).__eq__(5) is NotImplemented
+
+    def test_le(self):
+        assert self._ss(["00", "01"]) <= self._ss(["00", "10"])
+        assert not (self._ss(["00", "10"]) <= self._ss(["00", "01"]))
+
+    def test_le_other_type(self):
+        assert self._ss(["00", "01"]).__le__(5) is NotImplemented
+
+
+class TestCartesianProductComparisons:
+    """Equality, ordering and membership edge cases on CartesianProduct."""
+
+    def test_eq(self):
+        x = CartesianProduct([["0", "1"], ["0", "1"]])
+        assert x == CartesianProduct([["0", "1"], ["0", "1"]])
+        assert x != CartesianProduct([["0", "1"], ["0", "1", "2"]])
+
+    def test_eq_other_type(self):
+        assert CartesianProduct([["0", "1"]]) != "not a sample space"
+
+    def test_le(self):
+        x = CartesianProduct([["0", "1"], ["0", "1"]])
+        z = CartesianProduct([["0", "1"], ["0", "1", "2"]])
+        assert x <= z
+        assert not (z <= x)
+
+    def test_le_other_type(self):
+        assert CartesianProduct([["0", "1"]]).__le__("foo") is False
+
+    def test_contains_wrong_length(self):
+        x = CartesianProduct([["0", "1"], ["0", "1"]])
+        assert "000" not in x
+
+    def test_contains_non_iterable_raises(self):
+        from dit.exceptions import InvalidOutcome
+
+        x = CartesianProduct([["0", "1"], ["0", "1"]])
+        with pytest.raises(InvalidOutcome):
+            5 in x  # noqa: B015
