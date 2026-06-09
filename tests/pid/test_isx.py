@@ -221,5 +221,26 @@ def test_pid_sx_pw_to_string_not_computed():
     assert "not computed" in s
 
 
+def test_linear_pmf_on_log_distribution():
+    """_linear_pmf exponentiates a log-base distribution back to linear."""
+    from dit.pid.measures.isx import _linear_pmf
+
+    d = bivariates["unique 1"].copy()
+    d.set_base(2)
+    assert d.is_log()
+    assert float(np.sum(_linear_pmf(d))) == pytest.approx(1.0)
+
+
+def test_prob_union_computes_linear_pmf_when_omitted():
+    """_prob_union lazily computes the linear pmf when not supplied."""
+    from dit.pid.measures.isx import _prob_union
+
+    d = bivariates["unique 1"]
+    outcome = d.outcomes[0]
+    assert _prob_union(d, outcome, ((0,),)) == pytest.approx(
+        _prob_union(d, outcome, ((0,),), linear_pmf=d.pmf)
+    )
+
+
 if __name__ == "__main__":
     test_pid_sx3()

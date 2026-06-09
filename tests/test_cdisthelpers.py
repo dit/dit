@@ -25,6 +25,20 @@ def test_joint_from_factors_rvname():
     assert pXYZ.is_approx_equal(d)
 
 
+def test_joint_from_factors_rvname_collision():
+    """When the conditional's rv name collides with the marginal's, it is
+    suffixed with ``_Y`` to keep names unique."""
+    mdist = dit.Distribution(["0", "1"], [0.5, 0.5])
+    mdist.set_rv_names("A")
+    c0 = dit.Distribution(["0", "1"], [0.8, 0.2])
+    c0.set_rv_names("A")
+    c1 = dit.Distribution(["0", "1"], [0.3, 0.7])
+    c1.set_rv_names("A")
+
+    d = dit.joint_from_factors(mdist, [c0, c1])
+    assert d.get_rv_names() == ("A", "A_Y")
+
+
 def test_bad_marginal():
     d = dit.example_dists.Xor()
     pY, pXZgY = d.condition_on([1])
