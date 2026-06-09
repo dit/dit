@@ -60,7 +60,7 @@ class GHOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
 
         self._additional_options = {
             "options": {
-                "maxiter": 2500,
+                "maxiter": 300,
                 "ftol": 1e-6,
                 "eps": 1.4901161193847656e-9,
             }
