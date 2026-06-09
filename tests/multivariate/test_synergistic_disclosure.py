@@ -7,6 +7,7 @@ import pytest
 from dit.distconst import uniform
 from dit.multivariate.synergistic_disclosure import (
     backbone_disclosure,
+    modified_synergistic_disclosure,
     self_synergy,
     synergistic_disclosure,
 )
@@ -39,6 +40,39 @@ def test_synergistic_disclosure_empty_alpha():
     d = bivariates["synergy"]
     val = synergistic_disclosure(d, [[0], [1]], [2], alpha=[])
     assert val == pytest.approx(1.0, abs=1e-4)
+
+
+def test_synergistic_disclosure_empty_alpha_fast():
+    """Empty alpha takes the optimizer-free coinformation fallback."""
+    d = bivariates["redundant"]
+    val = synergistic_disclosure(d, [[0], [1]], [2], alpha=[])
+    assert val == pytest.approx(1.0)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# modified_synergistic_disclosure
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def test_modified_synergistic_disclosure_empty_alpha():
+    """Empty alpha falls back to the full source-target coinformation."""
+    d = bivariates["synergy"]
+    val = modified_synergistic_disclosure(d, [[0], [1]], [2], alpha=[])
+    assert val == pytest.approx(1.0)
+
+
+def test_modified_synergistic_disclosure_singleton_alpha_synergy():
+    """Singleton alpha uses I(T:all) - I(T:alpha); XOR leaks all 1 bit."""
+    d = bivariates["synergy"]
+    val = modified_synergistic_disclosure(d, [[0], [1]], [2], alpha=[[0]])
+    assert val == pytest.approx(1.0)
+
+
+def test_modified_synergistic_disclosure_singleton_alpha_redundant():
+    """A constrained source carrying all the target info leaves nothing."""
+    d = bivariates["redundant"]
+    val = modified_synergistic_disclosure(d, [[0], [1]], [2], alpha=[[0]])
+    assert val == pytest.approx(0.0)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
