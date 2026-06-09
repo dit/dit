@@ -36,6 +36,22 @@ def test_hamming_matrix():
     np.testing.assert_array_equal(hamming_matrix(3), 1 - np.eye(3))
 
 
+def test_lazy_plotter_attribute():
+    """`GrayWynerPlotter` is lazily importable from the package."""
+    import dit.rate_distortion.gray_wyner as gw
+    from dit.rate_distortion.gray_wyner.plotting import GrayWynerPlotter
+
+    assert gw.GrayWynerPlotter is GrayWynerPlotter
+
+
+def test_unknown_attribute_raises():
+    """Accessing an unknown attribute raises AttributeError."""
+    import dit.rate_distortion.gray_wyner as gw
+
+    with pytest.raises(AttributeError, match="has no attribute"):
+        gw.NotARealAttribute
+
+
 def test_corner_points_giant_bit():
     """All common informations of the giant bit equal H(X) = 1."""
     corners = GrayWynerNetwork(giant_bit()).corner_points(niter=3, maxiter=300)

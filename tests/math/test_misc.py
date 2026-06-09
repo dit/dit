@@ -4,7 +4,7 @@ Tests for dit.math.misc.
 
 import pytest
 
-from dit.math.misc import combinations, factorial, is_integer, is_number
+from dit.math.misc import combinations, factorial, is_integer, is_number, multinomial
 
 
 @pytest.mark.parametrize("n", range(-10, 10))
@@ -81,3 +81,26 @@ def test_combinations1(k, c):
 def test_combinations2():
     with pytest.raises(ValueError, match="is larger than"):
         combinations(5, 7)
+
+
+@pytest.mark.parametrize(
+    ("n", "ks", "expected"),
+    [
+        (3, [3], 1),
+        (3, [1, 2], 3),
+        (4, [2, 2], 6),
+        (6, [1, 2, 3], 60),
+    ],
+)
+def test_multinomial1(n, ks, expected):
+    assert multinomial(n, ks) == expected
+
+
+def test_multinomial2():
+    with pytest.raises(ValueError, match="must sum to n"):
+        multinomial(5, [2, 2])
+
+
+def test_multinomial3():
+    with pytest.raises(ValueError, match="must be non-negative"):
+        multinomial(3, [5, -2])
