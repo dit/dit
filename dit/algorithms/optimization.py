@@ -1315,7 +1315,16 @@ class BaseConvexOptimizer(BaseOptimizer):
             # even though this is convex, there might still be some optimization
             # issues, so we use niter > 1.
             niter = 2
-        return self._optimize_shotgun(x0, minimizer_kwargs, niter=niter)
+        result = self._optimize_shotgun(x0, minimizer_kwargs, niter=niter)
+        if result is None:
+            # Every start was unsuccessful and none were feasible within
+            # tolerance. With only a couple of starts this happens
+            # intermittently (SLSQP with analytic Jacobians frequently reports
+            # success=False at feasible optima), producing flaky "No optima
+            # found" failures. Retry once with many more random starts before
+            # giving up; this never changes a result that already succeeded.
+            result = self._optimize_shotgun(x0, minimizer_kwargs, niter=max(25, niter))
+        return result
 
 
 class BaseNonConvexOptimizer(BaseOptimizer):
