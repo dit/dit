@@ -24,6 +24,7 @@ def _stub_optimize(monkeypatch):
 
     monkeypatch.setattr(syndisc_module.SyndiscOptimizer, "optimize", fake_optimize)
 
+
 # ─────────────────────────────────────────────────────────────────────────────
 # synergistic_disclosure
 # ─────────────────────────────────────────────────────────────────────────────
@@ -173,9 +174,7 @@ def test_self_synergy_default_sources_smoke(monkeypatch):
 
 def test_backbone_disclosure_smoke(monkeypatch):
     """The backbone decomposition runs with the per-node solve stubbed out."""
-    monkeypatch.setattr(
-        syndisc_module.SynDisc, "_compute_s_alpha", lambda self, node, rng=None: float(len(node))
-    )
+    monkeypatch.setattr(syndisc_module.SynDisc, "_compute_s_alpha", lambda self, node, rng=None: float(len(node)))
     d = bivariates["synergy"]
     bb = backbone_disclosure(d)
     assert set(bb) == {1, 2}
