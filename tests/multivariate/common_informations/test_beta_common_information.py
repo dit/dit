@@ -83,6 +83,58 @@ class TestMaxcorrHelpers:
         joint = np.array([0.5, 0.5])
         assert _max_pairwise_maxcorr(joint, {0}, set()) == 0.0
 
+    def test_conditional_maxcorr_3d_degenerate_dim(self):
+        """A <2-state variable yields rho_m = 0 (line 69)."""
+        assert _conditional_maxcorr_from_3d(np.zeros((1, 2, 2))) == 0.0
+
+    def test_conditional_maxcorr_3d_no_live_z(self):
+        """An all-zero array has no live conditioning value (line 74)."""
+        assert _conditional_maxcorr_from_3d(np.zeros((2, 2, 2))) == 0.0
+
+    def test_max_pairwise_2d_branch(self):
+        """A bivariate joint routes through the 2-d maximal correlation."""
+        joint = np.array([[0.5, 0.0], [0.0, 0.5]])
+        assert _max_pairwise_maxcorr(joint, {0, 1}, set()) == pytest.approx(1.0, abs=1e-10)
+
+    def test_max_pairwise_conditional_branch(self):
+        """A 4-d joint with conditioning axes routes through the 3-d path."""
+        joint = np.zeros((2, 2, 2, 2))
+        joint[0, 0, 0, 0] = joint[1, 1, 0, 0] = 0.25
+        joint[0, 1, 1, 1] = joint[1, 0, 1, 1] = 0.25
+        rho = _max_pairwise_maxcorr(joint, {0, 1}, {2, 3})
+        assert np.isfinite(rho)
+        assert 0.0 <= rho <= 1.0
+
+
+# ── Construction / single-evaluation smoke tests (no optimisation) ────────
+
+
+class TestBetaCommonInformationSmoke:
+    """Exercise the optimizer's setup and a single objective evaluation
+    without running the (slow) basin-hopping optimization."""
+
+    def test_construct_and_evaluate(self):
+        d = D(["000", "001", "010", "011", "100", "101", "110", "111"], [1 / 8] * 8)
+        bci = BetaCommonInformation(d, beta=0.5)
+
+        assert bci.compute_bound() >= 1
+
+        x = bci.construct_random_initial()
+
+        # _objective() wires up self._cmi, used by true_objective.
+        objective = bci._objective()
+        assert np.isfinite(objective(bci, x))
+
+        assert np.isfinite(bci.constraint_maximal_correlation(x))
+        assert np.isfinite(bci.true_objective(x))
+
+    def test_construct_with_explicit_bound(self):
+        d = dsbs(0.2)
+        bci = BetaCommonInformation(d, beta=0.3, bound=2)
+        x = bci.construct_random_initial()
+        objective = bci._objective()
+        assert np.isfinite(objective(bci, x))
+
 
 # ── Fast-path tests (no optimisation) ────────────────────────────────────
 

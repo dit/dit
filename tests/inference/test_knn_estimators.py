@@ -7,7 +7,11 @@ import pytest
 from hypothesis import given, settings
 from hypothesis.strategies import floats, lists
 
-from dit.inference.knn_estimators import differential_entropy_knn, total_correlation_ksg
+from dit.inference.knn_estimators import (
+    _total_correlation_ksg_scipy,
+    differential_entropy_knn,
+    total_correlation_ksg,
+)
 
 
 @settings(max_examples=25)
@@ -68,3 +72,28 @@ def test_cmi_knn1(means, stds, rho):
     data = np.random.multivariate_normal(means, cov, n)
     mi = total_correlation_ksg(data, [[0], [1]], [2])
     assert mi == pytest.approx(-np.log2(1 - rho**2) / 2, abs=1e-1)
+
+
+def test_total_correlation_ksg_scipy_unconditioned():
+    """The scipy backend recovers the MI of a correlated bivariate normal.
+
+    ``total_correlation_ksg`` binds to the sklearn backend when it is
+    installed, so exercise the scipy implementation directly.
+    """
+    rng = np.random.RandomState(0)
+    rho = 0.6
+    cov = [[1.0, rho], [rho, 1.0]]
+    data = rng.multivariate_normal([0.0, 0.0], cov, 20000)
+    mi = _total_correlation_ksg_scipy(data, [[0], [1]])
+    assert mi == pytest.approx(-np.log2(1 - rho**2) / 2, abs=1e-1)
+
+
+def test_total_correlation_ksg_scipy_conditioned():
+    """The scipy backend runs the conditioned (crvs) code path."""
+    rng = np.random.RandomState(0)
+    rho = 0.6
+    cov = [[1.0, rho, 0.0], [rho, 1.0, 0.0], [0.0, 0.0, 1.0]]
+    data = rng.multivariate_normal([0.0, 0.0, 0.0], cov, 20000)
+    cmi = _total_correlation_ksg_scipy(data, [[0], [1]], [2])
+    assert np.isfinite(cmi)
+    assert cmi == pytest.approx(-np.log2(1 - rho**2) / 2, abs=1.5e-1)

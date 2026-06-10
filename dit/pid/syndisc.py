@@ -592,7 +592,7 @@ class ModifiedSynDisc(SynDisc):
 
     _name = "S_msd"
 
-    def _compute_s_alpha(self, node):
+    def _compute_s_alpha(self, node, rng=None):
         """
         Compute the modified synergistic disclosure for a lattice node.
 
@@ -608,4 +608,4 @@ class ModifiedSynDisc(SynDisc):
             source_mi = coinformation(self._dist, [list(node[0]), list(self._target)])
             return self._total - source_mi
 
-        return super()._compute_s_alpha(node)
+        return super()._compute_s_alpha(node, rng=rng)

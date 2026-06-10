@@ -32,16 +32,16 @@ from dit.abstractdist import AbstractDenseDistribution, get_abstract_dist
 
 from ..helpers import parse_rvs
 from ..utils import flatten
-from .optutil import Bunch, CVXOPT_Template, as_full_rank, prepare_dist
+from .optutil import Bunch, CVXOPT_Template, _as_full_rank, as_full_rank, prepare_dist
 
 # from ..utils import powerset
 
 __all__ = (
     # 'MarginalMaximumEntropy',
-    "MomentMaximumEntropy",
+    # 'MomentMaximumEntropy',
     # Use version provided by maxentropyfw.py
     # 'marginal_maxent_dists',
-    "moment_maxent_dists",
+    # 'moment_maxent_dists',
     "degrees_of_freedom",
 )
 
@@ -238,7 +238,7 @@ def marginal_constraint_rank(dist, m):
     dist = prepare_dist(dist)
 
     A, b = marginal_constraints(dist, m)
-    _, _, rank = as_full_rank(A, b)
+    _, _, rank = _as_full_rank(A, b)
     return rank
 
 
@@ -438,7 +438,7 @@ def moment_constraint_rank(dist, m, symbol_map=None, cumulative=True, with_repla
         symbol_map = range(n_symbols)
 
     A, b = moment_constraints(pmf, n_variables, mvals, symbol_map, with_replacement=with_replacement)
-    _, _, rank = as_full_rank(A, b)
+    _, _, rank = _as_full_rank(A, b)
 
     return rank
 
@@ -566,6 +566,12 @@ class MarginalMaximumEntropy(MaximumEntropy):
         self.hessian = hessian
 
 
+@removals.removed_class(
+    "MomentMaximumEntropy",
+    replacement="dit.algorithms.scipy_optimizers.MaxEntOptimizer",
+    message="Please see methods in dit.algorithms.distribution_optimizers.py.",
+    version="1.0.1",
+)
 class MomentMaximumEntropy(MaximumEntropy):
     """
     Find maximum entropy distribution subject to `k`-way marginal constraints.
@@ -614,7 +620,7 @@ class MomentMaximumEntropy(MaximumEntropy):
         args = (self.pmf, self.n_variables, k, self.symbol_map)
         kwargs = {"with_replacement": self.with_replacement}
         A, b = moment_constraints(*args, **kwargs)
-        AA, bb, rank = as_full_rank(A, b)
+        AA, bb, rank = _as_full_rank(A, b)
         if rank > n:
             raise ValueError("More independent constraints than parameters.")
 
@@ -671,6 +677,7 @@ def marginal_maxent_dists(dist, k_max=None, jitter=True, show_progress=True):
     return dists
 
 
+@removals.remove(message="Please see methods in dit.algorithms.distribution_optimizers.py.", version="1.0.1")
 def moment_maxent_dists(dist, symbol_map, k_max=None, jitter=True, with_replacement=True, show_progress=True):
     """
     Return the marginal-constrained maximum entropy distributions.

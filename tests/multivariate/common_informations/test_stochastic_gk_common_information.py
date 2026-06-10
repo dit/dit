@@ -7,6 +7,7 @@ connected-component structure forces all conditionals within a component to
 agree. This lets us reuse known GK values as ground truth.
 """
 
+import numpy as np
 import pytest
 from hypothesis import given, settings
 
@@ -146,3 +147,34 @@ def test_sgk_ordering(dist):
     mi = I(dist, [0], [1])
     assert k <= sgk + epsilon
     assert sgk <= mi + epsilon
+
+
+# ---------------------------------------------------------------------------
+# Construction / single-evaluation smoke tests (no optimisation)
+# ---------------------------------------------------------------------------
+
+
+class TestStochasticGKSmoke:
+    """Exercise the optimizer's setup, constraint, and a single objective
+    evaluation without running the (slow) basin-hopping optimization."""
+
+    def test_construct_and_evaluate(self):
+        d = Distribution(["00", "11"], [0.5, 0.5])
+        sgk = StochasticGKCommonInformation(d)
+
+        assert sgk.compute_bound() >= 1
+
+        x = sgk.construct_random_initial()
+
+        # Exercises constraint_match_conditional_distributions (the eq constraint).
+        assert np.isfinite(sgk.constraint_match_conditional_distributions(x))
+
+        objective = sgk._objective()
+        assert np.isfinite(objective(sgk, x))
+
+    def test_construct_with_bound(self):
+        d = Distribution(["00", "01", "10", "11"], [0.25] * 4)
+        sgk = StochasticGKCommonInformation(d, bound=2)
+        x = sgk.construct_random_initial()
+        objective = sgk._objective()
+        assert np.isfinite(objective(sgk, x))
