@@ -154,6 +154,31 @@ def test_channel_capacity_distribution_with_marginal():
     assert np.allclose(pXopt.data.values, [0.5, 0.5])
 
 
+def test_channel_capacity_native_conditional():
+    """A native conditional Distribution (given_vars set) is reshaped and solved."""
+    epsilon = 0.3
+    pXY = BEC_joint_xr(epsilon)
+    pYgX = pXY.condition_on("X")
+    assert pYgX.is_conditional()
+
+    cc, pXopt_pmf = channel_capacity(pYgX)
+    assert np.allclose(cc, 1 - epsilon)
+    assert np.allclose(pXopt_pmf, [0.5, 0.5])
+
+
+def test_channel_capacity_native_conditional_with_marginal():
+    """A native conditional plus a marginal Distribution returns a Distribution."""
+    epsilon = 0.3
+    pXY = BEC_joint_xr(epsilon)
+    pYgX = pXY.condition_on("X")
+    pX = pXY.marginal("X")
+
+    cc, pXopt = channel_capacity(pYgX, pX)
+    assert np.allclose(cc, 1 - epsilon)
+    assert isinstance(pXopt, Distribution)
+    assert np.allclose(pXopt.data.values, [0.5, 0.5])
+
+
 def test_channel_capacity_distribution_not_conditional():
     pXY = BEC_joint_xr(0.3)
     with pytest.raises(ditException):

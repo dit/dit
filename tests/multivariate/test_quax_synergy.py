@@ -88,6 +88,18 @@ def test_srv_optimizer_smoke():
         assert np.isfinite(opt._squared_mi(x, fn))
 
 
+def test_quax_synergy_driver_smoke(monkeypatch):
+    """Exercise the quax_synergy wrapper (construct -> optimize -> read result)
+    with the basin-hopping optimize() stubbed to a single fast evaluation."""
+
+    def fake_optimize(self, niter=None, maxiter=None, polish=None, **kwargs):
+        self._optima = self.construct_random_initial()
+
+    monkeypatch.setattr(SRVOptimizer, "optimize", fake_optimize)
+    val = quax_synergy(Xor(), [[0], [1]], [2])
+    assert val >= 0.0
+
+
 @pytest.mark.slow
 @pytest.mark.flaky(reruns=5)
 def test_synergy_xor():

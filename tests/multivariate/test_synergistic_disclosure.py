@@ -11,7 +11,18 @@ from dit.multivariate.synergistic_disclosure import (
     self_synergy,
     synergistic_disclosure,
 )
+from dit.pid import syndisc as syndisc_module
 from dit.pid.distributions import bivariates
+
+
+def _stub_optimize(monkeypatch):
+    """Replace the (slow) basin-hopping optimize with a no-op that records a
+    valid optimization vector, so the surrounding wrapper logic still runs."""
+
+    def fake_optimize(self, niter=None, **kwargs):
+        self._optima = self.construct_random_initial()
+
+    monkeypatch.setattr(syndisc_module.SyndiscOptimizer, "optimize", fake_optimize)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # synergistic_disclosure
@@ -109,3 +120,62 @@ def test_self_synergy_two_coins():
     d = uniform(["00", "01", "10", "11"])
     val = self_synergy(d, sources=[[0], [1]])
     assert val == pytest.approx(1.0, abs=1e-3)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Smoke tests (optimizer stubbed -- exercise wrapper logic without optimizing)
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def test_synergistic_disclosure_smoke(monkeypatch):
+    """The optimizer-backed path runs and clamps to a non-negative value."""
+    _stub_optimize(monkeypatch)
+    d = bivariates["synergy"]
+    val = synergistic_disclosure(d, [[0], [1]], [2], alpha=[[0], [1]])
+    assert val >= 0.0
+
+
+def test_synergistic_disclosure_exception_returns_zero(monkeypatch):
+    """A failure during optimization is swallowed and yields 0.0."""
+
+    def boom(self, niter=None, **kwargs):
+        raise RuntimeError("optimization failed")
+
+    monkeypatch.setattr(syndisc_module.SyndiscOptimizer, "optimize", boom)
+    d = bivariates["synergy"]
+    val = synergistic_disclosure(d, [[0], [1]], [2], alpha=[[0], [1]])
+    assert val == 0.0
+
+
+def test_modified_synergistic_disclosure_multi_alpha_smoke(monkeypatch):
+    """A multi-element alpha falls through to the optimizer-backed path."""
+    _stub_optimize(monkeypatch)
+    d = bivariates["synergy"]
+    val = modified_synergistic_disclosure(d, [[0], [1]], [2], alpha=[[0], [1]])
+    assert val >= 0.0
+
+
+def test_self_synergy_smoke(monkeypatch):
+    """Self-synergy runs end-to-end with the optimizer stubbed."""
+    _stub_optimize(monkeypatch)
+    d = uniform(["00", "01", "10", "11"])
+    val = self_synergy(d, sources=[[0], [1]])
+    assert val >= 0.0
+
+
+def test_self_synergy_default_sources_smoke(monkeypatch):
+    """sources=None uses dist.rvs and alpha=None builds singleton constraints."""
+    _stub_optimize(monkeypatch)
+    d = uniform(["00", "01", "10", "11"])
+    val = self_synergy(d)
+    assert val >= 0.0
+
+
+def test_backbone_disclosure_smoke(monkeypatch):
+    """The backbone decomposition runs with the per-node solve stubbed out."""
+    monkeypatch.setattr(
+        syndisc_module.SynDisc, "_compute_s_alpha", lambda self, node, rng=None: float(len(node))
+    )
+    d = bivariates["synergy"]
+    bb = backbone_disclosure(d)
+    assert set(bb) == {1, 2}

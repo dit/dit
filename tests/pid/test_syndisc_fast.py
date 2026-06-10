@@ -99,6 +99,23 @@ def test_syndisc_decomposition_smoke(monkeypatch):
     _exercise(SynDisc(Xor()))
 
 
+def test_syndisc_real_compute_s_alpha(monkeypatch):
+    """Run the *real* _compute_s_alpha for every lattice node, stubbing only the
+    basin-hopping optimize() so each node does a single fast evaluation.
+
+    This covers the trivial-node short circuits (empty / unconstrained / fully
+    constrained) and the optimizer-backed branch without the slow optimization.
+    """
+
+    def fake_optimize(self, niter=None, rng=None, **kwargs):
+        self._optima = self.construct_random_initial()
+
+    monkeypatch.setattr(SyndiscOptimizer, "optimize", fake_optimize)
+    sd = SynDisc(Xor())
+    for node in sd._lattice:
+        assert np.isfinite(sd.get_synergy(node))
+
+
 def test_modified_syndisc_smoke(monkeypatch):
     """ModifiedSynDisc runs its real singleton/CMI logic; only the multi-source
     fallback (the slow optimizer) is stubbed.
