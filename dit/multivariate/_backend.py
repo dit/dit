@@ -3,7 +3,7 @@ Shared backend resolution utilities for optimization.
 
 Provides :func:`_get_base_class` and :func:`_make_backend_subclass` which
 allow any ``BaseAuxVarOptimizer`` subclass hierarchy to transparently switch
-between the NumPy/SciPy, JAX, and PyTorch optimization backends.
+between the NumPy/SciPy, JAX, PyTorch, and PyTensor optimization backends.
 
 The recommended pattern is a **Mixin + composed class** approach:
 
@@ -40,7 +40,7 @@ def _get_base_class(backend="numpy"):
     Parameters
     ----------
     backend : str
-        One of ``'numpy'``, ``'jax'``, ``'torch'``.
+        One of ``'numpy'``, ``'jax'``, ``'torch'``, ``'pytensor'``.
 
     Returns
     -------
@@ -62,8 +62,12 @@ def _get_base_class(backend="numpy"):
         from ..algorithms.optimization_torch import BaseAuxVarTorchOptimizer
 
         return BaseAuxVarTorchOptimizer
+    elif backend == "pytensor":
+        from ..algorithms.optimization_pytensor import BaseAuxVarPytensorOptimizer
+
+        return BaseAuxVarPytensorOptimizer
     else:
-        raise ValueError(f"Unknown backend: {backend!r}. Choose from 'numpy', 'jax', 'torch'.")
+        raise ValueError(f"Unknown backend: {backend!r}. Choose from 'numpy', 'jax', 'torch', 'pytensor'.")
 
 
 _backend_class_cache = {}
@@ -99,7 +103,7 @@ def _make_backend_subclass(cls, backend):
     cls : type
         A concrete subclass of ``BaseAuxVarOptimizer``.
     backend : str
-        One of ``'numpy'``, ``'jax'``, ``'torch'``.
+        One of ``'numpy'``, ``'jax'``, ``'torch'``, ``'pytensor'``.
 
     Returns
     -------

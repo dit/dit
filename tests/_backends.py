@@ -38,4 +38,11 @@ backends = [
             pytest.mark.very_slow,
         ],
     ),
+    pytest.param(
+        "pytensor",
+        marks=[
+            pytest.mark.skipif(not _can_import("pytensor"), reason="pytensor not installed"),
+            pytest.mark.very_slow,
+        ],
+    ),
 ]

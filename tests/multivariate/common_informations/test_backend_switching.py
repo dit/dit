@@ -46,6 +46,12 @@ class TestGetBaseClass:
         cls = _get_base_class("torch")
         assert cls is BaseAuxVarTorchOptimizer
 
+    def test_pytensor(self):
+        from dit.algorithms.optimization_pytensor import BaseAuxVarPytensorOptimizer
+
+        cls = _get_base_class("pytensor")
+        assert cls is BaseAuxVarPytensorOptimizer
+
     def test_unknown(self):
         with pytest.raises(ValueError, match="Unknown backend"):
             _get_base_class("tensorflow")
@@ -104,6 +110,17 @@ class TestMakeBackendSubclass:
         assert hasattr(TorchExact, "_use_autodiff")
         assert TorchExact.optimize is BaseTorchOptimizer.optimize
 
+    def test_pytensor_has_correct_methods(self):
+        from dit.algorithms.optimization_pytensor import BaseAuxVarPytensorOptimizer, BasePytensorOptimizer
+
+        PytensorExact = _make_backend_subclass(ExactCommonInformation, "pytensor")
+        # The new class has the mixin and pytensor base
+        assert MarkovVarMixin in PytensorExact.__mro__
+        assert BaseAuxVarPytensorOptimizer in PytensorExact.__mro__
+        # Verify pytensor-specific methods are available
+        assert hasattr(PytensorExact, "_use_autodiff")
+        assert PytensorExact.optimize is BasePytensorOptimizer.optimize
+
     def test_preserves_name(self):
         JaxExact = _make_backend_subclass(ExactCommonInformation, "jax")
         assert JaxExact.__name__ == "ExactCommonInformation"
@@ -158,6 +175,14 @@ class TestMakeMarkovVarOptimizer:
         assert MarkovVarMixin in cls.__mro__
         assert BaseAuxVarTorchOptimizer in cls.__mro__
         assert cls.optimize is BaseTorchOptimizer.optimize
+
+    def test_pytensor_returns_pytensor_based(self):
+        from dit.algorithms.optimization_pytensor import BaseAuxVarPytensorOptimizer, BasePytensorOptimizer
+
+        cls = make_markov_var_optimizer("pytensor")
+        assert MarkovVarMixin in cls.__mro__
+        assert BaseAuxVarPytensorOptimizer in cls.__mro__
+        assert cls.optimize is BasePytensorOptimizer.optimize
 
 
 # ── functional() backend parameter ──────────────────────────────────────
@@ -215,4 +240,14 @@ def test_wyner_numpy_backward_compat():
     wci = WynerCommonInformation(d, bound=2)
     wci.optimize()
     val = wci.objective(wci._optima)
+    assert float(val) == pytest.approx(1.0, abs=1e-3)
+
+
+@pytest.mark.very_slow
+@pytest.mark.flaky(reruns=5)
+def test_wyner_pytensor_matches_numpy():
+    """The pytensor backend produces the same result as the numpy backend."""
+    pytest.importorskip("pytensor")
+    d = D([(0, 0), (1, 1)], [0.5, 0.5])
+    val = wyner_common_information(d, backend="pytensor")
     assert float(val) == pytest.approx(1.0, abs=1e-3)

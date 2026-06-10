@@ -107,7 +107,7 @@ The maximum entropy reconstruction underlies reconstructability analysis, which 
 Optimization Backends
 =====================
 
-By default, ``dit`` uses NumPy and SciPy for numerical optimization. Two additional backends are available that leverage automatic differentiation for computing exact gradients, which can improve convergence for large or complex problems:
+By default, ``dit`` uses NumPy and SciPy for numerical optimization. Three additional backends are available that leverage automatic differentiation for computing exact gradients, which can improve convergence for large or complex problems:
 
 JAX Backend
 ~~~~~~~~~~~
@@ -127,6 +127,17 @@ Install with ``pip install "dit[torch]"``. The PyTorch backend (``dit.algorithms
 * GPU acceleration via CUDA or MPS when available
 * ``torch.compile`` support for PyTorch 2.0+
 
+PyTensor Backend
+~~~~~~~~~~~~~~~~
+
+Install with ``pip install "dit[pytensor]"``. The PyTensor backend (``dit.algorithms.optimization_pytensor``) uses `PyTensor <https://pytensor.readthedocs.io>`_ (the maintained successor to the archived Aesara) and provides:
+
+* Symbolic graph compilation of the objective, its exact gradient via ``pytensor.grad``, and each constraint Jacobian, compiled once and reused across the optimization
+* A native augmented-Lagrangian solver (compiled value/gradient with ``L-BFGS-B`` inner solves) for moderate problem sizes, with a SciPy SLSQP fallback
+* Optional Numba compilation of the compiled functions (set ``DIT_PYTENSOR_MODE=NUMBA``)
+
+Set ``DIT_PYTENSOR_COMPILEDIR`` to persist PyTensor's compilation cache across process launches.
+
 For measures that use the Markov variable optimizer (e.g. common informations), the backend can be selected via the ``backend`` parameter:
 
 .. code-block:: python
@@ -141,6 +152,9 @@ For measures that use the Markov variable optimizer (e.g. common informations), 
 
     # PyTorch backend (requires torch)
     wyner_common_information(d, backend='torch')
+
+    # PyTensor backend (requires pytensor)
+    wyner_common_information(d, backend='pytensor')
 
 =======
 Logging

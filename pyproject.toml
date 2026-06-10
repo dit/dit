@@ -64,6 +64,9 @@ jax = [
 torch = [
     "torch",
 ]
+pytensor = [
+    "pytensor",
+]
 optional = [
     "colorama",
     "matplotlib",
@@ -90,6 +93,7 @@ dev = [
     "dit[docs]",
     "dit[jax]",
     "dit[torch]",
+    "dit[pytensor]",
     "ruff",
     "ty",
 ]
@@ -162,9 +166,10 @@ omit = [
     "*/dit/rate_distortion/gray_wyner/plotting.py",
     # don't cover table generation
     "dit/pid/helpers.py",
-    # JAX/Torch optimization backends are only exercised by very_slow tests
+    # JAX/Torch/PyTensor optimization backends are only exercised by very_slow tests
     "*/dit/algorithms/optimization_jax.py",
     "*/dit/algorithms/optimization_torch.py",
+    "*/dit/algorithms/optimization_pytensor.py",
 ]
 
 [tool.coverage.report]
@@ -258,6 +263,7 @@ allowed-unresolved-imports = [
     "matplotlib.**",
     "numdifftools.**",
     "pypoman.**",
+    "pytensor.**",
     "torch.**",
     "ternary.**",
     "sklearn.**",
