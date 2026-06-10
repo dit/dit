@@ -2,10 +2,9 @@
 Fast tests for dit.algorithms.maxentropy.
 
 These exercise the (non-optimizing) constraint-matrix builders, the moment
-machinery, the rank helpers, and the construction of MomentMaximumEntropy.
-The full ``moment_maxent_dists`` / ``marginal_maxent_dists`` optimizations are
-slow and covered elsewhere; here we only confirm the supporting code paths run
-and are syntactically correct.
+machinery, and the rank helpers. The optimizing classes/functions are
+deprecated; here we only confirm the supporting code paths run and are
+syntactically correct.
 """
 
 import numpy as np
@@ -13,7 +12,6 @@ import pytest
 
 import dit
 from dit.algorithms.maxentropy import (
-    MomentMaximumEntropy,
     ising_constraint_rank,
     marginal_constraint_rank,
     marginal_constraints,
@@ -134,14 +132,3 @@ def test_negentropy_uniform():
 def test_negentropy_deterministic():
     """Negentropy of a point mass is 0 (the ``nansum`` ignores the 0*log0)."""
     assert negentropy(np.array([1.0, 0.0])) == pytest.approx(0.0)
-
-
-# ── MomentMaximumEntropy construction (no optimize) ──────────────────────
-
-
-def test_moment_maximum_entropy_construction():
-    """Constructing the optimizer builds its equality constraints (A, b)."""
-    d = prepare_dist(dit.uniform_distribution(2, 2))
-    opt = MomentMaximumEntropy(d, 2, [-1, 1])
-    assert opt.A is not None
-    assert opt.b is not None
