@@ -27,6 +27,7 @@ _logger.disable("dit")
 
 import dit.algorithms  # noqa: E402
 import dit.channelorder  # noqa: E402
+import dit.coding  # noqa: E402
 import dit.divergences  # noqa: E402
 import dit.example_dists  # noqa: E402
 import dit.inference  # noqa: E402
