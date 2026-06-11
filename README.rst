@@ -55,7 +55,7 @@ https://anaconda.org/conda-forge/dit
 +-------------------------------------------------------------------+
 | Dependencies                                                      |
 +===================================================================+
-| * Python 3.9+                                                     |
+| * Python 3.11+                                                    |
 | * `boltons <https://boltons.readthedocs.io>`_                     |
 | * `debtcollector <https://docs.openstack.org/debtcollector/>`_    |
 | * `lattices <https://github.com/dit/lattices>`_                   |
@@ -64,6 +64,7 @@ https://anaconda.org/conda-forge/dit
 | * `numpy <http://www.numpy.org/>`_                                |
 | * `PLTable <https://github.com/platomav/PLTable>`_                |
 | * `scipy <https://www.scipy.org/>`_                               |
+| * `xarray <https://docs.xarray.dev/>`_                            |
 +-------------------------------------------------------------------+
 
 Optional Dependencies
@@ -75,9 +76,10 @@ Optional Dependencies
 * matplotlib, python-ternary: plotting of various information-theoretic expansions
 * numdifftools: numerical evaluation of gradients and hessians during optimization
 * pint: add units to informational values
+* pycddlib-standalone, pypoman: polytope vertex enumeration for convex-maximization-based measures
+* pytensor: PyTensor-based optimization backend with autodiff support
 * scikit-learn: faster nearest-neighbor lookups during entropy/mutual information estimation from samples
 * torch: PyTorch-based optimization backend with autodiff and GPU support
-* xarray: ``Distribution`` class for labeled, algebra-friendly distributions
 
 Install
 *******
@@ -138,32 +140,39 @@ though it is not in the literature, the multivariate conditional exact common in
 | Entropies                                | Mutual Informations                     | Divergences                       |
 |                                          |                                         |                                   |
 | * Shannon Entropy                        | * Co-Information                        | * Variational Distance            |
-| * Renyi Entropy                          | * Interaction Information               | * Kullback-Leibler Divergence \   |
-| * Tsallis Entropy                        | * Total Correlation /                   |   Relative Entropy                |
-| * Necessary Conditional Entropy          |   Multi-Information                     | * Cross Entropy                   |
-| * Residual Entropy /                     | * Dual Total Correlation /              | * Jensen-Shannon Divergence       |
-|   Independent Information /              |   Binding Information                   | * Earth Mover's Distance          |
-|   Variation of Information               | * CAEKL Multivariate Mutual Information +-----------------------------------+
-+------------------------------------------+-----------------------------------------+ Other Measures                    |
-| Common Informations                      | Partial Information Decomposition       |                                   |
-|                                          |                                         | * Channel Capacity                |
-| * Gacs-Korner Common Information         | * :math:`I_{min}`                       | * Complexity Profile              |
-| * Wyner Common Information               | * :math:`I_{\wedge}`                    | * Connected Informations          |
-| * Exact Common Information               | * :math:`I_{RR}`                        | * Copy Mutual Information         |
-| * Functional Common Information          | * :math:`I_{\downarrow}`                | * Cumulative Residual Entropy     |
-| * MSS Common Information                 | * :math:`I_{proj}`                      | * Extropy                         |
-+------------------------------------------+ * :math:`I_{BROJA}`                     | * Hypercontractivity Coefficient  |
-| Secret Key Agreement Bounds              | * :math:`I_{ccs}`                       | * Information Bottleneck          |
-|                                          | * :math:`I_{\pm}`                       | * Information Diagrams            |
-| * Secrecy Capacity                       | * :math:`I_{sx}`                        | * Information Trimming            |
-| * Intrinsic Mutual Information           | * :math:`I_{dep}`                       | * Lautum Information              |
-| * Reduced Intrinsic Mutual Information   | * :math:`I_{RAV}`                       | * LMPR Complexity                 |
-| * Minimal Intrinsic Mutual Information   | * :math:`I_{mmi}`                       | * Marginal Utility of Information |
-| * Necessary Intrinsic Mutual Information | * :math:`I_{\prec}`                     | * Maximum Correlation             |
-| * Two-Part Intrinsic Mutual Information  | * :math:`I_{RA}`                        | * Maximum Entropy Distributions   |
-|                                          | * :math:`I_{SKAR}`                      | * Perplexity                      |
-|                                          | * :math:`I_{IG}`                        | * Rate-Distortion Theory          |
-|                                          | * :math:`I_{RDR}`                       | * TSE Complexity                  |
+| * Renyi Entropy                          | * Interaction Information               | * Kullback-Leibler Divergence /   |
+| * Tsallis Entropy                        | * Total Correlation / Multi-Information |   Relative Entropy                |
+| * Necessary Conditional Entropy          | * Dual Total Correlation / Binding      | * Cross Entropy                   |
+| * Residual Entropy / Independent         |   Information                           | * Jensen-Shannon Divergence       |
+|   Information / Variation of Information | * CAEKL Multivariate Mutual Information | * Earth Mover's Distance          |
++------------------------------------------+ * O-Information                         +-----------------------------------+
+| Common Informations                      | * Cohesion                              | Other Measures                    |
+|                                          | * Transmission                          |                                   |
+| * Gacs-Korner Common Information         | * Union Information                     | * Channel Capacity                |
+| * Wyner Common Information               | * Logarithmic Decomposition             | * Complexity Profile              |
+| * Exact Common Information               | * Delta^k / Gamma^k                     | * Connected Informations          |
+| * Functional Common Information          | * DeWeese Mutual Information            | * Copy Mutual Information         |
+| * MSS Common Information                 +-----------------------------------------+ * Cumulative Residual Entropy     |
+| * Kamath-Anantharam Dual Common          | Partial Information Decomposition       | * Extropy                         |
+|   Information                            |                                         | * Hypercontractivity Coefficient  |
+| * Beta Common Information                | * :math:`I_{min}`                       | * Information Bottleneck          |
+| * Salamatian-Cohen-Medard Maximum Entropy| * :math:`I_{\wedge}`                    | * Information Diagrams            |
+|   Function                               | * :math:`I_{RR}`                        | * Information Trimming            |
++------------------------------------------+ * :math:`I_{\downarrow}`                | * Lautum Information              |
+| Secret Key Agreement Bounds              | * :math:`I_{proj}`                      | * LMPR Complexity                 |
+|                                          | * :math:`I_{BROJA}`                     | * Marginal Utility of Information |
+| * Secrecy Capacity                       | * :math:`I_{ccs}`                       | * Maximum Correlation             |
+| * Intrinsic Mutual Information           | * :math:`I_{\pm}`                       | * Maximum Entropy Distributions   |
+| * Reduced Intrinsic Mutual Information   | * :math:`I_{sx}`                        | * Perplexity                      |
+| * Minimal Intrinsic Mutual Information   | * :math:`I_{dep}`                       | * Rate-Distortion Theory          |
+| * Necessary Intrinsic Mutual Information | * :math:`I_{RAV}`                       | * TSE Complexity                  |
+| * Two-Part Intrinsic Mutual Information  | * :math:`I_{mmi}`                       | * Gray-Wyner Network              |
+|                                          | * :math:`I_{\prec}`                     |                                   |
+|                                          | * :math:`I_{RA}`                        |                                   |
+|                                          | * :math:`I_{SKAR}`                      |                                   |
+|                                          | * :math:`I_{IG}`                        |                                   |
+|                                          | * :math:`I_{RDR}`                       |                                   |
+|                                          | * :math:`I_{do}`                        |                                   |
 +------------------------------------------+-----------------------------------------+-----------------------------------+
 
 Quickstart
@@ -284,6 +293,57 @@ Draw 5 random samples from this distribution.
    >>> dit.math.prng.seed(1)
    >>> d2.rand(5)
    ['01', '10', '00', '01', '00']
+
+Source and Channel Coding
+-------------------------
+
+Beyond measures, ``dit`` builds explicit codes and ships a catalog of channels.
+
+The ``dit.coding`` module constructs lossless *source codes* (Shannon, Fano,
+Shannon-Fano-Elias, Huffman, length-limited Huffman, Golomb/Rice, Tunstall, and
+the universal integer codes) and reports their code-theoretic properties (rate,
+redundancy, efficiency, the Kraft sum, and whether the code is prefix-free /
+uniquely decodable / optimal).
+
+.. code:: python
+
+   >>> from dit.coding import huffman
+   >>> d = dit.Distribution(['a', 'b', 'c', 'd', 'e'], [0.4, 0.2, 0.2, 0.1, 0.1])
+   >>> code = huffman(d)
+   >>> code.average_length()
+   2.2
+   >>> float(code.source_entropy())
+   2.1219280948873624
+   >>> code.is_optimal(), code.is_prefix_free()
+   (True, True)
+
+It also builds binary (GF(2)) *channel codes* --- linear block codes
+(repetition, parity-check, Hamming, Reed-Muller, Golay) as well as LDPC, polar,
+and convolutional codes --- and evaluates them against a noisy channel supplied
+as a conditional ``Distribution`` ``p(Y|X)``.
+
+.. code:: python
+
+   >>> from dit.coding import hamming
+   >>> code = hamming(3)
+   >>> code.length, code.dimension, code.minimum_distance()
+   (7, 4, 3)
+   >>> bsc = dit.example_channels.binary_symmetric_channel(0.05)
+   >>> float(code.probability_of_error(bsc, method='exact'))
+   0.04438054218749993
+
+The ``dit.example_channels`` module is a catalog of canonical discrete
+memoryless channels (binary symmetric, binary erasure, Z-channel, q-ary
+symmetric/erasure, noisy typewriter, ...). Each constructor returns a
+conditional ``Distribution`` ``p(Y|X)`` ready for
+``dit.algorithms.channel_capacity`` or the coding layer above.
+
+.. code:: python
+
+   >>> from dit.algorithms import channel_capacity
+   >>> bec = dit.example_channels.binary_erasure_channel(0.25)
+   >>> float(channel_capacity(bec)[0])
+   0.75
 
 Contributions & Help
 --------------------
