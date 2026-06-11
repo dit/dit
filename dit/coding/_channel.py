@@ -2,8 +2,9 @@
 Channel helpers for the channel-coding evaluation layer.
 
 A channel is a conditional :class:`~dit.Distribution` ``p(Y | X)``, matching what
-:func:`dit.algorithms.channel_capacity` consumes. The erasure symbol of the binary
-erasure channel is the integer ``2`` (so that all alphabets stay sortable).
+:func:`dit.algorithms.channel_capacity` consumes. Concrete example channels (the
+binary symmetric channel, binary erasure channel, ...) live in
+:mod:`dit.example_channels`.
 """
 
 import itertools
@@ -14,65 +15,9 @@ import numpy as np
 from ..exceptions import ditException
 
 __all__ = (
-    "binary_erasure_channel",
-    "binary_symmetric_channel",
     "channel_arrays",
     "log_likelihoods",
 )
-
-ERASURE = 2
-
-
-def binary_symmetric_channel(p):
-    """
-    The binary symmetric channel with crossover probability ``p``.
-
-    Parameters
-    ----------
-    p : float
-        The probability that a transmitted bit is flipped.
-
-    Returns
-    -------
-    channel : Distribution
-        The conditional distribution ``p(Y | X)`` over ``{0, 1}``.
-    """
-    from ..distribution import Distribution
-
-    joint = Distribution(
-        {(0, 0): 0.5 * (1 - p), (0, 1): 0.5 * p, (1, 0): 0.5 * p, (1, 1): 0.5 * (1 - p)},
-        rv_names=["X", "Y"],
-    )
-    return joint.condition_on("X")
-
-
-def binary_erasure_channel(epsilon):
-    """
-    The binary erasure channel with erasure probability ``epsilon``.
-
-    Parameters
-    ----------
-    epsilon : float
-        The probability that a transmitted bit is erased.
-
-    Returns
-    -------
-    channel : Distribution
-        The conditional distribution ``p(Y | X)`` with output alphabet
-        ``{0, 1, 2}``, where ``2`` denotes an erasure.
-    """
-    from ..distribution import Distribution
-
-    joint = Distribution(
-        {
-            (0, 0): 0.5 * (1 - epsilon),
-            (0, ERASURE): 0.5 * epsilon,
-            (1, 1): 0.5 * (1 - epsilon),
-            (1, ERASURE): 0.5 * epsilon,
-        },
-        rv_names=["X", "Y"],
-    )
-    return joint.condition_on("X")
 
 
 def channel_arrays(channel):

@@ -14,7 +14,7 @@ conditional :class:`~dit.Distribution` ``p(Y|X)`` (decoding, block-error
 probability, and gap to capacity).
 """
 
-from ._channel import binary_erasure_channel, binary_symmetric_channel
+from ..example_channels import binary_erasure_channel, binary_symmetric_channel
 from .base import ChannelCoding, SourceCoding
 from .block_codes import golay, hamming, parity_check, reed_muller, repetition
 from .codes import (

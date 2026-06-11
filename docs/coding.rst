@@ -105,10 +105,10 @@ A *channel code* adds redundancy to a message so that it can be recovered after
 transmission over a noisy channel. All channel codes in :mod:`dit.coding` are
 binary (over :math:`\mathrm{GF}(2)`), and a channel is supplied as a conditional
 :class:`~dit.Distribution` :math:`p(Y \mid X)` -- a discrete memoryless channel
-applied independently to each transmitted symbol. The convenience constructors
-:func:`binary_symmetric_channel` and :func:`binary_erasure_channel` build the two
-standard binary channels (the erasure channel uses the integer ``2`` for an
-erasure).
+applied independently to each transmitted symbol. The :doc:`channels` page
+catalogs ready-made channels, including :func:`~dit.example_channels.binary_symmetric_channel`
+and :func:`~dit.example_channels.binary_erasure_channel` (re-exported from
+:mod:`dit.coding` for convenience).
 
 Every channel code derives from :class:`ChannelCoding`, which provides the
 information-theoretic evaluation common to all of them:
@@ -240,7 +240,3 @@ APIs
 .. autofunction:: polar
 
 .. autofunction:: convolutional
-
-.. autofunction:: binary_symmetric_channel
-
-.. autofunction:: binary_erasure_channel
