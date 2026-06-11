@@ -38,6 +38,8 @@ Contents:
    profiles
    rate_distortion
    gray_wyner
+   coding
+   channels
    measures/pid
    stumbling
    zreferences
