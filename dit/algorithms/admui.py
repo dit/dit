@@ -22,9 +22,9 @@ _DEFAULT_MAXITER = 1000
 
 def _iproj_is(px_given_s: np.ndarray, py_given_s: np.ndarray, r_xy: np.ndarray, *, eps: float, maxiter: int):
     """
-  Iterative-scaling I-projection of ``r_xy`` onto the set of joints with
-  marginals ``px_given_s``, ``py_given_s``.
-  """
+    Iterative-scaling I-projection of ``r_xy`` onto the set of joints with
+    marginals ``px_given_s``, ``py_given_s``.
+    """
     n_x, n_y = r_xy.shape
     x_mask = px_given_s > 0
     y_mask = py_given_s > 0
@@ -125,6 +125,7 @@ def admui_optimize(
 
     q_xy_given_s = np.zeros((n_x, n_y, n_s))
     converged = False
+    n_iters = 0
 
     for it in range(maxiter):
         diff = 1.0
@@ -133,22 +134,20 @@ def admui_optimize(
             mask = np.outer(x_mask, y_mask)
             ip_flat = ip.ravel()
             old = q_xy_given_s[:, :, s][mask]
-            if old.size == 0 or np.any(old <= 0):
-                diffs = 2.0
-            else:
-                diffs = float(np.max(ip_flat / old))
+            diffs = 2.0 if old.size == 0 or np.any(old <= 0) else float(np.max(ip_flat / old))
             if diffs > diff:
                 diff = diffs
             q_xy_given_s[:, :, s][mask] = ip_flat
 
         r_xy = np.tensordot(q_xy_given_s, ps, axes=([2], [0]))
+        n_iters = it + 1
 
         if diff - 1.0 < eps:
             converged = True
             break
 
     q_sxy = (q_xy_given_s * ps[np.newaxis, np.newaxis, :]).transpose(2, 0, 1)
-    return q_sxy, it + 1, converged
+    return q_sxy, n_iters, converged
 
 
 def _conditionals_from_dist(d: Distribution):

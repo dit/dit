@@ -44,7 +44,7 @@ class _BrojaConeSolver:
     def __init__(self, marg_xy, marg_xz):
         self.b_xy = dict(marg_xy)
         self.b_xz = dict(marg_xz)
-        self.X = sorted(set(x for x, _ in self.b_xy) | set(x for x, _ in self.b_xz))
+        self.X = sorted({x for x, _ in self.b_xy} | {x for x, _ in self.b_xz})
         self.Y = sorted({y for _, y in self.b_xy})
         self.Z = sorted({z for _, z in self.b_xz})
         self.idx_of_trip = {}
@@ -77,7 +77,7 @@ class _BrojaConeSolver:
         self.b_vec = np.zeros(n_cons, dtype=float)
         eqn, var, coeff = [], [], []
 
-        for i, (x, y, z) in enumerate(self.trip_of_idx):
+        for i, (_x, y, z) in enumerate(self.trip_of_idx):
             eqn.append(i)
             var.append(_p_idx(i))
             coeff.append(-1.0)
@@ -187,7 +187,7 @@ class _BrojaConeSolver:
         idx_xz = {(x, z): i for i, (x, z) in enumerate(self.b_xz)}
 
         mu_yz = defaultdict(float)
-        for j, (x, y, z) in enumerate(self.trip_of_idx):
+        for j, (_x, y, z) in enumerate(self.trip_of_idx):
             mu_yz[(y, z)] += self.sol_lambda[j]
 
         dual_infeas = 0.0
@@ -221,7 +221,7 @@ class _BrojaConeSolver:
     def cond_y_mutinf(self):
         marg_yz = self._marg_yz()
         marg_y = defaultdict(float)
-        for (y, z), p in marg_yz.items():
+        for (y, _z), p in marg_yz.items():
             marg_y[y] += p
 
         total = 0.0
@@ -242,7 +242,7 @@ class _BrojaConeSolver:
     def cond_z_mutinf(self):
         marg_yz = self._marg_yz()
         marg_z = defaultdict(float)
-        for (y, z), p in marg_yz.items():
+        for (_y, z), p in marg_yz.items():
             marg_z[z] += p
 
         total = 0.0

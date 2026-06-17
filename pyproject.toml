@@ -261,6 +261,7 @@ python-version = "3.13"
 allowed-unresolved-imports = [
     # Optional third-party packages
     "cvxopt.**",
+    "ecos.**",
     "jax.**",
     "matplotlib.**",
     "numdifftools.**",

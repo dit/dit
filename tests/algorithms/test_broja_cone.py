@@ -4,8 +4,6 @@ Tests for dit.algorithms.broja_cone.
 
 import pytest
 
-ecos = pytest.importorskip("ecos")
-
 import dit
 from dit.algorithms.broja_method import broja_solve_bivariate
 from dit.pid.distributions import bivariates
@@ -18,6 +16,7 @@ def _scipy_uniques(d):
 
 @pytest.mark.parametrize("name", ["and", "diff"])
 def test_cone_matches_scipy(name):
+    pytest.importorskip("ecos")
     d = bivariates[name]
     ref = _scipy_uniques(d)
     got, meta = broja_solve_bivariate(d, ((0,), (1,)), (2,), method="cone")
@@ -27,6 +26,7 @@ def test_cone_matches_scipy(name):
 
 
 def test_cone_and_distribution():
+    pytest.importorskip("ecos")
     d = dit.Distribution(["000", "001", "010", "111"], [0.25] * 4)
     uniques, meta = broja_solve_bivariate(d, ((0,), (1,)), (2,), method="cone")
     assert meta["primal_infeas"] < 1e-5

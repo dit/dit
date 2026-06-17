@@ -126,7 +126,7 @@ def _summarize(results):
 
 def _print_table(results):
     width = max(len(k) for k in results)
-    print(f"{'case':<{width}}  {'|XYZ|':>6}  " + "  ".join(f"{m+'_s':>10}" for m in METHODS) + "  admui_Δ")
+    print(f"{'case':<{width}}  {'|XYZ|':>6}  " + "  ".join(f"{m + '_s':>10}" for m in METHODS) + "  admui_Δ")
     print("-" * (width + 30 + 12 * len(METHODS)))
     for case, row in results.items():
         parts = [f"{case:<{width}}", f"{row['n_joint']:>6}"]
