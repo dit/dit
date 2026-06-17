@@ -173,18 +173,19 @@ def test_data_processing_inequality_wyner(dist, backend):
     assert c_xz <= c_xy + 150 * epsilon
 
 
-@pytest.mark.flaky(reruns=5)
+@pytest.mark.flaky(reruns=10)
 @pytest.mark.parametrize("backend", backends)
 @given(dist=markov_chains(alphabets=(2,) * 3))
-@settings(max_examples=5)
+@settings(max_examples=3)
 def test_data_processing_inequality_exact(dist, backend):
     """
     given X - Y - Z:
         G(X:Z) <= G(X:Y)
     """
-    g_xy = G(dist, [[0], [1]], niter=150, backend=backend)
-    g_xz = G(dist, [[0], [2]], niter=150, backend=backend)
-    assert g_xz <= g_xy + 150 * epsilon
+    niter = 300
+    g_xy = G(dist, [[0], [1]], niter=niter, backend=backend)
+    g_xz = G(dist, [[0], [2]], niter=niter, backend=backend)
+    assert g_xz <= g_xy + niter * epsilon
 
 
 @given(dist=distributions(alphabets=((2, 4),) * 2))

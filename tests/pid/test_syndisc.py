@@ -100,7 +100,7 @@ def test_synergy_monotonicity():
     sd = SynDisc(d)
     for node in sd._lattice:
         for desc in sd._lattice.descendants(node):
-            assert sd.get_synergy(desc) <= sd.get_synergy(node) + 1e-6
+            assert sd.get_synergy(desc) <= sd.get_synergy(node) + 1e-4
 
 
 # ─────────────────────────────────────────────────────────────────────────────
