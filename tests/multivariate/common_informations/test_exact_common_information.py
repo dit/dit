@@ -18,7 +18,6 @@ sbec = lambda p: D(["00", "0e", "1e", "11"], [(1 - p) / 2, p / 2, p / 2, (1 - p)
 G_sbec = lambda p: min(1, entropy(p) + 1 - p)
 
 
-@pytest.mark.slow
 @pytest.mark.flaky(reruns=5)
 @pytest.mark.parametrize("backend", backends)
 @pytest.mark.parametrize(
@@ -43,7 +42,6 @@ def x0():
     return {"x0": None}
 
 
-@pytest.mark.slow
 @pytest.mark.flaky(reruns=5)
 @pytest.mark.parametrize("i", range(1, 10))
 def test_eci2(i, x0):

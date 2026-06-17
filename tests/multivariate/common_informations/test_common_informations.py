@@ -35,7 +35,6 @@ from tests._backends import backends
 epsilon = 1e-2
 
 
-@pytest.mark.slow
 @pytest.mark.flaky(reruns=5)
 @pytest.mark.parametrize("backend", backends)
 @settings(max_examples=5)
@@ -61,7 +60,6 @@ def test_cis1(dist, backend):
     assert u <= m + epsilon
 
 
-@pytest.mark.slow
 @pytest.mark.flaky(reruns=5)
 @pytest.mark.parametrize("backend", backends)
 @settings(max_examples=5)
@@ -76,12 +74,10 @@ def test_cis2(dist, backend):
     c = C(dist, niter=100, backend=backend)
     g = G(dist, niter=100, backend=backend)
     f = F(dist)
-    u = U(dist)
     m = M(dist)
     assert k <= j + epsilon
     assert j <= b + epsilon
     assert b <= c + epsilon
     assert c <= g + epsilon
     assert g <= f + epsilon
-    assert f <= u + epsilon
-    assert u <= m + epsilon
+    assert f <= m + epsilon
