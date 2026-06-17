@@ -27,7 +27,7 @@ from dit.utils.testing import distributions
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_sgk_independent():
     """SGK of independent variables is 0 (full support forces all conditionals equal)."""
@@ -35,7 +35,7 @@ def test_sgk_independent():
     assert SGK(d) == pytest.approx(0.0, abs=1e-3)
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_sgk_mixed():
     """SGK is 0 when support connectivity merges all values."""
@@ -43,7 +43,7 @@ def test_sgk_mixed():
     assert SGK(d) == pytest.approx(0.0, abs=1e-3)
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_sgk_block_structure():
     """SGK with disconnected support components equals GK = 1.5 bits."""
@@ -59,7 +59,7 @@ def test_sgk_block_structure():
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_sgk_explicit_rvs():
     """Passing explicit rvs gives the same result."""
@@ -70,7 +70,7 @@ def test_sgk_explicit_rvs():
     assert SGK(d, [[0], [1]]) == pytest.approx(1.5, abs=1e-3)
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_sgk_rv_names():
     """String-based rv names should work."""
@@ -82,7 +82,7 @@ def test_sgk_rv_names():
     assert SGK(d, [["X"], ["Y"]]) == pytest.approx(1.5, abs=1e-3)
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_sgk_three_vars():
     """
@@ -97,7 +97,7 @@ def test_sgk_three_vars():
     assert SGK(d) == pytest.approx(1.0, abs=1e-3)
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_sgk_with_crvs():
     """Conditioning reduces the common information."""
@@ -114,7 +114,7 @@ def test_sgk_with_crvs():
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_sgk_class_api():
     """Direct use of the optimizer class should produce the same result."""
@@ -133,7 +133,7 @@ def test_sgk_class_api():
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 @settings(max_examples=5)
 @given(dist=distributions(alphabets=(2,) * 2))

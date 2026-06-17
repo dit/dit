@@ -38,7 +38,7 @@ def _is_accessible(node, source):
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 @pytest.mark.parametrize("name", ["synergy", "redundant", "unique 1", "and"])
 def test_consistency_condition(name):
@@ -57,7 +57,7 @@ def test_consistency_condition(name):
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 @pytest.mark.parametrize("name", ["synergy", "redundant", "unique 1", "and"])
 def test_atom_sum_equals_mutual_info(name):
@@ -72,7 +72,7 @@ def test_atom_sum_equals_mutual_info(name):
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_msd_xor():
     d = bivariates["synergy"]
@@ -88,7 +88,7 @@ def test_msd_xor():
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_msd_copy():
     d = bivariates["redundant"]
@@ -104,7 +104,7 @@ def test_msd_copy():
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_msd_and():
     d = bivariates["and"]
@@ -120,7 +120,7 @@ def test_msd_and():
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 @pytest.mark.parametrize("name", ["synergy", "redundant", "unique 1", "and"])
 def test_backbone_nonnegative(name):
@@ -131,7 +131,7 @@ def test_backbone_nonnegative(name):
         assert msd.get_backbone_atom(m) >= -1e-6, f"Failed for {name}, m={m}"
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 @pytest.mark.parametrize("name", ["synergy", "redundant", "unique 1", "and"])
 def test_backbone_sum_equals_mutual_info(name):
@@ -147,7 +147,7 @@ def test_backbone_sum_equals_mutual_info(name):
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_to_string():
     d = bivariates["synergy"]

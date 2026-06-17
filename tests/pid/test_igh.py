@@ -35,7 +35,7 @@ def test_pid_gh2():
     assert pid[((0, 1),)] == pytest.approx(0.5, abs=1e-4)
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_pid_gh3():
     """
@@ -49,7 +49,7 @@ def test_pid_gh3():
     assert pid[((0, 1),)] == pytest.approx(0.0, abs=1e-4)
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_pid_gh4():
     """

@@ -14,7 +14,7 @@ from dit.pid.syndisc import SynDisc
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_syndisc_xor():
     d = bivariates["synergy"]
@@ -30,7 +30,7 @@ def test_syndisc_xor():
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_syndisc_copy():
     d = bivariates["redundant"]
@@ -46,7 +46,7 @@ def test_syndisc_copy():
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_syndisc_unique1():
     d = bivariates["unique 1"]
@@ -63,7 +63,7 @@ def test_syndisc_unique1():
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_syndisc_and():
     d = bivariates["and"]
@@ -79,7 +79,7 @@ def test_syndisc_and():
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_atom_sum_equals_mutual_info():
     for name in ["synergy", "redundant", "unique 1", "and"]:
@@ -89,7 +89,7 @@ def test_atom_sum_equals_mutual_info():
         assert atom_sum == pytest.approx(sd._total, abs=1e-4), f"Failed for {name}"
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_boundary_synergies():
     for name in ["synergy", "redundant", "unique 1", "and"]:
@@ -99,7 +99,7 @@ def test_boundary_synergies():
         assert sd.get_synergy(sd._lattice.bottom) == pytest.approx(0.0, abs=1e-4)
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_synergy_monotonicity():
     """S_alpha >= S_beta when alpha is a descendant of beta (Lemma 2)."""
@@ -115,7 +115,7 @@ def test_synergy_monotonicity():
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_backbone_nonnegative():
     for name in ["synergy", "redundant", "unique 1", "and"]:
@@ -126,7 +126,7 @@ def test_backbone_nonnegative():
             assert sd.get_backbone_atom(m) >= -1e-6, f"Failed for {name}, m={m}"
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_backbone_sum_equals_mutual_info():
     for name in ["synergy", "redundant", "unique 1", "and"]:
@@ -137,7 +137,7 @@ def test_backbone_sum_equals_mutual_info():
         assert bb_sum == pytest.approx(sd._total, abs=1e-4), f"Failed for {name}"
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_backbone_xor():
     d = bivariates["synergy"]
@@ -151,7 +151,7 @@ def test_backbone_xor():
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_self_synergy_tbc():
     """Two independent fair coins: self-synergy S_{01}(X->X) = 1 bit."""
@@ -167,7 +167,7 @@ def test_self_synergy_tbc():
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_to_string():
     d = bivariates["synergy"]
@@ -177,7 +177,7 @@ def test_to_string():
     assert "{0}{1}" in s
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_backbone_to_string():
     d = bivariates["synergy"]

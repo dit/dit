@@ -30,7 +30,7 @@ def _stub_optimize(monkeypatch):
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_synergistic_disclosure_xor():
     d = bivariates["synergy"]
@@ -38,7 +38,7 @@ def test_synergistic_disclosure_xor():
     assert val == pytest.approx(1.0, abs=1e-4)
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_synergistic_disclosure_copy():
     d = bivariates["redundant"]
@@ -46,7 +46,7 @@ def test_synergistic_disclosure_copy():
     assert val == pytest.approx(0.0, abs=1e-4)
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_synergistic_disclosure_empty_alpha():
     d = bivariates["synergy"]
@@ -92,7 +92,7 @@ def test_modified_synergistic_disclosure_singleton_alpha_redundant():
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_backbone_disclosure_xor():
     d = bivariates["synergy"]
@@ -101,7 +101,7 @@ def test_backbone_disclosure_xor():
     assert bb[1] == pytest.approx(0.0, abs=1e-3)
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_backbone_disclosure_copy():
     d = bivariates["redundant"]
@@ -115,7 +115,7 @@ def test_backbone_disclosure_copy():
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_self_synergy_two_coins():
     d = uniform(["00", "01", "10", "11"])

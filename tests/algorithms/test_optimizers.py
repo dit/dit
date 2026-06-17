@@ -58,7 +58,7 @@ def test_maxent_2():
     assert d2.is_approx_equal(d1_maxent, rtol=1e-3, atol=1e-3)
 
 
-@pytest.mark.slow
+
 def test_maxent_3():
     """
     Test the RdnUnqXor distribution.

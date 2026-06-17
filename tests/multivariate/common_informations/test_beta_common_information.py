@@ -174,7 +174,6 @@ class TestBetaCommonInformationFastPaths:
 
 
 class TestBetaCommonInformationOptimisation:
-    @pytest.mark.slow
     @pytest.mark.flaky(reruns=5)
     def test_beta_zero_matches_wyner(self):
         """C_beta(beta=0) should equal Wyner common information."""
@@ -183,7 +182,6 @@ class TestBetaCommonInformationOptimisation:
         c_0 = C_beta(d, beta=0, niter=25)
         assert c_0 == pytest.approx(wyner, abs=5e-2)
 
-    @pytest.mark.slow
     @pytest.mark.flaky(reruns=5)
     def test_monotone_in_beta(self):
         """C_beta is decreasing in beta."""
@@ -195,7 +193,6 @@ class TestBetaCommonInformationOptimisation:
         assert c_mid >= c_hi - 1e-2
         assert c_hi >= -1e-2
 
-    @pytest.mark.slow
     @pytest.mark.flaky(reruns=5)
     def test_nonnegative(self):
         """C_beta should always be non-negative."""
@@ -204,7 +201,6 @@ class TestBetaCommonInformationOptimisation:
             c = C_beta(d, beta=beta, niter=5)
             assert c >= -1e-4
 
-    @pytest.mark.slow
     @pytest.mark.flaky(reruns=5)
     def test_upper_bounded_by_wyner(self):
         """C_beta <= C_0 = Wyner for all beta >= 0."""
@@ -213,7 +209,6 @@ class TestBetaCommonInformationOptimisation:
         c_mid = C_beta(d, beta=0.3, niter=10)
         assert c_mid <= wyner + 5e-2
 
-    @pytest.mark.slow
     @pytest.mark.flaky(reruns=5)
     def test_highly_correlated(self):
         """For a highly correlated source (p=0.05), C_0 ~ Wyner."""
@@ -222,7 +217,6 @@ class TestBetaCommonInformationOptimisation:
         c_0 = C_beta(d, beta=0, niter=15)
         assert c_0 == pytest.approx(wyner, abs=5e-2)
 
-    @pytest.mark.slow
     @pytest.mark.flaky(reruns=5)
     def test_constraint_satisfied(self):
         """The optimal U should satisfy rho_m(X;Y|U) <= beta."""
@@ -238,7 +232,6 @@ class TestBetaCommonInformationOptimisation:
 
 
 class TestBetaCommonInformationConditional:
-    @pytest.mark.slow
     @pytest.mark.flaky(reruns=5)
     def test_conditional_beta_zero_matches_wyner(self):
         """C_beta(X:Y|Z, beta=0) ~ Wyner(X:Y|Z)."""
@@ -278,7 +271,7 @@ class TestBetaCommonInformationMultivariate:
 # ── Property-based (Hypothesis) tests ────────────────────────────────────
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 @settings(max_examples=5)
 @given(dist=distributions(alphabets=(2,) * 2, nondegenerate=True))

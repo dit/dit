@@ -100,7 +100,7 @@ def test_quax_synergy_driver_smoke(monkeypatch):
     assert val >= 0.0
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_synergy_xor():
     """XOR of two independent bits: I_syn should be close to 1.0 (Section 5.1)."""
@@ -109,7 +109,7 @@ def test_synergy_xor():
     assert val == pytest.approx(1.0, abs=0.1)
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_synergy_and():
     """AND gate: I_syn ~ 0.311 bits (Section 5.3)."""
@@ -119,7 +119,7 @@ def test_synergy_and():
     assert val == pytest.approx(expected, abs=0.1)
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_synergy_nonneg():
     """Synergistic information is non-negative (Eq. 6)."""
@@ -128,7 +128,7 @@ def test_synergy_nonneg():
     assert val >= -1e-6
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_synergy_bounded_by_mi():
     """I_syn <= I(X:Y) (Eq. 7)."""
@@ -140,7 +140,7 @@ def test_synergy_bounded_by_mi():
     assert isyn <= total_mi + 1e-6
 
 
-@pytest.mark.slow
+
 @pytest.mark.flaky(reruns=5)
 def test_synergy_bounded_by_mse():
     """I_syn(X -> Y) <= max_synergistic_entropy(X)."""
