@@ -18,6 +18,8 @@ class ExactCommonInformation(MarkovVarOptimizer):
     render the X_i conditionally independent.
     """
 
+    _shotgun = 10
+
     name = "exact"
     description = "min H[V] where V renders all `rvs` independent"
 

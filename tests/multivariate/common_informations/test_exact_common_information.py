@@ -53,3 +53,11 @@ def test_eci2(i, x0):
     eci.optimize(x0=x0["x0"])
     x0["x0"] = eci._optima
     assert eci.objective(eci._optima) == pytest.approx(G_sbec(p), abs=1e-3)
+
+
+def test_eci_not_subadditive_under_product():
+    """
+    Kumar et al.: G(d ⊗ d) can be strictly less than 2 G(d) for independent pairs.
+    """
+    d = D(["00", "01", "10"], [1 / 3] * 3)
+    assert G(d @ d, [[0, 2], [1, 3]]) < 2 * G(d, [[0], [1]])
