@@ -23,7 +23,7 @@ from itertools import combinations
 import networkx as nx
 import numpy as np
 from lattices import Lattice
-from lattices.lattices import free_distributive_lattice
+from lattices.lattices import constraint_lattice
 
 from ..algorithms import BaseAuxVarOptimizer
 from ..algorithms.optimization import parallel_sweep
@@ -39,27 +39,6 @@ __all__ = ("ModifiedSynDisc", "SynDisc")
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-def _constraint_le(alpha, beta):
-    """
-    The constraint partial order: alpha <=_c beta iff for every alpha_i in
-    alpha, there exists beta_j in beta such that alpha_i is a subset of beta_j.
-
-    Parameters
-    ----------
-    alpha : frozenset of frozensets
-    beta : frozenset of frozensets
-
-    Returns
-    -------
-    le : bool
-    """
-    if not alpha:
-        return True
-    if not beta:
-        return False
-    return all(any(a <= b for b in beta) for a in alpha)
-
-
 def _build_constraint_lattice(sources):
     """
     Build the extended constraint lattice L* for the given sources.
@@ -69,8 +48,6 @@ def _build_constraint_lattice(sources):
     at the **bottom**.  This orientation matches the Mobius inversion
     convention used in the paper (equations 9-11): atoms are computed by
     subtracting descendant contributions, and atoms sum to I(X;Y).
-
-    Internally the lattice is built with <=_c and then inverted.
 
     Parameters
     ----------
@@ -83,9 +60,7 @@ def _build_constraint_lattice(sources):
         The constraint lattice with frozenset-of-frozenset nodes,
         top = empty antichain, bottom = {[n]}.
     """
-    fdl = free_distributive_lattice(sources)
-    nodes = set(fdl) | {frozenset()}
-    return Lattice(nodes, _constraint_le).inverse()
+    return constraint_lattice(sources)
 
 
 def _transform_constraint(lattice):
