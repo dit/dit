@@ -566,6 +566,66 @@ class BROJABivariateOptimizer(MaxCoInfoOptimizer):
         self._optvec_size = len(self._free)
 
 
+class BROJAAdmUIOptimizer(BROJABivariateOptimizer):
+    """
+    BROJA bivariate optimizer via admUI (Banerjee et al., arXiv:1709.07487).
+    """
+
+    def __init__(self, dist, sources, target, maxiter=1000, eps=1e-7, ip_method="IS"):
+        self._broja_sources = list(sources)
+        self._broja_target = list(target)
+        self._broja_orig = dist
+        self._admui_maxiter = maxiter
+        self._admui_eps = eps
+        self._admui_ip_method = ip_method
+        self._admui_meta = {}
+        super().__init__(dist, sources, target)
+
+    def optimize(self, x0=None, niter=None, maxiter=None, polish=1e-8, callback=False, rng=None):
+        from .admui import admui_dist
+
+        q_dist, self._admui_meta = admui_dist(
+            self._broja_orig,
+            self._broja_sources,
+            self._broja_target,
+            eps=self._admui_eps,
+            maxiter=self._admui_maxiter if maxiter is None else maxiter,
+            ip_method=self._admui_ip_method,
+        )
+        self.dist = q_dist
+        self._vpmf = self.dist.pmf.copy()
+        self._optima = self._vpmf[self._free].copy() if self._free else self._vpmf.copy()
+        return None
+
+
+class BROJAConEOptimizer(BROJABivariateOptimizer):
+    """
+    BROJA bivariate optimizer via exponential cone programming (Makkeh et al., arXiv:1802.02485).
+    """
+
+    def __init__(self, dist, sources, target, **ecos_kwargs):
+        self._broja_sources = list(sources)
+        self._broja_target = list(target)
+        self._broja_orig = dist
+        self._ecos_kwargs = ecos_kwargs
+        self._cone_meta = {}
+        super().__init__(dist, sources, target)
+
+    def optimize(self, x0=None, niter=None, maxiter=None, polish=1e-8, callback=False, rng=None):
+        from .broja_cone import broja_cone_solve
+
+        q_dist, self._cone_meta = broja_cone_solve(
+            self._broja_orig,
+            self._broja_sources,
+            self._broja_target,
+            **self._ecos_kwargs,
+        )
+        self.dist = q_dist
+        self._vpmf = self.dist.pmf.copy()
+        self._optima = self._vpmf[self._free].copy() if self._free else self._vpmf.copy()
+        return None
+
+
 def maxent_dist(dist, rvs, x0=None, maxiter=1000, sparse=True, method="ipf"):
     """
     Return the maximum entropy distribution consistent with the marginals from

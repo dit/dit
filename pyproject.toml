@@ -76,6 +76,9 @@ optional = [
     "pypoman",
     "scikit-learn",
 ]
+broja = [
+    "ecos",
+]
 docs = [
     "dit[optional]",
     "hypothesis",

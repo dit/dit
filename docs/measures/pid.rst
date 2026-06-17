@@ -262,6 +262,13 @@ In a very intuitive effort, Bertschinger et al (henceforth BROJA) :cite:`bertsch
 
    \Ibroja{X_{0:n} : Y} = \min_{Q \in \Delta} \I{X_i : Y | X_\overline{\{i\}}}
 
+For bivariate sources (two inputs), ``PID_BROJA`` accepts a ``method`` keyword selecting how the marginal-matching optimization is solved:
+
+* ``'scipy'`` (default for small alphabets under ``'auto'``) — SLSQP on the free joint pmf parameters.
+* ``'admui'`` — alternating divergence minimization :cite:`banerjee2017computing`.
+* ``'cone'`` — exponential cone program solved with ECOS :cite:`makkeh2018broja` (requires ``pip install dit[broja]``).
+* ``'auto'`` — picks ``scipy`` or ``admui`` by joint alphabet size, with fallback to the other methods on failure.
+
 .. note::
 
    In the bivariate case, Griffith independently suggested the same decomposition but from the viewpoint of synergy :cite:`griffith2014quantifying`.

@@ -10,16 +10,28 @@ from dit.pid.measures.iproj import PID_Proj
 
 
 @pytest.mark.flaky(reruns=5)
-def test_pid_broja1():
+@pytest.mark.parametrize("method", ["scipy", "admui", "auto"])
+def test_pid_broja1_method(method):
     """
-    Test ibroja on a generic distribution.
+    Test ibroja on a generic distribution across bivariate solvers.
     """
     d = bivariates["diff"]
-    pid = PID_BROJA(d, ((0,), (1,)), (2,))
+    pid = PID_BROJA(d, ((0,), (1,)), (2,), method=method)
     assert pid[((0,), (1,))] == pytest.approx(0.12255624891826589, abs=1e-4)
     assert pid[((0,),)] == pytest.approx(0.18872187554086706, abs=1e-4)
     assert pid[((1,),)] == pytest.approx(0.18872187554086706, abs=1e-4)
     assert pid[((0, 1),)] == pytest.approx(0.0, abs=1e-4)
+
+
+@pytest.mark.flaky(reruns=5)
+def test_pid_broja1_cone():
+    pytest.importorskip("ecos")
+    test_pid_broja1_method("cone")
+
+
+@pytest.mark.flaky(reruns=5)
+def test_pid_broja1():
+    test_pid_broja1_method("scipy")
 
 
 @pytest.mark.flaky(reruns=5)

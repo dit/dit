@@ -3,24 +3,13 @@ The I_BROJA unique measure, as proposed by the BROJA team.
 """
 
 from ...algorithms import BaseConvexOptimizer
-from ...algorithms.distribution_optimizers import BaseDistOptimizer, BROJABivariateOptimizer
+from ...algorithms.broja_method import broja_solve_bivariate
+from ...algorithms.broja_util import optimized_pmf
+from ...algorithms.distribution_optimizers import BaseDistOptimizer
 from ...algorithms.optimization import parallel_sweep
 from ..pid import BaseUniquePID
 
 __all__ = ("PID_BROJA",)
-
-
-def _optimized_pmf(opt, cutoff=1e-6):
-    """
-    The cutoff + renormalized joint pmf ndarray of a solved distribution
-    optimizer, matching what :meth:`construct_dist` produces but without
-    round-tripping through the (xarray-backed) :class:`Distribution`. Used to
-    read information measures off the optimum cheaply.
-    """
-    pmf = opt.construct_vector(opt._optima.copy())
-    pmf[pmf < cutoff] = 0
-    pmf /= pmf.sum()
-    return pmf.reshape(opt._shape)
 
 
 class BROJAOptimizer(BaseDistOptimizer, BaseConvexOptimizer):
@@ -100,12 +89,19 @@ class PID_BROJA(BaseUniquePID):
     -----
     This partial information decomposition, at least in the bivariate source
     case, was independently suggested by Griffith.
+
+    For two sources, ``method`` selects the bivariate solver:
+
+    - ``'scipy'`` — SLSQP on the marginal-matching polytope (default for small alphabets)
+    - ``'admui'`` — alternating divergence minimization (:cite:`banerjee2017computing`)
+    - ``'cone'`` — exponential cone program via ECOS (:cite:`makkeh2018broja`)
+    - ``'auto'`` — size-based selection with scipy/cone fallbacks
     """
 
     _name = "I_broja"
 
     @staticmethod
-    def _measure(d, sources, target, maxiter=1000):
+    def _measure(d, sources, target, maxiter=1000, method="auto", rng=None, **ecos_kwargs):
         """
         This computes unique information as min{I(source : target | other_sources)}
         over the space of distributions which matches source-target marginals.
@@ -118,34 +114,44 @@ class PID_BROJA(BaseUniquePID):
             The target variables.
         target : iterable
             The target variable.
+        maxiter : int
+            Maximum iterations for scipy/admui solvers.
+        method : str
+            Bivariate solver: ``'scipy'``, ``'admui'``, ``'cone'``, or ``'auto'``.
+        rng : np.random.Generator, optional
+            RNG for scipy restarts.
+        **ecos_kwargs
+            Passed to ECOS when ``method='cone'``.
 
         Returns
         -------
         ibroja : dict
             The value of I_broja for each individual source.
         """
-        uniques = {}
         if len(sources) == 2:
-            broja = BROJABivariateOptimizer(d, list(sources), target)
-            broja.optimize(niter=1, maxiter=maxiter)
-            pmf = _optimized_pmf(broja)
-            # I[source : target | other source], read directly off the joint
-            # ndarray rather than through the (xarray-backed) Distribution.
-            uniques[sources[0]] = float(broja._conditional_mutual_information({0}, {2}, {1})(pmf))
-            uniques[sources[1]] = float(broja._conditional_mutual_information({1}, {2}, {0})(pmf))
-        else:
+            uniques, _meta = broja_solve_bivariate(
+                d,
+                sources,
+                target,
+                maxiter=maxiter,
+                method=method,
+                rng=rng,
+                **ecos_kwargs,
+            )
+            return uniques
 
-            def _run(source, rng):
-                others = sum((i for i in sources if i != source), ())
-                dm = d.coalesce([source, others, target])
-                broja = BROJAOptimizer(dm, (0,), ((1,),), (2,))
-                broja.optimize(niter=1, maxiter=maxiter, rng=rng)
-                pmf = _optimized_pmf(broja)
-                # I[source : target | others]
-                cmi = broja._conditional_mutual_information(broja._source, broja._target, broja._others)
-                return float(cmi(pmf))
+        uniques = {}
 
-            for source, value in zip(sources, parallel_sweep(_run, sources), strict=True):
-                uniques[source] = value
+        def _run(source, rng):
+            others = sum((i for i in sources if i != source), ())
+            dm = d.coalesce([source, others, target])
+            broja = BROJAOptimizer(dm, (0,), ((1,),), (2,))
+            broja.optimize(niter=1, maxiter=maxiter, rng=rng)
+            pmf = optimized_pmf(broja)
+            cmi = broja._conditional_mutual_information(broja._source, broja._target, broja._others)
+            return float(cmi(pmf))
+
+        for source, value in zip(sources, parallel_sweep(_run, sources), strict=True):
+            uniques[source] = value
 
         return uniques

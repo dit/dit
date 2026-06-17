@@ -585,6 +585,9 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
+broja = [
+    { name = "ecos" },
+]
 dev = [
     { name = "colorama" },
     { name = "hypothesis", extra = ["numpy"] },
@@ -669,6 +672,7 @@ requires-dist = [
     { name = "colorama", marker = "extra == 'docs'" },
     { name = "colorama", marker = "extra == 'optional'" },
     { name = "debtcollector" },
+    { name = "ecos", marker = "extra == 'broja'" },
     { name = "hypothesis", marker = "extra == 'dev'" },
     { name = "hypothesis", marker = "extra == 'dev'", specifier = ">=6.0" },
     { name = "hypothesis", marker = "extra == 'docs'" },
@@ -737,7 +741,7 @@ requires-dist = [
     { name = "ty", marker = "extra == 'dev'" },
     { name = "xarray" },
 ]
-provides-extras = ["dev", "docs", "jax", "optional", "pytensor", "test", "torch"]
+provides-extras = ["broja", "dev", "docs", "jax", "optional", "pytensor", "test", "torch"]
 
 [[package]]
 name = "docutils"
@@ -746,6 +750,24 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/ae/b6/03bb70946330e88ffec97aefd3ea75ba575cb2e762061e0e62a213befee8/docutils-0.22.4.tar.gz", hash = "sha256:4db53b1fde9abecbb74d91230d32ab626d94f6badfc575d6db9194a49df29968", size = 2291750, upload-time = "2025-12-18T19:00:26.443Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/02/10/5da547df7a391dcde17f59520a231527b8571e6f46fc8efb02ccb370ab12/docutils-0.22.4-py3-none-any.whl", hash = "sha256:d0013f540772d1420576855455d050a2180186c91c15779301ac2ccb3eeb68de", size = 633196, upload-time = "2025-12-18T19:00:18.077Z" },
+]
+
+[[package]]
+name = "ecos"
+version = "2.0.14"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+    { name = "scipy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/2e/5f/17716c533da95ed110815b159efa22b1064c8c41fd5c862f21aff7a7fec0/ecos-2.0.14.tar.gz", hash = "sha256:64b3201c0e0a7f0129050557c4ac50b00031e80a10534506dba1200c8dc1efe4", size = 142430, upload-time = "2024-06-18T03:48:34.809Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2b/9b/c886a268d4b7adfaa1171244cdbfa3c944e5a599fe7a5e738ee27390ab20/ecos-2.0.14-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:dc90b54eaae16ead128bfdd95e04bf808b73578bdf40ed652c55aa36a6d02e42", size = 92594, upload-time = "2024-06-18T03:47:51.721Z" },
+    { url = "https://files.pythonhosted.org/packages/49/e9/fae34e8ef6a9b78c3098a4428ed0e8f77cdeb334a7dc17c649abb686ed08/ecos-2.0.14-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7a8be3b4856838ae351fec40fb3589181d52b41cf75bf4d35342686a508c37a6", size = 220084, upload-time = "2024-06-18T03:47:47.343Z" },
+    { url = "https://files.pythonhosted.org/packages/2f/45/1e52519d6c29dd26bbfaf92ece5b45ca3de3b7c8b2615a818aaeadb7ad63/ecos-2.0.14-cp311-cp311-win_amd64.whl", hash = "sha256:7495b3031ccc2d4cec72cdb40aed8a2d1fdd734fe40519b7e6047aead5e811cf", size = 72199, upload-time = "2024-06-18T03:49:07.772Z" },
+    { url = "https://files.pythonhosted.org/packages/af/c3/84e392f2410f51fa557198937cc52a2e80f887c517ef4e3fb6d46e3bb008/ecos-2.0.14-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:4a7e2704a3ef9acfb8146d594deff9942d3a0f0d0399de8fe2e0bd95e8b0855c", size = 92545, upload-time = "2024-06-18T03:47:50.589Z" },
+    { url = "https://files.pythonhosted.org/packages/82/12/42f4d953f9284571726b085f99e13bfa84522bf63bf2e7a81460013b09e6/ecos-2.0.14-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f3cbb1a66ecf10955a1a4bcd6b99db55148000cb79fd176bfac26d98b21a4814", size = 222132, upload-time = "2024-06-18T03:47:47.498Z" },
+    { url = "https://files.pythonhosted.org/packages/56/9a/ca30572f3e3ff3cef6a0ea8aa6cdc12c36f9fefe559f65c7d6265713196a/ecos-2.0.14-cp312-cp312-win_amd64.whl", hash = "sha256:718eb62afb8e45426bcc365ebaf3ca9f610afcbb754de6073ef5f104da8fca1f", size = 72248, upload-time = "2024-06-18T03:48:51.504Z" },
 ]
 
 [[package]]
