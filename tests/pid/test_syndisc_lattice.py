@@ -4,12 +4,12 @@ disclosure decomposition.
 """
 
 import pytest
+from lattices.orderings import constraint_le
 
 from dit.pid.syndisc import (
     _build_constraint_lattice,
     _transform_constraint,
 )
-from lattices.orderings import constraint_le
 
 # ─────────────────────────────────────────────────────────────────────────────
 # n = 2

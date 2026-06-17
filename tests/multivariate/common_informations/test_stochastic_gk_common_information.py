@@ -27,7 +27,6 @@ from dit.utils.testing import distributions
 # ---------------------------------------------------------------------------
 
 
-
 @pytest.mark.flaky(reruns=5)
 def test_sgk_independent():
     """SGK of independent variables is 0 (full support forces all conditionals equal)."""
@@ -35,13 +34,11 @@ def test_sgk_independent():
     assert SGK(d) == pytest.approx(0.0, abs=1e-3)
 
 
-
 @pytest.mark.flaky(reruns=5)
 def test_sgk_mixed():
     """SGK is 0 when support connectivity merges all values."""
     d = Distribution(["00", "01", "11"], [1 / 3] * 3)
     assert SGK(d) == pytest.approx(0.0, abs=1e-3)
-
 
 
 @pytest.mark.flaky(reruns=5)
@@ -59,7 +56,6 @@ def test_sgk_block_structure():
 # ---------------------------------------------------------------------------
 
 
-
 @pytest.mark.flaky(reruns=5)
 def test_sgk_explicit_rvs():
     """Passing explicit rvs gives the same result."""
@@ -68,7 +64,6 @@ def test_sgk_explicit_rvs():
         [1 / 8, 1 / 8, 1 / 8, 1 / 8, 1 / 4, 1 / 4],
     )
     assert SGK(d, [[0], [1]]) == pytest.approx(1.5, abs=1e-3)
-
 
 
 @pytest.mark.flaky(reruns=5)
@@ -80,7 +75,6 @@ def test_sgk_rv_names():
     )
     d.set_rv_names("XY")
     assert SGK(d, [["X"], ["Y"]]) == pytest.approx(1.5, abs=1e-3)
-
 
 
 @pytest.mark.flaky(reruns=5)
@@ -95,7 +89,6 @@ def test_sgk_three_vars():
     )
     assert SGK(d, [[0], [1]]) == pytest.approx(1.5, abs=1e-3)
     assert SGK(d) == pytest.approx(1.0, abs=1e-3)
-
 
 
 @pytest.mark.flaky(reruns=5)
@@ -114,7 +107,6 @@ def test_sgk_with_crvs():
 # ---------------------------------------------------------------------------
 
 
-
 @pytest.mark.flaky(reruns=5)
 def test_sgk_class_api():
     """Direct use of the optimizer class should produce the same result."""
@@ -131,7 +123,6 @@ def test_sgk_class_api():
 # ---------------------------------------------------------------------------
 # Ordering: GK <= SGK <= I(X;Y)
 # ---------------------------------------------------------------------------
-
 
 
 @pytest.mark.flaky(reruns=5)

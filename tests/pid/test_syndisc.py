@@ -14,7 +14,6 @@ from dit.pid.syndisc import SynDisc
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-
 @pytest.mark.flaky(reruns=5)
 def test_syndisc_xor():
     d = bivariates["synergy"]
@@ -30,7 +29,6 @@ def test_syndisc_xor():
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-
 @pytest.mark.flaky(reruns=5)
 def test_syndisc_copy():
     d = bivariates["redundant"]
@@ -44,7 +42,6 @@ def test_syndisc_copy():
 # ─────────────────────────────────────────────────────────────────────────────
 # Table 1: Unique 1
 # ─────────────────────────────────────────────────────────────────────────────
-
 
 
 @pytest.mark.flaky(reruns=5)
@@ -63,7 +60,6 @@ def test_syndisc_unique1():
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-
 @pytest.mark.flaky(reruns=5)
 def test_syndisc_and():
     d = bivariates["and"]
@@ -79,7 +75,6 @@ def test_syndisc_and():
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-
 @pytest.mark.flaky(reruns=5)
 def test_atom_sum_equals_mutual_info():
     for name in ["synergy", "redundant", "unique 1", "and"]:
@@ -89,7 +84,6 @@ def test_atom_sum_equals_mutual_info():
         assert atom_sum == pytest.approx(sd._total, abs=1e-4), f"Failed for {name}"
 
 
-
 @pytest.mark.flaky(reruns=5)
 def test_boundary_synergies():
     for name in ["synergy", "redundant", "unique 1", "and"]:
@@ -97,7 +91,6 @@ def test_boundary_synergies():
         sd = SynDisc(d)
         assert sd.get_synergy(sd._lattice.top) == pytest.approx(sd._total, abs=1e-4)
         assert sd.get_synergy(sd._lattice.bottom) == pytest.approx(0.0, abs=1e-4)
-
 
 
 @pytest.mark.flaky(reruns=5)
@@ -115,7 +108,6 @@ def test_synergy_monotonicity():
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-
 @pytest.mark.flaky(reruns=5)
 def test_backbone_nonnegative():
     for name in ["synergy", "redundant", "unique 1", "and"]:
@@ -126,7 +118,6 @@ def test_backbone_nonnegative():
             assert sd.get_backbone_atom(m) >= -1e-6, f"Failed for {name}, m={m}"
 
 
-
 @pytest.mark.flaky(reruns=5)
 def test_backbone_sum_equals_mutual_info():
     for name in ["synergy", "redundant", "unique 1", "and"]:
@@ -135,7 +126,6 @@ def test_backbone_sum_equals_mutual_info():
         n = len(sd._sources)
         bb_sum = sum(sd.get_backbone_atom(m) for m in range(1, n + 1))
         assert bb_sum == pytest.approx(sd._total, abs=1e-4), f"Failed for {name}"
-
 
 
 @pytest.mark.flaky(reruns=5)
@@ -149,7 +139,6 @@ def test_backbone_xor():
 # ─────────────────────────────────────────────────────────────────────────────
 # Self-synergy (TBC)
 # ─────────────────────────────────────────────────────────────────────────────
-
 
 
 @pytest.mark.flaky(reruns=5)
@@ -167,7 +156,6 @@ def test_self_synergy_tbc():
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-
 @pytest.mark.flaky(reruns=5)
 def test_to_string():
     d = bivariates["synergy"]
@@ -175,7 +163,6 @@ def test_to_string():
     s = sd.to_string()
     assert "S_disc" in s
     assert "{0}{1}" in s
-
 
 
 @pytest.mark.flaky(reruns=5)

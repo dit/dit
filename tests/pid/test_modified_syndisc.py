@@ -38,7 +38,6 @@ def _is_accessible(node, source):
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-
 @pytest.mark.flaky(reruns=5)
 @pytest.mark.parametrize("name", ["synergy", "redundant", "unique 1", "and"])
 def test_consistency_condition(name):
@@ -57,7 +56,6 @@ def test_consistency_condition(name):
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-
 @pytest.mark.flaky(reruns=5)
 @pytest.mark.parametrize("name", ["synergy", "redundant", "unique 1", "and"])
 def test_atom_sum_equals_mutual_info(name):
@@ -70,7 +68,6 @@ def test_atom_sum_equals_mutual_info(name):
 # ─────────────────────────────────────────────────────────────────────────────
 # Known atom values: XOR (pure synergy, identical to vanilla)
 # ─────────────────────────────────────────────────────────────────────────────
-
 
 
 @pytest.mark.flaky(reruns=5)
@@ -88,7 +85,6 @@ def test_msd_xor():
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-
 @pytest.mark.flaky(reruns=5)
 def test_msd_copy():
     d = bivariates["redundant"]
@@ -102,7 +98,6 @@ def test_msd_copy():
 # ─────────────────────────────────────────────────────────────────────────────
 # Known atom values: AND (MSD differs from vanilla here)
 # ─────────────────────────────────────────────────────────────────────────────
-
 
 
 @pytest.mark.flaky(reruns=5)
@@ -120,7 +115,6 @@ def test_msd_and():
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-
 @pytest.mark.flaky(reruns=5)
 @pytest.mark.parametrize("name", ["synergy", "redundant", "unique 1", "and"])
 def test_backbone_nonnegative(name):
@@ -129,7 +123,6 @@ def test_backbone_nonnegative(name):
     n = len(msd._sources)
     for m in range(1, n + 1):
         assert msd.get_backbone_atom(m) >= -1e-6, f"Failed for {name}, m={m}"
-
 
 
 @pytest.mark.flaky(reruns=5)
@@ -145,7 +138,6 @@ def test_backbone_sum_equals_mutual_info(name):
 # ─────────────────────────────────────────────────────────────────────────────
 # Display
 # ─────────────────────────────────────────────────────────────────────────────
-
 
 
 @pytest.mark.flaky(reruns=5)

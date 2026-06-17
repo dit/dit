@@ -30,7 +30,6 @@ def _stub_optimize(monkeypatch):
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-
 @pytest.mark.flaky(reruns=5)
 def test_synergistic_disclosure_xor():
     d = bivariates["synergy"]
@@ -38,13 +37,11 @@ def test_synergistic_disclosure_xor():
     assert val == pytest.approx(1.0, abs=1e-4)
 
 
-
 @pytest.mark.flaky(reruns=5)
 def test_synergistic_disclosure_copy():
     d = bivariates["redundant"]
     val = synergistic_disclosure(d, [[0], [1]], [2], alpha=[[0], [1]])
     assert val == pytest.approx(0.0, abs=1e-4)
-
 
 
 @pytest.mark.flaky(reruns=5)
@@ -92,14 +89,12 @@ def test_modified_synergistic_disclosure_singleton_alpha_redundant():
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-
 @pytest.mark.flaky(reruns=5)
 def test_backbone_disclosure_xor():
     d = bivariates["synergy"]
     bb = backbone_disclosure(d)
     assert bb[2] == pytest.approx(1.0, abs=1e-3)
     assert bb[1] == pytest.approx(0.0, abs=1e-3)
-
 
 
 @pytest.mark.flaky(reruns=5)
@@ -113,7 +108,6 @@ def test_backbone_disclosure_copy():
 # ─────────────────────────────────────────────────────────────────────────────
 # self_synergy
 # ─────────────────────────────────────────────────────────────────────────────
-
 
 
 @pytest.mark.flaky(reruns=5)

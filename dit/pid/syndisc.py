@@ -22,7 +22,6 @@ from itertools import combinations
 
 import networkx as nx
 import numpy as np
-from lattices import Lattice
 from lattices.lattices import constraint_lattice
 
 from ..algorithms import BaseAuxVarOptimizer

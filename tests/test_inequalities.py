@@ -159,7 +159,6 @@ def test_data_processing_inequality_gk(dist):
     assert k_xz <= k_xy + epsilon
 
 
-
 @pytest.mark.flaky(reruns=5)
 @pytest.mark.parametrize("backend", backends)
 @given(dist=markov_chains(alphabets=(2,) * 3))
@@ -172,7 +171,6 @@ def test_data_processing_inequality_wyner(dist, backend):
     c_xy = C(dist, [[0], [1]], niter=150, backend=backend)
     c_xz = C(dist, [[0], [2]], niter=150, backend=backend)
     assert c_xz <= c_xy + 150 * epsilon
-
 
 
 @pytest.mark.flaky(reruns=5)

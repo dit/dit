@@ -271,7 +271,6 @@ class TestBetaCommonInformationMultivariate:
 # ── Property-based (Hypothesis) tests ────────────────────────────────────
 
 
-
 @pytest.mark.flaky(reruns=5)
 @settings(max_examples=5)
 @given(dist=distributions(alphabets=(2,) * 2, nondegenerate=True))

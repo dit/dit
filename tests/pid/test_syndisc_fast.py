@@ -9,6 +9,7 @@ code paths are executed and confirmed syntactically correct quickly.
 """
 
 import numpy as np
+from lattices.orderings import constraint_le
 
 from dit.example_dists import Xor
 from dit.pid.syndisc import (
@@ -19,7 +20,6 @@ from dit.pid.syndisc import (
     _node_to_alpha,
     _transform_constraint,
 )
-from lattices.orderings import constraint_le
 
 # ── Pure lattice machinery (no optimization) ───────────────────────────────
 
