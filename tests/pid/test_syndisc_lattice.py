@@ -7,9 +7,9 @@ import pytest
 
 from dit.pid.syndisc import (
     _build_constraint_lattice,
-    _constraint_le,
     _transform_constraint,
 )
+from lattices.orderings import constraint_le
 
 # ─────────────────────────────────────────────────────────────────────────────
 # n = 2
@@ -102,23 +102,23 @@ def test_n3_top_has_all_descendants(lattice_n3):
 
 
 def test_constraint_le_empty_le_all():
-    assert _constraint_le(frozenset(), frozenset({frozenset({0})}))
-    assert _constraint_le(frozenset(), frozenset())
+    assert constraint_le(frozenset(), frozenset({frozenset({0})}))
+    assert constraint_le(frozenset(), frozenset())
 
 
 def test_constraint_le_nonempty_not_le_empty():
-    assert not _constraint_le(frozenset({frozenset({0})}), frozenset())
+    assert not constraint_le(frozenset({frozenset({0})}), frozenset())
 
 
 def test_constraint_le_subset_relation():
     alpha = frozenset({frozenset({0})})
     beta = frozenset({frozenset({0, 1})})
-    assert _constraint_le(alpha, beta)
-    assert not _constraint_le(beta, alpha)
+    assert constraint_le(alpha, beta)
+    assert not constraint_le(beta, alpha)
 
 
 def test_constraint_le_antichain():
     alpha = frozenset({frozenset({0}), frozenset({1})})
     beta = frozenset({frozenset({0, 1})})
-    assert _constraint_le(alpha, beta)
-    assert not _constraint_le(beta, alpha)
+    assert constraint_le(alpha, beta)
+    assert not constraint_le(beta, alpha)

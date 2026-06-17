@@ -226,7 +226,6 @@ def test_chernoff_inequalities(dist1, dist2):
     assert 1 - 2 ** (-c) <= b + epsilon
 
 
-@pytest.mark.slow
 @given(dist=markov_chains(alphabets=(2,) * 3))
 def test_mi_hc(dist):
     """

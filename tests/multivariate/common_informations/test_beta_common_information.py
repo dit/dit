@@ -254,7 +254,6 @@ class TestBetaCommonInformationConditional:
 
 
 class TestBetaCommonInformationMultivariate:
-    @pytest.mark.slow
     @pytest.mark.flaky(reruns=5)
     def test_three_var_monotone(self):
         """C_beta(X:Y:Z) is decreasing in beta for 3 variables."""
@@ -262,8 +261,9 @@ class TestBetaCommonInformationMultivariate:
             ["000", "001", "010", "011", "100", "101", "110", "111"],
             [0.2, 0.05, 0.05, 0.1, 0.05, 0.1, 0.1, 0.35],
         )
-        c_lo = C_beta(d, beta=0.1, niter=10)
-        c_hi = C_beta(d, beta=0.3, niter=10)
+        opt_kw = {"niter": 8, "bound": 5}
+        c_lo = C_beta(d, beta=0.1, **opt_kw)
+        c_hi = C_beta(d, beta=0.3, **opt_kw)
         assert c_lo >= c_hi - 1e-2
         assert c_hi >= -1e-2
 

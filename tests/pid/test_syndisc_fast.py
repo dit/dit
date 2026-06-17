@@ -16,10 +16,10 @@ from dit.pid.syndisc import (
     SynDisc,
     SyndiscOptimizer,
     _build_constraint_lattice,
-    _constraint_le,
     _node_to_alpha,
     _transform_constraint,
 )
+from lattices.orderings import constraint_le
 
 # ── Pure lattice machinery (no optimization) ───────────────────────────────
 
@@ -27,10 +27,10 @@ from dit.pid.syndisc import (
 def test_constraint_le():
     a = frozenset({frozenset({(0,)})})
     b = frozenset({frozenset({(0,), (1,)})})
-    assert _constraint_le(a, b)
-    assert not _constraint_le(b, a)
-    assert _constraint_le(frozenset(), a)  # empty alpha <= anything
-    assert not _constraint_le(a, frozenset())  # nothing <= empty beta
+    assert constraint_le(a, b)
+    assert not constraint_le(b, a)
+    assert constraint_le(frozenset(), a)  # empty alpha <= anything
+    assert not constraint_le(a, frozenset())  # nothing <= empty beta
 
 
 def test_build_constraint_lattice():

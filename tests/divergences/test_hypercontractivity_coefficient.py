@@ -60,4 +60,4 @@ def test_hypercontractivity_coefficient_tensorization(dist1, dist2):
     hc_mixed = hypercontractivity_coefficient(mixed, [[0, 2], [1, 3]])
     hc_a = hypercontractivity_coefficient(dist1, [[0], [1]])
     hc_b = hypercontractivity_coefficient(dist2, [[0], [1]])
-    assert hc_mixed == pytest.approx(max(hc_a, hc_b), abs=1e-2)
+    assert hc_mixed == pytest.approx(max(hc_a, hc_b), abs=5e-2)

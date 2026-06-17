@@ -278,7 +278,7 @@ class BetaCommonInformation(BaseAuxVarOptimizer):
 
 
 @unitful
-def beta_common_information(dist, beta, rvs=None, crvs=None, niter=None, maxiter=1000, polish=1e-6, bound=None):
+def beta_common_information(dist, beta, rvs=None, crvs=None, niter=None, maxiter=1000, polish=False, bound=None):
     """
     Compute the beta-approximate common information (information-correlation
     function) of *dist*.
@@ -311,9 +311,10 @@ def beta_common_information(dist, beta, rvs=None, crvs=None, niter=None, maxiter
         Number of basin-hopping restarts.
     maxiter : int
         Maximum iterations per local optimisation.
-    polish : float, False
+    polish : float or False, optional
         If a float, perform a second optimisation pass with probabilities
-        below this threshold zeroed out.  If False, skip polishing.
+        below this threshold zeroed out.  Default is False (no polishing),
+        matching Wyner/ECI common-information optimizers.
     bound : int, None
         Artificial bound on the cardinality of U.  If None, the theoretical
         bound from Lemma 15a is used.

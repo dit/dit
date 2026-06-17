@@ -3,6 +3,8 @@ Compute the hypercontractivity coefficient:
     s*(X||Y) = max_{U - X - Y} I[U:Y]/I[U:X]
 """
 
+from itertools import product
+
 import numpy as np
 
 from ..algorithms import BaseAuxVarOptimizer
@@ -15,6 +17,88 @@ __all__ = (
     "HypercontractivityCoefficient",
     "hypercontractivity_coefficient",
 )
+
+
+def _max_deterministic_aux(hc, max_channels=4096):
+    """
+    Maximize the hypercontractivity ratio over deterministic auxiliary channels.
+
+    Basin hopping often stalls at the independent-``U`` point (ratio ``0``); when
+    the auxiliary alphabet is small, an exhaustive sweep over one-hot channels is
+    cheap and reliably finds better witnesses.
+    """
+    if len(hc._aux_vars) != 1:
+        return None
+
+    shape = tuple(hc._aux_vars[0].shape)
+    n_out = shape[-1]
+    in_shape = shape[:-1]
+    n_in = int(np.prod(in_shape)) if in_shape else 1
+    if n_out**n_in > max_channels:
+        return None
+
+    best = -np.inf
+    for choices in product(range(n_out), repeat=n_in):
+        channel = np.zeros(shape)
+        for idx, out in zip(np.ndindex(in_shape), choices, strict=True):
+            channel[idx + (out,)] = 1.0
+        ratio = -hc.objective(channel.reshape(-1))
+        if np.isfinite(ratio):
+            best = max(best, ratio)
+
+    return best if np.isfinite(best) else None
+
+
+def _markov_witness_ratios(dist, rv_x, rv_y):
+    """
+    Lower bounds from variables already in ``dist`` that satisfy W - X - Y.
+    """
+    rv_x = tuple(rv_x)
+    rv_y = tuple(rv_y)
+    used = set(rv_x) | set(rv_y)
+    witnesses = [w for w in range(dist.outcome_length()) if w not in used]
+    if not witnesses:
+        return None
+
+    tiny = np.finfo(float).tiny
+    best = 0.0
+    cond = list(rv_x)
+    for w in witnesses:
+        if not np.isclose(total_correlation(dist, [[w], rv_y], cond), 0.0):
+            continue
+        denom = total_correlation(dist, [[w], rv_x])
+        if denom <= tiny:
+            continue
+        numer = total_correlation(dist, [[w], rv_y])
+        best = max(best, numer / denom)
+
+    return best if best > 0 else None
+
+
+def _product_hypercontractivity(dist, rv_x, rv_y, bound, niter):
+    """
+    Exact tensorization when ``dist`` factors into independent blocks.
+
+    For ``dist = dist_left ⊗ dist_right`` with
+    ``(X, Y) = (X_left X_right, Y_left Y_right)``,
+    ``s*(X:Y) = max(s*(X_left:Y_left), s*(X_right:Y_right))``.
+    """
+    rv_x = list(rv_x)
+    rv_y = list(rv_y)
+    if len(rv_x) < 2 or len(rv_y) < 2 or len(rv_x) != len(rv_y):
+        return None
+
+    mid = len(rv_x) // 2
+    left = sorted(rv_x[:mid] + rv_y[:mid])
+    right = sorted(rv_x[mid:] + rv_y[mid:])
+    if not np.isclose(total_correlation(dist, [left, right]), 0.0):
+        return None
+
+    k = mid
+    pairs = [list(range(k)), list(range(k, 2 * k))]
+    hc_l = hypercontractivity_coefficient(dist.marginal(left), pairs, bound=bound, niter=niter)
+    hc_r = hypercontractivity_coefficient(dist.marginal(right), pairs, bound=bound, niter=niter)
+    return max(hc_l, hc_r)
 
 
 class HypercontractivityCoefficient(BaseAuxVarOptimizer):
@@ -82,7 +166,10 @@ class HypercontractivityCoefficient(BaseAuxVarOptimizer):
             pmf = self.construct_joint(x)
             a = mi_a(pmf)
             b = mi_b(pmf)
-            return -(a / b) if not np.isclose(b, 0.0) else np.inf
+            tiny = np.finfo(float).tiny
+            if b <= tiny:
+                return 0.0 if a <= tiny else np.inf
+            return -(a / b)
 
         return objective
 
@@ -122,7 +209,20 @@ def hypercontractivity_coefficient(dist, rvs, bound=None, niter=None):
         return 0.0
     elif np.isclose(entropy(dist, rvs[1], rvs[0]), 0.0):
         return 1.0
-    else:
-        hc = HypercontractivityCoefficient(dist, rvs[0], rvs[1], bound=bound)
-        hc.optimize(niter=niter)
-        return -hc.objective(hc._optima)
+
+    product = _product_hypercontractivity(dist, rvs[0], rvs[1], bound, niter)
+    if product is not None:
+        return float(product)
+
+    hc = HypercontractivityCoefficient(dist, rvs[0], rvs[1], bound=bound)
+    hc.optimize(niter=niter)
+    val = -hc.objective(hc._optima)
+    det = _max_deterministic_aux(hc)
+    if det is not None:
+        val = max(val, det)
+    wit = _markov_witness_ratios(dist, rvs[0], rvs[1])
+    if wit is not None:
+        val = max(val, wit)
+    if not np.isfinite(val):
+        return np.inf if np.isneginf(val) else 0.0
+    return float(max(0.0, val))
