@@ -31,7 +31,7 @@ classifiers = [
 dependencies = [
     "boltons",
     "debtcollector",
-    "lattices>=0.4.0",
+    "lattices>=0.5.0",
     "loguru",
     "networkx>=2.6",
     "numpy>=1.22",
@@ -104,9 +104,8 @@ dev = [
 override-dependencies = ["pycddlib; sys_platform == 'never'"]
 
 [tool.uv.sources]
-# lattices 0.4.0 (adds Lattice.chains(), required by ShapleyDependencyDecomposition)
-# is tagged on GitHub but not yet on PyPI; install it from the tag until released.
-lattices = { git = "https://github.com/dit/lattices.git", tag = "v0.4.0" }
+# lattices 0.5.0 (constraint_lattice, Möbius API, FM3) — git tag until PyPI release
+lattices = { git = "https://github.com/dit/lattices.git", tag = "v0.5.0" }
 
 # ── Build configuration ─────────────────────────────────────────────────
 

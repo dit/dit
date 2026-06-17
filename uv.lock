@@ -681,7 +681,7 @@ requires-dist = [
     { name = "jax", marker = "extra == 'jax'" },
     { name = "jaxlib", marker = "extra == 'dev'" },
     { name = "jaxlib", marker = "extra == 'jax'" },
-    { name = "lattices", git = "https://github.com/dit/lattices.git?tag=v0.4.0" },
+    { name = "lattices", git = "https://github.com/dit/lattices.git?tag=v0.5.0" },
     { name = "loguru" },
     { name = "matplotlib", marker = "extra == 'dev'" },
     { name = "matplotlib", marker = "extra == 'docs'" },
@@ -1233,8 +1233,8 @@ wheels = [
 
 [[package]]
 name = "lattices"
-version = "0.4.0"
-source = { git = "https://github.com/dit/lattices.git?tag=v0.4.0#9f04e8a56fe9d699f33fad2e9dc89045c510bfcd" }
+version = "0.5.0"
+source = { git = "https://github.com/dit/lattices.git?tag=v0.5.0#22eeadbdd7d5f46387225894943cd5c5b91d4896" }
 dependencies = [
     { name = "networkx" },
 ]
