@@ -115,4 +115,7 @@ Further, the following inequality holds in the other direction:
 API
 ===
 
+See also :doc:`sibson_mutual_information` for the Sibson (:math:`\alpha`-)
+generalization of mutual information built from Rényi divergence.
+
 .. autofunction:: renyi_entropy

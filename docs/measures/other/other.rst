@@ -16,4 +16,5 @@ Other measures of information. These are generally based around alternatives to 
    lautum_information
    perplexity
    renyi_entropy
+   sibson_mutual_information
    tsallis_entropy
