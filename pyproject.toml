@@ -31,7 +31,7 @@ classifiers = [
 dependencies = [
     "boltons",
     "debtcollector",
-    "lattices>=0.5.0",
+    "lattices>=0.5",
     "loguru",
     "networkx>=2.6",
     "numpy>=1.22",
@@ -105,10 +105,6 @@ dev = [
 
 [tool.uv]
 override-dependencies = ["pycddlib; sys_platform == 'never'"]
-
-[tool.uv.sources]
-# lattices 0.5.0 (constraint_lattice, Möbius API, FM3) — git tag until PyPI release
-lattices = { git = "https://github.com/dit/lattices.git", tag = "v0.5.0" }
 
 # ── Build configuration ─────────────────────────────────────────────────
 

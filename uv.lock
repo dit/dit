@@ -685,7 +685,7 @@ requires-dist = [
     { name = "jax", marker = "extra == 'jax'" },
     { name = "jaxlib", marker = "extra == 'dev'" },
     { name = "jaxlib", marker = "extra == 'jax'" },
-    { name = "lattices", git = "https://github.com/dit/lattices.git?tag=v0.5.0" },
+    { name = "lattices", specifier = ">=0.5" },
     { name = "loguru" },
     { name = "matplotlib", marker = "extra == 'dev'" },
     { name = "matplotlib", marker = "extra == 'docs'" },
@@ -1255,10 +1255,14 @@ wheels = [
 
 [[package]]
 name = "lattices"
-version = "0.5.0"
-source = { git = "https://github.com/dit/lattices.git?tag=v0.5.0#22eeadbdd7d5f46387225894943cd5c5b91d4896" }
+version = "0.5.1"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "networkx" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e4/fb/bc48ab312ce6d9b8658cb9ab34e5b6c7c9d045352408dad361af0f805fce/lattices-0.5.1.tar.gz", hash = "sha256:ad9a62781a26f27583b80ab27c815f1000398f83e96ccbeef5a7208deda5873c", size = 17098, upload-time = "2026-06-24T05:27:46.794Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ce/07/e5cbe7eff29a1bf919252dc7284eb3cf4848ae91e76d0fbe68e855249262/lattices-0.5.1-py3-none-any.whl", hash = "sha256:c038eba4d2a61984bc7b0a0b48b3d4e6a7d4cb7d54465985ffd49ff807937b94", size = 14789, upload-time = "2026-06-24T05:27:45.624Z" },
 ]
 
 [[package]]
