@@ -36,6 +36,42 @@ from tests._backends import backends
 
 epsilon = 1e-4
 
+# Dougherty–Freiling–Zeger unified form (dougherty2011four, eq. 37–42):
+#   2 I(A:B) <= a I(A:B|C) + b I(A:C|B) + c I(B:C|A)
+#               + d I(A:B|D) + e I(A:D|B) + f I(B:D|A) + g I(C:D)
+# Variables A,B,C,D map to rvs 0,1,2,3.
+DFZ_INEQUALITIES = [
+    ("dfz_37", (5, 3, 1, 2, 0, 0, 2)),
+    ("dfz_38", (4, 2, 1, 3, 1, 0, 2)),
+    ("dfz_39", (4, 4, 1, 2, 1, 1, 2)),
+    ("dfz_40", (3, 3, 3, 2, 0, 0, 2)),
+    ("dfz_41", (3, 4, 2, 3, 1, 0, 2)),
+    ("dfz_42", (3, 2, 2, 2, 1, 1, 2)),
+]
+
+FOUR_VAR_ALPHABETS = ((2, 4),) * 4
+
+
+def _dfz_rhs(dist, coeffs):
+    """Right-hand side of a DFZ non-Shannon inequality."""
+    a, b, c, d, e, f, g = coeffs
+    rhs = 0.0
+    if a:
+        rhs += a * I(dist, [[0], [1]], [2])
+    if b:
+        rhs += b * I(dist, [[0], [2]], [1])
+    if c:
+        rhs += c * I(dist, [[1], [2]], [0])
+    if d:
+        rhs += d * I(dist, [[0], [1]], [3])
+    if e:
+        rhs += e * I(dist, [[0], [3]], [1])
+    if f:
+        rhs += f * I(dist, [[1], [3]], [0])
+    if g:
+        rhs += g * I(dist, [[2], [3]])
+    return rhs
+
 
 @given(dist=distributions())
 def test_entropy_upper_bound(dist):
@@ -113,7 +149,7 @@ def test_shannon_inequality(dist):
     assert i >= 0 - epsilon
 
 
-@given(dist=distributions(alphabets=((2, 4),) * 4))
+@given(dist=distributions(alphabets=FOUR_VAR_ALPHABETS))
 def test_zhang_yeung_inequality(dist):
     """
     2I(C:D) <= I(A:B)+I(A:CD)+3I(C:D|A)+I(C:D|B)
@@ -124,6 +160,42 @@ def test_zhang_yeung_inequality(dist):
     I_c_d_g_a = I(dist, [[2], [3]], [0])
     I_c_d_g_b = I(dist, [[2], [3]], [1])
     assert 2 * I_c_d <= I_a_b + I_a_cd + 3 * I_c_d_g_a + I_c_d_g_b + epsilon
+
+
+@pytest.mark.parametrize("name,coeffs", DFZ_INEQUALITIES, ids=[n for n, _ in DFZ_INEQUALITIES])
+@given(dist=distributions(alphabets=FOUR_VAR_ALPHABETS))
+def test_dfz_non_shannon_inequality(dist, name, coeffs):
+    """
+    DFZ unified non-Shannon inequality (Dougherty–Freiling–Zeger 2011).
+
+    2 I(A:B) <= a I(A:B|C) + b I(A:C|B) + c I(B:C|A)
+                + d I(A:B|D) + e I(A:D|B) + f I(B:D|A) + g I(C:D)
+    """
+    lhs = 2 * I(dist, [[0], [1]])
+    assert lhs <= _dfz_rhs(dist, coeffs) + epsilon
+
+
+@given(dist=distributions(alphabets=FOUR_VAR_ALPHABETS))
+def test_ingleton_inequality(dist):
+    """
+    Ingleton inequality (Shannon-type for four variables).
+
+    I(A:B) + I(C:D) + I(A:C) + I(B:D)
+        <= I(A:D) + I(B:C) + I(A:BCD) + I(B:ACD)
+    """
+    lhs = (
+        I(dist, [[0], [1]])
+        + I(dist, [[2], [3]])
+        + I(dist, [[0], [2]])
+        + I(dist, [[1], [3]])
+    )
+    rhs = (
+        I(dist, [[0], [3]])
+        + I(dist, [[1], [2]])
+        + I(dist, [[0], [1, 2, 3]])
+        + I(dist, [[1], [0, 2, 3]])
+    )
+    assert lhs <= rhs + epsilon
 
 
 @given(dist=markov_chains(alphabets=((2, 4),) * 3))

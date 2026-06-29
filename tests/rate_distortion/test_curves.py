@@ -5,6 +5,8 @@ Tests for dit.rate_distortion.curves
 import pytest
 
 from dit import Distribution
+from dit.divergences.pmf import relative_entropy
+from dit.exceptions import ditException
 from dit.rate_distortion.curves import IBCurve, RDCurve
 from dit.rate_distortion.distortions import maximum_correlation, residual_entropy
 from dit.shannon import entropy
@@ -116,3 +118,57 @@ def test_simple_ib_3():
     assert ib.relevances[2] == pytest.approx(0.0, abs=1e-4)
     assert ib.relevances[5] == pytest.approx(0.4080081559717983, abs=1e-4)
     assert ib.relevances[20] == pytest.approx(0.5709505944546684, abs=1e-4)
+
+
+def test_simple_ib_sequential_dib():
+    """
+    Test deterministic information bottleneck curve via hard reassignment.
+    """
+    dist = Distribution(["00", "11"], [1 / 2, 1 / 2])
+    ib = IBCurve(dist, variant="dib", method="sequential", beta_min=10, beta_max=10, beta_num=1)
+
+    assert ib.complexities[0] == pytest.approx(1.0)
+    assert ib.relevances[0] == pytest.approx(1.0)
+    assert ib.alphabets[0] == 2
+
+
+def test_simple_ib_agglomerative_dib():
+    """
+    Test deterministic information bottleneck curve via greedy agglomeration.
+    """
+    dist = Distribution(["00", "11"], [1 / 2, 1 / 2])
+    ib = IBCurve(dist, variant="dib", method="agglomerative", beta_min=0, beta_max=0, beta_num=1)
+
+    assert ib.complexities[0] == pytest.approx(0.0)
+    assert ib.relevances[0] == pytest.approx(0.0)
+    assert ib.alphabets[0] == 1
+
+
+def test_ib_ba_rejects_unsupported_variants():
+    """
+    Test that BA does not silently ignore unsupported IB settings.
+    """
+    dist = Distribution(["00", "11"], [1 / 2, 1 / 2])
+    dist2 = Distribution(["000", "011", "100", "111"], [1 / 4] * 4)
+
+    with pytest.raises(ditException):
+        IBCurve(dist, alpha=0.0, method="ba")
+
+    with pytest.raises(ditException):
+        IBCurve(dist, method="ba", divergence=relative_entropy)
+
+    with pytest.raises(ditException):
+        IBCurve(dist2, rvs=[[0], [1]], crvs=[2], method="ba")
+
+
+def test_ib_hard_methods_reject_soft_variants():
+    """
+    Test that hard solvers are only used for unconditional DIB.
+    """
+    dist = Distribution(["00", "11"], [1 / 2, 1 / 2])
+
+    with pytest.raises(ditException):
+        IBCurve(dist, method="sequential")
+
+    with pytest.raises(ditException):
+        IBCurve(dist, variant="gib", alpha=0.5, method="agglomerative")

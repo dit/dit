@@ -11,12 +11,14 @@ from scipy.optimize import approx_fprime
 
 from dit.algorithms import maxent_dist
 from dit.algorithms.distribution_optimizers import (
+    MaxCAEKLMutualInformationOptimizer,
     MaxCoInfoOptimizer,
     MaxDualTotalCorrelationOptimizer,
     MaxEntOptimizer,
     MinCoInfoOptimizer,
     MinDualTotalCorrelationOptimizer,
     MinEntOptimizer,
+    MinResidualEntropyOptimizer,
 )
 from dit.distconst import uniform
 from dit.example_dists import Xor
@@ -93,6 +95,8 @@ def test_minent_1():
         MinCoInfoOptimizer,
         MaxDualTotalCorrelationOptimizer,
         MinDualTotalCorrelationOptimizer,
+        MinResidualEntropyOptimizer,
+        MaxCAEKLMutualInformationOptimizer,
     ],
 )
 def test_analytic_gradients_match_fd(Optimizer):

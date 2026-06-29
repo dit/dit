@@ -73,6 +73,43 @@ where the final equality is due to the Markov chain. Due to all this, Informatio
 
 Though :math:`\I{X : Y | \hat{X}}` is the most simplified form of the average distortion, it is faster to compute :math:`\I{\hat{X} : Y}` during optimization.
 
+Variants and Algorithms
+-----------------------
+
+The standard information bottleneck uses :math:`\I{X : \hat{X}}` as the
+compression term. The generalized information bottleneck replaces this with
+
+.. math::
+
+   \H{\hat{X}} - \alpha \H{\hat{X} | X}
+
+so that :math:`\alpha = 1` recovers the standard bottleneck, while
+:math:`\alpha = 0` gives the deterministic information bottleneck
+:cite:`strouse2016deterministic`. The deterministic endpoint minimizes
+
+.. math::
+
+   \H{\hat{X}} - \beta \I{\hat{X} : Y}
+
+up to the constant :math:`\beta\I{X : Y}`, and its optima are hard clusterings
+of :math:`X`.
+
+``IBCurve`` supports these variants through ``variant='ib'``,
+``variant='gib'``, and ``variant='dib'``. The legacy ``alpha`` argument is still
+accepted: ``alpha=1`` is standard IB, ``alpha=0`` is DIB, and intermediate
+values are generalized IB. The default ``method='sp'`` uses the generic
+optimizer. ``method='ba'`` uses the Blahut-Arimoto-style finite-alphabet
+iteration for the standard, unconditional IB. ``method='sequential'`` and
+``method='agglomerative'`` use finite-alphabet hard-clustering algorithms for
+the unconditional DIB; the latter follows the information-based clustering
+viewpoint of building a hierarchy by merging clusters
+:cite:`slonim2005information`.
+
+For deterministic prediction tasks, where :math:`Y` is a function of
+:math:`X`, sweeps over the IB Lagrangian can miss portions of the IB curve and
+can include trivial solutions. Interpret kinks and beta sweeps in those cases
+with care :cite:`kolchinsky2018caveats`.
+
 
 Example
 -------
@@ -115,6 +152,14 @@ We can also find them utilizing the total variation:
 
    The spiky behavior at low :math:`\beta` values is due to numerical imprecision.
 
+The deterministic information bottleneck can be computed with a hard-clustering
+solver:
+
+.. ipython::
+   :verbatim:
+
+   In [9]: IBCurve(d, variant='dib', method='sequential', beta_num=26).plot();
+
 See Also
 ========
 
@@ -126,3 +171,9 @@ APIs
 .. autoclass:: RDCurve
 
 .. autoclass:: IBCurve
+
+.. autoclass:: InformationBottleneck
+
+.. autoclass:: GeneralizedInformationBottleneck
+
+.. autoclass:: DeterministicInformationBottleneck

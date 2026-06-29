@@ -9,6 +9,8 @@ from ..divergences.pmf import relative_entropy
 from ..exceptions import ditException
 
 __all__ = (
+    "DeterministicInformationBottleneck",
+    "GeneralizedInformationBottleneck",
     "InformationBottleneck",
     "InformationBottleneckDivergence",
 )
@@ -387,3 +389,54 @@ class InformationBottleneckDivergence(InformationBottleneck):
                 return dist
 
         return distortion
+
+
+class GeneralizedInformationBottleneck(InformationBottleneck):
+    """
+    The generalized information bottleneck family.
+
+    The parameter ``alpha`` interpolates between the standard information
+    bottleneck (``alpha=1``) and the deterministic information bottleneck
+    (``alpha=0``).
+    """
+
+
+class DeterministicInformationBottleneck(GeneralizedInformationBottleneck):
+    """
+    The deterministic information bottleneck objective.
+
+    This is the ``alpha=0`` endpoint of the generalized information bottleneck,
+    using :math:`H(T | Z)` as the compression term.
+    """
+
+    def __init__(self, dist, beta, alpha=0.0, rvs=None, crvs=None, bound=None):
+        """
+        Initialize the deterministic bottleneck optimizer.
+
+        Parameters
+        ----------
+        dist : Distribution
+            The distribution of interest.
+        beta : float
+            The beta value used in the objective function.
+        alpha : float
+            Must be 0.0. Accepted only so inherited helpers can instantiate this
+            class through the same call signature as InformationBottleneck.
+        rvs : iter of iters, None
+            The random variables to compute the bottleneck of.
+        crvs : iter, None
+            The random variables to condition on.
+        bound : int, None
+            The bound on the size of the statistic. If None, use the size of X.
+        """
+        if not np.isclose(alpha, 0.0):
+            msg = "DeterministicInformationBottleneck requires alpha=0.0."
+            raise ditException(msg)
+        super().__init__(
+            dist=dist,
+            beta=beta,
+            alpha=0.0,
+            rvs=rvs,
+            crvs=crvs,
+            bound=bound,
+        )

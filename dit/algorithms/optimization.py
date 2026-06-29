@@ -610,6 +610,53 @@ class BaseOptimizer(metaclass=ABCMeta):
 
         return dual_total_correlation
 
+    def _residual_entropy(self, rvs, crvs=None):
+        """
+        Compute the residual entropy (variation of information).
+
+        Parameters
+        ----------
+        rvs : set
+            The random variables to compute the residual entropy of.
+        crvs : set
+            The random variables to condition on.
+
+        Returns
+        -------
+        re : func
+            The residual entropy.
+        """
+        if crvs is None:
+            crvs = set()
+        idx_joint = tuple(self._all_vars - (rvs | crvs))
+        idx_margs = [tuple(self._all_vars - ((rvs - {rv}) | crvs)) for rv in rvs]
+        idx_crvs = tuple(self._all_vars - crvs)
+
+        def residual_entropy(pmf):
+            """
+            Compute the specified residual entropy.
+
+            Parameters
+            ----------
+            pmf : np.ndarray
+                The joint probability distribution.
+
+            Returns
+            -------
+            re : float
+                The residual entropy.
+            """
+            pmf_joint = pmf.sum(axis=idx_joint, keepdims=True)
+            pmf_margs = [pmf_joint.sum(axis=marg, keepdims=True) for marg in idx_margs]
+            pmf_crvs = pmf_joint.sum(axis=idx_crvs, keepdims=True)
+
+            h_crvs = self._h(pmf_crvs)
+            h_margs = [self._h(marg) - h_crvs for marg in pmf_margs]
+
+            return sum(h_margs)
+
+        return residual_entropy
+
     ###########################################################################
     # Analytic gradients of the objective building blocks.
     #
@@ -751,6 +798,21 @@ class BaseOptimizer(metaclass=ABCMeta):
             # dtc == sum_i H(marg_i) - n H(joint) - H(crvs).
             g = sum(self._marginal_entropy_grad(pmf, marg) for marg in idx_margs)
             g = g - n * self._marginal_entropy_grad(pmf, idx_joint) - self._marginal_entropy_grad(pmf, idx_crvs)
+            return self._full_grad(g, pmf)
+
+        return grad
+
+    def _residual_entropy_grad(self, rvs, crvs=None):
+        """Gradient builder for :meth:`_residual_entropy`."""
+        if crvs is None:
+            crvs = set()
+        idx_margs = [tuple(self._all_vars - ((rvs - {rv}) | crvs)) for rv in rvs]
+        idx_crvs = tuple(self._all_vars - crvs)
+        n = len(rvs)
+
+        def grad(pmf):
+            g = sum(self._marginal_entropy_grad(pmf, marg) for marg in idx_margs)
+            g = g - n * self._marginal_entropy_grad(pmf, idx_crvs)
             return self._full_grad(g, pmf)
 
         return grad

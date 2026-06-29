@@ -7,6 +7,7 @@ import pytest
 from dit import Distribution
 from dit.divergences.pmf import relative_entropy
 from dit.exceptions import ditException
+from dit.rate_distortion import DeterministicInformationBottleneck, GeneralizedInformationBottleneck
 from dit.rate_distortion.information_bottleneck import InformationBottleneck, InformationBottleneckDivergence
 
 dist = Distribution(["00", "02", "12", "21", "22"], [1 / 5] * 5)
@@ -53,6 +54,20 @@ def test_ib_5():
     """
     with pytest.raises(ditException):
         InformationBottleneck(dist, beta=-10.0)
+
+
+def test_ib_first_class_variants():
+    """
+    Test first-class generalized and deterministic bottleneck classes.
+    """
+    gib = GeneralizedInformationBottleneck(dist, beta=0.0, alpha=0.5)
+    dib = DeterministicInformationBottleneck(dist, beta=0.0)
+
+    assert gib._alpha == 0.5
+    assert dib._alpha == 0.0
+
+    with pytest.raises(ditException):
+        DeterministicInformationBottleneck(dist, beta=0.0, alpha=0.5)
 
 
 def test_ibd_1():

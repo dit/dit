@@ -7,10 +7,14 @@ from . import pmf
 from .copy_mutual_information import (
     copy_mutual_information,
 )
-
-# from .coupling_metrics import (
-#     coupling_metric,
-# )
+from .coupling_metrics import (
+    coupling_metric,
+    coupling_min_residual_entropy,
+    max_caekl_coupling,
+    max_dual_total_correlation_coupling,
+    max_total_correlation_coupling,
+    min_residual_entropy_coupling,
+)
 from .cross_entropy import (
     cross_entropy,
 )

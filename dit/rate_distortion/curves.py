@@ -9,9 +9,15 @@ from ..distribution import Distribution
 from ..exceptions import ditException
 from ..multivariate import entropy, total_correlation
 from ..utils import flatten
-from .blahut_arimoto import blahut_arimoto, blahut_arimoto_ib
+from .blahut_arimoto import blahut_arimoto
+from .bottleneck_algorithms import agglomerative_ib, blahut_arimoto_ib, sequential_ib
 from .distortions import hamming
-from .information_bottleneck import InformationBottleneck, InformationBottleneckDivergence
+from .information_bottleneck import (
+    DeterministicInformationBottleneck,
+    GeneralizedInformationBottleneck,
+    InformationBottleneck,
+    InformationBottleneckDivergence,
+)
 
 __all__ = (
     "IBCurve",
@@ -297,6 +303,8 @@ class IBCurve:
         alpha=1.0,
         method="sp",
         divergence=None,
+        variant=None,
+        bound=None,
     ):
         """
         Initialize the curve computer.
@@ -320,13 +328,20 @@ class IBCurve:
         alpha : float
             The alpha value to utilize. 1.0 corresponds to the standard information
             bottleneck, while 0.0 corresponds to the deterministic bottleneck.
-        method : {'sp', 'ba'}
+        method : {'sp', 'ba', 'sequential', 'agglomerative'}
             The method to utilize in computing the curve. If 'sp', utilize
             scipy.optimize; if 'ba' utilize the iterative Blahut-Arimoto
-            algorithm. Defaults to 'sp'.
+            algorithm; if 'sequential' or 'agglomerative', utilize hard
+            deterministic information bottleneck solvers. Defaults to 'sp'.
         divergence : func
             The divergence measure to use as a distortion. Defaults to the standard
             relative entropy.
+        variant : {'ib', 'gib', 'dib'}, None
+            The bottleneck variant to compute. If None, infer the variant from
+            ``alpha`` for backwards compatibility.
+        bound : int, None
+            The maximum bottleneck alphabet size for optimizer-backed and hard
+            deterministic methods. If None, use ``|X|``.
         """
         self.dist = dist.copy()
         self.dist.make_dense()
@@ -334,10 +349,53 @@ class IBCurve:
         self._x, self._y = rvs if rvs is not None else ([0], [1])
         self._z = crvs if crvs is not None else []
         self._aux = [dist.outcome_length()]
+        self._alpha = alpha
+        self._divergence = divergence
+
+        if variant is None:
+            if np.isclose(alpha, 1.0):
+                variant = "ib"
+            elif np.isclose(alpha, 0.0):
+                variant = "dib"
+            else:
+                variant = "gib"
+        variant = variant.lower()
+        if variant not in ("ib", "gib", "dib"):
+            msg = f"Variant '{variant}' not supported."
+            raise ditException(msg)
+
+        if variant == "ib":
+            alpha = 1.0
+        elif variant == "dib":
+            alpha = 0.0
+        elif not 0.0 <= alpha <= 1.0:
+            msg = "alpha must be in [0.0, 1.0]."
+            raise ditException(msg)
+
+        self._alpha = alpha
+        self._variant = variant
 
         self.p_xy = self.dist.coalesce([self._x, self._y])
         self.p_xy.make_dense()
         self.p_xy = self.p_xy.pmf.reshape(tuple(map(len, self.p_xy.alphabet)))
+        if bound is None:
+            self._bound = self.p_xy.shape[0]
+        else:
+            bound = int(bound)
+            if bound <= 0:
+                msg = "bound must be positive."
+                raise ditException(msg)
+            self._bound = min(bound, self.p_xy.shape[0])
+
+        if method not in ("sp", "ba", "sequential", "agglomerative"):
+            msg = f"Method '{method}' not supported."
+            raise ditException(msg)
+        if method == "ba" and (self._z or divergence is not None or not np.isclose(alpha, 1.0)):
+            msg = "Method 'ba' only supports the standard, unconditional information bottleneck."
+            raise ditException(msg)
+        if method in ("sequential", "agglomerative") and (self._z or divergence is not None or not np.isclose(alpha, 0.0)):
+            msg = f"Method '{method}' only supports the unconditional deterministic information bottleneck."
+            raise ditException(msg)
 
         args = {
             "dist": self.dist,
@@ -345,11 +403,16 @@ class IBCurve:
             "alpha": alpha,
             "rvs": [self._x, self._y],
             "crvs": self._z,
+            "bound": self._bound,
         }
 
         if divergence is not None:  # pragma: no cover
             bottleneck = InformationBottleneckDivergence
             args["divergence"] = divergence
+        elif variant == "dib":
+            bottleneck = DeterministicInformationBottleneck
+        elif variant == "gib":
+            bottleneck = GeneralizedInformationBottleneck
         else:
             bottleneck = InformationBottleneck
         self._bn = bottleneck(**args)
@@ -359,9 +422,9 @@ class IBCurve:
         self._max_rank = len(dist.marginal(self._x).outcomes)
         self._max_distortion = self._bn.distortion(self._get_opt_sp(beta=0.0)[0])
 
-        if np.isclose(alpha, 1.0):
+        if variant == "ib":
             self.label = "IB"
-        elif np.isclose(alpha, 0.0):
+        elif variant == "dib":
             self.label = "DIB"
         else:
             self.label = f"GIB({alpha:.3f})"
@@ -439,18 +502,46 @@ class IBCurve:
         q_xyzt = q_xyt[:, :, np.newaxis, :]
         return q_xyzt, None
 
+    def _get_opt_sequential(self, beta, initial=None):
+        """
+        Compute a deterministic bottleneck solution by hard reassignment.
+        """
+        result = sequential_ib(
+            p_xy=self.p_xy,
+            beta=beta,
+            n_clusters=self._bound,
+            initial_assignments=initial,
+        )
+        q_xyzt = result.p_xyt[:, :, np.newaxis, :]
+        return q_xyzt, result.assignments
+
+    def _get_opt_agglomerative(self, beta, initial=None):
+        """
+        Compute a deterministic bottleneck solution by greedy agglomeration.
+        """
+        result = agglomerative_ib(
+            p_xy=self.p_xy,
+            beta=beta,
+            n_clusters=None if self._bound == self.p_xy.shape[0] else self._bound,
+        )
+        q_xyzt = result.p_xyt[:, :, np.newaxis, :]
+        return q_xyzt, result.assignments
+
     def compute(self, method="sp"):
         """
         Sweep beta and compute the information bottleneck curve.
 
         Parameters
         ----------
-        method : {'sp', 'ba'}
+        method : {'sp', 'ba', 'sequential', 'agglomerative'}
             The method of computation to use. 'sp' denotes scipy.optimize;
-            'ba' denotes blahut-arimoto.
+            'ba' denotes blahut-arimoto; 'sequential' and 'agglomerative'
+            denote hard deterministic solvers.
         """
         get_opt = {
+            "agglomerative": self._get_opt_agglomerative,
             "ba": self._get_opt_ba,
+            "sequential": self._get_opt_sequential,
             "sp": self._get_opt_sp,
         }[method]
 

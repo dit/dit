@@ -532,6 +532,87 @@ class MinDualTotalCorrelationOptimizer(BaseDistOptimizer, BaseNonConvexOptimizer
         return objective
 
 
+class MinResidualEntropyOptimizer(BaseDistOptimizer, BaseNonConvexOptimizer):
+    """
+    Compute minimum residual entropy distributions.
+    """
+
+    def _objective_gradient(self):
+        """Gradient of the ``+R`` objective w.r.t. the pmf."""
+        return self._residual_entropy_grad(self._rvs)
+
+    def _objective(self):
+        """
+        Compute the residual entropy.
+
+        Returns
+        -------
+        objective : func
+            The objective function.
+        """
+        residual_entropy = self._residual_entropy(self._rvs)
+
+        def objective(self, x):
+            """
+            Compute :math:`R[rvs]`
+
+            Parameters
+            ----------
+            x : np.ndarray
+                An optimization vector.
+
+            Returns
+            -------
+            obj : float
+                The value of the objective.
+            """
+            pmf = self.construct_joint(x)
+            return residual_entropy(pmf)
+
+        return objective
+
+
+class MaxCAEKLMutualInformationOptimizer(BaseDistOptimizer, BaseNonConvexOptimizer):
+    """
+    Compute maximum CAEKL mutual information distributions.
+    """
+
+    def _objective_gradient(self):
+        """Gradient of the ``-J`` objective w.r.t. the pmf."""
+        caekl_grad = self._caekl_mutual_information_grad(self._rvs)
+        return lambda pmf: -caekl_grad(pmf)
+
+    def _objective(self):
+        """
+        Compute the negative CAEKL mutual information.
+
+        Returns
+        -------
+        objective : func
+            The objective function.
+        """
+        caekl_mutual_information = self._caekl_mutual_information(self._rvs)
+
+        def objective(self, x):
+            """
+            Compute :math:`-J[rvs]`
+
+            Parameters
+            ----------
+            x : np.ndarray
+                An optimization vector.
+
+            Returns
+            -------
+            obj : float
+                The value of the objective.
+            """
+            pmf = self.construct_joint(x)
+            return -caekl_mutual_information(pmf)
+
+        return objective
+
+
 class BROJABivariateOptimizer(MaxCoInfoOptimizer):
     """
     An optimizer for constructing the maximum co-information distribution
