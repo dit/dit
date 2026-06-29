@@ -74,9 +74,7 @@ def test_max_dual_total_correlation_coupling():
     from dit.distconst import uniform
 
     d = uniform(["000", "111"])
-    joint = max_dual_total_correlation_coupling(
-        [d.marginal([0]), d.marginal([1]), d.marginal([2])], niter=75
-    )
+    joint = max_dual_total_correlation_coupling([d.marginal([0]), d.marginal([1]), d.marginal([2])], niter=75)
     assert B(joint, [[0], [1], [2]]) == pytest.approx(2.0, abs=1e-2)
 
 
@@ -85,9 +83,7 @@ def test_max_caekl_coupling():
     from dit.distconst import uniform
 
     d = uniform(["000", "111"])
-    joint = max_caekl_coupling(
-        [d.marginal([0]), d.marginal([1]), d.marginal([2])], niter=100
-    )
+    joint = max_caekl_coupling([d.marginal([0]), d.marginal([1]), d.marginal([2])], niter=100)
     assert caekl_mutual_information(joint) == pytest.approx(1.0, abs=2e-2)
 
 

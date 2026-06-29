@@ -1,9 +1,9 @@
 .. sibson_mutual_information.rst
 .. py:module:: dit.other.sibson_mutual_information
 
-************************
+*************************
 Sibson Mutual Information
-************************
+*************************
 
 Sibson (or :math:`\alpha`-) mutual information generalizes Shannon mutual
 information. At :math:`\alpha = 1` it equals Shannon MI; at

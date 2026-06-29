@@ -393,7 +393,9 @@ class IBCurve:
         if method == "ba" and (self._z or divergence is not None or not np.isclose(alpha, 1.0)):
             msg = "Method 'ba' only supports the standard, unconditional information bottleneck."
             raise ditException(msg)
-        if method in ("sequential", "agglomerative") and (self._z or divergence is not None or not np.isclose(alpha, 0.0)):
+        if method in ("sequential", "agglomerative") and (
+            self._z or divergence is not None or not np.isclose(alpha, 0.0)
+        ):
             msg = f"Method '{method}' only supports the unconditional deterministic information bottleneck."
             raise ditException(msg)
 

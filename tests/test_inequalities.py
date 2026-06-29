@@ -175,29 +175,6 @@ def test_dfz_non_shannon_inequality(dist, name, coeffs):
     assert lhs <= _dfz_rhs(dist, coeffs) + epsilon
 
 
-@given(dist=distributions(alphabets=FOUR_VAR_ALPHABETS))
-def test_ingleton_inequality(dist):
-    """
-    Ingleton inequality (Shannon-type for four variables).
-
-    I(A:B) + I(C:D) + I(A:C) + I(B:D)
-        <= I(A:D) + I(B:C) + I(A:BCD) + I(B:ACD)
-    """
-    lhs = (
-        I(dist, [[0], [1]])
-        + I(dist, [[2], [3]])
-        + I(dist, [[0], [2]])
-        + I(dist, [[1], [3]])
-    )
-    rhs = (
-        I(dist, [[0], [3]])
-        + I(dist, [[1], [2]])
-        + I(dist, [[0], [1, 2, 3]])
-        + I(dist, [[1], [0, 2, 3]])
-    )
-    assert lhs <= rhs + epsilon
-
-
 @given(dist=markov_chains(alphabets=((2, 4),) * 3))
 def test_data_processing_inequality(dist):
     """

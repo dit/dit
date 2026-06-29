@@ -25,20 +25,20 @@ __all__ = (
 
 def _coupling_problem(dists):
     """
-  Build the tensor-product scaffold and per-marginal RV index groups.
+    Build the tensor-product scaffold and per-marginal RV index groups.
 
-  Parameters
-  ----------
-  dists : list of Distribution
-      Marginal distributions to couple.
+    Parameters
+    ----------
+    dists : list of Distribution
+        Marginal distributions to couple.
 
-  Returns
-  -------
-  product_dist : Distribution
-      Independent product used as the optimization scaffold.
-  dist_ids : list of list of int
-      RV index groups, one per marginal.
-  """
+    Returns
+    -------
+    product_dist : Distribution
+        Independent product used as the optimization scaffold.
+    dist_ids : list of list of int
+        RV index groups, one per marginal.
+    """
     d = dists[0]
     for d2 in dists[1:]:
         d = d.__matmul__(d2)
