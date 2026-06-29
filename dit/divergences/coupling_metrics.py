@@ -71,9 +71,26 @@ def _optimize_coupling(dists, optimizer_name, *, niter=50):
         RV index groups for each marginal.
     """
     from ..algorithms import distribution_optimizers as do
+    from ..multivariate import residual_entropy as multivariate_residual_entropy
 
     OptimizerClass = getattr(do, optimizer_name)
     product_dist, dist_ids = _coupling_problem(dists)
+
+    if optimizer_name == "MinResidualEntropyOptimizer":
+        meo = do.MinEntOptimizer(product_dist, dist_ids)
+        meo.optimize(niter=niter)
+        me_dist = meo.construct_dist()
+
+        opt = OptimizerClass(product_dist, dist_ids)
+        opt.optimize(x0=meo._optima.copy(), niter=niter)
+        re_dist = opt.construct_dist()
+
+        if multivariate_residual_entropy(re_dist, rvs=dist_ids) <= multivariate_residual_entropy(
+            me_dist, rvs=dist_ids
+        ):
+            return re_dist, dist_ids
+        return me_dist, dist_ids
+
     opt = OptimizerClass(product_dist, dist_ids)
     opt.optimize(niter=niter)
     return opt.construct_dist(), dist_ids

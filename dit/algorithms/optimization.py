@@ -19,7 +19,6 @@ from loguru import logger
 from scipy.optimize import Bounds, basinhopping, brute, differential_evolution, dual_annealing, minimize, shgo
 
 from ..algorithms.caekl_psp import (
-    caekl_from_partition_pmf,
     caekl_mutual_information_psp_pmf,
     caekl_mutual_information_psp_pmf_grad_data,
 )

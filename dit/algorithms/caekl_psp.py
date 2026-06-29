@@ -5,7 +5,7 @@ CAEKL via PSP on marginalized PMF arrays (optimization backends).
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable
-from functools import lru_cache
+from functools import cache
 
 import numpy as np
 
@@ -91,7 +91,7 @@ def caekl_mutual_information_psp_pmf_with_partition(
         pmf_joint = sum_axes(pmf, idx)
         return h(pmf_joint) - h(pmf_crvs)
 
-    @lru_cache(maxsize=None)
+    @cache
     def h_groups(group_indices: frozenset[int]) -> float:
         if not group_indices:
             return 0.0

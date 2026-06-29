@@ -7,7 +7,7 @@ from itertools import combinations
 
 import numpy as np
 
-from ...distconst import RVFunctions, insert_rvf, modify_outcomes
+from ...distconst import RVFunctions, insert_rvf
 from ...helpers import normalize_rvs
 from ...utils import partitions, unitful
 from ..dual_total_correlation import dual_total_correlation

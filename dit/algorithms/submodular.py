@@ -11,7 +11,7 @@ points and submodular minimization.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable, Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 
 import numpy as np
 
@@ -92,7 +92,7 @@ def minimum_norm_base(
     def to_vec(mapping: Mapping[int, float]) -> np.ndarray:
         return np.array([mapping[i] for i in ground_tuple], dtype=float)
 
-    weights = {i: 0.0 for i in ground_tuple}
+    weights = dict.fromkeys(ground_tuple, 0.0)
     x = to_vec(greedy_base_vertex(f, ground_tuple, weights))
 
     # Corral ``S``: vertices whose convex hull contains the current iterate.

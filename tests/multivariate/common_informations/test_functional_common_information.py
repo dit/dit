@@ -10,8 +10,8 @@ from dit.distconst import RVFunctions, insert_rvf, modify_outcomes
 from dit.helpers import normalize_rvs, parse_rvs
 from dit.multivariate import dual_total_correlation as B
 from dit.multivariate import functional_common_information as F
-from dit.multivariate.common_informations.functional_common_information import functional_markov_chain
 from dit.multivariate import gk_common_information as G
+from dit.multivariate import mss_common_information as M
 from dit.multivariate.common_informations._functional_partition import (
     conditional_dtc,
     labels_from_partition,
@@ -21,7 +21,7 @@ from dit.multivariate.common_informations._functional_partition import (
     prepare_functional_search,
     refinements_by_binary_split,
 )
-from dit.multivariate import mss_common_information as M
+from dit.multivariate.common_informations.functional_common_information import functional_markov_chain
 from dit.multivariate.entropy import entropy
 
 

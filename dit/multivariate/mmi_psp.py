@@ -9,7 +9,7 @@ subroutines on entropy-derived submodular functions.
 from __future__ import annotations
 
 from collections.abc import Callable
-from functools import lru_cache
+from functools import cache
 
 from ..algorithms.submodular import minimum_norm_base
 from ..helpers import normalize_rvs
@@ -29,7 +29,7 @@ class _EntropyOracle:
     def __init__(self, h: GroupEntropy):
         self._h = h
 
-    @lru_cache(maxsize=None)
+    @cache
     def h(self, group_indices: frozenset[int]) -> float:
         return self._h(group_indices)
 
@@ -71,10 +71,9 @@ def _partition_information(
     if norm <= 0:
         msg = "partition information requires at least two blocks"
         raise ValueError(msg)
-    if n_groups is None:
-        all_groups = frozenset().union(*partition)
-    else:
-        all_groups = frozenset(range(n_groups))
+    all_groups = (
+        frozenset().union(*partition) if n_groups is None else frozenset(range(n_groups))
+    )
     h_all = oracle.h(all_groups)
     h_parts = sum(oracle.h(block) for block in partition)
     return (h_parts - h_all) / norm
@@ -134,9 +133,8 @@ def fuse(partition: list[frozenset[int]], oracle: _EntropyOracle) -> tuple[float
         g_j = _make_g_j(partition_tuple, j, oracle)
         bases[j] = minimum_norm_base(g_j, ground)
 
-    best_j = None
     best_min = float("inf")
-    for j, base in bases.items():
+    for _j, base in bases.items():
         local_min = min(base.values())
         if local_min < best_min:
             best_min = local_min
@@ -240,7 +238,7 @@ def caekl_mutual_information_psp(dist, rvs, crvs):
     rvs, crvs = normalize_rvs(dist, rvs, crvs)
     n = len(rvs)
 
-    @lru_cache(maxsize=None)
+    @cache
     def h(group_indices: frozenset[int]) -> float:
         if not group_indices:
             return 0.0
