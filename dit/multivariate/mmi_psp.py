@@ -34,7 +34,9 @@ class _EntropyOracle:
         return self._h(group_indices)
 
 
-def _h_on_partition(partition: tuple[frozenset[int], ...], cluster_indices: frozenset[int], oracle: _EntropyOracle) -> float:
+def _h_on_partition(
+    partition: tuple[frozenset[int], ...], cluster_indices: frozenset[int], oracle: _EntropyOracle
+) -> float:
     rvs_groups: set[int] = set()
     for idx in cluster_indices:
         rvs_groups |= partition[idx]
@@ -71,9 +73,7 @@ def _partition_information(
     if norm <= 0:
         msg = "partition information requires at least two blocks"
         raise ValueError(msg)
-    all_groups = (
-        frozenset().union(*partition) if n_groups is None else frozenset(range(n_groups))
-    )
+    all_groups = frozenset().union(*partition) if n_groups is None else frozenset(range(n_groups))
     h_all = oracle.h(all_groups)
     h_parts = sum(oracle.h(block) for block in partition)
     return (h_parts - h_all) / norm
@@ -154,11 +154,7 @@ def fuse(partition: list[frozenset[int]], oracle: _EntropyOracle) -> tuple[float
         merge = {j}
         merge.update(i for i, val in base.items() if val <= min_x + tol)
         new_partition = _fuse_merge_partition(partition, merge)
-        score = (
-            _partition_information(tuple(new_partition), oracle=oracle)
-            if len(new_partition) > 1
-            else float("inf")
-        )
+        score = _partition_information(tuple(new_partition), oracle=oracle) if len(new_partition) > 1 else float("inf")
         candidates.append((score, j, new_partition))
 
     _, _, new_partition = min(candidates, key=lambda item: (item[0], item[1]))

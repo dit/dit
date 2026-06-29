@@ -49,13 +49,22 @@ COMPUTE_UI_CASES = {
 }
 
 
-@pytest.mark.parametrize("case", COMPUTE_UI_CASES)
-def test_admui_computeui_cases(case):
+@pytest.mark.parametrize("case", ["xor", "and"])
+def test_admui_computeui_matches_scipy(case):
     outcomes, pmf = COMPUTE_UI_CASES[case]
     d = dit.Distribution(outcomes, pmf)
     ref = _scipy_uniques(d)
     got, _ = broja_solve_bivariate(d, ((0,), (1,)), (2,), method="admui")
-    # perturbed_xor has two scipy local optima; admUI lands on the lower-u0 branch.
-    tol = 1e-3 if case == "perturbed_xor" else 1e-4
     for key in ref:
-        assert got[key] == pytest.approx(ref[key], abs=tol)
+        assert got[key] == pytest.approx(ref[key], abs=1e-4)
+
+
+def test_admui_computeui_perturbed_xor():
+    """perturbed_xor has multiple BROJA local optima; scipy branch is platform-dependent."""
+    outcomes, pmf = COMPUTE_UI_CASES["perturbed_xor"]
+    d = dit.Distribution(outcomes, pmf)
+    got, meta = broja_solve_bivariate(d, ((0,), (1,)), (2,), method="admui")
+    assert meta["converged"]
+    # admUI consistently selects the lower-u0 branch (scipy can return u0 ~ 0.03).
+    assert got[(0,)] < 1e-4
+    assert got[(1,)] == pytest.approx(0.08966, rel=1e-3)

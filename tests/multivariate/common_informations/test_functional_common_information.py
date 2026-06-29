@@ -46,7 +46,14 @@ def _reference_partition_metrics(dist, partition, rvs, crvs):
 @pytest.mark.parametrize(
     "partition",
     [
-        frozenset({frozenset([("0", "0", "0")]), frozenset([("0", "1", "1")]), frozenset([("1", "0", "1")]), frozenset([("1", "1", "0")])}),
+        frozenset(
+            {
+                frozenset([("0", "0", "0")]),
+                frozenset([("0", "1", "1")]),
+                frozenset([("1", "0", "1")]),
+                frozenset([("1", "1", "0")]),
+            }
+        ),
         frozenset({frozenset([("0", "0", "0"), ("1", "1", "0")]), frozenset([("0", "1", "1"), ("1", "0", "1")])}),
         frozenset({frozenset([("0", "0", "0"), ("0", "1", "1"), ("1", "0", "1"), ("1", "1", "0")])}),
     ],

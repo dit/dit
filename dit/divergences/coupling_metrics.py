@@ -85,9 +85,7 @@ def _optimize_coupling(dists, optimizer_name, *, niter=50):
         opt.optimize(x0=meo._optima.copy(), niter=niter)
         re_dist = opt.construct_dist()
 
-        if multivariate_residual_entropy(re_dist, rvs=dist_ids) <= multivariate_residual_entropy(
-            me_dist, rvs=dist_ids
-        ):
+        if multivariate_residual_entropy(re_dist, rvs=dist_ids) <= multivariate_residual_entropy(me_dist, rvs=dist_ids):
             return re_dist, dist_ids
         return me_dist, dist_ids
 

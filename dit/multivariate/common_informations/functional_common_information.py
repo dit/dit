@@ -70,9 +70,7 @@ def _partition_metrics(ctx, part, pmf_size):
 
 def _coarsen_neighbors(part):
     """Partitions obtained by merging two blocks."""
-    return [
-        frozenset([p for p in part if p not in pair] + [pair[0] | pair[1]]) for pair in combinations(part, 2)
-    ]
+    return [frozenset([p for p in part if p not in pair] + [pair[0] | pair[1]]) for pair in combinations(part, 2)]
 
 
 def _probe_seeds(ctx, dist, rvs, crvs, pmf_size, *, _use_mss_warmstart=True):
