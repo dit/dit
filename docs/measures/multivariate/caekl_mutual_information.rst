@@ -41,6 +41,11 @@ where :math:`\operatorname{I}_\mathcal{P}` is the :ref:`total_correlation` of th
 
 and :math:`\Pi` is the set of all non-trivial partitions of :math:`\left\{0:n\right\}`.
 
+``dit`` evaluates this minimum using the agglomerative principal-sequence-of-partitions
+algorithm of Chan and Liu :cite:`ChanLiu2017agglomerative` (minimum-norm-base
+subroutines per :cite:`Chakrabarty2014wolfe`), which is exact and faster than
+enumerating partitions in practice.
+
 .. todo::
 
    Include a nice i-diagram of this quantity, if possible.

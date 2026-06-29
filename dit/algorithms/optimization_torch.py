@@ -40,13 +40,17 @@ except ImportError:
 from boltons.iterutils import pairwise
 from scipy.optimize import Bounds, basinhopping, brute, differential_evolution, dual_annealing, minimize, shgo
 
+from ..algorithms.caekl_psp import (
+    caekl_from_partition_pmf,
+    caekl_mutual_information_psp_pmf_with_partition,
+)
 from ..algorithms.channelcapacity import channel_capacity
 from ..distconst import insert_rvf, modify_outcomes
 from ..distribution import Distribution
 from ..exceptions import OptimizationException, ditException
 from ..helpers import flatten, normalize_rvs, parse_rvs
 from ..math import prod, sample_simplex
-from ..utils import partitions, powerset
+from ..utils import powerset
 from ..utils.optimization import (
     BasinHoppingCallBack,
     BasinHoppingInnerCallBack,
@@ -681,6 +685,9 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
         """
         Compute the CAEKL mutual information using PyTorch.
 
+        Partition selection runs on the host via PSP; autodiff flows through the
+        selected partition only (a valid subgradient of the partition minimum).
+
         Parameters
         ----------
         rvs : set
@@ -695,45 +702,32 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
         """
         if crvs is None:
             crvs = set()
-        parts = [p for p in partitions(rvs) if len(p) > 1]
-        idx_parts = {}
-        for part in parts:
-            for p in part:
-                if p not in idx_parts:
-                    idx_parts[p] = tuple(self._all_vars - (p | crvs))
-        part_norms = [len(part) - 1 for part in parts]
         idx_joint = tuple(self._all_vars - (rvs | crvs))
         idx_crvs = tuple(self._all_vars - crvs)
+        all_vars = self._all_vars
 
         def caekl_mutual_information(pmf):
-            """
-            Compute the specified CAEKL mutual information.
+            with torch.no_grad():
+                pmf_np = _to_numpy(pmf)
+                _, partition = caekl_mutual_information_psp_pmf_with_partition(
+                    pmf_np,
+                    all_vars=all_vars,
+                    rvs=rvs,
+                    crvs=crvs,
+                    h=lambda p: float(self._h(torch.as_tensor(p, dtype=pmf.dtype, device=pmf.device))),
+                    sum_axes=lambda p, idx: np.asarray(p).sum(axis=idx, keepdims=True),
+                )
+                idx_parts = {block: tuple(all_vars - (set(block) | crvs)) for block in partition}
 
-            Parameters
-            ----------
-            pmf : torch.Tensor
-                The joint probability distribution.
-
-            Returns
-            -------
-            caekl : torch.Tensor
-                The CAEKL mutual information.
-            """
-            pmf_joint = _marginalize(pmf, idx_joint)
-            pmf_parts = {p: _marginalize(pmf_joint, idx) for p, idx in idx_parts.items()}
-            pmf_crvs = _marginalize(pmf_joint, idx_crvs)
-
-            h_crvs = self._h(pmf_crvs)
-            h_joint = self._h(pmf_joint) - h_crvs
-
-            candidates = []
-            for part, norm in zip(parts, part_norms, strict=True):
-                h_parts = sum(self._h(pmf_parts[p]) - h_crvs for p in part)
-                candidates.append((h_parts - h_joint) / norm)
-
-            caekl = torch.min(torch.stack(candidates))
-
-            return caekl
+            return caekl_from_partition_pmf(
+                pmf,
+                partition,
+                idx_joint=idx_joint,
+                idx_crvs=idx_crvs,
+                idx_parts=idx_parts,
+                h=self._h,
+                sum_axes=lambda p, idx: _marginalize(p, idx),
+            )
 
         return self._maybe_compile(caekl_mutual_information)
 

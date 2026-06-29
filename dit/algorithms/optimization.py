@@ -18,13 +18,18 @@ from boltons.iterutils import pairwise
 from loguru import logger
 from scipy.optimize import Bounds, basinhopping, brute, differential_evolution, dual_annealing, minimize, shgo
 
+from ..algorithms.caekl_psp import (
+    caekl_from_partition_pmf,
+    caekl_mutual_information_psp_pmf,
+    caekl_mutual_information_psp_pmf_grad_data,
+)
 from ..algorithms.channelcapacity import channel_capacity
 from ..distconst import insert_rvf, modify_outcomes
 from ..distribution import Distribution
 from ..exceptions import OptimizationException, ditException
 from ..helpers import flatten, normalize_rvs, parse_rvs
 from ..math import prod, sample_simplex
-from ..utils import partitions, powerset
+from ..utils import powerset
 from ..utils.optimization import (
     BasinHoppingCallBack,
     BasinHoppingInnerCallBack,
@@ -835,15 +840,6 @@ class BaseOptimizer(metaclass=ABCMeta):
         """
         if crvs is None:
             crvs = set()
-        parts = [p for p in partitions(rvs) if len(p) > 1]
-        idx_parts = {}
-        for part in parts:
-            for p in part:
-                if p not in idx_parts:
-                    idx_parts[p] = tuple(self._all_vars - (p | crvs))
-        part_norms = [len(part) - 1 for part in parts]
-        idx_joint = tuple(self._all_vars - (rvs | crvs))
-        idx_crvs = tuple(self._all_vars - crvs)
 
         def caekl_mutual_information(pmf):
             """
@@ -859,19 +855,14 @@ class BaseOptimizer(metaclass=ABCMeta):
             caekl : float
                 The CAEKL mutual information.
             """
-            pmf_joint = pmf.sum(axis=idx_joint, keepdims=True)
-            pmf_parts = {p: pmf_joint.sum(axis=idx, keepdims=True) for p, idx in idx_parts.items()}
-            pmf_crvs = pmf_joint.sum(axis=idx_crvs, keepdims=True)
-
-            h_crvs = self._h(pmf_crvs)
-            h_joint = self._h(pmf_joint) - h_crvs
-
-            pairs = zip(parts, part_norms, strict=True)
-            candidates = [(sum(self._h(pmf_parts[p]) - h_crvs for p in part) - h_joint) / norm for part, norm in pairs]
-
-            caekl = min(candidates)
-
-            return caekl
+            return caekl_mutual_information_psp_pmf(
+                pmf,
+                all_vars=self._all_vars,
+                rvs=rvs,
+                crvs=crvs,
+                h=self._h,
+                sum_axes=lambda p, idx: p.sum(axis=idx, keepdims=True),
+            )
 
         return caekl_mutual_information
 
@@ -886,34 +877,20 @@ class BaseOptimizer(metaclass=ABCMeta):
         """
         if crvs is None:
             crvs = set()
-        parts = [p for p in partitions(rvs) if len(p) > 1]
-        idx_parts = {}
-        for part in parts:
-            for p in part:
-                if p not in idx_parts:
-                    idx_parts[p] = tuple(self._all_vars - (p | crvs))
-        part_norms = [len(part) - 1 for part in parts]
-        idx_joint = tuple(self._all_vars - (rvs | crvs))
-        idx_crvs = tuple(self._all_vars - crvs)
 
         def grad(pmf):
-            # Recompute the candidates to find the active (argmin) partition.
-            pmf_joint = pmf.sum(axis=idx_joint, keepdims=True)
-            pmf_parts = {p: pmf_joint.sum(axis=idx, keepdims=True) for p, idx in idx_parts.items()}
-            pmf_crvs = pmf_joint.sum(axis=idx_crvs, keepdims=True)
+            _, partition, idx_joint, idx_crvs, idx_parts = caekl_mutual_information_psp_pmf_grad_data(
+                pmf,
+                all_vars=self._all_vars,
+                rvs=rvs,
+                crvs=crvs,
+                h=self._h,
+                sum_axes=lambda p, idx: p.sum(axis=idx, keepdims=True),
+            )
+            norm = len(partition) - 1
 
-            h_crvs = self._h(pmf_crvs)
-            h_joint = self._h(pmf_joint) - h_crvs
-
-            pairs = list(zip(parts, part_norms, strict=True))
-            candidates = [(sum(self._h(pmf_parts[p]) - h_crvs for p in part) - h_joint) / norm for part, norm in pairs]
-
-            idx_min = min(range(len(candidates)), key=lambda i: candidates[i])
-            part, norm = pairs[idx_min]
-
-            # d/dpmf of (sum_p H(p) - (|part|-1) H(crvs) - H(joint)) / norm.
-            g = sum(self._marginal_entropy_grad(pmf, idx_parts[p]) for p in part)
-            g = g - (len(part) - 1) * self._marginal_entropy_grad(pmf, idx_crvs)
+            g = sum(self._marginal_entropy_grad(pmf, idx_parts[block]) for block in partition)
+            g = g - norm * self._marginal_entropy_grad(pmf, idx_crvs)
             g = g - self._marginal_entropy_grad(pmf, idx_joint)
             g = g / norm
             return self._full_grad(g, pmf)

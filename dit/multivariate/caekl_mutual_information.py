@@ -7,8 +7,19 @@ Mutual Information Inspired by Secret-Key Agreement." Proceedings of the IEEE
 from ..helpers import normalize_rvs
 from ..utils import partitions, unitful
 from .entropy import entropy
+from .mmi_psp import caekl_mutual_information_psp
 
 __all__ = ("caekl_mutual_information",)
+
+
+def _caekl_by_partitions(dist, rvs, crvs):
+    H = entropy(dist, rvs, crvs)
+
+    def I_P(part):
+        a = sum(entropy(dist, rvs=p, crvs=crvs) for p in part)
+        return (a - H) / (len(part) - 1)
+
+    return min(I_P(p) for p in partitions(map(tuple, rvs)) if len(p) > 1)
 
 
 @unitful
@@ -50,12 +61,4 @@ def caekl_mutual_information(dist, rvs=None, crvs=None):
     """
     rvs, crvs = normalize_rvs(dist, rvs, crvs)
 
-    H = entropy(dist, rvs, crvs)
-
-    def I_P(part):
-        a = sum(entropy(dist, rvs=p, crvs=crvs) for p in part)
-        return (a - H) / (len(part) - 1)
-
-    J = min(I_P(p) for p in partitions(map(tuple, rvs)) if len(p) > 1)
-
-    return J
+    return caekl_mutual_information_psp(dist, rvs, crvs)

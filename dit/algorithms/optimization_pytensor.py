@@ -59,6 +59,7 @@ except ImportError:
 from boltons.iterutils import pairwise
 from scipy.optimize import Bounds, basinhopping, brute, differential_evolution, dual_annealing, minimize, shgo
 
+from ..algorithms.caekl_psp import caekl_from_partition_pmf, caekl_partition_indices
 from ..algorithms.channelcapacity import channel_capacity
 from ..distconst import insert_rvf, modify_outcomes
 from ..distribution import Distribution
@@ -619,6 +620,10 @@ class BasePytensorOptimizer(metaclass=ABCMeta):
         """
         Construct the CAEKL mutual information.
 
+        The symbolic (PyTensor) path still enumerates partitions so the
+        objective can be compiled as a single graph.  Eager NumPy evaluation
+        uses PSP for scalability.
+
         Parameters
         ----------
         rvs : set
@@ -645,9 +650,10 @@ class BasePytensorOptimizer(metaclass=ABCMeta):
 
         parts_tuple = tuple(tuple(p) for p in parts)
         idx_parts_items = tuple((k, v) for k, v in idx_parts.items())
+        all_vars = self._all_vars
 
         @self._maybe_jit
-        def caekl_mutual_information(pmf):
+        def caekl_mutual_information_symbolic(pmf):
             pmf_joint = pmf.sum(axis=idx_joint, keepdims=True)
             pmf_parts = {p: pmf_joint.sum(axis=idx, keepdims=True) for p, idx in idx_parts_items}
             pmf_crvs = pmf_joint.sum(axis=idx_crvs, keepdims=True)
@@ -661,6 +667,31 @@ class BasePytensorOptimizer(metaclass=ABCMeta):
                 candidates.append((h_parts - h_joint) / norm)
 
             return _amin(_stack(candidates))
+
+        def caekl_mutual_information_eager(pmf):
+            pmf_np = np.asarray(pmf)
+            partition, idx_joint_, idx_crvs_, idx_parts_sel = caekl_partition_indices(
+                pmf_np,
+                all_vars=all_vars,
+                rvs=rvs,
+                crvs=crvs,
+                h=self._h,
+                sum_axes=lambda p, idx: np.asarray(p).sum(axis=idx, keepdims=True),
+            )
+            return caekl_from_partition_pmf(
+                pmf_np,
+                partition,
+                idx_joint=idx_joint_,
+                idx_crvs=idx_crvs_,
+                idx_parts=idx_parts_sel,
+                h=self._h,
+                sum_axes=lambda p, idx: np.asarray(p).sum(axis=idx, keepdims=True),
+            )
+
+        def caekl_mutual_information(pmf):
+            if _is_pt(pmf):
+                return caekl_mutual_information_symbolic(pmf)
+            return caekl_mutual_information_eager(pmf)
 
         return caekl_mutual_information
 

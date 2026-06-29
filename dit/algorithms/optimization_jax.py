@@ -57,13 +57,20 @@ except ImportError:
 from boltons.iterutils import pairwise
 from scipy.optimize import Bounds, basinhopping, brute, differential_evolution, dual_annealing, minimize, shgo
 
+from ..algorithms.caekl_psp import (
+    caekl_from_partition_pmf,
+    caekl_mutual_information_psp_pmf_grad_data,
+    caekl_partition_indices,
+    labels_from_partition,
+    partition_from_labels,
+)
 from ..algorithms.channelcapacity import channel_capacity
 from ..distconst import insert_rvf, modify_outcomes
 from ..distribution import Distribution
 from ..exceptions import OptimizationException, ditException
 from ..helpers import flatten, normalize_rvs, parse_rvs
 from ..math import prod, sample_simplex
-from ..utils import partitions, powerset
+from ..utils import powerset
 from ..utils.optimization import (
     BasinHoppingCallBack,
     BasinHoppingInnerCallBack,
@@ -694,6 +701,10 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         """
         Compute the CAEKL mutual information using JAX.
 
+        Partition selection runs on the host via PSP; the objective value and
+        gradients are taken with respect to the selected partition (a valid
+        subgradient of the ``min`` over partitions).
+
         Parameters
         ----------
         rvs : set
@@ -708,50 +719,96 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         """
         if crvs is None:
             crvs = set()
-        parts = [p for p in partitions(rvs) if len(p) > 1]
-        idx_parts = {}
-        for part in parts:
-            for p in part:
-                if p not in idx_parts:
-                    idx_parts[p] = tuple(self._all_vars - (p | crvs))
-        part_norms = [len(part) - 1 for part in parts]
         idx_joint = tuple(self._all_vars - (rvs | crvs))
         idx_crvs = tuple(self._all_vars - crvs)
+        rvs_sorted = tuple(sorted(rvs))
+        n_rvs = len(rvs_sorted)
+        all_vars = self._all_vars
 
-        # Convert to tuples for JAX tracing
-        parts_tuple = tuple(tuple(p) for p in parts)
-        idx_parts_items = tuple((k, v) for k, v in idx_parts.items())
+        def _host_psp(pmf_arr):
+            pmf_arr = np.asarray(pmf_arr, dtype=np.float64)
+            value, partition, _, _, _ = caekl_mutual_information_psp_pmf_grad_data(
+                pmf_arr,
+                all_vars=all_vars,
+                rvs=rvs,
+                crvs=crvs,
+                h=lambda p: float(self._h(np.asarray(p))),
+                sum_axes=lambda p, idx: np.asarray(p).sum(axis=idx, keepdims=True),
+            )
+            labels = labels_from_partition(partition, rvs_sorted)
+            return value, labels
 
-        @self._maybe_jit
+        if JAX_AVAILABLE:
+            float_dtype = jnp.float64 if jax.config.jax_enable_x64 else jnp.float32
+            callback_result = (
+                jax.ShapeDtypeStruct((), float_dtype),
+                jax.ShapeDtypeStruct((n_rvs,), jnp.int32),
+            )
+
+            @jax.custom_vjp
+            def _caekl_psp_jax(pmf):
+                value, _ = jax.pure_callback(_host_psp, callback_result, pmf)
+                return value
+
+            def _caekl_psp_fwd(pmf):
+                value, labels = jax.pure_callback(_host_psp, callback_result, pmf)
+                return value, (pmf, labels)
+
+            def _host_grad(pmf_arr, labels_arr, g_scalar):
+                pmf_arr = np.asarray(pmf_arr, dtype=np.float64)
+                labels_arr = np.asarray(labels_arr, dtype=np.int32)
+                partition = partition_from_labels(labels_arr, rvs_sorted)
+                idx_parts = {block: tuple(all_vars - (set(block) | crvs)) for block in partition}
+                norm = len(partition) - 1
+
+                def _marginal_entropy_grad(p, idx):
+                    marginal = p.sum(axis=idx, keepdims=True)
+                    with np.errstate(divide="ignore"):
+                        return -(np.log2(np.maximum(marginal, 1e-300)) + 1.0 / np.log(2))
+
+                grad = sum(_marginal_entropy_grad(pmf_arr, idx_parts[block]) for block in partition)
+                grad = grad - norm * _marginal_entropy_grad(pmf_arr, idx_crvs)
+                grad = grad - _marginal_entropy_grad(pmf_arr, idx_joint)
+                grad = np.ascontiguousarray(grad / norm)
+                return grad * float(g_scalar)
+
+            def _caekl_psp_bwd(res, g):
+                pmf, labels = res
+                grad_pmf = jax.pure_callback(
+                    _host_grad,
+                    jax.ShapeDtypeStruct(pmf.shape, pmf.dtype),
+                    pmf,
+                    labels,
+                    g,
+                )
+                return (grad_pmf,)
+
+            _caekl_psp_jax.defvjp(_caekl_psp_fwd, _caekl_psp_bwd)
+
+            def caekl_mutual_information(pmf):
+                return _caekl_psp_jax(pmf)
+
+            return caekl_mutual_information
+
         def caekl_mutual_information(pmf):
-            """
-            Compute the specified CAEKL mutual information.
-
-            Parameters
-            ----------
-            pmf : jnp.ndarray
-                The joint probability distribution.
-
-            Returns
-            -------
-            caekl : float
-                The CAEKL mutual information.
-            """
-            pmf_joint = pmf.sum(axis=idx_joint, keepdims=True)
-            pmf_parts = {p: pmf_joint.sum(axis=idx, keepdims=True) for p, idx in idx_parts_items}
-            pmf_crvs = pmf_joint.sum(axis=idx_crvs, keepdims=True)
-
-            h_crvs = self._h(pmf_crvs)
-            h_joint = self._h(pmf_joint) - h_crvs
-
-            candidates = []
-            for part, norm in zip(parts_tuple, part_norms, strict=True):
-                h_parts = sum(self._h(pmf_parts[p]) - h_crvs for p in part)
-                candidates.append((h_parts - h_joint) / norm)
-
-            caekl = jnp.min(jnp.stack(candidates))
-
-            return caekl
+            pmf_np = np.asarray(pmf)
+            partition, idx_joint_, idx_crvs_, idx_parts = caekl_partition_indices(
+                pmf_np,
+                all_vars=all_vars,
+                rvs=rvs,
+                crvs=crvs,
+                h=self._h,
+                sum_axes=lambda p, idx: np.asarray(p).sum(axis=idx, keepdims=True),
+            )
+            return caekl_from_partition_pmf(
+                pmf_np,
+                partition,
+                idx_joint=idx_joint_,
+                idx_crvs=idx_crvs_,
+                idx_parts=idx_parts,
+                h=self._h,
+                sum_axes=lambda p, idx: np.asarray(p).sum(axis=idx, keepdims=True),
+            )
 
         return caekl_mutual_information
 
