@@ -2,16 +2,22 @@
 The functional common information.
 """
 
-from collections import deque
+import heapq
 from itertools import combinations
 
 import numpy as np
 
 from ...distconst import RVFunctions, insert_rvf, modify_outcomes
-from ...helpers import normalize_rvs, parse_rvs
+from ...helpers import normalize_rvs
 from ...utils import partitions, unitful
 from ..dual_total_correlation import dual_total_correlation
 from ..entropy import entropy
+from ._functional_partition import (
+    conditional_dtc,
+    labels_from_partition,
+    partition_entropy,
+    prepare_functional_search,
+)
 
 __all__ = ("functional_common_information",)
 
@@ -51,7 +57,7 @@ def functional_markov_chain_naive(dist, rvs=None, crvs=None):  # pragma: no cove
 
 def functional_markov_chain(dist, rvs=None, crvs=None):
     """
-    Add the smallest function of `dist` which renders `rvs` independent.
+    Return H(W) for the smallest function W of `dist` which renders `rvs` independent.
 
     Parameters
     ----------
@@ -68,68 +74,63 @@ def functional_markov_chain(dist, rvs=None, crvs=None):
 
     Returns
     -------
-    d : Distribution
-        The distribution `dist` with the additional variable added to the end.
+    h : float
+        The entropy of the smallest valid functional Markov variable W.
 
     Notes
     -----
-    The implementation of this function is quite slow. It is approximately
-    doubly exponential in the size of the sample space. This method is several
-    times faster than the naive method however. It remains an open question as
-    to whether a method to directly construct this variable exists (as it does
-    with the GK common variable, minimal sufficient statistic, etc).
+    The search explores coarsenings of the finest outcome partition among those
+    with zero dual total correlation B(rvs | crvs, W).  Per-partition evaluation
+    uses numpy PMF marginals (O(|support| · n_rvs)) rather than rebuilding a
+    :class:`~dit.Distribution`.  Partitions are processed in best-first order by
+    H(W) so the loop can stop as soon as H(W) equals B(rvs | crvs).
+
+    The number of valid partitions can still grow quickly with support size; it
+    remains an open question whether a direct construction exists (as for the GK
+    or MSS common variables).  See james2017multivariate.
     """
     optimal_b = dual_total_correlation(dist, rvs, crvs)
+    ctx = prepare_functional_search(dist, rvs=rvs, crvs=crvs)
+    pmf_size = int(np.prod(ctx.shape))
 
-    rv_names = dist.get_rv_names()
-    dist = modify_outcomes(dist, tuple)
-    if rv_names is not None:
-        dist.set_rv_names(rv_names)
+    part = frozenset(frozenset([o]) for o in ctx.dist.outcomes)
+    finest_labels = labels_from_partition(part, ctx.outcome_to_flat, pmf_size)
+    optimal_h = partition_entropy(ctx.pmf, finest_labels)
 
-    rvs, crvs = normalize_rvs(dist, rvs, crvs)
+    heap: list[tuple[float, frozenset]] = [(optimal_h, part)]
+    checked: set[frozenset] = set()
 
-    rvs = [parse_rvs(dist, rv)[1] for rv in rvs]
-    crvs = parse_rvs(dist, crvs)[1]
+    while heap:  # pragma: no branch
+        _, part = heapq.heappop(heap)
 
-    part = frozenset(frozenset([o]) for o in dist.outcomes)  # make copy
-
-    bf = RVFunctions(dist)
-
-    W = (dist.outcome_length(),)
-
-    H = lambda d: entropy(d, W)
-    B = lambda d: dual_total_correlation(d, rvs, crvs + W)
-
-    initial = insert_rvf(dist, bf.from_partition(part))
-    optimal = (H(initial), initial)
-
-    queue = deque([part])
-
-    checked = set()
-
-    while queue:  # pragma: no branch
-        part = queue.popleft()
-
+        if part in checked:
+            continue
         checked.add(part)
 
-        d = insert_rvf(dist, bf.from_partition(part))
+        labels = labels_from_partition(part, ctx.outcome_to_flat, pmf_size)
 
-        if np.isclose(B(d), 0):
-            h = H(d)
+        if not np.isclose(conditional_dtc(ctx.pmf, labels, ctx.rvs, ctx.crvs), 0):
+            continue
 
-            if h <= optimal[0]:
-                optimal = (h, d)
+        h = partition_entropy(ctx.pmf, labels)
 
-            if np.isclose(h, optimal_b):
-                break
+        if h <= optimal_h:
+            optimal_h = h
 
-            new_parts = [
-                frozenset([p for p in part if p not in pair] + [pair[0] | pair[1]]) for pair in combinations(part, 2)
-            ]
-            new_parts = sorted((part for part in new_parts if part not in checked), key=lambda p: sorted(map(len, p)))
-            queue.extendleft(new_parts)
+        if np.isclose(h, optimal_b):
+            break
 
-    return optimal[1]
+        new_parts = [
+            frozenset([p for p in part if p not in pair] + [pair[0] | pair[1]]) for pair in combinations(part, 2)
+        ]
+        for new_part in new_parts:
+            if new_part in checked:
+                continue
+            new_labels = labels_from_partition(new_part, ctx.outcome_to_flat, pmf_size)
+            new_h = partition_entropy(ctx.pmf, new_labels)
+            heapq.heappush(heap, (new_h, new_part))
+
+    return optimal_h
 
 
 @unitful
@@ -165,5 +166,4 @@ def functional_common_information(dist, rvs=None, crvs=None):
     if np.isclose(dtc, ent):
         return dtc
 
-    d = functional_markov_chain(dist, rvs, crvs)
-    return entropy(d, [dist.outcome_length()])
+    return functional_markov_chain(dist, rvs, crvs)
