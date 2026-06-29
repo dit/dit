@@ -4,10 +4,13 @@ Partition-label helpers for functional common information search.
 
 from __future__ import annotations
 
+from collections import defaultdict
 from dataclasses import dataclass
 
 import numpy as np
 
+from ...algorithms.lattice import insert_meet
+from ...algorithms.minimal_sufficient_statistic import insert_joint_mss
 from ...distconst import modify_outcomes
 from ...helpers import normalize_rvs, parse_rvs
 from ...shannon import entropy_pmf
@@ -17,7 +20,10 @@ __all__ = (
     "conditional_dtc",
     "labels_from_partition",
     "partition_entropy",
+    "partition_from_joint_mss",
+    "partition_from_meet",
     "prepare_functional_search",
+    "refinements_by_binary_split",
 )
 
 
@@ -144,3 +150,74 @@ def labels_from_partition(
         for outcome in block:
             labels[outcome_to_flat[outcome]] = block_id
     return labels
+
+
+def partition_from_joint_mss(dist, rvs=None) -> frozenset[frozenset]:
+    """
+    Outcome partition induced by the joint minimal sufficient statistic on ``dist``.
+
+    Each block collects support outcomes that share the same joint-MSS label.
+    """
+    rv_names = dist.get_rv_names()
+    dist = dist.copy()
+    dist.make_sparse()
+    dist = modify_outcomes(dist, tuple)
+    if rv_names is not None:
+        dist.set_rv_names(rv_names)
+
+    n_orig = dist.outcome_length()
+    d = insert_joint_mss(dist, -1, rvs)
+    d = modify_outcomes(d, tuple)
+
+    blocks: defaultdict[object, set] = defaultdict(set)
+    for outcome in d.outcomes:
+        prefix = tuple(outcome[:n_orig])
+        blocks[outcome[-1]].add(prefix)
+
+    return frozenset(frozenset(block) for block in blocks.values())
+
+
+def partition_from_meet(dist, rvs=None, crvs=None) -> frozenset[frozenset]:
+    """
+    Outcome partition induced by the Gács–Körner meet on ``dist``.
+
+    Each block collects support outcomes that share the same meet label.
+    """
+    rv_names = dist.get_rv_names()
+    dist = dist.copy()
+    dist.make_sparse()
+    dist = modify_outcomes(dist, tuple)
+    if rv_names is not None:
+        dist.set_rv_names(rv_names)
+
+    rvs, crvs = normalize_rvs(dist, rvs, crvs)
+
+    n_orig = dist.outcome_length()
+    d = insert_meet(dist, -1, rvs, support_only=True)
+    d = modify_outcomes(d, tuple)
+
+    blocks: defaultdict[object, set] = defaultdict(set)
+    for outcome in d.outcomes:
+        prefix = tuple(outcome[:n_orig])
+        blocks[outcome[-1]].add(prefix)
+
+    return frozenset(frozenset(block) for block in blocks.values())
+
+
+def refinements_by_binary_split(partition: frozenset[frozenset]) -> list[frozenset]:
+    """
+    All partitions obtained by splitting one block into two non-empty parts.
+    """
+    refinements: list[frozenset] = []
+    for block in partition:
+        items = tuple(block)
+        n = len(items)
+        if n < 2:
+            continue
+        for bitmask in range(1, (1 << n) - 1):
+            if not bitmask & 1:
+                continue
+            left = frozenset(items[i] for i in range(n) if bitmask & (1 << i))
+            right = frozenset(items[i] for i in range(n) if not (bitmask & (1 << i)))
+            refinements.append(frozenset((partition - {block}) | {left, right}))
+    return refinements
