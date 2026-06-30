@@ -49,7 +49,7 @@ COMPUTE_UI_CASES = {
 }
 
 
-@pytest.mark.parametrize("case", ["xor", "and"])
+@pytest.mark.parametrize("case", ["and"])
 def test_admui_computeui_matches_scipy(case):
     outcomes, pmf = COMPUTE_UI_CASES[case]
     d = dit.Distribution(outcomes, pmf)
@@ -57,6 +57,16 @@ def test_admui_computeui_matches_scipy(case):
     got, _ = broja_solve_bivariate(d, ((0,), (1,)), (2,), method="admui")
     for key in ref:
         assert got[key] == pytest.approx(ref[key], abs=1e-4)
+
+
+def test_admui_computeui_xor():
+    """XOR has zero unique information; scipy can land on a spurious positive branch."""
+    outcomes, pmf = COMPUTE_UI_CASES["xor"]
+    d = dit.Distribution(outcomes, pmf)
+    got, meta = broja_solve_bivariate(d, ((0,), (1,)), (2,), method="admui")
+    assert meta["converged"]
+    assert got[(0,)] == pytest.approx(0.0, abs=1e-6)
+    assert got[(1,)] == pytest.approx(0.0, abs=1e-6)
 
 
 def test_admui_computeui_perturbed_xor():
