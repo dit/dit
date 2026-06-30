@@ -23,6 +23,17 @@ __all__ = (
 SubmodularFn = Callable[[frozenset[int]], float]
 
 
+def _minimum_norm_on_segment(p: np.ndarray, q: np.ndarray) -> np.ndarray:
+    """Euclidean minimum-norm point in ``conv({p, q})``."""
+    d = q - p
+    denom = float(np.dot(d, d))
+    if denom <= 0:
+        return p.copy()
+    t = -float(np.dot(p, d)) / denom
+    t = min(1.0, max(0.0, t))
+    return p + t * d
+
+
 def greedy_base_vertex(
     f: SubmodularFn,
     ground: Sequence[int],
@@ -91,6 +102,16 @@ def minimum_norm_base(
 
     def to_vec(mapping: Mapping[int, float]) -> np.ndarray:
         return np.array([mapping[i] for i in ground_tuple], dtype=float)
+
+    if len(ground_tuple) == 1:
+        element = ground_tuple[0]
+        return {element: f(frozenset({element}))}
+
+    if len(ground_tuple) == 2:
+        a, b = ground_tuple
+        v1 = to_vec(greedy_base_vertex(f, ground_tuple, {a: 0.0, b: 1.0}))
+        v2 = to_vec(greedy_base_vertex(f, ground_tuple, {a: 1.0, b: 0.0}))
+        return to_dict(_minimum_norm_on_segment(v1, v2))
 
     weights = dict.fromkeys(ground_tuple, 0.0)
     x = to_vec(greedy_base_vertex(f, ground_tuple, weights))

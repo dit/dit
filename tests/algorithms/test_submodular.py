@@ -39,3 +39,22 @@ def test_minimum_norm_base_cut():
         q = greedy_base_vertex(f, ground, w)
         q_norm = np.sqrt(sum(v * v for v in q.values()))
         assert norm <= q_norm + 1e-8
+
+
+def test_minimum_norm_base_singleton():
+    ground = (3,)
+    f = _cut_function(frozenset({0, 1}))
+    x = minimum_norm_base(f, ground)
+    assert x == {3: pytest.approx(0.0)}
+
+
+def test_minimum_norm_base_pair():
+    ground = (0, 2)
+    f = _cut_function(frozenset({0, 1}))
+    x = minimum_norm_base(f, ground)
+    norm = np.sqrt(sum(v * v for v in x.values()))
+    for scale in (-2.0, -1.0, 0.0, 1.0, 2.0):
+        w = dict.fromkeys(ground, scale)
+        q = greedy_base_vertex(f, ground, w)
+        q_norm = np.sqrt(sum(v * v for v in q.values()))
+        assert norm <= q_norm + 1e-8
