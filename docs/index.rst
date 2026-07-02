@@ -37,6 +37,7 @@ Contents:
    measures/measures
    symbolic
    profiles
+   visualization
    rate_distortion
    gray_wyner
    coding

@@ -38,3 +38,4 @@ import dit.pid  # noqa: E402
 import dit.profiles  # noqa: E402
 import dit.shannon  # noqa: E402
 import dit.symbolic  # noqa: E402
+import dit.visualization  # noqa: E402

@@ -166,6 +166,7 @@ omit = [
     # don't cover plotting code
     "dit/rate_distortion/plotting.py",
     "*/dit/rate_distortion/gray_wyner/plotting.py",
+    "*/dit/visualization/upset.py",
     # don't cover table generation
     "dit/pid/helpers.py",
     # JAX/Torch/PyTensor optimization backends are only exercised by very_slow tests
