@@ -92,6 +92,7 @@ docs = [
     "sphinx-rtd-theme",
     "sphinxcontrib-bibtex",
     "python-ternary",
+    "sympy",
 ]
 dev = [
     "dit[test]",

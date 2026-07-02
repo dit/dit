@@ -25,6 +25,8 @@ distribution:
 
    In [1]: from dit.symbolic import symbolic_distribution, symbols, simplify
 
+   In [1]: import sympy
+
    In [2]: p = symbols('p')
 
    In [3]: d = symbolic_distribution(['0', '1'], [p, 1 - p])
