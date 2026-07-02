@@ -68,6 +68,8 @@ def entropy(dist, rvs=None):
     d = dist.marginal(rvs) if rvs is not None else dist
 
     pmf = d.pmf
+    if d.is_symbolic():
+        return _symbolic_entropy(pmf)
     if d.is_log():
         base = d.get_base(numerical=True)
         terms = -(base**pmf) * pmf
@@ -78,6 +80,23 @@ def entropy(dist, rvs=None):
 
     H = np.nansum(terms)
     return H
+
+
+def _symbolic_entropy(pmf):
+    """Shannon entropy (base 2) of a symbolic pmf, as a sympy expression.
+
+    Uses the convention ``0 * log(0) = 0``: any probability that is literally
+    zero contributes nothing.
+    """
+    import sympy
+
+    terms = []
+    for p in pmf:
+        p = sympy.sympify(p)
+        if p == 0:
+            continue
+        terms.append(-p * sympy.log(p, 2))
+    return sympy.Add(*terms)
 
 
 def conditional_entropy(dist, rvs_X, rvs_Y):

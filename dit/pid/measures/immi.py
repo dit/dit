@@ -37,4 +37,9 @@ class PID_MMI(BasePID):
         immi : float
             The value of I_mmi.
         """
-        return min(coinformation(d, [source, target]) for source in sources)
+        mis = [coinformation(d, [source, target]) for source in sources]
+        if d.is_symbolic():
+            from ...symbolic import symbolic_min
+
+            return symbolic_min(mis)
+        return min(mis)

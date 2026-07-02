@@ -35,7 +35,7 @@ Contents:
    hypothesis
    optimization
    measures/measures
-   profiles
+   symbolic   profiles
    rate_distortion
    gray_wyner
    coding

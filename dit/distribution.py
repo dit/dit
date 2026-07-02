@@ -53,6 +53,67 @@ def _check_xarray():
         raise ImportError("xarray is required for Distribution. Install with: pip install xarray")
 
 
+def _is_symbolic_value(p):
+    """True if ``p`` is a sympy expression (symbolic probability)."""
+    return isinstance(p, tuple(_sympy_basic()))
+
+
+def _sympy_basic():
+    """Return ``(sympy.Basic,)`` if sympy is importable, else ``()``.
+
+    Kept lazy so that ``sympy`` remains an optional dependency.
+    """
+    try:
+        from sympy import Basic
+    except ImportError:  # pragma: no cover
+        return ()
+    return (Basic,)
+
+
+def _symbolic_nonzero_mask(values):
+    """Boolean support mask for a raveled array of symbolic probabilities.
+
+    A symbolic probability is treated as a structural zero only when it is
+    *literally* zero (e.g. ``sympy.Integer(0)`` or ``0``). Free symbols and
+    non-trivial expressions are part of the support even though their sign is
+    not decidable.
+    """
+    return np.array([not _is_zero(v) for v in values], dtype=bool)
+
+
+def _is_zero(v):
+    """True if ``v`` is (structurally) zero."""
+    try:
+        return bool(v == 0)
+    except TypeError:
+        return False
+
+
+def _symbolic_safe_divide(numerator, denominator):
+    """Element-wise ``numerator / denominator`` for symbolic DataArrays.
+
+    Uses xarray's name-based alignment (so the denominator broadcasts over the
+    summed-out dimensions correctly). Any entry whose denominator is a
+    structural zero becomes zero -- mirroring the numeric
+    ``xr.where(denom > 0, num / denom, 0)`` convention without requiring a
+    decidable sign, and avoiding division by a structural zero.
+    """
+    import sympy
+
+    # Align the denominator across the numerator's dimensions by name.
+    num_full, denom_full = xr.broadcast(numerator, denominator)
+    num_full = num_full.transpose(*numerator.dims)
+    denom_full = denom_full.transpose(*numerator.dims)
+
+    n_vals = np.asarray(num_full.values)
+    d_vals = np.asarray(denom_full.values)
+    out = np.empty(n_vals.shape, dtype=object)
+    for idx in np.ndindex(n_vals.shape):
+        d = d_vals[idx]
+        out[idx] = sympy.Integer(0) if _is_zero(d) else sympy.sympify(n_vals[idx]) / d
+    return xr.DataArray(out, dims=numerator.dims, coords=numerator.coords)
+
+
 class Distribution:
     """
     A distribution backed by an xarray DataArray.
@@ -201,17 +262,24 @@ class Distribution:
             if len(outcomes) != len(pmf):
                 raise ValueError(f"outcomes and pmf must have the same length, got {len(outcomes)} and {len(pmf)}")
 
+            # Detect symbolic (sympy) probabilities: they cannot be coerced
+            # to float, so they need object-dtype storage and bypass the
+            # float-based base auto-detection.
+            _symbolic = any(_is_symbolic_value(p) for p in pmf)
+
             # Auto-detect base when None
             if base is None:
-                from .math import LinearOperations
-                from .validate import is_pmf
+                if _symbolic:
+                    base = "linear"
+                else:
+                    from .math import LinearOperations
+                    from .validate import is_pmf
 
-                base = (
-                    "linear"
-                    if is_pmf(np.asarray(pmf, dtype=float), LinearOperations())
-                    else __import__("dit").ditParams["base"]
-                )
-
+                    base = (
+                        "linear"
+                        if is_pmf(np.asarray(pmf, dtype=float), LinearOperations())
+                        else __import__("dit").ditParams["base"]
+                    )
             # Detect scalar outcomes (int, float, etc.) and wrap in 1-tuples
             # so they fit into xarray's coordinate system.
             # Variable-length strings (e.g. ['red', 'blue']) are treated as
@@ -244,7 +312,7 @@ class Distribution:
             coords = {name: alpha for name, alpha in zip(rv_names, alphabets, strict=True)}
 
             shape = tuple(len(a) for a in alphabets)
-            arr = np.zeros(shape)
+            arr = np.zeros(shape, dtype=object) if _symbolic else np.zeros(shape)
             for outcome, p in zip(outcomes, pmf, strict=True):
                 idx = tuple(alphabets[i].index(outcome[i]) for i in range(n))
                 arr[idx] = p
@@ -438,7 +506,8 @@ class Distribution:
             return tuple(_wrap(combo) for combo in itertools.product(*coord_vals))
         # The flattened linear array is in C-order, matching itertools.product
         # over the per-dimension coordinate values; keep the positive cells.
-        mask = np.asarray(self._linear_data().values).ravel() > 0
+        lin = np.asarray(self._linear_data().values).ravel()
+        mask = _symbolic_nonzero_mask(lin) if self.is_symbolic() else (lin > 0)
         return tuple(_wrap(combo) for combo, keep in zip(itertools.product(*coord_vals), mask, strict=True) if keep)
 
     @property
@@ -453,6 +522,11 @@ class Distribution:
         # aligns with :attr:`outcomes`. Gather directly rather than doing a
         # per-outcome xarray ``.sel`` (which dominates measure computations).
         values = np.asarray(self.data.values).ravel()
+        if self.is_symbolic():
+            if not self._sparse:
+                return values
+            mask = _symbolic_nonzero_mask(np.asarray(self._linear_data().values).ravel())
+            return values[mask]
         if not self._sparse:
             return values.astype(float, copy=True)
         mask = np.asarray(self._linear_data().values).ravel() > 0
@@ -685,6 +759,32 @@ class Distribution:
                     return False
         return True
 
+    def is_symbolic(self):
+        """True if the probabilities are symbolic (sympy) expressions.
+
+        Symbolic distributions store their pmf as an ``object``-dtype array
+        of sympy expressions rather than floats, enabling exact/algebraic
+        computation of information measures.
+        """
+        return self.data.dtype == object
+
+    def _coerce_prob(self, value):
+        """Return a single probability, as a float or (if symbolic) a sympy expr.
+
+        ``value`` may be an xarray scalar, a numpy scalar, or a sympy
+        expression. Symbolic distributions preserve the expression; numeric
+        distributions return a Python float (matching ``dit`` semantics).
+        """
+        if hasattr(value, "item") and not self.is_symbolic():
+            value = value.item()
+        elif hasattr(value, "values"):
+            value = value.values
+            if hasattr(value, "item"):
+                value = value.item()
+        if self.is_symbolic():
+            return value
+        return float(value)
+
     def is_homogeneous(self):
         """True if the alphabet for each random variable is the same."""
         if len(self.alphabet) == 0:
@@ -860,17 +960,18 @@ class Distribution:
             for outcome in override:
                 o_tuple = outcome if isinstance(outcome, tuple) else (outcome,)
                 sel = {d: v for d, v in zip(dims, o_tuple, strict=True)}
-                p = float(arr.sel(sel))
-                if mode == "atoms" or p > 0:
+                p = self._coerce_prob(arr.sel(sel))
+                if mode == "atoms" or not _is_zero(p):
                     o = _native(o_tuple[0]) if self._unwrap_scalar else tuple(_native(v) for v in o_tuple)
                     yield o, p
             return
 
         coord_vals = [self.data.coords[d].values for d in dims]
         values = np.asarray(arr.values).ravel()
+        symbolic = self.is_symbolic()
         for combo, p in zip(itertools.product(*coord_vals), values, strict=True):
-            p = float(p)
-            if mode == "atoms" or p > 0:
+            p = p if symbolic else float(p)
+            if mode == "atoms" or not _is_zero(p):
                 o = _native(combo[0]) if self._unwrap_scalar else tuple(_native(v) for v in combo)
                 yield o, p
 
@@ -1310,6 +1411,19 @@ class Distribution:
         """
         arr = self._linear_data()
 
+        if self.is_symbolic():
+            if self._is_unconditional():
+                import sympy
+
+                total = sympy.simplify(sympy.Add(*arr.values.ravel().tolist()))
+                if total.free_symbols:
+                    # Cannot decide normalisation with free symbols present;
+                    # accept and let the user assert constraints if desired.
+                    return True
+                if not bool(sympy.Eq(total, 1)):
+                    raise ValueError(f"Distribution sums to {total}, expected 1.0")
+            return True
+
         if self._is_unconditional():
             total = float(arr.sum())
             if not np.isclose(total, 1.0, atol=atol):
@@ -1615,7 +1729,10 @@ class Distribution:
 
         lin = self._linear_data()
         marginal_data = lin.sum(dim=list(new_free))
-        conditional_data = xr.where(marginal_data > 0, lin / marginal_data, 0.0)
+        if self.is_symbolic():
+            conditional_data = _symbolic_safe_divide(lin, marginal_data)
+        else:
+            conditional_data = xr.where(marginal_data > 0, lin / marginal_data, 0.0)
 
         new_given = self.given_vars | cond
 
@@ -1653,15 +1770,23 @@ class Distribution:
         """
         lin = self._linear_data()
         marginal_data = lin.sum(dim=keep_names)
-        conditional_data = xr.where(marginal_data > 0, lin / marginal_data, 0.0)
+        symbolic = self.is_symbolic()
+        if symbolic:
+            conditional_data = _symbolic_safe_divide(lin, marginal_data)
+        else:
+            conditional_data = xr.where(marginal_data > 0, lin / marginal_data, 0.0)
 
         cond_coords = [self.data.coords[d].values for d in cond_names]
         marg_vals = np.asarray(marginal_data.transpose(*cond_names).values).ravel()
         slices = []
         for combo, marg_p in zip(itertools.product(*cond_coords), marg_vals, strict=True):
-            marg_p = float(marg_p)
-            if marg_p <= 0:
-                continue
+            if symbolic:
+                if _is_zero(marg_p):
+                    continue
+            else:
+                marg_p = float(marg_p)
+                if marg_p <= 0:
+                    continue
             sel = dict(zip(cond_names, combo, strict=True))
             sliced = conditional_data.sel(sel)
             if sliced.ndim == 0:
@@ -2233,7 +2358,7 @@ class Distribution:
                 key = tuple(key)
             elif len(self.data.dims) == 1:
                 try:
-                    return float(self.data.sel({self.data.dims[0]: key}))
+                    return self._coerce_prob(self.data.sel({self.data.dims[0]: key}))
                 except KeyError as exc:
                     raise InvalidOutcome(msg=f"Outcome {key!r} is not in the sample space.") from exc
             else:
@@ -2241,7 +2366,7 @@ class Distribution:
         # Scalar key for 1-D distributions
         if not isinstance(key, tuple) and len(self.data.dims) == 1:
             try:
-                return float(self.data.sel({self.data.dims[0]: key}))
+                return self._coerce_prob(self.data.sel({self.data.dims[0]: key}))
             except KeyError as exc:
                 raise InvalidOutcome(msg=f"Outcome {key!r} is not in the sample space.") from exc
         if isinstance(key, tuple) and len(key) == len(self.data.dims):
@@ -2255,11 +2380,11 @@ class Distribution:
             except (KeyError, TypeError):
                 idx = None
             if idx is not None:
-                return float(np.asarray(self.data.values)[idx])
+                return self._coerce_prob(np.asarray(self.data.values)[idx])
 
             sel = dict(zip(self.data.dims, key, strict=True))
             try:
-                return float(self.data.sel(sel))
+                return self._coerce_prob(self.data.sel(sel))
             except KeyError:
                 pass
 
@@ -2272,7 +2397,7 @@ class Distribution:
 
             sel2 = {d: _serialize(v) for d, v in zip(self.data.dims, key, strict=True)}
             try:
-                return float(self.data.sel(sel2))
+                return self._coerce_prob(self.data.sel(sel2))
             except KeyError as exc:
                 raise InvalidOutcome(msg=f"Outcome {key!r} is not in the sample space.") from exc
         raise InvalidOutcome(msg=f"Invalid outcome: {key!r}")

@@ -19,7 +19,12 @@ def _caekl_by_partitions(dist, rvs, crvs):
         a = sum(entropy(dist, rvs=p, crvs=crvs) for p in part)
         return (a - H) / (len(part) - 1)
 
-    return min(I_P(p) for p in partitions(map(tuple, rvs)) if len(p) > 1)
+    candidates = [I_P(p) for p in partitions(map(tuple, rvs)) if len(p) > 1]
+    if getattr(dist, "is_symbolic", lambda: False)():
+        from ..symbolic import symbolic_min
+
+        return symbolic_min(candidates)
+    return min(candidates)
 
 
 @unitful
@@ -60,5 +65,8 @@ def caekl_mutual_information(dist, rvs=None, crvs=None):
         contain non-existant random variables.
     """
     rvs, crvs = normalize_rvs(dist, rvs, crvs)
+
+    if dist.is_symbolic():
+        return _caekl_by_partitions(dist, rvs, crvs)
 
     return caekl_mutual_information_psp(dist, rvs, crvs)

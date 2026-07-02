@@ -35,6 +35,17 @@ def s_i(d, source, target, target_value):
     pp_a, pp_s_a = d.condition_on(source, rvs=target)
     p_s_a = {a: pp[target_value] for a, pp in zip(pp_a.outcomes, pp_s_a, strict=True)}
 
+    if d.is_symbolic():
+        import sympy
+
+        terms = []
+        for a, psa in p_s_a.items():
+            coeff = sympy.sympify(p_a_s[a])
+            if coeff == 0:
+                continue
+            terms.append(coeff * sympy.log(psa / p_s, 2))
+        return sympy.Add(*terms)
+
     return np.nansum([p_a_s[a] * np.log2(psa / p_s) for a, psa in p_s_a.items()])
 
 
@@ -66,4 +77,12 @@ class PID_WB(BasePID):
             The value of I_min.
         """
         p_s = d.marginal(target)
+        if d.is_symbolic():
+            import sympy
+
+            from ...symbolic import symbolic_min
+
+            return sympy.Add(
+                *[p_s[s] * symbolic_min([s_i(d, source, target, s) for source in sources]) for s in p_s.outcomes]
+            )
         return sum(p_s[s] * min(s_i(d, source, target, s) for source in sources) for s in p_s.outcomes)

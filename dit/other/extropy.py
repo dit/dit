@@ -47,6 +47,16 @@ def extropy(dist, rvs=None):
     d = dist.marginal(rvs) if rvs is not None else dist
 
     pmf = d.pmf
+    if d.is_symbolic():
+        import sympy
+
+        terms = []
+        for p in pmf:
+            np_ = 1 - sympy.sympify(p)
+            if np_ == 0:
+                continue
+            terms.append(-np_ * sympy.log(np_, 2))
+        return sympy.Add(*terms)
     if d.is_log():
         base = d.get_base(numerical=True)
         npmf = d.ops.log(1 - d.ops.exp(pmf))

@@ -43,7 +43,7 @@ def interaction_information(dist, rvs=None, crvs=None):
 
     II = (-1) ** len(rvs) * coinformation(dist, rvs, crvs)
 
-    if np.isclose(II, 0):
+    if not getattr(dist, "is_symbolic", lambda: False)() and np.isclose(II, 0):
         II = 0.0
 
     return II

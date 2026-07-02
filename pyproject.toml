@@ -67,6 +67,9 @@ torch = [
 pytensor = [
     "pytensor",
 ]
+symbolic = [
+    "sympy",
+]
 optional = [
     "colorama",
     "matplotlib",

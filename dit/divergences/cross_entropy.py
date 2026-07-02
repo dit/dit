@@ -94,6 +94,13 @@ def cross_entropy(dist1, dist2, rvs=None, crvs=None):
     normalize_rvs(dist2, rvs, crvs)
 
     p1s, q1s = get_pmfs_like(dist1, dist2, rvs + crvs)
+    if dist1.is_symbolic() or dist2.is_symbolic():
+        xh = _symbolic_cross_entropy(p1s, q1s)
+        if crvs:
+            p2s, q2s = get_pmfs_like(dist1, dist2, crvs)
+            xh -= _symbolic_cross_entropy(p2s, q2s)
+        return xh
+
     xh = -np.nansum(p1s * np.log2(q1s))
 
     if crvs:
@@ -102,3 +109,16 @@ def cross_entropy(dist1, dist2, rvs=None, crvs=None):
         xh -= xh2
 
     return xh
+
+
+def _symbolic_cross_entropy(ps, qs):
+    """Symbolic ``-sum(p * log2(q))`` with the ``0 * log(0) = 0`` convention."""
+    import sympy
+
+    terms = []
+    for p, q in zip(ps, qs, strict=True):
+        p = sympy.sympify(p)
+        if p == 0:
+            continue
+        terms.append(-p * sympy.log(sympy.sympify(q), 2))
+    return sympy.Add(*terms)

@@ -26,6 +26,21 @@ __all__ = (
 )
 
 
+def _pid_coerce(value):
+    """Coerce a measure/PI value to float, preserving symbolic (sympy) values.
+
+    Numeric distributions yield floats (unchanged behaviour); symbolic
+    distributions yield sympy expressions that must not be cast to float.
+    """
+    try:
+        from sympy import Basic
+    except ImportError:  # pragma: no cover
+        return float(value)
+    if isinstance(value, Basic):
+        return value
+    return float(value)
+
+
 def sort_key(lattice):
     """
     A key for sorting the nodes of a PID lattice.
@@ -275,7 +290,7 @@ class BasePID(metaclass=ABCMeta):
         if node not in self._reds:
             if node not in self._lattice:
                 raise Exception(f'Cannot get redundancy associated with node "{node}" because it is in the lattice')
-            self._reds[node] = float(self._measure(self._dist, node, self._target, **self._kwargs))
+            self._reds[node] = _pid_coerce(self._measure(self._dist, node, self._target, **self._kwargs))
 
         return self._reds[node]
 
@@ -298,7 +313,9 @@ class BasePID(metaclass=ABCMeta):
                 raise Exception(
                     f'Cannot get partial information associated with node "{node}" because it is in the lattice'
                 )
-            self._pis[node] = float(self.get_red(node) - sum(self.get_pi(n) for n in self._lattice.descendants(node)))
+            self._pis[node] = _pid_coerce(
+                self.get_red(node) - sum(self.get_pi(n) for n in self._lattice.descendants(node))
+            )
 
         return self._pis[node]
 
