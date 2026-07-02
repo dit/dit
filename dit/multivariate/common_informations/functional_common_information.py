@@ -190,6 +190,7 @@ def _search_coarsen(
         mss_part = probe["mss_part"]
         h_mss = probe["h_mss"]
         optimal_h = h_mss
+        optimal_part = mss_part
         heap: list[tuple[float, int, frozenset]] = [(h_mss, 0, mss_part)]
         used_mss_warmstart = True
         if np.isclose(h_mss, optimal_b):
@@ -198,9 +199,11 @@ def _search_coarsen(
                 "mss_warmstart": True,
                 "meet_warmstart": False,
                 "direction": "coarsen",
+                "partition": optimal_part,
             }
     else:
         optimal_h = partition_entropy(ctx.pmf, finest_labels)
+        optimal_part = finest_part
         heap = [(optimal_h, 0, finest_part)]
 
     checked: set[frozenset] = set()
@@ -222,6 +225,7 @@ def _search_coarsen(
 
         if h <= optimal_h:
             optimal_h = h
+            optimal_part = part
 
         if np.isclose(h, optimal_b):
             break
@@ -239,6 +243,7 @@ def _search_coarsen(
         "mss_warmstart": used_mss_warmstart,
         "meet_warmstart": False,
         "direction": "coarsen",
+        "partition": optimal_part,
     }
 
 
@@ -253,6 +258,7 @@ def _search_refine(ctx, dist, rvs, crvs, optimal_b, pmf_size, *, probe=None, _ma
             "mss_warmstart": False,
             "meet_warmstart": False,
             "direction": "refine",
+            "partition": None,
         }
 
     meet_part = probe["meet_part"]
@@ -265,9 +271,11 @@ def _search_refine(ctx, dist, rvs, crvs, optimal_b, pmf_size, *, probe=None, _ma
             "mss_warmstart": False,
             "meet_warmstart": True,
             "direction": "refine",
+            "partition": meet_part,
         }
 
     optimal_h = float("inf")
+    optimal_part = None
     heap: list[tuple[float, int, frozenset]] = [(h_meet, 0, meet_part)]
     checked: set[frozenset] = set()
     seq = 1
@@ -287,6 +295,7 @@ def _search_refine(ctx, dist, rvs, crvs, optimal_b, pmf_size, *, probe=None, _ma
                 "mss_warmstart": False,
                 "meet_warmstart": True,
                 "direction": "refine",
+                "partition": None,
             }
 
         labels = labels_from_partition(part, ctx.outcome_to_flat, pmf_size)
@@ -295,6 +304,7 @@ def _search_refine(ctx, dist, rvs, crvs, optimal_b, pmf_size, *, probe=None, _ma
             h = partition_entropy(ctx.pmf, labels)
             if h <= optimal_h:
                 optimal_h = h
+                optimal_part = part
             if np.isclose(h, optimal_b):
                 break
 
@@ -312,6 +322,7 @@ def _search_refine(ctx, dist, rvs, crvs, optimal_b, pmf_size, *, probe=None, _ma
             "mss_warmstart": False,
             "meet_warmstart": True,
             "direction": "refine",
+            "partition": None,
         }
 
     return optimal_h, {
@@ -319,6 +330,7 @@ def _search_refine(ctx, dist, rvs, crvs, optimal_b, pmf_size, *, probe=None, _ma
         "mss_warmstart": False,
         "meet_warmstart": True,
         "direction": "refine",
+        "partition": optimal_part,
     }
 
 
@@ -350,6 +362,7 @@ def _search_bidirectional(ctx, dist, rvs, crvs, optimal_b, pmf_size, *, probe=No
             "meet_warmstart": used_meet,
             "direction": "bidirectional",
             "met_in_middle": 0,
+            "partition": meet_part,
         }
 
     if used_mss and np.isclose(h_upper, optimal_b):
@@ -359,9 +372,11 @@ def _search_bidirectional(ctx, dist, rvs, crvs, optimal_b, pmf_size, *, probe=No
             "meet_warmstart": used_meet,
             "direction": "bidirectional",
             "met_in_middle": 0,
+            "partition": upper_part,
         }
 
     optimal_h = float("inf")
+    optimal_part = None
     checked: set[frozenset] = set()
     met_in_middle = 0
     seq = 0
@@ -391,6 +406,7 @@ def _search_bidirectional(ctx, dist, rvs, crvs, optimal_b, pmf_size, *, probe=No
         if b_zero:
             if h <= optimal_h:
                 optimal_h = h
+                optimal_part = part
             if np.isclose(h, optimal_b):
                 break
 
@@ -424,6 +440,7 @@ def _search_bidirectional(ctx, dist, rvs, crvs, optimal_b, pmf_size, *, probe=No
         "meet_warmstart": used_meet,
         "direction": "bidirectional",
         "met_in_middle": met_in_middle,
+        "partition": optimal_part,
     }
 
 
@@ -512,6 +529,7 @@ def functional_markov_chain(
         _stats.update(winner_stats)
         _stats["visited"] = winner_stats["visited"]
         _stats["strategy"] = winner_stats["direction"]
+        _stats["partition"] = winner_stats.get("partition")
         if _strategy == "auto":
             _stats["route"] = route
 

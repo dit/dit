@@ -229,6 +229,29 @@ def test_mss_warmstart_fallback_on_named_partial_rvs():
     assert stats["mss_warmstart"] is False
 
 
+@pytest.mark.parametrize("strategy", ["auto", "coarsen", "refine", "bidirectional"])
+@pytest.mark.parametrize(
+    "dist",
+    [
+        Distribution(["000", "011", "101", "110"], [1 / 4] * 4),
+        MDBSI16,
+    ],
+)
+def test_search_returns_optimal_partition(dist, strategy):
+    """_stats['partition'] is a valid functional Markov variable achieving H(W)."""
+    stats: dict = {}
+    h = functional_markov_chain(dist, _strategy=strategy, _stats=stats)
+    partition = stats["partition"]
+    assert partition is not None
+
+    ctx = prepare_functional_search(dist)
+    pmf_size = int(np.prod(ctx.shape))
+    labels = labels_from_partition(partition, ctx.outcome_to_flat, pmf_size)
+
+    assert np.isclose(conditional_dtc(ctx.pmf, labels, ctx.rvs, ctx.crvs), 0)
+    assert partition_entropy(ctx.pmf, labels) == pytest.approx(h)
+
+
 @pytest.mark.parametrize(
     "dist",
     [
