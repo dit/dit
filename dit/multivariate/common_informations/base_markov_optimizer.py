@@ -244,6 +244,11 @@ class MarkovVarMixin:
 
         @unitful
         def common_info(dist, rvs=None, crvs=None, niter=None, maxiter=1000, polish=1e-6, bound=None, backend="numpy"):
+            if backend == "symbolic" or (backend == "numpy" and dist.is_symbolic()):
+                from .symbolic_solve import symbolic_common_information
+
+                return symbolic_common_information(dist, cls.name, rvs=rvs, crvs=crvs, bound=bound)
+
             dtc = dual_total_correlation(dist, rvs, crvs)
             ent = entropy(dist, rvs, crvs)
             if np.isclose(dtc, ent):

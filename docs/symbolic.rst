@@ -93,9 +93,41 @@ Symbolic computation is supported for the closed-form measures:
 - **Common informations**: Gács-Körner and the other combinatorial forms.
 - **PID**: the closed-form redundancy measures (e.g. ``I_min``, ``I_mmi``).
 
-Optimization-based measures (e.g. Wyner/exact common information, BROJA, and
-the secret-key-agreement rates) are **not** available symbolically: their
-optima have no closed form and continue to require numeric solvers.
+Optimization-based common informations
+======================================
+
+The Wyner and Exact common informations are *variational* (a minimisation over
+an auxiliary variable) and have no general closed form, so the numeric backends
+use iterative solvers. A best-effort ``backend="symbolic"`` is nonetheless
+available for **small** symbolic distributions:
+
+.. ipython::
+
+   In [1]: from dit.multivariate import wyner_common_information
+
+   In [2]: a = symbols('a')
+
+   In [3]: dsbs = symbolic_distribution(['00', '01', '10', '11'],
+      ...:                              [(1 - a) / 2, a / 2, a / 2, (1 - a) / 2])
+
+   In [4]: wyner_common_information(dsbs, backend="symbolic")  # doctest: +SKIP
+
+The symbolic backend proceeds by (a) analytic short-circuits — the common
+informations are squeezed between the dual total correlation and the joint
+entropy, so equal bounds (e.g. a giant bit, the XOR source) or independence
+give the answer immediately; (b) a generic KKT / reduced-gradient solve at
+small auxiliary cardinality; and (c) structural (symmetry-injected) ansätze for
+recognised symmetric sources such as the doubly-symmetric binary source (whose
+Wyner common information is :math:`1 + h(a) - 2h(a_0)` with
+:math:`a_0(1 - a_0) = a/2`). A symbolic distribution is routed to this backend
+automatically; pass ``backend="symbolic"`` explicitly for a numeric
+distribution.
+
+When no closed form is reachable (e.g. the Exact common information of the
+doubly-symmetric binary source, which has no simple closed form), the backend
+raises ``SymbolicOptimizationError`` rather than returning an approximation.
+Other optimization-based measures (BROJA, ``I_proj``/``I_IG``/``I_GH``, and the
+secret-key-agreement rates) remain numeric-only.
 
 Notes and limitations
 =====================
