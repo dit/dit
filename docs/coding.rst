@@ -96,6 +96,52 @@ Where a symbol code maps each symbol to a variable-length codeword, a
 word to a fixed-length codeword. It is the variable-to-fixed dual of Huffman and
 is realized by :class:`TunstallCode`.
 
+Polar source coding
+------------------
+
+Source polarization :cite:`arikan2010source` applies the Arikan transform on the
+*source* side. For :math:`N = 2^m` i.i.d. copies of a binary source :math:`X`
+(optionally with side information :math:`Y`), the transform
+:math:`U^N = X^N G_N` produces synthesized coordinates whose conditional
+entropies :math:`\H{U_i \mid U^{i-1}, Y^N}` polarize toward :math:`0`
+(deterministic given the past) or :math:`1` (uniform given the past) as :math:`N`
+grows. The coordinates that stay near one -- the *high-entropy set* -- are exactly
+what a lossless source code must store; the rest are recovered by sequential
+decisions and the inverse transform. With side information this is the polar route
+to Slepian-Wolf coding.
+
+The finite-block utilities are exact (no density evolution), so they are limited
+to small :math:`N`:
+
+- :func:`source_bhattacharyya` -- the source Bhattacharyya parameter
+  :math:`Z(X \mid Y) = 2 \sum_y \sqrt{p(0, y) p(1, y)}`, small when :math:`X` is
+  nearly determined by :math:`Y` and near one when :math:`X` is nearly uniform,
+- :func:`source_polarization_profile` -- the per-coordinate conditional entropy
+  and source Bhattacharyya (and an optional Goela-style
+  ``max_correlation_with_past`` diagnostic :cite:`goela2014polarized`),
+- :func:`source_high_entropy_set` -- the coordinates a code keeps; by default the
+  lossless set (every coordinate whose conditional entropy exceeds a tolerance).
+
+The :func:`polar_source` constructor builds a :class:`PolarSourceCode` -- an exact
+finite-block source code (binary source, power-of-two block length, optional
+decoder side information). Its :meth:`~PolarSourceCode.encode` returns the
+high-entropy coordinates and :meth:`~PolarSourceCode.decode` fills the low-entropy
+coordinates by exact maximum a posteriori decisions before inverting the
+transform. Because the joint table is enumerated exactly, a ``max_states`` guard
+prevents accidental exponential blowups.
+
+.. ipython::
+
+   In [1]: from dit.coding import polar_source, source_polarization_profile
+
+   In [2]: dsbs = dit.Distribution(['00', '01', '10', '11'], [0.45, 0.05, 0.05, 0.45])
+
+   In [3]: [round(row['entropy'], 3) for row in source_polarization_profile(dsbs, 4, rv=0, crvs=[1])]
+
+   In [4]: code = polar_source(dsbs, 8, rv=0, crvs=[1])
+
+   In [5]: code.rate(), code.high_entropy_set
+
 .. _channel-coding:
 
 Channel coding
@@ -182,6 +228,17 @@ APIs
 
 .. autoclass:: TunstallCode
    :members:
+
+.. autoclass:: PolarSourceCode
+   :members:
+
+.. autofunction:: polar_source
+
+.. autofunction:: source_bhattacharyya
+
+.. autofunction:: source_polarization_profile
+
+.. autofunction:: source_high_entropy_set
 
 .. autofunction:: shannon
 

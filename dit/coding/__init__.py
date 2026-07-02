@@ -30,6 +30,13 @@ from .convolutional import ConvolutionalCode, convolutional
 from .ldpc import LDPCCode, gallager, ldpc
 from .linear import LinearCode
 from .polar import PolarCode, polar
+from .source_polar import (
+    PolarSourceCode,
+    polar_source,
+    source_bhattacharyya,
+    source_high_entropy_set,
+    source_polarization_profile,
+)
 from .symbol_code import SymbolCode
 from .tunstall import TunstallCode, tunstall
 from .universal import (
@@ -47,6 +54,7 @@ __all__ = (
     "LDPCCode",
     "LinearCode",
     "PolarCode",
+    "PolarSourceCode",
     "SourceCoding",
     "SymbolCode",
     "TunstallCode",
@@ -67,11 +75,15 @@ __all__ = (
     "length_limited_huffman",
     "parity_check",
     "polar",
+    "polar_source",
     "reed_muller",
     "repetition",
     "rice",
     "shannon",
     "shannon_fano_elias",
+    "source_bhattacharyya",
+    "source_high_entropy_set",
+    "source_polarization_profile",
     "tunstall",
     "unary",
     "universal_code",

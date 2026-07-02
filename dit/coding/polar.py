@@ -12,22 +12,13 @@ from math import log2
 import numpy as np
 
 from ..exceptions import ditException
+from ._util import polar_transform as _polar_transform
 from .linear import LinearCode
 
 __all__ = (
     "PolarCode",
     "polar",
 )
-
-
-def _polar_transform(u):
-    """The Arikan polar transform of a bit vector (``x = u F^{otimes m}``)."""
-    n = len(u)
-    if n == 1:
-        return list(u)
-    half = n // 2
-    upper = [u[i] ^ u[i + half] for i in range(half)]
-    return _polar_transform(upper) + _polar_transform(u[half:])
 
 
 def _bhattacharyya_zs(z0, m):

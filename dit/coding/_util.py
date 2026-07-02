@@ -48,6 +48,32 @@ def linear_outcomes_probs(dist):
     return outcomes, probs
 
 
+def polar_transform(u):
+    """
+    The Arikan polar transform of a bit vector, ``x = u F^{\\otimes m}``.
+
+    The transform is the linear map ``F^{\\otimes m}`` over :math:`\\mathrm{GF}(2)`
+    with ``F = [[1, 0], [1, 1]]``. It is its own inverse, so the same routine maps
+    ``u -> x`` (channel encoding) and ``x -> u`` (source polarization).
+
+    Parameters
+    ----------
+    u : sequence of int
+        A bit vector whose length is a power of two.
+
+    Returns
+    -------
+    x : list of int
+        The transformed bit vector.
+    """
+    n = len(u)
+    if n == 1:
+        return list(u)
+    half = n // 2
+    upper = [u[i] ^ u[i + half] for i in range(half)]
+    return polar_transform(upper) + polar_transform(u[half:])
+
+
 def radix_expansion(frac, length, radix):
     """
     The first `length` digits of the base-`radix` expansion of ``frac``.
