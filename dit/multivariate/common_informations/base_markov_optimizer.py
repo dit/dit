@@ -261,7 +261,13 @@ class MarkovVarMixin:
             ci = actual_cls(dist, rvs, crvs, bound)
             ci.optimize(niter=niter, maxiter=maxiter, polish=polish)
             val = ci.objective(ci._optima)
-            return float(val.detach().cpu().item()) if hasattr(val, "detach") else float(val)
+            val = float(val.detach().cpu().item()) if hasattr(val, "detach") else float(val)
+            # Every common information is provably bounded below by the dual
+            # total correlation (which is itself non-negative). On near-degenerate
+            # distributions (e.g. denormal probabilities) the optimizer can
+            # converge to an infeasible point whose objective is nonsensical --
+            # even negative -- so enforce the analytic lower bound.
+            return max(val, dtc, 0.0)
 
         common_info.__doc__ = f"""
         Computes the {cls.name} common information, {cls.description}.

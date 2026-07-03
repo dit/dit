@@ -153,7 +153,12 @@ def distributions(draw, alphabets=(2, 2, 2), nondegenerate=False, zeros=True):
 
     lower = 1e-6 if not zeros else 0.0
 
-    pmf = draw(arrays(np.float64, shape=alphabets, elements=floats(lower, 1)))
+    # Exclude subnormal floats: denormal-scale probabilities (~1e-308) are not
+    # structural zeros but destabilize the numeric optimizers (common
+    # information, channel capacity, ...), and platforms differ in whether they
+    # flush denormals to zero -- a classic source of BLAS-dependent flakiness
+    # (e.g. macOS ARM vs x86 Linux) rather than real behavioral coverage.
+    pmf = draw(arrays(np.float64, shape=alphabets, elements=floats(lower, 1, allow_subnormal=False)))
 
     assume(pmf.sum() > 0)
 
