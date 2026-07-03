@@ -166,10 +166,18 @@ class HypercontractivityCoefficient(BaseAuxVarOptimizer):
             pmf = self.construct_joint(x)
             a = mi_a(pmf)
             b = mi_b(pmf)
-            tiny = np.finfo(float).tiny
-            if b <= tiny:
-                return 0.0 if a <= tiny else np.inf
-            return -(a / b)
+            # ``U - X - Y`` is a Markov chain, so the data-processing inequality
+            # guarantees ``0 <= I[U:Y] <= I[U:X]`` and hence the ratio lies in
+            # ``[0, 1]``. As ``I[U:X] -> 0`` the ratio is a numerically unstable
+            # ``0/0``: a denominator of, say, ``1e-8`` turns estimator noise in
+            # the numerator into a spurious ratio far above 1, and basin-hopping
+            # is happy to chase those artifacts. Guard the denominator well above
+            # machine ``tiny`` and clamp to the theoretical ``[0, 1]`` range so
+            # the optimizer cannot be lured to degenerate, near-independent ``U``.
+            eps = 1e-6
+            if b <= eps:
+                return 0.0
+            return -min(1.0, max(0.0, a / b))
 
         return objective
 
