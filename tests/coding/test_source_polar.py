@@ -116,9 +116,7 @@ def test_profile_polarizes_with_block_length():
 
 def test_profile_max_correlation_diagnostic():
     """The Goela max-correlation diagnostic is present, in [0, 1], zero at i=0."""
-    profile = source_polarization_profile(
-        dsbs(0.1), 4, rv=0, crvs=[1], metrics=("max_correlation_with_past",)
-    )
+    profile = source_polarization_profile(dsbs(0.1), 4, rv=0, crvs=[1], metrics=("max_correlation_with_past",))
     assert profile[0]["max_correlation_with_past"] == pytest.approx(0.0)
     assert all(-1e-9 <= row["max_correlation_with_past"] <= 1.0 + 1e-9 for row in profile)
 

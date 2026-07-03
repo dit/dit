@@ -317,7 +317,9 @@ class PolarSourceCode(SourceCoding):
         A guard on the number of enumerated joint outcomes.
     """
 
-    def __init__(self, dist, block_length, rv=0, crvs=None, rank_by="entropy", rate=None, size=None, tol=1e-9, max_states=1 << 16):
+    def __init__(
+        self, dist, block_length, rv=0, crvs=None, rank_by="entropy", rate=None, size=None, tol=1e-9, max_states=1 << 16
+    ):
         super().__init__(dist=dist, radix=2)
         N = block_length
         if N < 1 or (N & (N - 1)) != 0:
@@ -345,7 +347,9 @@ class PolarSourceCode(SourceCoding):
             )
         self._polar_transform = polar_transform
 
-        self.high_entropy_set = source_high_entropy_set(dist, N, rate=rate, size=size, rv=rv, crvs=crvs, rank_by=rank_by, tol=tol)
+        self.high_entropy_set = source_high_entropy_set(
+            dist, N, rate=rate, size=size, rv=rv, crvs=crvs, rank_by=rank_by, tol=tol
+        )
         self.low_entropy_set = [i for i in range(N) if i not in set(self.high_entropy_set)]
 
         # Exact joint p(U^N, Y^N), used for sequential MAP decoding.
@@ -436,8 +440,10 @@ class PolarSourceCode(SourceCoding):
             y = ()
         else:
             if side_information is None or len(side_information) != expected_side:
-                raise ditException(f"Expected {expected_side} side-information symbols, got "
-                                   f"{0 if side_information is None else len(side_information)}.")
+                raise ditException(
+                    f"Expected {expected_side} side-information symbols, got "
+                    f"{0 if side_information is None else len(side_information)}."
+                )
             y = tuple(side_information)
 
         stored = dict(zip(self.high_entropy_set, encoded, strict=True))
@@ -465,7 +471,9 @@ class PolarSourceCode(SourceCoding):
         return self.message_length / self.block_length
 
 
-def polar_source(dist, block_length, rv=0, crvs=None, rank_by="entropy", rate=None, size=None, tol=1e-9, max_states=1 << 16):
+def polar_source(
+    dist, block_length, rv=0, crvs=None, rank_by="entropy", rate=None, size=None, tol=1e-9, max_states=1 << 16
+):
     """
     Build an exact finite-block polar source code.
 

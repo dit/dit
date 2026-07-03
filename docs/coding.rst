@@ -97,7 +97,7 @@ word to a fixed-length codeword. It is the variable-to-fixed dual of Huffman and
 is realized by :class:`TunstallCode`.
 
 Polar source coding
-------------------
+-------------------
 
 Source polarization :cite:`arikan2010source` applies the Arikan transform on the
 *source* side. For :math:`N = 2^m` i.i.d. copies of a binary source :math:`X`

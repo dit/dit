@@ -19,22 +19,28 @@ def main():
     # down.
     dsbs = dit.Distribution(["00", "01", "10", "11"], [0.45, 0.05, 0.05, 0.45])
 
-    print("Source-with-side-information H(X | Y) =", round(
-        dit.shannon.conditional_entropy(dsbs, [0], [1]), 4))
+    print("Source-with-side-information H(X | Y) =", round(dit.shannon.conditional_entropy(dsbs, [0], [1]), 4))
     print()
 
     # The exact polarization profile for N = 4 copies: conditional entropies of
     # each synthesized coordinate given the past and all of Y. They sum to
     # N * H(X | Y) and spread toward 0 (determined) and 1 (uniform).
     profile = source_polarization_profile(
-        dsbs, block_length=4, rv=0, crvs=[1],
+        dsbs,
+        block_length=4,
+        rv=0,
+        crvs=[1],
         metrics=("entropy", "bhattacharyya"),
     )
     print("N = 4 source-polarization profile (given past and Y):")
     for row in profile:
         print(f"  U_{row['index']}:  H = {row['entropy']:.4f}   Z = {row['bhattacharyya']:.4f}")
-    print("  sum H =", round(sum(r["entropy"] for r in profile), 4),
-          "= 4 * H(X | Y) =", round(4 * dit.shannon.conditional_entropy(dsbs, [0], [1]), 4))
+    print(
+        "  sum H =",
+        round(sum(r["entropy"] for r in profile), 4),
+        "= 4 * H(X | Y) =",
+        round(4 * dit.shannon.conditional_entropy(dsbs, [0], [1]), 4),
+    )
     print()
 
     # A lossless polar source code with the same side information at N = 8. The
