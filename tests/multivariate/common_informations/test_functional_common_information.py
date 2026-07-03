@@ -229,14 +229,20 @@ def test_mss_warmstart_fallback_on_named_partial_rvs():
     assert stats["mss_warmstart"] is False
 
 
-@pytest.mark.parametrize("strategy", ["auto", "coarsen", "refine", "bidirectional"])
-@pytest.mark.parametrize(
-    "dist",
-    [
-        Distribution(["000", "011", "101", "110"], [1 / 4] * 4),
-        MDBSI16,
-    ],
-)
+_PARITY = Distribution(["000", "011", "101", "110"], [1 / 4] * 4)
+
+# Pure ``refine`` explores the refinement lattice above the Gács–Körner meet
+# and is only practical on small supports; on MDBSI16 (16 outcomes) it blows up,
+# which is exactly why the auto-router never picks pure refine for supports over
+# ``_MAX_PURE_REFINE_SUPPORT`` (see ``test_fci_dual_search_auto_mdbsi``). Run
+# every strategy on the small parity distribution but skip the impractical
+# ``refine`` sweep on MDBSI16.
+_SEARCH_CASES = [(_PARITY, strategy) for strategy in ("auto", "coarsen", "refine", "bidirectional")] + [
+    (MDBSI16, strategy) for strategy in ("auto", "coarsen", "bidirectional")
+]
+
+
+@pytest.mark.parametrize("dist, strategy", _SEARCH_CASES)
 def test_search_returns_optimal_partition(dist, strategy):
     """_stats['partition'] is a valid functional Markov variable achieving H(W)."""
     stats: dict = {}
