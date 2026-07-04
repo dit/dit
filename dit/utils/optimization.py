@@ -14,6 +14,7 @@ from scipy.optimize import OptimizeResult
 __all__ = (
     "BasinHoppingCallBack",
     "BasinHoppingInnerCallBack",
+    "BoundedDisplacement",
     "Uniquifier",
     "accept_test",
     "basinhop_status",
@@ -265,6 +266,38 @@ def accept_test(**kwargs):
     tmax = bool(np.all(x <= 1))
     tmin = bool(np.all(x >= 0))
     return tmin and tmax
+
+
+class BoundedDisplacement:
+    """
+    A basin-hopping step-taker that keeps every coordinate within ``[0, 1]``.
+
+    scipy's default :class:`RandomDisplacement` perturbs the vector without
+    regard to bounds, so it can hand the local minimizer an ``x0`` that lies
+    outside ``[0, 1]``. ``accept_test`` only rejects such a point *after* the
+    local minimization, but modern scipy (>=1.15) validates ``x0`` up front in
+    ``approx_derivative`` and raises ``ValueError: 'x0' violates bound
+    constraints`` before the objective ever runs. That surfaced as a
+    platform-flaky failure (e.g. ``test_mi_hc`` on macOS) whenever a jump landed
+    just outside the box. Clipping the displaced point back into the box keeps
+    the stochastic exploration while guaranteeing a feasible start.
+
+    This mirrors scipy's own ``RandomDisplacement`` (including the ``rng``
+    protocol it uses) but clips the result.
+    """
+
+    def __init__(self, stepsize=0.5, rng=None, lower=0.0, upper=1.0):
+        self.stepsize = stepsize
+        self.rng = rng if rng is not None else np.random.default_rng()
+        self.lower = lower
+        self.upper = upper
+
+    def __call__(self, x):
+        # ``np.random.Generator`` exposes ``uniform``; a legacy ``RandomState``
+        # does too, so this works for whatever scipy hands us.
+        x = np.asarray(x, dtype=float)
+        x += self.rng.uniform(-self.stepsize, self.stepsize, x.shape)
+        return np.clip(x, self.lower, self.upper)
 
 
 def basinhop_status(res):

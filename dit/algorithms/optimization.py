@@ -32,6 +32,7 @@ from ..utils import powerset
 from ..utils.optimization import (
     BasinHoppingCallBack,
     BasinHoppingInnerCallBack,
+    BoundedDisplacement,
     Uniquifier,
     accept_test,
     basinhop_status,
@@ -1413,6 +1414,7 @@ class BaseNonConvexOptimizer(BaseOptimizer):
             minimizer_kwargs=minimizer_kwargs,
             niter=niter,
             accept_test=accept_test,
+            take_step=BoundedDisplacement(rng=self._rng),
             callback=self._callback,
             **bh_kwargs,
         )
