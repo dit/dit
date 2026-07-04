@@ -1422,6 +1422,20 @@ class BaseNonConvexOptimizer(BaseOptimizer):
         if not success:  # pragma: no cover
             result = self._callback.minimum() or res_shotgun
 
+        if result is None:
+            # Basin hopping reported failure and neither the callback minima nor
+            # the (optional) seeding shotgun yielded a usable point. On
+            # near-degenerate distributions (e.g. probabilities ~1e-8 that are
+            # not subnormal, so they survive the test strategy's denormal
+            # filter) this happens intermittently depending on the random
+            # starts, producing flaky "No optima found" failures even though the
+            # problem is solvable. Fall back to a many-start shotgun, which
+            # tolerates SLSQP's spurious ``success=False`` at feasible optima via
+            # ``_best_feasible``. This never overrides a result that already
+            # succeeded.
+            logger.debug("Basin hopping produced no result; retrying with shotgun fallback")
+            result = self._optimize_shotgun(x0, minimizer_kwargs, niter=max(25, niter))
+
         return result
 
     def _optimization_diffevo(self, x0, minimizer_kwargs, niter):  # pragma: no cover
