@@ -46,10 +46,7 @@ def negentropy(dist, rvs=None):
     """
     base = dist.get_base(numerical=True) if dist.is_log() else 2
 
-    if rvs is None:
-        rvs = list(range(dist.outcome_length()))
-    else:
-        rvs = list(flatten(rvs))
+    rvs = list(range(dist.outcome_length())) if rvs is None else list(flatten(rvs))
 
     alphabet = dist.alphabet
     max_entropy = sum(np.log(len(alphabet[rv])) for rv in rvs) / np.log(base)

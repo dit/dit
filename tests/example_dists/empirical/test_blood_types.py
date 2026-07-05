@@ -29,9 +29,7 @@ def test_rv_names(d):
     """
     The seven random variables are named.
     """
-    assert d.get_rv_names() == (
-        "Region", "ABO", "Rh", "Kell", "Duffy", "Kidd", "MNS"
-    )
+    assert d.get_rv_names() == ("Region", "ABO", "Rh", "Kell", "Duffy", "Kidd", "MNS")
 
 
 def test_support(d):

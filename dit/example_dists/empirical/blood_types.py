@@ -149,9 +149,7 @@ def _mns_freq(region):
     """The nine MNS phenotype probabilities for ``region``, as MN x Ss."""
     mn = _MN_FREQ[region]
     ss = _SS_FREQ[region]
-    return {mn_label + ss_label: mn[i] * ss[j]
-            for i, mn_label in enumerate(_MN)
-            for j, ss_label in enumerate(_SS)}
+    return {mn_label + ss_label: mn[i] * ss[j] for i, mn_label in enumerate(_MN) for j, ss_label in enumerate(_SS)}
 
 
 def blood_types():
@@ -187,9 +185,7 @@ def blood_types():
     for region in _REGIONS:
         p_region = _POPULATION[region] / total_pop
         mns_freq = _mns_freq(region)
-        for abo, rh, kell, duffy, kidd, mns in itertools.product(
-            _ABO, _RH, _KELL, _DUFFY, _KIDD, _MNS
-        ):
+        for abo, rh, kell, duffy, kidd, mns in itertools.product(_ABO, _RH, _KELL, _DUFFY, _KIDD, _MNS):
             p = (
                 p_region
                 * _ABO_FREQ[region][_ABO.index(abo)]

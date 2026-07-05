@@ -56,7 +56,6 @@ def test_negentropy6():
     assert N(d, [1]) == pytest.approx(1 - H(d.marginal([1])))
 
 
-
 @pytest.mark.parametrize("n", range(2, 8))
 def test_negentropy7(n):
     """Test that negentropy is non-negative."""
