@@ -38,3 +38,7 @@ API
 ---
 
 .. autofunction:: earth_movers_distance
+
+The optimal transport plan achieving this distance is itself a joint distribution (coupling) whose marginals are the two input distributions. It can be obtained directly:
+
+.. autofunction:: earth_movers_distance_coupling

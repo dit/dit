@@ -7,6 +7,7 @@ from .cumulative_residual_entropy import *
 from .disequilibrium import *
 from .extropy import extropy
 from .lautum_information import lautum_information
+from .negentropy import negentropy
 from .perplexity import perplexity
 from .renyi_entropy import renyi_entropy
 from .sibson_mutual_information import (

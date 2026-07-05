@@ -20,6 +20,7 @@ from .cross_entropy import (
 )
 from .earth_movers_distance import (
     earth_movers_distance,
+    earth_movers_distance_coupling,
 )
 from .generalized_divergences import (
     alpha_divergence,

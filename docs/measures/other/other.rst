@@ -14,6 +14,7 @@ Other measures of information. These are generally based around alternatives to 
    disequilibrium
    extropy
    lautum_information
+   negentropy
    perplexity
    renyi_entropy
    sibson_mutual_information

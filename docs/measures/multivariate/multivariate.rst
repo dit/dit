@@ -29,6 +29,7 @@ These measures all reduce to the standard Shannon :ref:`mutual_information` for 
    cohesion
    caekl_mutual_information
    interaction_information
+   s_information
    deweese
 
 It is perhaps illustrative to consider how each of these measures behaves on two canonical distributions: the giant bit and parity.
