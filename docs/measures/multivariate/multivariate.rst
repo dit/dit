@@ -94,3 +94,4 @@ These measures quantify other aspects of a joint distribution.
    necessary_conditional_entropy
    delta_gamma
    transmission
+   cross_mutual_information

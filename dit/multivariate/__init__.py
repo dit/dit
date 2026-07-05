@@ -7,6 +7,7 @@ from .caekl_mutual_information import *
 from .cohesion import *
 from .coinformation import *
 from .common_informations import *
+from .cross_mutual_information import *
 from .delta_gamma import *
 from .deweese import *
 from .dual_total_correlation import *
