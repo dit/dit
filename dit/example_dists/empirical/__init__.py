@@ -7,4 +7,5 @@ time and returns the empirical joint distribution.
 """
 
 from .blood_types import blood_types
+from .congress import congress
 from .titanic import titanic
