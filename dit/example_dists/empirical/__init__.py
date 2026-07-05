@@ -9,4 +9,5 @@ time and returns the empirical joint distribution.
 from .blood_types import blood_types
 from .congress import congress
 from .penguins import penguins
+from .student import student
 from .titanic import titanic
