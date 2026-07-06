@@ -70,6 +70,9 @@ pytensor = [
 symbolic = [
     "sympy",
 ]
+music = [
+    "music21",
+]
 optional = [
     "colorama",
     "matplotlib",
