@@ -359,7 +359,7 @@ If you'd like to get in contact about anything, you can reach us through our `sl
    :target: https://github.com/dit/dit/actions/workflows/build.yml
    :alt: Continuous Integration Status
 
-.. |codecov| image:: https://codecov.io/gh/dit/dit/branch/master/graph/badge.svg
+.. |codecov| image:: https://codecov.io/gh/dit/dit/branch/main/graph/badge.svg
    :target: https://codecov.io/gh/dit/dit
    :alt: Test Coverage Status
 
