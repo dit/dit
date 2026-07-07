@@ -62,7 +62,7 @@ The genearlized form of the cumulative residual entropy integrates over the inti
 Conditional Cumulative Residual Entropy
 =======================================
 
-The conditional cumulative residual entropy :math:`\CRE[X|Y]` is a distribution with the same probability mass function as :math:`Y`, and the outcome associated with :math:`p(y)` is equal to the cumulative residual entropy over probabilities conditioned on :math:`Y = y`. In this sense the conditional cumulative residual entropy is more akin to a distribution over :math:`\H[X|Y=y]` than the single scalar quantity :math:`\H[X|Y]`.
+The conditional cumulative residual entropy :math:`\CRE{X|Y}` is a distribution with the same probability mass function as :math:`Y`, and the outcome associated with :math:`p(y)` is equal to the cumulative residual entropy over probabilities conditioned on :math:`Y = y`. In this sense the conditional cumulative residual entropy is more akin to a distribution over :math:`\H{X|Y=y}` than the single scalar quantity :math:`\H{X|Y}`.
 
 .. math::
 

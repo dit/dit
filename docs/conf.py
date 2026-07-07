@@ -125,6 +125,8 @@ _MACROS = {
     "Iig": [r"\op{I_{IG}}{#1}", 1],
     "Ict": [r"\op{I_{CT}}{#1}", 1],
     "Imes": [r"\op{I_{mes}}{#1}", 1],
+    "Isx": [r"\op{I_{sx}}{#1}", 1],
+    "Irdr": [r"\op{I_{rdr}}{#1}", 1],
     # Entropy decompositions
     "Hpart": [r"\op{H_{\partial}}{#1}", 1],
     "Hcs": [r"\op{H_{cs}}{#1}", 1],
@@ -154,7 +156,20 @@ htmlhelp_basename = "ditdoc"
 
 # -- LaTeX output (generate preamble from the same macro dict) -----------------
 
-_LATEX_RENEW = {"H", "P"}
+# Code examples contain Unicode (Greek rv names like alpha/beta/delta) that the
+# default pdflatex engine cannot typeset inside verbatim blocks; xelatex handles
+# Unicode natively in both prose and code, so the PDF build succeeds.
+latex_engine = "xelatex"
+
+# The index is ASCII-only (module/function names), so the simpler makeindex is
+# sufficient; xelatex otherwise defaults to xindy, an extra toolchain dependency.
+latex_use_xindy = False
+
+# Names that collide with LaTeX kernel commands (\H umlaut, \P pilcrow,
+# \S section, \L barred-L) must use \renewcommand or pdflatex aborts with
+# "Command already defined". MathJax has no such collision, so this only
+# affects the PDF build.
+_LATEX_RENEW = {"H", "P", "S", "L"}
 
 
 def _macros_to_latex(macros, renew):

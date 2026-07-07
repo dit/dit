@@ -211,7 +211,7 @@ Taken together, we see the following structure:
 
 .. math::
 
-   \begin{align}
+   \begin{aligned}
      &\min\{ \I{X : Y}, \I{X : Y | Z} \} \\
      &\quad \geq \I{X : Y \downarrow Z} \\
      &\quad\quad \geq \I{X : Y \downarrow\downarrow Z} \\
@@ -224,7 +224,7 @@ Taken together, we see the following structure:
      &\quad\quad\quad\quad\quad\quad\quad\quad\quad \geq \I{X : Y \uparrow Z} \\
      &\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad \geq S[X : Y || Z] \\
      &\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad \geq 0.0
-   \end{align}
+   \end{aligned}
 
 Generalizations
 ---------------

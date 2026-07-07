@@ -194,7 +194,7 @@ This method constructs the minimal sufficient statistic of :math:`X` about
 
 .. math::
 
-   X \mss Y = \min \{ V | V \iless X \land \I[X:Y] = \I[V:Y] \}
+   X \mss Y = \min \{ V | V \iless X \land \I{X:Y} = \I{V:Y} \}
 
 .. ipython::
 

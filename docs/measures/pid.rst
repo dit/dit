@@ -260,7 +260,7 @@ In a very intuitive effort, Bertschinger et al (henceforth BROJA) :cite:`bertsch
 
    \Delta = \{ Q : \forall i : p(x_i, y) = q(x_i, y) \}
 
-   \Ibroja{X_{0:n} : Y} = \min_{Q \in \Delta} \I{X_i : Y | X_\overline{\{i\}}}
+   \Ibroja{X_{0:n} : Y} = \min_{Q \in \Delta} \I{X_i : Y | X_{\overline{\{i\}}}}
 
 For bivariate sources (two inputs), ``PID_BROJA`` accepts a ``method`` keyword selecting how the marginal-matching optimization is solved:
 
@@ -435,11 +435,11 @@ For large datasets with up to five source variables, refer to the reference impl
 :math:`\Irav{\bullet}`
 ----------------------
 
-Taking a functional perspective as in :math:`\Iwedge`, :math:`\Irav` defines bivariate redundancy as the maximum coinformation between the two sources :math:`X_0, X_1', a target :math:`Y`, and a deterministic function of the inputs :math:`f(X_0,X_1)`.
+Taking a functional perspective as in :math:`\Iwedge{\bullet}`, :math:`\Irav{\bullet}` defines bivariate redundancy as the maximum coinformation between the two sources :math:`X_0, X_1`, a target :math:`Y`, and a deterministic function of the inputs :math:`f(X_0,X_1)`.
 
 .. math::
 
-   \Irav{X_{0:2} : Y} = \max_f\left(\I{X_0\!:\!X_1\!:\!Y\!:\!f(X_0,X_1)}
+   \Irav{X_{0:2} : Y} = \max_f\left(\I{X_0\!:\!X_1\!:\!Y\!:\!f(X_0,X_1)}\right)
 
 This measure is designed to exploit the conflation of synergy and redundancy in the three variable coinformation: :math:`\I{X_0\!:\!X_1\!:\!Y} = R - S`.
 
