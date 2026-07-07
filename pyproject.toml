@@ -86,10 +86,18 @@ broja = [
     "ecos",
 ]
 docs = [
-    "dit[optional]",
+    # dit[optional] minus pypoman: pypoman requires pycddlib, which ships no
+    # Linux/macOS wheels and needs system cddlib to compile from source, so pip
+    # installs (e.g. Read the Docs) fail. The [tool.uv] override swaps in
+    # pycddlib-standalone for uv only; pypoman is not exercised by the docs build.
+    "colorama",
+    "matplotlib",
+    "numdifftools",
+    "pint",
+    "pycddlib-standalone",
+    "scikit-learn",
     "hypothesis",
     "ipython",
-    "matplotlib",
     "nbconvert",
     "sphinx",
     "sphinx-rtd-theme",
