@@ -42,15 +42,24 @@ SchneidmanProfile = ConnectedInformations
 
 
 class ConnectedDualInformations(BaseProfile):  # noqa: D101
-    __doc__ = profile_docstring.format(
-        name="ConnectedDualInformations", static_attributes="", attributes="", methods=""
+    __doc__ = (
+        profile_docstring.format(
+            name="ConnectedDualInformations", static_attributes="", attributes="", methods=""
+        )
+        + "\n\nNotes\n-----\n"
+        "Increments of dual total correlation along the e-flat MaxEnt ladder\n"
+        "``marginal_maxent_dists``. This is *not* Amari's m-flat / reverse-KL\n"
+        "hierarchy; see :class:`~dit.profiles.MFlatConnectedInformations`."
     )
 
     _name = "Connected Dual Informations"
 
     def _compute(self):
         """
-        Compute the connected dual information decomposition.
+        Compute DTC increments along the MaxEnt (e-flat) ladder.
+
+        For reverse-KL m-projections onto additive pmf truncations, use
+        :class:`~dit.profiles.MFlatConnectedInformations` instead.
         """
         dists = marginal_maxent_dists(self.dist)
         diffs = np.diff([B(d) for d in dists])

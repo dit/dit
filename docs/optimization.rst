@@ -76,6 +76,31 @@ The second constructs several maximum entropy distributions, each with all subse
 where ``k0`` is the maxent dist corresponding the same alphabets as ``xor``; ``k1`` fixes :math:`p(x_0)`, :math:`p(x_1)`, and :math:`p(x_2)`; ``k2`` fixes :math:`p(x_0, x_1)`, :math:`p(x_0, x_2)`, and :math:`p(x_1, x_2)` (as in the ``maxent_dist`` example above), and finally ``k3`` fixes :math:`p(x_0, x_1, x_2)` (e.g. is the distribution we started with).
 
 =================================
+M-Flat m-Projections
+=================================
+
+The dual of the MaxEnt / e-flat ladder is Amari's m-flat hierarchy
+:cite:`Amari2001`. Instead of matching :math:`k`-way marginals, one truncates
+the additive (ANOVA) expansion of the pmf and takes the reverse-KL m-projection
+onto that mixture family. Sparse supports use the symmetric smooth
+:math:`P_\varepsilon=(1-\varepsilon)P+\varepsilon U` (or the
+:math:`\varepsilon\downarrow 0` schedule via ``m_projection_eps_limit``):
+
+.. ipython::
+
+    In [9a]: from dit.algorithms import m_projection, m_projection_eps_limit, mflat_mprojection_dists
+
+    In [9b]: q2 = m_projection(xor, 2, eps=1e-6)
+
+    In [9c]: q2_lim = m_projection_eps_limit(xor, order=2)
+
+    In [9d]: ladder = mflat_mprojection_dists(xor, eps_schedule=(1e-4, 1e-6, 1e-8))
+
+See :doc:`profiles` (:class:`~dit.profiles.MFlatConnectedInformations` and
+:class:`~dit.profiles.DualDependencyDecomposition`) for reverse-KL gaps along
+the order chain and the full dependency lattice.
+
+=================================
 Maximum Entropy Solver (IPF)
 =================================
 
@@ -102,6 +127,39 @@ The maximum entropy reconstruction underlies reconstructability analysis, which 
     In [14]: from dit.multivariate import entropy
 
     In [15]: print(DependencyDecomposition(xor, measures={'H': entropy, 'T': transmission, 'df': degrees_of_freedom}))
+
+=================================
+Mixtures of product distributions
+=================================
+
+Shared-randomness profiles fit *mixtures of fully factorized* distributions
+(naive-Bayes / latent-class models) by EM. Maximum likelihood equals the
+forward-KL projection onto
+
+.. math::
+
+   \mathcal{F}_k = \Bigl\{
+       Q : Q(x) = \sum_{\alpha=1}^{k} \pi_\alpha \prod_i Q_i(x_i \mid \alpha)
+   \Bigr\}.
+
+Helpers :func:`~dit.algorithms.fit_mixture_of_products` and
+:func:`~dit.algorithms.mixture_of_products_dists` feed
+:class:`~dit.profiles.BindingMixtureProfile` (see :doc:`profiles`).
+
+For *additive* building blocks (Amari ANOVA / fixed marginal lifts), see
+:func:`~dit.algorithms.m_projection` (criteria ``jsd``, ``forward_kl``,
+``reverse_kl``) and :func:`~dit.algorithms.fit_marginal_lift_mixture`.
+
+.. ipython::
+
+    In [15a]: from dit.algorithms import fit_mixture_of_products
+
+    In [15b]: gb = dit.Distribution(['000', '111'], [0.5, 0.5])
+
+    In [15c]: q2 = fit_mixture_of_products(gb, k=2, n_init=8, seed=0)['dist']
+
+    In [15d]: print(round(dit.divergences.kullback_leibler_divergence(gb, q2), 8))
+    0.0
 
 =====================
 Optimization Backends
