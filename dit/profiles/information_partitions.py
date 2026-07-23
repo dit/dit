@@ -13,6 +13,11 @@ from boltons.iterutils import pairwise_iter
 from lattices.lattices import dependency_lattice, powerset_lattice
 
 from ..algorithms import degrees_of_freedom, maxent_dist
+from ..algorithms.mprojection import (
+    m_projection_eps_limit,
+    mflat_subsets_from_dependency,
+    symmetric_smooth,
+)
 from ..divergences import kullback_leibler_divergence
 from ..multivariate.transmission import transmission
 from ..other import extropy
@@ -25,6 +30,7 @@ __all__ = (
     "ShannonPartition",
     "ExtropyPartition",
     "DependencyDecomposition",
+    "DualDependencyDecomposition",
 )
 
 
@@ -428,6 +434,176 @@ class DependencyDecomposition:
         f = self._stringify if string else lambda d: d
 
         return set(map(f, self.atoms.keys()))
+
+
+class DualDependencyDecomposition(DependencyDecomposition):
+    """
+    m-flat dual of :class:`DependencyDecomposition`.
+
+    Uses the same dependency lattice, but at each node :math:`\\pi` reconstructs
+    via the reverse-KL m-projection onto the additive (mixture) family
+
+    .. math::
+
+        \\mathcal{M}_\\pi = \\Bigl\\{ Q : Q(x) = \\sum_{S \\subseteq T,\\ T\\in\\pi}
+        h_S(x_S) \\Bigr\\}
+
+    rather than MaxEnt with marginal constraints. Sparse targets use symmetric
+    smoothing :math:`P_\\varepsilon=(1-\\varepsilon)P+\\varepsilon U` and take
+    :math:`\\varepsilon\\downarrow 0` along ``eps_schedule``. Default atom
+    measure is :math:`D(Q_\\pi \\Vert P_\\varepsilon)` at the final ``eps``.
+
+    See Amari (2001) and :class:`~dit.profiles.MFlatConnectedInformations` for
+    the order-chain special case.
+    """
+
+    # Sentinel: measure the reverse KL from the node reconstruction to the data.
+    REVERSE_KL = object()
+
+    def __init__(
+        self,
+        dist,
+        rvs=None,
+        measures=None,
+        cover=True,
+        eps_schedule=(1e-4, 1e-6, 1e-8),
+        eps=None,
+        nrestarts=8,
+        maxiter=2000,
+    ):
+        """
+        Parameters
+        ----------
+        dist : Distribution
+            Distribution to decompose.
+        rvs : iterable or None
+            Variables to include. Defaults to all.
+        measures : dict or None
+            ``{name: callable}`` applied to each reconstruction. The sentinel
+            ``DualDependencyDecomposition.REVERSE_KL`` (the default under the
+            name ``"rKL"``) records :math:`D(Q \\Vert P_\\varepsilon)`.
+        cover : bool
+            Passed to :func:`~lattices.lattices.dependency_lattice`.
+        eps_schedule : sequence of float or None
+            Decreasing smooth weights for the :math:`\\varepsilon\\downarrow 0`
+            limit. Default ``(1e-4, 1e-6, 1e-8)``. Ignored if ``eps`` is set
+            (single-shot smooth).
+        eps : float or None
+            Single symmetric smooth weight (overrides ``eps_schedule``).
+        nrestarts, maxiter : int
+            m-projection optimizer controls.
+        """
+        if measures is None:
+            measures = {"rKL": self.REVERSE_KL}
+        self.eps_schedule = None if eps_schedule is None else tuple(eps_schedule)
+        self.eps = eps
+        self._nrestarts = nrestarts
+        self._mp_maxiter = maxiter
+        # Replicate DependencyDecomposition.__init__ so we do not call MaxEnt.
+        self.dist = dist
+        self.rvs = sum(dist.rvs, []) if rvs is None else rvs
+        self.measures = measures
+        self.cover = cover
+        self._partition()
+        self._measure_of_interest = self.atoms
+
+    def _index_map(self):
+        """Map lattice element labels to dense outcome-coordinate indices."""
+        names = self.dist.get_rv_names()
+        if names:
+            return {name: i for i, name in enumerate(names)}
+        return {rv: rv for rv in self.rvs}
+
+    def _project_node(self, subsets, warm):
+        """Reverse-KL project onto the mixture family for one lattice node."""
+        if self.eps is not None or self.eps_schedule is None:
+            from ..algorithms.mprojection import m_projection_from_subsets
+
+            return m_projection_from_subsets(
+                self.dist,
+                subsets,
+                eps=self.eps if self.eps is not None else 1e-8,
+                nrestarts=self._nrestarts,
+                maxiter=self._mp_maxiter,
+                warm_start=warm,
+                criterion="reverse_kl",
+            ), None
+
+        result = m_projection_eps_limit(
+            self.dist,
+            subsets=subsets,
+            eps_schedule=self.eps_schedule,
+            nrestarts=self._nrestarts,
+            maxiter=self._mp_maxiter,
+            warm_start=warm,
+        )
+        return result["dist"], result
+
+    def _partition(self, maxiter=None):  # noqa: ARG002
+        """
+        m-project onto each dependency node's mixture family.
+        """
+        names = self.dist.get_rv_names()
+        rvs = [names[i] for i in self.rvs] if names else self.rvs
+
+        self._lattice = dependency_lattice(rvs, cover=self.cover)
+        index_map = self._index_map()
+        n = self.dist.outcome_length()
+        dists = {}
+        meta = {}
+
+        for node in reversed(list(self._lattice)):
+            try:
+                parent = next(iter(self._lattice._lattice[node].keys()))
+                warm = dists[parent]
+            except (IndexError, StopIteration, KeyError):
+                warm = None
+
+            subsets = mflat_subsets_from_dependency(node, index_map=index_map)
+            if any(len(s) == n for s in subsets):
+                # Full joint: exact recovery of the working reverse-KL target.
+                if self.eps is not None or self.eps_schedule is None:
+                    from ..algorithms.mprojection import _resolve_reverse_kl_target
+
+                    target, final_eps = _resolve_reverse_kl_target(self.dist, eps=self.eps)
+                    dists[node] = target
+                    meta[node] = {"eps": final_eps, "target": target, "rKL": 0.0}
+                else:
+                    target = symmetric_smooth(self.dist, self.eps_schedule[-1])
+                    dists[node] = target
+                    meta[node] = {"eps": self.eps_schedule[-1], "target": target, "rKL": 0.0}
+            else:
+                q, info = self._project_node(subsets, warm)
+                dists[node] = q
+                meta[node] = info
+
+        self.dists = dists
+        self._node_meta = meta
+
+        # Shared reverse-KL target at the final eps.
+        if self.eps is not None or self.eps_schedule is None:
+            from ..algorithms.mprojection import _resolve_reverse_kl_target
+
+            target, final_eps = _resolve_reverse_kl_target(self.dist, eps=self.eps)
+        else:
+            final_eps = self.eps_schedule[-1]
+            target = symmetric_smooth(self.dist, final_eps)
+        self.target = target
+        self.eps_final = final_eps
+
+        atoms = defaultdict(dict)
+        for name, measure in self.measures.items():
+            for node in self._lattice:
+                if measure is degrees_of_freedom:
+                    atoms[node][name] = degrees_of_freedom(self.dist, node)
+                elif measure is self.REVERSE_KL:
+                    atoms[node][name] = kullback_leibler_divergence(dists[node], target)
+                elif measure is transmission:
+                    atoms[node][name] = kullback_leibler_divergence(target, dists[node])
+                else:
+                    atoms[node][name] = measure(dists[node])
+
+        self.atoms = atoms
 
 
 class ShapleyDecomposition(DependencyDecomposition):
