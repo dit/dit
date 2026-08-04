@@ -5,6 +5,7 @@ A selection of generic distributions which could be useful.
 from .circuits import And, ImperfectRdn, Or, Rdn, RdnXor, Subtle, Unq, Xor
 from .dice import iid_sum, summed_dice
 from .empirical import bach, blood_types, car, congress, corelli, penguins, student, titanic
+from .genetic_code import genetic_code
 from .giant_bit import giant_bit, jeff
 from .mdbsi import dyadic, triadic
 from .n_mod_m import n_mod_m
