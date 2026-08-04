@@ -88,13 +88,13 @@ onto that mixture family. Sparse supports use the symmetric smooth
 
 .. ipython::
 
-    In [9a]: from dit.algorithms import m_projection, m_projection_eps_limit, mflat_mprojection_dists
+    In [16]: from dit.algorithms import m_projection, m_projection_eps_limit, mflat_mprojection_dists
 
-    In [9b]: q2 = m_projection(xor, 2, eps=1e-6)
+    In [17]: q2 = m_projection(xor, 2, eps=1e-6)
 
-    In [9c]: q2_lim = m_projection_eps_limit(xor, order=2)
+    In [18]: q2_lim = m_projection_eps_limit(xor, order=2)
 
-    In [9d]: ladder = mflat_mprojection_dists(xor, eps_schedule=(1e-4, 1e-6, 1e-8))
+    In [19]: ladder = mflat_mprojection_dists(xor, eps_schedule=(1e-4, 1e-6, 1e-8))
 
 See :doc:`profiles` (:class:`~dit.profiles.MFlatConnectedInformations` and
 :class:`~dit.profiles.DualDependencyDecomposition`) for reverse-KL gaps along
@@ -152,13 +152,13 @@ For *additive* building blocks (Amari ANOVA / fixed marginal lifts), see
 
 .. ipython::
 
-    In [15a]: from dit.algorithms import fit_mixture_of_products
+    In [20]: from dit.algorithms import fit_mixture_of_products
 
-    In [15b]: gb = dit.Distribution(['000', '111'], [0.5, 0.5])
+    In [21]: gb = dit.Distribution(['000', '111'], [0.5, 0.5])
 
-    In [15c]: q2 = fit_mixture_of_products(gb, k=2, n_init=8, seed=0)['dist']
+    In [22]: q2 = fit_mixture_of_products(gb, k=2, n_init=8, seed=0)['dist']
 
-    In [15d]: print(round(dit.divergences.kullback_leibler_divergence(gb, q2), 8))
+    In [23]: print(round(dit.divergences.kullback_leibler_divergence(gb, q2), 8))
     0.0
 
 =====================

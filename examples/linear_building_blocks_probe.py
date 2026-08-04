@@ -20,15 +20,10 @@ from scipy.optimize import minimize
 from dit import Distribution
 from dit.algorithms.mprojection import (
     _aligned_pmf,
-    _alphabets,
-    _dist_from_pmf,
-    _outcome_tuples,
-    _project_onto_mflat,
     mflat_design_matrix,
     symmetric_smooth,
 )
 from dit.algorithms.optutil import prepare_dist
-from dit.divergences import kullback_leibler_divergence as D
 from dit.divergences.jensen_shannon_divergence import jensen_shannon_divergence_pmf
 from dit.multivariate import dual_total_correlation as B
 from dit.multivariate import total_correlation as T
@@ -272,8 +267,7 @@ def main():
         bmp = BindingMixtureProfile(dist, k_max=min(8, max(4, int((pmf > 0).sum()))), n_init=8, seed=0)
         for k in sorted(bmp.profile):
             print(
-                f"  k={k}: ΔB={bmp.profile[k]:.4f}  B(Q)={bmp.bindings[k - 1]:.4f}  "
-                f"D(P||Q)={bmp.forward_kl[k - 1]:.4f}"
+                f"  k={k}: ΔB={bmp.profile[k]:.4f}  B(Q)={bmp.bindings[k - 1]:.4f}  D(P||Q)={bmp.forward_kl[k - 1]:.4f}"
             )
 
 

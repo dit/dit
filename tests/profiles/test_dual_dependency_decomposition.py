@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from dit import Distribution
-from dit.algorithms import m_projection, m_projection_eps_limit, symmetric_smooth
+from dit.algorithms import m_projection_eps_limit, symmetric_smooth
 from dit.algorithms.mprojection import mflat_subsets_from_dependency
 from dit.divergences import kullback_leibler_divergence as D
 from dit.example_dists import n_mod_m
@@ -25,7 +25,7 @@ def test_mflat_subsets_downward_closure():
 def test_symmetric_smooth_preserves_w_symmetry():
     w = Distribution(["001", "010", "100"], [1 / 3] * 3)
     pe = symmetric_smooth(w, 1e-6)
-    pm = {"".join(o) if not isinstance(o, str) else o: float(p) for o, p in zip(pe.outcomes, pe.pmf)}
+    pm = {"".join(o) if not isinstance(o, str) else o: float(p) for o, p in zip(pe.outcomes, pe.pmf, strict=True)}
     wt1 = [pm["001"], pm["010"], pm["100"]]
     zeros = [pm[x] for x in ("000", "011", "101", "110", "111")]
     assert max(wt1) - min(wt1) < 1e-15
@@ -63,7 +63,7 @@ def test_dual_dd_w_pairs_symmetric():
     dd = DualDependencyDecomposition(w, nrestarts=6, maxiter=1500)
     pairs = frozenset([frozenset([0, 1]), frozenset([0, 2]), frozenset([1, 2])])
     q = dd.dists[pairs]
-    pm = {"".join(o) if not isinstance(o, str) else o: float(p) for o, p in zip(q.outcomes, q.pmf)}
+    pm = {"".join(o) if not isinstance(o, str) else o: float(p) for o, p in zip(q.outcomes, q.pmf, strict=True)}
     wt1 = np.array([pm.get("001", 0), pm.get("010", 0), pm.get("100", 0)])
     wt2 = np.array([pm.get("011", 0), pm.get("101", 0), pm.get("110", 0)])
     assert np.ptp(wt1) < 1e-3
@@ -122,7 +122,7 @@ def test_m_projection_eps_limit_w_order2():
     w = Distribution(["001", "010", "100"], [1 / 3] * 3)
     res = m_projection_eps_limit(w, order=2, eps_schedule=(1e-4, 1e-6), nrestarts=8, maxiter=1500)
     q = res["dist"]
-    pm = {"".join(o) if not isinstance(o, str) else o: float(p) for o, p in zip(q.outcomes, q.pmf)}
+    pm = {"".join(o) if not isinstance(o, str) else o: float(p) for o, p in zip(q.outcomes, q.pmf, strict=True)}
     wt2 = [pm.get(x, 0) for x in ("011", "101", "110")]
     assert np.ptp(wt2) < 1e-3
     assert res["rKL"] > 1.0

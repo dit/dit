@@ -43,7 +43,6 @@ __all__ = (
 )
 
 
-
 def _outcome_tuples(dist):
     """Return outcomes as tuples of hashable symbols."""
     return [tuple(o) if not isinstance(o, tuple) else o for o in dist.outcomes]
@@ -315,7 +314,6 @@ def _project_onto_mflat(
     return best_q
 
 
-
 def symmetric_smooth(dist, eps):
     """
     Symmetric full-support smoothing :math:`P_\\varepsilon = (1-\\varepsilon)P + \\varepsilon U`.
@@ -569,8 +567,7 @@ def mflat_mprojection_dists(
 
     dense = prepare_dist(deepcopy(dist))
     pmf_map = {
-        tuple(o) if not isinstance(o, tuple) else o: float(p)
-        for o, p in zip(dense.outcomes, dense.pmf, strict=True)
+        tuple(o) if not isinstance(o, tuple) else o: float(p) for o, p in zip(dense.outcomes, dense.pmf, strict=True)
     }
     raw_pmf = np.array([pmf_map.get(o, 0.0) for o in outcomes], dtype=float)
     raw_pmf = raw_pmf / raw_pmf.sum()

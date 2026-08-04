@@ -43,9 +43,7 @@ SchneidmanProfile = ConnectedInformations
 
 class ConnectedDualInformations(BaseProfile):  # noqa: D101
     __doc__ = (
-        profile_docstring.format(
-            name="ConnectedDualInformations", static_attributes="", attributes="", methods=""
-        )
+        profile_docstring.format(name="ConnectedDualInformations", static_attributes="", attributes="", methods="")
         + "\n\nNotes\n-----\n"
         "Increments of dual total correlation along the e-flat MaxEnt ladder\n"
         "``marginal_maxent_dists``. This is *not* Amari's m-flat / reverse-KL\n"

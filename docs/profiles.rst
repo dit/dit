@@ -277,11 +277,11 @@ Giant Bit / Copy saturate at order 2; XOR / W need order 3.
 
 .. ipython::
 
-   In [25a]: from dit.profiles import MFlatConnectedInformations
+   In [44]: from dit.profiles import MFlatConnectedInformations
 
-   In [25b]: from dit.algorithms import m_projection, mflat_mprojection_dists
+   In [45]: from dit.algorithms import m_projection, mflat_mprojection_dists
 
-   In [25c]: print(sorted(MFlatConnectedInformations(ex4, criterion='jsd').profile))
+   In [46]: print(sorted(MFlatConnectedInformations(ex4, criterion='jsd').profile))
    [1, 2, 3]
 
 Helpers :func:`~dit.algorithms.m_projection` /
@@ -303,11 +303,11 @@ from pair lifts alone — only when the full joint is an allowed block.
 
 .. ipython::
 
-   In [25m]: from dit.profiles import MarginalLiftProfile
+   In [47]: from dit.profiles import MarginalLiftProfile
 
-   In [25n]: copy = dit.Distribution(['000', '001', '110', '111'], [1/4]*4)
+   In [48]: copy = dit.Distribution(['000', '001', '110', '111'], [1/4]*4)
 
-   In [25o]: print(round(MarginalLiftProfile(copy).residuals[2], 8))
+   In [49]: print(round(MarginalLiftProfile(copy).residuals[2], 8))
    0.0
 
 Binding Mixture Profile
@@ -343,18 +343,18 @@ ladder, only the *measure* is :math:`B`) and from
 
 .. ipython::
 
-   In [25d]: from dit.profiles import BindingMixtureProfile
+   In [50]: from dit.profiles import BindingMixtureProfile
 
-   In [25e]: from dit.algorithms import fit_mixture_of_products, mixture_of_products_dists
+   In [51]: from dit.algorithms import fit_mixture_of_products, mixture_of_products_dists
 
-   In [25f]: gb = BindingMixtureProfile(ex2, k_max=4, n_init=8, seed=0)
+   In [52]: gb = BindingMixtureProfile(ex2, k_max=4, n_init=8, seed=0)
 
-   In [25g]: print(round(gb.profile[2], 6))
+   In [53]: print(round(gb.profile[2], 6))
    1.0
 
-   In [25h]: xor_prof = BindingMixtureProfile(ex4, k_max=4, n_init=10, seed=0, early_stop=False)
+   In [54]: xor_prof = BindingMixtureProfile(ex4, k_max=4, n_init=10, seed=0, early_stop=False)
 
-   In [25i]: print(round(sum(xor_prof.profile.values()), 6))
+   In [55]: print(round(sum(xor_prof.profile.values()), 6))
    2.0
 
 Shared Randomness Decomposition
@@ -369,9 +369,9 @@ binding rather than entropy / total correlation.
 
 .. ipython::
 
-   In [25j]: from dit.profiles import SharedRandomnessDecomposition
+   In [56]: from dit.profiles import SharedRandomnessDecomposition
 
-   In [25k]: print('B' in next(iter(SharedRandomnessDecomposition(ex2).atoms.values())))
+   In [57]: print('B' in next(iter(SharedRandomnessDecomposition(ex2).atoms.values())))
    True
 
 .. py:module:: dit.profiles.entropy_triangle
