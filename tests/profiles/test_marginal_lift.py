@@ -48,3 +48,28 @@ def test_product_lift_mode():
     w = Distribution(["001", "010", "100"], [1 / 3] * 3)
     prof = MarginalLiftProfile(w, mode="product", n_init=8)
     assert prof.residuals[-1] == pytest.approx(0.0, abs=1e-5)
+
+
+def test_unknown_lift_mode_and_negative_order():
+    from dit.algorithms.marginal_lifts import lift_marginal
+    from dit.exceptions import ditException
+
+    d = Distribution(["000", "111"], [0.5, 0.5])
+    with pytest.raises(ditException):
+        fit_marginal_lift_mixture(d, order=-1)
+    with pytest.raises(ditException):
+        # Build cartesian table then hit lift_marginal with bad mode.
+        from dit.algorithms.marginal_lifts import _cartesian
+
+        outs, pmf, alph, _ = _cartesian(d)
+        lift_marginal(outs, pmf, alph, (0,), mode="nope")
+
+
+def test_marginal_lift_named_rvs_and_order0():
+    d = Distribution(["000", "111"], [0.5, 0.5])
+    d.set_rv_names("XYZ")
+    dists, metas = marginal_lift_dists(d, k_max=2, mode="uniform", n_init=4)
+    assert dists[0].get_rv_names() == ("X", "Y", "Z")
+    assert metas[0]["L2"] is None
+    fit = fit_marginal_lift_mixture(d, order=3)
+    assert fit["L2"] == pytest.approx(0.0, abs=1e-6)

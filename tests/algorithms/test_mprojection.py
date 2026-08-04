@@ -112,3 +112,89 @@ def test_symmetric_smooth_full_support():
     pe = symmetric_smooth(d, 1e-5)
     assert np.all(pe.pmf > 0)
     assert abs(pe.pmf.sum() - 1.0) < 1e-12
+
+
+def test_symmetric_smooth_eps_zero_and_invalid():
+    d = Distribution(["000", "111"], [0.5, 0.5])
+    pe0 = symmetric_smooth(d, 0.0)
+    assert abs(float(pe0["000"]) - 0.5) < 1e-12
+    assert abs(float(pe0["111"]) - 0.5) < 1e-12
+    with pytest.raises(ditException):
+        symmetric_smooth(d, -0.1)
+    with pytest.raises(ditException):
+        symmetric_smooth(d, 1.0)
+
+
+def test_unknown_criterion_raises():
+    d = _weakly_dependent_binary()
+    with pytest.raises(ditException):
+        m_projection(d, 1, criterion="nope", eps=0.0)
+
+
+def test_order_clamped_to_n():
+    d = _weakly_dependent_binary()
+    q = m_projection(d, 99, eps=0.0)
+    assert q.is_approx_equal(d, rtol=1e-10, atol=1e-10)
+
+
+def test_empty_subsets_is_uniform():
+    from dit.algorithms import m_projection_from_subsets
+
+    d = _weakly_dependent_binary()
+    q = m_projection_from_subsets(d, subsets=[], criterion="jsd")
+    assert np.allclose(q.pmf, 1.0 / len(q.outcomes))
+
+
+def test_full_joint_subset_short_circuit():
+    from dit.algorithms import m_projection_from_subsets
+
+    d = Distribution(["000", "111"], [0.5, 0.5])
+    q = m_projection_from_subsets(d, subsets=[(0, 1, 2)], criterion="jsd")
+    # Full joint span recovers the (densified) target support masses.
+    assert abs(float(q["000"]) + float(q["111"]) - 1.0) < 1e-8
+
+
+def test_warm_start_and_eps_limit_path():
+    from dit.algorithms import m_projection_eps_limit
+
+    d = Distribution(["000", "111"], [0.5, 0.5])
+    warm = m_projection(d, 1, eps=1e-4, nrestarts=4, maxiter=400)
+    res = m_projection_eps_limit(
+        d,
+        order=2,
+        eps_schedule=(1e-3, 1e-5),
+        nrestarts=4,
+        maxiter=400,
+        warm_start=warm,
+    )
+    assert "path" in res and len(res["path"]) == 2
+    assert res["rKL"] == pytest.approx(0.0, abs=1e-3)
+    with pytest.raises(ditException):
+        m_projection_eps_limit(d, order=1, eps_schedule=())
+
+
+def test_mflat_design_matrix_order_guards():
+    from dit.algorithms import mflat_design_matrix
+
+    with pytest.raises(ditException):
+        mflat_design_matrix([("0", "1"), ("0", "1")], order=-1)
+    A, outcomes = mflat_design_matrix([("0", "1"), ("0", "1")], order=99)
+    assert len(outcomes) == 4
+    assert A.shape[0] == 4
+
+
+def test_mflat_subsets_with_index_map():
+    from dit.algorithms.mprojection import mflat_subsets_from_dependency
+
+    node = frozenset([frozenset(["X", "Y"]), frozenset(["Z"])])
+    subs = mflat_subsets_from_dependency(node, index_map={"X": 0, "Y": 1, "Z": 2})
+    assert (0, 1) in subs
+    assert (2,) in subs
+
+
+def test_mflat_ladder_kmax_guards():
+    d = _weakly_dependent_binary()
+    with pytest.raises(ditException):
+        mflat_mprojection_dists(d, k_max=-1)
+    ladder = mflat_mprojection_dists(d, k_max=99, criterion="jsd", nrestarts=4)
+    assert len(ladder) == 4  # orders 0..3

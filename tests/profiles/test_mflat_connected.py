@@ -87,3 +87,13 @@ def test_copy_exact_at_order_2():
     prof = MFlatConnectedInformations(copy, criterion="jsd", nrestarts=8)
     assert prof.profile[3] == pytest.approx(0.0, abs=1e-3)
     assert prof.profile[2] > 0.1
+
+
+def test_mflat_forward_kl_and_single_eps():
+    d = _weakly_dependent_binary()
+    prof = MFlatConnectedInformations(d, criterion="forward_kl", nrestarts=6, eps_schedule=None)
+    assert set(prof.profile) == {1, 2, 3}
+    assert all(v >= -1e-5 for v in prof.profile.values())
+    # Single-eps reverse_kl path (overrides schedule).
+    prof2 = MFlatConnectedInformations(d, criterion="reverse_kl", eps=1e-6, eps_schedule=None, nrestarts=4)
+    assert sum(prof2.profile.values()) > 0

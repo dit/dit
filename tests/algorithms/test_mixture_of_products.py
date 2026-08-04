@@ -122,3 +122,15 @@ def test_ladder_entropy_decreases():
     dists, _ = mixture_of_products_dists(d, k_max=3, n_init=8, seed=1)
     ents = [H(q) for q in dists]
     assert ents[0] >= ents[-1] - 1e-6
+
+
+def test_fit_k_must_be_positive():
+    with pytest.raises(ValueError):
+        fit_mixture_of_products(_xor(), k=0)
+
+
+def test_mixture_ladder_default_kmax_and_early_stop():
+    d = _giant_bit()
+    dists, meta = mixture_of_products_dists(d, n_init=6, seed=0, early_stop=True)
+    assert len(dists) >= 2
+    assert meta[-1]["forward_kl"] == pytest.approx(0.0, abs=1e-6)
