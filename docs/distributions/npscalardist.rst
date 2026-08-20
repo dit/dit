@@ -2,13 +2,16 @@
 
 .. py:currentmodule:: dit
 
-Scalar Distributions
-====================
+Numeric Outcomes
+================
 
-Distributions are used to represent distributions over real numbers, for example a six-sided die or the number of heads when flipping 100 coins.
+When a :class:`~dit.Distribution` is one-dimensional with numeric outcomes —
+a six-sided die, a binomial count — arithmetic operators transform the
+**outcomes**. This is distinct from named-variable multiplication, which
+implements the chain rule (see :doc:`algebra`).
 
-Playing with Distributions
---------------------------
+Playing with numeric distributions
+----------------------------------
 
 First we will enable two optional features: printing fractions by default, and using :func:`__str__` as :func:`__repr__`. Be careful using either of these options, they can incur significant performance hits on some distributions.
 
@@ -162,7 +165,8 @@ Furthermore, we can perform such operations with two distributions:
    0   3/4
    1   1/4
 
-There are also statistical functions which can be applied to :class:`~dit.Distributions`:
+There are also statistical functions which can be applied to numeric
+:class:`~dit.Distribution`\ s:
 
 .. ipython::
 

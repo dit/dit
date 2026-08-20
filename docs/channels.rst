@@ -82,3 +82,15 @@ APIs
 .. autofunction:: identity_channel
 
 .. autofunction:: useless_channel
+
+Capacity
+========
+
+:func:`~dit.algorithms.channel_capacity` takes a list of conditionals
+:math:`p(Y \mid X=x)` (or a channel from this catalog) and returns the
+capacity together with a capacity-achieving input. For a joint
+distribution, use :func:`~dit.algorithms.channel_capacity_joint`.
+
+.. autofunction:: dit.algorithms.channel_capacity
+
+.. autofunction:: dit.algorithms.channel_capacity_joint

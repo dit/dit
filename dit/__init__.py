@@ -10,7 +10,12 @@ Python package for sigma-algebras defined on finite sets.
 
 """
 
-__version__ = "1.5"
+from importlib.metadata import PackageNotFoundError, version as _pkg_version
+
+try:
+    __version__ = _pkg_version("dit")
+except PackageNotFoundError:  # pragma: no cover
+    __version__ = "0.0.0"
 
 from loguru import logger as _logger
 
