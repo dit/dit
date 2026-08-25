@@ -23,7 +23,7 @@ from .iproj import PID_Proj
 from .irav import PID_RAV
 from .irdr import PID_RDR
 from .irr import PID_RR
-from .iskar import PID_SKAR_owb
+from .iskar import PID_SKAR_nw, PID_SKAR_owa, PID_SKAR_owb, PID_SKAR_tw
 from .isx import PID_SX
 from .iwedge import PID_GK
 
@@ -42,7 +42,10 @@ __all_pids = [
     PID_dep,
     PID_RA,
     PID_RAV,
+    PID_SKAR_nw,
+    PID_SKAR_owa,
     PID_SKAR_owb,
+    PID_SKAR_tw,
     PID_Prec,
     PID_CT,
     PID_IG,

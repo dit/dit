@@ -81,7 +81,7 @@ The I-diagrams, or :class:`ShannonPartition`, for these four examples can be com
    | I[0:1:2] |  0.510 |
    +----------+--------+
 
-And their X-diagrams, or :class:`ExtropyDiagram`, can be computed like so:
+And their X-diagrams, or :class:`ExtropyPartition`, can be computed like so:
 
 .. ipython::
    :doctest:
@@ -261,8 +261,9 @@ dual construction walks the *m-flat* mixture hierarchy instead
 
    \mathcal{M}_k = \Bigl\{ Q : Q(x) = \sum_{|S|\le k} h_S(x_S) \Bigr\}.
 
-:class:`MFlatConnectedInformations` projects :math:`P` onto each
-:math:`\mathcal{M}_k` under a chosen divergence ``criterion``:
+:class:`MFlatConnectedInformations` (alias :class:`AmariMFlatProfile`)
+projects :math:`P` onto each :math:`\mathcal{M}_k` under a chosen
+divergence ``criterion``:
 
 * ``'jsd'`` (default) — Jensen–Shannon; finite on sparse supports with no smoothing
 * ``'forward_kl'`` — :math:`D(P \Vert Q)`
@@ -557,3 +558,32 @@ triple keeps a large reverse KL:
 
    In [43]: print(round(xor[pairs]['rKL'], 3) > 1)
    True
+
+Shapley decompositions
+======================
+
+Ay, Polani & Virgo :cite:`ay2019information` assign a non-negative
+contribution to every non-empty subset of sources via generalized
+Shapley values on the input lattice.
+
+:class:`ShapleyDependencyDecomposition` decomposes
+:math:`I(\text{sources}; \text{target})`. On exclusive-or, the pair
+carries the whole bit and each singleton is zero:
+
+.. ipython::
+
+   In [47]: from dit.profiles import ShapleyDependencyDecomposition
+
+   In [48]: from dit.example_dists import Xor
+
+   In [49]: print(ShapleyDependencyDecomposition(Xor()))
+
+:class:`ShapleyShannonDecomposition` is an alias of the Shannon-lattice
+Shapley profile :class:`~dit.profiles.information_partitions.ShapleyDecomposition`.
+
+API
+---
+
+.. autoclass:: dit.profiles.ShapleyDependencyDecomposition
+
+.. autoclass:: dit.profiles.ShapleyShannonDecomposition

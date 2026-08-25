@@ -18,106 +18,94 @@ There are several operations possible on joint random variables. Let's consider 
 Marginal
 ========
 
-:mod:`dit` supports two ways of selecting only a subset of random variables. :meth:`~Distribution.marginal` returns a distribution containing only the random variables specified, whereas :meth:`~Distribution.marginalize` return a distribution containing all random variables *except* the ones specified:
+:meth:`~Distribution.marginal` returns a distribution containing only the
+random variables specified; :meth:`~Distribution.marginalize` returns one
+containing all free variables *except* the ones specified. Both accept
+positional names or a single list. See :doc:`distributions/algebra` for the
+chain-rule product and quotient that reconstruct joints from these pieces.
 
 .. ipython::
    :doctest:
 
    In [3]: print(d.marginal(['X', 'Y']))
-   Class:          Distribution
-   Alphabet:       ('0', '1') for all rvs
-   Base:           linear
-   Outcome Class:  str
-   Outcome Length: 2
-   RV Names:       ('X', 'Y')
-   x    p(x)
-   00   1/4
-   01   1/4
-   10   1/4
-   11   1/4
+   Class:    Distribution
+   Alphabet: (('0', '1'), ('0', '1'))
+   Base:     linear
+   <BLANKLINE>
+   x            p(X,Y)
+   ('0', '0')   0.25
+   ('0', '1')   0.25
+   ('1', '0')   0.25
+   ('1', '1')   0.25
 
    In [4]: print(d.marginalize(['X', 'Y']))
-   Class:          Distribution
-   Alphabet:       ('0', '1') for all rvs
-   Base:           linear
-   Outcome Class:  str
-   Outcome Length: 1
-   RV Names:       ('Z',)
-   x   p(x)
-   0   1/2
-   1   1/2
+   Class:    Distribution
+   Alphabet: (('0', '1'),)
+   Base:     linear
+   <BLANKLINE>
+   x        p(Z)
+   ('0',)   0.5
+   ('1',)   0.5
 
 .. automethod:: Distribution.marginal
+   :no-index:
 .. automethod:: Distribution.marginalize
+   :no-index:
 
 Conditional
 ===========
 
-We can also condition on a subset of random variables:
+Native :meth:`~Distribution.condition_on` takes positional variable names and
+returns a **single** conditional :class:`~dit.Distribution`:
 
 .. ipython::
 
-   In [5]: marginal, cdists = d.condition_on(['X', 'Y'], rvs=['Z'])
+   In [5]: p_z_xy = d.condition_on('X', 'Y')
 
    @doctest
-   In [6]: print(marginal)
-   Class:          Distribution
-   Alphabet:       ('0', '1') for all rvs
-   Base:           linear
-   Outcome Class:  str
-   Outcome Length: 2
-   RV Names:       ('X', 'Y')
-   x    p(x)
-   00   1/4
-   01   1/4
-   10   1/4
-   11   1/4
+   In [6]: print(p_z_xy)
+   Class:    Distribution
+   Alphabet: (('0', '1'), ('0', '1'), ('0', '1'))
+   Base:     linear
+   <BLANKLINE>
+   x                 p(Z|X,Y)
+   ('0', '0', '0')   1.0
+   ('0', '1', '1')   1.0
+   ('1', '0', '1')   1.0
+   ('1', '1', '0')   1.0
+
+Passing a list or the ``crvs`` / ``rvs`` keywords uses the older
+compatibility form, which returns a pair
+``(marginal, list_of_conditionals)`` — one slice per outcome of the
+conditioning variables:
+
+.. ipython::
+
+   In [7]: marginal, cdists = d.condition_on(['X', 'Y'], rvs=['Z'])
 
    @doctest
-   In [7]: print(cdists[0]) # XY = 00
-   Class:          Distribution
-   Alphabet:       ('0', '1') for all rvs
-   Base:           linear
-   Outcome Class:  str
-   Outcome Length: 1
-   RV Names:       ('Z',)
-   x   p(x)
-   0   1
+   In [8]: print(marginal)
+   Class:    Distribution
+   Alphabet: (('0', '1'), ('0', '1'))
+   Base:     linear
+   <BLANKLINE>
+   x            p(X,Y)
+   ('0', '0')   0.25
+   ('0', '1')   0.25
+   ('1', '0')   0.25
+   ('1', '1')   0.25
 
    @doctest
-   In [8]: print(cdists[1]) # XY = 01
-   Class:          Distribution
-   Alphabet:       ('0', '1') for all rvs
-   Base:           linear
-   Outcome Class:  str
-   Outcome Length: 1
-   RV Names:       ('Z',)
-   x   p(x)
-   1   1
-
-   @doctest
-   In [9]: print(cdists[2]) # XY = 10
-   Class:          Distribution
-   Alphabet:       ('0', '1') for all rvs
-   Base:           linear
-   Outcome Class:  str
-   Outcome Length: 1
-   RV Names:       ('Z',)
-   x   p(x)
-   1   1
-
-   @doctest
-   In [10]: print(cdists[3]) # XY = 11
-   Class:          Distribution
-   Alphabet:       ('0', '1') for all rvs
-   Base:           linear
-   Outcome Class:  str
-   Outcome Length: 1
-   RV Names:       ('Z',)
-   x   p(x)
-   0   1
+   In [9]: print(cdists[0])
+   Class:    Distribution
+   Alphabet: (('0', '1'),)
+   Base:     linear
+   <BLANKLINE>
+   x        p(Z)
+   ('0',)   1.0
 
 .. automethod:: Distribution.condition_on
+   :no-index:
 
 .. py:module:: dit.algorithms.lattice
 
@@ -134,18 +122,19 @@ Where :math:`\min` is understood to be minimizing with respect to the entropy.
 
 .. ipython::
 
-   In [11]: from dit.algorithms.lattice import join
+   In [10]: from dit.algorithms.lattice import join
 
    @doctest
-   In [12]: print(join(d, ['XY']))
+   In [11]: print(join(d, ['XY']))
    Class:    Distribution
    Alphabet: (0, 1, 2, 3)
    Base:     linear
+   <BLANKLINE>
    x   p(x)
-   0   1/4
-   1   1/4
-   2   1/4
-   3   1/4
+   0   0.25
+   1   0.25
+   2   0.25
+   3   0.25
 
 .. autofunction:: join
 .. autofunction:: insert_join
@@ -153,7 +142,7 @@ Where :math:`\min` is understood to be minimizing with respect to the entropy.
 Meet
 ====
 
-We can construct the meet of two random variabls:
+We can construct the meet of two random variables:
 
 .. math::
 
@@ -163,23 +152,22 @@ Where :math:`\max` is understood to be maximizing with respect to the entropy.
 
 .. ipython::
 
-   In [13]: from dit.algorithms.lattice import meet
+   In [12]: from dit.algorithms.lattice import meet
 
-   In [14]: outcomes = ['00', '01', '10', '11', '22', '33']
+   In [13]: outcomes = ['00', '01', '10', '11', '22', '33']
 
-   In [15]: d2 = dit.Distribution(outcomes, [1/8]*4 + [1/4]*2, sample_space=outcomes)
+   In [14]: d2 = dit.Distribution(outcomes, [1/8]*4 + [1/4]*2)
 
-   In [16]: d2.set_rv_names('XY')
+   In [15]: d2.set_rv_names('XY')
 
    @doctest
-   In [17]: print(meet(d2, ['X', 'Y']))
+   In [16]: print(meet(d2, ['X', 'Y']))
    Class:    Distribution
-   Alphabet: (0, 1, 2)
+   Alphabet: (0,)
    Base:     linear
+   <BLANKLINE>
    x   p(x)
-   0   1/4
-   1   1/4
-   2   1/2
+   0   1.0
 
 .. autofunction:: meet
 .. autofunction:: insert_meet
@@ -198,25 +186,23 @@ This method constructs the minimal sufficient statistic of :math:`X` about
 
 .. ipython::
 
-   In [18]: from dit.algorithms import insert_mss
+   In [17]: from dit.algorithms import insert_mss
 
-   In [19]: d2 = dit.Distribution(['00', '01', '10', '11', '22', '33'], [1/8]*4 + [1/4]*2)
+   In [18]: d2 = dit.Distribution(['00', '01', '10', '11', '22', '33'], [1/8]*4 + [1/4]*2)
 
    @doctest
-   In [20]: print(insert_mss(d2, -1, [0], [1]))
-   Class:          Distribution
-   Alphabet:       (('0', '1', '2', '3'), ('0', '1', '2', '3'), ('0', '1', '2'))
-   Base:           linear
-   Outcome Class:  str
-   Outcome Length: 3
-   RV Names:       None
-   x     p(x)
-   002   1/8
-   012   1/8
-   102   1/8
-   112   1/8
-   220   1/4
-   331   1/4
+   In [19]: print(insert_mss(d2, -1, [0], [1]))
+   Class:    Distribution
+   Alphabet: (('0', '1', '2', '3'), ('0', '1', '2', '3'), (0, 1, 2))
+   Base:     linear
+   <BLANKLINE>
+   x               p(X0,X1,X2)
+   ('0', '0', 2)   0.125
+   ('0', '1', 2)   0.125
+   ('1', '0', 2)   0.125
+   ('1', '1', 2)   0.125
+   ('2', '2', 0)   0.25
+   ('3', '3', 1)   0.25
 
 Again, :math:`\min` is understood to be over entropies.
 

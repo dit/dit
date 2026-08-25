@@ -33,3 +33,18 @@ To install specific optional extras:
 
   # PyTorch optimization backend
   pip install "dit[torch]"
+
+  # PyTensor optimization backend
+  pip install "dit[pytensor]"
+
+  # Symbolic (sympy) distributions
+  pip install "dit[symbolic]"
+
+  # BROJA cone solver (ECOS)
+  pip install "dit[broja]"
+
+  # Empirical music distributions (music21)
+  pip install "dit[music]"
+
+  # Plotting, units, polytope helpers, nearest-neighbor estimators
+  pip install "dit[optional]"

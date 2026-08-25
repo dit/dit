@@ -27,10 +27,15 @@ These measures all reduce to the standard Shannon :ref:`mutual_information` for 
    total_correlation
    dual_total_correlation
    cohesion
+   o_information
    caekl_mutual_information
    interaction_information
    s_information
    deweese
+   union_information
+   quax_synergy
+   synergistic_disclosure
+   logarithmic_decomposition
 
 It is perhaps illustrative to consider how each of these measures behaves on two canonical distributions: the giant bit and parity.
 
@@ -67,6 +72,12 @@ These measures all somehow measure shared information, but do not equal the mutu
    kamath_common_information
    maxent_function
    mss_common_information
+   beta_common_information
+   stochastic_gk_common_information
+
+The directed Kamath–Anantharam quantity
+:func:`~dit.multivariate.directed_kamath_common_information` is documented on
+the :doc:`kamath_common_information` page.
 
 Ordering
 --------

@@ -7,7 +7,7 @@
 Secret Key Agreement
 ********************
 
-One of the only methods of encrypting a message from Alice to Bomb such that no third party (Eve) can possibly decrypt it is a one-time pad.
+One of the only methods of encrypting a message from Alice to Bob such that no third party (Eve) can possibly decrypt it is a one-time pad.
 This technique requires that Alice and Bob have a secret sequence of bits, :math:`S`, which Alice then encrypts by computing the exclusive-or of it with the plaintext, :math:`P`, to produce the cyphertext, :math:`C`: :math:`C = S \oplus P`.
 Bob can then decrypt by ``xor``\ ing again: :math:`P = S \oplus C`.
 
@@ -17,7 +17,7 @@ The maximum rate at which :math:`S` can be constructed in the *secret key agreem
 Background
 ==========
 
-Given :math:`N` IID copies of a joint distribution governed by :math:`p(x, y, z)`, let :math:`X^N` denote the random variables observed by Alice, :math:`Y^N` denote the random variables observed by Bob, and :math:`Z^N` denote the random variables observed by Even.
+Given :math:`N` IID copies of a joint distribution governed by :math:`p(x, y, z)`, let :math:`X^N` denote the random variables observed by Alice, :math:`Y^N` denote the random variables observed by Bob, and :math:`Z^N` denote the random variables observed by Eve.
 A *secret key agreement scheme* consists of functions :math:`f` and :math:`g`, as well as a protocol for public communication (producing :math:`V`), and is considered :math:`R`-achievable if:
 
 .. math::

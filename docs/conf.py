@@ -70,6 +70,7 @@ _MACROS = {
     "I": [r"\op{I}{#1}", 1],
     "T": [r"\op{T}{#1}", 1],
     "B": [r"\op{B}{#1}", 1],
+    "O": [r"\op{O}{#1}", 1],
     "S": [r"\op{S}{#1}", 1],
     "J": [r"\op{J}{#1}", 1],
     "R": [r"\op{R}{#1}", 1],
@@ -127,6 +128,7 @@ _MACROS = {
     "Imes": [r"\op{I_{mes}}{#1}", 1],
     "Isx": [r"\op{I_{sx}}{#1}", 1],
     "Irdr": [r"\op{I_{rdr}}{#1}", 1],
+    "Ido": [r"\op{I_{do}}{#1}", 1],
     # Entropy decompositions
     "Hpart": [r"\op{H_{\partial}}{#1}", 1],
     "Hcs": [r"\op{H_{cs}}{#1}", 1],

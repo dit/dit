@@ -1,5 +1,5 @@
 .. hypothesis.rst
-.. py:function:: dit.util.testing.distributions
+.. py:function:: dit.utils.testing.distributions
 
 ****************
 Finding Examples
