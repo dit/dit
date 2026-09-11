@@ -2,11 +2,12 @@
 
 .. py:currentmodule:: dit
 
-Joint Distributions
-===================
+Construction
+============
 
 The primary method of constructing a distribution is by supplying both the
-outcomes and the probability mass function:
+outcomes and the probability mass function. Each outcome is an indexable
+sequence whose length is the number of random variables:
 
 .. ipython::
 
@@ -20,71 +21,97 @@ outcomes and the probability mass function:
 
    @doctest
    In [5]: print(xor)
-   Class:          Distribution
-   Alphabet:       ('0', '1') for all rvs
-   Base:           linear
-   Outcome Class:  str
-   Outcome Length: 3
-   RV Names:       None
-   x     p(x)
-   000   0.25
-   011   0.25
-   101   0.25
-   110   0.25
+   Class:    Distribution
+   Alphabet: (('0', '1'), ('0', '1'), ('0', '1'))
+   Base:     linear
+   <BLANKLINE>
+   x                 p(X0,X1,X2)
+   ('0', '0', '0')   0.25
+   ('0', '1', '1')   0.25
+   ('1', '0', '1')   0.25
+   ('1', '1', '0')   0.25
 
-Another way to construct a distribution is by supplying a dictionary mapping
-outcomes to probabilities:
+A dictionary mapping outcomes to probabilities is equivalent:
 
 .. ipython::
 
-   In [6]: outcomes_probs = {'000': 1/4, '011': 1/4, '101': 1/4, '110': 1/4}
-
-   In [7]: xor2 = Distribution(outcomes_probs)
+   In [6]: xor2 = Distribution({'000': 1/4, '011': 1/4, '101': 1/4, '110': 1/4})
 
    @doctest
-   In [8]: print(xor2)
-   Class:          Distribution
-   Alphabet:       ('0', '1') for all rvs
-   Base:           linear
-   Outcome Class:  str
-   Outcome Length: 3
-   RV Names:       None
-   x     p(x)
-   000   0.25
-   011   0.25
-   101   0.25
-   110   0.25
+   In [7]: xor.is_approx_equal(xor2)
+   Out[7]: True
 
-Yet a third method is via an ndarray:
+An ndarray is interpreted as a dense pmf, with each axis a random variable
+and the index along that axis the variable's value:
 
 .. ipython::
 
-    In [9]: pmf = [[0.5, 0.25], [0.25, 0]]
+   In [8]: pmf = [[0.5, 0.25], [0.25, 0]]
 
-    In [10]: d = Distribution.from_ndarray(pmf)
+   In [9]: d = Distribution.from_ndarray(pmf)
 
-    @doctest
-    In [11]: print(d)
-    Class:          Distribution
-    Alphabet:       (0, 1) for all rvs
-    Base:           linear
-    Outcome Class:  tuple
-    Outcome Length: 2
-    RV Names:       None
-    x       p(x)
-    (0, 0)  0.5
-    (0, 1)  0.25
-    (1, 0)  0.25
+   @doctest
+   In [10]: print(d)
+   Class:    Distribution
+   Alphabet: ((0, 1), (0, 1))
+   Base:     linear
+   <BLANKLINE>
+   x        p(X0,X1)
+   (0, 0)   0.5
+   (0, 1)   0.25
+   (1, 0)   0.25
+
+An :class:`~xarray.DataArray` can be passed directly, which is the native
+storage format. Dimension names become random-variable names:
+
+.. ipython::
+
+   In [11]: import numpy as np
+
+   In [12]: import xarray as xr
+
+   In [13]: arr = np.zeros((2, 2, 2))
+
+   In [14]: arr[0, 0, 0] = arr[0, 1, 1] = arr[1, 0, 1] = arr[1, 1, 0] = 0.25
+
+   In [15]: data = xr.DataArray(arr, dims=['X', 'Y', 'Z'], coords={'X': ['0', '1'], 'Y': ['0', '1'], 'Z': ['0', '1']})
+
+   In [16]: dx = Distribution(data)
+
+   In [17]: xor.set_rv_names('XYZ')
+
+   @doctest
+   In [18]: dx.is_approx_equal(xor)
+   Out[18]: True
+
+:meth:`Distribution.from_array` is the same idea with an explicit alphabet
+list. :meth:`Distribution.from_factors` rebuilds a joint from a marginal and
+a compatible conditional (the inverse of chain-rule multiplication; see
+:doc:`algebra`). :meth:`Distribution.from_rv_discrete` wraps a frozen
+``scipy.stats.rv_discrete``.
+
+Sparse vs dense
+---------------
+
+Zero-probability outcomes can be dropped from the printed table
+(:meth:`~dit.Distribution.make_sparse`) or filled back in
+(:meth:`~dit.Distribution.make_dense`). :meth:`~dit.Distribution.validate`
+checks that free-variable slices are normalized.
+
+Symbolic probabilities are constructed with :mod:`dit.symbolic`; see
+:doc:`../symbolic`.
+
+API
+===
 
 .. automethod:: Distribution.__init__
 
-To verify that these two distributions are the same, we can use the
-`is_approx_equal` method:
+.. automethod:: Distribution.from_ndarray
 
-.. ipython::
+.. automethod:: Distribution.from_array
 
-   @doctest
-   In [12]: xor.is_approx_equal(xor2)
-   Out[12]: True
+.. automethod:: Distribution.from_factors
+
+.. automethod:: Distribution.from_rv_discrete
 
 .. automethod:: Distribution.is_approx_equal

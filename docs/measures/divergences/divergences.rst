@@ -16,5 +16,9 @@ Divergences are measures of comparison between distributions:
    earth_movers_distance
    coupling_metrics
    copy_mutual_information
+   variational_distance
+   generalized_divergences
+   maximum_correlation
+   hypercontractivity_coefficient
 
 While the cross entropy and the Kullback-Leibler divergence are not true metrics (they are not symmetric), the square root of the Jensen-Shannon divergence is.

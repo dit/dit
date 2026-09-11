@@ -452,7 +452,7 @@ This measure is designed to exploit the conflation of synergy and redundancy in 
    In [23]: PID_RAV(bivariates['pnt. unq.'])
    Out[23]:
    ╔════════╤════════╤════════╗
-   ║ I_pm   │  I_r   │   pi   ║
+   ║ I_RAV  │  I_r   │   pi   ║
    ╟────────┼────────┼────────╢
    ║ {0:1}  │ 1.0000 │ 0.0000 ║
    ║  {0}   │ 0.5000 │ 0.5000 ║
@@ -489,7 +489,7 @@ In order to combine :math:`\Immi{\bullet}` with the coinformation, Goodwell and 
    ║ {0}{1} │ 0.3333 │ 0.3333 ║
    ╚════════╧════════╧════════╝
 
-.. py:module:: dit.pid.ira
+.. py:module:: dit.pid.measures.idep
 
 :math:`\Ira{\bullet}`
 ---------------------
@@ -620,12 +620,39 @@ Kolchinsky :cite:`kolchinsky2022novel` defines a redundancy measure using the Bl
 
 The constraint set is a convex polytope and the objective is convex, so the optimum lies at a vertex.
 
+.. py:module:: dit.pid.measures.ido
+
+:math:`\Ido{\bullet}`
+---------------------
+
+Lyu, Clark & Raviv :cite:`lyu2024explicit` give an explicit bivariate redundancy via Pearl-style do-calculus. An intervened source :math:`X'_i` is defined by
+
+.. math::
+
+   p(X'_i, X_j, Y) = p(X_j)\, p(Y \mid X_j)\, p(X_i \mid Y)
+
+and the redundancy is :math:`I(X'_1 : X_2) = I(X'_2 : X_1)`. Only defined for two sources.
+
+.. ipython::
+
+   In [26]: from dit.pid import PID_Do
+
+   In [27]: print(PID_Do(bivariates['synergy']))
+
+.. py:module:: dit.pid.syndisc
+
+Synergistic Disclosure
+----------------------
+
+Rosas, Mediano, Rassouli & Barrett :cite:`rosas2020operational` decompose :math:`I(X;Y)` via :math:`\alpha`-synergistic channels (see also :doc:`multivariate/synergistic_disclosure`). :class:`~dit.pid.SynDisc` inverts on the extended constraint lattice; :class:`~dit.pid.ModifiedSynDisc` is the backbone coarse-graining.
+
 .. py:module:: dit.pid.iskar
 
 Secret Key Agreement Rates
 --------------------------
 
-One can associate :ref:`Secret Key Agreement` rates with unique informations :cite:`banerjee2015synergy` by considering the rate at which one source and the target can agree upon a secret key while the other source eavesdrops. This results in four possibilities:
+One can associate :ref:`Secret Key Agreement` rates with unique informations :cite:`banerjee2015synergy` by considering the rate at which one source and the target can agree upon a secret key while the other source eavesdrops. The four classes are :class:`~dit.pid.PID_SKAR_nw` (no communication), :class:`~dit.pid.PID_SKAR_owa` (source to target), :class:`~dit.pid.PID_SKAR_owb` (target to source), and :class:`~dit.pid.PID_SKAR_tw` (two-way). This results in four possibilities:
+
 - neither source nor target communicate
 - only the source communicates
 - only the target communicates
@@ -713,3 +740,22 @@ Like :math:`\Iccs{\bullet}`,  :math:`\Hcs{\bullet}` is also subadditive.
    ║  {1}   │ 1.0000 │ 1.0000 ║
    ║ {0}{1} │ 0.0000 │ 0.0000 ║
    ╚════════╧════════╧════════╝
+
+.. py:module:: dit.pid.hmos
+
+:math:`H_{\mathrm{mos}}`
+------------------------
+
+Finn & Lizier :cite:`finn2020generalised` define a partial entropy
+decomposition whose redundancy functional is the expected minimum of the
+source-group surprisals:
+
+.. math::
+
+   H_{\mathrm{mos}}(\alpha) = \mathbb{E}\bigl[\min_i h(A_i)\bigr]
+
+.. ipython::
+
+   In [28]: from dit.pid import PED_MOS
+
+   In [29]: print(PED_MOS(dit.Distribution(['00','01','10','11'], [0.25]*4)))

@@ -42,6 +42,8 @@ Contents:
    gray_wyner
    coding
    channels
+   channelorder
+   inference
    measures/pid
    stumbling
    zreferences

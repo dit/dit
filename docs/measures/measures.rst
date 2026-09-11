@@ -4,7 +4,7 @@
 Information Measures
 ********************
 
-``dit`` supports many information measures, ranging from as standard as the Shannon entropy to as exotic as Gács-Körner common information (with even more esoteric measure coming soon!). We organize these quantities into the following groups.
+``dit`` supports many information measures, ranging from as standard as the Shannon entropy to as exotic as Gács-Körner common information. We organize these quantities into the following groups.
 
 We first have the Shannon-like measures. These quantities are based on sums and differences of entropies, conditional entropies, or mutual informations of random variables:
 

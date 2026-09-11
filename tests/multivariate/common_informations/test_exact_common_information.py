@@ -61,3 +61,19 @@ def test_eci_not_subadditive_under_product():
     """
     d = D(["00", "01", "10"], [1 / 3] * 3)
     assert G(d @ d, [[0, 2], [1, 3]]) < 2 * G(d, [[0], [1]])
+
+
+def test_eci_large_alphabet_bound_no_overflow():
+    """
+    Regression: the cardinality bound must not overflow int64 for large alphabets.
+
+    ``compute_bound`` evaluates ``2 ** k`` with ``k`` a product of alphabet
+    sizes. As an ``np.int64`` this wraps negative once ``k >= 63``, which made
+    the bound negative and later raised "negative dimensions are not allowed"
+    while allocating the auxiliary variable. Here the two smallest alphabets
+    multiply to ``8 * 8 = 64``, so constructing the optimizer must still succeed
+    and yield a positive bound.
+    """
+    giant8 = D([str(i) * 3 for i in range(8)], [1 / 8] * 8)
+    eci = ExactCommonInformation(giant8, bound=2)  # must not raise
+    assert eci._optvec_size > 0

@@ -81,7 +81,7 @@ The I-diagrams, or :class:`ShannonPartition`, for these four examples can be com
    | I[0:1:2] |  0.510 |
    +----------+--------+
 
-And their X-diagrams, or :class:`ExtropyDiagram`, can be computed like so:
+And their X-diagrams, or :class:`ExtropyPartition`, can be computed like so:
 
 .. ipython::
    :doctest:
@@ -246,6 +246,135 @@ And for the ``xor``, all bits appear independent until fixing the three-way marg
    @savefig schneidman_profile_example_4.png width=500 align=center
    In [25]: SchneidmanProfile(ex4).draw();
 
+.. py:module:: dit.profiles.mflat
+
+M-Flat Connected Informations
+=============================
+
+The Schneidman profile above walks the *e-flat* MaxEnt ladder (match
+:math:`k`-way marginals, set higher-order natural parameters to zero). Amari's
+dual construction walks the *m-flat* mixture hierarchy instead
+:cite:`Amari2001`: distributions whose ANOVA / Hoeffding expansion of the
+*pmf itself* has no interactions above order :math:`k`,
+
+.. math::
+
+   \mathcal{M}_k = \Bigl\{ Q : Q(x) = \sum_{|S|\le k} h_S(x_S) \Bigr\}.
+
+:class:`MFlatConnectedInformations` (alias :class:`AmariMFlatProfile`)
+projects :math:`P` onto each :math:`\mathcal{M}_k` under a chosen
+divergence ``criterion``:
+
+* ``'jsd'`` (default) — Jensen–Shannon; finite on sparse supports with no smoothing
+* ``'forward_kl'`` — :math:`D(P \Vert Q)`
+* ``'reverse_kl'`` — Amari's true m-projection :math:`D(Q \Vert P)` (uses
+  symmetric :math:`P_\varepsilon` / ``eps_schedule`` on sparse supports)
+
+Profile atoms are consecutive drops in the residual to :math:`P` (for
+``reverse_kl``, consecutive reverse-KL gaps between rungs, recovering the
+Pythagorean decomposition).
+
+Giant Bit / Copy saturate at order 2; XOR / W need order 3.
+
+.. ipython::
+
+   In [44]: from dit.profiles import MFlatConnectedInformations
+
+   In [45]: from dit.algorithms import m_projection, mflat_mprojection_dists
+
+   In [46]: print(sorted(MFlatConnectedInformations(ex4, criterion='jsd').profile))
+   [1, 2, 3]
+
+Helpers :func:`~dit.algorithms.m_projection` /
+:func:`~dit.algorithms.m_projection_from_subsets` and
+:func:`~dit.algorithms.mflat_mprojection_dists` live under
+:doc:`optimization`. The full dependency-lattice version with reverse KL is
+:class:`~dit.profiles.DualDependencyDecomposition`.
+
+Marginal Lift Profile
+=====================
+
+A complementary *fixed-block* construction: at order :math:`k`, form lifts of
+the data's own marginals :math:`P_S` (:math:`|S|\le k`) plus the uniform, and
+fit a convex combination by least squares
+(:class:`~dit.profiles.MarginalLiftProfile`). Coefficients show which
+marginals carry the approximation (Copy puts all mass on the copied pair at
+order 2). Unlike Amari's free ANOVA tables, Giant Bit / XOR are *not* recovered
+from pair lifts alone — only when the full joint is an allowed block.
+
+.. ipython::
+
+   In [47]: from dit.profiles import MarginalLiftProfile
+
+   In [48]: copy = dit.Distribution(['000', '001', '110', '111'], [1/4]*4)
+
+   In [49]: print(round(MarginalLiftProfile(copy).residuals[2], 8))
+   0.0
+
+Binding Mixture Profile
+=======================
+
+Rosas et al. :cite:`rosas2019quantifying` distinguish *collective constraints*
+(total correlation :math:`T`) from *shared randomness* (dual total correlation /
+binding entropy :math:`B`). The MaxEnt Schneidman ladder decomposes the
+constraint face. The shared-randomness face is captured by mixtures of product
+distributions (latent-class / naive-Bayes models underlying Wyner common
+information):
+
+.. math::
+
+   \mathcal{F}_k = \Bigl\{
+       Q : Q(x) = \sum_{\alpha=1}^{k} \pi_\alpha \prod_i Q_i(x_i \mid \alpha)
+   \Bigr\}.
+
+:class:`BindingMixtureProfile` fits the MLE
+:math:`Q^{(k)} = \arg\min_{Q\in\mathcal{F}_k} D(P\Vert Q)` by EM and reports
+
+.. math::
+
+   \Delta B_k = B\bigl(Q^{(k)}\bigr) - B\bigl(Q^{(k-1)}\bigr)
+
+(with :math:`B(Q^{(0)}) := 0`). These atoms are nonnegative and sum to
+:math:`B(P)` once the fit saturates. Giant bit concentrates at :math:`k=2`;
+XOR needs :math:`k=4`; copy :math:`X=Y \perp Z` saturates at :math:`k=2`.
+
+This is distinct from :class:`ConnectedDualInformations` (still the MaxEnt
+ladder, only the *measure* is :math:`B`) and from
+:class:`MFlatConnectedInformations` (Amari additive m-flat geometry).
+
+.. ipython::
+
+   In [50]: from dit.profiles import BindingMixtureProfile
+
+   In [51]: from dit.algorithms import fit_mixture_of_products, mixture_of_products_dists
+
+   In [52]: gb = BindingMixtureProfile(ex2, k_max=4, n_init=8, seed=0)
+
+   In [53]: print(round(gb.profile[2], 6))
+   1.0
+
+   In [54]: xor_prof = BindingMixtureProfile(ex4, k_max=4, n_init=10, seed=0, early_stop=False)
+
+   In [55]: print(round(sum(xor_prof.profile.values()), 6))
+   2.0
+
+Shared Randomness Decomposition
+===============================
+
+:class:`SharedRandomnessDecomposition` is the dependency-lattice counterpart:
+at each antichain :math:`\pi` the reconstruction is the product of exact block
+marginals (the *saturated* mixture-of-products model within each block, with
+independence across blocks), and the default atom measure is :math:`B`.
+It shares reconstructions with :class:`DependencyDecomposition` but reports
+binding rather than entropy / total correlation.
+
+.. ipython::
+
+   In [56]: from dit.profiles import SharedRandomnessDecomposition
+
+   In [57]: print('B' in next(iter(SharedRandomnessDecomposition(ex2).atoms.values())))
+   True
+
 .. py:module:: dit.profiles.entropy_triangle
 
 Entropy Triangle and Entropy Triangle2
@@ -389,3 +518,72 @@ And finally in the case of the exclusive or, only constraining the 012 marginal 
    |    01:2    |  3.000 |
    |   0:1:2    |  3.000 |
    +------------+--------+
+
+Dual Dependency Decomposition
+=============================
+
+:class:`DualDependencyDecomposition` uses the *same* dependency lattice, but
+reconstructs each node by an m-flat reverse-KL m-projection rather than MaxEnt
+:cite:`Amari2001`. At node :math:`\pi` the model is
+
+.. math::
+
+   \mathcal{M}_\pi = \Bigl\{ Q : Q(x) = \sum_{S \subseteq T,\ T\in\pi} h_S(x_S) \Bigr\},
+
+with target the symmetrically smoothed :math:`P_\varepsilon=(1-\varepsilon)P+\varepsilon U`
+and :math:`\varepsilon\downarrow 0` along ``eps_schedule`` (default
+``(1e-4, 1e-6, 1e-8)``). The default atom is
+:math:`D(Q_\pi \Vert P_\varepsilon)` at the final ``eps``. Symmetric
+smoothing preserves permutation symmetries (e.g. the W distribution),
+unlike random support jitter. The order-chain profile
+:class:`MFlatConnectedInformations` is the rank-aggregated special case
+(all blocks of size :math:`\le k`).
+
+For the giant bit (``ex2``), the full pairwise cover ``01:02:12`` already
+achieves reverse KL zero. For ``xor`` (``ex4``), every node short of the full
+triple keeps a large reverse KL:
+
+.. ipython::
+
+   In [38]: from dit.profiles import DualDependencyDecomposition
+
+   In [39]: gb = DualDependencyDecomposition(ex2, nrestarts=4)
+
+   In [40]: pairs = frozenset([frozenset([0, 1]), frozenset([0, 2]), frozenset([1, 2])])
+
+   In [41]: print(round(gb[pairs]['rKL'], 6))
+   0.0
+
+   In [42]: xor = DualDependencyDecomposition(ex4, nrestarts=4)
+
+   In [43]: print(round(xor[pairs]['rKL'], 3) > 1)
+   True
+
+Shapley decompositions
+======================
+
+Ay, Polani & Virgo :cite:`ay2019information` assign a non-negative
+contribution to every non-empty subset of sources via generalized
+Shapley values on the input lattice.
+
+:class:`ShapleyDependencyDecomposition` decomposes
+:math:`I(\text{sources}; \text{target})`. On exclusive-or, the pair
+carries the whole bit and each singleton is zero:
+
+.. ipython::
+
+   In [47]: from dit.profiles import ShapleyDependencyDecomposition
+
+   In [48]: from dit.example_dists import Xor
+
+   In [49]: print(ShapleyDependencyDecomposition(Xor()))
+
+:class:`ShapleyShannonDecomposition` is an alias of the Shannon-lattice
+Shapley profile :class:`~dit.profiles.information_partitions.ShapleyDecomposition`.
+
+API
+---
+
+.. autoclass:: dit.profiles.ShapleyDependencyDecomposition
+
+.. autoclass:: dit.profiles.ShapleyShannonDecomposition

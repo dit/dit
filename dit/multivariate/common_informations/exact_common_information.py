@@ -39,11 +39,15 @@ class ExactCommonInformation(MarkovVarOptimizer):
             The bound.
         """
         # from the Caratheodory-Fenchel theorem
-        bound_1 = np.prod(self._shape[:-1])
+        bound_1 = int(np.prod(self._shape[:-1]))
 
-        # from number of support-distinct conditional distributions
+        # from number of support-distinct conditional distributions. Cast to a
+        # Python int before exponentiating: ``2 ** np.int64(k)`` overflows int64
+        # (silently wrapping negative once k >= 63), which corrupts the ``min``
+        # below and later raises "negative dimensions are not allowed" when the
+        # auxiliary-variable mask is allocated.
         combos = combinations(self._shape[:-1], len(self._shape[:-1]) - 1)
-        bound_2 = 2 ** min(np.prod(combo) for combo in combos) - 1
+        bound_2 = 2 ** int(min(np.prod(combo) for combo in combos)) - 1
 
         return min([bound_1, bound_2])
 
