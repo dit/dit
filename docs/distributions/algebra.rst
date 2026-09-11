@@ -104,6 +104,42 @@ Dividing a joint by a marginal conditions on the marginal's free variables:
    In [14]: p_xy / d.marginal('X')
    Out[14]: <Distribution p(Y|X)>
 
+Independent product (``@``)
+---------------------------
+
+``@`` treats its operands as independent and takes their Cartesian product,
+carrying the variable names over to the result. A name that occurs in *both*
+operands becomes a single **paired** variable whose symbols join the two
+contributions, so ``p(X,Y) @ p(X,Z)`` is a distribution over ``X, Y, Z``
+rather than one with ``X`` repeated:
+
+.. ipython::
+
+   In [15]: a = Distribution(['00', '11'], [1/2]*2, rv_names=['X', 'Y'])
+
+   In [16]: b = Distribution(['00', '01', '10', '11'], [1/4]*4, rv_names=['X', 'Z'])
+
+   @doctest
+   In [17]: print(a @ b)
+   Class:    Distribution
+   Alphabet: (('00', '01', '10', '11'), ('0', '1'), ('0', '1'))
+   Base:     linear
+   <BLANKLINE>
+   x                  p(X,Y,Z)
+   ('00', '0', '0')   0.125
+   ('00', '0', '1')   0.125
+   ('01', '0', '0')   0.125
+   ('01', '0', '1')   0.125
+   ('10', '1', '0')   0.125
+   ('10', '1', '1')   0.125
+   ('11', '1', '0')   0.125
+   ('11', '1', '1')   0.125
+
+Here ``X`` ranges over the four pairs ``(x_left, x_right)``; string symbols
+are concatenated, anything else pairs to a tuple. Distributions whose names
+were never set explicitly (the auto-generated ``X0``, ``X1``, …) have no
+names to match on, so their outcomes are simply concatenated as before.
+
 Numeric-outcome ``*`` is different
 ----------------------------------
 
@@ -121,15 +157,15 @@ form above; the tuple form is still used by some algorithms.
 
 .. ipython::
 
-   In [15]: marg, cdists = d.condition_on(['X', 'Y'], rvs=['Z'])
+   In [18]: marg, cdists = d.condition_on(['X', 'Y'], rvs=['Z'])
 
    @doctest
-   In [16]: marg
-   Out[16]: <Distribution p(X,Y)>
+   In [19]: marg
+   Out[19]: <Distribution p(X,Y)>
 
    @doctest
-   In [17]: len(cdists)
-   Out[17]: 4
+   In [20]: len(cdists)
+   Out[20]: 4
 
 API
 ===

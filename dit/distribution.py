@@ -89,6 +89,38 @@ def _is_zero(v):
         return False
 
 
+def _paired_symbols(left_alphabet, right_alphabet):
+    """Symbol for each ``(left, right)`` value of a paired random variable.
+
+    Used by ``Distribution.__matmul__`` when a variable name occurs in both
+    operands. String symbols are concatenated, keeping the usual dit outcome
+    style (``'0'`` and ``'1'`` pair to ``'01'``). Anything else -- or a
+    concatenation that would not be injective, which would silently merge
+    probability mass -- pairs to a tuple instead.
+    """
+    pairs = list(itertools.product(left_alphabet, right_alphabet))
+    if all(isinstance(a, str) and isinstance(b, str) for a, b in pairs):
+        joined = [a + b for a, b in pairs]
+        if len(set(joined)) == len(joined):
+            return dict(zip(pairs, joined, strict=True))
+    return {pair: pair for pair in pairs}
+
+
+def _coord_values(alphabet):
+    """Coordinate values for one dimension, as xarray wants them.
+
+    Tuple-valued symbols (produced when ``@`` pairs a shared random
+    variable) must live in an object array: xarray reads a plain list of
+    equal-length tuples as two-dimensional data and refuses it.
+    """
+    if not any(isinstance(v, tuple) for v in alphabet):
+        return alphabet
+    values = np.empty(len(alphabet), dtype=object)
+    for i, v in enumerate(alphabet):
+        values[i] = v
+    return values
+
+
 def _symbolic_safe_divide(numerator, denominator):
     """Element-wise ``numerator / denominator`` for symbolic DataArrays.
 
@@ -309,7 +341,7 @@ class Distribution:
             else:
                 alphabets = [sorted({o[i] for o in outcomes}) for i in range(n)]
 
-            coords = {name: alpha for name, alpha in zip(rv_names, alphabets, strict=True)}
+            coords = {name: _coord_values(alpha) for name, alpha in zip(rv_names, alphabets, strict=True)}
 
             shape = tuple(len(a) for a in alphabets)
             arr = np.zeros(shape, dtype=object) if _symbolic else np.zeros(shape)
@@ -2076,6 +2108,22 @@ class Distribution:
         Cartesian product of two distributions (treated as independent).
 
         Combines outcomes via tuple concatenation and multiplies probabilities.
+
+        When *both* operands have explicitly named random variables, the
+        names are carried over to the result and a name occurring in both
+        operands becomes a single **paired** variable: its symbols join the
+        contribution from each operand rather than appearing twice. Given
+        ``p(X,Y)`` and ``p(X,Z)`` the result is a distribution over
+        ``X, Y, Z`` in which ``X`` ranges over pairs ``(x_left, x_right)``.
+        Distributions with auto-generated names (``X0``, ``X1``, ...) are
+        concatenated as before.
+
+        Examples
+        --------
+        >>> a = Distribution(['00', '11'], [1 / 2, 1 / 2], rv_names=['X', 'Y'])
+        >>> b = Distribution(['00', '01', '10', '11'], [1 / 4] * 4, rv_names=['X', 'Z'])
+        >>> (a @ b).outcomes[:2]
+        (('00', '0', '0'), ('00', '0', '1'))
         """
         if not isinstance(other, Distribution):
             return NotImplemented
@@ -2083,14 +2131,35 @@ class Distribution:
         from itertools import product as iprod
 
         d2 = other.copy(base=self.get_base())
+
+        named = self._rv_names_set and d2._rv_names_set
+        left_dims = list(self.dims)
+        right_dims = list(d2.dims)
+        rv_names = left_dims + [d for d in right_dims if d not in left_dims] if named else None
+        shared = [d for d in left_dims if d in right_dims] if named else []
+
+        left_alpha = dict(zip(left_dims, self.alphabet, strict=True))
+        right_alpha = dict(zip(right_dims, d2.alphabet, strict=True))
+        pair_maps = {d: _paired_symbols(left_alpha[d], right_alpha[d]) for d in shared}
+
+        def _as_tuple(o):
+            return o if isinstance(o, tuple) else (o,)
+
         dist = defaultdict(float)
         for (o1, p1), (o2, p2) in iprod(self.zipped(), d2.zipped()):
-            combined = tuple(o1) + tuple(o2)
+            if shared:
+                lv = dict(zip(left_dims, _as_tuple(o1), strict=True))
+                rv = dict(zip(right_dims, _as_tuple(o2), strict=True))
+                combined = tuple(
+                    pair_maps[d][lv[d], rv[d]] if d in pair_maps else (lv[d] if d in lv else rv[d]) for d in rv_names
+                )
+            else:
+                combined = _as_tuple(o1) + _as_tuple(o2)
             dist[combined] += self.ops.mult(p1, p2)
 
         outcomes = sorted(dist.keys())
         pmf = [dist[o] for o in outcomes]
-        return Distribution(outcomes, pmf, base=self.get_base())
+        return Distribution(outcomes, pmf, rv_names=rv_names, base=self.get_base())
 
     # ── Outcome-transforming operators (scalar distributions) ──────
 
