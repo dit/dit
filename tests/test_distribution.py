@@ -1521,6 +1521,54 @@ class TestScalarArithmetic:
     def test_matmul_rejects_scalar(self):
         assert _d6().__matmul__(3) is NotImplemented
 
+    def test_matmul_keeps_rv_names(self):
+        a = Distribution(["00", "11"], [1 / 2, 1 / 2], rv_names=["X", "Y"])
+        b = Distribution(["0", "1"], [1 / 2, 1 / 2], rv_names=["Z"])
+        assert (a @ b).get_rv_names() == ("X", "Y", "Z")
+
+    def test_matmul_pairs_shared_rv_name(self):
+        a = Distribution(["00", "11"], [1 / 2, 1 / 2], rv_names=["X", "Y"])
+        b = Distribution(["00", "01", "10", "11"], [1 / 4] * 4, rv_names=["X", "Z"])
+        expected = Distribution(
+            [
+                ("00", "0", "0"),
+                ("00", "0", "1"),
+                ("01", "0", "0"),
+                ("01", "0", "1"),
+                ("10", "1", "0"),
+                ("10", "1", "1"),
+                ("11", "1", "0"),
+                ("11", "1", "1"),
+            ],
+            [1 / 8] * 8,
+            rv_names=["X", "Y", "Z"],
+        )
+        assert a @ b == expected
+
+    def test_matmul_pairs_non_string_symbols_as_tuples(self):
+        a = Distribution([(0, "a"), (1, "b")], [1 / 2, 1 / 2], rv_names=["X", "Y"])
+        b = Distribution([(0, "p"), (1, "q")], [1 / 2, 1 / 2], rv_names=["X", "Z"])
+        prod = a @ b
+        assert prod.get_rv_names() == ("X", "Y", "Z")
+        assert _as_dict(prod) == pytest.approx(
+            {
+                ((0, 0), "a", "p"): 0.25,
+                ((0, 1), "a", "q"): 0.25,
+                ((1, 0), "b", "p"): 0.25,
+                ((1, 1), "b", "q"): 0.25,
+            }
+        )
+
+    def test_matmul_does_not_pair_auto_generated_names(self):
+        # Without explicit rv_names the shared 'X0'/'X1' dims are positional,
+        # not the same variable, so outcomes concatenate as before.
+        a = Distribution(["00", "11"], [1 / 2, 1 / 2])
+        b = Distribution(["00", "01", "10", "11"], [1 / 4] * 4)
+        prod = a @ b
+        assert prod.get_rv_names() is None
+        assert prod.outcome_length() == 4
+        assert len(prod.outcomes) == 8
+
     def test_mul_scalar(self):
         assert _as_dict(_d6() * 2) == pytest.approx(dict.fromkeys(range(2, 13, 2), 1 / 6))
 
