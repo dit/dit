@@ -7,6 +7,7 @@ import pytest
 import xarray as xr
 
 from dit.distribution import Distribution
+from dit.params import ditParams
 
 # ─── Helpers ─────────────────────────────────────────────────────────────
 
@@ -823,6 +824,17 @@ class TestRepr:
         p = _make_pxy().condition_on("X")
         assert "p(Y|X)" in repr(p)
 
+    def test_print_exact_uses_fractions(self):
+        p = Distribution(["0", "1"], [1 / 2, 1 / 2])
+        original = ditParams["print.exact"]
+        try:
+            ditParams["print.exact"] = True
+            text = repr(p)
+            assert "1/2" in text
+            assert "0.5" not in text
+        finally:
+            ditParams["print.exact"] = original
+
 
 # ─── Equality ────────────────────────────────────────────────────────────
 
@@ -1628,3 +1640,14 @@ class TestDisplay:
     def test_to_string_exact_fractions(self):
         s = _make_pxy().to_string(exact=True)
         assert "Distribution" in s
+
+    def test_html_and_string_print_exact_fractions(self):
+        p = Distribution(["0", "1"], [1 / 2, 1 / 2])
+        original = ditParams["print.exact"]
+        try:
+            ditParams["print.exact"] = True
+            assert "1/2" in p._to_html()
+            assert "1/2" in p._to_string()
+            assert "0.5" not in p._to_html()
+        finally:
+            ditParams["print.exact"] = original

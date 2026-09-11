@@ -1048,7 +1048,7 @@ class Distribution:
     def __repr__(self):
         from .params import ditParams
 
-        if ditParams["repr.print"]:
+        if ditParams["repr.print"] or ditParams["print.exact"]:
             return self.to_string()
 
         free = ",".join(d for d in self.dims if d in self.free_vars)
@@ -1222,15 +1222,21 @@ class Distribution:
         p : float
             Probability value.
         digits : int or None
-            Number of digits to round to. ``None`` for a default compact
-            representation.
+            Number of digits to round to. ``None`` uses fractions when
+            ``ditParams['print.exact']`` is True, otherwise a compact float.
 
         Returns
         -------
         s : str
         """
+        from .params import ditParams
+
         if digits is not None:
             return str(round(p, digits))
+        if ditParams["print.exact"]:
+            from .math import approximate_fraction
+
+            return str(approximate_fraction(p, 1e-9))
         # Compact default: up to 6 significant figures, strip trailing zeros
         return f"{p:.6g}"
 
