@@ -29,6 +29,7 @@ These measures all reduce to the standard Shannon :ref:`mutual_information` for 
    cohesion
    o_information
    caekl_mutual_information
+   kirkwood
    interaction_information
    s_information
    deweese
