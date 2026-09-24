@@ -74,6 +74,7 @@ These measures all somehow measure shared information, but do not equal the mutu
    mss_common_information
    beta_common_information
    stochastic_gk_common_information
+   tension_common_information
 
 The directed Kamath–Anantharam quantity
 :func:`~dit.multivariate.directed_kamath_common_information` is documented on

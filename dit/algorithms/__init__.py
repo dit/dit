@@ -45,6 +45,11 @@ from .stats import (
     standard_moment,
     variance,
 )
+from .support_spectrum import (
+    spectral_entanglement_bound,
+    support_biadjacency,
+    support_singular_values,
+)
 
 # Don't expose anything yet.
 # from . import pid_broja
