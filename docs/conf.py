@@ -82,6 +82,12 @@ _MACROS = {
     "G": [r"\op{G}{#1}", 1],
     "F": [r"\op{F}{#1}", 1],
     "M": [r"\op{M}{#1}", 1],
+    "Tci": [r"\op{\Theta}{#1}", 1],
+    # Tension
+    "Ent": [r"\op{E}{#1}", 1],
+    "Gnni": [r"\op{G_{NNI}}{#1}", 1],
+    "Gpni": [r"\op{G_{PNI}}{#1}", 1],
+    "Gppi": [r"\op{G_{PPI}}{#1}", 1],
     # Other measures
     "P": [r"\op{P}{#1}", 1],
     "N": [r"\op{N}{#1}", 1],

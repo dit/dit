@@ -28,6 +28,7 @@ surface.
 from collections import namedtuple
 
 import numpy as np
+from scipy.optimize import minimize
 
 from ...algorithms import BaseAuxVarOptimizer
 from ...exceptions import ditException
@@ -67,7 +68,19 @@ class GrayWynerOptimizer(BaseAuxVarOptimizer):
 
     name = "gray-wyner"
 
-    def __init__(self, dist, lambdas, rvs=None, crvs=None, distortions=None, bounds=None, markov=False, bound=None):
+    def __init__(
+        self,
+        dist,
+        lambdas,
+        rvs=None,
+        crvs=None,
+        distortions=None,
+        bounds=None,
+        markov=False,
+        bound=None,
+        allow_signed=False,
+        rate_equalities=None,
+    ):
         """
         Initialize the optimizer.
 
@@ -76,9 +89,10 @@ class GrayWynerOptimizer(BaseAuxVarOptimizer):
         dist : Distribution
             The distribution of interest.
         lambdas : iterable of float
-            The non-negative weights ``(lambda_0, lambda_1, ..., lambda_n)``
-            placed on the common rate and each private rate. Must have length
-            ``n + 1`` where ``n`` is the number of source groups.
+            The weights ``(lambda_0, lambda_1, ..., lambda_n)`` placed on the
+            common rate and each private rate. Must have length ``n + 1``
+            where ``n`` is the number of source groups. Must be non-negative
+            unless `allow_signed` is True.
         rvs : list of lists, None
             The source groups ``X_1, ..., X_n``. If None, each variable of
             `dist` is treated as its own source.
@@ -99,6 +113,21 @@ class GrayWynerOptimizer(BaseAuxVarOptimizer):
         bound : int, None
             An optional cap on the cardinality of ``W``. If None, the
             Caratheodory-style bound from :meth:`compute_bound` is used.
+        allow_signed : bool
+            If True, permit negative weights. A negative weight turns the
+            corresponding rate into something to be *maximized*. Note that the
+            Gray-Wyner region is upward-closed, so a weighted sum with a
+            negative component is unbounded below over the region proper; what
+            is optimized here is the raw set of rate points attainable by some
+            auxiliary ``W``, which is compact. This is what the Li & El Gamal
+            :cite:`li2018extended` extreme points (e.g. the maximal
+            interaction information) require.
+        rate_equalities : iterable of (iterable of float, float), None
+            Affine equality constraints on the rate vector, each given as
+            ``(weights, constant)`` and imposing
+            ``sum_k weights[k] * R_k == constant`` with ``weights`` of length
+            ``n + 1``. Used to pin tension coordinates to zero when computing
+            the intercepts of the tension region.
         """
         super().__init__(dist, rvs=rvs, crvs=crvs)
 
@@ -109,8 +138,8 @@ class GrayWynerOptimizer(BaseAuxVarOptimizer):
         if self._lambdas.size != n + 1:
             msg = f"`lambdas` must have length {n + 1} (n + 1), got {self._lambdas.size}."
             raise ditException(msg)
-        if np.any(self._lambdas < 0):
-            msg = "`lambdas` must be non-negative."
+        if not allow_signed and np.any(self._lambdas < 0):
+            msg = "`lambdas` must be non-negative; pass `allow_signed=True` to permit maximization."
             raise ditException(msg)
 
         distortions = [None] * n if distortions is None else list(distortions)
@@ -175,6 +204,15 @@ class GrayWynerOptimizer(BaseAuxVarOptimizer):
                     }
                 )
 
+        # Affine equality constraints on the rate vector (tension intercepts).
+        for weights, constant in rate_equalities or []:
+            self.constraints.append(
+                {
+                    "type": "eq",
+                    "fun": self._make_rate_equality(weights, constant),
+                }
+            )
+
         # Optional conditional-independence constraint (Wyner common info).
         if markov and len(self._sources) > 1:
             tc = self._total_correlation(self._rvs, self._W | self._crvs)
@@ -191,6 +229,13 @@ class GrayWynerOptimizer(BaseAuxVarOptimizer):
         """
         Caratheodory-style cardinality bound on ``W``.
 
+        The Fenchel-Eggleston strengthening of Caratheodory's theorem gives
+        ``|W| <= |X_1| ... |X_n| + 2``: the joint pmf must be preserved
+        (``prod - 1`` constraints) and the rate point itself contributes the
+        remaining degrees of freedom. This is the bound used throughout the
+        assisted-common-information literature
+        :cite:`prabhakaran2014assisted,li2018extended`.
+
         Returns
         -------
         bound : int
@@ -198,7 +243,41 @@ class GrayWynerOptimizer(BaseAuxVarOptimizer):
         """
         source_card = prod(self._shape[i] for i in self._sources)
         crv_card = prod(self._shape[c] for c in self._crvs) if self._crvs else 1
-        return int(source_card * crv_card + 1)
+        return int(source_card * crv_card + 2)
+
+    def _make_rate_equality(self, weights, constant):
+        """
+        Build a scipy-style equality constraint on a weighted sum of rates.
+
+        Parameters
+        ----------
+        weights : iterable of float
+            The length-``n + 1`` weights over ``(R_0, R_1, ..., R_n)``.
+        constant : float
+            The value the weighted sum must take.
+
+        Returns
+        -------
+        constraint : func
+            A function mapping an optimization vector to the constraint
+            residual, zero when satisfied.
+        """
+        weights = np.asarray(weights, dtype=float)
+        if weights.size != len(self._sources) + 1:
+            msg = f"`rate_equalities` weights must have length {len(self._sources) + 1}, got {weights.size}."
+            raise ditException(msg)
+
+        rate_common = self._rate_common
+        rate_private = self._rate_private
+
+        def constraint(x):
+            pmf = self.construct_joint(x)
+            total = weights[0] * rate_common(pmf)
+            for w, rate in zip(weights[1:], rate_private, strict=True):
+                total = total + w * rate(pmf)
+            return total - constant
+
+        return constraint
 
     def _make_distortion(self, source, xhat, dmatrix):
         """
@@ -253,6 +332,109 @@ class GrayWynerOptimizer(BaseAuxVarOptimizer):
             return budget - distortion(pmf)
 
         return constraint
+
+    def _deterministic_seeds(self):
+        """
+        Optimization vectors for the canonical deterministic probes.
+
+        Every extreme point of interest on the Gray-Wyner boundary is attained
+        by a probe that is a deterministic function of the sources: the
+        trivial probe ``W = .``, each single source ``W = X_i``, each
+        "all but one" probe ``W = X_{-i}``, and the full joint
+        ``W = X_{0:n}``. These sit at vertices of the channel simplex, which a
+        random or uniform start approaches only asymptotically, so gradient
+        methods routinely stall short of them. Seeding with them explicitly is
+        what keeps the tension intercepts and the shape function from
+        reporting infeasible values.
+
+        Returns
+        -------
+        seeds : list of np.ndarray
+            Optimization vectors, one per deterministic probe.
+        """
+        auxvar = self._aux_vars[0]
+        bases = sorted(auxvar.bases)
+        bound = auxvar.bound
+        base_shape = tuple(self._shape[i] for i in bases)
+
+        # Remaining aux vars (lossy reconstruction channels) keep their
+        # uniform initialization; only the probe W is seeded deliberately.
+        tail = [np.ones(av.shape).ravel() / av.bound for av in self._aux_vars[1:]]
+
+        # Index grids for each base variable, broadcast over the base shape.
+        grids = np.indices(base_shape)
+
+        groupings = [()]  # W = .
+        groupings += [(k,) for k in range(len(bases))]  # W = X_i
+        if len(bases) > 2:
+            groupings += [tuple(j for j in range(len(bases)) if j != k) for k in range(len(bases))]
+        if len(bases) > 1:
+            groupings.append(tuple(range(len(bases))))  # W = X_{0:n}
+
+        seeds = []
+        for group in groupings:
+            # Label each base outcome by the tuple of coordinates in `group`,
+            # then fold those labels into [0, bound).
+            label = np.zeros(base_shape, dtype=int)
+            for k in group:
+                label = label * base_shape[k] + grids[k]
+            if label.max() >= bound:  # pragma: no cover
+                continue
+            channel = np.zeros((*base_shape, bound))
+            np.put_along_axis(channel, label[..., np.newaxis], 1.0, axis=-1)
+            seeds.append(np.concatenate([channel.ravel(), *tail]))
+
+        return seeds
+
+    def optimize(self, x0=None, niter=None, maxiter=None, polish=1e-6, callback=False, rng=None):
+        """
+        Perform the optimization, including the deterministic probe seeds.
+
+        Parameters
+        ----------
+        x0 : np.ndarray, None
+            The vector to initialize the optimization with.
+        niter : int, None
+            The number of basin hops to perform.
+        maxiter : int, None
+            The number of inner optimizer steps to perform.
+        polish : False, float
+            Whether to polish the result.
+        callback : bool
+            Whether to utilize a callback or not.
+
+        Returns
+        -------
+        result : OptimizeResult, None
+            The result of the optimization.
+        """
+        result = super().optimize(x0=x0, niter=niter, maxiter=maxiter, polish=polish, callback=callback, rng=rng)
+
+        minimizer_kwargs = {
+            "bounds": [(0, 1)] * self._optvec_size,
+            "constraints": self.constraints,
+            "options": {"maxiter": maxiter or 1000},
+        }
+        # Without an analytic gradient and without constraints SciPy falls
+        # back to L-BFGS-B, whose finite-difference probe can step a hair
+        # outside the box and abort.
+        self._apply_analytic_jacobians(minimizer_kwargs)
+
+        candidates = []
+        for seed in self._deterministic_seeds():
+            try:
+                candidates.append(minimize(fun=self.objective, x0=seed, **minimizer_kwargs))
+            except ValueError:  # pragma: no cover
+                # This refinement is strictly additive; a failed start must
+                # never invalidate the result already in hand.
+                continue
+
+        best = self._best_feasible(candidates, minimizer_kwargs)
+
+        if best is not None and best.fun < self.objective(self._optima):
+            self._optima = best.x.copy()
+
+        return result
 
     def rates(self, x=None):
         """
