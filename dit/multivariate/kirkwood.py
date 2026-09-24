@@ -77,31 +77,41 @@ def _log_linear_divergence(pmf, exponents):
 
 
 @unitful
-def kirkwood_mutual_information(dist, rvs=None, crvs=None):
+def kirkwood_mutual_information(dist, rvs=None, crvs=None, order=None):
     r"""
     Compute the Kirkwood mutual information: the Kullback-Leibler divergence
     from the joint distribution to its normalized generalized Kirkwood
     superposition approximation.
 
     For variables :math:`X_0, \ldots, X_{n-1}` the generalized Kirkwood
-    approximation is the Möbius product over proper subsets
-    :cite:`watanabe1960information`,
+    approximation of order :math:`k` truncates the Möbius (interaction)
+    expansion of :math:`\log p` at subsets of size at most :math:`k`
+    :cite:`watanabe1960information,killian2007extraction`:
 
     .. math::
-        \tilde{p}(x) = \prod_{\emptyset \neq S \subsetneq [n]} p(x_S)^{(-1)^{n-1-|S|}},
+        \tilde{p}_k(x) = \prod_{1 \leq |S| \leq k} p(x_S)^{c_S}, \qquad
+        c_S = (-1)^{k-|S|} \binom{n-|S|-1}{k-|S|},
 
-    which need not sum to one. With :math:`\hat{p} = \tilde{p} / Z`,
-    :math:`Z = \sum_x \tilde{p}(x)`, the measure is
-    :math:`K = D_{KL}(p \| \hat{p})`. For three variables this is the
-    divergence from the normalized Kirkwood superposition approximation used
-    by :cite:`wan2010boost`. It satisfies
+    which need not sum to one. The default order :math:`k = n-1` is the
+    standard Kirkwood approximation, the Möbius product over proper subsets
+    with :math:`c_S = (-1)^{n-1-|S|}`. Order 1 is the product of marginals
+    and order 0 is the uniform distribution. With
+    :math:`\hat{p}_k = \tilde{p}_k / Z` and :math:`Z = \sum_x \tilde{p}_k(x)`,
+    the measure is :math:`K_k = D_{KL}(p \| \hat{p}_k)`.
+
+    For three variables and the default order this is the divergence from the
+    normalized Kirkwood superposition approximation used by
+    :cite:`wan2010boost`. At the default order it satisfies
 
     .. math::
         K = (-1)^n I[X_0 : \cdots : X_{n-1}] + \log_2 Z,
 
     where :math:`I` is the coinformation :cite:`kubkowski2020asymptotic`.
-    For two variables it is the mutual information; for a single variable it
-    is zero.
+    Order 1 gives the total correlation, and order 0 gives
+    :math:`\sum_i \log_2 |\mathcal{X}_i| - H[X_0, \ldots, X_{n-1}]`. Since
+    :math:`\hat{p}_k` is log-linear in the :math:`k`-marginals, :math:`K_k`
+    upper bounds the divergence to the maximum entropy distribution matching
+    them. For fewer than two variables the result is zero.
 
     Parameters
     ----------
@@ -115,11 +125,19 @@ def kirkwood_mutual_information(dist, rvs=None, crvs=None):
     crvs : list, None
         A single list of indexes specifying the random variables to condition
         on. If None, then no variables are conditioned on.
+    order : int, None
+        The largest marginal size k used by the approximation. Must satisfy
+        0 <= k <= n - 1. If None, defaults to n - 1.
 
     Returns
     -------
     K : float
         The Kirkwood mutual information.
+
+    Raises
+    ------
+    ditException
+        Raised if `order` is out of range.
 
     Examples
     --------
@@ -129,19 +147,28 @@ def kirkwood_mutual_information(dist, rvs=None, crvs=None):
     >>> d = dit.example_dists.n_mod_m(3, 2)
     >>> dit.multivariate.kirkwood_mutual_information(d)
     1.0
+    >>> dit.multivariate.kirkwood_mutual_information(d, order=1)
+    1.0
     """
     rvs, crvs = normalize_rvs(dist, rvs, crvs)
     n = len(rvs)
     if n < 2:
         return 0.0
 
-    exponents = {S: (-1) ** (n - 1 - k) for k in range(1, n) for S in combinations(range(n), k)}
+    k = n - 1 if order is None else order
+    if not 0 <= k <= n - 1:
+        msg = f"order must satisfy 0 <= order <= {n - 1}, {k} given."
+        raise ditException(msg)
+
+    exponents = {
+        S: (-1) ** (k - j) * comb(n - j - 1, k - j) for j in range(1, k + 1) for S in combinations(range(n), j)
+    }
 
     return _log_linear_divergence(_joint_array(dist, rvs, crvs), exponents)
 
 
 @unitful
-def ouroboros_mutual_information(dist, order=None, rvs=None, crvs=None):
+def ouroboros_mutual_information(dist, rvs=None, crvs=None, order=None):
     r"""
     Compute the order-k ouroboros mutual information: the Kullback-Leibler
     divergence from the joint distribution to its normalized order-k
@@ -172,15 +199,15 @@ def ouroboros_mutual_information(dist, order=None, rvs=None, crvs=None):
     dist : Distribution
         The distribution from which the ouroboros mutual information is
         calculated.
-    order : int, None
-        The number of inputs k to each channel. Must satisfy
-        1 <= k <= n - 2. If None, defaults to n - 2.
     rvs : list, None
         A list of lists. Each inner list specifies the indexes of the random
         variables used. If None, then all random variables are used.
     crvs : list, None
         A single list of indexes specifying the random variables to condition
         on. If None, then no variables are conditioned on.
+    order : int, None
+        The number of inputs k to each channel. Must satisfy
+        1 <= k <= n - 2. If None, defaults to n - 2.
 
     Returns
     -------

@@ -13,8 +13,13 @@ from dit.algorithms import maxent_dist
 from dit.divergences import kullback_leibler_divergence
 from dit.example_dists import Xor, dyadic, giant_bit, n_mod_m, triadic
 from dit.exceptions import ditException
-from dit.multivariate import coinformation, kirkwood_mutual_information, ouroboros_mutual_information
-from dit.shannon import mutual_information
+from dit.multivariate import (
+    coinformation,
+    kirkwood_mutual_information,
+    ouroboros_mutual_information,
+    total_correlation,
+)
+from dit.shannon import entropy, mutual_information
 from dit.utils.testing import distributions
 
 
@@ -119,6 +124,72 @@ def test_kirkwood_coinformation_identity(n, data):
     rvs = [[i] for i in range(n)]
     expected = (-1) ** n * coinformation(d, rvs) + log_kirkwood_normalizer(d)
     assert kirkwood_mutual_information(d, rvs) == pytest.approx(expected, abs=1e-6)
+
+
+@pytest.mark.parametrize("n", range(2, 6))
+def test_kirkwood_default_order(n):
+    """The default order is n - 1."""
+    d = weighted(n)
+    assert kirkwood_mutual_information(d) == pytest.approx(kirkwood_mutual_information(d, order=n - 1))
+
+
+@pytest.mark.parametrize("n", range(2, 6))
+def test_kirkwood_order_one_is_total_correlation(n):
+    """The order-1 approximation is the product of marginals."""
+    d = weighted(n)
+    assert kirkwood_mutual_information(d, order=1) == pytest.approx(total_correlation(d))
+
+
+def test_kirkwood_order_zero_is_uniform():
+    """The order-0 approximation is uniform."""
+    d = weighted(4)
+    assert kirkwood_mutual_information(d, order=0) == pytest.approx(4 - entropy(d))
+
+
+@pytest.mark.parametrize("n", range(3, 6))
+def test_kirkwood_orders_giant_bit(n):
+    """The giant bit is captured exactly from its pairwise marginals."""
+    d = giant_bit(n, 2)
+    assert kirkwood_mutual_information(d, order=1) == pytest.approx(n - 1)
+    for k in range(2, n):
+        assert kirkwood_mutual_information(d, order=k) == pytest.approx(0.0, abs=1e-9)
+
+
+@pytest.mark.parametrize("n", range(3, 6))
+def test_kirkwood_orders_parity(n):
+    """Every proper marginal of parity is uniform."""
+    d = n_mod_m(n, 2)
+    for k in range(n):
+        assert kirkwood_mutual_information(d, order=k) == pytest.approx(1.0)
+
+
+def test_kirkwood_orders_triadic():
+    """Triadic plus an independent bit: pairwise order sees the triad, order 3 does not."""
+    d = triadic @ Distribution(["0", "1"], [1 / 2, 1 / 2])
+    values = [kirkwood_mutual_information(d, order=k) for k in range(4)]
+    assert values == pytest.approx([3.0, 3.0, 1.0, 0.0], abs=1e-9)
+
+
+def test_kirkwood_conditional_order():
+    """Conditional order-1 Kirkwood MI is the conditional mutual information."""
+    d = weighted(4)
+    expected = coinformation(d, [[0], [1]], [2, 3])
+    assert kirkwood_mutual_information(d, [[0], [1]], [2, 3], order=1) == pytest.approx(expected)
+
+
+@pytest.mark.parametrize("order", [-1, 4])
+def test_kirkwood_bad_order(order):
+    """The order must lie in [0, n - 1]."""
+    with pytest.raises(ditException, match="order must satisfy"):
+        kirkwood_mutual_information(weighted(4), order=order)
+
+
+@pytest.mark.parametrize("k", [1, 2, 3])
+def test_kirkwood_maxent_bound(k):
+    """K_k upper bounds the divergence to the k-marginal maxent distribution."""
+    d = weighted(4)
+    m = maxent_dist(d, [list(S) for S in combinations(range(4), k)])
+    assert kirkwood_mutual_information(d, order=k) >= kullback_leibler_divergence(d, m) - 1e-6
 
 
 @pytest.mark.parametrize("n", range(3, 6))

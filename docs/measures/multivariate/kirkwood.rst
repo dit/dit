@@ -47,6 +47,23 @@ For two variables the approximation is the product of marginals, so :math:`K` is
    In [4]: [K(n_mod_m(n, 2)) for n in range(3, 6)]
    Out[4]: [1.0, 1.0, 1.0]
 
+Lower Orders
+------------
+
+Truncating the Möbius (interaction) expansion of :math:`\log p` at subsets of size at most :math:`k` gives the order-:math:`k` Kirkwood approximation :cite:`killian2007extraction`:
+
+.. math::
+
+   \tilde{p}_k(x_{0:n}) = \prod_{1 \leq |S| \leq k} p(x_S)^{c_S}, \qquad c_S = (-1)^{k-|S|} \binom{n-|S|-1}{k-|S|}
+
+The ``order`` argument selects :math:`k`, which must lie between :math:`0` and :math:`n-1`. The default, :math:`k = n-1`, is the standard approximation above. Order :math:`1` is the product of marginals, so :math:`K_1` is the :ref:`total_correlation`. Order :math:`0` is the uniform distribution. Because :math:`\hat{p}_k` is log-linear in the :math:`k`-marginals, :math:`K_k` upper bounds the divergence from the maximum entropy distribution consistent with those marginals.
+
+.. ipython::
+
+   @doctest float
+   In [5]: [K(giant_bit(4, 2), order=k) for k in range(4)]
+   Out[5]: [3.0, 3.0, 0.0, 0.0]
+
 Ouroboros Mutual Information
 ============================
 
@@ -64,17 +81,17 @@ Low orders detect structure that the Kirkwood approximation ignores. A triadic d
 
 .. ipython::
 
-   In [5]: from dit import Distribution as D
+   In [6]: from dit import Distribution as D
 
-   In [6]: from dit.example_dists import triadic
+   In [7]: from dit.example_dists import triadic
 
-   In [7]: from dit.multivariate import ouroboros_mutual_information as O
+   In [8]: from dit.multivariate import ouroboros_mutual_information as O
 
-   In [8]: d = triadic @ D(['0', '1'], [1/2, 1/2])
+   In [9]: d = triadic @ D(['0', '1'], [1/2, 1/2])
 
    @doctest float
-   In [9]: [K(d), O(d, order=1), O(d, order=2)]
-   Out[9]: [0.0, 1.0, 0.0]
+   In [10]: [K(d), O(d, order=1), O(d, order=2)]
+   Out[10]: [0.0, 1.0, 0.0]
 
 API
 ===
