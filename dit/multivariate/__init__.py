@@ -13,6 +13,7 @@ from .deweese import *
 from .dual_total_correlation import *
 from .entropy import *
 from .interaction_information import *
+from .kirkwood import *
 from .logarithmic_decomposition import *
 from .o_information import *
 from .quax_synergy import *
