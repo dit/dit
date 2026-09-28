@@ -3,8 +3,12 @@ Non-cython methods for getting counts and distributions from data.
 """
 
 import contextlib
+from collections import Counter
 
 import numpy as np
+from boltons.iterutils import windowed_iter
+
+from ._symbols import is_trials
 
 __all__ = (
     "counts_from_data",
@@ -17,13 +21,8 @@ try:  # cython
     from .pycounts import counts_from_data, distribution_from_data
 
 except ImportError:  # no cython
-    from collections import Counter, defaultdict
+    from collections import defaultdict
     from itertools import product
-
-    from boltons.iterutils import windowed_iter
-
-    from .. import modify_outcomes
-    from ..exceptions import ditException
 
     def counts_from_data(data, hLength, fLength, marginals=True, alphabet=None, standardize=True):
         """
@@ -133,58 +132,116 @@ except ImportError:  # no cython
             value of `dit.ditParams['base']` is used.
 
         """
-        from dit.distribution import Distribution
-        from dit.params import ditParams
-
-        # Normalize data: ensure list, convert 2D rows to tuples for hashability
         d = np.asarray(d)
         d = d.tolist() if d.ndim == 1 else [tuple(row) for row in d]
-
-        if base is None:
-            base = ditParams["base"]
-
-        # Build alphabet from all symbols in the data (1D: scalars, 2D: rows)
         alphabet = tuple(sorted(set(d)))
+        return _distribution_from_word_counts(Counter(windowed_iter(d, L)), alphabet, L, trim, base)
 
-        # Count observed words using sliding windows
-        word_counts = Counter(windowed_iter(d, L))
 
-        # Build full distribution over all possible words (including zero-count)
-        all_words = list(product(alphabet, repeat=L))
-        counts_arr = np.array(
-            [word_counts.get(w, 0) for w in all_words],
-            dtype=float,
-        )
-        total = counts_arr.sum()
-        pmf = counts_arr / total if total > 0 else np.zeros_like(counts_arr)
+def _distribution_from_word_counts(word_counts, alphabet, L, trim, base):
+    """
+    Build the plug-in distribution over length-`L` words from their counts.
 
-        # Flatten nested-tuple words: ((0,), (1,)) -> (0, 1)
-        def _flatten_word(w):
-            flat = []
-            for elem in w:
-                if isinstance(elem, tuple) and len(elem) != 1:
-                    flat.extend(elem)
-                else:
-                    flat.append(elem[0] if isinstance(elem, tuple) else elem)
-            return tuple(flat)
+    With ``trim=True`` only observed words are materialized, rather than all
+    ``len(alphabet) ** L`` of them.
+    """
+    from itertools import product
 
-        words = [_flatten_word(w) for w in all_words]
+    from dit.distribution import Distribution
+    from dit.params import ditParams
 
-        # Always build in linear space so zero probabilities are stored as 0.
-        # set_base will then correctly convert 0 -> -inf for log bases.
-        dist = Distribution(words, pmf, trim=trim, base="linear")
+    from .. import modify_outcomes
+    from ..exceptions import ditException
 
-        if L == 1:
-            with contextlib.suppress(ditException):
-                # Only unwrap 1-tuples (e.g. (0,) -> 0), not multi-variable outcomes (e.g. (0,1,0))
-                dist = modify_outcomes(dist, lambda o: o[0] if isinstance(o, tuple) and len(o) == 1 else o)
+    if base is None:
+        base = ditParams["base"]
 
-        # Call set_base after modify_outcomes: modify_outcomes creates a new Distribution
-        # with base from the original; if we converted to log first, it would use np.zeros
-        # for unfilled positions, giving 0 instead of -inf in log space (which becomes p=1).
-        dist.set_base(base)
+    all_words = sorted(word_counts) if trim else list(product(alphabet, repeat=L))
+    counts_arr = np.array([word_counts.get(w, 0) for w in all_words], dtype=float)
+    total = counts_arr.sum()
+    pmf = counts_arr / total if total > 0 else np.zeros_like(counts_arr)
 
-        return dist
+    # Flatten nested-tuple words: ((0,), (1,)) -> (0, 1)
+    def _flatten_word(w):
+        flat = []
+        for elem in w:
+            if isinstance(elem, tuple) and len(elem) != 1:
+                flat.extend(elem)
+            else:
+                flat.append(elem[0] if isinstance(elem, tuple) else elem)
+        return tuple(flat)
+
+    words = [_flatten_word(w) for w in all_words]
+
+    # Always build in linear space so zero probabilities are stored as 0.
+    # set_base will then correctly convert 0 -> -inf for log bases.
+    dist = Distribution(words, pmf, trim=trim, base="linear")
+
+    if L == 1:
+        with contextlib.suppress(ditException):
+            # Only unwrap 1-tuples (e.g. (0,) -> 0), not multi-variable outcomes (e.g. (0,1,0))
+            dist = modify_outcomes(dist, lambda o: o[0] if isinstance(o, tuple) and len(o) == 1 else o)
+
+    # Call set_base after modify_outcomes: modify_outcomes creates a new Distribution
+    # with base from the original; if we converted to log first, it would use np.zeros
+    # for unfilled positions, giving 0 instead of -inf in log space (which becomes p=1).
+    dist.set_base(base)
+
+    return dist
+
+
+_distribution_from_sequence = distribution_from_data
+
+
+def distribution_from_data(d, L, trim=True, base=None):
+    """
+    Returns a distribution over words of length `L` from `d`.
+
+    The returned distribution is the naive estimate of the distribution,
+    which assigns probabilities equal to the number of times a particular
+    word appeared in the data divided by the total number of times a word
+    could have appeared in the data.
+
+    Roughly, it corresponds to the stationary distribution of a maximum
+    likelihood estimate of the transition matrix of an (L-1)th order Markov
+    chain.
+
+    Parameters
+    ----------
+    d : list or Trials
+        A list of symbols to be converted into a distribution, or independent
+        :class:`~dit.inference.Trials`, whose word counts are pooled without
+        any word spanning two trials.
+    L : integer
+        The length of the words for the distribution.
+    trim : bool
+        If true, then words with zero probability are trimmed from the
+        distribution.
+    base : int or string
+        The desired base of the returned distribution. If `None`, then the
+        value of `dit.ditParams['base']` is used.
+
+    Notes
+    -----
+    With ``trim=True`` only the observed words are built, rather than all
+    ``len(alphabet) ** L`` of them. A :class:`~dit.Distribution` still indexes
+    its outcomes densely by each variable's alphabet, so for large alphabets
+    and word lengths use the count-level estimators
+    (:func:`~dit.inference.block_entropy`,
+    :func:`~dit.inference.conditional_entropy_rate`), which never build a
+    distribution.
+    """
+    if not is_trials(d):
+        return _distribution_from_sequence(d, L, trim=trim, base=base)
+    trials = []
+    for t in d:
+        t = np.asarray(t)
+        trials.append(t.tolist() if t.ndim == 1 else [tuple(row) for row in t])
+    alphabet = tuple(sorted(set().union(*map(set, trials))))
+    word_counts = Counter()
+    for t in trials:
+        word_counts.update(windowed_iter(t, L))
+    return _distribution_from_word_counts(word_counts, alphabet, L, trim, base)
 
 
 def get_counts(data, length):
