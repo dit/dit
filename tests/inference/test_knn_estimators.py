@@ -97,3 +97,13 @@ def test_total_correlation_ksg_scipy_conditioned():
     cmi = _total_correlation_ksg_scipy(data, [[0], [1]], [2])
     assert np.isfinite(cmi)
     assert cmi == pytest.approx(-np.log2(1 - rho**2) / 2, abs=1.5e-1)
+
+
+def test_knn_prng_reproducible():
+    """
+    The symmetry-breaking noise is reproducible given a seed.
+    """
+    data = np.repeat(np.arange(4.0), 25).reshape(-1, 1)
+    data = np.hstack([data, data % 2])
+    assert differential_entropy_knn(data, prng=3) == differential_entropy_knn(data, prng=3)
+    assert total_correlation_ksg(data, [[0], [1]], prng=3) == total_correlation_ksg(data, [[0], [1]], prng=3)
