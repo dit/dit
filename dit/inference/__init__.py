@@ -3,7 +3,7 @@ Module for basic inference tools.
 """
 
 from ._symbols import Trials, UndersamplingWarning
-from .binning import binned
+from .binning import binned, ordinal_patterns, relative_rank
 from .counts import distribution_from_data, get_counts
 from .estimators import (
     ENTROPY_ESTIMATORS,
@@ -15,6 +15,8 @@ from .estimators import (
     entropy_2,
     entropy_from_counts,
     lz_entropy_rate,
+    permutation_entropy,
+    weighted_permutation_entropy,
 )
 from .knn_estimators import differential_entropy_knn, total_correlation_ksg
 from .markov_order import MarkovOrderTest, markov_order_test, select_markov_order

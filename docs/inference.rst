@@ -109,6 +109,29 @@ Two further entropy-rate estimates check it:
   chain from their Dirichlet posterior and reports the entropy rate of each draw
   :cite:`Strelioff2007`, giving credible intervals.
 
+Ordinal patterns
+================
+
+:func:`ordinal_patterns` maps each delay window
+:math:`(x_{t-(m-1)\tau}, \ldots, x_t)` of a real-valued series to the permutation
+that sorts it :cite:`Bandt2002`, giving :math:`m!` symbols that are invariant to
+monotone transforms of the series. :func:`relative_rank` encodes the *present*
+:math:`x_t` as its rank among the :math:`m` preceding values, so that a present
+symbol shares no values with the preceding pattern; this avoids the leakage that
+biases symbolic transfer entropy :cite:`Kugiumtzis2012`. Ties are ranked by order
+of occurrence, broken by negligible noise, or kept as their own patterns
+:cite:`Bian2012`.
+
+:func:`permutation_entropy` is the entropy of the pattern distribution, and
+:func:`weighted_permutation_entropy` weights each window by its variance, which
+restores some amplitude information :cite:`Fadlallah2013` and serves as a
+model-free predictability measure :cite:`Garland2014`.
+
+Consecutive windows with :math:`\tau = 1` share :math:`m - 1` values, so each
+pattern can be followed by only :math:`m` of the :math:`m!` patterns. Those
+forbidden transitions are a property of the encoding, not of the process, so
+history-based estimates on ordinal symbols should use non-overlapping patterns.
+
 Markov order
 ============
 
@@ -175,6 +198,16 @@ API
 .. autoclass:: UndersamplingWarning
 
 .. autofunction:: distribution_from_data
+
+.. autofunction:: binned
+
+.. autofunction:: ordinal_patterns
+
+.. autofunction:: relative_rank
+
+.. autofunction:: permutation_entropy
+
+.. autofunction:: weighted_permutation_entropy
 
 .. autofunction:: dist_from_timeseries
 
