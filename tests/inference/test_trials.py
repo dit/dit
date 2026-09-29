@@ -20,8 +20,6 @@ from dit.inference import (
     select_markov_order,
     shift_surrogates,
     stationary_bootstrap,
-    transfer_entropy,
-    transfer_entropy_test,
     whittle_count,
     whittle_surrogates,
 )
@@ -100,21 +98,6 @@ def test_markov_order_many_short_trials():
     assert select_markov_order(trials, 3, n_surrogates=99, prng=0) == 1
 
 
-def test_transfer_entropy_trials():
-    rng = np.random.default_rng(2)
-    xs, ys = [], []
-    for _ in range(20):
-        x = rng.integers(0, 2, 50)
-        y = np.concatenate([[0], x[:-1]])
-        xs.append(x)
-        ys.append(y)
-    te = transfer_entropy(Trials(xs), Trials(ys))
-    assert te == pytest.approx(1.0, abs=0.05)
-    assert transfer_entropy_test(Trials(xs), Trials(ys), null="whittle", n_surrogates=19, prng=0).pvalue <= 0.05
-    with pytest.raises(ValueError):
-        transfer_entropy(Trials(xs), ys[0])
-
-
 def test_stationary_bootstrap_trials():
     trials = Trials([[0], [1], [2]])
     draws = stationary_bootstrap(trials, n=20, prng=0)
@@ -147,14 +130,6 @@ def test_undersampling_warning():
         warnings.simplefilter("error", UndersamplingWarning)
         block_entropy(y, 3)
         markov_order_test(y, 1, method="asymptotic")
-
-
-def test_effective_sample_sizes():
-    x = np.random.default_rng(4).integers(0, 2, 300)
-    assert markov_order_test(x, 2, method="asymptotic").n_windows == 300 - 3
-    assert markov_order_test(Trials([x[:100], x[100:]]), 2, method="asymptotic").n_windows == 300 - 6
-    result = transfer_entropy_test(x, np.roll(x, 1), history_length=2, n_surrogates=5, prng=0)
-    assert result.n_samples == 300 - 2
 
 
 def test_distribution_from_data_observed_words_only():

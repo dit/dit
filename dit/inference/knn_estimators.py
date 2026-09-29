@@ -11,7 +11,6 @@ from dit.utils import flatten
 from ._symbols import as_generator
 
 __all__ = (
-    "conditional_mutual_information_test_knn",
     "differential_entropy_knn",
     "total_correlation_ksg",
 )
@@ -245,78 +244,3 @@ try:
     total_correlation_ksg = _total_correlation_ksg_sklearn
 except ImportError:
     total_correlation_ksg = _total_correlation_ksg_scipy
-
-
-def _local_permutation(x, z, k_perm, rng):
-    """
-    Runge's local permutation: each sample takes the `x` of a distinct sample among
-    its `k_perm` nearest neighbors in `z`, so the dependence of `x` on `z` survives.
-    """
-    n = len(x)
-    if z.shape[1] == 0:
-        return x[rng.permutation(n)]
-    k_perm = min(k_perm, n)
-    neighbors = cKDTree(z).query(z, k_perm, p=np.inf)[1].reshape(n, -1)
-    used = np.zeros(n, dtype=bool)
-    choice = np.empty(n, dtype=np.int64)
-    for i in rng.permutation(n):
-        candidates = neighbors[i][rng.permutation(neighbors.shape[1])]
-        free = candidates[~used[candidates]]
-        j = free[0] if len(free) else candidates[0]
-        used[j] = True
-        choice[i] = j
-    return x[choice]
-
-
-def conditional_mutual_information_test_knn(
-    data, rvs, crvs=None, k=4, k_perm=5, n_surrogates=200, noise=1e-10, prng=None
-):
-    """
-    Test :math:`I[X : Y \\mid Z] = 0` for continuous data with the KSG estimator
-    and local-permutation surrogates :cite:`Runge2018`.
-
-    Each surrogate replaces :math:`X` in sample :math:`i` by the :math:`X` of a
-    (mostly distinct) sample among the `k_perm` nearest neighbors of :math:`i` in
-    :math:`Z`. That keeps the dependence of :math:`X` on :math:`Z` while breaking
-    any further dependence on :math:`Y`. It is the continuous analogue of
-    :func:`~dit.inference.conditional_mutual_information_test`, which permutes
-    within exact strata of a discrete :math:`Z`.
-
-    Parameters
-    ----------
-    data : np.ndarray
-        Samples, one per row.
-    rvs : list of two lists
-        The columns of :math:`X` and of :math:`Y`.
-    crvs : list, None
-        The columns of :math:`Z`. If None, :math:`X` is permuted freely.
-    k : int
-        Nearest neighbors for the KSG estimate.
-    k_perm : int
-        Neighborhood size for the local permutation; small values (5–10) keep the
-        null conditional on :math:`Z`.
-    n_surrogates : int
-        The number of surrogates.
-    noise : float
-        Symmetry-breaking noise for the KSG estimator.
-    prng : None, int, Generator, RandomState
-        Source of randomness.
-
-    Returns
-    -------
-    result : SurrogateTest
-    """
-    from .significance import _result
-
-    rng = as_generator(prng)
-    data = np.asarray(data, dtype=np.float64)
-    x_cols, y_cols = (list(r) for r in rvs)
-    crvs = [] if crvs is None else list(crvs)
-    value = total_correlation_ksg(data, [x_cols, y_cols], crvs, k=k, noise=noise, prng=rng)
-    z = data[:, crvs]
-    null = np.empty(n_surrogates)
-    for i in range(n_surrogates):
-        shuffled = data.copy()
-        shuffled[:, x_cols] = _local_permutation(data[:, x_cols], z, k_perm, rng)
-        null[i] = total_correlation_ksg(shuffled, [x_cols, y_cols], crvs, k=k, noise=noise, prng=rng)
-    return _result(value, null, len(data))

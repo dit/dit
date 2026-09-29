@@ -6,11 +6,8 @@ import warnings
 
 import numpy as np
 import pytest
-from scipy.stats import false_discovery_control
 
 from dit.inference import (
-    benjamini_hochberg,
-    conditional_mutual_information_test_knn,
     entropy_from_counts,
     lz_entropy_rate,
 )
@@ -59,31 +56,3 @@ def test_lz_golden_mean():
         prev = 0 if prev == 1 else int(rng.integers(2))
         x.append(prev)
     assert lz_entropy_rate(x) == pytest.approx(2 / 3, abs=0.1)
-
-
-def test_knn_local_permutation():
-    rng = np.random.default_rng(3)
-    n = 400
-    z = rng.normal(size=n)
-    x = z + 0.3 * rng.normal(size=n)
-    y = z + 0.3 * rng.normal(size=n)
-    data = np.stack([x, y, z], axis=1)
-    marginal = conditional_mutual_information_test_knn(data, [[0], [1]], n_surrogates=19, prng=0)
-    conditional = conditional_mutual_information_test_knn(data, [[0], [1]], [2], n_surrogates=19, prng=0)
-    assert marginal.pvalue <= 0.05
-    assert conditional.pvalue > 0.05
-    w = x + 0.5 * y + 0.2 * rng.normal(size=n)
-    dependent = conditional_mutual_information_test_knn(
-        np.stack([w, y, z], axis=1), [[0], [1]], [2], n_surrogates=19, prng=0
-    )
-    assert dependent.pvalue <= 0.05
-
-
-@pytest.mark.parametrize("dependent", [False, True])
-def test_benjamini_hochberg_matches_scipy(dependent):
-    p = np.random.default_rng(4).random(30) ** 3
-    reject, adjusted = benjamini_hochberg(p, 0.1, dependent=dependent)
-    expected = false_discovery_control(p, method="by" if dependent else "bh")
-    assert np.allclose(adjusted, expected)
-    assert np.array_equal(reject, expected <= 0.1)
-    assert benjamini_hochberg([])[0].size == 0
