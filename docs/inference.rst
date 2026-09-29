@@ -7,10 +7,9 @@ Inference
 
 :mod:`dit.inference` estimates distributions and information quantities from
 samples. Plug-in counts live alongside bias-corrected entropy estimators,
-Markov-order tests and selection, surrogate-data significance tests,
-stationary-bootstrap confidence intervals, and k-nearest-neighbor /
-Kraskov–Stögbauer–Grassberger estimators for differential entropy and total
-correlation.
+Markov-order tests and selection, surrogate and bootstrap generators, and
+k-nearest-neighbor / Kraskov–Stögbauer–Grassberger estimators for differential
+entropy and total correlation.
 
 The kNN / KSG implementations optionally use ``scikit-learn`` (installed
 with the ``dit[optional]`` extra) when it is available.
@@ -59,8 +58,8 @@ Wrap separate recordings in :class:`Trials` to pool them. Counts are summed
 over trials, but no word ever spans the boundary between two trials, which
 concatenating them would do. Every sample-based function in this module accepts
 :class:`Trials`: block entropies, Markov-order tests (each trial gets its own
-Whittle surrogate set), transfer entropy, surrogates, and the stationary
-bootstrap, which resamples whole trials.
+Whittle surrogate set), surrogates, and the stationary bootstrap, which
+resamples whole trials.
 
 .. code-block:: python
 
@@ -73,9 +72,8 @@ Undersampling
 
 Estimators raise an :class:`UndersamplingWarning` when there are more than a
 fifth as many distinct words as windows, or when the word space
-``len(alphabet) ** L`` exceeds the number of windows. Test results report their
-effective sample size (``MarkovOrderTest.n_windows``,
-``SurrogateTest.n_samples``).
+``len(alphabet) ** L`` exceeds the number of windows. Markov-order test results
+report their effective sample size (``MarkovOrderTest.n_windows``).
 
 Entropy estimators
 ==================
@@ -151,46 +149,23 @@ true order; all methods return longer histories as the sample grows.
    In [11]: select_markov_order(x, max_order=4, prng=0)
    Out[11]: 1
 
-Significance and uncertainty
-============================
+Conditional mutual information and resampling
+=============================================
 
-:func:`transfer_entropy` :cite:`Schreiber2000` and
-:func:`conditional_mutual_information` estimate from samples with any of the
-entropy estimators above. Transfer entropy takes separate target and source
-history lengths (``history_length``, ``source_history``), a ``lag`` between the
-source past and the target present, and ``conditions``: further series whose
-pasts are conditioned on, which removes a common driver. ``history_length='auto'``
-sets the target history to its estimated Markov order.
-:func:`transfer_entropy_test` compares the estimate against surrogates:
+:func:`conditional_mutual_information` estimates :math:`I[X : Y \mid Z]` from
+paired samples with any of the entropy estimators above; lagged copies of a
+series give time-delayed and transfer-entropy-style quantities.
 
-* ``null='conditional'`` permutes the source past within strata of the target
-  past, which targets exactly :math:`T_{X \to Y} = 0`.
-* ``null='whittle'`` replaces the source with :func:`whittle_surrogates`,
-  preserving its own Markov structure.
-* ``null='shift'`` (:func:`shift_surrogates`) circularly shifts the source.
-* ``null='block'`` (:func:`block_surrogates`) shuffles blocks of the source.
+:func:`stationary_bootstrap` :cite:`Politis1994` resamples a series in blocks of
+geometrically distributed length (whole trials for :class:`Trials`). Each block
+junction creates words that were never observed, so statistics of lagged windows
+are biased toward independence unless the mean block length is much longer than
+the window.
 
-The last three test the stronger null that the two series are independent,
-while keeping the source's memory. An i.i.d. shuffle would inflate false
-positives whenever the source is autocorrelated.
-:func:`conditional_mutual_information_test` is the analogous permutation test
-for paired samples. For continuous data,
-:func:`conditional_mutual_information_test_knn` pairs the KSG estimator with
-local-permutation surrogates, which shuffle :math:`X` among nearest neighbours
-in :math:`Z` :cite:`Runge2018`.
-
-When many tests are run at once, for example every pair of series in a
-network, :func:`benjamini_hochberg` controls the false discovery rate
-:cite:`Benjamini1995`. Pass ``dependent=True`` for the Benjamini–Yekutieli
-correction, which is valid under arbitrary dependence :cite:`Benjamini2001`.
-
-:func:`stationary_bootstrap` :cite:`Politis1994` resamples a series in blocks
-of geometrically distributed length, and :func:`bootstrap_ci` turns any
-statistic into a confidence interval. Each block junction creates words that
-were never observed, so statistics of lagged windows are biased toward
-independence unless the mean block length is much longer than the window.
-:func:`transfer_entropy_ci` avoids this by resampling the aligned windows
-themselves.
+Transfer entropy, its surrogate tests and confidence intervals, false discovery
+rate control, and network inference live in the companion package
+`infoflow <https://github.com/dit/infoflow>`_, which builds on these estimators
+and null generators.
 
 API
 ===
@@ -235,26 +210,11 @@ API
 
 .. autofunction:: block_surrogates
 
-.. autofunction:: transfer_entropy
-
-.. autofunction:: transfer_entropy_test
-
-.. autofunction:: transfer_entropy_ci
-
 .. autofunction:: conditional_mutual_information
 
-.. autofunction:: conditional_mutual_information_test
-
-.. autoclass:: SurrogateTest
-
-.. autofunction:: benjamini_hochberg
-
 .. autofunction:: stationary_bootstrap
-
-.. autofunction:: bootstrap_ci
 
 .. autofunction:: differential_entropy_knn
 
 .. autofunction:: total_correlation_ksg
 
-.. autofunction:: conditional_mutual_information_test_knn

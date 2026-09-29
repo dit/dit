@@ -16,6 +16,7 @@ __all__ = (
     "entropy_1",
     "entropy_2",
     "entropy_from_counts",
+    "conditional_mutual_information",
     "lz_entropy_rate",
 )
 
@@ -365,3 +366,66 @@ def lz_entropy_rate(data):
     if count == 0 or total == 0:
         raise ValueError("`data` is too short to estimate an entropy rate.")
     return float(count / total)
+
+
+def _dense(values):
+    """
+    Integer codes ``0..K-1`` for a 1D array of labels, or for the rows of a 2D array.
+    """
+    values = np.asarray(values)
+    if values.ndim > 1:
+        _, inverse = np.unique(values, axis=0, return_inverse=True)
+    else:
+        _, inverse = np.unique(values, return_inverse=True)
+    return inverse.ravel().astype(np.int64)
+
+
+def _pair(a, b):
+    return _dense(a * (int(b.max()) + 1) + b)
+
+
+def _cmi_codes(x, y, z, estimator):
+    """
+    :math:`I[x : y \\mid z]` in bits from dense integer codes.
+    """
+
+    def H(codes):
+        return _entropy(np.bincount(codes), estimator)
+
+    xz, yz = _pair(x, z), _pair(y, z)
+    xyz = _pair(xz, y)
+    return H(xz) + H(yz) - H(xyz) - H(z)
+
+
+def _check_joint(*codes):
+    """
+    Warn if the joint outcomes of aligned code arrays are undersampled.
+    """
+    joint = codes[0]
+    for c in codes[1:]:
+        joint = _pair(joint, c)
+    check_sampling(len(np.unique(joint)), len(joint), stacklevel=3)
+
+
+def conditional_mutual_information(x, y, z=None, estimator="plugin"):
+    """
+    Estimate :math:`I[X : Y \\mid Z]` in bits from paired samples.
+
+    Parameters
+    ----------
+    x, y : array_like
+        Samples of each variable; rows of 2D arrays are joint outcomes.
+    z : array_like, None
+        Samples of the conditioning variable. If None, estimate :math:`I[X : Y]`.
+    estimator : str
+        The entropy estimator applied to each term; see
+        :func:`~dit.inference.entropy_from_counts`.
+
+    Returns
+    -------
+    cmi : float
+    """
+    x, y = _dense(x), _dense(y)
+    z = np.zeros_like(x) if z is None else _dense(z)
+    _check_joint(x, y, z)
+    return _cmi_codes(x, y, z, estimator)
