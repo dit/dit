@@ -16,7 +16,10 @@ __all__ = (
     "entropy_1",
     "entropy_2",
     "entropy_from_counts",
+    "conditional_mutual_information",
     "lz_entropy_rate",
+    "permutation_entropy",
+    "weighted_permutation_entropy",
 )
 
 
@@ -365,3 +368,155 @@ def lz_entropy_rate(data):
     if count == 0 or total == 0:
         raise ValueError("`data` is too short to estimate an entropy rate.")
     return float(count / total)
+
+
+def _dense(values):
+    """
+    Integer codes ``0..K-1`` for a 1D array of labels, or for the rows of a 2D array.
+    """
+    values = np.asarray(values)
+    if values.ndim > 1:
+        _, inverse = np.unique(values, axis=0, return_inverse=True)
+    else:
+        _, inverse = np.unique(values, return_inverse=True)
+    return inverse.ravel().astype(np.int64)
+
+
+def _pair(a, b):
+    return _dense(a * (int(b.max()) + 1) + b)
+
+
+def _cmi_codes(x, y, z, estimator):
+    """
+    :math:`I[x : y \\mid z]` in bits from dense integer codes.
+    """
+
+    def H(codes):
+        return _entropy(np.bincount(codes), estimator)
+
+    xz, yz = _pair(x, z), _pair(y, z)
+    xyz = _pair(xz, y)
+    return H(xz) + H(yz) - H(xyz) - H(z)
+
+
+def _check_joint(*codes):
+    """
+    Warn if the joint outcomes of aligned code arrays are undersampled.
+    """
+    joint = codes[0]
+    for c in codes[1:]:
+        joint = _pair(joint, c)
+    check_sampling(len(np.unique(joint)), len(joint), stacklevel=3)
+
+
+def conditional_mutual_information(x, y, z=None, estimator="plugin"):
+    """
+    Estimate :math:`I[X : Y \\mid Z]` in bits from paired samples.
+
+    Parameters
+    ----------
+    x, y : array_like
+        Samples of each variable; rows of 2D arrays are joint outcomes.
+    z : array_like, None
+        Samples of the conditioning variable. If None, estimate :math:`I[X : Y]`.
+    estimator : str
+        The entropy estimator applied to each term; see
+        :func:`~dit.inference.entropy_from_counts`.
+
+    Returns
+    -------
+    cmi : float
+    """
+    x, y = _dense(x), _dense(y)
+    z = np.zeros_like(x) if z is None else _dense(z)
+    _check_joint(x, y, z)
+    return _cmi_codes(x, y, z, estimator)
+
+
+def permutation_entropy(ts, order=3, delay=1, normalize=False, estimator="plugin", ties="first", prng=None):
+    """
+    The permutation entropy of a real-valued series :cite:`Bandt2002`.
+
+    This is the entropy, in bits, of the distribution of
+    :func:`~dit.inference.ordinal_patterns` of order :math:`m` and delay
+    :math:`\\tau`. For piecewise-monotone maps, the permutation entropy per
+    symbol converges to the Kolmogorov–Sinai entropy as :math:`m \\to \\infty`.
+
+    Parameters
+    ----------
+    ts : array_like or Trials
+        The series, or independent trials (patterns are pooled).
+    order, delay : int
+        The pattern order :math:`m` and delay :math:`\\tau`.
+    normalize : bool
+        Divide by :math:`\\log_2 m!`, giving a value in :math:`[0, 1]`.
+    estimator : str
+        See :func:`entropy_from_counts`; ``'nsb'`` uses :math:`m!` outcomes.
+    ties : {'first', 'noise', 'distinct'}
+        See :func:`~dit.inference.ordinal_patterns`.
+    prng : None, int, Generator, RandomState
+        Source of randomness for ``ties='noise'``.
+
+    Returns
+    -------
+    h : float
+    """
+    from math import factorial
+
+    from ._symbols import is_trials
+    from .binning import ordinal_patterns
+
+    patterns = ordinal_patterns(ts, order, delay, ties, prng)
+    codes = np.concatenate(list(patterns)) if is_trials(patterns) else patterns
+    K = factorial(order)
+    counts = np.unique(codes, return_counts=True)[1]
+    check_sampling(len(counts), int(counts.sum()), K, 1)
+    h = _entropy(counts, estimator, K)
+    return h / np.log2(K) if normalize else h
+
+
+def weighted_permutation_entropy(ts, order=3, delay=1, normalize=False, ties="first", prng=None):
+    """
+    The weighted permutation entropy of a real-valued series :cite:`Fadlallah2013`.
+
+    Each window's pattern is weighted by the variance of the window, so patterns
+    of large fluctuations count more than patterns of noise-level wiggles. This
+    restores some of the amplitude information that
+    :func:`permutation_entropy` discards. Garland, James & Bradley use it as a
+    model-free measure of predictability :cite:`Garland2014`.
+
+    Parameters
+    ----------
+    ts : array_like or Trials
+        The series, or independent trials (weights are pooled).
+    order, delay : int
+        The pattern order :math:`m` and delay :math:`\\tau`.
+    normalize : bool
+        Divide by :math:`\\log_2 m!`.
+    ties : {'first', 'noise', 'distinct'}
+        See :func:`~dit.inference.ordinal_patterns`.
+    prng : None, int, Generator, RandomState
+        Source of randomness for ``ties='noise'``.
+
+    Returns
+    -------
+    h : float
+    """
+    from math import factorial
+
+    from ._symbols import is_trials
+    from .binning import _windows, ordinal_patterns
+
+    series = list(ts) if is_trials(ts) else [ts]
+    codes, weights = [], []
+    for s in series:
+        codes.append(ordinal_patterns(s, order, delay, ties, prng))
+        weights.append(np.var(_windows(s, order, delay), axis=1))
+    codes, weights = np.concatenate(codes), np.concatenate(weights)
+    total = weights.sum()
+    if total == 0:
+        return 0.0
+    p = np.bincount(np.unique(codes, return_inverse=True)[1].ravel(), weights=weights) / total
+    p = p[p > 0]
+    h = float(-np.sum(p * np.log2(p)))
+    return h / np.log2(factorial(order)) if normalize else h

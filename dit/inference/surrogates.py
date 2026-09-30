@@ -19,6 +19,7 @@ from ._symbols import Trials, as_generator, decode, is_trials, standardize, stan
 __all__ = (
     "block_surrogates",
     "shift_surrogates",
+    "stationary_bootstrap",
     "whittle_count",
     "whittle_surrogates",
 )
@@ -286,3 +287,46 @@ def block_surrogates(data, block_length, n=1, prng=None):
     data = np.asarray(data)
     blocks = [data[i : i + block_length] for i in range(0, len(data), block_length)]
     return np.stack([np.concatenate([blocks[j] for j in rng.permutation(len(blocks))]) for _ in range(n)])
+
+
+def stationary_bootstrap(data, n=1, mean_block_length=None, prng=None):
+    """
+    Resample a series with the stationary bootstrap :cite:`Politis1994`.
+
+    Each resample concatenates blocks that start at uniformly random positions
+    and have geometrically distributed lengths, wrapping around the end of the
+    series. Rows of multivariate `data` are resampled together. For
+    :class:`~dit.inference.Trials`, whole trials are resampled with replacement
+    instead (a cluster bootstrap), so no resample joins two trials.
+
+    Parameters
+    ----------
+    data : array_like or Trials
+        The series (along the first axis), or independent trials.
+    n : int
+        The number of resamples.
+    mean_block_length : float, None
+        The mean block length; defaults to ``N ** (1 / 3)``.
+    prng : None, int, Generator, RandomState
+        Source of randomness.
+
+    Returns
+    -------
+    resamples : np.ndarray or list of Trials
+        Shape ``(n,) + np.shape(data)``, or a list of `n` :class:`Trials`.
+    """
+    rng = as_generator(prng)
+    if is_trials(data):
+        picks = rng.integers(0, len(data), size=(n, len(data)))
+        return [Trials(data[j] for j in row) for row in picks]
+    data = np.asarray(data)
+    N = len(data)
+    if mean_block_length is None:
+        mean_block_length = N ** (1 / 3)
+    new_block = rng.random((n, N)) < 1 / mean_block_length
+    new_block[:, 0] = True
+    starts = rng.integers(0, N, size=(n, N))
+    positions = np.arange(N)
+    block_start = np.maximum.accumulate(np.where(new_block, positions, 0), axis=1)
+    index = (np.take_along_axis(starts, block_start, axis=1) + positions - block_start) % N
+    return data[index]
