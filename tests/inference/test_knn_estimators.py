@@ -9,6 +9,7 @@ from hypothesis.strategies import floats, lists
 
 from dit.inference.knn_estimators import (
     _total_correlation_ksg_scipy,
+    _total_correlation_ksg_sklearn,
     differential_entropy_knn,
     total_correlation_ksg,
 )
@@ -107,3 +108,22 @@ def test_knn_prng_reproducible():
     data = np.hstack([data, data % 2])
     assert differential_entropy_knn(data, prng=3) == differential_entropy_knn(data, prng=3)
     assert total_correlation_ksg(data, [[0], [1]], prng=3) == total_correlation_ksg(data, [[0], [1]], prng=3)
+
+
+@pytest.mark.parametrize("estimator", [_total_correlation_ksg_scipy, _total_correlation_ksg_sklearn])
+def test_cmi_ksg_high_dimensional_condition(estimator):
+    """
+    Given a 4-dimensional Z, X = c(Z) + e1 and Y = X + c'(Z) + e2 with unit noises, so
+    I[X : Y | Z] = log2(1 + var(e1) / var(e2)) / 2 = 0.5 bits. Counting neighbours on the
+    boundary of the epsilon-ball (instead of strictly inside) biases this far downward.
+    """
+    if estimator is _total_correlation_ksg_sklearn:
+        pytest.importorskip("sklearn")
+    rng = np.random.default_rng(0)
+    n = 5000
+    z = rng.normal(size=(n, 4))
+    x = 0.5 * z.sum(axis=1) + rng.normal(size=n)
+    y = x + 0.5 * z.sum(axis=1) + rng.normal(size=n)
+    data = np.column_stack([x, y, z])
+    cmi = estimator(data, [[0], [1]], [2, 3, 4, 5], k=4, prng=0)
+    assert cmi == pytest.approx(0.5, abs=0.05)
