@@ -331,6 +331,200 @@ class MoreIntrinsicMIMixin:
         return intrinsic
 
 
+class ReducedIntrinsicMIMixin:
+    """
+    Mixin containing reduced intrinsic MI optimizer logic.
+
+    The reduced intrinsic mutual information is defined as a nested
+    minimization,
+
+    .. math::
+        I[X:Y \\Downarrow Z] = \\min_{U} I[X:Y \\downarrow ZU] + H[U]
+                            = \\min_{U} \\min_{\\bar{Z}} I[X:Y|\\bar{Z}] + H[U],
+
+    with ``U`` drawn from ``p(u|xyz)`` and ``\\bar{Z}`` from ``p(\\bar{z}|zu)``.
+    Since ``H[U]`` does not depend on ``\\bar{Z}``, the two minimizations
+    combine into a single joint minimization over both channels, so ``U`` and
+    ``\\bar{Z}`` are registered as two chained auxiliary variables.
+
+    Must be composed with a ``BaseAuxVarOptimizer``-compatible base class.
+    """
+
+    name = ""
+    style = "reduced"
+
+    # The objective ``I[X:Y|Zbar] + H[U]`` is non-negative, so the optimizer
+    # can early-stop once it reaches zero.
+    _objective_bound = 0.0
+
+    def __init__(self, dist, rvs=None, crvs=None, bound=None):
+        """
+        Initialize the optimizer.
+
+        Parameters
+        ----------
+        dist : Distribution
+            The distribution to compute the reduced intrinsic mutual
+            information of.
+        rvs : list, None
+            A list of lists. Each inner list specifies the indexes of the random
+            variables used to calculate the intrinsic mutual information. If None,
+            then it is calculated over all random variables, which is equivalent
+            to passing `rvs=dist.rvs`.
+        crvs : list
+            A single list of indexes specifying the random variables to
+            condition on.
+        bound : int, None
+            Specifies a bound on the size of the auxiliary random variable `U`.
+            If None, then the theoretical bound is used. The bound on
+            :math:`\\bar{Z}` is then :math:`|Z| \\cdot |U|`.
+        """
+        if not crvs:
+            msg = "Intrinsic mutual informations require a conditional variable."
+            raise ditException(msg)
+
+        super().__init__(dist, rvs, crvs)
+
+        theoretical_bound = prod(self._shape)
+        bound_u = min([bound, theoretical_bound]) if bound else theoretical_bound
+
+        crv_index = len(self._shape) - 1
+        u_index = crv_index + 1
+        bound_zbar = self._shape[crv_index] * bound_u
+
+        self._construct_auxvars(
+            [
+                (self._rvs | self._crvs, bound_u),
+                ({crv_index, u_index}, bound_zbar),
+            ]
+        )
+        self._u = {u_index}
+        self._zbar = {u_index + 1}
+
+    @abstractmethod
+    def measure(self, rvs, crvs):
+        """
+        Abstract method for computing the appropriate measure of generalized
+        mutual information.
+
+        Parameters
+        ----------
+        rvs : set
+            The set of random variables.
+        crvs : set
+            The set of conditional random variables.
+
+        Returns
+        -------
+        gmi : func
+            The generalized mutual information.
+        """
+        pass
+
+    def _objective(self):
+        """
+        Minimize :math:`I[X:Y|\\bar{Z}] + H[U]`, or its multivariate analog.
+
+        Returns
+        -------
+        obj : func
+            The objective function.
+        """
+        mmi = self.measure(self._rvs, self._zbar)
+        h = self._entropy(self._u)
+
+        def objective(self, x):
+            """
+            Compute :math:`I[X:Y|\\bar{Z}] + H[U]`
+
+            Parameters
+            ----------
+            x : np.ndarray
+                An optimization vector.
+
+            Returns
+            -------
+            obj : float
+                The value of the objective.
+            """
+            pmf = self.construct_joint(x)
+            return mmi(pmf) + h(pmf)
+
+        return objective
+
+    def optimize(self, *args, **kwargs):
+        """
+        Perform the optimization, then compare against known feasible points
+        and keep whichever yields the lowest objective.
+        """
+        super().optimize(*args, **kwargs)
+
+        constant = self.construct_constant_initial()
+        copy = self.construct_copy_initial()
+
+        # Constant U with Zbar a copy of Z gives the conditional mutual information.
+        a, b = self._parts[1]
+        conditional = constant.copy()
+        conditional[a:b] = copy[a:b]
+
+        options = [
+            constant,  # the unconditioned mutual information
+            conditional,
+            self._optima,  # found optima
+        ]
+
+        self._optima = min(options, key=lambda opt: self.objective(opt))
+
+    @classmethod
+    def functional(cls):
+        """
+        Construct a functional form of the optimizer.
+        """
+
+        @unitful
+        def reduced_intrinsic(dist, rvs=None, crvs=None, niter=None, bounds=None, backend="numpy"):
+            if bounds is None:
+                bounds = (2, 3, 4, None)
+
+            actual_cls = _make_backend_subclass(cls, backend)
+
+            def _run(bound, rng):
+                opt = actual_cls(dist, rvs=rvs, crvs=crvs, bound=bound)
+                opt.optimize(niter=niter, rng=rng)
+                val = opt.objective(opt._optima)
+                return float(val.detach().cpu().item()) if hasattr(val, "detach") else float(val)
+
+            candidates = parallel_sweep(_run, bounds)
+            return min(candidates)
+
+        reduced_intrinsic.__doc__ = f"""
+            Compute the reduced intrinsic {cls.name}.
+
+            Parameters
+            ----------
+            dist : Distribution
+                The distribution to compute the reduced intrinsic {cls.name} of.
+            rvs : list, None
+                A list of lists. Each inner list specifies the indexes of the random
+                variables used to calculate the intrinsic {cls.name}. If None,
+                then it is calculated over all random variables, which is equivalent
+                to passing `rvs=dist.rvs`.
+            crvs : list
+                A single list of indexes specifying the random variables to
+                condition on.
+            niter : int
+                The number of optimization iterations to perform.
+            bounds : [int], None
+                Bounds on the size of the auxiliary variable `U`. If None, use the
+                theoretical bound. This is used to better sample smaller subspaces.
+            backend : str
+                The optimization backend. One of ``'numpy'`` (default),
+                ``'jax'``, or ``'torch'``.
+            """
+
+        return reduced_intrinsic
+
+
 class InnerTwoPartIMIMixin:
     """
     Mixin containing inner two-part intrinsic MI optimizer logic.
@@ -697,119 +891,19 @@ class BaseMoreIntrinsicMutualInformation(MoreIntrinsicMIMixin, BaseAuxVarOptimiz
     pass
 
 
-class BaseReducedIntrinsicMutualInformation(BaseMoreIntrinsicMutualInformation):
+class BaseReducedIntrinsicMutualInformation(ReducedIntrinsicMIMixin, BaseAuxVarOptimizer):
     """
-    Compute the reduced intrinsic mutual information, a lower bound on the secret
-    key agreement rate:
+    Compute the reduced intrinsic mutual information, an upper bound on the
+    secret key agreement rate:
 
     .. math::
         I[X : Y \\Downarrow Z] = min_U I[X : Y \\downarrow ZU] + H[U]
+                              = min_{U, \\bar{Z}} I[X : Y | \\bar{Z}] + H[U]
+
+    Uses the default NumPy / SciPy optimization backend.
     """
 
-    style = "reduced"
-
-    # The outer minimization over ``U`` is non-convex; a single basin-hopping
-    # run from a random start lands in a local minimum too often (returning,
-    # e.g., 0.337 where the true value is 0). The objective
-    # ``I[X:Y down ZU] + H[U]`` is non-negative, so ``_objective_bound = 0.0``
-    # lets the optimizer early-stop once the true optimum is reached, and
-    # :meth:`optimize` additionally tests the trivial-``U`` (constant) and copy
-    # initials -- the constant auxiliary reduces RIMI to the plain intrinsic MI,
-    # which is the optimum whenever a non-trivial ``U`` cannot help.
-    _objective_bound = 0.0
-
-    def optimize(self, *args, **kwargs):
-        """
-        Perform the optimization, then compare against the trivial-``U``
-        (constant) and copy initials and keep whichever yields the lowest
-        objective.
-        """
-        result = super().optimize(*args, **kwargs)
-
-        options = [
-            self.construct_constant_initial(),  # trivial auxiliary U
-            self.construct_copy_initial(),
-            result.x,  # found optima
-        ]
-
-        self._optima = min(options, key=lambda opt: self.objective(opt))
-
-    @property
-    @staticmethod
-    @abstractmethod
-    def measure():
-        pass
-
-    # Maximum number of distinct inner-solve results to memoize per thread.
-    _inner_cache_size = 64
-
-    def _inner_cache_dict(self):
-        """Return this thread's inner-solve cache (thread-local, see construct_joint cache)."""
-        store = self.__dict__.get("_inner_cache")
-        if store is None:
-            store = self._inner_cache = threading.local()
-        cache = getattr(store, "cache", None)
-        if cache is None:
-            cache = store.cache = {}
-        return cache
-
-    def _inner_cache_lookup(self, joint_np):
-        """Return ``(key, cached_value_or_None)`` for the marginalized joint."""
-        cache = self._inner_cache_dict()
-        key = joint_np.tobytes()
-        return key, cache.get(key)
-
-    def _inner_cache_store(self, key, value):
-        """Store *value* under *key*, evicting the oldest entry when full."""
-        cache = self._inner_cache_dict()
-        if len(cache) >= self._inner_cache_size:
-            cache.pop(next(iter(cache)))
-        cache[key] = value
-
-    def _objective(self):
-        """
-        Minimize :math:`I[X:Y \\downarrow ZU] + H[U]`
-
-        Returns
-        -------
-        obj : func
-            The objective function.
-        """
-        h = self._entropy(self._arvs)
-
-        def objective(self, x):
-            """
-            Compute :math:`I[X:Y \\downarrow ZU] + H[U]`
-
-            Parameters
-            ----------
-            x : np.ndarray
-                An optimization vector.
-
-            Returns
-            -------
-            obj : float
-                The value of the objective.
-            """
-            pmf = self.construct_joint(x)
-
-            # I[X:Y \downarrow ZU] — a full nested optimization. Memoize on the
-            # joint bytes so a repeated outer iterate reuses the inner solve.
-            joint_np = pmf.detach().cpu().numpy() if hasattr(pmf, "detach") else np.asarray(pmf)
-            cache_key, cached = self._inner_cache_lookup(joint_np)
-            if cached is not None:
-                a = cached
-            else:
-                d = Distribution.from_ndarray(pmf)
-                a = self.measure(dist=d, rvs=[[rv] for rv in self._rvs], crvs=self._crvs | self._arvs)
-                self._inner_cache_store(cache_key, a)
-
-            # H[U]
-            b = h(pmf)
-
-            return a + b
-
-        return objective
+    pass
 
 
 class BaseMinimalIntrinsicMutualInformation(BaseMoreIntrinsicMutualInformation):
