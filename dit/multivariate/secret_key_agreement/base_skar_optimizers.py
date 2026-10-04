@@ -869,7 +869,7 @@ class InnerTwoPartIntrinsicMutualInformation(InnerTwoPartIMIMixin, BaseAuxVarOpt
 
     .. math::
         I[X : Y \\downarrow\\downarrow\\downarrow\\downarrow Z] =
-          inf_{J} min_{V - U - XY - ZJ} I[X:Y|J] + I[U:J|V] - I[U:Z|V]
+          inf_{J} max_{V - U - XY - ZJ} I[X:Y|J] + I[U:J|V] - I[U:Z|V]
 
     Uses the default NumPy / SciPy optimization backend.
     """
@@ -884,7 +884,7 @@ class BaseTwoPartIntrinsicMutualInformation(TwoPartIMIMixin, BaseAuxVarOptimizer
 
     .. math::
         I[X : Y \\downarrow\\downarrow\\downarrow\\downarrow Z] =
-          inf_{J} min_{V - U - XY - ZJ} I[X:Y|J] + I[U:J|V] - I[U:Z|V]
+          inf_{J} max_{V - U - XY - ZJ} I[X:Y|J] + I[U:J|V] - I[U:Z|V]
 
     Uses the default NumPy / SciPy optimization backend.
     """
