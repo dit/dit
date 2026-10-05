@@ -357,6 +357,11 @@ class ReducedIntrinsicMIMixin:
     # can early-stop once it reaches zero.
     _objective_bound = 0.0
 
+    # The joint minimization over ``U`` and ``Zbar`` is non-convex; a single
+    # basin-hopping run stalls in a poor basin (e.g. 1.0 or 1.39 on
+    # intrinsic_3, where 0.98 is reachable) about one time in five.
+    _shotgun = 10
+
     def __init__(self, dist, rvs=None, crvs=None, bound=None):
         """
         Initialize the optimizer.
