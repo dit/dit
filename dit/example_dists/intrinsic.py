@@ -9,6 +9,7 @@ __all__ = (
     "intrinsic_1",
     "intrinsic_2",
     "intrinsic_3",
+    "bound_information",
 )
 
 
@@ -28,3 +29,11 @@ intrinsic_3 = Distribution(
     [1 / 24, 1 / 12, 1 / 24, 1 / 12, 1 / 24, 1 / 12, 1 / 24, 1 / 12, 1 / 8, 1 / 8, 1 / 8, 1 / 8],
 )
 intrinsic_3.secret_rate = 0.97927916037609197
+
+
+# from the bipartite bound information paper; Eve's symbol 2 is the erasure
+bound_information = Distribution(
+    ["000", "002", "010", "011", "012", "100", "101", "102", "111", "112"],
+    [5 / 36, 5 / 36, 2 / 36, 2 / 36, 4 / 36, 2 / 36, 2 / 36, 4 / 36, 5 / 36, 5 / 36],
+)
+bound_information.secret_rate = 0.0

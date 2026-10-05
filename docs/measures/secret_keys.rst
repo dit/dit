@@ -204,6 +204,23 @@ Two-Part Intrinsic Mutual Information
 
    \I{X : Y \downarrow\downarrow\downarrow\downarrow Z} = inf_{J} min_{V - U - XY - ZJ} \I{X : Y | J} + \I{U : J | V} - \I{U : Z | V}
 
+.. py:module:: dit.multivariate.secret_key_agreement.less_noisy_intrinsic_mutual_information
+
+Less-Noisy Intrinsic Mutual Information
+***************************************
+
+If Eve's channel :math:`p(z | x y)` is *less noisy* than a channel :math:`p(j | x y)`, meaning :math:`\I{U : Z} \geq \I{U : J}` for every :math:`U - XY - ZJ` and every input distribution, then no protocol can distill more key against :math:`Z` than against :math:`J` :cite:`gohari2017achieving`. The :py:func:`less_noisy_intrinsic_mutual_information` :cite:`pauwels2026bipartite` optimizes over all such :math:`J`:
+
+.. math::
+
+   \I{X : Y \downarrow_{\mathrm{ln}} Z} = \inf_{p(j | x y) \,:\, p(z | x y) \succeq_{\mathrm{ln}} p(j | x y)} \I{X : Y | J}
+
+Every degradation :math:`p(\overline{z} | z)` is dominated, so this never exceeds the :ref:`Intrinsic Mutual Information`, and it is never smaller than the inf-max upper bound of Gohari and Anantharam (2010), stated as Eq. (11) of :cite:`abin2026source`. It is not comparable in general to the reduced or minimal intrinsic mutual informations.
+
+A channel is less noisy than another iff the difference of the two output entropies is concave in the input distribution :cite:`vandijk1997special`. That forces every dominated channel to factor as :math:`p(j | x y) = \sum_z p(z | x y) K(z, j)` for a real, possibly signed, matrix :math:`K`; ``dit`` optimizes over :math:`K`, imposing the concavity condition on a finite sample of input distributions.
+
+The distribution ``bound_information`` of :cite:`pauwels2026bipartite` has :math:`\I{X : Y \downarrow Z} > 0` but :math:`\I{X : Y \downarrow_{\mathrm{ln}} Z} = 0`, and so a secret key agreement rate of zero. When :math:`X` and :math:`Y` are binary and :math:`Z = X \oplus Y`, every known upper bound, this one included, equals :math:`\I{X : Y}` :cite:`abin2026source`.
+
 All Together Now
 ----------------
 
