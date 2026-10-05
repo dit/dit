@@ -10,6 +10,7 @@ from .intrinsic_mutual_informations import (
     intrinsic_dual_total_correlation,
     intrinsic_total_correlation,
 )
+from .iterated_discarding import iterated_discarding_skar
 from .less_noisy_intrinsic_mutual_information import less_noisy_intrinsic_mutual_information
 from .minimal_intrinsic_mutual_informations import (
     minimal_intrinsic_CAEKL_mutual_information,

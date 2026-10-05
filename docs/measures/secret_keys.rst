@@ -139,6 +139,19 @@ Interactive Intrinsic Mutual Information
       \sum_{i \textrm{even}} \I{U_i : Y | U_{0 \ldots i}} - \I{U_i : Z | U_{0 \ldots i}} + \\
       \sum_{i \textrm{odd}}  \I{U_i : X | U_{0 \ldots i}} - \I{U_i : Z | U_{0 \ldots i}}
 
+.. py:module:: dit.multivariate.secret_key_agreement.iterated_discarding
+
+Iterated Public Discarding
+**************************
+
+The :py:func:`iterated_discarding_skar` restricts the interactive bound to protocols in which every auxiliary variable is a public keep/discard flag :cite:`maurer1993secret`.
+Alice and Bob alternate rounds; in each round the speaker announces, independently for each position, whether to keep it, with a keep probability :math:`k_i(\cdot)` that depends only on their own symbol.
+Discarded positions are abandoned, and on the surviving positions whichever party fares better sends their variable as a one-way key, yielding the final term :math:`\max\{\I{X : Y} - \I{X : Z}, \I{X : Y} - \I{Y : Z}\}` evaluated on the post-selected distribution.
+Each round contributes :math:`\I{U_i : Y} - \I{U_i : Z}` (Alice speaking) or :math:`\I{U_i : X} - \I{U_i : Z}` (Bob speaking), weighted by the probability that a position survives the earlier rounds.
+
+Because each round needs only one keep probability per symbol, this bound remains tractable for many more rounds than :py:func:`interactive_intrinsic_mutual_information`.
+For example, the W distribution, :math:`\{100, 010, 001\}` uniformly, has a one-way secret key agreement rate of zero in both directions, while iterated discarding reaches approximately :math:`0.138`, :math:`0.164`, and :math:`0.174` bits with one, two, and three discarding rounds, approaching roughly :math:`0.186` bits as the number of rounds grows.
+
 
 Upper Bounds
 ------------

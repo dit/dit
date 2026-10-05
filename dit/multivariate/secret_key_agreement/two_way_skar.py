@@ -6,6 +6,10 @@ import numpy as np
 
 from .interactive_intrinsic_mutual_informations import interactive_intrinsic_mutual_information
 from .intrinsic_mutual_informations import intrinsic_total_correlation as intrinsic_mutual_information
+from .iterated_discarding import iterated_discarding_skar
+from .minimal_intrinsic_mutual_informations import (
+    minimal_intrinsic_total_correlation as minimal_intrinsic_mutual_information,
+)
 from .no_communication import no_communication_skar
 from .relaxed_two_part_intrinsic_mutual_informations import relaxed_two_part_intrinsic_mutual_information
 from .skar_lower_bounds import necessary_intrinsic_mutual_information
@@ -47,6 +51,10 @@ def _two_way_skar_bounds_iter(dist, rvs=None, crvs=None, backend="numpy"):
     new_lower = necessary_intrinsic_mutual_information(dist, rvs, crvs, backend=backend)
     lower = max([lower, new_lower])
     yield lower, upper
+    new_lower = iterated_discarding_skar(dist, rvs, crvs)
+    lower = max([lower, new_lower])
+    yield lower, upper
+    new_upper = minimal_intrinsic_mutual_information(dist, rvs, crvs, backend=backend)
     # Warm-started from the minimal intrinsic mutual information, so never larger
     # than it. Not the two-part bound: its inner max over U, V is underestimated by
     # any alphabet cap or local optimum, so a truncated value need not be an upper bound.
