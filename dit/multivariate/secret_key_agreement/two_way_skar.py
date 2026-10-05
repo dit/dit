@@ -11,10 +11,8 @@ from .minimal_intrinsic_mutual_informations import (
     minimal_intrinsic_total_correlation as minimal_intrinsic_mutual_information,
 )
 from .no_communication import no_communication_skar
+from .relaxed_two_part_intrinsic_mutual_informations import relaxed_two_part_intrinsic_mutual_information
 from .skar_lower_bounds import necessary_intrinsic_mutual_information
-from .two_part_intrinsic_mutual_informations import (
-    two_part_intrinsic_total_correlation as two_part_intrinsic_mutual_information,
-)
 
 __all__ = (
     "two_way_skar",
@@ -57,6 +55,10 @@ def _two_way_skar_bounds_iter(dist, rvs=None, crvs=None, backend="numpy"):
     lower = max([lower, new_lower])
     yield lower, upper
     new_upper = minimal_intrinsic_mutual_information(dist, rvs, crvs, backend=backend)
+    # Warm-started from the minimal intrinsic mutual information, so never larger
+    # than it. Not the two-part bound: its inner max over U, V is underestimated by
+    # any alphabet cap or local optimum, so a truncated value need not be an upper bound.
+    new_upper = relaxed_two_part_intrinsic_mutual_information(dist, rvs, crvs, backend=backend)
     upper = min([upper, new_upper])
     yield lower, upper
     new_lower = interactive_intrinsic_mutual_information(
@@ -73,9 +75,6 @@ def _two_way_skar_bounds_iter(dist, rvs=None, crvs=None, backend="numpy"):
         dist, rvs, crvs, bound_func=bound_func, rounds=4, backend=backend
     )
     lower = max([lower, new_lower])
-    yield lower, upper
-    new_upper = two_part_intrinsic_mutual_information(dist, rvs, crvs, bound_j=2, bound_u=2, bound_v=2, backend=backend)
-    upper = min([upper, new_upper])
     yield lower, upper
 
 

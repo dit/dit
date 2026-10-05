@@ -1,15 +1,9 @@
 """
 The reduced intrinsic mutual information.
-
-Note: this code is nowhere near efficient enough to actually run. Don't try it.
 """
 
+from ...distribution import Distribution
 from .base_skar_optimizers import BaseReducedIntrinsicMutualInformation
-from .intrinsic_mutual_informations import (
-    intrinsic_caekl_mutual_information,
-    intrinsic_dual_total_correlation,
-    intrinsic_total_correlation,
-)
 
 __all__ = (
     "reduced_intrinsic_total_correlation",
@@ -24,7 +18,34 @@ class ReducedIntrinsicTotalCorrelation(BaseReducedIntrinsicMutualInformation):
     """
 
     name = "total correlation"
-    measure = staticmethod(intrinsic_total_correlation)
+
+    def measure(self, rvs, crvs):
+        """
+        The total correlation.
+
+        Parameters
+        ----------
+        rvs : iterable of iterables
+            The random variables.
+        crvs : iterable
+            The variables to condition on.
+
+        Returns
+        -------
+        tc : func
+            The total correlation.
+        """
+        return self._total_correlation(rvs, crvs)
+
+    def _objective_gradient(self):
+        """Gradient of ``T[X:Y:...|Zbar] + H[U]`` w.r.t. the joint."""
+        tc_grad = self._total_correlation_grad(self._rvs, self._zbar)
+        h_grad = self._entropy_grad(self._u)
+
+        def grad(pmf):
+            return tc_grad(pmf) + h_grad(pmf)
+
+        return grad
 
 
 reduced_intrinsic_total_correlation = ReducedIntrinsicTotalCorrelation.functional()
@@ -36,7 +57,34 @@ class ReducedIntrinsicDualTotalCorrelation(BaseReducedIntrinsicMutualInformation
     """
 
     name = "dual total correlation"
-    measure = staticmethod(intrinsic_dual_total_correlation)
+
+    def measure(self, rvs, crvs):
+        """
+        The dual total correlation, also known as the binding information.
+
+        Parameters
+        ----------
+        rvs : iterable of iterables
+            The random variables.
+        crvs : iterable
+            The variables to condition on.
+
+        Returns
+        -------
+        dtc : func
+            The dual total correlation.
+        """
+        return self._dual_total_correlation(rvs, crvs)
+
+    def _objective_gradient(self):
+        """Gradient of ``B[X:Y:...|Zbar] + H[U]`` w.r.t. the joint."""
+        dtc_grad = self._dual_total_correlation_grad(self._rvs, self._zbar)
+        h_grad = self._entropy_grad(self._u)
+
+        def grad(pmf):
+            return dtc_grad(pmf) + h_grad(pmf)
+
+        return grad
 
 
 reduced_intrinsic_dual_total_correlation = ReducedIntrinsicDualTotalCorrelation.functional()
@@ -48,7 +96,34 @@ class ReducedIntrinsicCAEKLMutualInformation(BaseReducedIntrinsicMutualInformati
     """
 
     name = "CAEKL mutual information"
-    measure = staticmethod(intrinsic_caekl_mutual_information)
+
+    def measure(self, rvs, crvs):
+        """
+        The CAEKL mutual information.
+
+        Parameters
+        ----------
+        rvs : iterable of iterables
+            The random variables.
+        crvs : iterable
+            The variables to condition on.
+
+        Returns
+        -------
+        caekl : func
+            The CAEKL mutual information.
+        """
+        return self._caekl_mutual_information(rvs, crvs)
+
+    def _objective_gradient(self):
+        """Gradient of ``J[X:Y:...|Zbar] + H[U]`` w.r.t. the joint."""
+        caekl_grad = self._caekl_mutual_information_grad(self._rvs, self._zbar)
+        h_grad = self._entropy_grad(self._u)
+
+        def grad(pmf):
+            return caekl_grad(pmf) + h_grad(pmf)
+
+        return grad
 
 
 reduced_intrinsic_CAEKL_mutual_information = ReducedIntrinsicCAEKLMutualInformation.functional()
@@ -80,7 +155,19 @@ def reduced_intrinsic_mutual_information_constructor(func):  # pragma: no cover
 
     class ReducedIntrinsicMutualInformation(BaseReducedIntrinsicMutualInformation):
         name = func.__name__
-        measure = staticmethod(func)
+
+        def measure(self, rvs, crvs):
+            """
+            Dummy method.
+            """
+            pass
+
+        def objective(self, x):
+            pmf = self.construct_joint(x)
+            d = Distribution.from_ndarray(pmf)
+            mi = func(d, rvs=[[rv] for rv in self._rvs], crvs=self._zbar)
+            h = self._entropy(self._u)(pmf)
+            return mi + h
 
     ReducedIntrinsicMutualInformation.__doc__ = f"""
     Compute the reduced intrinsic {func.__name__}.
@@ -91,13 +178,13 @@ def reduced_intrinsic_mutual_information_constructor(func):  # pragma: no cover
 
     Parameters
     ----------
-    d : Distribution
-        The distribution to compute {func.__name__} of.
+    x : np.ndarray
+        An optimization vector.
 
     Returns
     -------
-    imi : float
-        The {func.__name__}.
+    obj : float
+        The {func.__name__}-based objective function.
     """
     try:
         # python 2

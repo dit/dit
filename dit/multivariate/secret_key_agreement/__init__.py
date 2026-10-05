@@ -11,6 +11,7 @@ from .intrinsic_mutual_informations import (
     intrinsic_total_correlation,
 )
 from .iterated_discarding import iterated_discarding_skar
+from .less_noisy_intrinsic_mutual_information import less_noisy_intrinsic_mutual_information
 from .minimal_intrinsic_mutual_informations import (
     minimal_intrinsic_CAEKL_mutual_information,
     minimal_intrinsic_dual_total_correlation,
@@ -25,6 +26,7 @@ from .reduced_intrinsic_mutual_informations import (
     reduced_intrinsic_dual_total_correlation,
     reduced_intrinsic_total_correlation,
 )
+from .relaxed_two_part_intrinsic_mutual_informations import relaxed_two_part_intrinsic_mutual_information
 from .skar_lower_bounds import (
     necessary_intrinsic_mutual_information,
     secrecy_capacity_skar,

@@ -197,7 +197,17 @@ This bound can be improved, producing the :py:func:`reduced_intrinsic_mutual_inf
 
 This bound improves upon the :ref:`Intrinsic Mutual Information` when a small amount of information, :math:`U`, can result in a larger decrease in the amount of information shared between :math:`X` and :math:`Y` given :math:`Z` and :math:`U`.
 
+Although written as a nested minimization, the inner intrinsic mutual information is itself a minimization over :math:`p(\overline{z} | z u)`, and :math:`\H{U}` does not depend on :math:`\overline{Z}`. The two minimizations therefore combine into a single joint minimization over two chained channels, :math:`p(u | x y z)` and :math:`p(\overline{z} | z u)`:
+
+.. math::
+
+   \I{X : Y \downarrow\downarrow Z} = \min_{p(u | x y z),\, p(\overline{z} | z u)} \I{X : Y | \overline{Z}} + \H{U}
+
+This is how ``dit`` computes it, with :math:`|\overline{Z}| \leq |Z| |U|` from the corresponding bound for the intrinsic mutual information :cite:`renner2003new`.
+
 .. py:module:: dit.multivariate.secret_key_agreement.minimal_intrinsic_mutual_informations
+
+.. _minimal intrinsic mutual information:
 
 Minimal Intrinsic Mutual Information
 ************************************
@@ -213,9 +223,47 @@ The :ref:`Reduced Intrinsic Mutual Information` can be further reduced into the 
 Two-Part Intrinsic Mutual Information
 *************************************
 
+The :py:func:`two_part_intrinsic_mutual_information` :cite:`gohari2010information,gohari2017comments` is:
+
 .. math::
 
-   \I{X : Y \downarrow\downarrow\downarrow\downarrow Z} = inf_{J} min_{V - U - XY - ZJ} \I{X : Y | J} + \I{U : J | V} - \I{U : Z | V}
+   \I{X : Y \downarrow\downarrow\downarrow\downarrow Z} = \inf_{J} \max_{V - U - XY - ZJ} \I{X : Y | J} + \I{U : J | V} - \I{U : Z | V}
+
+The inner maximization is the one-way secret key agreement rate from :math:`XY` to :math:`J` with :math:`Z` eavesdropping.
+No cardinality bound on :math:`J` is known, so the bound cannot be computed exactly :cite:`gohari2017comments`; any particular :math:`J` still yields a valid upper bound, provided the inner maximization is solved exactly.
+
+.. py:module:: dit.multivariate.secret_key_agreement.relaxed_two_part_intrinsic_mutual_informations
+
+Relaxed Two-Part Intrinsic Mutual Information
+*********************************************
+
+Because the inner maximization above is a one-way secret key agreement rate, it is bounded from above by the :ref:`Intrinsic Mutual Information` :math:`\I{XY : J \downarrow Z}` :cite:`maurer1997intrinsic`.
+Substituting this gives the :py:func:`relaxed_two_part_intrinsic_mutual_information`:
+
+.. math::
+
+   \I{X : Y \downarrow\downarrow\downarrow\downarrow_r Z} = \min_{p(j | x y z),\, p(\overline{z} | z)} \I{X : Y | J} + \I{XY : J | \overline{Z}}
+
+Since :math:`\I{XY : J \downarrow Z} \leq \I{XY : J | Z}`, it is never larger than the :ref:`Minimal Intrinsic Mutual Information`, and since it relaxes only the inner maximization, it is never smaller than the two-part intrinsic mutual information.
+Unlike the latter, it is a single joint minimization over two channels, with :math:`|\overline{Z}| \leq |Z|` :cite:`christandl2003property`.
+Restricting the size of :math:`J` or stopping at a local optimum can therefore only loosen it, never invalidate it, which is why :py:func:`two_way_skar` uses it in place of the two-part bound.
+
+.. py:module:: dit.multivariate.secret_key_agreement.less_noisy_intrinsic_mutual_information
+
+Less-Noisy Intrinsic Mutual Information
+***************************************
+
+If Eve's channel :math:`p(z | x y)` is *less noisy* than a channel :math:`p(j | x y)`, meaning :math:`\I{U : Z} \geq \I{U : J}` for every :math:`U - XY - ZJ` and every input distribution, then no protocol can distill more key against :math:`Z` than against :math:`J` :cite:`gohari2017achieving`. The :py:func:`less_noisy_intrinsic_mutual_information` :cite:`pauwels2026bipartite` optimizes over all such :math:`J`:
+
+.. math::
+
+   \I{X : Y \downarrow_{\mathrm{ln}} Z} = \inf_{p(j | x y) \,:\, p(z | x y) \succeq_{\mathrm{ln}} p(j | x y)} \I{X : Y | J}
+
+Every degradation :math:`p(\overline{z} | z)` is dominated, so this never exceeds the :ref:`Intrinsic Mutual Information`, and it is never smaller than the inf-max upper bound of Gohari and Anantharam (2010), stated as Eq. (11) of :cite:`abin2026source`. It is not comparable in general to the reduced or minimal intrinsic mutual informations.
+
+A channel is less noisy than another iff the difference of the two output entropies is concave in the input distribution :cite:`vandijk1997special`. That forces every dominated channel to factor as :math:`p(j | x y) = \sum_z p(z | x y) K(z, j)` for a real, possibly signed, matrix :math:`K`; ``dit`` optimizes over :math:`K`, imposing the concavity condition on a finite sample of input distributions.
+
+The distribution ``bound_information`` of :cite:`pauwels2026bipartite` has :math:`\I{X : Y \downarrow Z} > 0` but :math:`\I{X : Y \downarrow_{\mathrm{ln}} Z} = 0`, and so a secret key agreement rate of zero. When :math:`X` and :math:`Y` are binary and :math:`Z = X \oplus Y`, every known upper bound, this one included, equals :math:`\I{X : Y}` :cite:`abin2026source`.
 
 All Together Now
 ----------------
@@ -229,15 +277,20 @@ Taken together, we see the following structure:
      &\quad \geq \I{X : Y \downarrow Z} \\
      &\quad\quad \geq \I{X : Y \downarrow\downarrow Z} \\
      &\quad\quad\quad \geq \I{X : Y \downarrow\downarrow\downarrow Z} \\
+     &\quad\quad\quad\quad \geq \I{X : Y \downarrow\downarrow\downarrow\downarrow_r Z} \\
      &\quad\quad\quad\quad \geq \I{X : Y \downarrow\downarrow\downarrow\downarrow Z} \\
      &\quad\quad\quad\quad\quad \geq S[X \leftrightarrow Y || Z] \\
      &\quad\quad\quad\quad\quad\quad \geq \I{X : Y \uparrow\uparrow\uparrow\uparrow Z} \\
      &\quad\quad\quad\quad\quad\quad\quad \geq \I{X : Y \uparrow\uparrow\uparrow Z} \\
      &\quad\quad\quad\quad\quad\quad\quad\quad \geq \I{X : Y \uparrow\uparrow Z} \\
-     &\quad\quad\quad\quad\quad\quad\quad\quad\quad \geq \I{X : Y \uparrow Z} \\
-     &\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad \geq S[X : Y || Z] \\
-     &\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad \geq 0.0
+     &\quad\quad\quad\quad\quad\quad\quad\quad\quad \geq \max\{ \I{X : Y \uparrow Z}, S[X : Y || Z] \} \\
+     &\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad \geq 0.0
    \end{aligned}
+
+The secrecy capacity dominates both of the final two bounds: choosing :math:`U = X` (or :math:`U = Y`) recovers :math:`\I{X : Y \uparrow Z}`, and choosing :math:`U = X \meet Y` recovers :math:`S[X : Y || Z]`.
+The final two bounds, however, are incomparable.
+For example, let :math:`W`, :math:`A`, and :math:`B` be independent uniform bits, and let :math:`X = (W, A)`, :math:`Y = (W, B)`, and :math:`Z = (A, B)`.
+Then :math:`S[X : Y || Z] = \H{W | Z} = 1` bit, since Alice and Bob share :math:`W` and Eve knows nothing about it, while :math:`\I{X : Y} = \I{X : Z} = \I{Y : Z} = 1` bit, so :math:`\I{X : Y \uparrow Z} = 0`.
 
 Generalizations
 ---------------
