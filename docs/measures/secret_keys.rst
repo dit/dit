@@ -184,6 +184,14 @@ This bound can be improved, producing the :py:func:`reduced_intrinsic_mutual_inf
 
 This bound improves upon the :ref:`Intrinsic Mutual Information` when a small amount of information, :math:`U`, can result in a larger decrease in the amount of information shared between :math:`X` and :math:`Y` given :math:`Z` and :math:`U`.
 
+Although written as a nested minimization, the inner intrinsic mutual information is itself a minimization over :math:`p(\overline{z} | z u)`, and :math:`\H{U}` does not depend on :math:`\overline{Z}`. The two minimizations therefore combine into a single joint minimization over two chained channels, :math:`p(u | x y z)` and :math:`p(\overline{z} | z u)`:
+
+.. math::
+
+   \I{X : Y \downarrow\downarrow Z} = \min_{p(u | x y z),\, p(\overline{z} | z u)} \I{X : Y | \overline{Z}} + \H{U}
+
+This is how ``dit`` computes it, with :math:`|\overline{Z}| \leq |Z| |U|` from the corresponding bound for the intrinsic mutual information :cite:`renner2003new`.
+
 .. py:module:: dit.multivariate.secret_key_agreement.minimal_intrinsic_mutual_informations
 
 .. _minimal intrinsic mutual information:

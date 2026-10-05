@@ -1448,8 +1448,15 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         if not results:  # pragma: no cover
             return None
 
+        # slsqp-jax only enforces the [0, 1] box as soft inequality constraints,
+        # and a diverged start can land far outside it where the objective is
+        # meaningless (e.g. negative). Project back into the box before ranking;
+        # equality constraints are re-checked by the caller.
         raw_obj = self._jax_raw_objective
-        return min(results, key=lambda r: float(np.asarray(raw_obj(r.x))))
+        for r in results:
+            r.x = np.clip(r.x, 0.0, 1.0)
+            r.fun = float(np.asarray(raw_obj(r.x)))
+        return min(results, key=lambda r: r.fun)
 
     ###########################################################################
     # scipy-based shotgun (fallback path)
