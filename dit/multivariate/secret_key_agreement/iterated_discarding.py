@@ -126,13 +126,16 @@ def iterated_discarding_skar(dist, rvs, crvs, rounds=8, niter=None, rng=None):
         speakers = [sizes[(i % 2) != alice_first] for i in range(rounds)]
         splits = np.cumsum(speakers)[:-1]
 
-        def objective(theta, alice_first=alice_first, splits=splits):
-            keeps = [1 / (1 + np.exp(-np.clip(t, -40, 40))) for t in np.split(theta, splits)]
-            return -_rate(p, keeps, alice_first)
+        def objective(keeps, alice_first=alice_first, splits=splits):
+            return -_rate(p, np.split(keeps, splits), alice_first)
 
-        starts = [np.full(sum(speakers), 40.0)] + [rng.normal(0, 3, sum(speakers)) for _ in range(niter)]
+        # Optimize the keep probabilities directly within [0, 1]: a sigmoid
+        # parameterization saturates, and its flat regions trap restarts in
+        # spurious local optima.
+        n = sum(speakers)
+        starts = [np.ones(n)] + [rng.uniform(size=n) for _ in range(niter)]
         for start in starts:
-            result = minimize(objective, start, method="L-BFGS-B")
+            result = minimize(objective, start, method="L-BFGS-B", bounds=[(0.0, 1.0)] * n)
             best = max(best, -result.fun)
 
     return best
