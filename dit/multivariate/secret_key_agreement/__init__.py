@@ -25,6 +25,7 @@ from .reduced_intrinsic_mutual_informations import (
     reduced_intrinsic_dual_total_correlation,
     reduced_intrinsic_total_correlation,
 )
+from .relaxed_two_part_intrinsic_mutual_informations import relaxed_two_part_intrinsic_mutual_information
 from .skar_lower_bounds import (
     necessary_intrinsic_mutual_information,
     secrecy_capacity_skar,

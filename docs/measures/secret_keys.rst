@@ -186,6 +186,8 @@ This bound improves upon the :ref:`Intrinsic Mutual Information` when a small am
 
 .. py:module:: dit.multivariate.secret_key_agreement.minimal_intrinsic_mutual_informations
 
+.. _minimal intrinsic mutual information:
+
 Minimal Intrinsic Mutual Information
 ************************************
 
@@ -200,9 +202,30 @@ The :ref:`Reduced Intrinsic Mutual Information` can be further reduced into the 
 Two-Part Intrinsic Mutual Information
 *************************************
 
+The :py:func:`two_part_intrinsic_mutual_information` :cite:`gohari2010information,gohari2017comments` is:
+
 .. math::
 
-   \I{X : Y \downarrow\downarrow\downarrow\downarrow Z} = inf_{J} min_{V - U - XY - ZJ} \I{X : Y | J} + \I{U : J | V} - \I{U : Z | V}
+   \I{X : Y \downarrow\downarrow\downarrow\downarrow Z} = \inf_{J} \max_{V - U - XY - ZJ} \I{X : Y | J} + \I{U : J | V} - \I{U : Z | V}
+
+The inner maximization is the one-way secret key agreement rate from :math:`XY` to :math:`J` with :math:`Z` eavesdropping.
+No cardinality bound on :math:`J` is known, so the bound cannot be computed exactly :cite:`gohari2017comments`; any particular :math:`J` still yields a valid upper bound, provided the inner maximization is solved exactly.
+
+.. py:module:: dit.multivariate.secret_key_agreement.relaxed_two_part_intrinsic_mutual_informations
+
+Relaxed Two-Part Intrinsic Mutual Information
+*********************************************
+
+Because the inner maximization above is a one-way secret key agreement rate, it is bounded from above by the :ref:`Intrinsic Mutual Information` :math:`\I{XY : J \downarrow Z}` :cite:`maurer1997intrinsic`.
+Substituting this gives the :py:func:`relaxed_two_part_intrinsic_mutual_information`:
+
+.. math::
+
+   \I{X : Y \downarrow\downarrow\downarrow\downarrow_r Z} = \min_{p(j | x y z),\, p(\overline{z} | z)} \I{X : Y | J} + \I{XY : J | \overline{Z}}
+
+Since :math:`\I{XY : J \downarrow Z} \leq \I{XY : J | Z}`, it is never larger than the :ref:`Minimal Intrinsic Mutual Information`, and since it relaxes only the inner maximization, it is never smaller than the two-part intrinsic mutual information.
+Unlike the latter, it is a single joint minimization over two channels, with :math:`|\overline{Z}| \leq |Z|` :cite:`christandl2003property`.
+Restricting the size of :math:`J` or stopping at a local optimum can therefore only loosen it, never invalidate it, which is why :py:func:`two_way_skar` uses it in place of the two-part bound.
 
 .. py:module:: dit.multivariate.secret_key_agreement.less_noisy_intrinsic_mutual_information
 
@@ -233,15 +256,20 @@ Taken together, we see the following structure:
      &\quad \geq \I{X : Y \downarrow Z} \\
      &\quad\quad \geq \I{X : Y \downarrow\downarrow Z} \\
      &\quad\quad\quad \geq \I{X : Y \downarrow\downarrow\downarrow Z} \\
+     &\quad\quad\quad\quad \geq \I{X : Y \downarrow\downarrow\downarrow\downarrow_r Z} \\
      &\quad\quad\quad\quad \geq \I{X : Y \downarrow\downarrow\downarrow\downarrow Z} \\
      &\quad\quad\quad\quad\quad \geq S[X \leftrightarrow Y || Z] \\
      &\quad\quad\quad\quad\quad\quad \geq \I{X : Y \uparrow\uparrow\uparrow\uparrow Z} \\
      &\quad\quad\quad\quad\quad\quad\quad \geq \I{X : Y \uparrow\uparrow\uparrow Z} \\
      &\quad\quad\quad\quad\quad\quad\quad\quad \geq \I{X : Y \uparrow\uparrow Z} \\
-     &\quad\quad\quad\quad\quad\quad\quad\quad\quad \geq \I{X : Y \uparrow Z} \\
-     &\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad \geq S[X : Y || Z] \\
-     &\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad \geq 0.0
+     &\quad\quad\quad\quad\quad\quad\quad\quad\quad \geq \max\{ \I{X : Y \uparrow Z}, S[X : Y || Z] \} \\
+     &\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad \geq 0.0
    \end{aligned}
+
+The secrecy capacity dominates both of the final two bounds: choosing :math:`U = X` (or :math:`U = Y`) recovers :math:`\I{X : Y \uparrow Z}`, and choosing :math:`U = X \meet Y` recovers :math:`S[X : Y || Z]`.
+The final two bounds, however, are incomparable.
+For example, let :math:`W`, :math:`A`, and :math:`B` be independent uniform bits, and let :math:`X = (W, A)`, :math:`Y = (W, B)`, and :math:`Z = (A, B)`.
+Then :math:`S[X : Y || Z] = \H{W | Z} = 1` bit, since Alice and Bob share :math:`W` and Eve knows nothing about it, while :math:`\I{X : Y} = \I{X : Z} = \I{Y : Z} = 1` bit, so :math:`\I{X : Y \uparrow Z} = 0`.
 
 Generalizations
 ---------------
