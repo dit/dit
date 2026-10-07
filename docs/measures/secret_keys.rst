@@ -383,3 +383,31 @@ This seems to imply that :math:`X` and :math:`Y` can adopt a scheme such as: if 
    @doctest float
    In [9]: minimal_intrinsic_mutual_information(intrinsic_2, [[0], [1]], [2], bounds=(3,))
    Out[9]: 1.0
+
+Two further sources come from :cite:`abin2026source`. In the ``deterministic_erasure`` source, :math:`X` is uniform on four symbols, Eve sees :math:`Z = \lfloor X / 2 \rfloor`, and Bob sees :math:`X` through an erasure channel with erasure probability :math:`\epsilon`. Abin and Gohari show that one-way communication achieves the upper bound :math:`\I{X : Y | Z} = (1 - \epsilon) \H{X | Z}`. Because :math:`Z` is a function of :math:`X`, :math:`Y - X - Z` is a Markov chain, so this also follows from the trivial lower bound :math:`\I{X : Y} - \I{Y : Z} = \I{X : Y | Z}` :cite:`maurer1993secret`. Here it is with :math:`\epsilon = 0.3`:
+
+.. ipython::
+
+   In [10]: from dit.example_dists.intrinsic import deterministic_erasure_source, xor_key
+
+   @doctest float
+   In [11]: lower_intrinsic_mutual_information(deterministic_erasure_source, [[0], [1]], [2])
+   Out[11]: 0.7
+
+   @doctest float
+   In [12]: intrinsic_mutual_information(deterministic_erasure_source, [[0], [1]], [2])
+   Out[12]: 0.7
+
+The ``xor_key`` source has binary :math:`X` and :math:`Y` with any joint distribution, and :math:`Z = X \oplus Y`. Every known upper bound equals :math:`\I{X : Y}`, and the true rate is open: Abin and Gohari conjecture that it is smaller for some distributions.
+
+.. ipython::
+
+   In [13]: d = xor_key([0.4, 0.1, 0.2, 0.3])
+
+   @doctest float
+   In [14]: upper_intrinsic_mutual_information(d, [[0], [1]], [2])
+   Out[14]: 0.12451124978365313
+
+   @doctest float
+   In [15]: intrinsic_mutual_information(d, [[0], [1]], [2])
+   Out[15]: 0.12451124978365313
