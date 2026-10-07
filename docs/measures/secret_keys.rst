@@ -411,3 +411,26 @@ The ``xor_key`` source has binary :math:`X` and :math:`Y` with any joint distrib
    @doctest float
    In [15]: intrinsic_mutual_information(d, [[0], [1]], [2])
    Out[15]: 0.12451124978365313
+
+Sources with Known Rates
+************************
+
+Exact secret key agreement rates are known for only a few sources, and ``dit`` includes several as test cases, each with its ``secret_rate`` attribute set:
+
+* ``chitambar_bob_speaks``: the rate :math:`\I{X : Y | Z} = 1/3` is achieved when Bob announces whether :math:`y \in \{0, 1\}`, but not by one-way communication from Alice :cite:`chitambar2015distributions`.
+* ``chitambar_two_way``: the rate :math:`\I{X : Y | Z} = 1/5` needs both parties to announce whether their symbol lies in :math:`\{0, 1\}`; one-way communication in either direction falls short :cite:`chitambar2015distributions`.
+* ``james_problem``: the "Problem" distribution of :cite:`james2019unique`, with the rate :math:`1/2` attained by one-way communication and matched by :math:`\I{X : Y}`.
+* ``reversely_degraded(a, b, c, e)``: two independent components, one degraded toward Bob and one toward Alice, with rate :math:`\I{X : Y | Z}`; achieving it needs two-way communication :cite:`ahlswede1993common`.
+* ``gisin_wolf(alpha)``: a standard-basis measurement of a family of qutrit states :cite:`gisin2000linking`. For :math:`2 \leq \alpha \leq 3`, a degradation of :math:`Z` makes :math:`X` and :math:`Y` independent, so the rate is :math:`0`; outside that interval it is positive :cite:`pauwels2026bipartite` but unknown.
+
+.. ipython::
+
+   In [16]: from dit.example_dists.intrinsic import chitambar_two_way
+
+   @doctest float
+   In [17]: upper_intrinsic_mutual_information(chitambar_two_way, [[0], [1]], [2])
+   Out[17]: 0.2
+
+   @doctest float
+   In [18]: chitambar_two_way.secret_rate
+   Out[18]: 0.2
