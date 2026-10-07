@@ -123,7 +123,7 @@ def iterated_discarding_skar(dist, rvs, crvs, rounds=8, niter=None, rng=None):
 
     best = 0.0
     for alice_first in (True, False):
-        speakers = [sizes[(i % 2) != alice_first] for i in range(rounds)]
+        speakers = [sizes[(i % 2 == 0) != alice_first] for i in range(rounds)]
         splits = np.cumsum(speakers)[:-1]
 
         def objective(keeps, alice_first=alice_first, splits=splits):
