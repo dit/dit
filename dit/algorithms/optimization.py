@@ -1148,11 +1148,24 @@ class BaseOptimizer(metaclass=ABCMeta):
 
         return result
 
+    def _seed_initials(self):
+        """
+        Deterministic initial conditions minimized by :meth:`_optimize_shotgun`
+        before its random starts. Subclasses override this to seed the search
+        with known candidate optima.
+
+        Returns
+        -------
+        seeds : list of np.ndarray
+            The seed optimization vectors.
+        """
+        return []
+
     def _optimize_shotgun(self, x0, minimizer_kwargs, niter):
         """
         Perform a non-convex optimization. This uses a "shotgun" approach,
-        minimizing several random initial conditions and selecting the minimal
-        result.
+        minimizing any seeds from :meth:`_seed_initials` and several random
+        initial conditions, and selecting the minimal result.
 
         Parameters
         ----------
@@ -1192,6 +1205,16 @@ class BaseOptimizer(metaclass=ABCMeta):
                     logger.debug("Shotgun early stop: objective {f} reached bound {b}", f=res.fun, b=bound)
                     return res
             niter -= 1
+
+        for seed in self._seed_initials():
+            logger.debug("Shotgun: trying seed initial condition")
+            res = minimize(fun=self.objective, x0=seed.flatten(), **minimizer_kwargs)
+            all_results.append(res)
+            if res.success:
+                results.append(res)
+                if bound is not None and res.fun <= bound + atol:
+                    logger.debug("Shotgun early stop: objective {f} reached bound {b}", f=res.fun, b=bound)
+                    return res
 
         # Generate all random initial conditions up front (serially) so the
         # global RNG state is consumed deterministically regardless of whether

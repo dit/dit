@@ -155,9 +155,26 @@ class IntrinsicMIMixin:
 
         self._objective_bound = 0.0
 
+    def _seed_initials(self):
+        """
+        Seed the search with the constant and identity corruptions, whose
+        objectives are the mutual information and the conditional mutual
+        information, the two trivial upper bounds on the intrinsic mutual
+        information :cite:`maurer1997intrinsic`.
+
+        Returns
+        -------
+        seeds : list of np.ndarray
+            The constant and identity optimization vectors.
+        """
+        return [self.construct_constant_initial(), self.construct_copy_initial()]
+
     def optimize(self, *args, **kwargs):
         """
         Perform the optimization.
+
+        The multi-start search that seeds basin hopping always includes the
+        constant and identity corruptions (see :meth:`_seed_initials`).
 
         Parameters
         ----------

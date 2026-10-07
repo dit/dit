@@ -181,6 +181,7 @@ The :py:func:`intrinsic_mutual_information` :cite:`maurer1997intrinsic` is defin
    \I{X : Y \downarrow Z} = \min_{p(\overline{z} | z)} \I{X : Y | \overline{Z}}
 
 It is straightforward to see that :math:`p(\overline{z} | z)` being a constant achieves :math:`\I{X : Y}`, and :math:`p(\overline{z} | z)` being the identity achieves :math:`\I{X : Y | Z}`.
+``dit`` uses both corruptions as seeds of the basin-hopping search, so the minima it considers always include these two values.
 
 .. py:module:: dit.multivariate.secret_key_agreement.reduced_intrinsic_mutual_informations
 
