@@ -411,3 +411,26 @@ The ``xor_key`` source has binary :math:`X` and :math:`Y` with any joint distrib
    @doctest float
    In [15]: intrinsic_mutual_information(d, [[0], [1]], [2])
    Out[15]: 0.12451124978365313
+
+.. py:module:: dit.multivariate.secret_key_agreement.secret_key_cost
+
+Secret Key Cost
+===============
+
+Secret key agreement asks how much key can be extracted from :math:`p(x, y, z)`. The reverse question asks how much secret key Alice and Bob must consume to *form* :math:`p(x, y, z)`: starting from shared secret bits, they use local operations and public communication to produce :math:`X^N Y^N`, such that Eve could simulate the public transcript by processing :math:`Z^N`. The minimal rate is the :py:func:`secret_key_cost`, also called the information of formation :cite:`renner2003bounds`. Winter found a single-letter formula for it :cite:`winter2005secret,chitambar2016private`:
+
+.. math::
+
+   \operatorname{K_c}[X : Y || Z] = \min_{\substack{XY - Z - U \\ X - UV - Y}} \I{XY : V | U}
+
+with :math:`|U| \leq |Z| + 1` and :math:`|V| \leq |X||Y|`. For each choice of :math:`U` the inner minimization is the conditional :doc:`Wyner common information </measures/multivariate/wyner_common_information>` :math:`\C{X : Y | U}`, so the secret key cost is a Wyner common information minimized over degradations of :math:`Z`, just as the :ref:`Intrinsic Mutual Information` minimizes the conditional mutual information. Since :math:`\C{X : Y | U} \geq \I{X : Y | U}`,
+
+.. math::
+
+   S[X \leftrightarrow Y || Z] \leq \I{X : Y \downarrow Z} \leq \operatorname{K_c}[X : Y || Z] \leq \min\{ \C{X : Y}, \C{X : Y | Z} \}
+
+where the middle inequality is due to :cite:`renner2003bounds`. When :math:`Z` is independent of :math:`XY`, the secret key cost is the Wyner common information :math:`\C{X : Y}`.
+
+``dit`` builds the second Markov chain into the parametrization, as it does for the Wyner common information: :math:`U` is a channel from :math:`Z`, :math:`V` a channel from :math:`XU`, and a copy :math:`Y'` a channel from :math:`UV`, subject to :math:`XY'U` being distributed as :math:`XYU`. As with all of these optimizations, the result is a local minimum, and so an upper bound on the secret key cost.
+
+For ``intrinsic_2``, :math:`\I{X : Y \downarrow Z} = \C{X : Y | Z} = 1.5`, so forming it costs 1.5 bits of secret key, while only 1 bit can be extracted from it. For ``bound_information`` :cite:`pauwels2026bipartite`, no key can be extracted, but the intrinsic mutual information is positive, and so is the cost of forming it; ``dit`` finds roughly :math:`0.026` bits.
