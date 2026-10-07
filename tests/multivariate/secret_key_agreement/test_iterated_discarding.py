@@ -56,6 +56,19 @@ def test_no_eavesdropper():
     assert skar == pytest.approx(I(W, [[0], [1]]), abs=1e-6)
 
 
+@pytest.mark.parametrize("rounds", [1, 2])
+def test_unequal_alphabets_symmetric(rounds):
+    """
+    With |X| != |Y|, the bound is defined and does not depend on which party is listed first.
+    """
+    dist = Distribution(["000", "011", "101", "110", "200", "211"], [0.3, 0.1, 0.1, 0.2, 0.1, 0.2])
+    xy = iterated_discarding_skar(dist, [[0], [1]], [2], rounds=rounds, niter=50, rng=0)
+    yx = iterated_discarding_skar(dist, [[1], [0]], [2], rounds=rounds, niter=50, rng=0)
+    assert xy == pytest.approx(yx, abs=1e-4)
+    assert lower_intrinsic_mutual_information(dist, [[0], [1]], [2]) <= xy + 1e-6
+    assert xy <= intrinsic_mutual_information(dist, [[0], [1]], [2]) + 1e-4
+
+
 @settings(max_examples=10)
 @given(dist=distributions(alphabets=(2, 2, 2)))
 def test_bounds(dist):
