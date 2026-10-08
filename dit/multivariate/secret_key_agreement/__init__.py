@@ -27,6 +27,7 @@ from .reduced_intrinsic_mutual_informations import (
     reduced_intrinsic_total_correlation,
 )
 from .relaxed_two_part_intrinsic_mutual_informations import relaxed_two_part_intrinsic_mutual_information
+from .secret_key_cost import secret_key_cost
 from .skar_lower_bounds import (
     necessary_intrinsic_mutual_information,
     secrecy_capacity_skar,
@@ -51,3 +52,4 @@ reduced_intrinsic_mutual_information = reduced_intrinsic_total_correlation
 minimal_intrinsic_mutual_information = minimal_intrinsic_total_correlation
 two_part_intrinsic_mutual_information = two_part_intrinsic_total_correlation
 upper_intrinsic_mutual_information = upper_intrinsic_total_correlation
+information_of_formation = secret_key_cost
