@@ -181,6 +181,7 @@ The :py:func:`intrinsic_mutual_information` :cite:`maurer1997intrinsic` is defin
    \I{X : Y \downarrow Z} = \min_{p(\overline{z} | z)} \I{X : Y | \overline{Z}}
 
 It is straightforward to see that :math:`p(\overline{z} | z)` being a constant achieves :math:`\I{X : Y}`, and :math:`p(\overline{z} | z)` being the identity achieves :math:`\I{X : Y | Z}`.
+``dit`` uses both corruptions as seeds of the basin-hopping search, so the minima it considers always include these two values.
 
 .. py:module:: dit.multivariate.secret_key_agreement.reduced_intrinsic_mutual_informations
 
@@ -412,10 +413,6 @@ The ``xor_key`` source has binary :math:`X` and :math:`Y` with any joint distrib
    In [15]: intrinsic_mutual_information(d, [[0], [1]], [2])
    Out[15]: 0.12451124978365313
 
-.. py:module:: dit.multivariate.secret_key_agreement.secret_key_cost
-
-Secret Key Cost
-===============
 
 Secret key agreement asks how much key can be extracted from :math:`p(x, y, z)`. The reverse question asks how much secret key Alice and Bob must consume to *form* :math:`p(x, y, z)`: starting from shared secret bits, they use local operations and public communication to produce :math:`X^N Y^N`, such that Eve could simulate the public transcript by processing :math:`Z^N`. The minimal rate is the :py:func:`secret_key_cost`, also called the information of formation :cite:`renner2003bounds`. Winter found a single-letter formula for it :cite:`winter2005secret,chitambar2016private`:
 
@@ -434,3 +431,31 @@ where the middle inequality is due to :cite:`renner2003bounds`. When :math:`Z` i
 ``dit`` builds the second Markov chain into the parametrization, as it does for the Wyner common information: :math:`U` is a channel from :math:`Z`, :math:`V` a channel from :math:`XU`, and a copy :math:`Y'` a channel from :math:`UV`, subject to :math:`XY'U` being distributed as :math:`XYU`. As with all of these optimizations, the result is a local minimum, and so an upper bound on the secret key cost.
 
 For ``intrinsic_2``, :math:`\I{X : Y \downarrow Z} = \C{X : Y | Z} = 1.5`, so forming it costs 1.5 bits of secret key, while only 1 bit can be extracted from it. For ``bound_information`` :cite:`pauwels2026bipartite`, no key can be extracted, but the intrinsic mutual information is positive, and so is the cost of forming it; ``dit`` finds roughly :math:`0.026` bits.
+=======
+Sources with Known Rates
+************************
+
+Exact secret key agreement rates are known for only a few sources, and ``dit`` includes several as test cases, each with its ``secret_rate`` attribute set:
+
+* ``chitambar_bob_speaks``: the rate :math:`\I{X : Y | Z} = 1/3` is achieved when Bob announces whether :math:`y \in \{0, 1\}`, but not by one-way communication from Alice :cite:`chitambar2015distributions`.
+* ``chitambar_two_way``: the rate :math:`\I{X : Y | Z} = 1/5` needs both parties to announce whether their symbol lies in :math:`\{0, 1\}`; one-way communication in either direction falls short :cite:`chitambar2015distributions`.
+* ``james_problem``: the "Problem" distribution of :cite:`james2019unique`, with the rate :math:`1/2` attained by one-way communication and matched by :math:`\I{X : Y}`.
+* ``reversely_degraded(a, b, c, e)``: two independent components, one degraded toward Bob and one toward Alice, with rate :math:`\I{X : Y | Z}`; achieving it needs two-way communication :cite:`ahlswede1993common`.
+* ``gisin_wolf(alpha)``: a standard-basis measurement of a family of qutrit states :cite:`gisin2000linking`. For :math:`2 \leq \alpha \leq 3`, a degradation of :math:`Z` makes :math:`X` and :math:`Y` independent, so the rate is :math:`0`; outside that interval it is positive :cite:`pauwels2026bipartite` but unknown.
+
+.. ipython::
+
+   In [16]: from dit.example_dists.intrinsic import chitambar_two_way
+
+   @doctest float
+   In [17]: upper_intrinsic_mutual_information(chitambar_two_way, [[0], [1]], [2])
+   Out[17]: 0.2
+
+   @doctest float
+   In [18]: chitambar_two_way.secret_rate
+   Out[18]: 0.2
+
+.. py:module:: dit.multivariate.secret_key_agreement.secret_key_cost
+
+Secret Key Cost
+========
