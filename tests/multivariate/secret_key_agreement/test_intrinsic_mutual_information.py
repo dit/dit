@@ -217,6 +217,38 @@ def test_bounds(dist, backend):
     assert imi <= cmi + 1e-10
 
 
+@given(dist=distributions(alphabets=((2, 4),) * 3))
+def test_seeds_are_trivial_bounds(dist):
+    """
+    The constant and identity seeds evaluate to I[X:Y] and I[X:Y|Z].
+    """
+    opt = IMI.IntrinsicTotalCorrelation(dist, [[0], [1]], [2])
+    opt.optimize(niter=1, polish=False)
+    constant, identity = opt._seed_initials()
+    mi = total_correlation(dist, [[0], [1]])
+    cmi = total_correlation(dist, [[0], [1]], [2])
+    assert opt.objective(constant) == pytest.approx(mi, abs=1e-8)
+    assert opt.objective(identity) == pytest.approx(cmi, abs=1e-8)
+
+
+def test_seeds_are_minimized(monkeypatch):
+    """
+    The multi-start search that seeds basin hopping minimizes both seeds.
+    """
+    opt = IMI.IntrinsicTotalCorrelation(intrinsic_2, [[0], [1]], [2])
+    calls = []
+    seed_initials = opt._seed_initials
+
+    def spy():
+        seeds = seed_initials()
+        calls.append(len(seeds))
+        return seeds
+
+    monkeypatch.setattr(opt, "_seed_initials", spy)
+    opt.optimize()
+    assert calls and calls[0] == 2
+
+
 @pytest.mark.parametrize("backend", backends)
 @pytest.mark.parametrize(("dist", "val"), [(intrinsic_1, 0.0), (intrinsic_2, 1.5), (intrinsic_3, 1.3932929108738521)])
 def test_1(dist, val, backend):
