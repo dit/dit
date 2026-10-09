@@ -33,3 +33,9 @@ Scalar summaries
 
 The legacy :func:`coupling_metric` returns the residual entropy of the
 *minimum joint-entropy* coupling (not a direct minimization of residual entropy).
+
+Entropy is concave, so the minimum joint-entropy coupling lies at a vertex of the
+polytope of couplings. The search is seeded with vertices from linear programs with
+random costs and, for disjoint marginals, with the greedy coupling of
+:cite:`kocaoglu2017entropic`, whose entropy is within one bit of the minimum
+:cite:`cicalese2019minimum`.

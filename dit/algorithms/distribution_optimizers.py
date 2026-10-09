@@ -7,6 +7,7 @@ from itertools import combinations
 
 import numpy as np
 from debtcollector import removals
+from scipy.optimize import linprog
 
 from ..distconst import product_distribution
 from ..distribution import Distribution
@@ -329,11 +330,87 @@ class MaxEntOptimizer(BaseDistOptimizer, BaseConvexOptimizer):
 class MinEntOptimizer(BaseDistOptimizer, BaseNonConvexOptimizer):
     """
     Compute minimum entropy distributions.
+
+    Entropy is concave, so its minimum over the polytope of distributions
+    matching the marginals is attained at a vertex. The search is seeded with
+    vertices from linear programs with random costs and, for a coupling of disjoint
+    groups of variables, with the greedy coupling of :cite:`kocaoglu2017entropic`,
+    whose entropy is within one bit of the minimum :cite:`cicalese2019minimum`.
     """
+
+    _n_vertex_seeds = 50
 
     def __init__(self, dist, marginals):
         super().__init__(dist, marginals)
         self._objective_bound = 0.0
+        self._marginals = [sorted(set(flatten(m))) for m in marginals]
+
+    def _greedy_coupling(self):
+        """
+        Greedy minimum-entropy coupling, when the marginals are disjoint groups
+        of variables that together cover every variable.
+
+        Returns
+        -------
+        pmf : np.ndarray, None
+            The coupling as a full pmf vector, or None if not applicable.
+        """
+        groups = self._marginals
+        n = len(self._shape)
+        flat = [v for g in groups for v in g]
+        if len(groups) < 2 or len(flat) != n or set(flat) != set(range(n)):
+            return None
+        pmf = self.dist.pmf.reshape(self._shape)
+        margs = [pmf.sum(axis=tuple(v for v in range(n) if v not in g)).ravel() for g in groups]
+        joint = np.zeros([len(m) for m in margs])
+        while min(m.sum() for m in margs) > 1e-12:
+            idx = tuple(int(m.argmax()) for m in margs)
+            mass = min(m[i] for m, i in zip(margs, idx, strict=True))
+            joint[idx] += mass
+            for m, i in zip(margs, idx, strict=True):
+                m[i] -= mass
+        joint = joint.reshape([self._shape[v] for v in flat]).transpose(np.argsort(flat))
+        return joint.ravel()
+
+    def _seed_pmfs(self, rng=None):
+        """
+        Vertices of the marginal polytope, plus the greedy coupling if applicable.
+
+        Returns
+        -------
+        seeds : list of np.ndarray
+            Full pmf vectors.
+        """
+        rng = np.random.default_rng() if rng is None else rng
+        seeds = []
+        greedy = self._greedy_coupling()
+        if greedy is not None:
+            seeds.append(greedy)
+        for _ in range(self._n_vertex_seeds):
+            res = linprog(rng.random(len(self._vpmf)), A_eq=self._A, b_eq=self._b, bounds=(0, None), method="highs-ds")
+            if res.x is not None:
+                seeds.append(np.clip(res.x, 0, None))
+        return seeds
+
+    def optimize(self, *args, **kwargs):
+        """
+        Optimize, then keep the best of the result and the vertex seeds.
+
+        Parameters
+        ----------
+        args, kwargs
+            Passed to :meth:`BaseDistOptimizer.optimize`.
+
+        Returns
+        -------
+        result : OptimizeResult, None
+            The result of the local search.
+        """
+        result = super().optimize(*args, **kwargs)
+        if self._free:
+            candidates = [self._optima] + [seed[self._free] for seed in self._seed_pmfs(kwargs.get("rng"))]
+            self._optima = min(candidates, key=self.objective).copy()
+        return result
 
     def _objective_gradient(self):
         """Gradient of the ``+H`` objective w.r.t. the pmf."""

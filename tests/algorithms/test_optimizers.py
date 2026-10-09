@@ -9,6 +9,7 @@ import numpy as np
 import pytest
 from scipy.optimize import approx_fprime
 
+from dit import Distribution
 from dit.algorithms import maxent_dist
 from dit.algorithms.distribution_optimizers import (
     MaxCAEKLMutualInformationOptimizer,
@@ -84,6 +85,26 @@ def test_minent_1():
     meo.optimize()
     dp = meo.construct_dist()
     assert H(dp) == pytest.approx(1, abs=1e-4)
+
+
+@pytest.mark.parametrize("n_groups", [2, 3])
+def test_minent_no_worse_than_greedy(n_groups):
+    """
+    The minimum-entropy coupling is never worse than the greedy coupling it is seeded with.
+    """
+    rng = np.random.default_rng(0)
+    margs = [rng.dirichlet(np.ones(4)) for _ in range(n_groups)]
+    pmf = margs[0]
+    for m in margs[1:]:
+        pmf = np.multiply.outer(pmf, m)
+    outcomes = ["".join(map(str, idx)) for idx in np.ndindex(*pmf.shape)]
+    d = Distribution(outcomes, pmf.ravel())
+    meo = MinEntOptimizer(d, [[i] for i in range(n_groups)])
+    greedy = meo._greedy_coupling()
+    assert greedy.reshape(pmf.shape).sum(axis=tuple(range(1, n_groups))) == pytest.approx(margs[0])
+    meo.optimize()
+    nz = greedy[greedy > 0]
+    assert H(meo.construct_dist()) <= -(nz * np.log2(nz)).sum() + 1e-6
 
 
 @pytest.mark.parametrize(
