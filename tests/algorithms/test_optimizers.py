@@ -197,9 +197,11 @@ def test_auxvar_analytic_gradients_match_fd(label, opt):
 
     worst = 0.0
     for _ in range(6):
-        # Blend two random channel parametrizations to stay in the interior.
+        # Blend two random channel parametrizations to stay in the interior, then
+        # rescale entries: the optimizer searches unnormalized rows of ``x``.
         x = np.asarray(opt.construct_random_initial()).ravel()
         x = 0.7 * x + 0.3 * np.asarray(opt.construct_random_initial()).ravel()
+        x = x * np.random.uniform(0.5, 1.5, size=x.size)
 
         an = opt._jacobian(x)
         fd = approx_fprime(x, lambda v: float(opt.objective(v)), 1e-7)

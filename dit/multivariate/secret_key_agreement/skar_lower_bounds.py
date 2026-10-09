@@ -67,10 +67,10 @@ def necessary_intrinsic_mutual_information(dist, rvs, crvs, niter=None, bound_u=
         The number of hops to perform during optimization.
     bound_u : int, None
         The bound to use on the size of the variable U. If none, use the
-        theoretical bound of |X|.
+        theoretical bound of |X|^2.
     bound_v : int, None
         The bound to use on the size of the variable V. If none, use the
-        theoretical bound of |X|^2.
+        theoretical bound of |X|.
     backend : str
         The optimization backend. One of ``'numpy'`` (default),
         ``'jax'``, or ``'torch'``.

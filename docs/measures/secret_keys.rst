@@ -70,6 +70,8 @@ If only Alice is allowed to publicly broadcast information, the secret key agree
 
    \operatorname{S}[X \rightarrow Y || Z] = \displaystyle \max_{V - U - X - YZ} \I{U : Y | V} - \I{U : Z | V}
 
+:cite:`ahlswede1993common`. It suffices to take :math:`|V| \leq |X|` and :math:`|U| \leq |X|^2` :cite:`elgamal2011network`: :math:`V` splits Alice's distribution into at most :math:`|X|` parts, and :math:`U` splits each of those into at most :math:`|X|` further parts.
+
 .. py:module:: dit.multivariate.secret_key_agreement.two_way_skar
 
 Two-Way Communication
