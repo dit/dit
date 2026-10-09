@@ -9,6 +9,7 @@ import pytest
 
 from dit import Distribution
 from dit.pid.distributions import bivariates
+from dit.pid.measures.ideg import PID_Deg
 from dit.pid.measures.iln import PID_LN
 from dit.pid.measures.imc import PID_MC
 
@@ -64,6 +65,8 @@ def test_pid_ln_tied_rows():
         if w > 0:
             outcomes.append(f"{a}{b}{y}")
             pmf.append(w)
-    pid = PID_LN(Distribution(outcomes, pmf), ((0,), (1,)), (2,), seed=0)
-    assert pid[RED] == pytest.approx(0.021, abs=2e-3)
+    d = Distribution(outcomes, pmf)
+    pid = PID_LN(d, ((0,), (1,)), (2,), seed=0)
+    assert pid[RED] == pytest.approx(0.0216, abs=1e-3)
     assert pid[((0, 1),)] < -0.015
+    assert pid[RED] >= PID_Deg(d, ((0,), (1,)), (2,))[RED] - 1e-6

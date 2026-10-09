@@ -34,6 +34,7 @@ from scipy.optimize import minimize
 
 from ...channelorder._utils import channels_from_joint
 from ..pid import BaseBivariatePID
+from .ideg import _degradation_channel
 from .imc import _mi_bits, _mi_grad_wrt_K, _params_to_stochastic, _softmax_vjp
 
 __all__ = ("PID_LN",)
@@ -191,6 +192,10 @@ def _less_noisy_ii(channels, pi_t, n_q=None, n_points=None, niter=None, seed=Non
     for ch in channels:
         if _is_dominated(ch, channels, check_pts):
             best_mi = max(best_mi, _mi_bits(pi_t, ch))
+    # A common degradation is less-noisy dominated, so I_d^∩ is always attainable.
+    _, k_deg = _degradation_channel(channels, pi_t, niter=30, seed=seed)
+    if k_deg is not None:
+        best_mi = max(best_mi, _mi_bits(pi_t, _make_feasible(k_deg, channels, pi_t, check_pts)))
 
     E = _tied_rows(channels)
     n_c = E.shape[1]

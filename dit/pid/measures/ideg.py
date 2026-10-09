@@ -20,23 +20,12 @@ References
 """
 
 import numpy as np
-from scipy.optimize import minimize
+from scipy.optimize import linprog
 
 from ...channelorder._utils import channels_from_joint
 from ..pid import BaseBivariatePID
 
 __all__ = ("PID_Deg",)
-
-
-def _params_to_stochastic(params, n_rows, n_cols):
-    """Map unconstrained params to a row-stochastic matrix via softmax."""
-    mat = np.zeros((n_rows, n_cols))
-    for r in range(n_rows):
-        logits = params[r * n_cols : (r + 1) * n_cols]
-        x = logits - logits.max()
-        e = np.exp(x)
-        mat[r] = e / e.sum()
-    return mat
 
 
 def _mi_bits(pi_t, ch):
@@ -52,6 +41,90 @@ def _mi_bits(pi_t, ch):
     return mi
 
 
+def _mi_grad(pi_t, ch, floor=1e-12):
+    """Gradient of I(T; Q) w.r.t. the channel, with logs floored so zero entries stay finite."""
+    p_q = pi_t @ ch
+    return pi_t[:, None] * np.log2(np.maximum(ch, floor) / np.maximum(p_q, floor)[None, :])
+
+
+def _degradation_channel(channels, pi_t, bound=None, niter=None, steps=50, seed=0):
+    """
+    Maximize I(Q; T) over common degradations K_Q = K^(i) @ Λ_i of every source.
+
+    The feasible (Λ_1, ..., Λ_n) form a polytope and I(Q; T) is convex in K_Q, so
+    the maximum is at a vertex. Each start is a vertex from a linear program with a
+    random cost, followed by successive linearization: move to the vertex maximizing
+    the gradient's linear form while that improves I(Q; T). Every candidate is
+    exactly feasible.
+
+    Parameters
+    ----------
+    channels : list of ndarray
+        Source channel matrices [K^(1), K^(2), ...], each shape (|T|, |Y_i|).
+    pi_t : ndarray
+        Target marginal P(T).
+    bound : int or None
+        Cardinality of Q.  Defaults to Kolchinsky's bound.
+    niter : int or None
+        Number of random vertices to start from.
+    steps : int
+        Maximum linearization steps per start.
+    seed : int or None
+        Random seed for the vertex costs.
+
+    Returns
+    -------
+    mi : float
+        The degradation intersection information (in bits).
+    k_q : ndarray or None
+        An optimal channel K_Q, or None if the optimum is the constant channel.
+    """
+    n_t = channels[0].shape[0]
+    sizes = [ch.shape[1] for ch in channels]
+    n_q = bound if bound is not None else sum(sizes) - len(channels) + 1
+    niter = 100 if niter is None else niter
+    offsets = np.cumsum([0] + [s * n_q for s in sizes])
+    n_z = offsets[-1]
+
+    def kq_map(i):
+        """Linear map from the stacked Λ's to vec(K^(i) @ Λ_i)."""
+        M = np.zeros((n_t * n_q, n_z))
+        block = np.kron(channels[i], np.eye(n_q))
+        M[:, offsets[i] : offsets[i + 1]] = block
+        return M
+
+    rows = [np.kron(np.eye(s), np.ones(n_q)) for s in sizes]
+    A_rows = np.zeros((sum(sizes), n_z))
+    r = 0
+    for i, block in enumerate(rows):
+        A_rows[r : r + sizes[i], offsets[i] : offsets[i + 1]] = block
+        r += sizes[i]
+    M0 = kq_map(0)
+    A = np.vstack([A_rows] + [M0 - kq_map(i) for i in range(1, len(channels))])
+    b = np.r_[np.ones(sum(sizes)), np.zeros(A.shape[0] - sum(sizes))]
+
+    def channel(z):
+        return np.clip((M0 @ z).reshape(n_t, n_q), 0, None)
+
+    rng = np.random.default_rng(seed)
+    best_mi, best_k = 0.0, None
+    for _ in range(niter):
+        res = linprog(rng.standard_normal(n_z), A_eq=A, b_eq=b, bounds=(0, None), method="highs-ds")
+        if res.x is None:
+            continue
+        z = res.x
+        val = _mi_bits(pi_t, channel(z))
+        for _ in range(steps):
+            g = M0.T @ _mi_grad(pi_t, channel(z)).ravel()
+            res = linprog(-g, A_eq=A, b_eq=b, bounds=(0, None), method="highs-ds")
+            if res.x is None or _mi_bits(pi_t, channel(res.x)) <= val + 1e-12:
+                break
+            z, val = res.x, _mi_bits(pi_t, channel(res.x))
+        if val > best_mi:
+            best_mi, best_k = val, channel(z)
+    return best_mi, best_k
+
+
 def _degradation_ii(channels, pi_t, bound=None, niter=None):
     """
     Compute I_d^∩ by maximizing I(Q; T) subject to Q ≤_d Y_i for all i.
@@ -63,69 +136,16 @@ def _degradation_ii(channels, pi_t, bound=None, niter=None):
     pi_t : ndarray
         Target marginal P(T).
     bound : int or None
-        Max cardinality of Q.  Defaults to Kolchinsky's bound.
+        Cardinality of Q.  Defaults to Kolchinsky's bound.
     niter : int or None
-        Number of random restarts per |Q| value.
+        Number of random vertices to start from.
 
     Returns
     -------
     float
         The degradation intersection information (in bits).
     """
-    n_sources = len(channels)
-    sizes = [ch.shape[1] for ch in channels]
-
-    if bound is None:
-        bound = sum(sizes) - n_sources + 1
-
-    if niter is None:
-        niter = 20
-
-    best_mi = 0.0
-    penalty_weight = 200.0
-
-    for n_q in range(1, bound + 1):
-        n_params = sum(s * n_q for s in sizes)
-
-        def _neg_obj(params, _sizes=sizes, _nq=n_q):
-            offset = 0
-            k_qs = []
-            for i in range(n_sources):
-                lam = _params_to_stochastic(
-                    params[offset : offset + _sizes[i] * _nq],
-                    _sizes[i],
-                    _nq,
-                )
-                offset += _sizes[i] * _nq
-                k_qs.append(channels[i] @ lam)
-
-            k_q = k_qs[0]
-            penalty = sum(np.sum((k_qs[i] - k_q) ** 2) for i in range(1, n_sources))
-            return -_mi_bits(pi_t, k_q) + penalty_weight * penalty
-
-        for _ in range(niter):
-            x0 = np.random.randn(n_params) * 0.5
-            res = minimize(_neg_obj, x0, method="L-BFGS-B", options={"maxiter": 500})
-
-            # Verify feasibility and record MI
-            offset = 0
-            k_qs = []
-            for i in range(n_sources):
-                lam = _params_to_stochastic(
-                    res.x[offset : offset + sizes[i] * n_q],
-                    sizes[i],
-                    n_q,
-                )
-                offset += sizes[i] * n_q
-                k_qs.append(channels[i] @ lam)
-
-            penalty = sum(np.sum((k_qs[i] - k_qs[0]) ** 2) for i in range(1, n_sources))
-            if penalty < 1e-6:
-                mi = _mi_bits(pi_t, k_qs[0])
-                if mi > best_mi:
-                    best_mi = mi
-
-    return best_mi
+    return _degradation_channel(channels, pi_t, bound=bound, niter=niter)[0]
 
 
 class PID_Deg(BaseBivariatePID):
@@ -158,9 +178,9 @@ class PID_Deg(BaseBivariatePID):
         target : iterable
             The target variable.
         bound : int or None
-            Max cardinality of the auxiliary variable Q.
+            Cardinality of the auxiliary variable Q.
         niter : int or None
-            Number of optimization restarts per |Q| value.
+            Number of random vertices to start the search from.
 
         Returns
         -------
