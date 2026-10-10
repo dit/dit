@@ -1054,14 +1054,14 @@ def _combine_scalar_dists(d1, d2, op):
     d : Distribution
         The two distributions combined via `op`
     """
-    # Copy to make sure we don't lose precision when converting.
-    d2 = d2.copy(base=d1.get_base())
-
+    # `zipped` yields linear probabilities regardless of base.
     dist = defaultdict(float)
     for (o1, p1), (o2, p2) in product(d1.zipped(), d2.zipped()):
-        dist[op(o1, o2)] += d1.ops.mult(p1, p2)
+        dist[op(o1, o2)] += p1 * p2
 
-    return Distribution(*zip(*dist.items(), strict=True), base=d1.get_base())
+    d = Distribution(*zip(*dist.items(), strict=True))
+    d.set_base(d1.get_base())
+    return d
 
 
 class DistributionEnumerator:

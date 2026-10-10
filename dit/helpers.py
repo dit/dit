@@ -327,6 +327,9 @@ def copypmf(d, base=None, mode="asis"):
         pmf = np.array([d[o] for o in d.sample_space()], dtype=float)
     elif mode == "sparse":
         pmf = np.array([p for p in d.pmf if not ops_old.is_null(p)], dtype=float)
+    else:
+        msg = f"Invalid mode {mode!r}; expected 'asis', 'dense', or 'sparse'."
+        raise ValueError(msg)
 
     # Determine the conversion targets.
     islog_old = d.is_log()
