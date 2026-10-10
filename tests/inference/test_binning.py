@@ -33,3 +33,9 @@ def test_uniform_binning():
     bins = np.array([0] * 8 + [1] * 2)
     bd = binned(data + (2 * bins), style="uniform")
     assert np.all(bd == bins)
+
+
+def test_uniform_binning_large_magnitude():
+    from dit.inference.binning import uniform_binning
+
+    assert list(uniform_binning(np.array([0, 5e5, 1e6]), 2)) == [0, 1, 1]

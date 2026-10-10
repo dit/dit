@@ -50,8 +50,7 @@ def numerical_distances(x_values, y_values):
     ds : np.ndarray
         The matrix of distances.
     """
-    xx, yy = np.meshgrid(x_values, y_values)
-    return abs(xx - yy)
+    return abs(np.subtract.outer(np.asarray(x_values, dtype=float), np.asarray(y_values, dtype=float)))
 
 
 def _emd_linprog(x, y, distances=None):
@@ -76,14 +75,13 @@ def _emd_linprog(x, y, distances=None):
         plan (a joint distribution with `x` as row marginal and `y` as column
         marginal).
     """
-    n = len(x)
+    n, m = len(x), len(y)
 
     if distances is None:
         # assume categorical distribution
         distances = categorical_distances(n)
 
-    eye = np.eye(n)
-    A = np.vstack([np.dstack([eye] * n).reshape(n, n**2), np.tile(eye, n)])
+    A = np.vstack([np.kron(np.eye(n), np.ones(m)), np.kron(np.ones(n), np.eye(m))])
 
     b = np.concatenate([x, y], axis=0)
 

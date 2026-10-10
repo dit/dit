@@ -60,3 +60,19 @@ def test_hypercontractivity_coefficient_tensorization(dist1, dist2):
     hc_a = hypercontractivity_coefficient(dist1, [[0], [1]])
     hc_b = hypercontractivity_coefficient(dist2, [[0], [1]])
     assert hc_mixed == pytest.approx(max(hc_a, hc_b), abs=5e-2)
+
+
+def test_hc_tensorization_respects_variable_order():
+    """
+    The product shortcut must keep X and Y straight when Y's indices precede X's.
+    """
+    pairs = {(0, 0): 0.5, (1, 0): 0.2, (1, 1): 0.3}
+    single = Distribution([f"{x}{y}" for x, y in pairs], list(pairs.values()))
+    s_xy = hypercontractivity_coefficient(single, [[0], [1]])
+    outs, probs = [], []
+    for (x0, y0), p0 in pairs.items():
+        for (x1, y1), p1 in pairs.items():
+            outs.append(f"{y0}{y1}{x0}{x1}")
+            probs.append(p0 * p1)
+    product = Distribution(outs, probs)
+    assert hypercontractivity_coefficient(product, [[2, 3], [0, 1]]) == pytest.approx(s_xy, abs=1e-3)

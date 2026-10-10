@@ -22,3 +22,11 @@ def test_cmi_1(dist, value):
     """
     cmi = copy_mutual_information(dist, [0], [1])
     assert cmi == pytest.approx(value)
+
+
+def test_cmi_value_absent_from_y():
+    """
+    X may take values that Y never takes.
+    """
+    dist = Distribution(["00", "11", "20"], [1 / 3] * 3)
+    assert copy_mutual_information(dist, [0], [1]) >= 0

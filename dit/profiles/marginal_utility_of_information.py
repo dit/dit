@@ -73,10 +73,8 @@ def get_lp_form(dist, ents):
                     cond[j] -= 1
                 if (pa_V & pa_W) & atom:
                     cond[j] -= 1
-                A.append(cond)
-                b.append(
-                    ents[([pa_V], [])] + ents[([pa_W], [])] - ents[([pa_V | pa_W], [])] - ents[([pa_V & pa_W], [])]
-                )
+            A.append(cond)
+            b.append(ents[([pa_V], [])] + ents[([pa_W], [])] - ents[([pa_V | pa_W], [])] - ents[([pa_V & pa_W], [])])
 
     A.append([1] * len(atoms))
     b.append(0)  # placeholder for y

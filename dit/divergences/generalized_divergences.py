@@ -4,9 +4,8 @@ The Kullback-Leibler divergence.
 
 import numpy as np
 
-from ..helpers import normalize_rvs
+from ..helpers import normalize_pmfs, normalize_rvs
 from ..utils import flatten
-from .cross_entropy import get_pmfs_like
 from .kullback_leibler_divergence import kullback_leibler_divergence
 
 __all__ = (
@@ -54,14 +53,38 @@ def double_power_sum(dist1, dist2, exp1=1, exp2=1, rvs=None):
         Raised if either `dist1` or `dist2` doesn't have `rvs` or, if `rvs` is
         None, if `dist2` has an outcome length different than `dist1`.
     """
+    ps, qs = _union_pmfs(dist1, dist2, rvs)
+    div = np.sum(_power(ps, exp1) * _power(qs, exp2))
+
+    return div
+
+
+def _union_pmfs(dist1, dist2, rvs):
+    """
+    Linear pmfs of `dist1` and `dist2` over `rvs`, aligned on the union of
+    their supports.
+    """
+    rvs = _validate_rvs(dist1, dist2, rvs)
+    return normalize_pmfs(dist1.marginal(rvs), dist2.marginal(rvs))
+
+
+def _validate_rvs(dist1, dist2, rvs):
+    """
+    Normalize `rvs` against `dist1` and check that `dist2` has them too.
+    """
     rvs, _ = normalize_rvs(dist1, rvs, None)
     rvs = list(flatten(rvs))
     normalize_rvs(dist2, rvs, None)
+    return rvs
 
-    ps, qs = get_pmfs_like(dist1, dist2, rvs)
-    div = np.nansum(np.power(ps, exp1) * np.power(qs, exp2))
 
-    return div
+def _power(x, e):
+    """
+    ``x**e`` with ``0**e = inf`` for ``e < 0`` and ``0**0 = 0``, so that an
+    outcome outside a distribution's support contributes nothing at ``e = 0``.
+    """
+    with np.errstate(divide="ignore"):
+        return np.where(x > 0, np.power(x, e), np.inf if e < 0 else 0.0)
 
 
 def hellinger_sum(dist1, dist2, alpha=1.0, rvs=None):
@@ -125,7 +148,7 @@ def hellinger_divergence(dist1, dist2, alpha=1.0, rvs=None):
         None, if `dist2` has an outcome length different than `dist1`.
     """
     if alpha == 1:
-        return kullback_leibler_divergence(dist1, dist2, rvs=rvs)
+        return kullback_leibler_divergence(dist1, dist2, rvs=rvs) * np.log(2)
     s = hellinger_sum(dist1, dist2, rvs=rvs, alpha=alpha)
     return (s - 1) / (alpha - 1)
 
@@ -160,7 +183,7 @@ def tsallis_divergence(dist1, dist2, alpha=1.0, rvs=None):
     """
     # D_T = (D_alpha -1) / (alpha-1)
     if alpha == 1:
-        div = kullback_leibler_divergence(dist1, dist2, rvs=rvs)
+        div = kullback_leibler_divergence(dist1, dist2, rvs=rvs) * np.log(2)
     else:
         s = hellinger_sum(dist1, dist2, rvs=rvs, alpha=alpha)
         div = (s - 1) / (alpha - 1)
@@ -236,9 +259,10 @@ def alpha_divergence(dist1, dist2, alpha=1.0, rvs=None):
         None, if `dist2` has an outcome length different than `dist1`.
     """
     if alpha == 1:
-        return kullback_leibler_divergence(dist1, dist2, rvs=rvs)
+        rvs = _validate_rvs(dist1, dist2, rvs)
+        return kullback_leibler_divergence(dist2, dist1, rvs=rvs) * np.log(2)
     if alpha == -1:
-        return kullback_leibler_divergence(dist2, dist1, rvs=rvs)
+        return kullback_leibler_divergence(dist1, dist2, rvs=rvs) * np.log(2)
     s = double_power_sum(dist1, dist2, (1 - alpha) / 2, (1 + alpha) / 2, rvs=rvs)
     return 4 * (1 - s) / (1 - alpha * alpha)
 
@@ -272,13 +296,16 @@ def f_divergence(dist1, dist2, f, rvs=None):
     ditException
         Raised if either `dist1` or `dist2` doesn't have `rvs` or, if `rvs` is
         None,         if `dist2` has an outcome length different than `dist1`.
-    """
-    rvs, _ = normalize_rvs(dist1, rvs, None)
-    rvs = list(flatten(rvs))
-    normalize_rvs(dist2, rvs, None)
 
-    ps, qs = get_pmfs_like(dist1, dist2, rvs)
+    Notes
+    -----
+    Outcomes where `dist2` is zero but `dist1` is not are omitted: their
+    contribution, ``p * lim_{t -> inf} f(t) / t``, depends on `f` and is not
+    computed.
+    """
+    ps, qs = _union_pmfs(dist1, dist2, rvs)
     vfunc = np.vectorize(f)
-    div = np.nansum(qs * vfunc(np.divide(ps, qs)))
+    with np.errstate(divide="ignore", invalid="ignore"):
+        div = np.nansum(qs * vfunc(np.divide(ps, qs)))
 
     return div

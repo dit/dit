@@ -103,3 +103,13 @@ class TestComposeChannels:
         composed = compose_channels(bsc(a), bsc(b))
         # Two cascaded BSCs form a BSC with crossover a + b - 2ab.
         assert np.allclose(composed, bsc(a + b - 2 * a * b))
+
+
+@pytest.mark.parametrize("func", [channels_from_joint, reverse_channels_from_joint])
+def test_integer_indices_match_names(func):
+    d = Distribution(["000", "011", "101", "110"], [0.1, 0.2, 0.3, 0.4])
+    d.set_rv_names("SYZ")
+    by_index = func(d, [2], [0], [1])
+    by_name = func(d, ["Z"], ["S"], ["Y"])
+    for a, b in zip(by_index, by_name, strict=True):
+        assert np.allclose(a, b)

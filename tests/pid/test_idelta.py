@@ -43,3 +43,16 @@ def test_pid_delta_and():
     assert pid[((0, 1),)] == pytest.approx(0.5, abs=1e-4)
     assert pid[((0,),)] == pytest.approx(0.0, abs=1e-4)
     assert pid[((1,),)] == pytest.approx(0.0, abs=1e-4)
+
+
+def test_pid_delta_unique_copy():
+    """
+    T copies X0 and X1 is independent noise: all information is unique to X0.
+    """
+    from dit import Distribution
+
+    d = Distribution(["000", "010", "101", "111"], [1 / 4] * 4)
+    pid = PID_Delta(d, ((0,), (1,)), (2,))
+    assert pid[((0,),)] == pytest.approx(1.0, abs=1e-4)
+    assert pid[((1,),)] == pytest.approx(0.0, abs=1e-4)
+    assert pid[((0,), (1,))] == pytest.approx(0.0, abs=1e-4)

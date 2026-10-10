@@ -113,3 +113,21 @@ def test_emd_coupling_distances():
         distances[i][j] * coupling[(a, b)] for i, (a,) in enumerate(d1.outcomes) for j, (b,) in enumerate(d2.outcomes)
     )
     assert cost == pytest.approx(emd)
+
+
+def test_emd_numeric_asymmetric_supports():
+    """
+    The cost matrix must be indexed (dist1 outcome, dist2 outcome).
+    """
+    from scipy.stats import wasserstein_distance
+
+    d1 = Distribution([0, 10], [1 / 2, 1 / 2])
+    d2 = Distribution([1, 2], [9 / 10, 1 / 10])
+    expected = wasserstein_distance([0, 10], [1, 2], [1 / 2, 1 / 2], [9 / 10, 1 / 10])
+    assert earth_movers_distance(d1, d2) == pytest.approx(expected)
+
+
+def test_emd_numeric_different_sizes():
+    d1 = Distribution([0, 1, 2], [0.2, 0.3, 0.5])
+    d2 = Distribution([5], [1.0])
+    assert earth_movers_distance(d1, d2) == pytest.approx(0.2 * 5 + 0.3 * 4 + 0.5 * 3)
