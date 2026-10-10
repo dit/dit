@@ -46,6 +46,8 @@ algorithm of Chan and Liu :cite:`ChanLiu2017agglomerative` (minimum-norm-base
 subroutines per :cite:`Chakrabarty2014wolfe`), which is exact and faster than
 enumerating partitions in practice.
 
+The CAEKL mutual information is the secret key capacity when every variable is a terminal that must share the key; :py:func:`~dit.multivariate.secret_key_agreement.secret_key_capacity` generalizes it to key sets with helper terminals :cite:`csiszar2004secrecy`.
+
 .. todo::
 
    Include a nice i-diagram of this quantity, if possible.
