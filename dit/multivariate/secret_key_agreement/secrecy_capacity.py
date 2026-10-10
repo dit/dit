@@ -20,6 +20,12 @@ class SecrecyCapacity(OneWaySKAR):
         max_{U - X - YZ} I[U:Y] - I[U:Z]
     """
 
+    def _get_u_bound(self):
+        """
+        |U| <= |X|
+        """
+        return self._shape[0]
+
     def _get_v_bound(self):
         """
         Make V a constant.

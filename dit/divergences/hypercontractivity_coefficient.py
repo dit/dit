@@ -4,8 +4,10 @@ Compute the hypercontractivity coefficient:
 """
 
 from itertools import product
+from math import comb
 
 import numpy as np
+from scipy.optimize import linprog
 
 from ..algorithms import BaseAuxVarOptimizer
 from ..exceptions import ditException
@@ -73,6 +75,70 @@ def _markov_witness_ratios(dist, rv_x, rv_y):
         best = max(best, numer / denom)
 
     return best if best > 0 else None
+
+
+def _joint_matrix(dist, rv_x, rv_y):
+    """The joint pmf of (X, Y) as a matrix, restricted to the support of X."""
+    d = dist.coalesce([list(rv_x), list(rv_y)])
+    d.make_dense()
+    pmf = d.pmf.reshape([len(a) for a in d.alphabet])
+    return pmf[pmf.sum(axis=1) > 0]
+
+
+def _maximal_correlation_squared(pmf):
+    """
+    Squared maximal correlation, the second singular value of p(x,y)/sqrt(p(x)p(y)).
+    It lower-bounds s*, approached as U becomes independent of X :cite:`anantharam2013maximal`.
+    """
+    px, py = pmf.sum(axis=1), pmf.sum(axis=0)
+    keep = py > 0
+    B = pmf[:, keep] / np.sqrt(np.outer(px, py[keep]))
+    sv = np.linalg.svd(B, compute_uv=False)
+    return float(sv[1] ** 2) if len(sv) > 1 else 0.0
+
+
+def _envelope_hypercontractivity(pmf, max_alphabet=4, grid_points=3000, iters=30, tol=1e-9):
+    """
+    Lower bound on s* from the convex-envelope characterization
+    :cite:`anantharam2013maximal`: with ``g(q) = H(q W) - lam H(q)`` for X ~ q,
+    ``I(U:Y) - lam I(U:X) = g(p) - sum_u p(u) g(q_u)``, so s* is the least
+    ``lam`` at which ``g`` touches its convex envelope at ``p(x)``. Envelopes are
+    taken over a grid of Alice's simplex; the returned ``lam`` is violated by an
+    explicit split, so it never exceeds s*.
+    """
+    n = pmf.shape[0]
+    if n > max_alphabet:
+        return None
+    px = pmf.sum(axis=1)
+    W = pmf / px[:, None]
+    count = 1
+    while comb(count + n, n - 1) <= grid_points:
+        count += 1
+    grid = [c for c in product(range(count + 1), repeat=n - 1) if sum(c) <= count]
+    Q = np.array([list(c) + [count - sum(c)] for c in grid], dtype=float) / count
+    Q = np.r_[Q, px[None, :]]
+
+    def ent(P):
+        with np.errstate(divide="ignore", invalid="ignore"):
+            return -np.where(P > 0, P * np.log2(P), 0.0).sum(axis=-1)
+
+    hy, hx = ent(Q @ W), ent(Q)
+
+    def violated(lam):
+        g = hy - lam * hx
+        res = linprog(g, A_eq=Q.T, b_eq=px, bounds=(0, None), method="highs")
+        return res.x is not None and g[-1] - res.fun > tol
+
+    lo, hi = 0.0, 1.0
+    if not violated(lo):
+        return 0.0
+    for _ in range(iters):
+        mid = 0.5 * (lo + hi)
+        if violated(mid):
+            lo = mid
+        else:
+            hi = mid
+    return lo
 
 
 def _product_hypercontractivity(dist, rv_x, rv_y, bound, niter):
@@ -231,6 +297,11 @@ def hypercontractivity_coefficient(dist, rvs, bound=None, niter=None):
     wit = _markov_witness_ratios(dist, rvs[0], rvs[1])
     if wit is not None:
         val = max(val, wit)
+    pmf = _joint_matrix(dist, rvs[0], rvs[1])
+    val = max(val, _maximal_correlation_squared(pmf))
+    env = _envelope_hypercontractivity(pmf)
+    if env is not None:
+        val = max(val, env)
     if not np.isfinite(val):
         return np.inf if np.isneginf(val) else 0.0
     return float(max(0.0, val))

@@ -70,6 +70,8 @@ If only Alice is allowed to publicly broadcast information, the secret key agree
 
    \operatorname{S}[X \rightarrow Y || Z] = \displaystyle \max_{V - U - X - YZ} \I{U : Y | V} - \I{U : Z | V}
 
+:cite:`ahlswede1993common`. It suffices to take :math:`|V| \leq |X|` and :math:`|U| \leq |X|^2` :cite:`elgamal2011network`: :math:`V` splits Alice's distribution into at most :math:`|X|` parts, and :math:`U` splits each of those into at most :math:`|X|` further parts.
+
 .. py:module:: dit.multivariate.secret_key_agreement.two_way_skar
 
 Two-Way Communication
@@ -431,7 +433,7 @@ where the middle inequality is due to :cite:`renner2003bounds`. When :math:`Z` i
 ``dit`` builds the second Markov chain into the parametrization, as it does for the Wyner common information: :math:`U` is a channel from :math:`Z`, :math:`V` a channel from :math:`XU`, and a copy :math:`Y'` a channel from :math:`UV`, subject to :math:`XY'U` being distributed as :math:`XYU`. As with all of these optimizations, the result is a local minimum, and so an upper bound on the secret key cost.
 
 For ``intrinsic_2``, :math:`\I{X : Y \downarrow Z} = \C{X : Y | Z} = 1.5`, so forming it costs 1.5 bits of secret key, while only 1 bit can be extracted from it. For ``bound_information`` :cite:`pauwels2026bipartite`, no key can be extracted, but the intrinsic mutual information is positive, and so is the cost of forming it; ``dit`` finds roughly :math:`0.026` bits.
-=======
+
 Sources with Known Rates
 ************************
 
@@ -458,4 +460,4 @@ Exact secret key agreement rates are known for only a few sources, and ``dit`` i
 .. py:module:: dit.multivariate.secret_key_agreement.secret_key_cost
 
 Secret Key Cost
-========
+===============

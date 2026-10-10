@@ -126,6 +126,7 @@ _MACROS = {
     "IdeltaLambda": [r"\op{I_{\delta\Lambda}}{#1}", 1],
     "Iipid": [r"\op{I_{IPID}}{#1}", 1],
     "Imc": [r"\op{I_{MC}}{#1}", 1],
+    "Iln": [r"\op{I_{LN}}{#1}", 1],
     "Ideg": [r"\op{I_{deg}}{#1}", 1],
     "Iprec": [r"\op{I_{prec}}{#1}", 1],
     "Igh": [r"\op{I_{GH}}{#1}", 1],

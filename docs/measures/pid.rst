@@ -596,6 +596,28 @@ The more-capable intersection information of Gomes & Figueiredo :cite:`gomes2023
 
 where :math:`Q \preceq_{\mathrm{mc}} X_i` iff :math:`\I{Q : Y} \leq \I{X_i : Y}` for every input distribution on :math:`Y`.
 
+.. py:module:: dit.pid.iln
+
+:math:`\Iln{\bullet}`
+---------------------
+
+The less-noisy intersection information of Gomes & Figueiredo :cite:`gomes2023orders` uses the *less noisy* channel preorder, which sits between the Blackwell-degradation and more-capable orders, so :math:`\Ideg{\bullet} \leq \Iln{\bullet} \leq \Imc{\bullet}`:
+
+.. math::
+
+   \Iln{X_{0:n} \to Y} = \max_{Q :\; Q \preceq_{\mathrm{ln}} X_i \;\forall i} \I{Q : Y}
+
+where :math:`Q \preceq_{\mathrm{ln}} X_i` iff :math:`\I{U : Q} \leq \I{U : X_i}` for every :math:`U` with :math:`U - Y - (Q, X_i)`.
+Equivalently, the one-way secret key agreement rate from :math:`Y` to :math:`Q` with :math:`X_i` eavesdropping vanishes, so :math:`\Iln{\bullet}` is the most information about the target that cannot support secret key agreement against any single source.
+
+By :cite:`vandijk1997special`, :math:`Q \preceq_{\mathrm{ln}} X_i` iff :math:`\I{Y : X_i} - \I{Y : Q}` is concave in the distribution of :math:`Y`.
+``dit`` imposes the equivalent pointwise condition on the Hessians of the output entropies at sampled distributions and directions, so the computed value is approximate.
+No bound on :math:`|Q|` is known; it defaults to the largest source alphabet.
+
+.. warning::
+
+   This measure appears to result in a negative PID. For :math:`p_Y = (0.3, 0.55, 0.15)` with :math:`p(x_0 | y)` rows :math:`(0.2, 0.5, 0.3), (0, 0, 1), (0.1, 0.9, 0)` and :math:`p(x_1 | y)` rows :math:`(0.1, 0, 0.9), (0.05, 0.5, 0.45), (0.05, 0.5, 0.45)`, :math:`\Iln{\bullet} \approx 0.021` bits, below the coinformation :math:`0.6925 + 0.2341 - 0.8836 = 0.043` bits, so the synergy is about :math:`-0.022` bits. More generally, since :math:`\Iln{\bullet}` depends only on the source-target marginals, it gives a nonnegative synergy on every distribution with those marginals only if it is at least :math:`\Ibroja{\bullet}` :cite:`bertschinger2014quantifying` (Lemma 3), which here is :math:`0.050` bits.
+
 .. py:module:: dit.pid.imes
 
 :math:`\Imes{\bullet}`

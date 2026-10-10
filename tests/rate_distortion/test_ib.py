@@ -90,3 +90,18 @@ def test_ibd_2():
     pmf = ibd.construct_joint(ibd._optima)
     assert float(ibd.complexity(pmf)) == pytest.approx(0.0, abs=1e-4)
     assert float(ibd.relevance(pmf)) == pytest.approx(0.0, abs=1e-4)
+
+
+def test_ib_high_beta_seeded():
+    """
+    At beta = 10 random starts often stay near an uninformative encoder; the
+    seeded search reaches the best of 60 self-consistent iterations and all
+    deterministic encoders, 1.8306 bits.
+    """
+    pxy = [[0.0031, 0.0, 0.2947], [0.1006, 0.0353, 0.0065], [0.3585, 0.0127, 0.0071], [0.0047, 0.1389, 0.0378]]
+    outcomes = [f"{x}{y}" for x in range(4) for y in range(3)]
+    pmf = [p for row in pxy for p in row]
+    d = Distribution(outcomes, [p / sum(pmf) for p in pmf])
+    ib = InformationBottleneck(d, beta=10.0)
+    ib.optimize()
+    assert ib.objective(ib._optima) == pytest.approx(1.8306, abs=1e-3)

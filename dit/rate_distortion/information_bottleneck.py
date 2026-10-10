@@ -83,6 +83,103 @@ class InformationBottleneck(BaseAuxVarOptimizer):
 
         self._default_hops *= 3
 
+    _max_partition_seeds = 2000
+    _n_fixed_point_seeds = 10
+
+    def _partition_encoders(self):
+        """
+        Deterministic encoders T = f(X), one per partition of X into at most
+        ``bound`` blocks, when Z is trivial and there are few enough of them.
+        For the deterministic bottleneck (alpha = 0) the objective is concave in
+        the encoder, so its minimum is among these.
+        """
+        n_x, n_z, bound = self._aux_vars[0].shape
+        if n_z != 1:
+            return []
+        labels = [[0]]
+        for _ in range(n_x - 1):
+            labels = [lab + [k] for lab in labels for k in range(min(max(lab) + 2, bound))]
+            if len(labels) > self._max_partition_seeds:
+                return []
+        encoders = []
+        for lab in labels:
+            enc = np.zeros((n_x, 1, bound))
+            enc[np.arange(n_x), 0, lab] = 1
+            encoders.append(enc)
+        return encoders
+
+    def _fixed_point(self, enc, iters=500, tol=1e-10):
+        """
+        Iterate the information bottleneck self-consistent equations
+        :cite:`tishby2000information`, p(t|x) ∝ p(t) exp(-beta KL[p(y|x) || p(y|t)]),
+        separately for each value of Z.
+        """
+        enc = enc.copy()
+        for z in range(enc.shape[1]):
+            p_xy = self._pmf[:, :, z]
+            p_x = p_xy.sum(axis=1)
+            if p_x.sum() <= 0:
+                continue
+            keep = p_x > 0
+            p_y_x = p_xy[keep] / p_x[keep, None]
+            e = enc[keep, z, :]
+            for _ in range(iters):
+                p_t = p_x[keep] @ e
+                p_y_t = (p_xy[keep].T @ e) / np.maximum(p_t, 1e-300)
+                with np.errstate(divide="ignore", invalid="ignore"):
+                    ratio = np.where(
+                        p_y_x[:, :, None] > 0, np.log(p_y_x[:, :, None] / np.maximum(p_y_t[None], 1e-300)), 0.0
+                    )
+                kl = (p_y_x[:, :, None] * ratio).sum(axis=1)
+                new = p_t[None, :] * np.exp(-self._beta * (kl - kl.min(axis=1, keepdims=True)))
+                new /= new.sum(axis=1, keepdims=True)
+                done = np.abs(new - e).max() < tol
+                e = new
+                if done:
+                    break
+            enc[keep, z, :] = e
+        return enc
+
+    def _seed_initials(self):
+        """
+        The constant and identity encoders and, for the standard bottleneck,
+        fixed points of the self-consistent equations reached from random encoders.
+
+        Returns
+        -------
+        seeds : list of np.ndarray
+            Optimization vectors.
+        """
+        shape = self._aux_vars[0].shape
+        seeds = [self.construct_constant_initial(), self.construct_copy_initial()]
+        if np.isclose(self._alpha, 1.0):
+            rng = np.random.default_rng() if self._rng is None else self._rng
+            for _ in range(self._n_fixed_point_seeds):
+                enc = rng.dirichlet(np.ones(shape[-1]), size=shape[:-1])
+                seeds.append(self._fixed_point(enc).ravel())
+        return seeds
+
+    def optimize(self, *args, **kwargs):
+        """
+        Optimize, then keep the best of the result, the seeds, and the
+        deterministic partition encoders, since local search started at a seed
+        can drift away from it.
+
+        Parameters
+        ----------
+        args, kwargs
+            Passed to :meth:`BaseAuxVarOptimizer.optimize`.
+
+        Returns
+        -------
+        result : OptimizeResult
+            The result of the search.
+        """
+        result = super().optimize(*args, **kwargs)
+        partitions = [enc.ravel() for enc in self._partition_encoders()]
+        self._optima = min([self._optima, *self._seed_initials(), *partitions], key=self.objective).copy()
+        return result
+
     def _distortion(self):
         """
         Construct the distortion function.

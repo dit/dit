@@ -376,8 +376,10 @@ class ReducedIntrinsicMIMixin:
 
     # The joint minimization over ``U`` and ``Zbar`` is non-convex; a single
     # basin-hopping run stalls in a poor basin (e.g. 1.0 or 1.39 on
-    # intrinsic_3, where 0.98 is reachable) about one time in five.
-    _shotgun = 10
+    # intrinsic_3, where 0.98 is reachable) about one time in five. The 0.98
+    # basin needs a stochastic, low-entropy ``U``; 10 starts still missed it in
+    # 4 of 30 seeded runs, 20 starts in none.
+    _shotgun = 20
 
     def __init__(self, dist, rvs=None, crvs=None, bound=None):
         """

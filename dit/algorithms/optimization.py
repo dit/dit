@@ -1879,8 +1879,8 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
         grad : np.ndarray
             The objective gradient w.r.t. ``x``, of length ``len(x)``.
         """
-        x = x.copy()
-        channels = list(self._construct_channels(x))
+        # _construct_channels normalizes its argument in place; _channel_vjp needs the raw rows.
+        channels = list(self._construct_channels(x.copy()))
 
         # Forward pass, recording the running joint before each channel multiply.
         prev_joints = []

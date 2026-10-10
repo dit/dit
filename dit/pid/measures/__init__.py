@@ -13,6 +13,7 @@ from .ido import PID_Do
 from .igh import PID_GH
 from .iig import PID_IG
 from .iipid import PID_IPID
+from .iln import PID_LN
 from .imc import PID_MC
 from .imes import PID_MES
 from .imin import PID_WB
@@ -55,5 +56,6 @@ __all_pids = [
     PID_RDR,
     PID_Deg,
     PID_MC,
+    PID_LN,
     PID_Do,
 ]
