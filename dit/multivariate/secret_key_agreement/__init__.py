@@ -17,6 +17,7 @@ from .minimal_intrinsic_mutual_informations import (
     minimal_intrinsic_dual_total_correlation,
     minimal_intrinsic_total_correlation,
 )
+from .multiterminal_skar import omniscience_rate, secret_key_capacity
 from .no_communication import no_communication_skar
 
 # one-way communication

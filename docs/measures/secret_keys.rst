@@ -457,6 +457,50 @@ Exact secret key agreement rates are known for only a few sources, and ``dit`` i
    In [18]: chitambar_two_way.secret_rate
    Out[18]: 0.2
 
+.. py:module:: dit.multivariate.secret_key_agreement.multiterminal_skar
+
+Multiterminal Secret Key Capacity
+=================================
+
+When there is no eavesdropper side information but many terminals, the secret key capacity is known exactly :cite:`csiszar2004secrecy`.
+Each terminal :math:`j \in \mathcal{M}` observes :math:`X_j`, all of them may discuss publicly, and only the terminals in a key set :math:`\mathcal{A} \subseteq \mathcal{M}` must end up with the key; the rest are *helpers*, from whom the key need not be hidden.
+The capacity is
+
+.. math::
+
+   C_{SK}^{\mathcal{A}} = \H{X_\mathcal{M}} - R_{CO}^{\mathcal{A}}
+
+where :math:`R_{CO}^{\mathcal{A}}` is the minimum rate of communication for omniscience, the least total public discussion after which every terminal in :math:`\mathcal{A}` knows every :math:`X_j`:
+
+.. math::
+
+   R_{CO}^{\mathcal{A}} = \min \sum_{j \in \mathcal{M}} R_j
+   \quad \text{s.t.} \quad
+   \sum_{j \in \mathcal{B}} R_j \geq \H{X_\mathcal{B} | X_{\mathcal{B}^c}}
+   \quad \forall\, \emptyset \neq \mathcal{B} \subsetneq \mathcal{M},\ \mathcal{A} \not\subseteq \mathcal{B}
+
+``dit`` solves this linear program directly, so the cost grows as :math:`2^{|\mathcal{M}|}`.
+If some terminals are compromised, revealing :math:`X_\mathcal{D}` to the eavesdropper while still cooperating, the private key capacity is the same expression with every entropy conditioned on :math:`X_\mathcal{D}`; pass those variables as ``crvs``.
+When :math:`\mathcal{A} = \mathcal{M}`, the capacity is the :ref:`caekl_mutual_information`.
+
+Helpers can create key where none existed. If Alice and Bob hold independent uniform bits and a helper holds their ``xor``, Alice and Bob alone share nothing, but after the helper announces its bit they share one secret bit:
+
+.. ipython::
+
+   In [19]: d = dit.Distribution(['000', '011', '101', '110'], [1/4] * 4)
+
+   @doctest float
+   In [20]: secret_key_capacity(d, [[0], [1], [2]], key_terminals=[0, 1])
+   Out[20]: 1.0
+
+   @doctest float
+   In [21]: omniscience_rate(d, [[0], [1], [2]], key_terminals=[0, 1])
+   Out[21]: 1.0
+
+.. autofunction:: secret_key_capacity
+
+.. autofunction:: omniscience_rate
+
 .. py:module:: dit.multivariate.secret_key_agreement.secret_key_cost
 
 Secret Key Cost
