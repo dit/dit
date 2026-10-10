@@ -12,6 +12,7 @@ from .math.misc import is_number
 from .utils import flatten, product_maker
 
 __all__ = (
+    "as_linear",
     "construct_alphabets",
     "copypmf",
     "get_outcome_ctor",
@@ -351,9 +352,26 @@ def copypmf(d, base=None, mode="asis"):
     return pmf
 
 
+def as_linear(dist):
+    """
+    Return `dist` with linear probabilities, copying only if it is log-based.
+
+    Parameters
+    ----------
+    dist : Distribution
+        The distribution.
+
+    Returns
+    -------
+    dist : Distribution
+        `dist` itself if its pmf is linear, else a linear-base copy.
+    """
+    return dist.copy(base="linear") if dist.is_log() else dist
+
+
 def normalize_pmfs(dist1, dist2):
     """
-    Construct probability vectors with common support.
+    Construct linear probability vectors with common support.
 
     Parameters
     ----------
@@ -365,13 +383,16 @@ def normalize_pmfs(dist1, dist2):
     Returns
     -------
     p : np.ndarray
-        The pmf of `dist1`.
+        The (linear) pmf of `dist1`.
     q : np.ndarray
-        The pmf of `dist2`.
+        The (linear) pmf of `dist2`.
     """
-    event_space = list(set().union(dist1.outcomes, dist2.outcomes))
-    p = np.array([dist1[e] if e in dist1.outcomes else 0 for e in event_space])
-    q = np.array([dist2[e] if e in dist2.outcomes else 0 for e in event_space])
+    dist1, dist2 = as_linear(dist1), as_linear(dist2)
+    p_dict = dict(zip(dist1.outcomes, dist1.pmf, strict=True))
+    q_dict = dict(zip(dist2.outcomes, dist2.pmf, strict=True))
+    event_space = list(set().union(p_dict, q_dict))
+    p = np.array([p_dict.get(e, 0) for e in event_space])
+    q = np.array([q_dict.get(e, 0) for e in event_space])
     return p, q
 
 

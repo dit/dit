@@ -6,7 +6,7 @@ import numpy as np
 from scipy.optimize import linprog
 
 from ..distribution import Distribution
-from ..helpers import numerical_test
+from ..helpers import as_linear, numerical_test
 
 __all__ = (
     "categorical_distances",
@@ -137,6 +137,7 @@ def _emd_setup(dist1, dist2, distances=None):
     outcomes1, outcomes2 : tuple
         The outcome labels indexing the rows (`p`) and columns (`q`).
     """
+    dist1, dist2 = as_linear(dist1), as_linear(dist2)
     if distances is None:
         try:
             numerical_test(dist1)

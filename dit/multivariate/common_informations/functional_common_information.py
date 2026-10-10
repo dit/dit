@@ -8,7 +8,7 @@ from itertools import combinations
 import numpy as np
 
 from ...distconst import RVFunctions, insert_rvf
-from ...helpers import normalize_rvs
+from ...helpers import as_linear, normalize_rvs
 from ...utils import partitions, unitful
 from ..dual_total_correlation import dual_total_correlation
 from ..entropy import entropy
@@ -489,6 +489,7 @@ def functional_markov_chain(
     With ``_strategy='auto'`` (default), cheap probes on the meet and MSS
     seeds pick among the three.  See james2017multivariate.
     """
+    dist = as_linear(dist)
     optimal_b = dual_total_correlation(dist, rvs, crvs)
     ctx = prepare_functional_search(dist, rvs=rvs, crvs=crvs)
     pmf_size = int(np.prod(ctx.shape))
@@ -562,6 +563,7 @@ def functional_common_information(dist, rvs=None, crvs=None):
     F : float
         The functional common information.
     """
+    dist = as_linear(dist)
     rvs, crvs = normalize_rvs(dist, rvs, crvs)
 
     dtc = dual_total_correlation(dist, rvs, crvs)

@@ -2,6 +2,7 @@
 The Kullback-Leibler divergence.
 """
 
+from ..helpers import as_linear
 from ..multivariate.entropy import entropy
 from .cross_entropy import cross_entropy
 
@@ -37,6 +38,7 @@ def kullback_leibler_divergence(dist1, dist2, rvs=None, crvs=None):
         Raised if either `dist1` or `dist2` doesn't have `rvs` or, if `rvs` is
         None, if `dist2` has an outcome length different than `dist1`.
     """
+    dist1, dist2 = as_linear(dist1), as_linear(dist2)
     xh = cross_entropy(dist1, dist2, rvs, crvs)
     h = entropy(dist1, rvs, crvs)
     dkl = xh - h

@@ -4,7 +4,7 @@ The lautum (mutual backwards) information, as defined by Palomar & Verdu.
 
 from dit.distconst import product_distribution
 from dit.divergences import kullback_leibler_divergence
-from dit.helpers import normalize_rvs
+from dit.helpers import as_linear, normalize_rvs
 
 __all__ = ("lautum_information",)
 
@@ -47,6 +47,7 @@ def lautum_information(dist, rvs=None, crvs=None):
         Raised if `dist` is not a joint distribution or if `rvs` or `crvs`
         contain non-existent random variables.
     """
+    dist = as_linear(dist)
     rvs, crvs = normalize_rvs(dist, rvs, crvs)
 
     pd = product_distribution(dist, rvs=rvs + [crvs])

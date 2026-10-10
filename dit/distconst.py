@@ -147,10 +147,11 @@ def mixture_distribution2(dists, weights):
     ops = dists[0].ops
     validate_pmf(weights, ops)
 
-    mix = dists[0].copy()
-    ops.mult_inplace(mix.pmf, weights[0])
+    pmf = ops.mult(dists[0].pmf, weights[0])
     for dist, weight in zip(dists[1:], weights[1:], strict=True):
-        ops.add_inplace(mix.pmf, ops.mult(dist.pmf, weight))
+        pmf = ops.add(pmf, ops.mult(dist.pmf, weight))
+    mix = dists[0].copy()
+    mix.pmf = pmf
     return mix
 
 
@@ -938,7 +939,6 @@ def product_distribution(dist, rvs=None, base=None):
 
     marginals = [dist.marginal(index_list) for index_list in indexes]
     ctor = dist._outcome_ctor
-    ops = dist.ops
 
     outcomes = []
     pmf = []
@@ -953,13 +953,11 @@ def product_distribution(dist, rvs=None, base=None):
                 outcome.extend(value)
             prob.append(pair[1])
         outcomes.append(ctor(outcome))
-        pmf.append(ops.mult_reduce(prob))
+        # `zipped` yields linear probabilities regardless of the dist's base.
+        pmf.append(np.prod(prob))
 
     d = Distribution(outcomes, pmf, validate=False)
-
-    # Maybe we should use ditParams['base'] when base is None?
-    if base is not None:
-        d.set_base(base)
+    d.set_base(base if base is not None else dist.get_base())
 
     return d
 

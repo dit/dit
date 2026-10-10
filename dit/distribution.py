@@ -344,9 +344,10 @@ class Distribution:
             coords = {name: _coord_values(alpha) for name, alpha in zip(rv_names, alphabets, strict=True)}
 
             shape = tuple(len(a) for a in alphabets)
-            arr = np.zeros(shape, dtype=object) if _symbolic else np.zeros(shape)
+            arr = np.zeros(shape, dtype=object) if _symbolic else np.full(shape, get_ops(base).zero, dtype=float)
+            index_maps = [{v: j for j, v in enumerate(alpha)} for alpha in alphabets]
             for outcome, p in zip(outcomes, pmf, strict=True):
-                idx = tuple(alphabets[i].index(outcome[i]) for i in range(n))
+                idx = tuple(index_maps[i][outcome[i]] for i in range(n))
                 arr[idx] = p
 
             da = xr.DataArray(arr, dims=rv_names, coords=coords)

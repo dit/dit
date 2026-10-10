@@ -12,6 +12,7 @@ import numpy as np
 from lattices.lattices import free_distributive_lattice
 
 from ..exceptions import ditException
+from ..helpers import as_linear
 from ..multivariate import coinformation
 from ..params import ditParams
 from ..utils import build_table, flatten, powerset
@@ -127,7 +128,7 @@ class BasePID(metaclass=ABCMeta):
             If the all the partial information values should be automatically
             computed.
         """
-        self._dist = dist
+        self._dist = dist = as_linear(dist)
 
         if target is None:
             target = dist.rvs[-1]

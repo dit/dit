@@ -7,7 +7,7 @@ from copy import deepcopy
 import numpy as np
 
 from ...algorithms.minimal_sufficient_statistic import insert_joint_mss
-from ...helpers import normalize_rvs
+from ...helpers import as_linear, normalize_rvs
 from ...utils import unitful
 from ..dual_total_correlation import dual_total_correlation
 from ..entropy import entropy
@@ -32,7 +32,7 @@ def mss_common_information(dist, rvs=None, crvs=None):
         The random variables to condition the joint minimal sufficient statistic on. If None, then no random variables are conditioned on.
 
     """
-    dist = deepcopy(dist)
+    dist = deepcopy(as_linear(dist))
     dist.make_sparse()
     rvs, crvs = normalize_rvs(dist, rvs, crvs)
 
