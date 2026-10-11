@@ -153,26 +153,38 @@ def maximal_leakage(dist, rvs_X, rvs_Y):
     return sibson_mutual_information(dist, rvs_X, rvs_Y, np.inf)
 
 
+def _conditional_slices(p_xyz):
+    """
+    Yield ``(p(z), p(x, y | z))`` for each z with positive probability.
+    """
+    p_z = p_xyz.sum(axis=(0, 1))
+    for z in range(p_xyz.shape[2]):
+        if p_z[z] > 0:
+            yield p_z[z], p_xyz[:, :, z] / p_z[z]
+
+
 def _conditional_y_given_z_pmf(p_xyz, order):
     """
     I^Y|Z_alpha from a 3-D joint PMF (axis 0=X, 1=Y, 2=Z).
 
-    min_{Q_{Y|Z}} D_alpha(P_{XYZ} || P_{X|Z} Q_{Y|Z} P_Z) decomposes over z as a
-    weighted sum of unconditional Sibson terms on each P_{XY|z}.
+    min_{Q_{Y|Z}} D_alpha(P_{XYZ} || P_{X|Z} Q_{Y|Z} P_Z)
+    = 1/(alpha-1) log2 sum_z P(z) 2^{(alpha-1) I_alpha(X;Y|Z=z)},
+    whose alpha = 1 limit is sum_z P(z) I_1(X;Y|Z=z) and alpha = inf limit is
+    max_z I_inf(X;Y|Z=z).
     """
     _validate_order(order)
 
-    p_z = p_xyz.sum(axis=(0, 1))
-    n_z = p_xyz.shape[2]
+    weights, infos = [], []
+    for p_z, p_xy_z in _conditional_slices(p_xyz):
+        weights.append(p_z)
+        infos.append(_sibson_mi_from_joint_pmf(p_xy_z, order))
+    weights, infos = np.array(weights), np.array(infos)
 
-    total = 0.0
-    for z in range(n_z):
-        if p_z[z] == 0:
-            continue
-        p_xy_z = p_xyz[:, :, z]
-        total += p_z[z] * _sibson_mi_from_joint_pmf(p_xy_z, order)
-
-    return float(total)
+    if order == 1:
+        return float(np.sum(weights * infos))
+    if order == np.inf:
+        return float(np.max(infos))
+    return float(np.log2(np.sum(weights * 2.0 ** ((order - 1) * infos))) / (order - 1))
 
 
 def _conditional_z_pmf(p_xyz, order):
@@ -184,65 +196,25 @@ def _conditional_z_pmf(p_xyz, order):
     """
     _validate_order(order)
 
-    p_z = p_xyz.sum(axis=(0, 1))
-    n_z = p_xyz.shape[2]
+    total = 0.0
+    for p_z, p_xy_z in _conditional_slices(p_xyz):
+        p_x_z = p_xy_z.sum(axis=1)[:, None]
+        p_y_z = p_xy_z.sum(axis=0)[None, :]
+        support = p_xy_z > 0
+        with np.errstate(divide="ignore", invalid="ignore"):
+            if order == 1:
+                total += p_z * np.sum(np.where(support, p_xy_z * np.log2(p_xy_z / (p_x_z * p_y_z)), 0.0))
+            elif order == np.inf:
+                total += p_z * np.max(np.where(support, p_xy_z / (p_x_z * p_y_z), 0.0))
+            else:
+                term = np.sum(np.where(support, p_xy_z**order * p_x_z ** (1 - order) * p_y_z ** (1 - order), 0.0))
+                total += p_z * term ** (1 / order)
 
     if order == 1:
-        total = 0.0
-        for z in range(n_z):
-            if p_z[z] == 0:
-                continue
-            p_xy_z = p_xyz[:, :, z]
-            p_x_z = p_xy_z.sum(axis=1)
-            p_y_z = p_xy_z.sum(axis=0)
-            with np.errstate(divide="ignore", invalid="ignore"):
-                terms = np.where(
-                    p_xy_z > 0,
-                    p_xy_z * np.log2(p_xy_z * p_z[z] / (p_x_z[:, None] * p_y_z)),
-                    0.0,
-                )
-            total += terms.sum()
         return float(total)
-
     if order == np.inf:
-        total = 0.0
-        for z in range(n_z):
-            if p_z[z] == 0:
-                continue
-            p_xy_z = p_xyz[:, :, z]
-            p_x_z = p_xy_z.sum(axis=1)
-            p_y_z = p_xy_z.sum(axis=0)
-            ess_sup = 0.0
-            for x in range(p_xy_z.shape[0]):
-                for y in range(p_xy_z.shape[1]):
-                    if p_xy_z[x, y] == 0:
-                        continue
-                    if p_x_z[x] > 0 and p_y_z[y] > 0:
-                        ratio = p_xy_z[x, y] / (p_x_z[x] * p_y_z[y])
-                        ess_sup = max(ess_sup, ratio)
-            total += p_z[z] * ess_sup
         return float(np.log2(total))
-
-    inner_sum = 0.0
-    for z in range(n_z):
-        if p_z[z] == 0:
-            continue
-        p_xy_z = p_xyz[:, :, z]
-        p_x_z = p_xy_z.sum(axis=1)
-        p_y_z = p_xy_z.sum(axis=0)
-        with np.errstate(divide="ignore", invalid="ignore"):
-            term = np.sum(
-                np.where(
-                    p_xy_z > 0,
-                    p_xy_z**order
-                    * np.where(p_x_z[:, None] > 0, p_x_z[:, None], 1.0) ** (1 - order)
-                    * np.where(p_y_z > 0, p_y_z, 1.0) ** (1 - order),
-                    0.0,
-                )
-            )
-        inner_sum += p_z[z] * term ** (1 / order)
-
-    return float((order / (order - 1)) * np.log2(inner_sum))
+    return float((order / (order - 1)) * np.log2(total))
 
 
 def _joint_pmf_xyz(dist, rvs_X, rvs_Y, rvs_Z):

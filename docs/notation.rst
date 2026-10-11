@@ -19,6 +19,11 @@ If we ever need to describe an infinitely long chain of variables we drop the in
 
 Furthermore, we define :math:`0 \log_2 0 = 0`.
 
+Units
+-----
+
+Information measures are reported in the logarithmic base of the distribution they are computed from: bits for linear and base-2 distributions, nats for a base-:math:`e` distribution (``d.copy(base='e')``), and so on. Unitless quantities (variational distance, maximal correlation, Tsallis entropy and the Hellinger/Tsallis/:math:`\alpha` divergences, normalized complexities) do not depend on the base. With ``ditParams['units'] = True`` (requires ``pint``), values carry the matching unit.
+
 Advanced Notation
 =================
 

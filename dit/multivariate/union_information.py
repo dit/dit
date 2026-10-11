@@ -9,7 +9,7 @@ non-negative components using pointwise max/min of marginal surprisals.
 
 import numpy as np
 
-from ..helpers import normalize_rvs
+from ..helpers import as_linear, normalize_rvs
 from ..shannon import entropy as shannon_entropy
 from ..utils import flatten, unitful
 
@@ -41,6 +41,9 @@ def _pointwise_surprisals(dist, rvs):
         ``surprisals[i][j]`` is the marginal surprisal of rv group *j*
         for the *i*-th outcome.
     """
+    dist = as_linear(dist)
+    dims = list(dist.dims)
+    indices = [[dims.index(name) for name in dist._resolve_rv_names(list(flatten(rv)))] for rv in rvs]
     marginals = [dist.marginal(list(flatten(rv))) for rv in rvs]
 
     outcomes = []
@@ -54,8 +57,7 @@ def _pointwise_surprisals(dist, rvs):
         probs.append(p)
 
         row = []
-        for rv, marg in zip(rvs, marginals, strict=True):
-            idx = list(flatten(rv))
+        for idx, marg in zip(indices, marginals, strict=True):
             marg_outcome = tuple(outcome[i] for i in idx)
             if len(marg_outcome) == 1:
                 marg_outcome = marg_outcome[0]

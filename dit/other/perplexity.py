@@ -28,11 +28,12 @@ def perplexity(dist, rvs=None, crvs=None):
     """
     base = dist.get_base(numerical=True) if dist.is_log() else 2
 
-    if rvs is not None:
-        rvs = set(flatten(rvs))
     if crvs is None:
         crvs = []
     if rvs is None:
-        return base ** entropy(dist)
+        if not crvs:
+            return base ** entropy(dist)
+        rvs = range(dist.outcome_length())
+    rvs = set(flatten(rvs))
 
     return base ** conditional_entropy(dist, rvs, crvs)

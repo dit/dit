@@ -26,36 +26,16 @@ class PID_PM(BasePointwisePID):
 
     _name = "I_±"
 
-    @staticmethod
-    def _pointwise_measure(dist, sources, target, **kwargs):
+    @classmethod
+    def _pointwise_measure(cls, dist, sources, target, **kwargs):
         """
         Per-outcome pointwise redundancy:
         i_±(outcome) = min_h_s(outcome) - min_h_s|t(outcome)
 
         Returns a dict keyed by the original distribution's outcomes.
         """
-        source_marginals = [dist.marginal(list(s)) for s in sources]
-        target_marginal = dist.marginal(list(target))
-        source_target_joints = [dist.marginal(list(s) + list(target)) for s in sources]
-
-        pw = {}
-        for outcome in dist.outcomes:
-            source_vals = [tuple(outcome[i] for i in s) for s in sources]
-            target_val = tuple(outcome[i] for i in target)
-
-            min_h_s = min(-np.log2(source_marginals[i][sv]) for i, sv in enumerate(source_vals))
-
-            p_t = target_marginal[target_val]
-            h_s_g_t_vals = []
-            for i, sv in enumerate(source_vals):
-                p_st = source_target_joints[i][sv + target_val]
-                p_s_g_t = p_st / p_t if p_t > 0 else 0.0
-                h_s_g_t_vals.append(-np.log2(p_s_g_t))
-            min_h_s_g_t = min(h_s_g_t_vals)
-
-            pw[outcome] = min_h_s - min_h_s_g_t
-
-        return pw
+        plus, minus = cls._pointwise_measure_parts(dist, sources, target)
+        return {outcome: plus[outcome] - minus[outcome] for outcome in plus}
 
     @staticmethod
     def _pointwise_measure_parts(dist, sources, target, **kwargs):
@@ -66,32 +46,30 @@ class PID_PM(BasePointwisePID):
 
         Returns (plus_dict, minus_dict) keyed by original outcomes.
         """
-        source_marginals = [dist.marginal(list(s)) for s in sources]
-        target_marginal = dist.marginal(list(target))
-        source_target_joints = [dist.marginal(list(s) + list(target)) for s in sources]
+        dist = dist.copy(base="linear") if dist.is_log() else dist
+        # `marginal` orders variables by index, so build lookup keys the same way.
+        source_idx = [sorted(s) for s in sources]
+        target_idx = sorted(target)
+        joint_idx = [sorted(list(s) + list(target)) for s in sources]
+        source_marginals = [dist.marginal(idx) for idx in source_idx]
+        target_marginal = dist.marginal(target_idx)
+        source_target_joints = [dist.marginal(idx) for idx in joint_idx]
+
+        def key(outcome, idx):
+            return tuple(outcome[i] for i in idx)
 
         plus_dict = {}
         minus_dict = {}
         for outcome in dist.outcomes:
-            source_vals = [tuple(outcome[i] for i in s) for s in sources]
-            target_val = tuple(outcome[i] for i in target)
+            plus_dict[outcome] = min(
+                -np.log2(marg[key(outcome, idx)]) for marg, idx in zip(source_marginals, source_idx, strict=True)
+            )
 
-            plus_dict[outcome] = min(-np.log2(source_marginals[i][sv]) for i, sv in enumerate(source_vals))
-
-            p_t = target_marginal[target_val]
+            p_t = target_marginal[key(outcome, target_idx)]
             h_s_g_t_vals = []
-            for i, sv in enumerate(source_vals):
-                p_st = source_target_joints[i][sv + target_val]
-                p_s_g_t = p_st / p_t if p_t > 0 else 0.0
+            for joint, idx in zip(source_target_joints, joint_idx, strict=True):
+                p_s_g_t = joint[key(outcome, idx)] / p_t if p_t > 0 else 0.0
                 h_s_g_t_vals.append(-np.log2(p_s_g_t))
             minus_dict[outcome] = min(h_s_g_t_vals)
 
         return plus_dict, minus_dict
-
-    @classmethod
-    def _measure(cls, dist, sources, target, **kwargs):
-        """
-        Averaged redundancy over the joint distribution.
-        """
-        pw = cls._pointwise_measure(dist, sources, target, **kwargs)
-        return np.nansum([dist[outcome] * val for outcome, val in pw.items()])

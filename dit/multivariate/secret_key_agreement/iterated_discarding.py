@@ -30,7 +30,13 @@ def _mutual_information(pab):
     pa = pab.sum(axis=1, keepdims=True)
     pb = pab.sum(axis=0, keepdims=True)
     mask = pab > 0
-    return float((pab[mask] * np.log2(pab[mask] / (pa @ pb)[mask])).sum())
+    # Logs separately: pa * pb can underflow for tiny probabilities.
+    log_ratio = (
+        np.log2(pab[mask])
+        - np.log2(np.broadcast_to(pa, pab.shape)[mask])
+        - np.log2(np.broadcast_to(pb, pab.shape)[mask])
+    )
+    return float((pab[mask] * log_ratio).sum())
 
 
 def _rate(p, keeps, alice_first):

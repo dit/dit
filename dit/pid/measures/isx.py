@@ -11,23 +11,49 @@ from ..pid import BasePointwisePID
 __all__ = ("PID_SX",)
 
 
-def _linear_pmf(dist):
-    """Return a 1-D array of linear (non-log) probabilities for dist.outcomes."""
-    if dist.is_log():
-        return np.array([dist.ops.exp(p) for p in dist.pmf])
-    return dist.pmf
+def _prob_union(outcomes, linear_pmf, outcome, var_sets):
+    """
+    Probability of the union of events where at least one var_set matches outcome.
 
-
-def _prob_union(dist, outcome, var_sets, *, linear_pmf=None):
-    """Probability of the union of events where at least one var_set matches outcome."""
-    if linear_pmf is None:
-        linear_pmf = _linear_pmf(dist)
-    mask = np.zeros(len(dist.outcomes), dtype=bool)
+    Parameters
+    ----------
+    outcomes : np.ndarray
+        Object array of shape (n_outcomes, n_variables).
+    linear_pmf : np.ndarray
+        Linear probabilities aligned with `outcomes`.
+    outcome : tuple
+        The outcome whose events are matched.
+    var_sets : iterable of iterables
+        Variable index sets; each defines the event ``X_vs = outcome[vs]``.
+    """
+    mask = np.zeros(len(outcomes), dtype=bool)
     for var_set in var_sets:
-        mask |= np.array(
-            [all(dist.outcomes[rlz][i] == outcome[i] for i in var_set) for rlz in range(len(dist.outcomes))]
-        )
-    return np.sum(linear_pmf, where=mask)
+        var_set = list(var_set)
+        values = np.empty(len(var_set), dtype=object)
+        values[:] = [outcome[i] for i in var_set]
+        mask |= (outcomes[:, var_set] == values).all(axis=1)
+    return linear_pmf[mask].sum()
+
+
+def _pointwise_parts(dist, sources, target):
+    """
+    ``(plus, minus)`` dicts of i^sx+(s) = -log2 P(union of source events) and
+    i^sx-(s, t) = -log2 P(union of (source, target) events) / P(t).
+    """
+    dist = dist.copy(base="linear") if dist.is_log() else dist
+    outcomes = np.empty((len(dist.outcomes), dist.outcome_length()), dtype=object)
+    outcomes[:] = [list(o) for o in dist.outcomes]
+    lin_joint = np.asarray(dist.pmf, dtype=float)
+    dist_target = dist.marginal(target)
+    joint_sets = tuple(tuple(s) + tuple(target) for s in sources)
+
+    plus, minus = {}, {}
+    for outcome in dist.outcomes:
+        p_t = dist_target[tuple(outcome[t] for t in target)]
+        with np.errstate(divide="ignore", invalid="ignore"):
+            plus[outcome] = -np.log2(_prob_union(outcomes, lin_joint, outcome, sources))
+            minus[outcome] = -np.log2(_prob_union(outcomes, lin_joint, outcome, joint_sets) / p_t)
+    return plus, minus
 
 
 class PID_SX(BasePointwisePID):
@@ -55,23 +81,8 @@ class PID_SX(BasePointwisePID):
         pw : dict
             ``{outcome: float}`` for every joint outcome in *dist*.
         """
-        dist_marg = dist.marginalize(target)
-        dist_target = dist.marginal(target)
-        lin_marg = _linear_pmf(dist_marg)
-        lin_joint = _linear_pmf(dist)
-        target_lin = dist_target.copy(base="linear") if dist_target.is_log() else dist_target
-
-        pw = {}
-        for outcome in dist.outcomes:
-            with np.errstate(divide="ignore", invalid="ignore"):
-                plus = -np.log2(_prob_union(dist_marg, outcome, sources, linear_pmf=lin_marg))
-                minus = -np.log2(
-                    _prob_union(dist, outcome, tuple(s + target for s in sources), linear_pmf=lin_joint)
-                    / target_lin[tuple(outcome[t] for t in target)]
-                )
-            pw[outcome] = plus - minus
-
-        return pw
+        plus, minus = _pointwise_parts(dist, sources, target)
+        return {outcome: plus[outcome] - minus[outcome] for outcome in plus}
 
     @staticmethod
     def _pointwise_measure_parts(dist, sources, target, **kwargs):
@@ -86,20 +97,4 @@ class PID_SX(BasePointwisePID):
         -------
         plus_dict, minus_dict : dict, dict
         """
-        dist_marg = dist.marginalize(target)
-        dist_target = dist.marginal(target)
-        lin_marg = _linear_pmf(dist_marg)
-        lin_joint = _linear_pmf(dist)
-        target_lin = dist_target.copy(base="linear") if dist_target.is_log() else dist_target
-
-        plus_dict = {}
-        minus_dict = {}
-        for outcome in dist.outcomes:
-            with np.errstate(divide="ignore", invalid="ignore"):
-                plus_dict[outcome] = -np.log2(_prob_union(dist_marg, outcome, sources, linear_pmf=lin_marg))
-                minus_dict[outcome] = -np.log2(
-                    _prob_union(dist, outcome, tuple(s + target for s in sources), linear_pmf=lin_joint)
-                    / target_lin[tuple(outcome[t] for t in target)]
-                )
-
-        return plus_dict, minus_dict
+        return _pointwise_parts(dist, sources, target)

@@ -34,6 +34,8 @@ class PID_MES(BaseBivariatePID):
         i_mes : float
             The value of I_ME*.
         """
-        dp = maxent_dist(d, [source + target for source in sources])
+        d = d.coalesce(list(sources) + [target])
+        n = len(sources)
+        dp = maxent_dist(d, [[i, n] for i in range(n)])
         i_mes = I(dp)
         return i_mes

@@ -764,6 +764,11 @@ class BaseIncompletePID(BasePID):
                         if node not in self._reds:
                             self._reds[node] = self._reds[top]
 
+        # once every redundancy is known the Mobius inversion is exact; the
+        # heuristic below assumes nonnegative atoms, so it would override it.
+        if all(node in self._reds for node in self._lattice):
+            return
+
         # if redundancy of A is equal to the redundancy any of A's children, then pi(A) = 0
         for node in self._lattice:
             if (

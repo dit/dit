@@ -2,6 +2,8 @@
 The lautum (mutual backwards) information, as defined by Palomar & Verdu.
 """
 
+import numpy as np
+
 from dit.distconst import product_distribution
 from dit.divergences import kullback_leibler_divergence
 from dit.helpers import as_linear, normalize_rvs
@@ -52,6 +54,23 @@ def lautum_information(dist, rvs=None, crvs=None):
     dist = as_linear(dist)
     rvs, crvs = normalize_rvs(dist, rvs, crvs)
 
-    pd = product_distribution(dist, rvs=rvs + [crvs])
-    L = kullback_leibler_divergence(pd, dist, rvs=rvs, crvs=crvs)
-    return L
+    if not crvs:
+        pd = product_distribution(dist, rvs=rvs)
+        return kullback_leibler_divergence(pd, dist, rvs=rvs)
+
+    # L(X;Y|Z) = D(p(z) prod_i p(x_i|z) || p(x, z)), Palomar & Verdu eq. (38).
+    d = dist.coalesce(rvs + [crvs])
+    d.make_dense()
+    p = d.pmf.reshape([len(a) for a in d.alphabet])
+    k = len(rvs)
+    p_z = p.sum(axis=tuple(range(k)))
+    with np.errstate(divide="ignore", invalid="ignore"):
+        q = np.ones_like(p)
+        for i in range(k):
+            others = tuple(j for j in range(k) if j != i)
+            q = q * np.expand_dims(p.sum(axis=others), others)
+        q = np.where(p_z > 0, q / p_z ** (k - 1), 0.0)
+        if np.any((q > 0) & (p == 0)):
+            return np.inf
+        terms = np.where(q > 0, q * np.log2(q / p), 0.0)
+    return float(terms.sum())

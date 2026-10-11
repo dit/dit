@@ -180,6 +180,8 @@ class PID_GH(BasePID):
                 break
             except OptimizationException:
                 continue
-        q = len(sources) + 1
-        od = gho.construct_distribution()
-        return mutual_information(od, target, [q])
+        else:
+            msg = "I_GH: optimization failed for every auxiliary bound."
+            raise OptimizationException(msg)
+        # The objective is -I[Q : Y].
+        return -gho.objective(gho._optima)

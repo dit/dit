@@ -52,7 +52,7 @@ def renyi_entropy(dist, order, rvs=None):
     pmf = dist.pmf
 
     if order == 0:
-        H_a = np.log2(pmf.size)
+        H_a = np.log2(np.count_nonzero(pmf))
     elif order == 1:
         H_a = entropy(dist)
     elif order == np.inf:

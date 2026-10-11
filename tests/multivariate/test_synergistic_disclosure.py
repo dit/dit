@@ -131,15 +131,28 @@ def test_synergistic_disclosure_smoke(monkeypatch):
 
 
 def test_synergistic_disclosure_exception_returns_zero(monkeypatch):
-    """A failure during optimization is swallowed and yields 0.0."""
+    """An optimization failure yields 0.0."""
+    from dit.exceptions import OptimizationException
 
     def boom(self, niter=None, **kwargs):
-        raise RuntimeError("optimization failed")
+        raise OptimizationException("optimization failed")
 
     monkeypatch.setattr(syndisc_module.SyndiscOptimizer, "optimize", boom)
     d = bivariates["synergy"]
     val = synergistic_disclosure(d, [[0], [1]], [2], alpha=[[0], [1]])
     assert val == 0.0
+
+
+def test_synergistic_disclosure_other_errors_propagate(monkeypatch):
+    """Errors other than optimization failures are not swallowed."""
+
+    def boom(self, niter=None, **kwargs):
+        raise RuntimeError("bug")
+
+    monkeypatch.setattr(syndisc_module.SyndiscOptimizer, "optimize", boom)
+    d = bivariates["synergy"]
+    with pytest.raises(RuntimeError):
+        synergistic_disclosure(d, [[0], [1]], [2], alpha=[[0], [1]])
 
 
 def test_modified_synergistic_disclosure_multi_alpha_smoke(monkeypatch):

@@ -590,20 +590,23 @@ class InnerTwoPartIMIMixin:
 
         super().__init__(dist, rvs + [j], crvs)
 
-        theoretical_bound_u = prod(self._shape[rv] for rv in self._rvs)
+        # U is a channel from X, Y only (V - U - XY - ZJ), so it excludes J.
+        self._j = {max(self._rvs)}
+        xy = self._rvs - self._j
+
+        theoretical_bound_u = prod(self._shape[rv] for rv in xy)
         bound_u = min([bound_u, theoretical_bound_u]) if bound_u else theoretical_bound_u
 
-        theoretical_bound_v = prod(self._shape[rv] for rv in self._rvs) ** 2
+        theoretical_bound_v = prod(self._shape[rv] for rv in xy) ** 2
         bound_v = min([bound_v, theoretical_bound_v]) if bound_v else theoretical_bound_v
 
         self._construct_auxvars(
             [
-                (self._rvs, bound_u),
+                (xy, bound_u),
                 ({len(self._shape)}, bound_v),
             ]
         )
         idx = min(self._arvs)
-        self._j = {max(self._rvs)}
         self._u = {idx}
         self._v = {idx + 1}
 

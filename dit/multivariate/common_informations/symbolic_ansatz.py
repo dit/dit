@@ -92,8 +92,10 @@ def ansatz_common_information(dist, measure, rvs=None, symbol_map=None):
     if a is not None and measure == "wyner":
         # Wyner CI of the DSBS (Wyner 1975): the optimal auxiliary is a fair bit
         # feeding two identical binary symmetric channels with crossover a0,
-        # where a0 (1 - a0) = a / 2 and a0 in (0, 1/2).
-        a0 = sympy.Rational(1, 2) - sympy.sqrt(1 - 2 * a) / 2
+        # where a0 (1 - a0) = a / 2 and a0 in (0, 1/2). Relabeling Y maps a to
+        # 1 - a without changing the Wyner CI, so use min(a, 1 - a).
+        a_min = sympy.Min(a, 1 - a)
+        a0 = sympy.Rational(1, 2) - sympy.sqrt(1 - 2 * a_min) / 2
         return sympy.simplify(1 + _binary_entropy(a) - 2 * _binary_entropy(a0))
 
     # NOTE: the Exact common information of the DSBS does *not* reduce to the
