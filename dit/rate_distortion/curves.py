@@ -24,6 +24,9 @@ __all__ = (
     "RDCurve",
 )
 
+# beta grows by 1.5x per step, so 60 steps reach ~3.7e10.
+_MAX_BETA_STEPS = 60
+
 
 class RDCurve:
     """
@@ -168,9 +171,13 @@ class RDCurve:
         beta_max = 1
         rate = 0
 
-        while not np.isclose(rate, self._max_rate, atol=1e-5, rtol=1e-5):
+        for _ in range(_MAX_BETA_STEPS):
             beta_max = 1.5 * beta_max
-            rate, _, _, _ = self._get_rd(beta=beta_max)
+            prev, (rate, _, _, _) = rate, self._get_rd(beta=beta_max)
+            if np.isclose(rate, self._max_rate, atol=1e-5, rtol=1e-5) or (
+                rate > 0 and np.isclose(rate, prev, atol=1e-7, rtol=1e-7)
+            ):
+                break
 
         return beta_max
 
@@ -565,7 +572,7 @@ class IBCurve:
             d = Distribution.from_ndarray(q_xyzt)
             self.distributions.append(d)
             complexities.append(total_correlation(d, [x, t], z))
-            entropies.append(entropy(d, x, z))
+            entropies.append(entropy(d, t, z))
             relevances.append(total_correlation(d, [y, t], z))
             errors.append(total_correlation(d, [x, y], z + t))
             distortions.append(self._bn.distortion(q_xyzt))
@@ -599,10 +606,16 @@ class IBCurve:
         beta_max = 1.0
         relevance = 0.0
 
-        while not np.isclose(relevance, self._max_relevance, atol=1e-5, rtol=1e-5):
+        # The maximal relevance may be unreachable (e.g. under a `bound`), so
+        # also stop once growing beta no longer improves it.
+        for _ in range(_MAX_BETA_STEPS):
             beta_max = 1.5 * beta_max
             q, _ = self._get_opt_sp(beta=beta_max)
-            relevance = self._bn.relevance(q)
+            prev, relevance = relevance, self._bn.relevance(q)
+            if np.isclose(relevance, self._max_relevance, atol=1e-5, rtol=1e-5) or (
+                relevance > 0 and np.isclose(relevance, prev, atol=1e-7, rtol=1e-7)
+            ):
+                break
 
         return beta_max
 
@@ -617,7 +630,7 @@ class IBCurve:
         """
         diff = np.diff(self.ranks)
         jumps = np.arange(len(diff))[diff > 0]
-        kinks = np.asarray([jump for jump in jumps if diff[jump - 1] == 0])
+        kinks = np.asarray([jump for jump in jumps if jump > 0 and diff[jump - 1] == 0])
         return self.betas[kinks] if len(kinks) else []
 
     def plot(self, downsample=5):  # pragma: no cover

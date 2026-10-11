@@ -119,6 +119,9 @@ def fit_marginal_lift_mixture(dist, order, mode="uniform", n_init=12, seed=0):
     def loss(x):
         return float(np.sum((A @ x - pmf) ** 2))
 
+    if n_init < 1:
+        msg = "n_init must be at least 1."
+        raise ValueError(msg)
     cons = {"type": "eq", "fun": lambda x: float(x.sum() - 1.0)}
     best = None
     rng = np.random.default_rng(seed)

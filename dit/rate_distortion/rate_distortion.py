@@ -69,7 +69,7 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
         tbound = self._shape[0]
         bound = min([bound, tbound]) if bound is not None else tbound
 
-        self._construct_auxvars([(self._x | self._z, tbound)])
+        self._construct_auxvars([(self._x | self._z, bound)])
 
         self.rate = self._conditional_mutual_information(self._x, self._t, self._z)
         self.distortion = self._distortion()

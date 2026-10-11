@@ -315,6 +315,26 @@ def _pair_network(dist, rvs, crvs, bound):
     return network
 
 
+def _no_path_of_length_three(network):
+    """
+    Whether every outcome has ``p(x|y) = 1`` or ``p(y|x) = 1``.
+
+    This is exactly when the interaction informations vanish
+    :cite:`li2018extended`. Checked only without conditioning variables.
+    """
+    if network.crvs:
+        return False
+    d = network.dist.coalesce(network.rvs)
+    d = d.copy(base="linear")
+    d.make_dense()
+    p = d.pmf.reshape([len(a) for a in d.alphabet])
+    with np.errstate(divide="ignore", invalid="ignore"):
+        x_given_y = p / p.sum(axis=0, keepdims=True)
+        y_given_x = p / p.sum(axis=1, keepdims=True)
+    determined = np.isclose(x_given_y, 1.0) | np.isclose(y_given_x, 1.0)
+    return bool(np.all(determined[p > 0]))
+
+
 @unitful
 def maximal_interaction_information(dist, rvs=None, crvs=None, niter=None, maxiter=1000, bound=None):
     """
@@ -351,6 +371,8 @@ def maximal_interaction_information(dist, rvs=None, crvs=None, niter=None, maxit
         The maximal interaction information.
     """
     network = _pair_network(dist, rvs, crvs, bound)
+    if _no_path_of_length_three(network):
+        return 0.0
     marginals = network._marginal_entropies
 
     # max (v_XY - v_X - v_Y) = max (R_0 + R_1 + R_2) - H[X] - H[Y].
@@ -400,6 +422,8 @@ def asymmetric_private_interaction_information(dist, rvs=None, crvs=None, niter=
         The asymmetric private interaction information.
     """
     network = _pair_network(dist, rvs, crvs, bound)
+    if _no_path_of_length_three(network):
+        return 0.0
     h_x, h_y = network._marginal_entropies
 
     # I[X:Y|U] - I[X:Y] = v_XY - v_X - v_Y, and independence from X pins
@@ -456,6 +480,8 @@ def symmetric_private_interaction_information(dist, rvs=None, crvs=None, niter=N
         The symmetric private interaction information.
     """
     network = _pair_network(dist, rvs, crvs, bound)
+    if _no_path_of_length_three(network):
+        return 0.0
     h_x, h_y = network._marginal_entropies
 
     # Independence from both sources pins v_X = v_Y = 0, i.e. R_1 = H[X] and

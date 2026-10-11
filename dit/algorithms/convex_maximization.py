@@ -43,8 +43,6 @@ def maximize_convex_function(f, A_ineq, b_ineq, A_eq=None, b_eq=None):
     A_ineq = A_ineq.astype("float")
     b_ineq = b_ineq.astype("float")
 
-    A_ineq, b_ineq, _ = _as_full_rank(A_ineq, b_ineq)
-
     if A_eq is not None:
         # pypoman doesn't support equality constraints. We remove equality
         # constraints by doing a coordinate transformation.

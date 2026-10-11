@@ -172,7 +172,7 @@ class BasinHoppingCallBack:
         min : np.ndarray
             The minimum basin.
         """
-        eq_possible = [(x, f) for x, f, cs in self.eq_candidates if all(c < cutoff for c in cs)]
+        eq_possible = [(x, f) for x, f, cs in self.eq_candidates if all(abs(c) < cutoff for c in cs)]
         ineq_possible = [(x, f) for x, f, cs in self.ineq_candidates if all(c > -cutoff for c in cs)]
         possible = [(x, f) for x, f in eq_possible if any(np.allclose(x, x2) for x2, _ in ineq_possible)]
         possible = [(x, f) for x, f in possible if accept_test(x_new=x)]

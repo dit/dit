@@ -343,7 +343,7 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         x : np.ndarray
             A random optimization vector.
         """
-        vec = sample_simplex(self._optvec_size)
+        vec = sample_simplex(self._optvec_size, rng=getattr(self, "_rng", None))
         return vec
 
     def construct_uniform_initial(self):
@@ -879,8 +879,9 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
             The conditional maximum correlation function.
         """
         idx_xyz = tuple(self._all_vars - (rv_x | rv_y | rv_z))
-        idx_xz = tuple(self._all_vars - (rv_x | rv_z))
-        idx_yz = tuple(self._all_vars - (rv_y | rv_z))
+        # `sum` keeps the remaining axes in index order; reorder them to (x, y, z).
+        kept = sorted(rv_x | rv_y | rv_z)
+        perm = [kept.index(min(rv)) for rv in (rv_x, rv_y, rv_z)]
 
         @self._maybe_jit
         def conditional_maximum_correlation(pmf):
@@ -897,9 +898,9 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
             cmc : float
                 The conditional maximum correlation.
             """
-            p_xyz = pmf.sum(axis=idx_xyz)
-            p_xz = pmf.sum(axis=idx_xz)[:, jnp.newaxis, :]
-            p_yz = pmf.sum(axis=idx_yz)[jnp.newaxis, :, :]
+            p_xyz = jnp.transpose(pmf.sum(axis=idx_xyz), perm)
+            p_xz = p_xyz.sum(axis=1, keepdims=True)
+            p_yz = p_xyz.sum(axis=0, keepdims=True)
 
             Q = jnp.where(p_xyz > 0, p_xyz / (jnp.sqrt(p_xz * p_yz)), 0.0)
 
@@ -909,7 +910,7 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
 
             # Use vmap for vectorized SVD computation if possible
             slices = jnp.dsplit(Q, Q.shape[2])
-            cmc = max(svd_slice(m) for m in slices)
+            cmc = jnp.max(jnp.stack([svd_slice(m) for m in slices]))
 
             return cmc
 
@@ -1176,6 +1177,7 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
             minimizer_kwargs["options"]["maxiter"] = maxiter
 
         # Store the numpy-safe objective for use by scipy callers
+        _np_objective._dit_raw = self._jax_source_objective
         self.objective = _np_objective
 
         return minimizer_kwargs, icb
@@ -1208,10 +1210,15 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         result : OptimizeResult
             The result of the optimization.
         """
+        self._rng = rng
+
         try:
             callable(self.objective)
         except AttributeError:
             self.objective = MethodType(self._objective(), self)
+        # A previous optimize() replaced the objective with a float-returning
+        # wrapper for scipy; restore the differentiable one.
+        self.objective = getattr(self.objective, "_dit_raw", self.objective)
 
         x0 = x0.copy().flatten() if x0 is not None else self.construct_initial()
         x0 = np.asarray(x0, dtype=np.float64)
@@ -1229,6 +1236,7 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         # kernel, so scipy's SLSQP gets cheap exact gradients.
         raw_objective = self.objective
         raw_constraints = list(self.constraints)
+        self._jax_source_objective = raw_objective
 
         if self._use_jit and JAX_AVAILABLE:
             raw_objective = jit(raw_objective)
@@ -1679,6 +1687,10 @@ class BaseNonConvexJaxOptimizer(BaseJaxOptimizer):
         else:
             res_shotgun = None
 
+        bh_kwargs = {}
+        if getattr(self, "_rng", None) is not None:
+            bh_kwargs["rng"] = self._rng
+
         result = basinhopping(
             func=self.objective,
             x0=x0,
@@ -1686,6 +1698,7 @@ class BaseNonConvexJaxOptimizer(BaseJaxOptimizer):
             niter=niter,
             accept_test=accept_test,
             callback=self._callback,
+            **bh_kwargs,
         )
 
         success, msg = basinhop_status(result)
@@ -2013,7 +2026,7 @@ class BaseAuxVarJaxOptimizer(BaseNonConvexJaxOptimizer):
         """
         vecs = []
         for av in self._aux_vars:
-            vec = sample_simplex(av.shape[-1], prod(av.shape[:-1]))
+            vec = sample_simplex(av.shape[-1], prod(av.shape[:-1]), rng=getattr(self, "_rng", None))
             vecs.append(vec.ravel())
         return np.concatenate(vecs, axis=0)
 
@@ -2262,7 +2275,9 @@ class BaseAuxVarJaxOptimizer(BaseNonConvexJaxOptimizer):
             msg = f"Style {style} is not understood."
             raise OptimizationException(msg)
 
-        true_objective = self.objective(self._optima)
+        # Bind the main objective now: self.objective is swapped below.
+        main_objective = getattr(self.objective, "_dit_raw", self.objective)
+        true_objective = main_objective(self._optima)
 
         @self._maybe_jit
         def constraint_match_objective(x):
@@ -2281,7 +2296,7 @@ class BaseAuxVarJaxOptimizer(BaseNonConvexJaxOptimizer):
                 The squared deviation of the current objective from the
                 previously found optimum.
             """
-            obj = (self.objective(x) - true_objective) ** 2
+            obj = (main_objective(x) - true_objective) ** 2
             return obj
 
         constraint = [

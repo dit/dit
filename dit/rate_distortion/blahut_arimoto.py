@@ -22,7 +22,7 @@ __all__ = (
 # Rate-Distortion
 
 
-def _blahut_arimoto(p_x, beta, q_y_x, distortion, max_iters=100):
+def _blahut_arimoto(p_x, beta, q_y_x, distortion, max_iters=10_000):
     """
     Perform the Blahut-Arimoto algorithm.
 
@@ -90,13 +90,15 @@ def _blahut_arimoto(p_x, beta, q_y_x, distortion, max_iters=100):
         return q_y, q_y_x, d
 
     q_y = next_q_y(q_y_x)
-    prev_d = 0
     d = av_dist(q_y_x, distortion(p_x, q_y_x))
 
-    iters = 0
-    while not np.isclose(prev_d, d) and iters < max_iters:
-        iters += 1
-        (q_y, q_y_x, d), prev_d = next_rd(q_y, q_y_x), d
+    # Stop when the channel itself stops moving: D alone can stall near the
+    # critical slope long before the Lagrangian has converged.
+    for _ in range(max_iters):
+        prev_q_y_x = q_y_x
+        q_y, q_y_x, d = next_rd(q_y, q_y_x)
+        if np.max(np.abs(q_y_x - prev_q_y_x)) < 1e-12:
+            break
 
     q = q_xy(q_y_x)
     # Zeros in ``q`` give ``log2(0)``/``0/0`` intermediates handled by ``nansum``.
@@ -107,7 +109,7 @@ def _blahut_arimoto(p_x, beta, q_y_x, distortion, max_iters=100):
     return result, q
 
 
-def blahut_arimoto(p_x, beta, distortion=hamming_distortion, max_iters=100, restarts=100):
+def blahut_arimoto(p_x, beta, distortion=hamming_distortion, max_iters=10_000, restarts=100):
     """
     Perform a robust form of the Blahut-Arimoto algorithms.
 
@@ -143,8 +145,9 @@ def blahut_arimoto(p_x, beta, distortion=hamming_distortion, max_iters=100, rest
         if i == 0:
             q_y_x = np.ones((n, n)) / n
         elif i == 1:
+            # the constant channel: every x maps to reconstruction 0
             q_y_x = np.zeros((n, n))
-            q_y_x[0, :] = 1
+            q_y_x[:, 0] = 1
         else:
             q_y_x = sample_simplex(n, n)
         inits.append(q_y_x)
