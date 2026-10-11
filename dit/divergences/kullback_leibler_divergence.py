@@ -4,6 +4,7 @@ The Kullback-Leibler divergence.
 
 from ..helpers import as_linear
 from ..multivariate.entropy import entropy
+from ..utils import unitful
 from .cross_entropy import cross_entropy
 
 __all__ = (
@@ -12,6 +13,7 @@ __all__ = (
 )
 
 
+@unitful
 def kullback_leibler_divergence(dist1, dist2, rvs=None, crvs=None):
     """
     The Kullback-Liebler divergence between `dist1` and `dist2`.

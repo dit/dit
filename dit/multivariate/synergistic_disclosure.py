@@ -11,6 +11,7 @@ Provides standalone functions for computing:
 - Self-synergy S_alpha(X -> X)
 """
 
+from ..exceptions import OptimizationException
 from ..utils import flatten, unitful
 
 __all__ = (
@@ -72,7 +73,7 @@ def synergistic_disclosure(dist, sources, target, alpha, niter=None, bound=None)
         opt.optimize(niter=niter)
         val = opt.synergistic_disclosure(opt._optima)
         return max(val, 0.0)
-    except Exception:
+    except OptimizationException:
         return 0.0
 
 

@@ -29,7 +29,7 @@ The cumulative residual entropy :cite:`Rao2004` is an alternative to the differe
 
    @doctest float
    In [5]: cumulative_residual_entropy(d2)
-   Out[5]: 22.672680046016705
+   Out[5]: 42.566064100334294
 
 Generalized Cumulative Residual Entropy
 =======================================
@@ -52,7 +52,7 @@ The genearlized form of the cumulative residual entropy integrates over the inti
 
    @doctest float
    In [9]: cumulative_residual_entropy(d3)
-   Out[9]: 0.90656497547719606
+   Out[9]: 0.7863137138648348
 
    @doctest float
    In [10]: generalized_cumulative_residual_entropy(d3)

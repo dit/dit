@@ -6,11 +6,12 @@ import numpy as np
 
 from ..helpers import as_linear, normalize_rvs
 from ..multivariate import entropy
-from ..utils import flatten
+from ..utils import flatten, unitful
 
 __all__ = ("renyi_entropy",)
 
 
+@unitful
 def renyi_entropy(dist, order, rvs=None):
     """
     Compute the Renyi entropy of order `order`.

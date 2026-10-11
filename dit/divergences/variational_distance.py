@@ -7,6 +7,7 @@ from scipy.optimize import minimize_scalar
 
 from ..exceptions import OptimizationException
 from ..helpers import normalize_pmfs
+from ..utils import unitful
 
 __all__ = (
     "bhattacharyya_coefficient",
@@ -182,6 +183,7 @@ def chernoff_information_pmf(p, q):
     return ci
 
 
+@unitful
 def chernoff_information(dist1, dist2):
     """
     Compute the Chernoff information.

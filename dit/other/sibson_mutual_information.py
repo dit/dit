@@ -9,7 +9,7 @@ maximal leakage (order infinity).  Conditional forms follow Esposito et al.
 import numpy as np
 
 from ..shannon import mutual_information
-from ..utils import flatten
+from ..utils import flatten, unitful
 
 __all__ = (
     "maximal_leakage",
@@ -91,6 +91,7 @@ def sibson_mutual_information_pmf(p_xy, order):
     return _sibson_mi_from_joint_pmf(np.asarray(p_xy, dtype=float), order)
 
 
+@unitful
 def sibson_mutual_information(dist, rvs_X, rvs_Y, order):
     """
     Compute the Sibson mutual information of order ``order``.
@@ -128,6 +129,7 @@ def sibson_mutual_information(dist, rvs_X, rvs_Y, order):
     return _sibson_mi_from_joint_pmf(p_xy, order)
 
 
+@unitful
 def maximal_leakage(dist, rvs_X, rvs_Y):
     """
     Maximal leakage from ``X`` to ``Y``.
@@ -250,6 +252,7 @@ def _joint_pmf_xyz(dist, rvs_X, rvs_Y, rvs_Z):
     return joint.pmf.reshape(shape)
 
 
+@unitful
 def sibson_conditional_mutual_information_y_given_z(dist, rvs_X, rvs_Y, rvs_Z, order):
     """
     Conditional Sibson MI minimizing over ``Q_{Y|Z}`` (Esposito et al., Def. 3).
@@ -280,6 +283,7 @@ def sibson_conditional_mutual_information_y_given_z(dist, rvs_X, rvs_Y, rvs_Z, o
     return _conditional_y_given_z_pmf(p_xyz, order)
 
 
+@unitful
 def sibson_conditional_mutual_information_z(dist, rvs_X, rvs_Y, rvs_Z, order):
     """
     Conditional Sibson MI minimizing over ``Q_Z`` (Esposito et al., Def. 4).

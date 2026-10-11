@@ -4,8 +4,8 @@ The Kullback-Leibler divergence.
 
 import numpy as np
 
-from ..helpers import normalize_pmfs, normalize_rvs
-from ..utils import flatten
+from ..helpers import as_linear, normalize_pmfs, normalize_rvs
+from ..utils import flatten, unitful
 from .kullback_leibler_divergence import kullback_leibler_divergence
 
 __all__ = (
@@ -57,6 +57,12 @@ def double_power_sum(dist1, dist2, exp1=1, exp2=1, rvs=None):
     div = np.sum(_power(ps, exp1) * _power(qs, exp2))
 
     return div
+
+
+def _kl_nats(dist1, dist2, rvs):
+    """KL divergence in nats, independent of the distributions' bases."""
+    kl_bits = kullback_leibler_divergence(as_linear(dist1), as_linear(dist2), rvs=rvs)
+    return getattr(kl_bits, "magnitude", kl_bits) * np.log(2)
 
 
 def _union_pmfs(dist1, dist2, rvs):
@@ -148,7 +154,7 @@ def hellinger_divergence(dist1, dist2, alpha=1.0, rvs=None):
         None, if `dist2` has an outcome length different than `dist1`.
     """
     if alpha == 1:
-        return kullback_leibler_divergence(dist1, dist2, rvs=rvs) * np.log(2)
+        return _kl_nats(dist1, dist2, rvs)
     s = hellinger_sum(dist1, dist2, rvs=rvs, alpha=alpha)
     return (s - 1) / (alpha - 1)
 
@@ -183,13 +189,14 @@ def tsallis_divergence(dist1, dist2, alpha=1.0, rvs=None):
     """
     # D_T = (D_alpha -1) / (alpha-1)
     if alpha == 1:
-        div = kullback_leibler_divergence(dist1, dist2, rvs=rvs) * np.log(2)
+        div = _kl_nats(dist1, dist2, rvs)
     else:
         s = hellinger_sum(dist1, dist2, rvs=rvs, alpha=alpha)
         div = (s - 1) / (alpha - 1)
     return div
 
 
+@unitful
 def renyi_divergence(dist1, dist2, alpha=1, rvs=None):
     """
     The Renyi divergence of `dist1` and `dist2`.
@@ -260,9 +267,9 @@ def alpha_divergence(dist1, dist2, alpha=1.0, rvs=None):
     """
     if alpha == 1:
         rvs = _validate_rvs(dist1, dist2, rvs)
-        return kullback_leibler_divergence(dist2, dist1, rvs=rvs) * np.log(2)
+        return _kl_nats(dist2, dist1, rvs)
     if alpha == -1:
-        return kullback_leibler_divergence(dist1, dist2, rvs=rvs) * np.log(2)
+        return _kl_nats(dist1, dist2, rvs)
     s = double_power_sum(dist1, dist2, (1 - alpha) / 2, (1 + alpha) / 2, rvs=rvs)
     return 4 * (1 - s) / (1 - alpha * alpha)
 

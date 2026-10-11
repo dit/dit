@@ -57,6 +57,7 @@ def specific_copy_mutual_information(p_Y_g_x, p_Y, x):
         return 0
 
 
+@unitful
 def copy_mutual_information(dist, X, Y):
     """
     Computes the copy mutual information. Roughly, it is the

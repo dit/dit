@@ -5,10 +5,12 @@ The lautum (mutual backwards) information, as defined by Palomar & Verdu.
 from dit.distconst import product_distribution
 from dit.divergences import kullback_leibler_divergence
 from dit.helpers import as_linear, normalize_rvs
+from dit.utils import unitful
 
 __all__ = ("lautum_information",)
 
 
+@unitful
 def lautum_information(dist, rvs=None, crvs=None):
     """
     Computes the lautum information.

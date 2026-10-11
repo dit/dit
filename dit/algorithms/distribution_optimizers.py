@@ -817,6 +817,7 @@ def maxent_dist(dist, rvs, x0=None, maxiter=1000, sparse=True, method="ipf"):
     me : Distribution
         The maximum entropy distribution.
     """
+    dist = dist.copy()
     if method == "ipf":
         # Easy structures (acyclic, or well-conditioned cyclic) converge well
         # within this budget; structures that stall here converge only linearly
