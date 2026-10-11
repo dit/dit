@@ -280,7 +280,8 @@ def test_c_beta_bounded_by_wyner(dist):
         0 <= C_beta(beta=0.3) <= C_0 = Wyner
     """
     rho = maximum_correlation(dist)
-    if rho < 0.31:
+    # C_beta vanishes exactly when beta >= rho; just above 0.3 it need not.
+    if rho <= 0.3:
         assert C_beta(dist, beta=0.3) == pytest.approx(0.0, abs=1e-4)
     else:
         try:
