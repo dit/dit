@@ -377,13 +377,16 @@ class PolarSourceCode(SourceCoding):
 
     def _x_bits(self, x_block):
         """Map a block of source outcomes to ``0/1`` bits."""
-        zero = self._x_alphabet[0]
+        # The stored alphabet is stringified, so match on str(value) first.
+        alphabet = [str(a) for a in self._x_alphabet]
         bits = []
         for value in x_block:
-            if value in (0, 1):
+            if str(value) in alphabet:
+                bits.append(alphabet.index(str(value)))
+            elif value in (0, 1):
                 bits.append(int(value))
             else:
-                bits.append(0 if value == zero else 1)
+                raise ditException(f"Symbol {value!r} is not in the source alphabet {alphabet}.")
         return bits
 
     def encode(self, x_block):
@@ -444,7 +447,8 @@ class PolarSourceCode(SourceCoding):
                     f"Expected {expected_side} side-information symbols, got "
                     f"{0 if side_information is None else len(side_information)}."
                 )
-            y = tuple(side_information)
+            # Side-information symbols are stored stringified.
+            y = tuple(str(v) for v in side_information)
 
         stored = dict(zip(self.high_entropy_set, encoded, strict=True))
         high = set(self.high_entropy_set)
@@ -462,6 +466,8 @@ class PolarSourceCode(SourceCoding):
                 if u_row[:i] != prefix:
                     continue
                 weights[u_row[i]] += p
+            if weights == [0.0, 0.0]:
+                raise ditException("Side information is inconsistent with the source distribution.")
             u[i] = 0 if weights[0] >= weights[1] else 1
 
         return self._polar_transform(u)

@@ -28,3 +28,9 @@ def test_giant_bit2(n, k):
     """
     d = giant_bit(n, k)
     assert I(d) == pytest.approx(np.log2(k))
+
+
+def test_giant_bit_large_alphabet():
+    d = giant_bit(2, 11)
+    assert d.outcome_length() == 2
+    assert len(d.outcomes) == 11

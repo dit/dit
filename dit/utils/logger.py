@@ -35,11 +35,9 @@ def basic_logger(name, level):
     """
     bound = logger.bind(name=name)
 
-    if level is False or level is None:
-        bound.disable("dit")
-    elif level is True:
-        bound.enable("dit")
-    else:
+    # loguru activation is global, so only ever turn logging on (when asked);
+    # never switch off logging the user enabled with ``logger.enable("dit")``.
+    if level:
         bound.enable("dit")
 
     return bound
