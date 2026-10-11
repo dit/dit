@@ -80,7 +80,7 @@ LOG_SINGLE = [
     lautum_information,
     functional_common_information,
     mss_common_information,
-    lambda d: wyner_common_information(d, niter=1),
+    lambda d: (np.random.seed(0), wyner_common_information(d, niter=1))[1],
     lambda d: copy_mutual_information(d, [0], [1]),
     lambda d: sibson_mutual_information(d, [0], [1], 2),
     lambda d: maximal_leakage(d, [0], [1]),

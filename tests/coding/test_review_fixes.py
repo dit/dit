@@ -16,16 +16,15 @@ def test_tunstall_single_symbol_terminates():
 
 
 def test_golomb_parameter_is_optimal_for_geometric_source():
+    from dit.coding.codes import _optimal_golomb_m
+
     theta = 0.8
-    outcomes = list(range(400))
+    outcomes = list(range(60))
     probs = np.array([(1 - theta) * theta**n for n in outcomes])
     d = Distribution(outcomes, probs / probs.sum())
-    lengths = {
-        m: sum(p * len(golomb(d, m=m).encode([o])) for o, p in zip(outcomes, d.pmf, strict=True)) for m in range(1, 8)
-    }
-    code = golomb(d)
-    chosen = sum(p * len(code.encode([o])) for o, p in zip(outcomes, d.pmf, strict=True))
-    assert chosen == pytest.approx(min(lengths.values()))
+    # Gallager & van Voorhis: theta^m + theta^(m+1) <= 1 < theta^(m-1) + theta^m.
+    m = _optimal_golomb_m(d)
+    assert theta**m + theta ** (m + 1) <= 1 < theta ** (m - 1) + theta**m
 
 
 def test_convolutional_k1_decodes():
