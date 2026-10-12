@@ -1,460 +1,242 @@
 """
 The functional common information.
+
+F[X_0 : ... : X_{n-1} | Z] is the least entropy H[W] of a function W of the
+variables such that the X_i are mutually independent given (W, Z)
+:cite:`james2017multivariate`.
+
+A function W is a partition of the support, and the X_i are independent given
+(W = w, Z = z) exactly when the outcomes in block w with Z = z carry a product
+distribution: their support is a combinatorial rectangle A_0 x ... x A_{n-1}
+and the pmf factorizes over it. Since H[W] = sum_w -p(w) log2 p(w) is a sum of
+per-block costs, F is a minimum-weight exact cover of the support by such
+blocks, which is solved exactly as an integer program.
+
+Without conditioning, every block lies within one connected component of the
+support (outcomes are adjacent when they agree on some X_i), so W refines the
+Gacs-Korner common variable and each component is solved independently.
 """
 
-import heapq
-from itertools import combinations
+from collections import defaultdict
+from itertools import product
 
 import numpy as np
+from debtcollector import removals
+from scipy.optimize import Bounds, LinearConstraint, milp
 
-from ...distconst import RVFunctions, insert_rvf
+from ...distconst import insert_rvf
+from ...exceptions import ditException
 from ...helpers import as_linear, normalize_rvs
-from ...utils import partitions, unitful
+from ...utils import flatten, unitful
 from ..dual_total_correlation import dual_total_correlation
 from ..entropy import entropy
-from ._functional_partition import (
-    conditional_dtc,
-    labels_from_partition,
-    partition_entropy,
-    partition_from_joint_mss,
-    partition_from_meet,
-    prepare_functional_search,
-    refinements_by_binary_split,
+
+__all__ = (
+    "functional_common_information",
+    "functional_variable",
 )
 
-__all__ = ("functional_common_information",)
+# Bound on the number of candidate blocks handed to the integer program.
+_MAX_CANDIDATES = 200_000
 
-_MAX_PURE_REFINE_SUPPORT = 8
 
-
-def functional_markov_chain_naive(dist, rvs=None, crvs=None):  # pragma: no cover
+def _support(dist, rvs, crvs):
     """
-    Add the smallest function of `dist` which renders `rvs` independent.
-
-    Parameters
-    ----------
-    dist : Distribution
-        The distribution for which the smallest function will be constructed.
-    rvs : list, None
-        A list of lists. Each inner list specifies the indexes of the random
-        variables used to calculate the total correlation. If None, then the
-        total correlation is calculated over all random variables, which is
-        equivalent to passing `rvs=dist.rvs`.
-    crvs : list, None
-        A single list of indexes specifying the random variables to condition
-        on. If None, then no variables are conditioned on.
+    The support of (X_0, ..., X_{n-1}, Z) with its linear probabilities.
 
     Returns
     -------
-    d : Distribution
-        The distribution `dist` with the additional variable added to the end.
+    points : list of (tuple, tuple)
+        Each point is ``(x, z)`` with ``x`` a tuple of per-variable symbols.
+    probs : np.ndarray
+        The probability of each point.
+    members : list of list
+        The outcomes of `dist` mapped to each point.
     """
-    rvs, crvs = normalize_rvs(dist, rvs, crvs)
-    outcomes = dist.outcomes
-    bf = RVFunctions(dist)
-    f = [len(dist.rvs)]
-    parts = partitions(outcomes)
-    dists = [insert_rvf(dist, bf.from_partition(part)) for part in parts]
-    B = lambda d: dual_total_correlation(d, rvs, crvs + f)
-    dists = [d for d in dists if np.isclose(B(d), 0)]
-    return min(dists, key=lambda d: entropy(d, rvs=f))
+    dims = list(dist.dims)
 
+    def positions(rv):
+        return [dims.index(name) for name in dist._resolve_rv_names(list(rv))]
 
-def _partition_metrics(ctx, part, pmf_size):
-    """Return (H(W), B(rvs | crvs, W)) for an outcome partition."""
-    labels = labels_from_partition(part, ctx.outcome_to_flat, pmf_size)
-    h = partition_entropy(ctx.pmf, labels)
-    b = conditional_dtc(ctx.pmf, labels, ctx.rvs, ctx.crvs)
-    return h, b
+    groups = [positions(rv) for rv in rvs]
+    z_pos = positions(crvs) if crvs else []
 
-
-def _coarsen_neighbors(part):
-    """Partitions obtained by merging two blocks."""
-    return [frozenset([p for p in part if p not in pair] + [pair[0] | pair[1]]) for pair in combinations(part, 2)]
-
-
-def _probe_seeds(ctx, dist, rvs, crvs, pmf_size, *, _use_mss_warmstart=True):
-    """
-    Compute meet / MSS (or finest) partition seeds and their H, B metrics.
-    """
-    finest_part = frozenset(frozenset([o]) for o in ctx.dist.outcomes)
-    h_finest, b_finest = _partition_metrics(ctx, finest_part, pmf_size)
-
-    meet_part = None
-    h_meet = b_meet = None
-    try:
-        meet_part = partition_from_meet(dist, rvs=rvs, crvs=crvs)
-        h_meet, b_meet = _partition_metrics(ctx, meet_part, pmf_size)
-    except Exception:  # pragma: no cover
-        pass
-
-    mss_part = None
-    h_mss = b_mss = None
-    mss_valid = False
-    if _use_mss_warmstart:
-        try:
-            mss_part = partition_from_joint_mss(dist, rvs=rvs)
-            h_mss, b_mss = _partition_metrics(ctx, mss_part, pmf_size)
-            mss_valid = np.isclose(b_mss, 0)
-        except Exception:  # pragma: no cover
-            pass
-
-    if mss_valid:
-        upper_part = mss_part
-        h_upper = h_mss
-        b_upper = b_mss
-    else:
-        upper_part = finest_part
-        h_upper = h_finest
-        b_upper = b_finest
-
-    return {
-        "finest_part": finest_part,
-        "meet_part": meet_part,
-        "h_meet": h_meet,
-        "b_meet": b_meet,
-        "mss_part": mss_part,
-        "h_mss": h_mss,
-        "b_mss": b_mss,
-        "mss_valid": mss_valid,
-        "upper_part": upper_part,
-        "h_upper": h_upper,
-        "b_upper": b_upper,
-    }
-
-
-def _route_auto_strategy(probe, optimal_b, n_outcomes):
-    """
-    Pick coarsen, refine, or bidirectional from cheap seed probes.
-    """
-    h_meet = probe["h_meet"]
-    b_meet = probe["b_meet"]
-    h_upper = probe["h_upper"]
-
-    if (
-        probe["meet_part"] is not None
-        and b_meet is not None
-        and np.isclose(b_meet, 0)
-        and h_meet is not None
-        and np.isclose(h_meet, optimal_b)
-    ):
-        return "refine"
-
-    if probe["mss_valid"] and np.isclose(h_upper, optimal_b):
-        return "coarsen"
-
-    if probe["meet_part"] is None:
-        return "coarsen"
-
-    n_meet = len(probe["meet_part"])
-    n_upper = len(probe["upper_part"])
-
-    if n_meet == 1 and n_upper >= 4:
-        return "coarsen"
-
-    if n_upper <= n_meet + 1:
-        return "refine"
-
-    if n_outcomes > _MAX_PURE_REFINE_SUPPORT:
-        return "bidirectional"
-
-    gap_h = h_upper - h_meet if h_meet is not None else h_upper
-    if gap_h > 1.5 * max(b_meet or 0.0, 1e-12):
-        return "coarsen"
-
-    if n_meet >= n_upper // 2:
-        return "refine"
-
-    return "bidirectional"
-
-
-def _search_coarsen(
-    ctx,
-    dist,
-    rvs,
-    optimal_b,
-    pmf_size,
-    *,
-    _use_mss_warmstart=True,
-    probe=None,
-):
-    """Best-first coarsening from the finest (or MSS) partition."""
-    if probe is None:
-        probe = _probe_seeds(ctx, dist, rvs, None, pmf_size, _use_mss_warmstart=_use_mss_warmstart)
-
-    finest_part = probe["finest_part"]
-    finest_labels = labels_from_partition(finest_part, ctx.outcome_to_flat, pmf_size)
-    used_mss_warmstart = False
-
-    if probe["mss_valid"]:
-        mss_part = probe["mss_part"]
-        h_mss = probe["h_mss"]
-        optimal_h = h_mss
-        optimal_part = mss_part
-        heap: list[tuple[float, int, frozenset]] = [(h_mss, 0, mss_part)]
-        used_mss_warmstart = True
-        if np.isclose(h_mss, optimal_b):
-            return optimal_h, {
-                "visited": 0,
-                "mss_warmstart": True,
-                "meet_warmstart": False,
-                "direction": "coarsen",
-                "partition": optimal_part,
-            }
-    else:
-        optimal_h = partition_entropy(ctx.pmf, finest_labels)
-        optimal_part = finest_part
-        heap = [(optimal_h, 0, finest_part)]
-
-    checked: set[frozenset] = set()
-    seq = 1
-
-    while heap:  # pragma: no branch
-        _, _, part = heapq.heappop(heap)
-
-        if part in checked:
+    mass = defaultdict(float)
+    members = defaultdict(list)
+    for outcome, p in dist.zipped():
+        if p <= 0:
             continue
-        checked.add(part)
+        o = outcome if isinstance(outcome, tuple) else (outcome,)
+        key = (tuple(tuple(o[i] for i in g) for g in groups), tuple(o[i] for i in z_pos))
+        mass[key] += p
+        members[key].append(o)
 
-        labels = labels_from_partition(part, ctx.outcome_to_flat, pmf_size)
-
-        if not np.isclose(conditional_dtc(ctx.pmf, labels, ctx.rvs, ctx.crvs), 0):
-            continue
-
-        h = partition_entropy(ctx.pmf, labels)
-
-        if h <= optimal_h:
-            optimal_h = h
-            optimal_part = part
-
-        if np.isclose(h, optimal_b):
-            break
-
-        for new_part in _coarsen_neighbors(part):
-            if new_part in checked:
-                continue
-            new_labels = labels_from_partition(new_part, ctx.outcome_to_flat, pmf_size)
-            new_h = partition_entropy(ctx.pmf, new_labels)
-            heapq.heappush(heap, (new_h, seq, new_part))
-            seq += 1
-
-    return optimal_h, {
-        "visited": len(checked),
-        "mss_warmstart": used_mss_warmstart,
-        "meet_warmstart": False,
-        "direction": "coarsen",
-        "partition": optimal_part,
-    }
+    points = sorted(mass, key=repr)
+    return points, np.array([mass[pt] for pt in points]), [members[pt] for pt in points]
 
 
-def _search_refine(ctx, dist, rvs, crvs, optimal_b, pmf_size, *, probe=None, _max_visits=None):
-    """Best-first refinement from the Gács–Körner meet partition."""
-    if probe is None:
-        probe = _probe_seeds(ctx, dist, rvs, crvs, pmf_size)
-
-    if probe["meet_part"] is None:
-        return None, {
-            "visited": None,
-            "mss_warmstart": False,
-            "meet_warmstart": False,
-            "direction": "refine",
-            "partition": None,
-        }
-
-    meet_part = probe["meet_part"]
-    h_meet = probe["h_meet"]
-    b_meet = probe["b_meet"]
-
-    if np.isclose(b_meet, 0) and np.isclose(h_meet, optimal_b):
-        return h_meet, {
-            "visited": 0,
-            "mss_warmstart": False,
-            "meet_warmstart": True,
-            "direction": "refine",
-            "partition": meet_part,
-        }
-
-    optimal_h = float("inf")
-    optimal_part = None
-    heap: list[tuple[float, int, frozenset]] = [(h_meet, 0, meet_part)]
-    checked: set[frozenset] = set()
-    seq = 1
-
-    while heap:  # pragma: no branch
-        _, _, part = heapq.heappop(heap)
-
-        if part in checked:
-            continue
-        checked.add(part)
-
-        if _max_visits is not None and len(checked) > _max_visits:
-            if np.isfinite(optimal_h):
-                break
-            return None, {
-                "visited": len(checked),
-                "mss_warmstart": False,
-                "meet_warmstart": True,
-                "direction": "refine",
-                "partition": None,
-            }
-
-        labels = labels_from_partition(part, ctx.outcome_to_flat, pmf_size)
-
-        if np.isclose(conditional_dtc(ctx.pmf, labels, ctx.rvs, ctx.crvs), 0):
-            h = partition_entropy(ctx.pmf, labels)
-            if h <= optimal_h:
-                optimal_h = h
-                optimal_part = part
-            if np.isclose(h, optimal_b):
-                break
-
-        for new_part in refinements_by_binary_split(part):
-            if new_part in checked:
-                continue
-            new_labels = labels_from_partition(new_part, ctx.outcome_to_flat, pmf_size)
-            new_h = partition_entropy(ctx.pmf, new_labels)
-            heapq.heappush(heap, (new_h, seq, new_part))
-            seq += 1
-
-    if not np.isfinite(optimal_h):
-        return None, {
-            "visited": len(checked),
-            "mss_warmstart": False,
-            "meet_warmstart": True,
-            "direction": "refine",
-            "partition": None,
-        }
-
-    return optimal_h, {
-        "visited": len(checked),
-        "mss_warmstart": False,
-        "meet_warmstart": True,
-        "direction": "refine",
-        "partition": optimal_part,
-    }
-
-
-def _search_bidirectional(ctx, dist, rvs, crvs, optimal_b, pmf_size, *, probe=None):
+def _is_product(xs, ps):
     """
-    Meet-in-the-middle search: refine from GK meet, coarsen from MSS/finest.
-
-    Both frontiers share one ``checked`` set so partitions discovered from one
-    side prune work on the other.
+    Whether points `xs` (tuples) with probabilities `ps` form a product
+    distribution on a combinatorial rectangle.
     """
-    if probe is None:
-        probe = _probe_seeds(ctx, dist, rvs, crvs, pmf_size)
+    alphabets = [sorted({x[i] for x in xs}, key=repr) for i in range(len(xs[0]))]
+    if np.prod([len(a) for a in alphabets]) != len(xs):
+        return False
+    index = [{v: j for j, v in enumerate(a)} for a in alphabets]
+    q = np.zeros([len(a) for a in alphabets])
+    for x, p in zip(xs, ps, strict=True):
+        q[tuple(index[i][v] for i, v in enumerate(x))] = p
+    q /= q.sum()
+    outer = np.ones_like(q)
+    for i in range(q.ndim):
+        others = tuple(j for j in range(q.ndim) if j != i)
+        outer = outer * q.sum(axis=others, keepdims=True)
+    return bool(np.allclose(q, outer, rtol=1e-9, atol=1e-12))
 
-    if probe["meet_part"] is None:
-        return _search_coarsen(ctx, dist, rvs, optimal_b, pmf_size, probe=probe)
 
-    meet_part = probe["meet_part"]
-    upper_part = probe["upper_part"]
-    h_meet = probe["h_meet"]
-    b_meet = probe["b_meet"]
-    h_upper = probe["h_upper"]
-    used_mss = bool(probe["mss_valid"])
-    used_meet = True
+def _rectangles(idx, points, probs):
+    """
+    All subsets of the points `idx` (sharing one value of Z) that carry a
+    product distribution on a rectangle.
 
-    if np.isclose(b_meet, 0) and np.isclose(h_meet, optimal_b):
-        return h_meet, {
-            "visited": 0,
-            "mss_warmstart": used_mss,
-            "meet_warmstart": used_meet,
-            "direction": "bidirectional",
-            "met_in_middle": 0,
-            "partition": meet_part,
-        }
+    Both conditions are inherited by sub-rectangles, so the valid rectangles
+    are grown one symbol at a time from single points.
 
-    if used_mss and np.isclose(h_upper, optimal_b):
-        return h_upper, {
-            "visited": 0,
-            "mss_warmstart": used_mss,
-            "meet_warmstart": used_meet,
-            "direction": "bidirectional",
-            "met_in_middle": 0,
-            "partition": upper_part,
-        }
+    Returns
+    -------
+    blocks : set of frozenset
+        Each block is a set of indices into `points`.
+    """
+    lookup = {points[i][0]: i for i in idx}
+    n = len(points[idx[0]][0])
+    values = [sorted({points[i][0][k] for i in idx}, key=repr) for k in range(n)]
 
-    optimal_h = float("inf")
-    optimal_part = None
-    checked: set[frozenset] = set()
-    met_in_middle = 0
-    seq = 0
-    heap_refine: list[tuple[float, int, frozenset]] = [(h_meet, seq, meet_part)]
-    seq += 1
-    heap_coarsen: list[tuple[float, int, frozenset]] = [(h_upper, seq, upper_part)]
-    seq += 1
+    def block_of(rect):
+        cells = list(product(*rect))
+        if any(c not in lookup for c in cells):
+            return None
+        block = [lookup[c] for c in cells]
+        if len(block) > 1 and not _is_product(cells, probs[block]):
+            return None
+        return frozenset(block)
 
-    while heap_refine or heap_coarsen:  # pragma: no branch
-        h_ref = heap_refine[0][0] if heap_refine else float("inf")
-        h_coa = heap_coarsen[0][0] if heap_coarsen else float("inf")
-
-        if h_ref <= h_coa:
-            h, _, part = heapq.heappop(heap_refine)
-        else:
-            h, _, part = heapq.heappop(heap_coarsen)
-
-        if part in checked:
-            met_in_middle += 1
+    seen = set()
+    blocks = set()
+    frontier = [tuple(frozenset([v]) for v in points[i][0]) for i in idx]
+    while frontier:
+        rect = frontier.pop()
+        if rect in seen:
             continue
-        checked.add(part)
-
-        labels = labels_from_partition(part, ctx.outcome_to_flat, pmf_size)
-        b = conditional_dtc(ctx.pmf, labels, ctx.rvs, ctx.crvs)
-        b_zero = np.isclose(b, 0)
-
-        if b_zero:
-            if h <= optimal_h:
-                optimal_h = h
-                optimal_part = part
-            if np.isclose(h, optimal_b):
-                break
-
-        for new_part in refinements_by_binary_split(part):
-            if new_part in checked:
-                continue
-            new_h = partition_entropy(
-                ctx.pmf,
-                labels_from_partition(new_part, ctx.outcome_to_flat, pmf_size),
-            )
-            heapq.heappush(heap_refine, (new_h, seq, new_part))
-            seq += 1
-
-        if b_zero:
-            for new_part in _coarsen_neighbors(part):
-                if new_part in checked:
-                    continue
-                new_h = partition_entropy(
-                    ctx.pmf,
-                    labels_from_partition(new_part, ctx.outcome_to_flat, pmf_size),
-                )
-                heapq.heappush(heap_coarsen, (new_h, seq, new_part))
-                seq += 1
-
-    if not np.isfinite(optimal_h):
-        return _search_coarsen(ctx, dist, rvs, optimal_b, pmf_size, probe=probe)
-
-    return optimal_h, {
-        "visited": len(checked),
-        "mss_warmstart": used_mss,
-        "meet_warmstart": used_meet,
-        "direction": "bidirectional",
-        "met_in_middle": met_in_middle,
-        "partition": optimal_part,
-    }
+        seen.add(rect)
+        block = block_of(rect)
+        if block is None:
+            continue
+        blocks.add(block)
+        if len(blocks) > _MAX_CANDIDATES:
+            msg = "Too many candidate blocks for the functional common information."
+            raise ditException(msg)
+        for k in range(n):
+            for v in values[k]:
+                if v not in rect[k]:
+                    grown = rect[:k] + (rect[k] | {v},) + rect[k + 1 :]
+                    if grown not in seen:
+                        frontier.append(grown)
+    return blocks
 
 
-def functional_markov_chain(
-    dist,
-    rvs=None,
-    crvs=None,
-    *,
-    _use_mss_warmstart=True,
-    _strategy="auto",
-    _stats=None,
-):
+def _components(points):
     """
-    Return H(W) for the smallest function W of `dist` which renders `rvs` independent.
+    Connected components of the points, adjacent when they share a symbol of
+    some X_i.
+    """
+    parent = list(range(len(points)))
+
+    def find(i):
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+
+    first = {}
+    for i, (x, _) in enumerate(points):
+        for k, v in enumerate(x):
+            j = first.setdefault((k, v), i)
+            parent[find(i)] = find(j)
+
+    comps = defaultdict(list)
+    for i in range(len(points)):
+        comps[find(i)].append(i)
+    return list(comps.values())
+
+
+def _candidates(idx, points, probs, conditional):
+    """
+    Candidate blocks (sets of point indices) covering the points `idx`.
+
+    With conditioning, a block of W may combine one rectangle from each value
+    of Z.
+    """
+    by_z = defaultdict(list)
+    for i in idx:
+        by_z[points[i][1]].append(i)
+    per_z = [sorted(_rectangles(sub, points, probs), key=sorted) for sub in by_z.values()]
+    if not conditional:
+        return per_z[0]
+
+    n_combos = np.prod([len(r) + 1 for r in per_z], dtype=float) - 1
+    if n_combos > _MAX_CANDIDATES:
+        msg = "Too many candidate blocks for the conditional functional common information."
+        raise ditException(msg)
+    blocks = []
+    for choice in product(*[[frozenset()] + r for r in per_z]):
+        block = frozenset().union(*choice)
+        if block:
+            blocks.append(block)
+    return blocks
+
+
+def _min_entropy_cover(idx, blocks, probs):
+    """
+    The exact cover of `idx` by `blocks` minimizing sum_b -p(b) log2 p(b).
+
+    Returns
+    -------
+    cost : float
+        The entropy contribution of the chosen blocks.
+    chosen : list of frozenset
+        The chosen blocks.
+    """
+    blocks = list(blocks)
+    masses = np.array([probs[list(b)].sum() for b in blocks])
+    costs = -masses * np.log2(masses)
+    if len(idx) == 1:
+        return float(costs[0]), blocks
+
+    row = {i: r for r, i in enumerate(idx)}
+    A = np.zeros((len(idx), len(blocks)))
+    for c, block in enumerate(blocks):
+        for i in block:
+            A[row[i], c] = 1
+    res = milp(
+        costs,
+        constraints=LinearConstraint(A, 1, 1),
+        integrality=np.ones(len(blocks)),
+        bounds=Bounds(0, 1),
+    )
+    if not res.success:  # pragma: no cover
+        msg = f"Exact cover failed: {res.message}"
+        raise ditException(msg)
+    chosen = [blocks[c] for c in np.flatnonzero(res.x > 0.5)]
+    return float(costs[res.x > 0.5].sum()), chosen
+
+
+@removals.removed_kwarg("_strategy", message="The exact cover needs no search strategy.", version="2.4")
+@removals.removed_kwarg("_use_mss_warmstart", message="The exact cover needs no warm start.", version="2.4")
+def functional_markov_chain(dist, rvs=None, crvs=None, *, _stats=None, _strategy=None, _use_mss_warmstart=None):
+    """
+    Return H(W) for the least-entropy function W of `rvs` (and `crvs`) which
+    renders `rvs` independent given `crvs`.
 
     Parameters
     ----------
@@ -462,9 +244,8 @@ def functional_markov_chain(
         The distribution for which the smallest function will be constructed.
     rvs : list, None
         A list of lists. Each inner list specifies the indexes of the random
-        variables used to calculate the total correlation. If None, then the
-        total correlation is calculated over all random variables, which is
-        equivalent to passing `rvs=dist.rvs`.
+        variables to render independent. If None, then all random variables
+        are used, which is equivalent to passing `rvs=dist.rvs`.
     crvs : list, None
         A single list of indexes specifying the random variables to condition
         on. If None, then no variables are conditioned on.
@@ -472,77 +253,44 @@ def functional_markov_chain(
     Returns
     -------
     h : float
-        The entropy of the smallest valid functional Markov variable W.
-
-    Notes
-    -----
-    Three exact searches are available:
-
-    * **Coarsen** (top-down): merge blocks starting from the finest outcome
-      partition, or from the joint-MSS partition when it already satisfies
-      B = 0.
-    * **Refine** (bottom-up): split blocks starting from the Gács–Körner meet
-      partition until B = 0.
-    * **Bidirectional**: interleaved refine/coarsen with a shared visited set,
-      growing from meet and MSS toward the middle.
-
-    With ``_strategy='auto'`` (default), cheap probes on the meet and MSS
-    seeds pick among the three.  See james2017multivariate.
+        The entropy of the least-entropy functional Markov variable W.
     """
     dist = as_linear(dist)
-    optimal_b = dual_total_correlation(dist, rvs, crvs)
-    ctx = prepare_functional_search(dist, rvs=rvs, crvs=crvs)
-    pmf_size = int(np.prod(ctx.shape))
-    n_outcomes = len(ctx.dist.outcomes)
+    rvs, crvs = normalize_rvs(dist, rvs, crvs)
+    crvs = list(flatten(crvs))
+    points, probs, members = _support(dist, rvs, crvs)
 
-    probe = _probe_seeds(ctx, dist, rvs, crvs, pmf_size, _use_mss_warmstart=_use_mss_warmstart)
+    conditional = bool(crvs)
+    regions = [list(range(len(points)))] if conditional else _components(points)
 
-    route = _route_auto_strategy(probe, optimal_b, n_outcomes) if _strategy == "auto" else _strategy
-
-    if route == "coarsen":
-        h, winner_stats = _search_coarsen(
-            ctx,
-            dist,
-            rvs,
-            optimal_b,
-            pmf_size,
-            _use_mss_warmstart=_use_mss_warmstart,
-            probe=probe,
-        )
-    elif route == "refine":
-        h, winner_stats = _search_refine(ctx, dist, rvs, crvs, optimal_b, pmf_size, probe=probe)
-        if h is None:
-            h, winner_stats = _search_coarsen(
-                ctx,
-                dist,
-                rvs,
-                optimal_b,
-                pmf_size,
-                probe=probe,
-            )
-    elif route == "bidirectional":
-        h, winner_stats = _search_bidirectional(ctx, dist, rvs, crvs, optimal_b, pmf_size, probe=probe)
-    else:
-        msg = f"Unknown strategy: {route!r}"
-        raise ValueError(msg)
+    h = 0.0
+    chosen = []
+    for idx in regions:
+        whole = frozenset(idx)
+        # Merging blocks never increases entropy, so a valid whole region is optimal.
+        if not conditional and (len(idx) == 1 or _is_product([points[i][0] for i in idx], probs[idx])):
+            mass = probs[idx].sum()
+            h += float(-mass * np.log2(mass))
+            chosen.append(whole)
+            continue
+        cost, blocks = _min_entropy_cover(idx, _candidates(idx, points, probs, conditional), probs)
+        h += cost
+        chosen.extend(blocks)
 
     if _stats is not None:
-        _stats.update(winner_stats)
-        _stats["visited"] = winner_stats["visited"]
-        _stats["strategy"] = winner_stats["direction"]
-        _stats["partition"] = winner_stats.get("partition")
-        if _strategy == "auto":
-            _stats["route"] = route
+        _stats["partition"] = frozenset(frozenset(outcome for i in block for outcome in members[i]) for block in chosen)
+        _stats["components"] = len(regions)
 
     return h
 
 
 @unitful
-def functional_common_information(dist, rvs=None, crvs=None):
+def functional_common_information(dist, rvs=None, crvs=None, return_partition=False):
     """
     Compute the functional common information, F, of `dist`. It is the entropy
     of the smallest random variable W such that all the variables in `rvs` are
-    rendered independent conditioned on W, and W is a function of `rvs`.
+    rendered independent conditioned on W (and `crvs`), and W is a function of
+    `rvs` and `crvs`.
 
     Parameters
     ----------
@@ -557,18 +305,71 @@ def functional_common_information(dist, rvs=None, crvs=None):
     crvs : list, None
         A single list of indexes specifying the random variables to condition
         on. If None, then no variables are conditioned on.
+    return_partition : bool
+        If True, also return the optimal W as a partition of the outcomes of
+        `dist`: a frozenset of blocks, each a frozenset of outcomes.
 
     Returns
     -------
     F : float
         The functional common information.
+    partition : frozenset of frozensets
+        The optimal W, only if `return_partition` is True.
     """
     dist = as_linear(dist)
     rvs, crvs = normalize_rvs(dist, rvs, crvs)
 
-    dtc = dual_total_correlation(dist, rvs, crvs)
-    ent = entropy(dist, rvs, crvs)
-    if np.isclose(dtc, ent):
-        return dtc
+    # B = H means the identity on the support is optimal (unconditionally).
+    if not crvs and not return_partition:
+        dtc = dual_total_correlation(dist, rvs, crvs)
+        if np.isclose(dtc, entropy(dist, rvs, crvs)):
+            return dtc
 
-    return functional_markov_chain(dist, rvs, crvs)
+    stats = {}
+    h = functional_markov_chain(dist, rvs, crvs, _stats=stats)
+    return (h, stats["partition"]) if return_partition else h
+
+
+def functional_variable(dist, rvs=None, crvs=None):
+    """
+    Return `dist` with the optimal functional common variable W appended.
+
+    W is the least-entropy function of `rvs` and `crvs` rendering `rvs`
+    independent given `crvs`, so ``entropy(d, [d.outcome_length() - 1])`` is
+    the functional common information. Its values are block labels ``0, 1,
+    ...`` (as strings when the outcomes of `dist` have string symbols).
+
+    Parameters
+    ----------
+    dist : Distribution
+        The distribution of interest.
+    rvs : list, None
+        A list of lists. Each inner list specifies the indexes of the random
+        variables to render independent. If None, all random variables are
+        used.
+    crvs : list, None
+        A single list of indexes specifying the random variables to condition
+        on. If None, then no variables are conditioned on.
+
+    Returns
+    -------
+    d : Distribution
+        The support of `dist` with W appended as its last variable.
+    """
+    dist = as_linear(dist).copy()
+    dist.make_sparse()
+    rvs, crvs = normalize_rvs(dist, rvs, crvs)
+    stats = {}
+    functional_markov_chain(dist, rvs, crvs, _stats=stats)
+
+    blocks = sorted(stats["partition"], key=lambda block: min(map(repr, block)))
+    as_str = all(isinstance(v, str) for o in dist.outcomes for v in (o if isinstance(o, tuple) else (o,)))
+    label = {}
+    for i, block in enumerate(blocks):
+        for outcome in block:
+            label[outcome] = str(i) if as_str else i
+
+    def w(outcome):
+        return (label[outcome if isinstance(outcome, tuple) else (outcome,)],)
+
+    return insert_rvf(dist, w)
