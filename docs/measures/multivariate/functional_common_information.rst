@@ -31,3 +31,5 @@ API
 ===
 
 .. autofunction:: functional_common_information
+
+.. autofunction:: functional_variable

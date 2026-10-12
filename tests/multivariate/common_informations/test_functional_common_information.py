@@ -13,6 +13,7 @@ from dit.example_dists import dyadic, giant_bit, triadic
 from dit.helpers import normalize_rvs, parse_rvs
 from dit.multivariate import dual_total_correlation as B
 from dit.multivariate import functional_common_information as F
+from dit.multivariate import functional_variable
 from dit.multivariate.common_informations._functional_partition import (
     conditional_dtc,
     labels_from_partition,
@@ -207,3 +208,23 @@ def test_random_three_by_three():
     h = functional_markov_chain(d, _stats=stats)
     _assert_valid_partition(d, None, None, h, stats["partition"])
     assert B(d) - 1e-9 <= h <= entropy(d) + 1e-9
+
+
+@pytest.mark.parametrize(("rvs", "crvs"), [(None, None), ([[0], [1]], None), ([[0], [1]], [2])])
+def test_return_partition(rvs, crvs):
+    """The returned partition is a valid W achieving F."""
+    h, partition = F(_PARITY, rvs, crvs, return_partition=True)
+    assert h == pytest.approx(F(_PARITY, rvs, crvs))
+    _assert_valid_partition(_PARITY, rvs, crvs, h, partition)
+
+
+@pytest.mark.parametrize("dist", [_PARITY, MDBSI16, giant_bit(3, 3)])
+def test_functional_variable(dist):
+    """The appended W is a function of the others, renders them independent, and has entropy F."""
+    d = functional_variable(dist)
+    n = dist.outcome_length()
+    w = [n]
+    rvs = [[i] for i in range(n)]
+    assert entropy(d, w) == pytest.approx(F(dist))
+    assert entropy(d, w, list(range(n))) == pytest.approx(0.0)
+    assert B(d, rvs, w) == pytest.approx(0.0)
