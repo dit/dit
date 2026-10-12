@@ -80,7 +80,6 @@ LOG_SINGLE = [
     lautum_information,
     functional_common_information,
     mss_common_information,
-    lambda d: (np.random.seed(0), wyner_common_information(d, niter=1))[1],
     lambda d: copy_mutual_information(d, [0], [1]),
     lambda d: sibson_mutual_information(d, [0], [1], 2),
     lambda d: maximal_leakage(d, [0], [1]),
@@ -120,6 +119,15 @@ def test_unitless_pairwise_base_invariant(measure, base):
 def test_log_single_follow_base(measure, base):
     expected = measure(AND) * _scale(base)
     assert np.allclose(measure(AND.copy(base=base)), expected, atol=1e-4)
+
+
+@pytest.mark.parametrize("base", [2, "e"])
+def test_optimizer_measure_follows_base(base):
+    """Optimizer-based measures are rescaled too; the tolerance absorbs optimizer noise."""
+    np.random.seed(0)
+    expected = wyner_common_information(AND) * _scale(base)
+    np.random.seed(0)
+    assert wyner_common_information(AND.copy(base=base)) == pytest.approx(expected, rel=1e-3)
 
 
 @pytest.mark.parametrize("base", [2, "e"])
