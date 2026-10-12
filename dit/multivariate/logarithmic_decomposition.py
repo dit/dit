@@ -24,6 +24,8 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
+from ..utils import flatten
+
 if TYPE_CHECKING:
     from ..distribution import Distribution
 
@@ -278,6 +280,7 @@ class LogarithmicDecomposition:
             rvs = list(range(self._outcome_length))
         if not isinstance(rvs, (list, tuple)):
             rvs = [rvs]
+        rvs = list(flatten(rvs))
 
         partition = self._partition_for_rv(rvs)
         parts = list(partition.values())

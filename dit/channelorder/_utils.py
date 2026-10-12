@@ -7,6 +7,7 @@ import numpy as np
 
 from ..cdisthelpers import cdist_array
 from ..exceptions import ditException
+from ..helpers import as_linear
 
 __all__ = (
     "channel_matrix",
@@ -95,9 +96,8 @@ def channels_from_joint(dist, S, Y, Z):
     pi_s : ndarray
         Marginal pmf ``P(S)``.
     """
-    S = list(S)
-    Y = list(Y)
-    Z = list(Z)
+    dist = as_linear(dist)
+    S, Y, Z = (dist._resolve_rv_names(list(v)) for v in (S, Y, Z))
 
     sub_sy = dist.marginal(*(S + Y))
     marg_s, cdists_y = sub_sy.condition_on(S, rvs=Y)
@@ -146,9 +146,8 @@ def reverse_channels_from_joint(dist, S, Y, Z):
     pi_z : ndarray
         Marginal pmf ``P(Z)``.
     """
-    S = list(S)
-    Y = list(Y)
-    Z = list(Z)
+    dist = as_linear(dist)
+    S, Y, Z = (dist._resolve_rv_names(list(v)) for v in (S, Y, Z))
 
     sub_sy = dist.marginal(*(S + Y))
     marg_y, cdists_s_given_y = sub_sy.condition_on(Y, rvs=S)

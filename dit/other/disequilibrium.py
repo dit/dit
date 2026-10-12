@@ -68,8 +68,9 @@ def LMPR_complexity(dist, rvs=None):
     C : float
         The LMPR complexity.
     """
-    d = dist.copy()
+    d = dist.marginal(rvs) if rvs is not None else dist
+    d = d.copy(base="linear")
     d.make_dense()
-    D = disequilibrium(d, rvs)
-    H = entropy(d, rvs) / np.log2(len(d.outcomes))
+    D = disequilibrium(d)
+    H = entropy(d) / np.log2(len(d.outcomes))
     return D * H

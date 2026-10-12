@@ -108,10 +108,11 @@ def test_divergences_to_kl(dists):
     Tests that the generalized divergences properly fall back to KL for the appropriate values of alpha, and not otherwise.
     """
     for dist1, dist2 in combinations(dists, 2):
-        assert alpha_divergence(dist1, dist2, alpha=-1) == pytest.approx(kullback_leibler_divergence(dist2, dist1))
+        kl_nats = kullback_leibler_divergence(dist1, dist2) * np.log(2)
+        assert alpha_divergence(dist1, dist2, alpha=-1) == pytest.approx(kl_nats)
 
-        assert alpha_divergence(dist1, dist2, alpha=0) != pytest.approx(kullback_leibler_divergence(dist2, dist1))
-        assert alpha_divergence(dist1, dist2, alpha=2) != pytest.approx(kullback_leibler_divergence(dist2, dist1))
+        assert alpha_divergence(dist1, dist2, alpha=0) != pytest.approx(kl_nats)
+        assert alpha_divergence(dist1, dist2, alpha=2) != pytest.approx(kl_nats)
 
 
 @pytest.mark.parametrize("dists", [get_dists_2(), get_dists_3()])
@@ -121,7 +122,36 @@ def test_divergences_to_kl2(dists, divergence):
     Tests that the generalized divergences properly fall back to KL for the appropriate values of alpha.
     """
     for dist1, dist2 in combinations(dists, 2):
-        assert divergence(dist1, dist2, alpha=1) == pytest.approx(kullback_leibler_divergence(dist1, dist2))
+        if divergence is alpha_divergence:
+            kl = kullback_leibler_divergence(dist2, dist1) * np.log(2)
+        elif divergence is renyi_divergence:
+            kl = kullback_leibler_divergence(dist1, dist2)
+        else:
+            kl = kullback_leibler_divergence(dist1, dist2) * np.log(2)
+        assert divergence(dist1, dist2, alpha=1) == pytest.approx(kl)
+
+
+@pytest.mark.parametrize("dists", [get_dists_2(), get_dists_3()])
+@pytest.mark.parametrize("divergence", divergences)
+def test_continuous_at_one(dists, divergence):
+    """
+    The alpha = 1 special case must agree with the limit of the general formula.
+    """
+    for dist1, dist2 in combinations(dists, 2):
+        at_one = divergence(dist1, dist2, alpha=1)
+        near = divergence(dist1, dist2, alpha=1 + 1e-6)
+        assert at_one == pytest.approx(near, rel=1e-4)
+
+
+def test_union_support():
+    """
+    Outcomes outside the support of `dist1` must still contribute.
+    """
+    p = Distribution(["0", "1"], [1, 0])
+    q = Distribution(["0", "1"], [1 / 2, 1 / 2])
+    assert alpha_divergence(p, q, alpha=3) == pytest.approx(alpha_divergence(q, p, alpha=-3))
+    assert f_divergence(p, q, lambda t: abs(t - 1) / 2) == pytest.approx(0.5)
+    assert f_divergence(p, q, lambda t: (t - 1) ** 2) == pytest.approx(1.0)
 
 
 @pytest.mark.parametrize(

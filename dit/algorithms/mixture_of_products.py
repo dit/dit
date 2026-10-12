@@ -81,7 +81,7 @@ def _em_once(pmf, X, sizes, k, *, max_iter, tol, rng):
     n_out, n = X.shape
     pi = rng.dirichlet(np.ones(k))
     conds = [rng.dirichlet(np.ones(s), size=k) for s in sizes]
-    prev_ll = -np.inf
+    prev_ll = ll = -np.inf
 
     for _ in range(max_iter):
         log_comp = _component_logprob(pi, conds, X)
@@ -169,6 +169,9 @@ def fit_mixture_of_products(
         msg = "k must be >= 1"
         raise ValueError(msg)
 
+    if n_init < 1:
+        msg = "n_init must be at least 1."
+        raise ValueError(msg)
     outcomes, pmf, X, sizes = _dense_table(dist)
     rng = np.random.default_rng(seed)
     best = None

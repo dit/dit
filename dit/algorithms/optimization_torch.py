@@ -333,7 +333,7 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
         x : np.ndarray
             A random optimization vector.
         """
-        vec = sample_simplex(self._optvec_size)
+        vec = sample_simplex(self._optvec_size, rng=getattr(self, "_rng", None))
         return vec
 
     def construct_uniform_initial(self):
@@ -799,8 +799,9 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
             The conditional maximum correlation function.
         """
         idx_xyz = tuple(self._all_vars - (rv_x | rv_y | rv_z))
-        idx_xz = tuple(self._all_vars - (rv_x | rv_z))
-        idx_yz = tuple(self._all_vars - (rv_y | rv_z))
+        # `sum` keeps the remaining axes in index order; reorder them to (x, y, z).
+        kept = sorted(rv_x | rv_y | rv_z)
+        perm = [kept.index(min(rv)) for rv in (rv_x, rv_y, rv_z)]
 
         def conditional_maximum_correlation(pmf):
             """
@@ -816,9 +817,9 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
             cmc : torch.Tensor
                 The conditional maximum correlation.
             """
-            p_xyz = _marginalize(pmf, idx_xyz, keepdim=False)
-            p_xz = _marginalize(pmf, idx_xz, keepdim=False).unsqueeze(1)
-            p_yz = _marginalize(pmf, idx_yz, keepdim=False).unsqueeze(0)
+            p_xyz = _marginalize(pmf, idx_xyz, keepdim=False).permute(*perm)
+            p_xz = p_xyz.sum(dim=1, keepdim=True)
+            p_yz = p_xyz.sum(dim=0, keepdim=True)
 
             Q = torch.where(p_xyz > 0, p_xyz / torch.sqrt(p_xz * p_yz), torch.zeros_like(p_xyz))
 
@@ -1173,6 +1174,7 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
         if maxiter:
             minimizer_kwargs["options"]["maxiter"] = maxiter
 
+        _np_objective._dit_raw = self._torch_raw_objective
         self.objective = _np_objective
         return minimizer_kwargs, icb
 
@@ -1267,10 +1269,15 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
         result : OptimizeResult
             The result of the optimization.
         """
+        self._rng = rng
+
         try:
             callable(self.objective)
         except AttributeError:
             self.objective = MethodType(self._objective(), self)
+        # A previous optimize() replaced the objective with a float-returning
+        # wrapper for scipy; restore the differentiable one.
+        self.objective = getattr(self.objective, "_dit_raw", self.objective)
 
         x0 = x0.copy().flatten() if x0 is not None else self.construct_initial()
         x0 = _to_numpy(x0).astype(np.float64)
@@ -1532,6 +1539,10 @@ class BaseNonConvexTorchOptimizer(BaseTorchOptimizer):
         else:
             res_shotgun = None
 
+        bh_kwargs = {}
+        if getattr(self, "_rng", None) is not None:
+            bh_kwargs["rng"] = self._rng
+
         result = basinhopping(
             func=self.objective,
             x0=x0,
@@ -1539,6 +1550,7 @@ class BaseNonConvexTorchOptimizer(BaseTorchOptimizer):
             niter=niter,
             accept_test=accept_test,
             callback=self._callback,
+            **bh_kwargs,
         )
 
         success, msg = basinhop_status(result)
@@ -1868,7 +1880,7 @@ class BaseAuxVarTorchOptimizer(BaseNonConvexTorchOptimizer):
         """
         vecs = []
         for av in self._aux_vars:
-            vec = sample_simplex(av.shape[-1], prod(av.shape[:-1]))
+            vec = sample_simplex(av.shape[-1], prod(av.shape[:-1]), rng=getattr(self, "_rng", None))
             vecs.append(vec.ravel())
         return np.concatenate(vecs, axis=0)
 
@@ -2095,14 +2107,16 @@ class BaseAuxVarTorchOptimizer(BaseNonConvexTorchOptimizer):
             msg = f"Style {style} is not understood."
             raise OptimizationException(msg)
 
-        true_objective = self.objective(self._optima)
+        # Bind the main objective now: self.objective is swapped below.
+        main_objective = getattr(self.objective, "_dit_raw", self.objective)
+        true_objective = main_objective(self._optima)
 
         def constraint_match_objective(x):
             """
             Constraint to ensure that the new solution is not worse than that
             found before.
             """
-            obj = (self.objective(x) - true_objective) ** 2
+            obj = (main_objective(x) - true_objective) ** 2
             return obj
 
         constraint = [

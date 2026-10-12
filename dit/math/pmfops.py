@@ -164,19 +164,16 @@ def replace_zeros(pmf, delta, rand=True, prng=None):
     if prng is None:
         prng = dit.math.prng
 
-    nonzero = pmf == 0
+    pmf = np.asarray(pmf, dtype=float)
+    pmfs = np.atleast_2d(pmf)
+    zeros = pmfs == 0
 
-    replacements = np.zeros(nonzero.sum(), dtype=float)
-    if rand:
-        replacements = delta * prng.rand(len(replacements))
-    else:
-        replacements += delta
+    replacements = np.zeros(pmfs.shape, dtype=float)
+    replacements[zeros] = delta * prng.rand(zeros.sum()) if rand else delta
 
-    d = pmf.copy()
-    d[nonzero] += replacements
-    d[~nonzero] *= 1 - replacements.sum()
+    d = np.where(zeros, replacements, pmfs * (1 - replacements.sum(axis=-1, keepdims=True)))
 
-    return d
+    return d.reshape(pmf.shape)
 
 
 def jittered(pmf, jitter=1e-5, zeros=True, prng=None):

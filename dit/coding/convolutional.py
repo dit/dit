@@ -104,7 +104,7 @@ class ConvolutionalCode(ChannelCoding):
                     cost = path[state] + metric(outputs, chunk)
                     if cost < new_path[next_state]:
                         new_path[next_state] = cost
-                        back[next_state] = state
+                        back[next_state] = (state, bit)
             path = new_path
             backpointers.append(back)
 
@@ -112,9 +112,8 @@ class ConvolutionalCode(ChannelCoding):
         state = 0
         inputs = []
         for back in reversed(backpointers):
-            previous = back[state]
-            # Recover the input bit that took `previous` -> `state`.
-            bit = 1 if self._transitions[(previous, 1)][0] == state else 0
+            # Store the input bit: with K = 1 both inputs lead to the same state.
+            previous, bit = back[state]
             inputs.append(bit)
             state = previous
         inputs.reverse()

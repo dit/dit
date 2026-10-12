@@ -747,14 +747,15 @@ class BasePytensorOptimizer(metaclass=ABCMeta):
             The conditional maximum correlation function.
         """
         idx_xyz = tuple(self._all_vars - (rv_x | rv_y | rv_z))
-        idx_xz = tuple(self._all_vars - (rv_x | rv_z))
-        idx_yz = tuple(self._all_vars - (rv_y | rv_z))
+        # `sum` keeps the remaining axes in index order; reorder them to (x, y, z).
+        kept = sorted(rv_x | rv_y | rv_z)
+        perm = [kept.index(min(rv)) for rv in (rv_x, rv_y, rv_z)]
 
         @self._maybe_jit
         def conditional_maximum_correlation(pmf):
-            p_xyz = pmf.sum(axis=idx_xyz)
-            p_xz = pmf.sum(axis=idx_xz)[:, None, :]
-            p_yz = pmf.sum(axis=idx_yz)[None, :, :]
+            p_xyz = pmf.sum(axis=idx_xyz).transpose(perm)
+            p_xz = p_xyz.sum(axis=1, keepdims=True)
+            p_yz = p_xyz.sum(axis=0, keepdims=True)
 
             Q = _where(p_xyz > 0, p_xyz / _sqrt(p_xz * p_yz), 0.0)
 
@@ -947,6 +948,7 @@ class BasePytensorOptimizer(metaclass=ABCMeta):
         if maxiter:
             minimizer_kwargs["options"]["maxiter"] = maxiter
 
+        _np_objective._dit_raw = self._pt_raw_objective
         self.objective = _np_objective
 
         return minimizer_kwargs, icb
@@ -984,6 +986,9 @@ class BasePytensorOptimizer(metaclass=ABCMeta):
             callable(self.objective)
         except AttributeError:
             self.objective = MethodType(self._objective(), self)
+        # A previous optimize() replaced the objective with a float-returning
+        # wrapper for scipy; restore the differentiable one.
+        self.objective = getattr(self.objective, "_dit_raw", self.objective)
 
         x0 = x0.copy().flatten() if x0 is not None else self.construct_initial()
         x0 = np.asarray(x0, dtype=np.float64)
@@ -1950,10 +1955,12 @@ class BaseAuxVarPytensorOptimizer(BaseNonConvexPytensorOptimizer):
             msg = f"Style {style} is not understood."
             raise OptimizationException(msg)
 
-        true_objective = self.objective(self._optima)
+        # Bind the main objective now: self.objective is swapped below.
+        main_objective = getattr(self.objective, "_dit_raw", self.objective)
+        true_objective = main_objective(self._optima)
 
         def constraint_match_objective(x):
-            return (self.objective(x) - true_objective) ** 2
+            return (main_objective(x) - true_objective) ** 2
 
         constraint = [
             {

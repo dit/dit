@@ -45,3 +45,9 @@ def test_n_mod_m6(m):
     """Test that II is the log of m"""
     d = n_mod_m(3, m)
     assert II(d) == pytest.approx(log2(m))
+
+
+def test_n_mod_m_large_modulus():
+    d = n_mod_m(2, 11)
+    assert d.outcome_length() == 2
+    assert len(d.outcomes) == 11

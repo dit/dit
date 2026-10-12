@@ -10,6 +10,7 @@ import dit
 
 from ..distconst import mixture_distribution
 from ..exceptions import ditException
+from ..helpers import as_linear
 from ..shannon import entropy as H
 from ..shannon import entropy_pmf as H_pmf
 from ..utils import unitful
@@ -96,6 +97,7 @@ def jensen_shannon_divergence(dists, weights=None):
             m = "Likely user error. Second argument to JSD should be weights."
             raise dit.exceptions.ditException(m)
 
+    dists = [as_linear(d) for d in dists]
     # validation of `weights` is done in mixture_distribution,
     # so we don't need to worry about it for the second part.
     mixture = mixture_distribution(dists, weights, merge=True)

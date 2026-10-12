@@ -457,7 +457,7 @@ class LinearOperations(Operations):
             The normalized array.
 
         """
-        z = x / x.sum(axis=None)
+        z = x / x.sum(axis=axis, keepdims=True)
         return z
 
 
@@ -734,7 +734,10 @@ class LogOperations(Operations):
         """
         # The API way would be:  mult(x, invert( add_reduce(x) ))
         # We'll avoid some of those function calls.
-        z = x - self.add_reduce(x, axis=axis)
+        total = self.add_reduce(x, axis=axis)
+        if axis is not None:
+            total = np.expand_dims(total, axis)
+        z = x - total
         return z
 
 

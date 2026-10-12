@@ -30,7 +30,7 @@ def giant_bit(n=3, k=2):
     """
     alpha = list(map(str, range(k)))
 
-    outcomes = [a * n for a in alpha]
+    outcomes = [(a,) * n for a in alpha]
     pmf = [1 / k] * k
 
     return Distribution(outcomes, pmf)

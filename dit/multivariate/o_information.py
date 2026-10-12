@@ -35,8 +35,8 @@ def o_information(dist, rvs=None, crvs=None):
     --------
     >>> d = dit.example_dists.n_mod_m(5, 2)
     >>> dit.multivariate.o_information(d)
-    3.0
-    >>> dit.multivariate.o_information(d, rvs=[[0], [1], [3], [4]], [2])
+    -3.0
+    >>> dit.multivariate.o_information(d, rvs=[[0], [1], [3], [4]], crvs=[2])
     -2.0
 
     Raises

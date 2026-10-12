@@ -167,7 +167,8 @@ def tunstall(dist, code_length, radix=2):
     leaves = {(outcome,): p for outcome, p in alphabet}
     expansion = len(alphabet) - 1
 
-    while len(leaves) + expansion <= capacity:
+    # A single-symbol source never grows the dictionary; one word suffices.
+    while expansion > 0 and len(leaves) + expansion <= capacity:
         _, _, word, prob = heapq.heappop(heap)
         del leaves[word]
         for outcome, p in alphabet:

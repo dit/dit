@@ -54,7 +54,7 @@ def test_mixture_distribution2():
 
 def test_mixture_distribution3():
     # Sample spaces are compatible.
-    # But pmfs have a different order.
+    # Outcomes are given in a different order, but alphabets are canonicalized.
     d = dit.Distribution(["A", "B"], [0.5, 0.5])
     d2 = dit.Distribution(["B", "A"], [1, 0], sort=False, trim=False, sparse=False)
     pmf = np.array([0.25, 0.75])
@@ -62,7 +62,14 @@ def test_mixture_distribution3():
     d3 = dit.mixture_distribution([d, d2], [0.5, 0.5])
     assert np.allclose(pmf, d3.pmf)
     d3 = dit.mixture_distribution2([d, d2], [0.5, 0.5])
-    assert not np.allclose(pmf, d3.pmf)
+    assert np.allclose(pmf, d3.pmf)
+
+
+def test_mixture_distribution2_uses_weights():
+    d = dit.Distribution(["00", "01", "10", "11"], [1, 0, 0, 0], sparse=False, trim=False)
+    d2 = dit.Distribution(["00", "01", "10", "11"], [0, 0, 0, 1], sparse=False, trim=False)
+    d3 = dit.mixture_distribution2([d, d2], [0.5, 0.5])
+    assert np.allclose(d3.pmf, [0.5, 0, 0, 0.5])
 
 
 def test_mixture_distribution4():

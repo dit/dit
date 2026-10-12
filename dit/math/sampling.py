@@ -120,11 +120,7 @@ def _sample_discrete__python(pmf, rand):
         The index of the sampled event.
 
     """
-    total = 0
-    for i, prob in enumerate(pmf):  # pragma: no branch
-        total += prob
-        if rand < total:
-            return i
+    return int(_samples_discrete__python(np.asarray(pmf, dtype=float), np.array([rand]))[0])
 
 
 def _samples_discrete__python(pmf, rands, out=None):
@@ -150,20 +146,11 @@ def _samples_discrete__python(pmf, rands, out=None):
     out : NumPy int array, shape (k,)
 
     """
-    L = rands.shape[0]
+    # Clip so that rounding (sum(pmf) slightly below a rand) picks the last event.
+    idx = np.minimum(np.searchsorted(np.cumsum(pmf), rands, side="right"), pmf.shape[0] - 1)
     if out is None:
-        out = np.empty(L, dtype=int)
-
-    n = pmf.shape[0]
-    for i in range(L):
-        rand = rands[i]
-        total = 0
-        for j in range(n):  # pragma: no branch
-            total += pmf[j]
-            if rand < total:
-                out[i] = j
-                break
-
+        return idx.astype(int)
+    out[:] = idx
     return out
 
 

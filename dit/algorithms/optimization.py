@@ -635,7 +635,7 @@ class BaseOptimizer(metaclass=ABCMeta):
             crvs = set()
         idx_joint = tuple(self._all_vars - (rvs | crvs))
         idx_margs = [tuple(self._all_vars - ((rvs - {rv}) | crvs)) for rv in rvs]
-        idx_crvs = tuple(self._all_vars - crvs)
+        n = len(rvs)
 
         def residual_entropy(pmf):
             """
@@ -651,14 +651,11 @@ class BaseOptimizer(metaclass=ABCMeta):
             re : float
                 The residual entropy.
             """
+            # R = sum_i H(X_i | X_{-i}, C) = n H(X, C) - sum_i H(X_{-i}, C).
             pmf_joint = pmf.sum(axis=idx_joint, keepdims=True)
             pmf_margs = [pmf_joint.sum(axis=marg, keepdims=True) for marg in idx_margs]
-            pmf_crvs = pmf_joint.sum(axis=idx_crvs, keepdims=True)
 
-            h_crvs = self._h(pmf_crvs)
-            h_margs = [self._h(marg) - h_crvs for marg in pmf_margs]
-
-            return sum(h_margs)
+            return n * self._h(pmf_joint) - sum(self._h(marg) for marg in pmf_margs)
 
         return residual_entropy
 
@@ -811,13 +808,13 @@ class BaseOptimizer(metaclass=ABCMeta):
         """Gradient builder for :meth:`_residual_entropy`."""
         if crvs is None:
             crvs = set()
+        idx_joint = tuple(self._all_vars - (rvs | crvs))
         idx_margs = [tuple(self._all_vars - ((rvs - {rv}) | crvs)) for rv in rvs]
-        idx_crvs = tuple(self._all_vars - crvs)
         n = len(rvs)
 
         def grad(pmf):
-            g = sum(self._marginal_entropy_grad(pmf, marg) for marg in idx_margs)
-            g = g - n * self._marginal_entropy_grad(pmf, idx_crvs)
+            g = n * self._marginal_entropy_grad(pmf, idx_joint)
+            g = g - sum(self._marginal_entropy_grad(pmf, marg) for marg in idx_margs)
             return self._full_grad(g, pmf)
 
         return grad
@@ -965,8 +962,9 @@ class BaseOptimizer(metaclass=ABCMeta):
             The conditional maximum correlation.
         """
         idx_xyz = tuple(self._all_vars - (rv_x | rv_y | rv_z))
-        idx_xz = tuple(self._all_vars - (rv_x | rv_z))
-        idx_yz = tuple(self._all_vars - (rv_y | rv_z))
+        # `sum` keeps the remaining axes in index order; reorder them to (x, y, z).
+        kept = sorted(rv_x | rv_y | rv_z)
+        perm = [kept.index(min(rv)) for rv in (rv_x, rv_y, rv_z)]
 
         def conditional_maximum_correlation(pmf):
             """
@@ -982,9 +980,9 @@ class BaseOptimizer(metaclass=ABCMeta):
             mi : float
                 The mutual information.
             """
-            p_xyz = pmf.sum(axis=idx_xyz)
-            p_xz = pmf.sum(axis=idx_xz)[:, np.newaxis, :]
-            p_yz = pmf.sum(axis=idx_yz)[np.newaxis, :, :]
+            p_xyz = np.transpose(pmf.sum(axis=idx_xyz), perm)
+            p_xz = p_xyz.sum(axis=1, keepdims=True)
+            p_yz = p_xyz.sum(axis=0, keepdims=True)
 
             # Zero marginals give ``0/0 = nan``; the ``np.where`` mask drops them.
             with np.errstate(divide="ignore", invalid="ignore"):
@@ -2245,7 +2243,9 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
             msg = f"Style {style} is not understood."
             raise OptimizationException(msg)
 
-        true_objective = self.objective(self._optima)
+        # Bind the main objective now: self.objective is swapped below.
+        main_objective = getattr(self.objective, "_dit_raw", self.objective)
+        true_objective = main_objective(self._optima)
 
         def constraint_match_objective(x):
             """
@@ -2262,7 +2262,7 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
             obj : float
                 The l2 deviation of the current objective from the true.
             """
-            obj = (self.objective(x) - true_objective) ** 2
+            obj = (main_objective(x) - true_objective) ** 2
             return obj
 
         constraint = [

@@ -8,6 +8,7 @@ from boltons.iterutils import pairwise
 
 from ..distribution import Distribution
 from ..helpers import numerical_test
+from ..utils import unitful
 
 __all__ = (
     "cumulative_residual_entropy",
@@ -41,15 +42,17 @@ def _cumulative_residual_entropy(dist, generalized=False):
     numerical_test(dist)
     eps = ((e if generalized else abs(e), p) for e, p in dist.zipped())
     events, probs = zip(*sorted(eps), strict=True)
-    cdf = {a: p for a, p in zip(events, np.cumsum(probs), strict=True)}
+    # Survival function P(X > a), constant on [a, b) between consecutive events.
+    survival = {a: 1 - p for a, p in zip(events, np.cumsum(probs), strict=True)}
     terms = []
     for a, b in pairwise(events):
-        pgx = cdf[a]
-        term = (b - a) * pgx * np.log2(pgx)
+        pgx = survival[a]
+        term = (b - a) * pgx * np.log2(pgx) if pgx > 0 else 0.0
         terms.append(term)
     return -np.nansum(terms)
 
 
+@unitful
 def generalized_cumulative_residual_entropy(dist, extract=False):
     """
     The generalized cumulative residual entropy is a generalized from of the
@@ -87,6 +90,7 @@ def generalized_cumulative_residual_entropy(dist, extract=False):
     return cres
 
 
+@unitful
 def cumulative_residual_entropy(dist, extract=False):
     """
     The cumulative residual entropy is an alternative to the Shannon
@@ -114,7 +118,7 @@ def cumulative_residual_entropy(dist, extract=False):
     >>> cumulative_residual_entropy(d1)
     2.0683182557028439
     >>> cumulative_residual_entropy(d2)
-    22.672680046016705
+    42.566064100334294
     """
     if not dist.is_joint():
         return _cumulative_residual_entropy(dist, generalized=False)

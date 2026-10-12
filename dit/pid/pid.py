@@ -12,6 +12,7 @@ import numpy as np
 from lattices.lattices import free_distributive_lattice
 
 from ..exceptions import ditException
+from ..helpers import as_linear
 from ..multivariate import coinformation
 from ..params import ditParams
 from ..utils import build_table, flatten, powerset
@@ -100,6 +101,13 @@ def _transform(lattice):
     return tuple_lattice
 
 
+def _unit_scale(dist):
+    """
+    Factor converting bits into the units of `dist`'s log base (1 if linear).
+    """
+    return 1 / np.log2(dist.get_base(numerical=True)) if dist.is_log() else 1
+
+
 class BasePID(metaclass=ABCMeta):
     """
     This implements the basic Williams & Beer Partial Information Decomposition.
@@ -127,7 +135,8 @@ class BasePID(metaclass=ABCMeta):
             If the all the partial information values should be automatically
             computed.
         """
-        self._dist = dist
+        self._unit_scale = _unit_scale(dist)
+        self._dist = dist = as_linear(dist)
 
         if target is None:
             target = dist.rvs[-1]
@@ -140,13 +149,23 @@ class BasePID(metaclass=ABCMeta):
 
         self._lattice = _transform(free_distributive_lattice(self._sources))
         self._inverse_lattice = self._lattice.inverse()
-        self._total = coinformation(self._dist, [list(flatten(self._sources)), self._target])
+        self._total = self._scaled(coinformation(self._dist, [list(flatten(self._sources)), self._target]))
 
         self._reds = {} if reds is None else reds
         self._pis = {} if pis is None else pis
 
         if compute:
             self._compute()
+
+    def _scaled(self, value):
+        """
+        Express `value` (computed in bits) in the units of the distribution.
+        """
+        if self._unit_scale == 1:
+            return value
+        if isinstance(value, dict):
+            return {k: v * self._unit_scale for k, v in value.items()}
+        return value * self._unit_scale
 
     @abstractmethod
     def _measure(self, node, target):
@@ -290,7 +309,7 @@ class BasePID(metaclass=ABCMeta):
         if node not in self._reds:
             if node not in self._lattice:
                 raise Exception(f'Cannot get redundancy associated with node "{node}" because it is in the lattice')
-            self._reds[node] = _pid_coerce(self._measure(self._dist, node, self._target, **self._kwargs))
+            self._reds[node] = _pid_coerce(self._scaled(self._measure(self._dist, node, self._target, **self._kwargs)))
 
         return self._reds[node]
 
@@ -537,12 +556,12 @@ class BasePointwisePID(BasePID):
     def _compute_pointwise(self):
         """Compute pointwise redundancies and PI atoms for all lattice nodes."""
         for node in self._lattice:
-            pw = self._pointwise_measure(self._dist, node, self._target, **self._kwargs)
+            pw = self._scaled(self._pointwise_measure(self._dist, node, self._target, **self._kwargs))
             self._pw_reds[node] = pw
 
             parts = self._pointwise_measure_parts(self._dist, node, self._target, **self._kwargs)
             if parts is not None:
-                self._pw_reds_plus[node], self._pw_reds_minus[node] = parts
+                self._pw_reds_plus[node], self._pw_reds_minus[node] = (self._scaled(part) for part in parts)
 
         any_node = next(iter(self._pw_reds))
         outcomes = list(self._pw_reds[any_node].keys())
@@ -745,6 +764,11 @@ class BaseIncompletePID(BasePID):
                         if node not in self._reds:
                             self._reds[node] = self._reds[top]
 
+        # once every redundancy is known the Mobius inversion is exact; the
+        # heuristic below assumes nonnegative atoms, so it would override it.
+        if all(node in self._reds for node in self._lattice):
+            return
+
         # if redundancy of A is equal to the redundancy any of A's children, then pi(A) = 0
         for node in self._lattice:
             if (
@@ -831,7 +855,7 @@ class BaseIncompletePID(BasePID):
         if self.SELF_REDUNDANCY:  # pragma: no branch
             for node in self._lattice:
                 if len(node) == 1:
-                    self._reds[node] = coinformation(self._dist, [node[0], self._target])
+                    self._reds[node] = self._scaled(coinformation(self._dist, [node[0], self._target]))
 
         if self.LATTICE_MONOTONICITY:  # pragma: no branch
             self._compute_lattice_monotonicity()
@@ -840,8 +864,8 @@ class BaseIncompletePID(BasePID):
         if self.REDUCED_PID:  # pragma: no branch
             for node in self._lattice:
                 if node not in self._reds and len(node) < len(self._sources):
-                    sub_pid = self.__class__(self._dist.copy(), node, self._target)
-                    self._reds[node] = sub_pid._reds[node]
+                    sub_pid = self.__class__(self._dist.copy(), node, self._target, **self._kwargs)
+                    self._reds[node] = self._scaled(sub_pid._reds[node])
 
         while True:
             num_reds = len(self._reds)
@@ -899,7 +923,7 @@ class BaseIncompletePID(BasePID):
             for node in self._lattice:
                 if len(node) == 1:
                     red = self.get_red(node)
-                    mi = coinformation(self._dist, [node[0], self._target])
+                    mi = self._scaled(coinformation(self._dist, [node[0], self._target]))
                     if not np.isclose(red, mi, atol=1e-5, rtol=1e-5):  # pragma: no cover
                         return False
 
@@ -934,7 +958,7 @@ class BaseUniquePID(BaseIncompletePID):
 
     def _compute(self):
         """ """
-        uniques = self._measure(self._dist, self._sources, self._target, **self._kwargs)
+        uniques = self._scaled(self._measure(self._dist, self._sources, self._target, **self._kwargs))
 
         for node in self._lattice:
             if len(node) == 1 and node[0] in uniques and node not in self._pis:
@@ -952,6 +976,6 @@ class BaseBivariatePID(BaseIncompletePID):
         """ """
         for node in self._lattice:
             if len(node) == 2 and node not in self._reds:
-                self._reds[node] = self._measure(self._dist, node, self._target, **self._kwargs)
+                self._reds[node] = self._scaled(self._measure(self._dist, node, self._target, **self._kwargs))
 
         super()._compute()

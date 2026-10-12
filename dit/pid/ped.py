@@ -11,8 +11,9 @@ Concrete PED measures subclass ``BasePED`` and provide ``_name`` and
 
 from lattices.lattices import free_distributive_lattice
 
+from ..helpers import as_linear
 from ..multivariate import entropy
-from .pid import BasePID, _transform
+from .pid import BasePID, _transform, _unit_scale
 
 __all__ = ("BasePED",)
 
@@ -41,7 +42,8 @@ class BasePED(BasePID):
         sources : iter of iters, None
             The set of variables to include. If None, ``dist.rvs`` is used.
         """
-        self._dist = dist
+        self._unit_scale = _unit_scale(dist)
+        self._dist = dist = as_linear(dist)
 
         if sources is None:
             sources = dist.rvs
@@ -50,7 +52,7 @@ class BasePED(BasePID):
         self._sources = tuple(map(tuple, sources))
         self._target = None
         self._lattice = _transform(free_distributive_lattice(self._sources))
-        self._total = entropy(self._dist, rvs=self._sources)
+        self._total = self._scaled(entropy(self._dist, rvs=self._sources))
         self._reds = {}
         self._pis = {}
         self._compute()

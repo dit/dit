@@ -78,7 +78,8 @@ def uniform_binning(ts, bins):
     symb : ndarray
         The discretized time-series.
     """
-    symb = np.asarray(bins * (ts - ts.min()) / (ts.max() - ts.min() + 1e-12), dtype=int)
+    span = max(ts.max() - ts.min(), np.finfo(float).tiny)
+    symb = np.minimum(np.floor(bins * (ts - ts.min()) / span).astype(int), bins - 1)
     return symb
 
 

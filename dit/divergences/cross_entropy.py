@@ -5,7 +5,7 @@ The cross entropy.
 import numpy as np
 
 from ..exceptions import InvalidOutcome
-from ..helpers import normalize_rvs
+from ..helpers import as_linear, normalize_rvs
 from ..utils import flatten, unitful
 
 __all__ = ("cross_entropy",)
@@ -55,8 +55,8 @@ def get_pmfs_like(d1, d2, rvs):
     qs : ndarray
         A matching pmf from d2.
     """
-    dp = d1.marginal(rvs)
-    dq = d2.marginal(rvs)
+    dp = as_linear(d1.marginal(rvs))
+    dq = as_linear(d2.marginal(rvs))
     ps = dp.pmf
     qs = np.asarray([get_prob(dq, o) for o in dp.outcomes])
     return ps, qs

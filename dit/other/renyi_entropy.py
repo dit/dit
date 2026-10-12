@@ -4,13 +4,14 @@ Renyi Entropy.
 
 import numpy as np
 
-from ..helpers import normalize_rvs
+from ..helpers import as_linear, normalize_rvs
 from ..multivariate import entropy
-from ..utils import flatten
+from ..utils import flatten, unitful
 
 __all__ = ("renyi_entropy",)
 
 
+@unitful
 def renyi_entropy(dist, order, rvs=None):
     """
     Compute the Renyi entropy of order `order`.
@@ -43,6 +44,7 @@ def renyi_entropy(dist, order, rvs=None):
         msg = "`order` must be a non-negative real number"
         raise ValueError(msg)
 
+    dist = as_linear(dist)
     if dist.is_joint and rvs is not None:
         rvs = list(flatten(normalize_rvs(dist, rvs, None)[0]))
         dist = dist.marginal(rvs)
@@ -50,7 +52,7 @@ def renyi_entropy(dist, order, rvs=None):
     pmf = dist.pmf
 
     if order == 0:
-        H_a = np.log2(pmf.size)
+        H_a = np.log2(np.count_nonzero(pmf))
     elif order == 1:
         H_a = entropy(dist)
     elif order == np.inf:

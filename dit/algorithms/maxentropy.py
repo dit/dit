@@ -389,6 +389,7 @@ def moment_constraints(pmf, n_variables, m, symbol_map, with_replacement=True):
     A = [np.ones(d.n_elements)]
     b = [1]
 
+    mvals = []
     try:
         m[0]
     except TypeError:

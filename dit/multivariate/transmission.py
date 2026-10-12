@@ -4,10 +4,12 @@ when a distribution is decomposed into (reconstructed from) a set of marginals.
 """
 
 from ..divergences import kullback_leibler_divergence
+from ..utils import unitful
 
 __all__ = ("transmission",)
 
 
+@unitful
 def transmission(dist, structure=None):
     """
     Compute the transmission of `dist` relative to a marginal model: the

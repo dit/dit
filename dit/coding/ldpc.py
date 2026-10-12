@@ -65,6 +65,7 @@ class LDPCCode(LinearCode):
         M_cv = {(c, v): 0.0 for c in range(m) for v in self._check_vars[c]}
 
         clip = 1 - 1e-12
+        xhat = (L < 0).astype(int)
         for _ in range(self.max_iterations):
             for c in range(m):
                 vs = self._check_vars[c]

@@ -329,7 +329,8 @@ def _optimal_golomb_m(dist):
     theta = mean / (1 + mean)
     if theta <= 0 or theta >= 1:
         return 1
-    return max(1, ceil(-1 / log2(theta)))
+    # Gallager & van Voorhis (1975): the smallest m with theta^m + theta^(m+1) <= 1.
+    return max(1, ceil(-log2(1 + theta) / log2(theta)))
 
 
 def golomb(dist, m=None, radix=2):

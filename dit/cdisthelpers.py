@@ -18,6 +18,11 @@ def cdist_array(cdists, base="linear", mode="asis"):
     return np.vstack(dists)
 
 
+def _as_tuple(outcome):
+    """Wrap a scalar (unwrapped single-variable) outcome in a 1-tuple."""
+    return outcome if isinstance(outcome, tuple) else (outcome,)
+
+
 def joint_from_factors(mdist, cdists, strict=True):
     """
     Returns a joint distribution P(X,Y) built from P(X) and P(Y|X).
@@ -55,7 +60,7 @@ def joint_from_factors(mdist, cdists, strict=True):
         cd_lin = cd.copy(base="linear")
         cd_lin.make_dense()
         for y_outcome, y_prob in zip(cd_lin.outcomes, cd_lin.pmf, strict=True):
-            joint_outcome = tuple(x_outcome) + tuple(y_outcome)
+            joint_outcome = _as_tuple(x_outcome) + _as_tuple(y_outcome)
             joint_prob = float(X_pmf[i]) * float(y_prob)
             outcomes.append(joint_outcome)
             pmf.append(joint_prob)

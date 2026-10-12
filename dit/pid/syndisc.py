@@ -26,9 +26,12 @@ from lattices.lattices import constraint_lattice
 
 from ..algorithms import BaseAuxVarOptimizer
 from ..algorithms.optimization import parallel_sweep
+from ..exceptions import OptimizationException
+from ..helpers import as_linear
 from ..math import prod
 from ..multivariate import coinformation
 from ..utils import build_table, flatten
+from .pid import _unit_scale
 
 __all__ = ("ModifiedSynDisc", "SynDisc")
 
@@ -286,7 +289,8 @@ class SynDisc:
     _name = "S_disc"
 
     def __init__(self, dist, sources=None, target=None, niter=None, bound=None):
-        self._dist = dist
+        self._unit_scale = _unit_scale(dist)
+        self._dist = dist = as_linear(dist)
 
         if target is None:
             target = dist.rvs[-1]
@@ -300,7 +304,8 @@ class SynDisc:
 
         self._lattice = _transform_constraint(_build_constraint_lattice(self._sources))
 
-        self._total = coinformation(self._dist, [list(flatten(self._sources)), self._target])
+        self._total_bits = coinformation(self._dist, [list(flatten(self._sources)), self._target])
+        self._total = self._total_bits * self._unit_scale
 
         self._synergies = {}
         self._atoms = {}
@@ -312,7 +317,7 @@ class SynDisc:
         nodes = [node for node in self._lattice if node not in self._synergies]
         results = parallel_sweep(lambda node, rng: float(self._compute_s_alpha(node, rng=rng)), nodes)
         for node, val in zip(nodes, results, strict=True):
-            self._synergies[node] = val
+            self._synergies[node] = val * self._unit_scale
         self._compute_mobius_inversion()
 
     def _compute_mobius_inversion(self):
@@ -327,12 +332,12 @@ class SynDisc:
         The empty node () has no constraints, so S = I(X;Y).
         """
         if not node:
-            return self._total
+            return self._total_bits
 
         alpha = _node_to_alpha(node, self._sources)
 
         if not any(alpha):
-            return self._total
+            return self._total_bits
 
         all_sources_constrained = len(alpha) == 1 and set(alpha[0]) == set(range(len(self._sources)))
         if all_sources_constrained:
@@ -350,7 +355,7 @@ class SynDisc:
             opt.optimize(niter=self._niter, rng=rng)
             val = opt.synergistic_disclosure(opt._optima)
             return max(val, 0.0)
-        except Exception:
+        except OptimizationException:
             return 0.0
 
     def get_synergy(self, node):
@@ -580,6 +585,6 @@ class ModifiedSynDisc(SynDisc):
                 return 0.0
 
             source_mi = coinformation(self._dist, [list(node[0]), list(self._target)])
-            return self._total - source_mi
+            return self._total_bits - source_mi
 
         return super()._compute_s_alpha(node, rng=rng)

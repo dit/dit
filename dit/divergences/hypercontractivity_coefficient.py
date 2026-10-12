@@ -160,10 +160,11 @@ def _product_hypercontractivity(dist, rv_x, rv_y, bound, niter):
     if not np.isclose(total_correlation(dist, [left, right]), 0.0):
         return None
 
-    k = mid
-    pairs = [list(range(k)), list(range(k, 2 * k))]
-    hc_l = hypercontractivity_coefficient(dist.marginal(left), pairs, bound=bound, niter=niter)
-    hc_r = hypercontractivity_coefficient(dist.marginal(right), pairs, bound=bound, niter=niter)
+    pairs = [[0], [1]]
+    d_l = dist.coalesce([rv_x[:mid], rv_y[:mid]])
+    d_r = dist.coalesce([rv_x[mid:], rv_y[mid:]])
+    hc_l = hypercontractivity_coefficient(d_l, pairs, bound=bound, niter=niter)
+    hc_r = hypercontractivity_coefficient(d_r, pairs, bound=bound, niter=niter)
     return max(hc_l, hc_r)
 
 

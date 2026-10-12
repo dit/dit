@@ -71,7 +71,7 @@ def test_cre_2():
     Test the CRE of a multivariate distribution (CRE is of each marginal).
     """
     d = miwin()
-    assert np.allclose(CRE(d), [3.34415526, 3.27909534, 2.56831826])
+    assert np.allclose(CRE(d), [3.27909534, 3.34415526, 2.56831826])
 
 
 def test_cre_3():
@@ -116,7 +116,7 @@ def test_gcre_32():
     Test the GCRE of a multivariate distribution.
     """
     d = miwin()
-    assert np.allclose(GCRE(d), [3.34415526, 3.27909534, 2.56831826])
+    assert np.allclose(GCRE(d), [3.27909534, 3.34415526, 2.56831826])
 
 
 def test_gcre_3():
@@ -193,3 +193,13 @@ def test_cgcre_2(crvs):
     assert GCRE(d)[rv] == pytest.approx(mean(ccre1))
     assert GCRE(d)[rv] == pytest.approx(mean(ccre2))
     assert standard_deviation(ccre1) == pytest.approx(0)
+
+
+def test_cre_uses_survival_function():
+    """
+    CRE integrates -P(|X|>x) log P(|X|>x) (Rao et al.), not the CDF.
+    """
+    d = D([1, 2, 3, 4, 5, 100], [1 / 6] * 6)
+    survival = np.array([5, 4, 3, 2]) / 6
+    expected = -(np.sum(survival * np.log2(survival)) + 95 / 6 * np.log2(1 / 6))
+    assert CRE(d) == pytest.approx(expected)

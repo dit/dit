@@ -35,9 +35,8 @@ experience the penalty discussed above.
 """
 
 import itertools
+import math
 from collections.abc import Set
-from functools import reduce
-from operator import mul
 
 import numpy as np
 
@@ -305,10 +304,7 @@ class CartesianProduct(SampleSpace):
                 outcome_class = next(product(*self.alphabets)).__class__
 
         self._product = product
-        self._length = np.prod(self.alphabet_sizes, dtype=int)
-        if self._length < 0:
-            # numerical overflow in np.prod, use pure python:
-            self._length = reduce(mul, self.alphabet_sizes)
+        self._length = math.prod(self.alphabet_sizes)
         self._outcome_length = len(self.alphabet_sizes)
         self._outcome_class = outcome_class
         self._outcome_ctor = get_outcome_ctor(self._outcome_class)

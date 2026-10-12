@@ -147,10 +147,11 @@ def mixture_distribution2(dists, weights):
     ops = dists[0].ops
     validate_pmf(weights, ops)
 
-    mix = dists[0].copy()
-    ops.mult_inplace(mix.pmf, weights[0])
+    pmf = ops.mult(dists[0].pmf, weights[0])
     for dist, weight in zip(dists[1:], weights[1:], strict=True):
-        ops.add_inplace(mix.pmf, ops.mult(dist.pmf, weight))
+        pmf = ops.add(pmf, ops.mult(dist.pmf, weight))
+    mix = dists[0].copy()
+    mix.pmf = pmf
     return mix
 
 
@@ -938,7 +939,6 @@ def product_distribution(dist, rvs=None, base=None):
 
     marginals = [dist.marginal(index_list) for index_list in indexes]
     ctor = dist._outcome_ctor
-    ops = dist.ops
 
     outcomes = []
     pmf = []
@@ -953,13 +953,11 @@ def product_distribution(dist, rvs=None, base=None):
                 outcome.extend(value)
             prob.append(pair[1])
         outcomes.append(ctor(outcome))
-        pmf.append(ops.mult_reduce(prob))
+        # `zipped` yields linear probabilities regardless of the dist's base.
+        pmf.append(np.prod(prob))
 
     d = Distribution(outcomes, pmf, validate=False)
-
-    # Maybe we should use ditParams['base'] when base is None?
-    if base is not None:
-        d.set_base(base)
+    d.set_base(base if base is not None else dist.get_base())
 
     return d
 
@@ -1056,14 +1054,14 @@ def _combine_scalar_dists(d1, d2, op):
     d : Distribution
         The two distributions combined via `op`
     """
-    # Copy to make sure we don't lose precision when converting.
-    d2 = d2.copy(base=d1.get_base())
-
+    # `zipped` yields linear probabilities regardless of base.
     dist = defaultdict(float)
     for (o1, p1), (o2, p2) in product(d1.zipped(), d2.zipped()):
-        dist[op(o1, o2)] += d1.ops.mult(p1, p2)
+        dist[op(o1, o2)] += p1 * p2
 
-    return Distribution(*zip(*dist.items(), strict=True), base=d1.get_base())
+    d = Distribution(*zip(*dist.items(), strict=True))
+    d.set_base(d1.get_base())
+    return d
 
 
 class DistributionEnumerator:

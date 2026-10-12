@@ -344,9 +344,10 @@ class Distribution:
             coords = {name: _coord_values(alpha) for name, alpha in zip(rv_names, alphabets, strict=True)}
 
             shape = tuple(len(a) for a in alphabets)
-            arr = np.zeros(shape, dtype=object) if _symbolic else np.zeros(shape)
+            arr = np.zeros(shape, dtype=object) if _symbolic else np.full(shape, get_ops(base).zero, dtype=float)
+            index_maps = [{v: j for j, v in enumerate(alpha)} for alpha in alphabets]
             for outcome, p in zip(outcomes, pmf, strict=True):
-                idx = tuple(alphabets[i].index(outcome[i]) for i in range(n))
+                idx = tuple(index_maps[i][outcome[i]] for i in range(n))
                 arr[idx] = p
 
             da = xr.DataArray(arr, dims=rv_names, coords=coords)
@@ -621,6 +622,17 @@ class Distribution:
             )
         return self.data
 
+    def _from_linear_data(self, data, free_vars=None, given_vars=None):
+        """
+        Build a Distribution in this distribution's base from linear `data`.
+        """
+        if free_vars is None:
+            free_vars, given_vars = self.free_vars, self.given_vars
+        base = self.ops.base
+        if base != "linear":
+            data = xr.DataArray(get_ops(base).log(data.values), dims=data.dims, coords=data.coords)
+        return Distribution(data, free_vars=free_vars, given_vars=given_vars, base=base)
+
     def _linear_values_flat(self):
         """
         The dense linear-probability array raveled in C-order.
@@ -707,6 +719,8 @@ class Distribution:
         """Number of outcomes currently represented (respects sparse/dense)."""
         if not self._sparse:
             return int(np.prod(self.data.shape))
+        if self.is_symbolic():
+            return len(self.outcomes)
         return int(np.count_nonzero(self._linear_data().values > 0))
 
     def __iter__(self):
@@ -1199,7 +1213,7 @@ class Distribution:
         infos = "".join(f"<tr><th>{a}:</th><td>{b}</td></tr>" for a, b in info)
         header = f'<table border="1">{infos}</table>'
 
-        rv_names = list(self.get_rv_names())
+        rv_names = list(self.dims)
         pstr = "log p(x)" if d.is_log() else "p(x)"
         table_header = "<tr>" + "".join(f"<th>{a}</th>" for a in rv_names) + f"<th>{pstr}</th></tr>"
         table_rows = "".join(
@@ -1918,12 +1932,7 @@ class Distribution:
         if isinstance(other, (int, float, np.number)):
             if self._unwrap_scalar:
                 return self._apply_outcome_fn(lambda o: o * other)
-            return Distribution(
-                self.data * other,
-                free_vars=self.free_vars,
-                given_vars=self.given_vars,
-                base=self.ops.base,
-            )
+            return self._from_linear_data(self._linear_data() * other)
 
         if not isinstance(other, Distribution):
             return NotImplemented
@@ -1951,17 +1960,7 @@ class Distribution:
         result_free = self.free_vars | other.free_vars
         result_given = (self.given_vars | other.given_vars) - result_free
 
-        # If either operand was log-based, convert result back
-        base = self.ops.base
-        if base != "linear":
-            product_data = xr.DataArray(
-                get_ops(base).log(product_data.values),
-                dims=product_data.dims,
-                coords=product_data.coords,
-            )
-            return Distribution(product_data, free_vars=result_free, given_vars=result_given, base=base)
-
-        return Distribution(product_data, free_vars=result_free, given_vars=result_given)
+        return self._from_linear_data(product_data, result_free, result_given)
 
     def __rmul__(self, other):
         """
@@ -2002,12 +2001,7 @@ class Distribution:
             become given variables in the result.
         """
         if isinstance(other, (int, float, np.number)):
-            return Distribution(
-                self.data / other,
-                free_vars=self.free_vars,
-                given_vars=self.given_vars,
-                base=self.ops.base,
-            )
+            return self._from_linear_data(self._linear_data() / other)
 
         if not isinstance(other, Distribution):
             return NotImplemented
@@ -2024,16 +2018,7 @@ class Distribution:
         new_free = self.free_vars - other.free_vars
         new_given = (self.given_vars | other.free_vars | other.given_vars) - new_free
 
-        base = self.ops.base
-        if base != "linear":
-            quotient_data = xr.DataArray(
-                get_ops(base).log(quotient_data.values),
-                dims=quotient_data.dims,
-                coords=quotient_data.coords,
-            )
-            return Distribution(quotient_data, free_vars=new_free, given_vars=new_given, base=base)
-
-        return Distribution(quotient_data, free_vars=new_free, given_vars=new_given)
+        return self._from_linear_data(quotient_data, new_free, new_given)
 
     def __add__(self, other):
         """
@@ -2057,13 +2042,8 @@ class Distribution:
             return NotImplemented
         if self._unwrap_scalar and other._unwrap_scalar:
             return self._combine_independent(other, lambda a, b: a + b)
-        new_data = self.data + other.data
-        return Distribution(
-            new_data,
-            free_vars=self.free_vars,
-            given_vars=self.given_vars,
-            base=self.ops.base,
-        )
+        a, b = xr.align(self._linear_data(), other._linear_data(), join="outer", fill_value=0)
+        return self._from_linear_data(a + b)
 
     def __radd__(self, other):
         """Right-addition (supports ``sum(dists)`` starting from 0)."""
@@ -2089,13 +2069,8 @@ class Distribution:
             return NotImplemented
         if self._unwrap_scalar and other._unwrap_scalar:
             return self._combine_independent(other, lambda a, b: a - b)
-        new_data = self.data - other.data
-        return Distribution(
-            new_data,
-            free_vars=self.free_vars,
-            given_vars=self.given_vars,
-            base=self.ops.base,
-        )
+        a, b = xr.align(self._linear_data(), other._linear_data(), join="outer", fill_value=0)
+        return self._from_linear_data(a - b)
 
     def __rsub__(self, other):
         """Right-subtraction: ``scalar - dist`` (e.g. ``10 - d6``)."""
@@ -2155,11 +2130,14 @@ class Distribution:
                 )
             else:
                 combined = _as_tuple(o1) + _as_tuple(o2)
-            dist[combined] += self.ops.mult(p1, p2)
+            # `zipped` yields linear probabilities regardless of base.
+            dist[combined] += p1 * p2
 
         outcomes = sorted(dist.keys())
         pmf = [dist[o] for o in outcomes]
-        return Distribution(outcomes, pmf, rv_names=rv_names, base=self.get_base())
+        result = Distribution(outcomes, pmf, rv_names=rv_names)
+        result.set_base(self.get_base())
+        return result
 
     # ── Outcome-transforming operators (scalar distributions) ──────
 
@@ -2613,18 +2591,19 @@ class Distribution:
             if set(self.dims) != set(other.dims):
                 return False
             for dim in self.dims:
-                s_alpha = tuple(self.data.coords[dim].values)
-                o_alpha = tuple(other.data.coords[dim].values)
-                if len(s_alpha) != len(o_alpha):
+                s_alpha = set(self.data.coords[dim].values.tolist())
+                o_alpha = set(other.data.coords[dim].values.tolist())
+                if s_alpha != o_alpha:
                     return False
             s_lin = self._linear_data()
-            o_lin = other._linear_data()
-            o_aligned = o_lin.transpose(*self.dims)
+            o_aligned = other._linear_data().transpose(*self.dims).reindex_like(s_lin)
             return bool(np.allclose(s_lin.values, o_aligned.values, atol=atol))
 
         if self.alphabet != other.alphabet:
             return False
-        return all(np.isclose(self[outcome], other[outcome], atol=atol) for outcome in self.outcomes)
+        s_lin, o_lin = self.copy(base="linear"), other.copy(base="linear")
+        outcomes = set(self.outcomes) | set(other.outcomes)
+        return all(np.isclose(s_lin[outcome], o_lin[outcome], atol=atol) for outcome in outcomes)
 
     def normalize(self):
         """

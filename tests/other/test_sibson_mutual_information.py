@@ -126,3 +126,34 @@ def test_sibson_pmf_invalid_order(alpha):
     p_xy = np.full((2, 2), 0.25)
     with pytest.raises(ValueError, match="`order` must be a positive real number"):
         sibson_mutual_information_pmf(p_xy, alpha)
+
+
+@pytest.mark.parametrize(
+    ("order", "y_given_z", "z"),
+    [
+        (0.5, 0.113285, 0.117236),
+        (2.0, 0.226956, 0.231838),
+        (3.0, 0.267994, 0.276798),
+        (np.inf, 0.606007, 0.547143),
+    ],
+)
+def test_conditional_sibson_matches_brute_force(order, y_given_z, z):
+    """
+    Values from brute-force minimization of the defining Renyi divergences
+    (Esposito et al., Def. 3) on a random 2x2x2 distribution.
+    """
+    from itertools import product
+
+    from dit import Distribution
+    from dit.other import (
+        sibson_conditional_mutual_information_y_given_z,
+        sibson_conditional_mutual_information_z,
+    )
+
+    P = np.random.default_rng(0).dirichlet(np.ones(8)).reshape(2, 2, 2)
+    outcomes = [f"{x}{y}{w}" for x, y, w in product(range(2), repeat=3)]
+    d = Distribution(outcomes, [P[int(o[0]), int(o[1]), int(o[2])] for o in outcomes])
+    assert sibson_conditional_mutual_information_y_given_z(d, [0], [1], [2], order) == pytest.approx(
+        y_given_z, abs=1e-5
+    )
+    assert sibson_conditional_mutual_information_z(d, [0], [1], [2], order) == pytest.approx(z, abs=1e-5)

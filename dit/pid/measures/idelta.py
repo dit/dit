@@ -15,8 +15,6 @@ References
        "Capturing and Interpreting Unique Information", arXiv:2302.11873, 2023.
 """
 
-import numpy as np
-
 from ...channelorder._utils import channels_from_joint
 from ...channelorder.deficiency import weighted_output_kl_deficiency
 from ...multivariate import coinformation
@@ -53,8 +51,7 @@ def _kl_deficiency(d, source, other, target, nstarts=15):
     d = d.coalesce([list(source), list(other), list(target)])
     src, oth, tgt = d.dims
     kappa, mu, pi_s = channels_from_joint(d, [tgt], [src], [oth])
-    # weighted_output_kl_deficiency returns nats; convert to bits
-    return weighted_output_kl_deficiency(mu, kappa, pi_s) / np.log(2)
+    return weighted_output_kl_deficiency(mu, kappa, pi_s)
 
 
 class PID_Delta(BaseBivariatePID):

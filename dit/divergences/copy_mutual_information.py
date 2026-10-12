@@ -2,7 +2,9 @@
 The copy mutual information, as defined by Kolchinsky & Corominas-Murtra.
 """
 
+from ..helpers import as_linear
 from ..utils import unitful
+from .cross_entropy import get_prob
 from .pmf import relative_entropy
 
 __all__ = ("copy_mutual_information",)
@@ -47,14 +49,15 @@ def specific_copy_mutual_information(p_Y_g_x, p_Y, x):
     Icopy : float
         The specific copy mutual information of x.
     """
-    py = p_Y[x]
-    pygx = p_Y_g_x[x]
+    py = get_prob(p_Y, x)
+    pygx = get_prob(p_Y_g_x, x)
     if pygx > py:
         return binary_kullback_leibler_divergence(pygx, py)
     else:
         return 0
 
 
+@unitful
 def copy_mutual_information(dist, X, Y):
     """
     Computes the copy mutual information. Roughly, it is the
@@ -74,6 +77,7 @@ def copy_mutual_information(dist, X, Y):
     Icopy : float
         The copy mutual information of x.
     """
+    dist = as_linear(dist)
     p_Y = dist.marginal(Y)
     marg, cdists = dist.condition_on(X, rvs=Y)
     return sum(

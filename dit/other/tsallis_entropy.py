@@ -4,7 +4,7 @@ Tsallis Entropy.
 
 import numpy as np
 
-from ..helpers import normalize_rvs
+from ..helpers import as_linear, normalize_rvs
 from ..multivariate import entropy
 from ..utils import flatten
 
@@ -39,6 +39,7 @@ def tsallis_entropy(dist, order, rvs=None):
         Raised if `order` is not a non-negative float.
 
     """
+    dist = as_linear(dist)
     if dist.is_joint and rvs is not None:
         rvs = list(flatten(normalize_rvs(dist, rvs, None)[0]))
         dist = dist.marginal(rvs)
