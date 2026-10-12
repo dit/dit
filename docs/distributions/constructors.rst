@@ -16,6 +16,9 @@ These are imported at the package root:
 - :func:`~dit.uniform` / :func:`~dit.uniform_distribution` / :func:`~dit.uniform_like`
 - :func:`~dit.mixture_distribution` — convex combination of distributions
 - :func:`~dit.product_distribution` — product of specified marginals of a joint
+- :func:`~dit.kirkwood_approximation` / :func:`~dit.lancaster_approximation` —
+  order-:math:`k` multiplicative and additive approximations built from
+  marginals (see :ref:`below <marginal_approximations>`)
 - :func:`~dit.insert_rvf` / :class:`~dit.RVFunctions` — append a deterministic
   function of existing variables
 - :func:`~dit.noisy` / :func:`~dit.erasure` — pass each variable through a
@@ -57,6 +60,44 @@ These are imported at the package root:
    (1, 0, 1)   0.25
    (1, 1, 0)   0.25
 
+.. _marginal_approximations:
+
+Kirkwood and Lancaster approximations
+-------------------------------------
+
+Both approximations truncate an interaction expansion of :math:`p` at subsets of at most :math:`k` variables, and share the coefficients
+
+.. math::
+
+   c_S = (-1)^{k-|S|} \binom{n-|S|-1}{k-|S|}, \qquad |S| \leq k.
+
+The Kirkwood approximation :cite:`watanabe1960information,killian2007extraction` combines the marginals geometrically, and the Lancaster approximation :cite:`lancaster1969chi` arithmetically:
+
+.. math::
+
+   \tilde{p}_k(x) = \prod_{|S| \leq k} p(x_S)^{c_S}, \qquad
+   p_k(x) = \sum_{|S| \leq k} c_S \, p(x_S) \prod_{i \notin S} p(x_i).
+
+The default order is :math:`k = n-1`. For three variables these are :math:`p(x, y) p(x, z) p(y, z) / \left(p(x) p(y) p(z)\right)` and :math:`p(x, y) p(z) + p(x, z) p(y) + p(y, z) p(x) - 2 p(x) p(y) p(z)`. Both return dense, unvalidated distributions.
+
+The Kirkwood approximation is nonnegative but not normalized. Its total mass is the normalizer of the :ref:`kirkwood_mutual_information`. For the giant bit, every outcome off the diagonal has a vanishing pairwise marginal:
+
+.. ipython::
+
+   In [6]: from dit.example_dists import giant_bit
+
+   In [7]: dit.kirkwood_approximation(giant_bit(3, 2)).pmf
+   Out[7]: array([1., 0., 0., 0., 0., 0., 0., 1.])
+
+The order-:math:`k` Lancaster approximation keeps the Lancaster interactions of at most :math:`k` variables in the expansion :math:`p = \prod_i p(x_i) \sum_T \delta_T(x_T)`. At the default order it is :math:`p - \Delta_L p`, where :math:`\Delta_L p = \prod_i \left(p^*_{X_i} - p_{X_i}\right)` is the Lancaster interaction measure :cite:`sejdinovic2013kernel`. It sums to one and matches every marginal of :math:`p` on at most :math:`k` variables, but it may be negative:
+
+.. ipython::
+
+   In [8]: dit.lancaster_approximation(dit.Distribution(['000', '010', '100', '111'], [1/4] * 4)).pmf
+   Out[8]: array([ 0.3125, -0.0625,  0.1875,  0.0625,  0.1875,  0.0625,  0.0625,  0.1875])
+
+For :math:`n \leq 3` the default-order Lancaster approximation reproduces :math:`p` whenever :math:`p` factors nontrivially, though not only then. For :math:`n > 3` it can miss factorizations such as :math:`(X_0, X_1) \perp (X_2, X_3)`, which Streitberg's partition-lattice correction repairs :cite:`streitberg1990lancaster`. No canonical literature source is known for Lancaster orders below :math:`n-1`.
+
 ``dit.example_dists``
 ---------------------
 
@@ -89,6 +130,10 @@ API
 .. autofunction:: dit.mixture_distribution
 
 .. autofunction:: dit.product_distribution
+
+.. autofunction:: dit.kirkwood_approximation
+
+.. autofunction:: dit.lancaster_approximation
 
 .. autofunction:: dit.insert_rvf
 

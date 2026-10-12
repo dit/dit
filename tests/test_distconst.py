@@ -513,3 +513,161 @@ def test_combine_scalar_dists():
     combined = _combine_scalar_dists(d1, d2, operator.add)
     result = {o: p for o, p in zip(combined.outcomes, combined.pmf, strict=True)}
     assert result == pytest.approx({1: 0.25, 2: 0.5, 3: 0.25})
+
+
+def weighted(n):
+    """A fixed full-support distribution over n bits."""
+    outcomes = ["".join(o) for o in itertools.product("01", repeat=n)]
+    weights = np.arange(1, 2**n + 1, dtype=float) ** 1.5
+    return dit.Distribution(outcomes, list(weights / weights.sum()))
+
+
+def dense_array(d):
+    """The dense pmf of `d` with one axis per variable."""
+    d = d.copy()
+    d.make_dense()
+    return d.pmf.reshape([len(a) for a in d.alphabet])
+
+
+def marginal_array(p, S):
+    """The marginal of the array `p` onto the axes `S`, keeping all dimensions."""
+    return p.sum(axis=tuple(i for i in range(p.ndim) if i not in S), keepdims=True)
+
+
+def product_array(p):
+    """The product of the single-variable marginals of the array `p`."""
+    return np.prod(np.broadcast_arrays(*[marginal_array(p, (i,)) for i in range(p.ndim)]), axis=0)
+
+
+@pytest.mark.parametrize("n", range(3, 6))
+def test_kirkwood_approximation_giant_bit(n):
+    """The giant bit's approximation is (1/2)^(1 + (-1)^n) on each diagonal outcome."""
+    q = dit.kirkwood_approximation(dit.example_dists.giant_bit(n, 2))
+    expected = np.zeros(2**n)
+    expected[[0, -1]] = 0.5 ** (1 + (-1) ** n)
+    assert q.pmf == pytest.approx(expected)
+
+
+def test_kirkwood_approximation_three_variables():
+    """For three variables the approximation is p(xy) p(xz) p(yz) / (p(x) p(y) p(z))."""
+    d = weighted(3)
+    p = dense_array(d)
+    pairs = [marginal_array(p, S) for S in itertools.combinations(range(3), 2)]
+    expected = np.prod(np.broadcast_arrays(*pairs), axis=0) / product_array(p)
+    assert dense_array(dit.kirkwood_approximation(d)) == pytest.approx(expected)
+
+
+def test_kirkwood_approximation_order_one_is_product():
+    """The order-1 approximation is the product of marginals."""
+    d = weighted(3)
+    assert dense_array(dit.kirkwood_approximation(d, order=1)) == pytest.approx(product_array(dense_array(d)))
+
+
+def test_kirkwood_approximation_order_zero_is_one():
+    """The order-0 approximation is the empty product."""
+    assert dit.kirkwood_approximation(weighted(3), order=0).pmf == pytest.approx(np.ones(8))
+
+
+def test_kirkwood_approximation_grouped():
+    """With two groups the approximation is the product of the group marginals."""
+    d = weighted(3)
+    p = dense_array(d)
+    expected = (marginal_array(p, (0,)) * marginal_array(p, (1, 2))).ravel()
+    assert dit.kirkwood_approximation(d, [[0], [1, 2]]).pmf == pytest.approx(expected)
+
+
+@pytest.mark.parametrize("approximation", [dit.kirkwood_approximation, dit.lancaster_approximation])
+@pytest.mark.parametrize("order", [-1, 4])
+def test_approximation_bad_order(approximation, order):
+    """The order must lie in [0, n - 1]."""
+    with pytest.raises(ditException, match="order must satisfy"):
+        approximation(weighted(4), order=order)
+
+
+def test_lancaster_three_variables():
+    """p_L = p(xy) p(z) + p(xz) p(y) + p(yz) p(x) - 2 p(x) p(y) p(z)."""
+    d = weighted(3)
+    p = dense_array(d)
+    px, py, pz = (marginal_array(p, (i,)) for i in range(3))
+    expected = (
+        marginal_array(p, (0, 1)) * pz
+        + marginal_array(p, (0, 2)) * py
+        + marginal_array(p, (1, 2)) * px
+        - 2 * px * py * pz
+    )
+    assert dense_array(dit.lancaster_approximation(d)) == pytest.approx(expected)
+
+
+def test_lancaster_bivariate_is_product():
+    """For two variables the Lancaster approximation is the product of marginals."""
+    d = weighted(2)
+    assert dense_array(dit.lancaster_approximation(d)) == pytest.approx(product_array(dense_array(d)))
+
+
+@pytest.mark.parametrize("order", [0, 1])
+def test_lancaster_low_orders_are_product(order):
+    """Orders 0 and 1 are both the product of marginals."""
+    d = weighted(4)
+    q = dit.lancaster_approximation(d, order=order)
+    assert dense_array(q) == pytest.approx(product_array(dense_array(d)))
+
+
+def test_lancaster_four_variables_order_two():
+    """The order-2 approximation keeps only the pairwise Lancaster interactions."""
+    d = weighted(4)
+    p = dense_array(d)
+    prod = product_array(p)
+    expected = prod.copy()
+    for S in itertools.combinations(range(4), 2):
+        others = [marginal_array(p, (i,)) for i in range(4) if i not in S]
+        expected = expected + marginal_array(p, S) * np.prod(np.broadcast_arrays(*others), axis=0) - prod
+    assert dense_array(dit.lancaster_approximation(d, order=2)) == pytest.approx(expected)
+
+
+@pytest.mark.parametrize("n", range(2, 6))
+def test_lancaster_default_order(n):
+    """The default order is n - 1."""
+    d = weighted(n)
+    q = dit.lancaster_approximation(d)
+    assert q.pmf == pytest.approx(dit.lancaster_approximation(d, order=n - 1).pmf)
+
+
+@pytest.mark.parametrize("k", range(4))
+def test_lancaster_marginals(k):
+    """The order-k approximation has total mass one and matches every k-marginal of p."""
+    d = weighted(4)
+    p = dense_array(d)
+    q = dense_array(dit.lancaster_approximation(d, order=k))
+    assert q.sum() == pytest.approx(1.0)
+    for S in itertools.combinations(range(4), k):
+        assert marginal_array(q, S) == pytest.approx(marginal_array(p, S))
+
+
+@pytest.mark.parametrize("split", [[[0], [1], [2]], [[0], [2], [1]], [[1], [2], [0]]])
+def test_lancaster_factorization(split):
+    """With three variables, p_L = p whenever one variable is independent of the rest."""
+    d = weighted(2) @ dit.Distribution(["0", "1"], [1 / 3, 2 / 3])
+    expected = dense_array(d.coalesce(split))
+    assert dense_array(dit.lancaster_approximation(d, split)) == pytest.approx(expected)
+
+
+def test_lancaster_no_factorization():
+    """p_L = p does not imply a factorization (Sejdinovic et al. 2013, Table 4)."""
+    d = dit.Distribution(["000", "001", "010", "011", "100", "101", "110", "111"], [0.2] + [0.1] * 6 + [0.2])
+    assert dit.lancaster_approximation(d).pmf == pytest.approx(dense_array(d).ravel())
+    assert dit.multivariate.total_correlation(d) > 0.01
+
+
+def test_lancaster_four_variables_misses_factorization():
+    """For four variables, (X0, X1) independent of (X2, X3) need not give p_L = p."""
+    giant_bit = dit.example_dists.giant_bit(2, 2)
+    d = giant_bit @ giant_bit
+    difference = dit.lancaster_approximation(d).pmf - dense_array(d).ravel()
+    assert np.abs(difference) == pytest.approx(np.full(16, 1 / 16))
+
+
+def test_lancaster_signed():
+    """The Lancaster approximation can be negative."""
+    d = dit.Distribution(["000", "010", "100", "111"], [1 / 4] * 4)
+    q = dit.lancaster_approximation(d)
+    assert q.pmf == pytest.approx([0.3125, -0.0625, 0.1875, 0.0625, 0.1875, 0.0625, 0.0625, 0.1875])
