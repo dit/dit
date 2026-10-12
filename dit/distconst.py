@@ -4,14 +4,15 @@ Specialized distribution constructors.
 
 import contextlib
 from collections import defaultdict
-from itertools import permutations, product
+from itertools import combinations, permutations, product
+from math import comb
 from random import randint
 
 import numpy as np
 
 from .distribution import Distribution
 from .exceptions import ditException
-from .helpers import parse_rvs
+from .helpers import normalize_rvs, parse_rvs
 from .utils import digits, powerset
 from .validate import validate_pmf
 
@@ -29,6 +30,8 @@ __all__ = (
     "insert_rvf",
     "RVFunctions",
     "product_distribution",
+    "kirkwood_approximation",
+    "lancaster_approximation",
     "uniform",
     "uniform_like",
     "all_dist_structures",
@@ -960,6 +963,224 @@ def product_distribution(dist, rvs=None, base=None):
     d.set_base(base if base is not None else dist.get_base())
 
     return d
+
+
+def _joint_array(dist, rvs, crvs):
+    """
+    Coalesce `dist` into a dense array with one axis per element of `rvs`
+    followed by a single axis for `crvs` (of size one when unconditioned).
+    """
+    groups = list(rvs) + ([crvs] if crvs else [])
+    d = dist.coalesce(groups)
+    d.make_dense()
+    pmf = d.pmf.reshape([len(a) for a in d.alphabet])
+    if not crvs:
+        pmf = pmf[..., np.newaxis]
+    return pmf
+
+
+def _interaction_coefficients(n, order):
+    """
+    The coefficients c_S = (-1)^{k-|S|} C(n-|S|-1, k-|S|) for |S| <= k of the
+    order-k truncated interaction expansion of `n` variables, with k
+    defaulting to n - 1.
+    """
+    k = n - 1 if order is None else order
+    if not 0 <= k <= n - 1:
+        msg = f"order must satisfy 0 <= order <= {n - 1}, {k} given."
+        raise ditException(msg)
+
+    return {S: (-1) ** (k - j) * comb(n - j - 1, k - j) for j in range(k + 1) for S in combinations(range(n), j)}
+
+
+def _log_linear_product(pmf, exponents):
+    """
+    Compute log2 prod_S p(x_S | z)^{c_S}, which is -inf wherever a marginal
+    used by the product vanishes.
+
+    Parameters
+    ----------
+    pmf : np.ndarray
+        Joint pmf with one axis per variable and a final conditioning axis.
+    exponents : dict
+        Maps tuples of variable axes S to the exponent c_S.
+
+    Returns
+    -------
+    log_q : np.ndarray
+        The unnormalized log product, with the same shape as `pmf`.
+    """
+    axes = tuple(range(pmf.ndim - 1))
+    p_z = pmf.sum(axis=axes, keepdims=True)
+    safe_p_z = np.where(p_z > 0, p_z, 1.0)
+
+    log_q = np.zeros(pmf.shape)
+    zero = np.zeros(pmf.shape, dtype=bool)
+    for subset, exponent in exponents.items():
+        others = tuple(i for i in axes if i not in subset)
+        marginal = pmf.sum(axis=others, keepdims=True)
+        zero |= np.broadcast_to(marginal == 0, pmf.shape)
+        log_q += exponent * np.log2(np.where(marginal > 0, marginal, 1.0) / safe_p_z)
+
+    return np.where(zero, -np.inf, log_q)
+
+
+def _approximation_distribution(dist, rvs, values):
+    """
+    Wrap `values`, an array with one axis per element of `rvs`, as a dense,
+    unvalidated distribution over the outcomes of `dist` coalesced to `rvs`.
+    """
+    d = dist.coalesce(rvs)
+    d.make_dense()
+    q = Distribution(list(d.outcomes), values.ravel(), validate=False)
+    q.make_dense()
+    return q
+
+
+def kirkwood_approximation(dist, rvs=None, order=None):
+    r"""
+    Construct the unnormalized generalized Kirkwood superposition
+    approximation of a distribution.
+
+    For variables :math:`X_0, \ldots, X_{n-1}` the order-:math:`k`
+    approximation truncates the Möbius (interaction) expansion of
+    :math:`\log p` at subsets of size at most :math:`k`
+    :cite:`watanabe1960information,killian2007extraction`:
+
+    .. math::
+        \tilde{p}_k(x) = \prod_{1 \leq |S| \leq k} p(x_S)^{c_S}, \qquad
+        c_S = (-1)^{k-|S|} \binom{n-|S|-1}{k-|S|}.
+
+    The default order :math:`k = n-1` is the standard Kirkwood approximation,
+    e.g. :math:`p(x, y) p(x, z) p(y, z) / \left(p(x) p(y) p(z)\right)` for three
+    variables. Order 1 is the product of marginals and order 0 is constant
+    one. The approximation is not normalized: with :math:`Z` its total mass,
+    :func:`~dit.multivariate.kirkwood_mutual_information` is
+    :math:`D_{KL}(p \| \tilde{p}_k / Z)`. Wherever a marginal used by the
+    product vanishes, the approximation is zero. See
+    :func:`lancaster_approximation` for the additive analogue.
+
+    Parameters
+    ----------
+    dist : Distribution
+        The distribution to approximate.
+    rvs : list, None
+        A list of lists. Each inner list specifies the indexes of the random
+        variables forming one variable of the approximation. If None, then
+        each random variable is its own variable.
+    order : int, None
+        The largest marginal size k used by the approximation. Must satisfy
+        0 <= k <= n - 1. If None, defaults to n - 1.
+
+    Returns
+    -------
+    approx : Distribution
+        The dense, unnormalized approximation over the outcomes of `dist`
+        coalesced to `rvs`.
+
+    Raises
+    ------
+    ditException
+        Raised if `order` is out of range.
+
+    Examples
+    --------
+    >>> d = dit.example_dists.giant_bit(3, 2)
+    >>> dit.kirkwood_approximation(d).pmf
+    array([1., 0., 0., 0., 0., 0., 0., 1.])
+    """
+    rvs, _ = normalize_rvs(dist, rvs, None)
+    exponents = _interaction_coefficients(len(rvs), order)
+    log_q = _log_linear_product(_joint_array(dist, rvs, []), exponents)
+    return _approximation_distribution(dist, rvs, np.exp2(log_q[..., 0]))
+
+
+def lancaster_approximation(dist, rvs=None, order=None):
+    r"""
+    Construct the order-k Lancaster approximation of a distribution, the
+    additive analogue of the Kirkwood approximation.
+
+    Lancaster's expansion of :math:`X_0, \ldots, X_{n-1}` writes the joint
+    distribution relative to the product of its marginals
+    :cite:`lancaster1969chi`:
+
+    .. math::
+        p(x) = \prod_i p(x_i) \sum_{T} \delta_T(x_T), \qquad
+        \delta_T(x_T) = \sum_{S \subseteq T} (-1)^{|T|-|S|}
+                        \frac{p(x_S)}{\prod_{i \in S} p(x_i)},
+
+    where :math:`\delta_\emptyset = 1` and :math:`\delta_{\{i\}} = 0`.
+    :math:`\prod_i p(x_i) \, \delta_{\{0, \ldots, n-1\}}` is the Lancaster
+    interaction measure :math:`\Delta_L p = \prod_i (p^*_{X_i} - p_{X_i})`
+    :cite:`sejdinovic2013kernel`. Truncating the expansion at
+    :math:`|T| \leq k` gives
+
+    .. math::
+        p_k(x) = \sum_{|S| \leq k} c_S \, p(x_S) \prod_{i \notin S} p(x_i),
+        \qquad c_S = (-1)^{k-|S|} \binom{n-|S|-1}{k-|S|},
+
+    with the same coefficients as :func:`kirkwood_approximation`, but
+    combined arithmetically rather than geometrically. The default order
+    :math:`k = n-1` is :math:`p - \Delta_L p`, e.g. for three variables
+
+    .. math::
+        p_2(x, y, z) = p(x, y) p(z) + p(x, z) p(y) + p(y, z) p(x) - 2 p(x) p(y) p(z).
+
+    Orders 0 and 1 are both the product of marginals. Every order sums to one,
+    and its marginals of size at most k agree with those of :math:`p`, but it
+    may be negative. For :math:`n \leq 3`, the default order reproduces
+    :math:`p` whenever :math:`p` factors nontrivially, although the converse
+    fails. For :math:`n > 3` even that implication fails, which motivates
+    Streitberg's correction :cite:`streitberg1990lancaster`. No canonical
+    literature source is known for orders below :math:`n-1`.
+
+    Parameters
+    ----------
+    dist : Distribution
+        The distribution to approximate.
+    rvs : list, None
+        A list of lists. Each inner list specifies the indexes of the random
+        variables forming one variable of the approximation. If None, then
+        each random variable is its own variable.
+    order : int, None
+        The largest interaction size k kept by the approximation. Must satisfy
+        0 <= k <= n - 1. If None, defaults to n - 1.
+
+    Returns
+    -------
+    approx : Distribution
+        The dense, possibly signed, approximation over the outcomes of `dist`
+        coalesced to `rvs`.
+
+    Raises
+    ------
+    ditException
+        Raised if `order` is out of range.
+
+    Examples
+    --------
+    >>> d = dit.Distribution(['000', '010', '100', '111'], [1/4] * 4)
+    >>> dit.lancaster_approximation(d).pmf
+    array([ 0.3125, -0.0625,  0.1875,  0.0625,  0.1875,  0.0625,  0.0625,  0.1875])
+    """
+    rvs, _ = normalize_rvs(dist, rvs, None)
+    coefficients = _interaction_coefficients(len(rvs), order)
+    pmf = _joint_array(dist, rvs, [])[..., 0]
+    axes = tuple(range(pmf.ndim))
+
+    def marginal(S):
+        return pmf.sum(axis=tuple(i for i in axes if i not in S), keepdims=True)
+
+    singles = [marginal((i,)) for i in axes]
+    approx = np.zeros(pmf.shape)
+    for S, c in coefficients.items():
+        term = marginal(S)
+        for i in axes:
+            if i not in S:
+                term = term * singles[i]
+        approx += c * term
+
+    return _approximation_distribution(dist, rvs, approx)
 
 
 def all_dist_structures(outcome_length, alphabet_size):

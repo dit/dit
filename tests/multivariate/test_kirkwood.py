@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 from hypothesis import given, settings
 
-from dit import Distribution
+from dit import Distribution, kirkwood_approximation
 from dit.algorithms import maxent_dist
 from dit.divergences import kullback_leibler_divergence
 from dit.example_dists import Xor, dyadic, giant_bit, n_mod_m, triadic
@@ -51,6 +51,13 @@ def log_kirkwood_normalizer(d):
                 break
         terms.append(log_value)
     return np.logaddexp2.reduce(terms)
+
+
+def dense_array(d):
+    """The dense pmf of `d` with one axis per variable."""
+    d = d.copy()
+    d.make_dense()
+    return d.pmf.reshape([len(a) for a in d.alphabet])
 
 
 @pytest.mark.parametrize("n", range(3, 6))
@@ -264,3 +271,22 @@ def test_ouroboros_nonnegative(dist):
     """The ouroboros mutual information is a divergence."""
     for k in (1, 2):
         assert ouroboros_mutual_information(dist, order=k) >= -1e-9
+
+
+@settings(deadline=None, max_examples=15)
+@given(dist=distributions(alphabets=(2,) * 3))
+def test_kirkwood_approximation_mass(dist):
+    """The total mass of the approximation is the Kirkwood normalizer Z."""
+    q = kirkwood_approximation(dist)
+    assert q.pmf.sum() == pytest.approx(2 ** log_kirkwood_normalizer(dist))
+
+
+@pytest.mark.parametrize("k", range(4))
+def test_kirkwood_approximation_divergence(k):
+    """K_k is the divergence from p to the normalized order-k approximation."""
+    d = weighted(4)
+    p = dense_array(d).ravel()
+    q = kirkwood_approximation(d, order=k).pmf
+    q = q / q.sum()
+    expected = float(np.sum(p * np.log2(p / q)))
+    assert kirkwood_mutual_information(d, order=k) == pytest.approx(expected)

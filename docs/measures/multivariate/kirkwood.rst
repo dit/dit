@@ -93,6 +93,8 @@ Low orders detect structure that the Kirkwood approximation ignores. A triadic d
    In [10]: [K(d), O(d, order=1), O(d, order=2)]
    Out[10]: [0.0, 1.0, 0.0]
 
+The unnormalized approximation :math:`\tilde{p}_k` itself, and its additive Lancaster analogue, are constructed by :func:`dit.kirkwood_approximation` and :func:`dit.lancaster_approximation` (see :doc:`/distributions/constructors`).
+
 API
 ===
 

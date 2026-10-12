@@ -9,6 +9,7 @@ from math import comb
 
 import numpy as np
 
+from ..distconst import _interaction_coefficients, _joint_array, _log_linear_product
 from ..exceptions import ditException
 from ..helpers import normalize_rvs
 from ..utils import unitful
@@ -17,20 +18,6 @@ __all__ = (
     "kirkwood_mutual_information",
     "ouroboros_mutual_information",
 )
-
-
-def _joint_array(dist, rvs, crvs):
-    """
-    Coalesce `dist` into a dense array with one axis per element of `rvs`
-    followed by a single axis for `crvs` (of size one when unconditioned).
-    """
-    groups = list(rvs) + ([crvs] if crvs else [])
-    d = dist.coalesce(groups)
-    d.make_dense()
-    pmf = d.pmf.reshape([len(a) for a in d.alphabet])
-    if not crvs:
-        pmf = pmf[..., np.newaxis]
-    return pmf
 
 
 def _log_linear_divergence(pmf, exponents):
@@ -50,20 +37,11 @@ def _log_linear_divergence(pmf, exponents):
     dkl : float
         The averaged divergence, in bits.
     """
-    n = pmf.ndim - 1
-    axes = tuple(range(n))
+    axes = tuple(range(pmf.ndim - 1))
     p_z = pmf.sum(axis=axes, keepdims=True)
     safe_p_z = np.where(p_z > 0, p_z, 1.0)
 
-    log_q = np.zeros(pmf.shape)
-    zero = np.zeros(pmf.shape, dtype=bool)
-    for subset, exponent in exponents.items():
-        others = tuple(i for i in axes if i not in subset)
-        marginal = pmf.sum(axis=others, keepdims=True)
-        zero |= np.broadcast_to(marginal == 0, pmf.shape)
-        log_q += exponent * np.log2(np.where(marginal > 0, marginal, 1.0) / safe_p_z)
-
-    log_q = np.where(zero, -np.inf, log_q)
+    log_q = _log_linear_product(pmf, exponents)
     shift = np.max(log_q, axis=axes, keepdims=True)
     shift = np.where(np.isfinite(shift), shift, 0.0)
     support = pmf > 0
@@ -155,16 +133,7 @@ def kirkwood_mutual_information(dist, rvs=None, crvs=None, order=None):
     if n < 2:
         return 0.0
 
-    k = n - 1 if order is None else order
-    if not 0 <= k <= n - 1:
-        msg = f"order must satisfy 0 <= order <= {n - 1}, {k} given."
-        raise ditException(msg)
-
-    exponents = {
-        S: (-1) ** (k - j) * comb(n - j - 1, k - j) for j in range(1, k + 1) for S in combinations(range(n), j)
-    }
-
-    return _log_linear_divergence(_joint_array(dist, rvs, crvs), exponents)
+    return _log_linear_divergence(_joint_array(dist, rvs, crvs), _interaction_coefficients(n, order))
 
 
 @unitful
