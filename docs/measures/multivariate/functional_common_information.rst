@@ -11,6 +11,13 @@ The functional common information captures the minimum amount of information nec
 
    \F{X_{0:n} \mid Y_{0:m}} = \min_{\substack{\ind X_{0:n} \mid Y_{0:m}, W \\ W = f(X_{0:n}, Y_{0:m})}} \H{W}
 
+It was introduced in :cite:`james2017multivariate`.
+
+Computation
+===========
+
+A function :math:`W` is a partition of the support, and :math:`X_{0:n}` are independent given :math:`W = w` (and :math:`Y_{0:m}`) exactly when the outcomes in that block carry a product distribution on a combinatorial rectangle. Because :math:`\H{W}` is a sum of per-block costs :math:`-p(w) \log_2 p(w)`, the functional common information is a minimum-weight exact cover of the support by such blocks, which ``dit`` solves exactly as an integer program. Without conditioning, every block lies within one connected component of the support (the blocks of the Gács-Körner common variable), so each component is solved independently.
+
 Relationship To Other Measures of Common Information
 ====================================================
 
