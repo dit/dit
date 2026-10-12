@@ -3,10 +3,9 @@ Regression tests for coding bugs found in review.
 """
 
 import numpy as np
-import pytest
 
 from dit import Distribution
-from dit.coding import convolutional, golomb, hamming, ldpc, polar_source, tunstall
+from dit.coding import convolutional, hamming, ldpc, polar_source, tunstall
 from dit.example_channels import binary_symmetric_channel
 
 
