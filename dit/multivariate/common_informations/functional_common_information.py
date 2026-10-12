@@ -23,13 +23,17 @@ from itertools import product
 import numpy as np
 from scipy.optimize import Bounds, LinearConstraint, milp
 
+from ...distconst import insert_rvf
 from ...exceptions import ditException
 from ...helpers import as_linear, normalize_rvs
 from ...utils import flatten, unitful
 from ..dual_total_correlation import dual_total_correlation
 from ..entropy import entropy
 
-__all__ = ("functional_common_information",)
+__all__ = (
+    "functional_common_information",
+    "functional_variable",
+)
 
 # Bound on the number of candidate blocks handed to the integer program.
 _MAX_CANDIDATES = 200_000
@@ -278,11 +282,12 @@ def functional_markov_chain(dist, rvs=None, crvs=None, *, _stats=None):
 
 
 @unitful
-def functional_common_information(dist, rvs=None, crvs=None):
+def functional_common_information(dist, rvs=None, crvs=None, return_partition=False):
     """
     Compute the functional common information, F, of `dist`. It is the entropy
     of the smallest random variable W such that all the variables in `rvs` are
-    rendered independent conditioned on W, and W is a function of `rvs`.
+    rendered independent conditioned on W (and `crvs`), and W is a function of
+    `rvs` and `crvs`.
 
     Parameters
     ----------
@@ -297,18 +302,71 @@ def functional_common_information(dist, rvs=None, crvs=None):
     crvs : list, None
         A single list of indexes specifying the random variables to condition
         on. If None, then no variables are conditioned on.
+    return_partition : bool
+        If True, also return the optimal W as a partition of the outcomes of
+        `dist`: a frozenset of blocks, each a frozenset of outcomes.
 
     Returns
     -------
     F : float
         The functional common information.
+    partition : frozenset of frozensets
+        The optimal W, only if `return_partition` is True.
     """
     dist = as_linear(dist)
     rvs, crvs = normalize_rvs(dist, rvs, crvs)
 
-    dtc = dual_total_correlation(dist, rvs, crvs)
-    ent = entropy(dist, rvs, crvs)
-    if np.isclose(dtc, ent):
-        return dtc
+    # B = H means the identity on the support is optimal (unconditionally).
+    if not crvs and not return_partition:
+        dtc = dual_total_correlation(dist, rvs, crvs)
+        if np.isclose(dtc, entropy(dist, rvs, crvs)):
+            return dtc
 
-    return functional_markov_chain(dist, rvs, crvs)
+    stats = {}
+    h = functional_markov_chain(dist, rvs, crvs, _stats=stats)
+    return (h, stats["partition"]) if return_partition else h
+
+
+def functional_variable(dist, rvs=None, crvs=None):
+    """
+    Return `dist` with the optimal functional common variable W appended.
+
+    W is the least-entropy function of `rvs` and `crvs` rendering `rvs`
+    independent given `crvs`, so ``entropy(d, [d.outcome_length() - 1])`` is
+    the functional common information. Its values are block labels ``0, 1,
+    ...`` (as strings when the outcomes of `dist` have string symbols).
+
+    Parameters
+    ----------
+    dist : Distribution
+        The distribution of interest.
+    rvs : list, None
+        A list of lists. Each inner list specifies the indexes of the random
+        variables to render independent. If None, all random variables are
+        used.
+    crvs : list, None
+        A single list of indexes specifying the random variables to condition
+        on. If None, then no variables are conditioned on.
+
+    Returns
+    -------
+    d : Distribution
+        The support of `dist` with W appended as its last variable.
+    """
+    dist = as_linear(dist).copy()
+    dist.make_sparse()
+    rvs, crvs = normalize_rvs(dist, rvs, crvs)
+    stats = {}
+    functional_markov_chain(dist, rvs, crvs, _stats=stats)
+
+    blocks = sorted(stats["partition"], key=lambda block: min(map(repr, block)))
+    as_str = all(isinstance(v, str) for o in dist.outcomes for v in (o if isinstance(o, tuple) else (o,)))
+    label = {}
+    for i, block in enumerate(blocks):
+        for outcome in block:
+            label[outcome] = str(i) if as_str else i
+
+    def w(outcome):
+        return (label[outcome if isinstance(outcome, tuple) else (outcome,)],)
+
+    return insert_rvf(dist, w)
