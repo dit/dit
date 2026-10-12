@@ -21,6 +21,7 @@ from collections import defaultdict
 from itertools import product
 
 import numpy as np
+from debtcollector import removals
 from scipy.optimize import Bounds, LinearConstraint, milp
 
 from ...distconst import insert_rvf
@@ -230,7 +231,9 @@ def _min_entropy_cover(idx, blocks, probs):
     return float(costs[res.x > 0.5].sum()), chosen
 
 
-def functional_markov_chain(dist, rvs=None, crvs=None, *, _stats=None):
+@removals.removed_kwarg("_strategy", message="The exact cover needs no search strategy.", version="2.4")
+@removals.removed_kwarg("_use_mss_warmstart", message="The exact cover needs no warm start.", version="2.4")
+def functional_markov_chain(dist, rvs=None, crvs=None, *, _stats=None, _strategy=None, _use_mss_warmstart=None):
     """
     Return H(W) for the least-entropy function W of `rvs` (and `crvs`) which
     renders `rvs` independent given `crvs`.

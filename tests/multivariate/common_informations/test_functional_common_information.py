@@ -228,3 +228,9 @@ def test_functional_variable(dist):
     assert entropy(d, w) == pytest.approx(F(dist))
     assert entropy(d, w, list(range(n))) == pytest.approx(0.0)
     assert B(d, rvs, w) == pytest.approx(0.0)
+
+
+def test_strategy_keyword_is_deprecated():
+    with pytest.warns(DeprecationWarning):
+        h = functional_markov_chain(_PARITY, _strategy="coarsen")
+    assert h == pytest.approx(2.0)
