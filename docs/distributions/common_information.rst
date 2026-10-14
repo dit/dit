@@ -39,29 +39,28 @@ bit :math:`P_i` (which opens :math:`\operatorname{M} < \operatorname{H}`).
 
    In [3]: d.outcome_length(), len(d.outcomes), len(d.alphabet[0])
 
-The workhorse already strictly separates the middle of the ordering,
-:math:`\operatorname{K} < \operatorname{J} < \operatorname{B} < \operatorname{C} <
-\operatorname{G} < \operatorname{F}`, while having no private randomness (so
-:math:`\operatorname{M} = \operatorname{H}`):
+The workhorse already strictly separates the middle of the ordering, while having
+no private randomness (so :math:`\operatorname{M} = \operatorname{H}`):
 
 .. ipython::
 
    In [4]: from dit.multivariate import gk_common_information, caekl_mutual_information
 
-   In [5]: from dit.multivariate import dual_total_correlation, wyner_common_information
+   In [5]: from dit.multivariate import dual_total_correlation, functional_common_information
 
-   In [6]: from dit.multivariate import exact_common_information, functional_common_information
+   In [6]: w = noisy_copies(0.1, 3)
 
-   In [7]: w = noisy_copies(0.1, 3)
+   In [7]: gk_common_information(w), caekl_mutual_information(w), dual_total_correlation(w)
 
-   In [8]: gk_common_information(w), caekl_mutual_information(w), dual_total_correlation(w)
+   In [8]: functional_common_information(w)
 
-   In [9]: wyner_common_information(w, bound=6), exact_common_information(w, bound=6)
-
-   In [10]: functional_common_information(w)
-
-The giant bit then lifts :math:`\operatorname{K}` away from zero and the private
-bits pull :math:`\operatorname{M}` below :math:`\operatorname{H}`, so the assembled
+Between the dual total correlation and the functional common information shown
+above sit the Wyner (:func:`~dit.multivariate.wyner_common_information`) and exact
+(:func:`~dit.multivariate.exact_common_information`) common informations, with
+:math:`\operatorname{B} < \operatorname{C} < \operatorname{G} < \operatorname{F}`
+strict (these are optimization-based, so they are omitted from this example). The
+giant bit then lifts :math:`\operatorname{K}` away from zero and the private bits
+pull :math:`\operatorname{M}` below :math:`\operatorname{H}`, so the assembled
 witness strictly separates the whole chain. For ``n = 2`` the CAEKL and dual total
 correlation coincide with the mutual information, giving one fewer distinct rung.
 
