@@ -51,7 +51,7 @@ __all__ = (
 # 2 q (1 - q) = 0.30 gives q = (1 - sqrt(0.4)) / 2. At fixed q the exact-minus-Wyner
 # gap shrinks as n grows (more copies pin down the latent Z), but these values keep
 # every rung open through n = 5; larger n may require larger q.
-_TUNED_Q = {2: (1 - 0.4 ** 0.5) / 2, 3: 0.10, 4: 0.15, 5: 0.15}
+_TUNED_Q = {2: (1 - 0.4**0.5) / 2, 3: 0.10, 4: 0.15, 5: 0.15}
 
 
 def noisy_copies(q, n=3):
@@ -149,9 +149,6 @@ def symmetric_common_information_witness(n=3, q=None):
                 for e in noise:
                     weight *= q if e else (1 - q)
                 for private in product((0, 1), repeat=n):
-                    outcome = tuple(
-                        str(4 * giant + 2 * (latent ^ e) + p)
-                        for e, p in zip(noise, private, strict=True)
-                    )
-                    pmf[outcome] = pmf.get(outcome, 0.0) + weight * 0.5 ** n
+                    outcome = tuple(str(4 * giant + 2 * (latent ^ e) + p) for e, p in zip(noise, private, strict=True))
+                    pmf[outcome] = pmf.get(outcome, 0.0) + weight * 0.5**n
     return Distribution(list(pmf), list(pmf.values()))

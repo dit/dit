@@ -60,7 +60,7 @@ def test_noisy_support(n):
     """
     d = noisy_copies(0.1, n)
     assert d.outcome_length() == n
-    assert len(d.outcomes) == 2 ** n
+    assert len(d.outcomes) == 2**n
     assert set(d.alphabet[0]) == {"0", "1"}
 
 
@@ -83,7 +83,7 @@ def test_noisy_pmf(n):
     table = {tuple(o): p for o, p in d.zipped()}
     for bits in product("01", repeat=n):
         k = sum(b == "1" for b in bits)
-        expected = (q ** k * (1 - q) ** (n - k) + q ** (n - k) * (1 - q) ** k) / 2
+        expected = (q**k * (1 - q) ** (n - k) + q ** (n - k) * (1 - q) ** k) / 2
         assert table[bits] == pytest.approx(expected)
 
 
