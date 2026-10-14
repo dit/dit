@@ -83,3 +83,4 @@ See also the :doc:`../symbolic` page for sympy-valued probabilities.
    npscalardist.rst
    constructors.rst
    genetic_code.rst
+   common_information.rst
