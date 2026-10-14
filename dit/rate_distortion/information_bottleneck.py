@@ -16,6 +16,41 @@ __all__ = (
 )
 
 
+def partition_encoders(shape, max_seeds):
+    """
+    Deterministic encoders T = f(X), one per partition of X into at most
+    ``bound`` blocks, when Z is trivial and there are at most ``max_seeds`` of
+    them.
+
+    Parameters
+    ----------
+    shape : tuple
+        The encoder shape ``(|X|, |Z|, bound)``.
+    max_seeds : int
+        The maximum number of partitions to enumerate.
+
+    Returns
+    -------
+    encoders : list of np.ndarray
+        The encoders, each of shape ``shape``; empty if Z is non-trivial or
+        there are too many partitions.
+    """
+    n_x, n_z, bound = shape
+    if n_z != 1:
+        return []
+    labels = [[0]]
+    for _ in range(n_x - 1):
+        labels = [lab + [k] for lab in labels for k in range(min(max(lab) + 2, bound))]
+        if len(labels) > max_seeds:
+            return []
+    encoders = []
+    for lab in labels:
+        enc = np.zeros((n_x, 1, bound))
+        enc[np.arange(n_x), 0, lab] = 1
+        encoders.append(enc)
+    return encoders
+
+
 class InformationBottleneck(BaseAuxVarOptimizer):
     """
     Base optimizer for information bottleneck type calculations.
@@ -93,20 +128,7 @@ class InformationBottleneck(BaseAuxVarOptimizer):
         For the deterministic bottleneck (alpha = 0) the objective is concave in
         the encoder, so its minimum is among these.
         """
-        n_x, n_z, bound = self._aux_vars[0].shape
-        if n_z != 1:
-            return []
-        labels = [[0]]
-        for _ in range(n_x - 1):
-            labels = [lab + [k] for lab in labels for k in range(min(max(lab) + 2, bound))]
-            if len(labels) > self._max_partition_seeds:
-                return []
-        encoders = []
-        for lab in labels:
-            enc = np.zeros((n_x, 1, bound))
-            enc[np.arange(n_x), 0, lab] = 1
-            encoders.append(enc)
-        return encoders
+        return partition_encoders(self._aux_vars[0].shape, self._max_partition_seeds)
 
     def _fixed_point(self, enc, iters=500, tol=1e-10):
         """

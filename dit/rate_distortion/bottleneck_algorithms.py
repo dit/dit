@@ -11,10 +11,12 @@ from .blahut_arimoto import blahut_arimoto_ib
 
 __all__ = (
     "BottleneckResult",
+    "PrivacyFunnelResult",
     "active_alphabet",
     "agglomerative_ib",
     "bottleneck_result",
     "blahut_arimoto_ib",
+    "greedy_privacy_funnel",
     "sequential_ib",
 )
 
@@ -498,4 +500,124 @@ def agglomerative_ib(p_xy, beta=1.0, n_clusters=None):
         history=history,
         active_history=active_history,
         merges=selected_merges,
+    )
+
+
+@dataclass(frozen=True)
+class PrivacyFunnelResult:
+    """
+    The result of a finite-alphabet privacy funnel optimization.
+
+    Attributes
+    ----------
+    p_t_given_x : np.ndarray
+        The privacy mapping :math:`p(t | x)`.
+    leakage : float
+        :math:`I(S : T)`.
+    utility : float
+        :math:`I(X : T)`.
+    active : int
+        The number of non-empty released states.
+    assignments : np.ndarray
+        The hard cluster assignment for each :math:`x`, when available.
+    merges : tuple[tuple[int, int], ...]
+        The merge sequence, when available.
+    """
+
+    p_t_given_x: np.ndarray
+    leakage: float
+    utility: float
+    active: int
+    assignments: np.ndarray | None = None
+    merges: tuple[tuple[int, int], ...] = ()
+
+
+def _privacy_point(p_sx, p_t_given_x):
+    """
+    The leakage :math:`I(S : T)` and utility :math:`I(X : T)` of a mapping.
+    """
+    p_x = p_sx.sum(axis=0)
+    leakage = _mutual_information(p_sx @ p_t_given_x)
+    utility = _mutual_information(p_x[:, np.newaxis] * p_t_given_x)
+    return leakage, utility
+
+
+def _greedy_privacy_funnel_path(p_sx, rate, tol=1e-12):
+    """
+    The sequence of hard assignments visited by the greedy privacy funnel.
+    """
+    p_x = p_sx.sum(axis=0)
+    assignments = _compact_assignments(np.arange(len(p_x)), p_x)
+    path = [assignments]
+    merges = []
+
+    while len(np.unique(assignments)) > 1:
+        labels = np.unique(assignments)
+        best = None
+        for i, left in enumerate(labels):
+            for right in labels[i + 1 :]:
+                candidate = assignments.copy()
+                candidate[candidate == right] = left
+                candidate = _compact_assignments(candidate, p_x)
+                leakage, utility = _privacy_point(p_sx, _encoder_from_assignments(candidate))
+                if utility < rate - tol:
+                    continue
+                key = (leakage, -utility)
+                if best is None or key < best[0]:
+                    best = (key, candidate, (int(left), int(right)))
+        if best is None:
+            break
+        _, assignments, pair = best
+        path.append(assignments)
+        merges.append(pair)
+
+    return path, merges
+
+
+def greedy_privacy_funnel(p_sx, rate=0.0):
+    """
+    Greedily merge released symbols for the privacy funnel
+    :cite:`makhdoumi2014information`.
+
+    Starting from :math:`T = X`, repeatedly merge the pair of symbols of
+    :math:`T` whose merger most reduces the leakage :math:`I(S : T)` while
+    keeping the utility :math:`I(X : T) \\geq R`, until no merge is feasible.
+    Each step is locally optimal; the result need not be globally optimal.
+
+    Parameters
+    ----------
+    p_sx : np.ndarray
+        Joint distribution with axis 0 indexing the private :math:`S` and axis
+        1 indexing the public :math:`X`.
+    rate : float
+        The minimum utility :math:`R`, in bits. Must lie in
+        :math:`[0, H(X)]`.
+
+    Returns
+    -------
+    result : PrivacyFunnelResult
+        The hard privacy mapping found.
+
+    Raises
+    ------
+    ditException
+        If ``rate`` is outside :math:`[0, H(X)]`.
+    """
+    p_sx = _validate_p_xy(p_sx)
+    h_x = _entropy(p_sx.sum(axis=0))
+    if not -1e-12 <= rate <= h_x + 1e-9:
+        msg = "rate must lie in [0, H(X)]."
+        raise ditException(msg)
+
+    path, merges = _greedy_privacy_funnel_path(p_sx, rate)
+    assignments = path[-1]
+    p_t_given_x = _encoder_from_assignments(assignments)
+    leakage, utility = _privacy_point(p_sx, p_t_given_x)
+    return PrivacyFunnelResult(
+        p_t_given_x=p_t_given_x,
+        leakage=leakage,
+        utility=utility,
+        active=active_alphabet(p_t_given_x, p_sx.sum(axis=0)),
+        assignments=assignments,
+        merges=tuple(merges),
     )

@@ -160,6 +160,93 @@ solver:
 
    In [9]: IBCurve(d, variant='dib', method='sequential', beta_num=26).plot();
 
+Privacy Funnel
+==============
+
+The privacy funnel :cite:`makhdoumi2014information` is the information
+bottleneck turned around. Given private data :math:`S` and public data
+:math:`X`, we release :math:`T`, a randomized function of :math:`X` (so that
+:math:`S - X - T` form a Markov chain), which is informative about :math:`X`
+but reveals as little as possible about :math:`S`:
+
+.. math::
+
+   \mathrm{PF}(R) = \min_{q(t|x), \I{X : T} \geq R} \I{S : T}
+
+The leakage :math:`\I{S : T}` and utility :math:`\I{X : T}` are both convex in
+:math:`q(t|x)`, so their difference is not, and the privacy funnel is a
+non-convex problem. Its Lagrangian is
+
+.. math::
+
+   \mathcal{L} = \I{S : T} - \beta \I{X : T}
+
+Since :math:`\I{S : T} \leq \I{X : T}`, every :math:`\beta \geq 1` is
+minimized by releasing :math:`T = X`, so the Lagrangian is swept over
+:math:`\beta \in [0, 1]`.
+
+For a fixed :math:`p(s, x)`, the pairs :math:`(\I{X : T}, \I{S : T})` over
+all releases :math:`T` form a convex set. Its upper boundary is the information
+bottleneck curve of :math:`X` with respect to :math:`S`, and its lower boundary
+is the privacy funnel curve :cite:`asoodeh2020bottleneck`. So the privacy funnel
+curve is convex and increasing. Since it often has a narrow range of slopes, a
+sweep over :math:`\beta` resolves few of its points, and ``PFCurve`` sweeps the
+rate :math:`R` instead. The size of :math:`T` is bounded by :math:`|X| + 1`;
+unlike the information bottleneck, :math:`|X|` does not suffice in general
+:cite:`asoodeh2020bottleneck`.
+
+``greedy_privacy_funnel`` implements the greedy algorithm of
+:cite:`makhdoumi2014information`: starting from :math:`T = X`, it repeatedly
+merges the two symbols of :math:`T` whose merger most reduces the leakage while
+the utility is at least :math:`R`. Each step is locally optimal, but the result
+need not be optimal overall.
+
+Perfect Privacy
+---------------
+
+A release with non-zero utility and zero leakage exists if and only if the
+vectors :math:`p(S | x)` are linearly dependent :cite:`calmon2015fundamental`;
+in particular, whenever :math:`|X| > |S|`. The largest utility of such a
+release,
+
+.. math::
+
+   g_0 = \max_{q(t|x), \I{S : T} = 0} \I{X : T}
+
+is computed exactly by ``perfect_privacy_utility``. Every such :math:`T`
+writes :math:`p(X)` as a mixture of distributions :math:`p(X | t)` under which
+:math:`S` is distributed as :math:`p(S)`. These form a polytope, and since
+entropy is concave, the optimal mixture uses only its vertices; the mixing
+weights then solve a linear program :cite:`rassouli2021perfect`.
+
+Example
+-------
+
+Let :math:`S` be binary and :math:`X` ternary:
+
+.. ipython::
+
+   In [10]: from dit.rate_distortion import admits_perfect_privacy, perfect_privacy_utility, privacy_funnel_rate
+
+   In [11]: d = dit.Distribution(['00', '01', '12', '10'], [0.3, 0.2, 0.3, 0.2])
+
+   In [12]: admits_perfect_privacy(d)
+
+   In [13]: perfect_privacy_utility(d)
+
+   In [14]: privacy_funnel_rate(d, 1.2)
+
+``BottleneckRegionPlotter`` computes both curves and plots the region between
+them:
+
+.. ipython::
+   :okwarning:
+
+   In [15]: from dit.rate_distortion.plotting import BottleneckRegionPlotter
+
+   @savefig privacy_funnel_region.png width=800 align=center
+   In [16]: BottleneckRegionPlotter.from_dist(d).plot();
+
 See Also
 ========
 
@@ -177,3 +264,22 @@ APIs
 .. autoclass:: GeneralizedInformationBottleneck
 
 .. autoclass:: DeterministicInformationBottleneck
+
+.. autoclass:: PFCurve
+
+.. autoclass:: PrivacyFunnel
+
+.. autoclass:: PrivacyFunnelRate
+
+.. autofunction:: privacy_funnel
+
+.. autofunction:: privacy_funnel_rate
+
+.. autofunction:: greedy_privacy_funnel
+
+.. autofunction:: admits_perfect_privacy
+
+.. autofunction:: perfect_privacy_utility
+
+.. autoclass:: dit.rate_distortion.plotting.BottleneckRegionPlotter
+   :members: from_dist, plot

@@ -9,9 +9,12 @@ from operator import attrgetter
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .curves import IBCurve, RDCurve
+from ..exceptions import ditException
+from ..multivariate import entropy, total_correlation
+from .curves import IBCurve, PFCurve, RDCurve
 
 __all__ = (
+    "BottleneckRegionPlotter",
     "IBPlotter",
     "RDPlotter",
 )
@@ -241,5 +244,205 @@ class IBPlotter(BasePlotter):
         self._plot(axs[0, 1], self._complexity_axis, self._relevance_axis, downsample)
         self._plot(axs[1, 1], self._error_axis, self._complexity_axis, downsample)
         self._plot(axs[2, 1], self._distortion_axis, self._complexity_axis, downsample)
+
+        return fig
+
+
+def _boundary(xs, ys, anchors, upper):
+    """
+    Sort a boundary curve by x, adding the anchor points and keeping the
+    extreme y among repeated x values.
+    """
+    points = {}
+    for x, y in [*zip(xs, ys, strict=True), *anchors]:
+        x = round(float(x), 12)
+        points[x] = max(points.get(x, y), y) if upper else min(points.get(x, y), y)
+    x = np.array(sorted(points))
+    return x, np.array([points[k] for k in x])
+
+
+def _region_corner(ib_curve, pf_curve):
+    """
+    The point ``(H[X | Z], I[S : X | Z])`` achieved by releasing T = X.
+    """
+    if pf_curve is not None:
+        return pf_curve._max_utility, pf_curve._max_leakage
+    if ib_curve is None:
+        msg = "At least one curve is required."
+        raise ditException(msg)
+    z = list(ib_curve._z)
+    return entropy(ib_curve.dist, ib_curve._x, z), total_correlation(ib_curve.dist, [ib_curve._x, ib_curve._y], z)
+
+
+def _region_envelopes(ib_curve=None, pf_curve=None, num=201):
+    """
+    Evaluate the boundaries of the region of achievable
+    ``(I[X : T | Z], I[S : T | Z])`` pairs on a shared grid.
+
+    Both boundaries pass through ``(0, 0)`` (T constant) and
+    ``(H[X | Z], I[S : X | Z])`` (T = X); the information bottleneck curve is the
+    upper boundary and the privacy funnel curve the lower
+    :cite:`asoodeh2020bottleneck`.
+
+    Parameters
+    ----------
+    ib_curve : IBCurve, None
+        The information bottleneck curve of X with respect to S.
+    pf_curve : PFCurve, None
+        The privacy funnel curve of S and X.
+    num : int
+        The number of grid points.
+
+    Returns
+    -------
+    grid : np.ndarray
+        Utilities ``I[X : T | Z]`` from 0 to ``H[X | Z]``.
+    upper : np.ndarray, None
+        The information bottleneck boundary on the grid, if given.
+    lower : np.ndarray, None
+        The privacy funnel boundary on the grid, if given.
+    """
+    max_x, max_y = _region_corner(ib_curve, pf_curve)
+    anchors = [(0.0, 0.0), (max_x, max_y)]
+    grid = np.linspace(0.0, max_x, num)
+
+    upper = lower = None
+    if ib_curve is not None:
+        upper = np.interp(grid, *_boundary(ib_curve.complexities, ib_curve.relevances, anchors, upper=True))
+    if pf_curve is not None:
+        lower = np.interp(grid, *_boundary(pf_curve.utilities, pf_curve.leakages, anchors, upper=False))
+    return grid, upper, lower
+
+
+def _validate_region_curves(ib_curve, pf_curve):
+    """
+    Ensure the two curves bound the same region.
+    """
+    if ib_curve is not None and ib_curve._variant != "ib":
+        msg = "The region is bounded by the standard information bottleneck (variant 'ib')."
+        raise ditException(msg)
+    if ib_curve is None or pf_curve is None:
+        return
+    same_vars = (
+        list(ib_curve._x) == list(pf_curve._x)
+        and list(ib_curve._y) == list(pf_curve._s)
+        and list(ib_curve._z) == list(pf_curve._z)
+    )
+    if not same_vars:
+        msg = "The IB curve must be of X with respect to S: IBCurve(rvs=[X, S]) and PFCurve(rvs=[S, X])."
+        raise ditException(msg)
+    if not ib_curve.dist.is_approx_equal(pf_curve.dist):
+        msg = "The curves must be computed from the same distribution."
+        raise ditException(msg)
+
+
+class BottleneckRegionPlotter:
+    """
+    Plot the information bottleneck and privacy funnel curves together. For a
+    fixed p(s, x), every release T of X gives a point
+    ``(I[X : T | Z], I[S : T | Z])``; these points form a convex region whose
+    upper boundary is the information bottleneck curve and whose lower boundary
+    is the privacy funnel curve :cite:`asoodeh2020bottleneck`.
+    """
+
+    def __init__(self, ib_curve=None, pf_curve=None):
+        """
+        Initialize the plotter.
+
+        Parameters
+        ----------
+        ib_curve : IBCurve, None
+            The information bottleneck curve of X with respect to S, i.e.
+            ``IBCurve(dist, rvs=[X, S])``.
+        pf_curve : PFCurve, None
+            The privacy funnel curve, i.e. ``PFCurve(dist, rvs=[S, X])``.
+
+        Raises
+        ------
+        ditException
+            If neither curve is given, the IB curve is not the standard
+            variant, or the curves are of different distributions or
+            variables.
+        """
+        if ib_curve is None and pf_curve is None:
+            msg = "At least one curve is required."
+            raise ditException(msg)
+        _validate_region_curves(ib_curve, pf_curve)
+        self.ib_curve = ib_curve
+        self.pf_curve = pf_curve
+
+    @classmethod
+    def from_dist(cls, dist, rvs=None, crvs=None, ib_kwargs=None, pf_kwargs=None):
+        """
+        Compute both curves of a distribution and build a plotter for them.
+
+        Parameters
+        ----------
+        dist : Distribution
+            The distribution of interest.
+        rvs : iterable, None
+            The private variables S and the public variables X. If None, use
+            [0], [1].
+        crvs : iterable, None
+            The random variables to condition on.
+        ib_kwargs : dict, None
+            Extra keyword arguments for :class:`IBCurve`.
+        pf_kwargs : dict, None
+            Extra keyword arguments for :class:`PFCurve`.
+
+        Returns
+        -------
+        plotter : BottleneckRegionPlotter
+            The plotter.
+        """
+        s, x = rvs if rvs is not None else ([0], [1])
+        ib_curve = IBCurve(dist, rvs=[x, s], crvs=crvs, **(ib_kwargs or {}))
+        pf_curve = PFCurve(dist, rvs=[s, x], crvs=crvs, **(pf_kwargs or {}))
+        return cls(ib_curve=ib_curve, pf_curve=pf_curve)
+
+    def plot(self, ax=None, num=201):  # pragma: no cover
+        """
+        Plot the region.
+
+        Parameters
+        ----------
+        ax : mpl.Axis, None
+            The axis to plot on. If None, make a new figure.
+        num : int
+            The number of points used to shade the region.
+
+        Returns
+        -------
+        fig : mpl.Figure
+            The figure containing the plot.
+        """
+        if ax is None:
+            fig, ax = plt.subplots(figsize=(8, 6))
+        else:
+            fig = ax.figure
+
+        grid, upper, lower = _region_envelopes(self.ib_curve, self.pf_curve, num=num)
+        max_x, max_y = _region_corner(self.ib_curve, self.pf_curve)
+
+        if upper is not None and lower is not None:
+            ax.fill_between(grid, lower, upper, alpha=0.2, label="achievable")
+        if upper is not None:
+            ax.plot(self.ib_curve.complexities, self.ib_curve.relevances, "o", ms=3, c="C0")
+            ax.plot(grid, upper, lw=2, c="C0", label="IB")
+        if lower is not None:
+            ax.plot(self.pf_curve.utilities, self.pf_curve.leakages, "o", ms=3, c="C1")
+            ax.plot(grid, lower, lw=2, c="C1", label="PF")
+            g0 = self.pf_curve.perfect_utility
+            if g0:
+                ax.plot([g0], [0.0], "*", ms=12, c="C3", label=r"perfect privacy $g_0$")
+
+        ax.plot([0, max_y], [0, max_y], ls="--", c="k", lw=1, label="data processing")
+        ax.axhline(max_y, ls=":", c="k", lw=1)
+        ax.axvline(max_x, ls=":", c="k", lw=1)
+
+        ax.set_xlabel(r"$I[X:T]$")
+        ax.set_ylabel(r"$I[S:T]$")
+        ax.legend(loc="best")
+        _rescale_axes(ax, xmin=0, xmax=max_x, ymin=0, ymax=max_y)
 
         return fig

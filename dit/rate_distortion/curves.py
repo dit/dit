@@ -10,7 +10,7 @@ from ..exceptions import ditException
 from ..multivariate import entropy, total_correlation
 from ..utils import flatten
 from .blahut_arimoto import blahut_arimoto
-from .bottleneck_algorithms import agglomerative_ib, blahut_arimoto_ib, sequential_ib
+from .bottleneck_algorithms import agglomerative_ib, blahut_arimoto_ib, greedy_privacy_funnel, sequential_ib
 from .distortions import hamming
 from .information_bottleneck import (
     DeterministicInformationBottleneck,
@@ -18,9 +18,11 @@ from .information_bottleneck import (
     InformationBottleneck,
     InformationBottleneckDivergence,
 )
+from .privacy_funnel import PrivacyFunnelRate, perfect_privacy_utility
 
 __all__ = (
     "IBCurve",
+    "PFCurve",
     "RDCurve",
 )
 
@@ -652,3 +654,133 @@ class IBCurve:
 
         plotter = IBPlotter(self)
         return plotter.plot(downsample)
+
+
+class PFCurve:
+    """
+    Compute a privacy funnel curve :cite:`makhdoumi2014information`: the least
+    leakage ``I[S : T | Z]`` of a release T of X as a function of its utility
+    ``I[X : T | Z]``. It is the lower boundary of the region whose upper
+    boundary is the information bottleneck curve of X with respect to S
+    :cite:`asoodeh2020bottleneck`.
+
+    The curve is swept over utility rates rather than Lagrange multipliers:
+    it is convex, often with a narrow range of slopes, so a sweep over the
+    multiplier would resolve only a few of its points.
+    """
+
+    def __init__(self, dist, rvs=None, crvs=None, rate_num=26, method="sp", bound=None):
+        """
+        Initialize the curve computer.
+
+        Parameters
+        ----------
+        dist : Distribution
+            The distribution of interest.
+        rvs : iterable, None
+            The private variables S and the public variables X. If None, use
+            [0], [1].
+        crvs : iterable, None
+            The random variables to condition on.
+        rate_num : int
+            The number of evenly spaced utility rates in ``[0, H[X | Z]]``.
+            Defaults to 26.
+        method : {'sp', 'greedy'}
+            If 'sp', solve the constrained problem with scipy.optimize; if
+            'greedy', use the greedy merge algorithm. Defaults to 'sp'.
+        bound : int, None
+            The maximum size of T for the 'sp' method. If None, use ``|X| + 1``.
+        """
+        self.dist = dist.copy()
+        self.dist.make_dense()
+
+        self._s, self._x = rvs if rvs is not None else ([0], [1])
+        self._z = list(crvs) if crvs else []
+
+        if method not in ("sp", "greedy"):
+            msg = f"Method '{method}' not supported."
+            raise ditException(msg)
+        if method == "greedy" and self._z:
+            msg = "Method 'greedy' only supports the unconditional privacy funnel."
+            raise ditException(msg)
+        self._method = method
+
+        self._max_utility = entropy(self.dist, self._x, self._z)
+        self._max_leakage = total_correlation(self.dist, [self._s, self._x], self._z)
+
+        p_sx = self.dist.coalesce([self._s, self._x])
+        p_sx.make_dense()
+        self.p_sx = p_sx.pmf.reshape(tuple(map(len, p_sx.alphabet)))
+
+        self.perfect_utility = None if self._z else perfect_privacy_utility(self.dist, [self._s, self._x])
+
+        self.label = "PF"
+        self.rates = np.linspace(0.0, self._max_utility, rate_num)
+
+        if method == "sp":
+            self._pf = PrivacyFunnelRate(self.dist, rate=0.0, rvs=[self._s, self._x], crvs=self._z, bound=bound)
+
+        self.compute()
+
+    def compute(self):
+        """
+        Compute the leakages and utilities along the curve.
+        """
+        leakages = []
+        utilities = []
+
+        if self._method == "sp":
+            # No warm start: a polished optimum sits on the boundary of the
+            # simplex, where SLSQP stalls for the next rate.
+            for rate in self.rates:
+                self._pf._rate = rate
+                self._pf.optimize()
+                pmf = self._pf.construct_joint(self._pf._optima)
+                leakages.append(max(self._pf.leakage(pmf), 0.0))
+                utilities.append(self._pf.utility(pmf))
+        else:
+            for rate in self.rates:
+                result = greedy_privacy_funnel(self.p_sx, rate=rate)
+                leakages.append(result.leakage)
+                utilities.append(result.utility)
+
+        self.utilities = np.asarray(utilities)
+        self.leakages = self._time_share(self.utilities, np.asarray(leakages))
+
+    def _time_share(self, utilities, leakages):
+        """
+        Lower each leakage to the lower convex envelope of every release found.
+
+        Releasing one of two mappings at random, independently of the data,
+        achieves any convex combination of their (utility, leakage) pairs, and
+        the privacy funnel curve is convex :cite:`asoodeh2020bottleneck`. So the
+        envelope is achievable, and it repairs any point where the non-convex
+        optimizer stopped at a poor local minimum.
+        """
+        points = [(0.0, 0.0), (self._max_utility, self._max_leakage), *zip(utilities, leakages, strict=True)]
+        if self.perfect_utility is not None:
+            points.append((self.perfect_utility, 0.0))
+
+        def turns_left(a, b, c):
+            return (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]) > 0
+
+        hull = []
+        for point in sorted(points):
+            while len(hull) >= 2 and not turns_left(hull[-2], hull[-1], point):
+                hull.pop()
+            hull.append(point)
+        xs, ys = np.array(hull).T
+        return np.minimum(leakages, np.interp(utilities, xs, ys))
+
+    def plot(self):  # pragma: no cover
+        """
+        Plot the privacy funnel curve with a BottleneckRegionPlotter.
+
+        Returns
+        -------
+        fig : plt.figure
+            The resulting figure.
+        """
+        from .plotting import BottleneckRegionPlotter
+
+        return BottleneckRegionPlotter(pf_curve=self).plot()
