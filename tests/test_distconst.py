@@ -6,9 +6,12 @@ import itertools
 
 import numpy as np
 import pytest
+from hypothesis import given
+from hypothesis import strategies as st
 
 import dit
 from dit.exceptions import ditException
+from dit.utils.testing import distributions
 
 
 def test_mixture_distribution_weights():
@@ -576,7 +579,9 @@ def test_kirkwood_approximation_grouped():
     assert dit.kirkwood_approximation(d, [[0], [1, 2]]).pmf == pytest.approx(expected)
 
 
-@pytest.mark.parametrize("approximation", [dit.kirkwood_approximation, dit.lancaster_approximation])
+@pytest.mark.parametrize(
+    "approximation", [dit.kirkwood_approximation, dit.lancaster_approximation, dit.fejer_riesz_approximation]
+)
 @pytest.mark.parametrize("order", [-1, 4])
 def test_approximation_bad_order(approximation, order):
     """The order must lie in [0, n - 1]."""
@@ -671,3 +676,60 @@ def test_lancaster_signed():
     d = dit.Distribution(["000", "010", "100", "111"], [1 / 4] * 4)
     q = dit.lancaster_approximation(d)
     assert q.pmf == pytest.approx([0.3125, -0.0625, 0.1875, 0.0625, 0.1875, 0.0625, 0.0625, 0.1875])
+
+
+def test_fejer_riesz_bivariate():
+    """For two variables s_1 = E[s | x] + E[s | y] - E[s] with s = sqrt(p(x, y) / (p(x) p(y)))."""
+    d = weighted(2)
+    p = dense_array(d)
+    px, py = marginal_array(p, (0,)), marginal_array(p, (1,))
+    s = np.sqrt(p / (px * py))
+    s1 = (s * py).sum(axis=1, keepdims=True) + (s * px).sum(axis=0, keepdims=True) - (s * px * py).sum()
+    expected = px * py * s1**2
+    assert dense_array(dit.fejer_riesz_approximation(d)) == pytest.approx(expected / expected.sum())
+
+
+def test_fejer_riesz_order_zero_is_product():
+    """The order-0 approximation is the product of marginals."""
+    d = weighted(4)
+    q = dit.fejer_riesz_approximation(d, order=0)
+    assert dense_array(q) == pytest.approx(product_array(dense_array(d)))
+
+
+@pytest.mark.parametrize("n", range(2, 5))
+def test_fejer_riesz_default_order(n):
+    """The default order is n - 1."""
+    d = weighted(n)
+    q = dit.fejer_riesz_approximation(d)
+    assert q.pmf == pytest.approx(dit.fejer_riesz_approximation(d, order=n - 1).pmf)
+
+
+def test_fejer_riesz_grouped():
+    """Grouping variables is the same as approximating the coalesced distribution."""
+    d = weighted(3)
+    groups = [[0], [1, 2]]
+    expected = dit.fejer_riesz_approximation(d.coalesce(groups)).pmf
+    assert dit.fejer_riesz_approximation(d, groups).pmf == pytest.approx(expected)
+
+
+def test_fejer_riesz_nonnegative_where_lancaster_is_signed():
+    """The distribution with a negative Lancaster approximation has a nonnegative Fejér-Riesz approximation."""
+    d = dit.Distribution(["000", "010", "100", "111"], [1 / 4] * 4)
+    q = dit.fejer_riesz_approximation(d)
+    assert q.pmf == pytest.approx([0.3879, 0.0248, 0.1946, 0.0248, 0.1946, 0.0248, 0.0083, 0.1404], abs=1e-4)
+
+
+@given(dist=distributions(alphabets=(2, 3, 2)), order=st.integers(0, 2))
+def test_fejer_riesz_is_distribution(dist, order):
+    """Every order is a nonnegative, normalized distribution."""
+    q = dit.fejer_riesz_approximation(dist, order=order)
+    assert np.all(q.pmf >= 0)
+    assert q.pmf.sum() == pytest.approx(1.0)
+
+
+@given(dist=distributions(alphabets=(2, 3, 2)), order=st.integers(0, 2))
+def test_fejer_riesz_exact_on_products(dist, order):
+    """A product of marginals is reproduced at every order."""
+    d = dit.product_distribution(dist)
+    q = dit.fejer_riesz_approximation(d, order=order)
+    assert dense_array(q) == pytest.approx(dense_array(d))

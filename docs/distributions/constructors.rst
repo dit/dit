@@ -16,9 +16,10 @@ These are imported at the package root:
 - :func:`~dit.uniform` / :func:`~dit.uniform_distribution` / :func:`~dit.uniform_like`
 - :func:`~dit.mixture_distribution` — convex combination of distributions
 - :func:`~dit.product_distribution` — product of specified marginals of a joint
-- :func:`~dit.kirkwood_approximation` / :func:`~dit.lancaster_approximation` —
-  order-:math:`k` multiplicative and additive approximations built from
-  marginals (see :ref:`below <marginal_approximations>`)
+- :func:`~dit.kirkwood_approximation` / :func:`~dit.lancaster_approximation` /
+  :func:`~dit.fejer_riesz_approximation` — order-:math:`k` multiplicative,
+  additive, and squared-amplitude approximations built from marginals (see
+  :ref:`below <marginal_approximations>`)
 - :func:`~dit.insert_rvf` / :class:`~dit.RVFunctions` — append a deterministic
   function of existing variables
 - :func:`~dit.noisy` / :func:`~dit.erasure` — pass each variable through a
@@ -98,6 +99,22 @@ The order-:math:`k` Lancaster approximation keeps the Lancaster interactions of 
 
 For :math:`n \leq 3` the default-order Lancaster approximation reproduces :math:`p` whenever :math:`p` factors nontrivially, though not only then. For :math:`n > 3` it can miss factorizations such as :math:`(X_0, X_1) \perp (X_2, X_3)`, which Streitberg's partition-lattice correction repairs :cite:`streitberg1990lancaster`. No canonical literature source is known for Lancaster orders below :math:`n-1`.
 
+The Fejér-Riesz approximation trades the marginal constraints for nonnegativity. Writing :math:`\pi(x) = \prod_i p(x_i)`, the Lancaster approximation truncates the density ratio :math:`p / \pi`. Following the Fejér-Riesz theorem, which writes a nonnegative trigonometric polynomial as :math:`|h|^2` :cite:`fejer1916trigonometrische`, this approximation instead truncates the amplitude :math:`s = \sqrt{p / \pi}` and squares it:
+
+.. math::
+
+   s_k(x) = \sum_{|S| \leq k} c_S \, \mathbb{E}_\pi[s \mid x_S], \qquad
+   q_k(x) = \frac{\pi(x) \, s_k(x)^2}{Z_k}.
+
+Here :math:`s_k` is the :math:`L^2(\pi)` projection of :math:`s` onto functions of at most :math:`k` variables, so :math:`Z_k = \|s_k\|^2_\pi \leq 1`. The result is a probability distribution, and it equals :math:`p` whenever :math:`p` is a product of marginals. However, it need not match the marginals of :math:`p`. For the distribution above:
+
+.. ipython::
+
+   In [9]: dit.fejer_riesz_approximation(dit.Distribution(['000', '010', '100', '111'], [1/4] * 4)).pmf.round(4)
+   Out[9]: array([0.3879, 0.0248, 0.1946, 0.0248, 0.1946, 0.0248, 0.0083, 0.1404])
+
+No canonical literature source is known for this construction.
+
 ``dit.example_dists``
 ---------------------
 
@@ -134,6 +151,8 @@ API
 .. autofunction:: dit.kirkwood_approximation
 
 .. autofunction:: dit.lancaster_approximation
+
+.. autofunction:: dit.fejer_riesz_approximation
 
 .. autofunction:: dit.insert_rvf
 
