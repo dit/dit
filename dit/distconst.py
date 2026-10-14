@@ -32,6 +32,7 @@ __all__ = (
     "product_distribution",
     "kirkwood_approximation",
     "lancaster_approximation",
+    "fejer_riesz_approximation",
     "uniform",
     "uniform_like",
     "all_dist_structures",
@@ -1181,6 +1182,82 @@ def lancaster_approximation(dist, rvs=None, order=None):
         approx += c * term
 
     return _approximation_distribution(dist, rvs, approx)
+
+
+def fejer_riesz_approximation(dist, rvs=None, order=None):
+    r"""
+    Construct the order-k Fejér-Riesz approximation of a distribution, a
+    nonnegative analogue of the Lancaster approximation.
+
+    The Lancaster approximation truncates the interaction expansion of the
+    density ratio :math:`p / \pi`, where :math:`\pi(x) = \prod_i p(x_i)`, and
+    so may be negative. In the spirit of the Fejér-Riesz theorem, which
+    writes a nonnegative trigonometric polynomial as :math:`|h|^2`
+    :cite:`fejer1916trigonometrische`, this approximation instead truncates
+    the amplitude :math:`s = \sqrt{p / \pi}` and squares the result:
+
+    .. math::
+        s_k(x) = \sum_{|S| \leq k} c_S \, \mathbb{E}_\pi[s \mid x_S], \qquad
+        q_k(x) = \frac{\pi(x) \, s_k(x)^2}{Z_k},
+
+    with the coefficients :math:`c_S` of :func:`lancaster_approximation`.
+    :math:`s_k` is the :math:`L^2(\pi)` projection of :math:`s` onto
+    functions of at most :math:`k` variables :cite:`lancaster1969chi`, so
+    :math:`Z_k = \|s_k\|^2_\pi \leq \|s\|^2_\pi = 1`. Order 0 is the product
+    of marginals, and :math:`q_k = p` at every order when :math:`p` is
+    itself a product of marginals. Unlike the Lancaster approximation,
+    :math:`q_k` is a probability distribution, but it need not match the
+    marginals of :math:`p`. No canonical literature source is known for
+    this construction.
+
+    Parameters
+    ----------
+    dist : Distribution
+        The distribution to approximate.
+    rvs : list, None
+        A list of lists. Each inner list specifies the indexes of the random
+        variables forming one variable of the approximation. If None, then
+        each random variable is its own variable.
+    order : int, None
+        The largest interaction size k kept in the amplitude. Must satisfy
+        0 <= k <= n - 1. If None, defaults to n - 1.
+
+    Returns
+    -------
+    approx : Distribution
+        The dense, normalized approximation over the outcomes of `dist`
+        coalesced to `rvs`.
+
+    Raises
+    ------
+    ditException
+        Raised if `order` is out of range.
+
+    Examples
+    --------
+    >>> d = dit.Distribution(['000', '010', '100', '111'], [1/4] * 4)
+    >>> dit.fejer_riesz_approximation(d).pmf.round(4)
+    array([0.3879, 0.0248, 0.1946, 0.0248, 0.1946, 0.0248, 0.0083, 0.1404])
+    """
+    rvs, _ = normalize_rvs(dist, rvs, None)
+    coefficients = _interaction_coefficients(len(rvs), order)
+    pmf = _joint_array(dist, rvs, [])[..., 0]
+    axes = tuple(range(pmf.ndim))
+
+    singles = [pmf.sum(axis=tuple(j for j in axes if j != i), keepdims=True) for i in axes]
+    product = np.prod(np.broadcast_arrays(*singles), axis=0)
+    amplitude = np.sqrt(np.divide(pmf, product, out=np.zeros(pmf.shape), where=product > 0))
+
+    projection = np.zeros(pmf.shape)
+    for S, c in coefficients.items():
+        others = tuple(i for i in axes if i not in S)
+        weighted = amplitude
+        for i in others:
+            weighted = weighted * singles[i]
+        projection = projection + c * weighted.sum(axis=others, keepdims=True)
+
+    approx = product * projection**2
+    return _approximation_distribution(dist, rvs, approx / approx.sum())
 
 
 def all_dist_structures(outcome_length, alphabet_size):
