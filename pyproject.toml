@@ -34,7 +34,7 @@ dependencies = [
     "networkx>=2.6",
     "numpy>=1.22",
     "PLTable",
-    "scipy>=1.7",
+    "scipy>=1.9",
     "xarray",
 ]
 
