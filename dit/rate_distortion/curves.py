@@ -744,8 +744,33 @@ class PFCurve:
                 leakages.append(result.leakage)
                 utilities.append(result.utility)
 
-        self.leakages = np.asarray(leakages)
         self.utilities = np.asarray(utilities)
+        self.leakages = self._time_share(self.utilities, np.asarray(leakages))
+
+    def _time_share(self, utilities, leakages):
+        """
+        Lower each leakage to the lower convex envelope of every release found.
+
+        Releasing one of two mappings at random, independently of the data,
+        achieves any convex combination of their (utility, leakage) pairs, and
+        the privacy funnel curve is convex :cite:`asoodeh2020bottleneck`. So the
+        envelope is achievable, and it repairs any point where the non-convex
+        optimizer stopped at a poor local minimum.
+        """
+        points = [(0.0, 0.0), (self._max_utility, self._max_leakage), *zip(utilities, leakages, strict=True)]
+        if self.perfect_utility is not None:
+            points.append((self.perfect_utility, 0.0))
+
+        def turns_left(a, b, c):
+            return (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]) > 0
+
+        hull = []
+        for point in sorted(points):
+            while len(hull) >= 2 and not turns_left(hull[-2], hull[-1], point):
+                hull.pop()
+            hull.append(point)
+        xs, ys = np.array(hull).T
+        return np.minimum(leakages, np.interp(utilities, xs, ys))
 
     def plot(self):  # pragma: no cover
         """

@@ -238,6 +238,18 @@ def test_curve(pf_curve):
     assert leakages[-1] == pytest.approx(total_correlation(perfect, [[0], [1]]), abs=1e-6)
 
 
+def test_curve_time_sharing(pf_curve):
+    """
+    A point stuck at a poor local minimum is lowered to the convex envelope of
+    the others, and good points are untouched.
+    """
+    bad = pf_curve.leakages.copy()
+    bad[-2] = pf_curve._max_leakage
+    repaired = pf_curve._time_share(pf_curve.utilities, bad)
+    assert repaired[-2] < pf_curve._max_leakage - 0.05
+    assert np.allclose(np.delete(repaired, -2), np.delete(pf_curve.leakages, -2))
+
+
 def test_curve_greedy(pf_curve):
     curve = PFCurve(perfect, rate_num=9, method="greedy")
     assert np.all(curve.utilities >= curve.rates - 1e-9)
@@ -269,7 +281,8 @@ class TestRegion:
         plotting = pytest.importorskip("dit.rate_distortion.plotting")
         grid, upper, lower = plotting._region_envelopes(ib_curve, pf_curve)
         assert np.all(upper >= lower - 1e-5)
-        assert upper[0] == lower[0] == 0
+        assert upper[0] == pytest.approx(0, abs=1e-9)
+        assert lower[0] == pytest.approx(0, abs=1e-9)
         assert upper[-1] == pytest.approx(lower[-1])
         assert grid[-1] == pytest.approx(entropy(perfect, [1]))
         assert lower[-1] == pytest.approx(total_correlation(perfect, [[0], [1]]))

@@ -441,6 +441,10 @@ class PrivacyFunnelRate(PrivacyFunnel):
     # this much slack.
     _feasibility_tol = 1e-6
 
+    # Independent basin-hopping searches; a single one occasionally ends in a
+    # poor local minimum.
+    _restarts = 3
+
     def __init__(self, dist, rate, rvs=None, crvs=None, bound=None):
         """
         Initialize the privacy funnel.
@@ -495,8 +499,8 @@ class PrivacyFunnelRate(PrivacyFunnel):
 
     def optimize(self, *args, **kwargs):
         """
-        Optimize from the identity mapping, which is always feasible, then keep
-        the best feasible candidate.
+        Optimize from the identity mapping, which is always feasible, a few
+        times, then keep the best feasible candidate.
 
         Parameters
         ----------
@@ -510,10 +514,11 @@ class PrivacyFunnelRate(PrivacyFunnel):
         """
         if not args and kwargs.get("x0") is None:
             kwargs["x0"] = self.construct_copy_initial()
-        result = BaseAuxVarOptimizer.optimize(self, *args, **kwargs)
-        feasible = [
-            x for x in [self._optima, *self._candidates()] if self._constraint_utility(x) >= -self._feasibility_tol
-        ]
+        optima = []
+        for _ in range(self._restarts):
+            result = BaseAuxVarOptimizer.optimize(self, *args, **kwargs)
+            optima.append(self._optima)
+        feasible = [x for x in [*optima, *self._candidates()] if self._constraint_utility(x) >= -self._feasibility_tol]
         self._optima = min(feasible, key=self.objective).copy()
         return result
 
