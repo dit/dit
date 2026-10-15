@@ -197,6 +197,129 @@ def _pairwise_entanglement(dist, sources, crvs, niter, maxiter, bound):
     return sum(tension.tensions) + tension.residual
 
 
+def _meet_components(dist, sources):
+    """
+    Split a distribution along the values of the Gacs-Korner meet of its
+    sources.
+
+    Parameters
+    ----------
+    dist : Distribution
+        The distribution of interest.
+    sources : list of lists
+        The source groups.
+
+    Returns
+    -------
+    components : list of (float, Distribution)
+        The probability of each meet value and the distribution conditioned
+        on it, with tuple outcomes over the original variables.
+    """
+    from collections import defaultdict
+
+    from ...algorithms import insert_meet
+    from ...distribution import Distribution
+
+    outcomes, pmf = zip(*dist.zipped(mode="patoms"), strict=True)
+    d = Distribution(outcomes, pmf)
+    meet = insert_meet(d, -1, sources, support_only=True)
+
+    groups = defaultdict(list)
+    for outcome, p in meet.zipped(mode="patoms"):
+        outcome = tuple(outcome)
+        groups[outcome[-1]].append((outcome[:-1], p))
+
+    names = dist.get_rv_names()
+    components = []
+    for items in groups.values():
+        outs, probs = zip(*items, strict=True)
+        mass = float(sum(probs))
+        component = Distribution(list(outs), [p / mass for p in probs])
+        if names is not None:
+            component.set_rv_names(names)
+        components.append((mass, component))
+
+    return components
+
+
+def _mss_reduce(dist, sources):
+    """
+    Replace each source by its minimal sufficient statistic about the others.
+
+    For ``S_0`` the minimal sufficient statistic of ``X_0`` about ``X_{-0}``,
+    any probe for the reduced sources extends to the original ones (generate
+    ``X_0`` from ``S_0`` alone) with the same total tension, and any probe for
+    the original sources has no smaller total tension on the reduced ones
+    (each term only shrinks when ``X_0`` is coarsened to ``S_0``). So the
+    entanglement, and likewise the dual total correlation, are unchanged.
+
+    Parameters
+    ----------
+    dist : Distribution
+        The distribution of interest.
+    sources : list of lists
+        The source groups.
+
+    Returns
+    -------
+    reduced : Distribution
+        A distribution with one variable per reduced source.
+    """
+    from ...algorithms import insert_mss
+    from ...distribution import Distribution
+    from ...helpers import parse_rvs
+
+    outcomes, pmf = zip(*dist.zipped(mode="patoms"), strict=True)
+    d = Distribution([tuple(o) for o in outcomes], pmf)
+    current = [list(parse_rvs(dist, source)[1]) for source in sources]
+
+    for i in range(len(current)):
+        about = [v for j, source in enumerate(current) if j != i for v in source]
+        d = insert_mss(d, -1, current[i], about)
+        current[i] = [d.outcome_length() - 1]
+
+    return d.coalesce(current)
+
+
+def _entanglement(dist, sources, crvs, niter, maxiter, bound):
+    """
+    The entanglement in bits.
+
+    Some optimal probe contains the Gacs-Korner meet ``V``: revealing it
+    leaves every source tension unchanged and lowers the residual by
+    ``H[V|W]``. Given ``V`` the total tension is an average over the meet's
+    values, so ``E = sum_v p(v) E(X_{0:n} | V = v)`` and each component is
+    optimized on its own. Without this split the optimizer must discover the
+    meet inside a single probe, which it routinely fails to do on products.
+    Each component is then reduced to minimal sufficient statistics, which
+    strips private randomness the optimizer would otherwise search around.
+    """
+    if not crvs:
+        components = _meet_components(dist, sources)
+        if len(components) > 1:
+            return sum(mass * _entanglement(comp, sources, crvs, niter, maxiter, bound) for mass, comp in components)
+        dist = _mss_reduce(dist, sources)
+        sources = [[i] for i in range(len(sources))]
+
+    dtc = float(dual_total_correlation(dist, sources, crvs))
+    if dtc < 1e-12:
+        return 0.0
+
+    if len(sources) == 2:
+        value = _pairwise_entanglement(dist, sources, crvs, niter, maxiter, bound)
+    else:
+        opt = EntanglementOptimizer(dist, rvs=sources, crvs=crvs, bound=bound)
+        opt.optimize(niter=niter, maxiter=maxiter)
+        value = float(opt.objective(opt._optima))
+
+    # Two provable, cheap envelopes. The trivial probe W = . gives a total
+    # tension of B, and the Gacs-Korner meet gives B - K (only nonzero when
+    # conditioning prevented the split above).
+    gk = float(gk_common_information(dist, sources, crvs))
+
+    return min(max(value, 0.0), dtc - gk, dtc)
+
+
 @unitful
 def entanglement(dist, rvs=None, crvs=None, niter=None, maxiter=1000, bound=None):
     """
@@ -249,22 +372,7 @@ def entanglement(dist, rvs=None, crvs=None, niter=None, maxiter=1000, bound=None
     0.0
     """
     sources = _sources(dist, rvs)
-
-    if len(sources) == 2:
-        value = _pairwise_entanglement(dist, sources, crvs, niter, maxiter, bound)
-    else:
-        opt = EntanglementOptimizer(dist, rvs=sources, crvs=crvs, bound=bound)
-        opt.optimize(niter=niter, maxiter=maxiter)
-        value = float(opt.objective(opt._optima))
-
-    # Two provable, cheap envelopes. The trivial probe W = . gives a total
-    # tension of B, and the Gacs-Korner meet gives B - K; the meet is not
-    # among the optimizer's seeds, so imposing it here is what makes the
-    # Theta sandwich exact.
-    dtc = float(dual_total_correlation(dist, sources, crvs))
-    gk = float(gk_common_information(dist, sources, crvs))
-
-    return min(max(value, 0.0), dtc - gk, dtc)
+    return _entanglement(dist, sources, crvs, niter, maxiter, bound)
 
 
 @unitful

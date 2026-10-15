@@ -120,6 +120,54 @@ def test_xor_is_maximally_non_extractable():
     assert float(tension_common_information(d, niter=2, maxiter=400)) == pytest.approx(0.0, abs=1e-4)
 
 
+def noisy_copies(q, n):
+    """n noisy copies of a latent fair bit through i.i.d. BSC(q)."""
+    from itertools import product
+
+    pmf = {}
+    for z in (0, 1):
+        for bits in product((0, 1), repeat=n):
+            w = 0.5
+            for b in bits:
+                w *= q if b != z else 1 - q
+            key = "".join(map(str, bits))
+            pmf[key] = pmf.get(key, 0.0) + w
+    return dit.Distribution(list(pmf), list(pmf.values()))
+
+
+def stack(*dists):
+    """Independent product, variable i of the result being the tuple of the factors' variable i."""
+    n = dists[0].outcome_length()
+    d = dists[0]
+    for d2 in dists[1:]:
+        d = d.__matmul__(d2)
+    return d.coalesce([[i + n * j for j in range(len(dists))] for i in range(n)])
+
+
+@pytest.mark.flaky(reruns=3)
+def test_meet_split_on_products():
+    """Revealing the giant bit is free, so Theta(giant x noisy) = 1 + Theta(noisy)."""
+    noisy = noisy_copies(0.1, 3)
+    giant = dit.Distribution(["000", "111"], [0.5, 0.5])
+    theta = float(tension_common_information(noisy, niter=2, maxiter=500))
+
+    assert theta == pytest.approx(0.0024466, abs=1e-5)
+    assert float(tension_common_information(stack(giant, noisy), niter=2, maxiter=500)) == pytest.approx(
+        1 + theta, abs=1e-5
+    )
+
+
+@pytest.mark.flaky(reruns=3)
+def test_private_randomness_is_irrelevant():
+    """Appending an independent private bit to every source changes neither E nor Theta."""
+    noisy = noisy_copies(0.1, 3)
+    private = dit.Distribution(["000", "001", "010", "011", "100", "101", "110", "111"], [1 / 8] * 8)
+
+    assert float(entanglement(stack(noisy, private), niter=2, maxiter=500)) == pytest.approx(
+        float(entanglement(noisy, niter=2, maxiter=500)), abs=1e-5
+    )
+
+
 @pytest.mark.flaky(reruns=3)
 def test_direct_optimizer_matches_gray_wyner_for_pairs():
     """At n = 2 the direct probe optimizer and the Gray-Wyner query agree."""

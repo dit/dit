@@ -47,6 +47,16 @@ For a pair :math:`\B{X : Y} = \I{X : Y}`. Using the Gács-Körner meet as the pr
 
 For two variables this places it in the common-information ordering between the Gács-Körner common information and the mutual information. For three or more it is bounded above by the dual total correlation but is not known to be comparable with the :doc:`caekl_mutual_information`.
 
+Computation
+===========
+
+Two exact reductions are applied before any optimization (when no conditioning variables are given):
+
+* **Split on the Gács-Körner meet.** Adding the meet :math:`V` to a probe leaves every source tension unchanged, since :math:`V` is a function of each source, and lowers the residual by :math:`\H{V \mid W}`. So some optimal probe contains :math:`V`, and the entanglement is the average of the entanglements of the components, :math:`\Ent{X_{0:n}} = \sum_v p(v) \, \Ent{X_{0:n} \mid V = v}`.
+* **Reduce to minimal sufficient statistics.** Replacing a source by its minimal sufficient statistic about the other sources changes neither the entanglement nor the dual total correlation. This strips private randomness.
+
+Without these, the optimizer must discover the meet and ignore private randomness inside a single probe, which it routinely fails to do on independent products.
+
 Continuity
 ==========
 
