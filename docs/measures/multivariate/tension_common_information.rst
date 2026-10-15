@@ -18,32 +18,34 @@ The entanglement of a pair measures how far its mutual information is from being
 
 This is the quantity on the right-hand side of the Makarychev-Makarychev-Romashchenko-Vereshchagin class of non-Shannon inequalities :cite:`makarychev2002class`, and was studied by Zhang :cite:`zhang2003new` (writing it :math:`W(X, Y)`) in connection with the approximate representability of mutual information. The name is due to :cite:`matveev2026beyond`; it is unrelated to quantum entanglement.
 
-The three summands are exactly the coordinates of the :ref:`region of tension <tension region>`, so the entanglement is the least coordinate-sum over that region — a single weighted-rate query on the :doc:`/gray_wyner`.
+The three summands are exactly the coordinates of the :ref:`region of tension <tension region>`, so for a pair the entanglement is the least coordinate-sum over that region — a single weighted-rate query on the :doc:`/gray_wyner`.
 
-For :math:`n` sources the tension coordinates are :math:`\I{X_{-i} : W \mid X_i}` and :math:`\T{X_{0:n} \mid W}`, giving
+For :math:`n` sources the source tensions are :math:`\I{X_{-i} : W \mid X_i}` and the leftover dependence is measured by the :doc:`dual_total_correlation` :math:`\B{X_{0:n} \mid W}`, giving
 
 .. math::
 
-   \Ent{X_{0:n}} = \inf_{W} \left( \T{X_{0:n} \mid W} + \sum_i \I{X_{-i} : W \mid X_i} \right)
+   \Ent{X_{0:n}} = \inf_{W} \left( \B{X_{0:n} \mid W} + \sum_i \I{X_{-i} : W \mid X_i} \right)
 
-which reduces to the pairwise definition at :math:`n = 2`.
+which reduces to the pairwise definition at :math:`n = 2`. The dual total correlation keeps the measure on the scale of the common informations: conditioning on the Gács-Körner meet lowers :math:`\B{}` by exactly :math:`\K{}`, while it lowers the total correlation by :math:`(n-1)\K{}`. With a total-correlation residual the three-variable giant bit would have a tension common information of 2 bits, more than its entropy. Because :math:`\B{X_{0:n} \mid W}` is not affine in the Gray-Wyner rates, for :math:`n \geq 3` the probe :math:`W` is optimized directly rather than through the Gray-Wyner region.
 
 The entanglement vanishes exactly when the mutual information is Gács-Körner extractable, and attains :math:`\min\{\H{X \mid Y}, \H{Y \mid X}, \I{X : Y}\}` when the pair is *maximally non-extractable*.
 
 The tension common information
 ==============================
 
-Because the entanglement is a deficiency, subtracting it from the total correlation gives a quantity that runs the same way as a common information:
+Because the entanglement is a deficiency, subtracting it from the dual total correlation gives a quantity that runs the same way as a common information:
 
 .. math::
 
-   \Tci{X_{0:n}} = \T{X_{0:n}} - \Ent{X_{0:n}}
+   \Tci{X_{0:n}} = \B{X_{0:n}} - \Ent{X_{0:n}}
 
-Using the Gács-Körner meet as the probe makes every source tension vanish and leaves a residual of :math:`\T{X_{0:n}} - (n-1)\K{X_{0:n}}`, which sandwiches it:
+For a pair :math:`\B{X : Y} = \I{X : Y}`. Using the Gács-Körner meet as the probe makes every source tension vanish and leaves a residual of :math:`\B{X_{0:n}} - \K{X_{0:n}}`, which sandwiches it:
 
 .. math::
 
-   (n - 1) \K{X_{0:n}} \leq \Tci{X_{0:n}} \leq \T{X_{0:n}}
+   \K{X_{0:n}} \leq \Tci{X_{0:n}} \leq \B{X_{0:n}}
+
+For two variables this places it in the common-information ordering between the Gács-Körner common information and the mutual information. For three or more it is bounded above by the dual total correlation but is not known to be comparable with the :doc:`caekl_mutual_information`.
 
 Continuity
 ==========

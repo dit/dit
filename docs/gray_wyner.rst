@@ -101,7 +101,7 @@ Two envelopes depend only on the entropy profile. Evaluating at the deterministi
 
 A pair attaining the lower envelope everywhere is *rigid*; one attaining the upper envelope has Gács-Körner extractable mutual information. ``ShapeFunction.rigidity()`` reports where a given pair sits between them.
 
-The :doc:`measures/multivariate/tension_common_information` and the entanglement are read off the same region; see that page.
+For a pair, the :doc:`measures/multivariate/tension_common_information` and the entanglement are read off the same region. For three or more sources they measure leftover dependence with the dual total correlation rather than the residual coordinate :math:`\tau_{res} = \T{X_{0:n} \mid W}`, so they are no longer a query on this region; see that page.
 
 .. note::
 

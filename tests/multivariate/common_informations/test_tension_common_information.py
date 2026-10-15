@@ -7,12 +7,14 @@ from hypothesis import HealthCheck, given, settings
 
 import dit
 from dit.multivariate import (
+    dual_total_correlation,
     entanglement,
     entropy,
     gk_common_information,
     tension_common_information,
     total_correlation,
 )
+from dit.multivariate.common_informations.tension_common_information import EntanglementOptimizer
 from dit.rate_distortion import ShapeFunction
 from dit.utils.testing import distributions
 
@@ -35,7 +37,8 @@ def fano():
         (giant_bit, 0.0),
         (blocks, 0.0),
         (independent, 0.0),
-        (dit.example_dists.Xor(), 1.0),
+        (dit.example_dists.Xor(), 2.0),
+        (dit.Distribution(["000", "111"], [0.5, 0.5]), 0.0),
     ],
 )
 def test_entanglement_known_values(dist, value):
@@ -84,14 +87,47 @@ def test_fano_plane_is_maximally_non_extractable():
 
 
 @pytest.mark.flaky(reruns=3)
-@pytest.mark.parametrize("dist", [giant_bit, dsbs, blocks, dit.example_dists.Xor()])
+@pytest.mark.parametrize(
+    "dist",
+    [
+        giant_bit,
+        dsbs,
+        blocks,
+        dit.example_dists.Xor(),
+        dit.Distribution(["000", "111", "001", "110"], [0.4, 0.4, 0.1, 0.1]),
+    ],
+)
 def test_theta_sandwich(dist):
-    """(n - 1) K <= Theta <= T."""
+    """K <= Theta <= B."""
     theta = float(tension_common_information(dist, niter=2, maxiter=400))
-    n = dist.outcome_length()
 
-    assert theta >= (n - 1) * float(gk_common_information(dist)) - 1e-4
-    assert theta <= float(total_correlation(dist)) + 1e-6
+    assert theta >= float(gk_common_information(dist)) - 1e-4
+    assert theta <= float(dual_total_correlation(dist)) + 1e-6
+
+
+@pytest.mark.flaky(reruns=3)
+def test_theta_giant_bit_is_on_the_common_information_scale():
+    """On the three-variable giant bit Theta = K = B = 1, not the total correlation 2."""
+    d = dit.Distribution(["000", "111"], [0.5, 0.5])
+    assert float(total_correlation(d)) == pytest.approx(2.0)
+    assert float(tension_common_information(d, niter=2, maxiter=400)) == pytest.approx(1.0, abs=1e-4)
+
+
+@pytest.mark.flaky(reruns=3)
+def test_xor_is_maximally_non_extractable():
+    """Every probe leaves the whole dual total correlation of XOR as tension."""
+    d = dit.example_dists.Xor()
+    assert float(tension_common_information(d, niter=2, maxiter=400)) == pytest.approx(0.0, abs=1e-4)
+
+
+@pytest.mark.flaky(reruns=3)
+def test_direct_optimizer_matches_gray_wyner_for_pairs():
+    """At n = 2 the direct probe optimizer and the Gray-Wyner query agree."""
+    opt = EntanglementOptimizer(dsbs, rvs=[[0], [1]], bound=6)
+    opt.optimize(niter=2, maxiter=500)
+    direct = float(opt.objective(opt._optima))
+
+    assert direct == pytest.approx(float(entanglement(dsbs, niter=2, maxiter=500)), abs=1e-3)
 
 
 @pytest.mark.flaky(reruns=3)
@@ -124,4 +160,14 @@ def test_theta_sandwich_property(dist):
     theta = float(tension_common_information(dist, niter=1, maxiter=250))
 
     assert theta >= float(gk_common_information(dist)) - 1e-3
-    assert theta <= float(total_correlation(dist)) + 1e-6
+    assert theta <= float(dual_total_correlation(dist)) + 1e-6
+
+
+@settings(deadline=None, max_examples=3, suppress_health_check=[HealthCheck.too_slow])
+@given(dist=distributions(alphabets=(2,) * 3))
+def test_theta_sandwich_property_three_sources(dist):
+    """K <= Theta <= B on arbitrary binary triples."""
+    theta = float(tension_common_information(dist, niter=1, maxiter=250))
+
+    assert theta >= float(gk_common_information(dist)) - 1e-3
+    assert theta <= float(dual_total_correlation(dist)) + 1e-6
