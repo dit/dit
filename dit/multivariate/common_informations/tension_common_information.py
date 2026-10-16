@@ -18,8 +18,8 @@ entanglement.
 
 Geometrically it is the smallest coordinate-sum over the region of tension of
 Prabhakaran & Prabhakaran :cite:`prabhakaran2014assisted`, since the three
-summands are exactly the tension coordinates. This is how it is computed
-here: one weighted-rate query on the Gray-Wyner region.
+summands are exactly the tension coordinates. For a pair it is computed as
+one weighted-rate query on the Gray-Wyner region.
 
 Extremes
 --------
@@ -29,45 +29,50 @@ i.e. when ``K[X:Y] = I[X:Y]``, in which case the pair splits as
 other extreme ``E`` attains ``min{H[X|Y], H[Y|X], I[X:Y]}``, and the pair is
 *maximally non-extractable*.
 
+Several variables
+-----------------
+For ``n`` sources the leftover dependence is measured by the *dual* total
+correlation and the source tensions are ``tau_i = I[X_{-i} : W | X_i]``:
+
+.. math::
+
+    E(X_{0:n}) = \\inf_W \\Big\\{ B[X_{0:n}|W]
+        + \\sum_i I[X_{-i}{:}W|X_i] \\Big\\},
+
+which reduces to the pairwise definition at ``n = 2``. The dual total
+correlation keeps the measure on the scale of the common informations:
+conditioning on the Gacs-Korner meet lowers ``B`` by exactly ``K``, whereas
+it lowers the total correlation by ``(n - 1) K``. The residual
+``B[X_{0:n}|W]`` is not affine in the Gray-Wyner rates, so for ``n >= 3`` the
+probe is optimized directly.
+
 The tension common information
 ------------------------------
 Since ``E`` is a deficiency, the derived quantity
 
 .. math::
 
-    \\Theta(X_{0:n}) = T[X_{0:n}] - E(X_{0:n})
+    \\Theta(X_{0:n}) = B[X_{0:n}] - E(X_{0:n})
 
 runs the other way: it is a continuous relaxation of the Gacs-Korner common
 information, satisfying
 
 .. math::
 
-    (n - 1) K[X_{0:n}] \\leq \\Theta(X_{0:n}) \\leq T[X_{0:n}].
+    K[X_{0:n}] \\leq \\Theta(X_{0:n}) \\leq B[X_{0:n}].
 
 The lower bound follows by using the Gacs-Korner meet as the probe: it makes
-every source tension vanish and leaves a residual of
-``T - (n-1) K``. Unlike ``K``, which is determined by the connected
-components of the support graph and therefore collapses to zero under an
-arbitrarily small perturbation, ``Theta`` varies continuously.
-
-Several variables
------------------
-For ``n`` sources the tension coordinates are
-``tau_i = I[X_{-i} : W | X_i]`` and ``tau_res = T[X_{0:n} | W]``, so
-
-.. math::
-
-    E(X_{0:n}) = \\inf_W \\Big\\{ T[X_{0:n}|W]
-        + \\sum_i I[X_{-i}{:}W|X_i] \\Big\\},
-
-which reduces to the pairwise definition at ``n = 2``. Replacing the residual
-total correlation with the dual total correlation gives a different
-generalization that agrees at ``n = 2``; only the total-correlation form is
-affine in the Gray-Wyner rates, and it is the one implemented here.
+every source tension vanish and leaves a residual of ``B - K``. Unlike
+``K``, which is determined by the connected components of the support graph
+and therefore collapses to zero under an arbitrarily small perturbation,
+``Theta`` varies continuously.
 """
 
+import numpy as np
+
+from ...algorithms import BaseAuxVarOptimizer
 from ...utils import flatten, unitful
-from ..total_correlation import total_correlation
+from ..dual_total_correlation import dual_total_correlation
 from .gk_common_information import gk_common_information
 
 __all__ = (
@@ -76,9 +81,9 @@ __all__ = (
 )
 
 
-def _network(dist, rvs, crvs, bound):
+def _sources(dist, rvs):
     """
-    Build the Gray-Wyner network backing these measures.
+    Normalize the source groups.
 
     Parameters
     ----------
@@ -86,27 +91,233 @@ def _network(dist, rvs, crvs, bound):
         The distribution of interest.
     rvs : list of lists, None
         The source groups.
-    crvs : list, None
-        Variables to condition on.
-    bound : int, None
-        Optional cap on the cardinality of the probe.
 
     Returns
     -------
-    network : GrayWynerNetwork
-        The network.
     sources : list of lists
         The normalized source groups.
     """
     from ...exceptions import ditException
-    from ...rate_distortion import GrayWynerNetwork
 
     sources = [[i] for i in flatten(dist.rvs)] if rvs is None else rvs
     if len(sources) < 2:
         msg = "The entanglement requires at least two sources."
         raise ditException(msg)
 
-    return GrayWynerNetwork(dist, rvs=sources, crvs=crvs, bound=bound), sources
+    return sources
+
+
+class EntanglementOptimizer(BaseAuxVarOptimizer):
+    """
+    Minimize the total tension ``B[X_{0:n}|W] + sum_i I[X_{-i} : W | X_i]``
+    over probes ``W``.
+    """
+
+    name = "entanglement"
+    description = "The least total tension over probes W."
+
+    def __init__(self, dist, rvs=None, crvs=None, bound=None):
+        """
+        Initialize the optimizer.
+
+        Parameters
+        ----------
+        dist : Distribution
+            The distribution of interest.
+        rvs : list of lists
+            The source groups.
+        crvs : list, None
+            Variables to condition on.
+        bound : int, None
+            Cap on the cardinality of the probe ``W``.
+        """
+        super().__init__(dist, rvs=rvs, crvs=crvs)
+
+        theoretical_bound = self.compute_bound()
+        bound = min(bound, theoretical_bound) if bound else theoretical_bound
+
+        self._construct_auxvars([(self._rvs | self._crvs, bound)])
+
+    def compute_bound(self):
+        """
+        The support-lemma bound on the probe: preserve the joint of the
+        sources and the ``n + 1`` tension coordinates.
+
+        Returns
+        -------
+        bound : int
+            The bound on the size of W.
+        """
+        return int(np.prod(self._shape)) + len(self._rvs)
+
+    def _objective(self):
+        """
+        The total tension.
+
+        Returns
+        -------
+        obj : func
+            The objective function.
+        """
+        residual = self._dual_total_correlation(self._rvs, self._crvs | self._arvs)
+        tensions = [
+            self._conditional_mutual_information(self._rvs - {rv}, self._arvs, {rv} | self._crvs) for rv in self._rvs
+        ]
+
+        def objective(self, x):
+            """
+            Compute the total tension.
+
+            Parameters
+            ----------
+            x : np.ndarray
+                An optimization vector.
+
+            Returns
+            -------
+            obj : float
+                The value of the objective.
+            """
+            pmf = self.construct_joint(x)
+            return residual(pmf) + sum(tension(pmf) for tension in tensions)
+
+        return objective
+
+
+def _pairwise_entanglement(dist, sources, crvs, niter, maxiter, bound):
+    """
+    The pairwise entanglement as a weighted-rate query on the Gray-Wyner
+    region, where the three tension coordinates sum to ``3 R_0 + 2 R_1 + 2 R_2``
+    minus a constant.
+    """
+    from ...rate_distortion import GrayWynerNetwork
+
+    network = GrayWynerNetwork(dist, rvs=sources, crvs=crvs, bound=bound)
+    tension = network.tension_point([3.0, 2.0, 2.0], niter=niter, maxiter=maxiter)
+    return sum(tension.tensions) + tension.residual
+
+
+def _meet_components(dist, sources):
+    """
+    Split a distribution along the values of the Gacs-Korner meet of its
+    sources.
+
+    Parameters
+    ----------
+    dist : Distribution
+        The distribution of interest.
+    sources : list of lists
+        The source groups.
+
+    Returns
+    -------
+    components : list of (float, Distribution)
+        The probability of each meet value and the distribution conditioned
+        on it, with tuple outcomes over the original variables.
+    """
+    from collections import defaultdict
+
+    from ...algorithms import insert_meet
+    from ...distribution import Distribution
+
+    outcomes, pmf = zip(*dist.zipped(mode="patoms"), strict=True)
+    d = Distribution(outcomes, pmf)
+    meet = insert_meet(d, -1, sources, support_only=True)
+
+    groups = defaultdict(list)
+    for outcome, p in meet.zipped(mode="patoms"):
+        outcome = tuple(outcome)
+        groups[outcome[-1]].append((outcome[:-1], p))
+
+    names = dist.get_rv_names()
+    components = []
+    for items in groups.values():
+        outs, probs = zip(*items, strict=True)
+        mass = float(sum(probs))
+        component = Distribution(list(outs), [p / mass for p in probs])
+        if names is not None:
+            component.set_rv_names(names)
+        components.append((mass, component))
+
+    return components
+
+
+def _mss_reduce(dist, sources):
+    """
+    Replace each source by its minimal sufficient statistic about the others.
+
+    For ``S_0`` the minimal sufficient statistic of ``X_0`` about ``X_{-0}``,
+    any probe for the reduced sources extends to the original ones (generate
+    ``X_0`` from ``S_0`` alone) with the same total tension, and any probe for
+    the original sources has no smaller total tension on the reduced ones
+    (each term only shrinks when ``X_0`` is coarsened to ``S_0``). So the
+    entanglement, and likewise the dual total correlation, are unchanged.
+
+    Parameters
+    ----------
+    dist : Distribution
+        The distribution of interest.
+    sources : list of lists
+        The source groups.
+
+    Returns
+    -------
+    reduced : Distribution
+        A distribution with one variable per reduced source.
+    """
+    from ...algorithms import insert_mss
+    from ...distribution import Distribution
+    from ...helpers import parse_rvs
+
+    outcomes, pmf = zip(*dist.zipped(mode="patoms"), strict=True)
+    d = Distribution([tuple(o) for o in outcomes], pmf)
+    current = [list(parse_rvs(dist, source)[1]) for source in sources]
+
+    for i in range(len(current)):
+        about = [v for j, source in enumerate(current) if j != i for v in source]
+        d = insert_mss(d, -1, current[i], about)
+        current[i] = [d.outcome_length() - 1]
+
+    return d.coalesce(current)
+
+
+def _entanglement(dist, sources, crvs, niter, maxiter, bound):
+    """
+    The entanglement in bits.
+
+    Some optimal probe contains the Gacs-Korner meet ``V``: revealing it
+    leaves every source tension unchanged and lowers the residual by
+    ``H[V|W]``. Given ``V`` the total tension is an average over the meet's
+    values, so ``E = sum_v p(v) E(X_{0:n} | V = v)`` and each component is
+    optimized on its own. Without this split the optimizer must discover the
+    meet inside a single probe, which it routinely fails to do on products.
+    Each component is then reduced to minimal sufficient statistics, which
+    strips private randomness the optimizer would otherwise search around.
+    """
+    if not crvs:
+        components = _meet_components(dist, sources)
+        if len(components) > 1:
+            return sum(mass * _entanglement(comp, sources, crvs, niter, maxiter, bound) for mass, comp in components)
+        dist = _mss_reduce(dist, sources)
+        sources = [[i] for i in range(len(sources))]
+
+    dtc = float(dual_total_correlation(dist, sources, crvs))
+    if dtc < 1e-12:
+        return 0.0
+
+    if len(sources) == 2:
+        value = _pairwise_entanglement(dist, sources, crvs, niter, maxiter, bound)
+    else:
+        opt = EntanglementOptimizer(dist, rvs=sources, crvs=crvs, bound=bound)
+        opt.optimize(niter=niter, maxiter=maxiter)
+        value = float(opt.objective(opt._optima))
+
+    # Two provable, cheap envelopes. The trivial probe W = . gives a total
+    # tension of B, and the Gacs-Korner meet gives B - K (only nonzero when
+    # conditioning prevented the split above).
+    gk = float(gk_common_information(dist, sources, crvs))
+
+    return min(max(value, 0.0), dtc - gk, dtc)
 
 
 @unitful
@@ -118,12 +329,14 @@ def entanglement(dist, rvs=None, crvs=None, niter=None, maxiter=1000, bound=None
 
     .. math::
 
-        E(X_{0:n}) = \\inf_W \\Big\\{ T[X_{0:n}|W]
+        E(X_{0:n}) = \\inf_W \\Big\\{ B[X_{0:n}|W]
             + \\sum_i I[X_{-i}{:}W|X_i] \\Big\\},
 
     which for a pair is
     ``inf_W I[X:Y|W] + I[X:W|Y] + I[W:Y|X]``
-    :cite:`makarychev2002class,zhang2003new,matveev2026beyond`.
+    :cite:`makarychev2002class,zhang2003new,matveev2026beyond`. The
+    multivariate residual is the dual total correlation, which puts ``E`` on
+    the scale of the common informations.
 
     Parameters
     ----------
@@ -158,23 +371,8 @@ def entanglement(dist, rvs=None, crvs=None, niter=None, maxiter=1000, bound=None
     >>> float(entanglement(giant_bit))
     0.0
     """
-    network, sources = _network(dist, rvs, crvs, bound)
-    n = len(sources)
-
-    # The tension coordinates sum to (n + 1) R_0 + 2 sum_i R_i minus a
-    # constant, so minimizing that weighted rate minimizes the total tension.
-    lambdas = [float(n + 1)] + [2.0] * n
-    tension = network.tension_point(lambdas, niter=niter, maxiter=maxiter)
-    value = sum(tension.tensions) + tension.residual
-
-    # Two provable, cheap envelopes. The trivial probe W = . gives a total
-    # tension of T, and the Gacs-Korner meet gives T - (n-1) K; the meet is
-    # not among the optimizer's deterministic seeds, so imposing it here is
-    # what makes the Theta sandwich exact.
-    tc = float(total_correlation(dist, sources, crvs))
-    gk = float(gk_common_information(dist, sources, crvs))
-
-    return min(max(value, 0.0), tc - (n - 1) * gk, tc)
+    sources = _sources(dist, rvs)
+    return _entanglement(dist, sources, crvs, niter, maxiter, bound)
 
 
 @unitful
@@ -182,15 +380,16 @@ def tension_common_information(dist, rvs=None, crvs=None, niter=None, maxiter=10
     """
     Compute the tension common information.
 
-    This is the portion of the total correlation that is not obstructed by
-    tension,
+    This is the portion of the dual total correlation that is not obstructed
+    by tension,
 
     .. math::
 
-        \\Theta(X_{0:n}) = T[X_{0:n}] - E(X_{0:n}),
+        \\Theta(X_{0:n}) = B[X_{0:n}] - E(X_{0:n}),
 
     a continuous relaxation of the Gacs-Korner common information obeying
-    ``(n - 1) K <= Theta <= T`` :cite:`matveev2026beyond`.
+    ``K <= Theta <= B`` :cite:`matveev2026beyond`. For a pair ``B`` is the
+    mutual information.
 
     Parameters
     ----------
@@ -226,9 +425,9 @@ def tension_common_information(dist, rvs=None, crvs=None, niter=None, maxiter=10
     >>> float(gk_common_information(blocks))
     0.7219280948873623
     """
-    _, sources = _network(dist, rvs, crvs, bound)
+    sources = _sources(dist, rvs)
 
-    tc = float(total_correlation(dist, sources, crvs))
+    dtc = float(dual_total_correlation(dist, sources, crvs))
     e = entanglement(dist, rvs=sources, crvs=crvs, niter=niter, maxiter=maxiter, bound=bound)
 
-    return max(tc - float(e), 0.0)
+    return max(dtc - float(e), 0.0)
