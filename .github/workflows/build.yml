@@ -83,10 +83,10 @@ jobs:
           COVERAGE_CORE: sysmon
         run: >-
           uv run pytest
-          ${{ (matrix.os == 'ubuntu-latest' && matrix.python-version == '3.14') && '--cov-report=xml' || '--no-cov' }}
+          ${{ (matrix.os == 'macos-latest' && matrix.python-version == '3.14') && '--cov-report=xml' || '--no-cov' }}
 
       - name: Upload coverage
-        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.14'
+        if: matrix.os == 'macos-latest' && matrix.python-version == '3.14'
         uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
