@@ -128,6 +128,7 @@ _MACROS = {
     "Imc": [r"\op{I_{MC}}{#1}", 1],
     "Iln": [r"\op{I_{LN}}{#1}", 1],
     "Ideg": [r"\op{I_{deg}}{#1}", 1],
+    "Ici": [r"\op{I_{\cup}^{CI}}{#1}", 1],
     "Iprec": [r"\op{I_{prec}}{#1}", 1],
     "Igh": [r"\op{I_{GH}}{#1}", 1],
     "Iig": [r"\op{I_{IG}}{#1}", 1],

@@ -979,3 +979,74 @@ class BaseBivariatePID(BaseIncompletePID):
                 self._reds[node] = self._scaled(self._measure(self._dist, node, self._target, **self._kwargs))
 
         super()._compute()
+
+
+class BaseSynergyPID(BaseIncompletePID):
+    """
+    PID class for measures which define a (weak) synergy, or equivalently a union information.
+
+    Subclasses implement `_measure` to return the synergy of a collection of sources `alpha`
+    relative to its own union A = A_1 u ... u A_m,
+
+        S(alpha -> T) = I(A; T) - I_union(alpha -> T).
+
+    Redundancies are then obtained by inclusion-exclusion over sub-collections of each lattice
+    node,
+
+        I_cap(alpha) = sum_{beta subset alpha, beta nonempty} (-1)^(|beta| + 1) I_union(beta),
+
+    which holds exactly in the parthood formulation of the PID :cite:`gutknecht2021bits`.
+    """
+
+    LATTICE_MONOTONICITY = False
+    REDUCED_PID = False
+
+    def __init__(self, dist, sources=None, target=None, reds=None, pis=None, compute=True, **kwargs):
+        """ """
+        self._unions = {}
+        super().__init__(dist, sources, target, reds=reds, pis=pis, compute=compute, **kwargs)
+
+    def get_union(self, node):
+        """
+        Get the union information associated with the collection of sources `node`.
+
+        Parameters
+        ----------
+        node : iterable of iterables
+            A collection of sources.
+
+        Returns
+        -------
+        union : float
+            The union information I_union(node -> target).
+        """
+        key = tuple(sorted(tuple(source) for source in node))
+        if key not in self._unions:
+            whole = coinformation(self._dist, [list(flatten(key)), self._target])
+            syn = self._measure(self._dist, key, self._target, **self._kwargs)
+            self._unions[key] = _pid_coerce(self._scaled(whole - syn))
+        return self._unions[key]
+
+    def get_syn(self, node):
+        """
+        Get the synergy associated with the collection of sources `node`, relative to all sources.
+
+        Parameters
+        ----------
+        node : iterable of iterables
+            A collection of sources.
+
+        Returns
+        -------
+        syn : float
+            The synergy S(node -> target) = I(sources; target) - I_union(node -> target).
+        """
+        return self._total - self.get_union(node)
+
+    def _compute(self):
+        """ """
+        for node in self._lattice:
+            if len(node) > 1 and node not in self._reds:
+                self._reds[node] = sum((-1) ** (len(sub) + 1) * self.get_union(sub) for sub in powerset(node) if sub)
+
+        super()._compute()

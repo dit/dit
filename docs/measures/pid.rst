@@ -526,6 +526,33 @@ The degradation intersection information of Kolchinsky :cite:`kolchinsky2022nove
 
    \Ideg{X_{0:n} \to Y} = \max_{Q :\; Q \preceq_d X_i \;\forall i} \I{Q : Y}
 
+.. py:module:: dit.pid.ici
+
+:math:`\Ici{\bullet}`
+---------------------
+
+Gomes & Figueiredo :cite:`gomes2024measure` define a *union* information rather than a redundancy. Each source :math:`A_i` contributes its channel :math:`p(a_i \mid y)`; by sharing channels (and marginals thereof) the sources can build any distribution :math:`q(a, y) = p(y) \prod_{B \in \pi} p(a_B \mid y)`, where :math:`\pi` partitions the variables of :math:`A = \bigcup_i A_i` into blocks that each lie within some source. The union information is the best such :math:`q` can do, capped at the true mutual information:
+
+.. math::
+
+   \Ici{A_0, \ldots, A_{m-1} \to Y} = \min\left\{ \I{A : Y},\; \max_{q} \I{A : Y}_q \right\}
+
+Synergy is the information lost by assuming the sources are conditionally independent given the target, :math:`S^{CI} = \I{A : Y} - \Ici{A_0, \ldots, A_{m-1} \to Y} \geq 0`. Sources contained in, or a deterministic function of, other sources are removed first.
+
+``PID_CI`` is built on ``BaseSynergyPID``, which turns a synergy (equivalently, union information) into redundancies by inclusion-exclusion over sub-collections of each antichain, as in the parthood formulation of Gutknecht et al. :cite:`gutknecht2021bits`:
+
+.. math::
+
+   I_\cap(\alpha) = \sum_{\emptyset \neq \beta \subseteq \alpha} (-1)^{|\beta| + 1} I_\cup(\beta)
+
+.. ipython::
+
+   In [1]: from dit.pid import PID_CI
+
+   In [2]: PID_CI(bivariates['and'])
+
+   In [3]: PID_CI(bivariates['and']).get_syn(((0,), (1,)))
+
 .. py:module:: dit.pid.idelta
 
 :math:`\Idelta{\bullet}`
