@@ -30,6 +30,7 @@ These measures all reduce to the standard Shannon :ref:`mutual_information` for 
    o_information
    caekl_mutual_information
    kirkwood
+   pairwise_frustration
    interaction_information
    s_information
    deweese

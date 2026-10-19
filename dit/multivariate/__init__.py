@@ -16,6 +16,7 @@ from .interaction_information import *
 from .kirkwood import *
 from .logarithmic_decomposition import *
 from .o_information import *
+from .pairwise_frustration import *
 from .quax_synergy import *
 from .s_information import *
 from .secret_key_agreement import *
