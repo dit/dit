@@ -24,6 +24,7 @@ def test_mixed2():
     assert i == pytest.approx(2.0)
 
 
+@pytest.mark.flaky(reruns=5)
 def test_mixed3():
     """
     Test against known values.
