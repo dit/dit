@@ -145,7 +145,6 @@ addopts = [
     "--numprocesses=auto",
     "--durations=25",
     "--durations-min=1.0",
-    "--reruns=1",
     "-m", "not slow and not very_slow",
 ]
 markers = [
