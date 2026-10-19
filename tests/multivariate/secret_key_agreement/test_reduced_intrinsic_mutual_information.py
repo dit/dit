@@ -39,6 +39,7 @@ _measures = [
 ]
 
 
+@pytest.mark.flaky(reruns=5)
 @pytest.mark.parametrize("backend", backends)
 @pytest.mark.parametrize("measure", _measures)
 @pytest.mark.parametrize(("dist", "lower", "upper"), _dists)

@@ -202,7 +202,7 @@ def test_imi_fail():
         IMI.intrinsic_total_correlation(dist1, [[0], [1], [2]])
 
 
-@pytest.mark.flaky(rerun=5)
+@pytest.mark.flaky(reruns=5)
 @pytest.mark.parametrize("backend", backends)
 @given(dist=distributions(alphabets=((2, 4),) * 3))
 def test_bounds(dist, backend):

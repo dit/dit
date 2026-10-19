@@ -17,8 +17,30 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ["3.11", "3.12", "3.13", "3.14"]
+        # PRs: every OS on the newest Python, plus all versions on macOS (the fastest runner).
+        # Pushes to main and manual runs: the full OS x Python matrix.
+        include: >-
+          ${{ fromJSON(github.event_name == 'pull_request' && '[
+          {"os": "ubuntu-latest", "python-version": "3.14"},
+          {"os": "windows-latest", "python-version": "3.14"},
+          {"os": "macos-latest", "python-version": "3.11"},
+          {"os": "macos-latest", "python-version": "3.12"},
+          {"os": "macos-latest", "python-version": "3.13"},
+          {"os": "macos-latest", "python-version": "3.14"}
+          ]' || '[
+          {"os": "ubuntu-latest", "python-version": "3.11"},
+          {"os": "ubuntu-latest", "python-version": "3.12"},
+          {"os": "ubuntu-latest", "python-version": "3.13"},
+          {"os": "ubuntu-latest", "python-version": "3.14"},
+          {"os": "windows-latest", "python-version": "3.11"},
+          {"os": "windows-latest", "python-version": "3.12"},
+          {"os": "windows-latest", "python-version": "3.13"},
+          {"os": "windows-latest", "python-version": "3.14"},
+          {"os": "macos-latest", "python-version": "3.11"},
+          {"os": "macos-latest", "python-version": "3.12"},
+          {"os": "macos-latest", "python-version": "3.13"},
+          {"os": "macos-latest", "python-version": "3.14"}
+          ]') }}
 
     steps:
       - name: Checkout repository
@@ -57,10 +79,14 @@ jobs:
         run: uv sync --extra test --extra optional
 
       - name: Run tests
-        run: uv run pytest --cov-report=xml
+        env:
+          COVERAGE_CORE: sysmon
+        run: >-
+          uv run pytest
+          ${{ (matrix.os == 'macos-latest' && matrix.python-version == '3.14') && '--cov-report=xml' || '--no-cov' }}
 
       - name: Upload coverage
-        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.13'
+        if: matrix.os == 'macos-latest' && matrix.python-version == '3.14'
         uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

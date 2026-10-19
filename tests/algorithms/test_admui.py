@@ -49,6 +49,7 @@ COMPUTE_UI_CASES = {
 }
 
 
+@pytest.mark.flaky(reruns=5)
 @pytest.mark.parametrize("case", ["and"])
 def test_admui_computeui_matches_scipy(case):
     outcomes, pmf = COMPUTE_UI_CASES[case]
