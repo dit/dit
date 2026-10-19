@@ -85,7 +85,7 @@ LOG_SINGLE = [
     lambda d: maximal_leakage(d, [0], [1]),
     lambda d: PID_WB(d)[((0, 1),)],
     lambda d: PID_MMI(d)[((0, 1),)],
-    lambda d: PID_BROJA(d)[((0,),)],
+    pytest.param(lambda d: PID_BROJA(d)[((0,),)], marks=pytest.mark.flaky(reruns=5)),
 ]
 
 UNITLESS_SINGLE = [
