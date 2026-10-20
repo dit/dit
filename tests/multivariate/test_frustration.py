@@ -1,5 +1,5 @@
 """
-Tests for dit.multivariate.pairwise_frustration.
+Tests for dit.multivariate.frustration.
 """
 
 from itertools import permutations, product
@@ -12,11 +12,13 @@ from scipy.optimize import brentq
 from dit import Distribution
 from dit.algorithms import maxent_dist
 from dit.example_dists import Xor, giant_bit
-from dit.multivariate import coinformation, pairwise_frustration
+from dit.exceptions import ditException
+from dit.multivariate import coinformation, frustration, pairwise_frustration
 from dit.utils.testing import distributions
 
 PAIRS = [[0, 1], [0, 2], [1, 2]]
 W = Distribution(["001", "010", "100"], [1 / 3] * 3)
+HUB = [(0, 1, 2), (0, 1, 3), (0, 2, 4), (0, 3, 4)]
 
 
 def dense(d):
@@ -42,9 +44,19 @@ def ternary_potts(J):
     return from_array(np.exp(E))
 
 
+def xorsat(n, clauses, rhs, beta=1.0):
+    """Soft parity constraints: p(x) proportional to exp(beta * #satisfied clauses)."""
+    p = np.zeros((2,) * n)
+    for x in product((0, 1), repeat=n):
+        sat = sum((sum(x[i] for i in C) % 2) == b for C, b in zip(clauses, rhs, strict=True))
+        p[x] = np.exp(beta * sat)
+    return from_array(p)
+
+
 def test_w():
     """W is a maximally frustrated hard-core triangle: the weakest bond costs 2/3 bit."""
     assert pairwise_frustration(W) == pytest.approx(2 / 3, abs=1e-6)
+    assert frustration(W, order=2) == pytest.approx(2 / 3, abs=1e-6)
 
 
 def test_and_is_collider():
@@ -140,3 +152,46 @@ def test_binary_closed_form(dist):
 def test_nonnegative(dist):
     """F is a divergence."""
     assert pairwise_frustration(dist) >= 0.0
+
+
+@settings(deadline=None, max_examples=10)
+@given(dist=distributions(alphabets=(2,) * 4))
+def test_order_three_on_four_variables(dist):
+    """The triples of four variables contain no cycle, so three-way frustration vanishes."""
+    assert frustration(dist, order=3) == 0.0
+
+
+def test_order_at_least_n():
+    """With no proper k-subsets there is nothing to frustrate."""
+    assert frustration(W, order=3) == 0.0
+
+
+@pytest.mark.parametrize("order", [0, 1])
+def test_bad_order(order):
+    """The order must be at least 2."""
+    with pytest.raises(ditException, match="order must be at least 2"):
+        frustration(W, order=order)
+
+
+def test_inconsistent_xorsat_is_frustrated():
+    """Four parity constraints whose right-hand sides sum to 1 cannot all hold."""
+    assert frustration(xorsat(5, HUB, [0, 0, 0, 1]), order=3) == pytest.approx(0.107287, abs=1e-5)
+
+
+def test_consistent_xorsat_is_not():
+    """A satisfiable system of parity constraints is unfrustrated."""
+    assert frustration(xorsat(5, HUB, [0, 0, 0, 0]), order=3) == pytest.approx(0.0, abs=1e-6)
+
+
+def test_xorsat_gauge_invariance():
+    """Flipping the right-hand sides of every clause through variable 1 relabels X1."""
+    a = frustration(xorsat(5, HUB, [0, 0, 0, 1]), order=3)
+    b = frustration(xorsat(5, HUB, [1, 1, 0, 1]), order=3)
+    assert a == pytest.approx(b, abs=1e-6)
+
+
+def test_order_four_needs_five_variables():
+    """The quadruples of five variables form one cycle; an odd number of odd clauses frustrates it."""
+    quads = [(0, 1, 2, 3), (0, 1, 2, 4), (0, 1, 3, 4), (0, 2, 3, 4), (1, 2, 3, 4)]
+    assert frustration(xorsat(5, quads, [0, 0, 0, 0, 1]), order=4) == pytest.approx(0.067318, abs=1e-5)
+    assert frustration(xorsat(5, quads, [0, 0, 0, 0, 0]), order=4) == pytest.approx(0.0, abs=1e-6)
