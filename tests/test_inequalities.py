@@ -109,6 +109,17 @@ def test_data_processing_inequality_tv(triple):
     assert tv_out <= tv_in + epsilon
 
 
+@given(triple=channel_inputs())
+def test_data_processing_inequality_dkl(triple):
+    """
+    DKL(P||Q) >= DKL(PT||QT) for any channel T.
+    """
+    p, q, T = triple
+    dkl_in = relative_entropy(_as_dist(p), _as_dist(q))
+    dkl_out = relative_entropy(_as_dist(p @ T), _as_dist(q @ T))
+    assert dkl_out <= dkl_in + epsilon
+
+
 @given(dist=distributions(alphabets=(10, 10), nondegenerate=True))
 def test_fanos_inequality(dist):
     """
