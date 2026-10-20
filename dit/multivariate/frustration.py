@@ -193,7 +193,8 @@ class _LogLinear:
         """
         For every circuit and every binary sub-model of its variables, the rows whose
         product must be non-negative. Returns (distinct rows, constraints as lists of
-        (row index, orientation)).
+        (row index, orientation)). Letter pairs are always oriented a0 < a1, so equal
+        sub-models give identical rows.
         """
         letter_pairs = [list(itertools.combinations(range(k), 2)) for k in self.shape]
         rows, index, cons = [], {}, []
@@ -203,16 +204,11 @@ class _LogLinear:
                 A = dict(zip(V, choice, strict=True))
                 ids = []
                 for S in C:
-                    r = self.form_row(S, [A[i] for i in S])
-                    key, neg = tuple(np.round(r, 12)), tuple(np.round(-r, 12))
-                    if key in index:
-                        ids.append((index[key], 1))
-                    elif neg in index:
-                        ids.append((index[neg], -1))
-                    else:
+                    key = (S, tuple(A[i] for i in S))
+                    if key not in index:
                         index[key] = len(rows)
-                        rows.append(r)
-                        ids.append((index[key], 1))
+                        rows.append(self.form_row(S, list(key[1])))
+                    ids.append((index[key], 1))
                 cons.append(ids)
         return np.array(rows), cons
 

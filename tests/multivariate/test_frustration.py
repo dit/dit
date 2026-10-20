@@ -14,6 +14,7 @@ from dit.algorithms import maxent_dist
 from dit.example_dists import Xor, giant_bit
 from dit.exceptions import ditException
 from dit.multivariate import coinformation, frustration, pairwise_frustration
+from dit.multivariate.frustration import _branch_and_bound, _circuits, _LogLinear, _maxent, _ordered_start
 from dit.utils.testing import distributions
 
 PAIRS = [[0, 1], [0, 2], [1, 2]]
@@ -188,6 +189,40 @@ def test_xorsat_gauge_invariance():
     a = frustration(xorsat(5, HUB, [0, 0, 0, 1]), order=3)
     b = frustration(xorsat(5, HUB, [1, 1, 0, 1]), order=3)
     assert a == pytest.approx(b, abs=1e-6)
+
+
+def test_six_variable_cycle():
+    """A four-triple cycle on six variables, with a greedy choice of basis."""
+    d = xorsat(6, [(0, 1, 2), (0, 3, 4), (1, 3, 5), (2, 4, 5)], [0, 0, 0, 1])
+    assert frustration(d, order=3) == pytest.approx(0.151073, abs=1e-5)
+
+
+def test_cycle_space_too_large():
+    """Pairwise on eight variables has a cycle space of dimension 21."""
+    d = Distribution(["".join(x) for x in product("01", repeat=8)], [1 / 256] * 256)
+    with pytest.raises(ditException, match="too large to enumerate"):
+        frustration(d)
+
+
+def test_seriation_start_matches_exhaustive():
+    """The seriation heuristic for large alphabets finds the best ordered start here."""
+    p = dense(ternary_potts(1.0))
+    fam = _LogLinear(p.shape, 2)
+    exhaustive = _ordered_start(fam, p)
+    heuristic = _ordered_start(fam, p, max_exhaustive=0)
+    kl = lambda q: float((p * np.log2(p / q)).sum())
+    assert kl(heuristic) == pytest.approx(kl(exhaustive), abs=1e-6)
+
+
+def test_branch_and_bound_without_incumbent():
+    """Without an incumbent the branch-and-bound certifies the optimum on its own."""
+    p = dense(Distribution(["".join(map(str, s)) for s in permutations(range(3))], [1 / 6] * 6))
+    pk = _maxent(p, 2)
+    fam = _LogLinear(pk.shape, 2)
+    F, cons = fam.constraints(_circuits(3, 2))
+    value, lower = _branch_and_bound(fam, pk, F, cons, np.inf, max_nodes=20000, tol=1e-7)
+    assert value == pytest.approx(1.0, abs=1e-6)
+    assert lower == pytest.approx(value, abs=1e-6)
 
 
 def test_order_four_needs_five_variables():
