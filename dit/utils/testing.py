@@ -12,6 +12,7 @@ from ..distribution import Distribution
 from .optimization import colon
 
 __all__ = (
+    "channel_inputs",
     "channel_pairs",
     "degraded_channel_pairs",
     "distributions",
@@ -68,6 +69,59 @@ def channel_pairs(draw, input_size=(2, 4), output_y_size=(2, 4), output_z_size=(
     kappa = kappa_raw / kappa_raw.sum(axis=1, keepdims=True)
 
     return mu, kappa
+
+
+@composite
+def channel_inputs(draw, input_size=(2, 6), output_size=(2, 6)):
+    """
+    Generate two pmfs (p, q) over a common alphabet and a stochastic matrix
+    T whose input alphabet is that alphabet. Zero probabilities are allowed
+    in p, q, and T.
+
+    Parameters
+    ----------
+    draw : function
+        Hypothesis sampling function.
+    input_size : int or (int, int)
+        Size (or range) of the common input alphabet |X|.
+    output_size : int or (int, int)
+        Size (or range) of the channel output alphabet |Y|.
+
+    Returns
+    -------
+    p : ndarray, shape (|X|,)
+        The first pmf.
+    q : ndarray, shape (|X|,)
+        The second pmf.
+    T : ndarray, shape (|X|, |Y|)
+        Channel P(Y|X).
+    """
+
+    def _unpack(x):
+        try:
+            len(x)
+            return x
+        except TypeError:
+            return (x, x)
+
+    n_x = draw(integers(*_unpack(input_size)))
+    n_y = draw(integers(*_unpack(output_size)))
+
+    elements = floats(0, 1, allow_subnormal=False)
+    p_raw = draw(arrays(np.float64, shape=(n_x,), elements=elements))
+    q_raw = draw(arrays(np.float64, shape=(n_x,), elements=elements))
+    T_raw = draw(arrays(np.float64, shape=(n_x, n_y), elements=elements))
+
+    assume(p_raw.sum() > 0)
+    assume(q_raw.sum() > 0)
+    for row in T_raw:
+        assume(row.sum() > 0)
+
+    p = p_raw / p_raw.sum()
+    q = q_raw / q_raw.sum()
+    T = T_raw / T_raw.sum(axis=1, keepdims=True)
+
+    return p, q, T
 
 
 @composite
