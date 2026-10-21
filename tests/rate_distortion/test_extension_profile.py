@@ -252,3 +252,45 @@ def test_plot_degenerate_body():
     names = {t.name for t in ep.plot(_quick(ep)).data}
     assert "lower boundary of Ext" not in names
     assert "Gács–Körner" in names
+
+
+def test_plot_mutual_information_region():
+    pytest.importorskip("plotly")
+    ep = ExtensionProfile(dsbs(0.2), seed=8)
+    features = _quick(ep)
+    fig = ep.plot_mutual_information_region(features)
+    names = {t.name for t in fig.data}
+    for name in (
+        "image of Ext's lower boundary",
+        "Gács–Körner",
+        "privacy funnel (both zero-leakage faces)",
+        "plane v_X + v_Y − v_XY = I (bottom face)",
+        "plane v_Y = v_XY (X − Y − U)",
+    ):
+        assert name in names
+    # The affine map sends W = const to the origin and W = XY to (H[X], H[Y], H[XY]).
+    probes = next(t for t in fig.data if t.name == "probe W's")
+    xyz = np.c_[probes.x, probes.y, probes.z]
+    assert np.allclose(xyz[list(features["probes"]).index("W = const")], [0, 0, 0.008])
+    assert np.allclose(xyz[list(features["probes"]).index("W = XY")], [ep.h_x, ep.h_y, ep.h_xy + 0.008])
+
+
+def test_plot_tension_region():
+    pytest.importorskip("plotly")
+    c = 0.2
+    ep = ExtensionProfile(dsbs(c), seed=9)
+    fig = ep.plot_tension_region(_quick(ep))
+    names = {t.name for t in fig.data}
+    assert "region of tension (lower boundary)" in names
+    intercepts = next(t for t in fig.data if t.name == "axis intercepts")
+    xyz = np.c_[intercepts.x, intercepts.y, np.asarray(intercepts.z) - 0.008]
+    # No common part, so tau_3 = I; the MSS of Y for X is Y, so tau_1 = H[Y|X] = h(c).
+    assert np.allclose(xyz, [[0, 0, ep.mutual_information], [_h(c), 0, 0], [0, _h(c), 0]], atol=1e-6)
+
+
+def test_region_plots_degenerate_body():
+    pytest.importorskip("plotly")
+    ep = ExtensionProfile(giant_bit(), seed=10)
+    features = _quick(ep)
+    assert ep.plot_mutual_information_region(features).data
+    assert "region of tension (lower boundary)" not in {t.name for t in ep.plot_tension_region(features).data}

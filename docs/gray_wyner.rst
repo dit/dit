@@ -146,6 +146,8 @@ is a compact convex body. The Gray-Wyner region is its image under :math:`(R_0, 
 
 ``ExtensionProfile.plot`` (or :func:`plot_extension_profile`) draws all of it as an interactive Plotly figure: drag to rotate, scroll to zoom, toggle features from the legend, and hover for coordinates and Gray-Wyner rates. Plotly is an optional dependency (``pip install 'dit[optional]'``).
 
+The same features can be drawn in two other coordinate systems. ``ExtensionProfile.plot_mutual_information_region`` (or :func:`plot_mutual_information_region`) draws the mutual information region :math:`\{(\I{X : W}, \I{Y : W}, \I{XY : W})\}` :cite:`li2018extended`. It is the invertible affine image :math:`(\H{X} - x,\ \H{Y} - y,\ \H{XY} - x - y + z)` of the extension profile, so it carries exactly the same information. ``ExtensionProfile.plot_tension_region`` (or :func:`plot_tension_region`) draws the region of tension :math:`\{(\I{Y : W \mid X}, \I{X : W \mid Y}, \I{X : Y \mid W})\}` plus the positive orthant :cite:`prabhakaran2014assisted`. Its axis intercepts are the necessary conditional entropies :math:`\H{Y \dagger X}` and :math:`\H{X \dagger Y}`, and the Gács-Körner gap :math:`\I{X : Y} - \K{X : Y}`. Like the Gray-Wyner region, it sees only part of the shape function: directions with :math:`\alpha, \beta \geq 0` and :math:`\alpha + \beta \leq 1`.
+
 .. note::
 
    Every plotted point is attained by an explicit :math:`W`, so the drawn hull is an inner approximation. The boundary searches are non-convex. The excess functional information and Körner graph entropy are exact. Both first apply exact reductions: for :math:`\Psi`, splitting on the Gács-Körner common part and reducing each variable to its minimal sufficient statistic about the other; for :math:`H_K`, merging twins and recursing through disjoint unions and joins of the characteristic graph. They then enumerate the :math:`|\mathcal{Y}|^{|\mathcal{X}|}` functions of each reduced block, or the maximal independent sets of each prime graph, and return ``None`` when those are still too many.
@@ -240,6 +242,10 @@ APIs
    :members:
 
 .. autofunction:: plot_extension_profile
+
+.. autofunction:: plot_mutual_information_region
+
+.. autofunction:: plot_tension_region
 
 .. autofunction:: excess_functional_information
 

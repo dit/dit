@@ -63,9 +63,9 @@ def __getattr__(name):
         from .plotting import GrayWynerPlotter
 
         return GrayWynerPlotter
-    if name == "plot_extension_profile":
-        from .extension_plotting import plot_extension_profile
+    if name in ("plot_extension_profile", "plot_mutual_information_region", "plot_tension_region"):
+        from . import extension_plotting
 
-        return plot_extension_profile
+        return getattr(extension_plotting, name)
     msg = f"module {__name__!r} has no attribute {name!r}"
     raise AttributeError(msg)

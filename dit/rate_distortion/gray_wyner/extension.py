@@ -917,3 +917,21 @@ class ExtensionProfile:
         from .extension_plotting import plot_extension_profile
 
         return plot_extension_profile(self, self.compute() if features is None else features, **kwargs)
+
+    def plot_mutual_information_region(self, features=None, **kwargs):
+        """
+        Draw the mutual information region :cite:`li2018extended` with Plotly. See
+        `plot_mutual_information_region`.
+        """
+        from .extension_plotting import plot_mutual_information_region
+
+        return plot_mutual_information_region(self, self.compute() if features is None else features, **kwargs)
+
+    def plot_tension_region(self, features=None, **kwargs):
+        """
+        Draw the region of tension :cite:`prabhakaran2014assisted` with Plotly. See
+        `plot_tension_region`.
+        """
+        from .extension_plotting import plot_tension_region
+
+        return plot_tension_region(self, self.compute() if features is None else features, **kwargs)
