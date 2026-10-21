@@ -12,6 +12,7 @@ affine maps and `shape` the associated shape function.
 """
 
 from .curve import GrayWynerCurve
+from .extension import ExtensionProfile, excess_functional_information, korner_graph_entropy
 from .network import GrayWynerNetwork, lossy_wyner_common_information
 from .optimizer import GrayWynerOptimizer, GrayWynerPoint, hamming_matrix
 from .region import (
@@ -32,6 +33,7 @@ from .shape import ShapeFunction
 
 __all__ = (
     "ExtensionPoint",
+    "ExtensionProfile",
     "GrayWynerCurve",
     "GrayWynerNetwork",
     "GrayWynerOptimizer",
@@ -40,8 +42,10 @@ __all__ = (
     "ShapeFunction",
     "TensionPoint",
     "asymmetric_private_interaction_information",
+    "excess_functional_information",
     "extension_to_rates",
     "hamming_matrix",
+    "korner_graph_entropy",
     "lossy_wyner_common_information",
     "maximal_interaction_information",
     "mutual_information_to_rates",
@@ -54,10 +58,14 @@ __all__ = (
 
 
 def __getattr__(name):
-    """Lazily expose the (matplotlib-dependent) plotter."""
+    """Lazily expose the (matplotlib- and plotly-dependent) plotters."""
     if name == "GrayWynerPlotter":
         from .plotting import GrayWynerPlotter
 
         return GrayWynerPlotter
+    if name == "plot_extension_profile":
+        from .extension_plotting import plot_extension_profile
+
+        return plot_extension_profile
     msg = f"module {__name__!r} has no attribute {name!r}"
     raise AttributeError(msg)
