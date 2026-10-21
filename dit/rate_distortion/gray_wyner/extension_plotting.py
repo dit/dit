@@ -28,6 +28,8 @@ _COLORS = {
     "excess functional information": "#e7298a",
     "Körner graph entropy": "#66a61e",
     "interaction informations": "#a6761d",
+    "perfect privacy": "#006d2c",
+    "channel synthesis": "#6a51a3",
 }
 
 
@@ -114,6 +116,8 @@ def plot_extension_profile(profile, features, show_upper=True, show_gray_wyner_r
 
     # The body: one hull over every attained point, split into downward and upward faces.
     extra = [*probes.values(), features["Gács–Körner"], features["functional"], features["MSS"]]
+    extra += list(features.get("perfect privacy", []))
+    extra += [p for k, p in features["interaction informations"].items() if k != "maximal"]
     for key in ("relaxed Wyner",):
         extra += list(features.get(key, []))
     for key in (
@@ -361,7 +365,75 @@ def plot_extension_profile(profile, features, show_upper=True, show_gray_wyner_r
             )
         )
     ii, iiv = features["interaction informations"], features["interaction information values"]
-    add("interaction informations", ii, "x", "".join(f"<br>{k}: {v:.3f}" for k, v in iiv.items()), size=9)
+    color = _COLORS["interaction informations"]
+    for key, label, symbol, constraint in (
+        ("maximal", "maximal interaction information G_NNI", "x", "no constraint"),
+        ("asymmetric private X -> Y", "asymmetric private interaction information G_PNI", "diamond-open", "U ⊥ X"),
+        ("asymmetric private Y -> X", "asymmetric private interaction information G_PNI", "diamond-open", "U ⊥ Y"),
+        ("symmetric private", "symmetric private interaction information G_PPI", "square-open", "U ⊥ X, U ⊥ Y"),
+    ):
+        traces.append(
+            markers(
+                ii[key],
+                label,
+                color,
+                symbol,
+                [hover(f"{label} ({key})", ii[key], f"<br>max I[X:Y|U] − I[X:Y], {constraint}<br>= {iiv[key]:.3f}")],
+                size=10,
+                group=label,
+                showlegend=key != "asymmetric private Y -> X",
+            )
+        )
+    if efi:
+        for n, (a, b) in enumerate(
+            zip(efi, (ii["asymmetric private X -> Y"], ii["asymmetric private Y -> X"]), strict=False)
+        ):
+            traces.append(
+                line(
+                    [a, b],
+                    "edge U ⊥ X, H[Y|X,U] = 0 (Ψ ↔ G_PNI)",
+                    color,
+                    width=5,
+                    dash="dot",
+                    group="pni-edge",
+                    showlegend=n == 0,
+                    text=["Ψ end (min H[Y|U])", "G_PNI end (max H[Y|U])"],
+                )
+            )
+
+    if "perfect privacy" in features:
+        pp, ppv = features["perfect privacy"], features["perfect privacy values"]
+        traces.append(
+            markers(
+                np.array(pp),
+                "max rate for perfect privacy G_R*",
+                _COLORS["perfect privacy"],
+                "circle-open",
+                [
+                    hover(f"perfect privacy ({tag})", p, f"<br>G_R* = {ppv[tag]:.3f}")
+                    for p, tag in zip(pp, ("X -> Y", "Y -> X"), strict=True)
+                ],
+                size=10,
+            )
+        )
+
+    if "channel synthesis" in features:
+        ts, curves = features["channel synthesis"]
+        for n, ((values, pts_cs), tag) in enumerate(zip(curves, ("X → Y", "Y → X"), strict=True)):
+            traces.append(
+                line(
+                    pts_cs,
+                    "channel synthesis C(t)",
+                    _COLORS["channel synthesis"],
+                    width=9,
+                    group="cs",
+                    showlegend=n == 0,
+                    text=[
+                        hover(f"channel synthesis {tag}", p, f"<br>common randomness t = {t:.3f}<br>C(t) = {c:.3f}")
+                        for p, t, c in zip(pts_cs, ts, values, strict=True)
+                    ],
+                )
+            )
 
     corner_pts = np.array(list(probes.values()))
     traces.append(

@@ -24,6 +24,7 @@ from itertools import product
 
 import numpy as np
 from scipy.optimize import linprog, minimize
+from scipy.spatial import ConvexHull, QhullError
 from scipy.special import softmax
 
 from ...exceptions import ditException
@@ -721,8 +722,23 @@ class ExtensionProfile:
     @cached_property
     def interaction_information(self):
         """
-        The point of maximal ``I[X:Y|W]`` and the three interaction informations of
-        :cite:`li2018extended` (maximal, asymmetric private, symmetric private).
+        The three interaction informations of :cite:`li2018extended`, each a maximization of
+        ``I[X:Y|U] - I[X:Y]``, and their points:
+
+        * maximal, ``G_NNI``: the point of maximal ``z``;
+        * asymmetric private, ``G_PNI`` (``U`` independent of ``X``): the far end
+          ``(H[X], I + G, I + G)`` of the edge ``{x = H[X], z = y}`` whose near end is the
+          excess-functional-information corner, and its mirror;
+        * symmetric private, ``G_PPI`` (``U`` independent of ``X`` and ``Y``):
+          ``(H[X], H[Y], I + G)``.
+
+        Returns
+        -------
+        points : dict
+            ``{"maximal": p, "asymmetric private X -> Y": p, "asymmetric private Y -> X": p,
+            "symmetric private": p}``.
+        values : dict
+            The same keys, mapped to the values.
         """
         from .region import (
             asymmetric_private_interaction_information,
@@ -730,13 +746,95 @@ class ExtensionProfile:
             symmetric_private_interaction_information,
         )
 
-        point = self.support_point((0, 0, 1), starts=12)
+        i = self.mutual_information
         values = {
             "maximal": maximal_interaction_information(self.pair),
             "asymmetric private X -> Y": asymmetric_private_interaction_information(self.pair),
+            "asymmetric private Y -> X": asymmetric_private_interaction_information(self.pair, rvs=[[1], [0]]),
             "symmetric private": symmetric_private_interaction_information(self.pair),
         }
-        return point, values
+        g_xy, g_yx = values["asymmetric private X -> Y"], values["asymmetric private Y -> X"]
+        points = {
+            "maximal": self.support_point((0, 0, 1), starts=12),
+            "asymmetric private X -> Y": np.array([self.h_x, i + g_xy, i + g_xy]),
+            "asymmetric private Y -> X": np.array([i + g_yx, self.h_y, i + g_yx]),
+            "symmetric private": np.array([self.h_x, self.h_y, i + values["symmetric private"]]),
+        }
+        return points, values
+
+    @cached_property
+    def perfect_privacy(self):
+        """
+        The maximum rate for perfect privacy :cite:`li2018extended,rassouli2021perfect`,
+        ``G_R*(X -> Y) = max I[Y:U]`` with ``X - Y - U`` and ``U`` independent of ``X``:
+        the end ``(H[X], H[Y] - G, I)`` of the privacy-funnel arc, and its mirror. Computed
+        exactly by `perfect_privacy_utility` (vertices of the perfect-privacy polytope).
+
+        Returns
+        -------
+        points : list of np.ndarray
+            ``[X -> Y, Y -> X]``.
+        values : dict
+            The two rates.
+        """
+        from ..privacy_funnel import perfect_privacy_utility
+
+        g_xy = perfect_privacy_utility(self.pair, rvs=[[0], [1]])
+        g_yx = perfect_privacy_utility(self.pair, rvs=[[1], [0]])
+        i = self.mutual_information
+        points = [np.array([self.h_x, self.h_y - g_xy, i]), np.array([self.h_x - g_yx, self.h_y, i])]
+        return points, {"X -> Y": g_xy, "Y -> X": g_yx}
+
+    def channel_synthesis(self, lower, num=45):
+        """
+        The communication rate for distributed channel synthesis with common-randomness rate
+        ``t`` :cite:`cuff2013distributed,li2018extended`,
+
+        .. math::
+
+            C(t, X \\to Y) = \\min_{X - U - Y} \\max\\{I[X:U],\\ I[XY:U] - t\\},
+
+        a minimization over the bottom face of the extension profile. Its optimal ``U`` runs
+        along the bottom-face rim from the Wyner point (``t = 0``) towards the Kamath point,
+        where ``C(t) = I[X:Y]``.
+
+        Parameters
+        ----------
+        lower : np.ndarray
+            Lower-boundary points (from `lower_boundary`); their ``z = 0`` subset gives the rim.
+        num : int
+            Number of values of ``t``, from 0 to a little past the rate at which
+            ``C(t) = I[X:Y]`` (the necessary conditional entropy).
+
+        Returns
+        -------
+        ts : np.ndarray
+            The common-randomness rates.
+        curves : list of (np.ndarray, np.ndarray)
+            ``[(values, points) for X -> Y, (values, points) for Y -> X]``.
+        """
+        base = np.vstack([lower.reshape(-1, 3), *self.probes.values(), *self.kamath[0]])
+        base = base[np.abs(base[:, 2]) < 1e-9][:, :2]
+        try:
+            ring = base[ConvexHull(base).vertices]
+        except QhullError:  # the bottom face is a point or a segment
+            ring = base
+        ring = np.vstack([ring, ring[:1]])
+        rim = np.vstack([np.linspace(a, b, 60, endpoint=False) for a, b in zip(ring[:-1], ring[1:], strict=True)])
+        _, kv = self.kamath
+        t_max = 1.1 * max(kv["necessary conditional entropy Y -> X"], kv["necessary conditional entropy X -> Y"], 1e-9)
+        ts = np.linspace(0, t_max, num)
+        v_xy = self.h_xy - rim[:, 0] - rim[:, 1]
+        curves = []
+        for v_a in (self.h_x - rim[:, 0], self.h_y - rim[:, 1]):
+            values, points = [], []
+            for t in ts:
+                cost = np.maximum(v_a, v_xy - t)
+                k = int(np.argmin(cost))
+                values.append(cost[k])
+                points.append([rim[k, 0], rim[k, 1], 0.0])
+            curves.append((np.array(values), np.array(points)))
+        return ts, curves
 
     # -------------------------------------------------------------- everything
 
@@ -765,7 +863,9 @@ class ExtensionProfile:
         kamath_points, kamath_values = self.kamath
         efi_points, efi_values = self.excess_functional_information
         korner_points, korner_values = self.korner
-        interaction_point, interaction_values = self.interaction_information
+        interaction_points, interaction_values = self.interaction_information
+        perfect_points, perfect_values = self.perfect_privacy
+        cs_ts, cs_curves = self.channel_synthesis(low)
         entanglement_point, entanglement = self.entanglement
         features = {
             "lower": low.reshape(-1, 3),
@@ -786,8 +886,11 @@ class ExtensionProfile:
             "excess functional information values": efi_values,
             "Körner graph entropy": korner_points,
             "Körner graph entropy values": korner_values,
-            "interaction informations": interaction_point,
+            "interaction informations": interaction_points,
             "interaction information values": interaction_values,
+            "perfect privacy": perfect_points,
+            "perfect privacy values": perfect_values,
+            "channel synthesis": (cs_ts, cs_curves),
         }
         if slow:
             features["Wyner"] = self.wyner(niter=niter)

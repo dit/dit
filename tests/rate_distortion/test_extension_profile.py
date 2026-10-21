@@ -147,9 +147,40 @@ def test_named_points_dsbs():
     # DSBS(0.3) is maximally non-extractable: E = I.
     _, e = ep.entanglement
     assert e == pytest.approx(ep.mutual_information, abs=1e-5)
-    # The interaction informations all reach min{H[X|Y], H[Y|X]} via W = X xor Y.
-    point, _ = ep.interaction_information
-    assert point[2] == pytest.approx(1, abs=1e-5)
+    # The interaction informations all reach min{H[X|Y], H[Y|X]} = h(c) via W = X xor Y, at (1, 1, 1).
+    points, values = ep.interaction_information
+    for key, value in values.items():
+        assert value == pytest.approx(_h(c), abs=1e-4), key
+        assert np.allclose(points[key], [1, 1, 1], atol=1e-4), key
+
+
+def test_perfect_privacy():
+    # A DSBS has an invertible p(x|y): nothing about Y can be revealed independently of X.
+    (_, _), values = ExtensionProfile(dsbs(0.2)).perfect_privacy
+    assert values["X -> Y"] == pytest.approx(0, abs=1e-8)
+    # Give Y an extra fair bit independent of everything: exactly that bit is free.
+    d = dit.Distribution(
+        [(x, y, b) for x in "01" for y in "01" for b in "01"],
+        [(0.4 if x == y else 0.1) / 2 for x in "01" for y in "01" for b in "01"],
+    )
+    ep = ExtensionProfile(d, rvs=[[0], [1, 2]])
+    points, values = ep.perfect_privacy
+    assert values["X -> Y"] == pytest.approx(1, abs=1e-8)
+    assert np.allclose(points[0], [ep.h_x, ep.h_y - 1, ep.mutual_information])
+
+
+def test_channel_synthesis():
+    """C(0) is Wyner's common information; enough common randomness brings C(t) down to I[X:Y]."""
+    c = 0.1
+    ep = ExtensionProfile(dsbs(c), seed=7)
+    low = ep.lower_boundary(num_theta=8, num_radii=9)
+    ts, curves = ep.channel_synthesis(low)
+    q = (1 - np.sqrt(1 - 2 * c)) / 2
+    for values, points in curves:
+        assert values[0] == pytest.approx(1 + _h(c) - 2 * _h(q), abs=1e-3)
+        assert values[-1] == pytest.approx(ep.mutual_information, abs=1e-6)
+        assert np.all(np.diff(values) <= 1e-12)
+        assert np.all(points[:, 2] == 0)
 
 
 def test_wyner_point_dsbs():
