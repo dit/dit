@@ -70,7 +70,67 @@ def _best(objective, starts):
     return best.x, best.fun
 
 
-def excess_functional_information(pxy, max_functions=200_000):
+def _merge_identical(pxy, axis):
+    """Merge the rows (axis=0) or columns (axis=1) of pxy whose conditionals coincide."""
+    m = pxy if axis == 0 else pxy.T
+    cond = m / m.sum(1, keepdims=True)
+    groups = {}
+    for i, row in enumerate(np.round(cond, 12)):
+        groups.setdefault(row.tobytes(), []).append(i)
+    merged = np.array([m[g].sum(0) for g in groups.values()])
+    return merged if axis == 0 else merged.T
+
+
+def _reduce_pair(pxy):
+    """Alternately merge identical p(y|x) rows and proportional p(x|y) columns until stable."""
+    while True:
+        reduced = _merge_identical(_merge_identical(pxy, 0), 1)
+        if reduced.shape == pxy.shape:
+            return reduced
+        pxy = reduced
+
+
+def _support_blocks(pxy):
+    """The connected components of the bipartite support graph, as (rows, columns) index arrays."""
+    from scipy.sparse import coo_matrix
+    from scipy.sparse.csgraph import connected_components
+
+    nx_, ny_ = pxy.shape
+    rows, cols = np.nonzero(pxy > 0)
+    graph = coo_matrix((np.ones(len(rows)), (rows, nx_ + cols)), shape=(nx_ + ny_, nx_ + ny_))
+    _, labels = connected_components(graph, directed=False)
+    blocks = []
+    for label in np.unique(labels[np.r_[rows, nx_ + cols]]):
+        xs = np.flatnonzero(labels[:nx_] == label)
+        ys = np.flatnonzero(labels[nx_:] == label)
+        blocks.append((xs, ys))
+    return blocks
+
+
+def _inf_h_given_independent(pxy, max_functions):
+    """inf_{W indep X} H[Y|W] by the random-function linear program (no reductions)."""
+    from scipy.sparse import coo_matrix
+
+    px = pxy.sum(1)
+    nx_, ny_ = pxy.shape
+    if ny_ == 1 or nx_ == 1:
+        return 0.0
+    if ny_**nx_ > max_functions:
+        return None
+    funcs = np.array(list(product(range(ny_), repeat=nx_)))
+    masses = np.zeros((len(funcs), ny_))
+    for x in range(nx_):
+        masses[np.arange(len(funcs)), funcs[:, x]] += px[x]
+    with np.errstate(divide="ignore", invalid="ignore"):
+        cost = -np.where(masses > 0, masses * np.log2(masses), 0.0).sum(1)
+    rows = (np.arange(nx_) * ny_)[None, :] + funcs
+    cols = np.repeat(np.arange(len(funcs)), nx_)
+    a_eq = coo_matrix((np.ones(rows.size), (rows.ravel(), cols)), shape=(nx_ * ny_, len(funcs))).tocsr()
+    res = linprog(cost, A_eq=a_eq, b_eq=(pxy / px[:, None]).ravel(), bounds=(0, None), method="highs")
+    return res.fun
+
+
+def excess_functional_information(pxy, max_functions=200_000, reduce=True):
     """
     The excess functional information :cite:`li2018strong`
 
@@ -84,12 +144,28 @@ def excess_functional_information(pxy, max_functions=200_000):
     linear program over distributions on functions with
     :math:`P(f(x) = y) = p(y|x)`.
 
+    Three exact reductions shrink that program first:
+
+    * **Common part.** With :math:`g` the Gács-Körner common part (the connected
+      components of the support), a :math:`W` independent of :math:`X` is independent
+      of :math:`g` and of :math:`X` given :math:`g`, and per-block auxiliaries combine
+      into one, so :math:`\\inf H[Y|W] = H[g] + \\sum_k p(k) \\inf H[Y|W, g = k]`.
+    * **X to its minimal sufficient statistic about Y.** Merging values with identical
+      :math:`p(y|x)` leaves the infimum unchanged: an auxiliary for the merged variable
+      lifts by resampling :math:`X` given its class independently of :math:`(Y, W)`.
+    * **Y to its minimal sufficient statistic about X.** Merging values with
+      proportional :math:`p(x|y)` also leaves it unchanged: given its class :math:`Y`
+      is independent of :math:`X`, so :math:`W` can carry an independent draw of
+      :math:`Y` for every class.
+
     Parameters
     ----------
     pxy : np.ndarray
         The joint pmf p(x, y), shape ``(|X|, |Y|)``.
     max_functions : int
-        Give up (return None) if there are more than this many functions.
+        Give up (return None) if a reduced block still has more functions than this.
+    reduce : bool
+        Whether to apply the reductions (False solves the raw program, for testing).
 
     Returns
     -------
@@ -99,25 +175,73 @@ def excess_functional_information(pxy, max_functions=200_000):
         :math:`\\inf_{W \\perp X} H[Y|W] = I[X:Y] + \\Psi`, the height of the
         corner :math:`(H[X], I + \\Psi, I + \\Psi)` of the extension profile.
     """
-    px = pxy.sum(1)
-    xs = np.flatnonzero(px > 0)
-    ys = np.flatnonzero(pxy.sum(0) > 0)
-    sub = pxy[np.ix_(xs, ys)]
-    nx, ny = sub.shape
-    if ny**nx > max_functions:
-        return None, None
-    psub = sub.sum(1)
-    funcs = list(product(range(ny), repeat=nx))
-    cost = [_h(np.bincount(f, weights=psub, minlength=ny)) for f in funcs]
-    a_eq = np.zeros((nx * ny, len(funcs)))
-    for j, f in enumerate(funcs):
-        a_eq[np.arange(nx) * ny + np.array(f), j] = 1.0
-    res = linprog(cost, A_eq=a_eq, b_eq=(sub / psub[:, None]).ravel(), bounds=(0, None), method="highs")
-    mi = _h(psub) + _h(sub.sum(0)) - _h(sub)
-    return res.fun - mi, res.fun
+    pxy = np.asarray(pxy, dtype=float)
+    pxy = pxy[pxy.sum(1) > 0][:, pxy.sum(0) > 0]
+    pxy = pxy / pxy.sum()
+    mi = _h(pxy.sum(1)) + _h(pxy.sum(0)) - _h(pxy)
+    if not reduce:
+        inf_h = _inf_h_given_independent(pxy, max_functions)
+        return (None, None) if inf_h is None else (inf_h - mi, inf_h)
+    blocks = _support_blocks(pxy)
+    masses = np.array([pxy[np.ix_(xs, ys)].sum() for xs, ys in blocks])
+    inf_h = _h(masses)
+    for (xs, ys), mass in zip(blocks, masses, strict=True):
+        h = _inf_h_given_independent(_reduce_pair(pxy[np.ix_(xs, ys)] / mass), max_functions)
+        if h is None:
+            return None, None
+        inf_h += mass * h
+    return inf_h - mi, inf_h
 
 
-def korner_graph_entropy(pxy, max_sets=5000, iters=5000):
+def _prime_graph_entropy(graph, p, max_sets, iters):
+    """min I[X:U] over U a maximal independent set containing X, by alternating minimization."""
+    import networkx as nx
+
+    nodes = list(graph)
+    if len(nodes) == 1:
+        return 0.0
+    sets = []
+    for clique in nx.find_cliques(nx.complement(graph)):
+        sets.append(clique)
+        if len(sets) > max_sets:
+            return None
+    index = {v: i for i, v in enumerate(nodes)}
+    member = np.zeros((len(nodes), len(sets)), dtype=bool)
+    for u, s in enumerate(sets):
+        member[[index[v] for v in s], u] = True
+    pv = np.array([p[v] for v in nodes])
+    r = np.full(len(sets), 1 / len(sets))
+    for _ in range(iters):
+        q = np.where(member, r[None, :], 0.0)
+        q /= q.sum(1, keepdims=True)
+        r = pv @ q
+    joint = pv[:, None] * q
+    return _h(pv) + _h(joint.sum(0)) - _h(joint)
+
+
+def _graph_entropy(graph, p, max_sets, iters):
+    """Graph entropy of a networkx graph with vertex masses p (summing to 1), by recursive
+    substitution through disjoint unions and joins, and enumeration on prime graphs."""
+    import networkx as nx
+
+    nodes = list(graph)
+    if len(nodes) == 1:
+        return 0.0
+    for parts, joined in (
+        (list(nx.connected_components(graph)), False),
+        (list(nx.connected_components(nx.complement(graph))), True),
+    ):
+        if len(parts) > 1:
+            masses = np.array([sum(p[v] for v in part) for part in parts])
+            total = _h(masses) if joined else 0.0
+            for part, mass in zip(parts, masses, strict=True):
+                sub = graph.subgraph(part)
+                total += mass * _graph_entropy(sub, {v: p[v] / mass for v in part}, max_sets, iters)
+            return total
+    return _prime_graph_entropy(graph, p, max_sets, iters)
+
+
+def korner_graph_entropy(pxy, max_sets=5000, iters=5000, reduce=True):
     """
     Körner's graph entropy :cite:`korner1973coding` of the characteristic graph of
     :math:`X` (two values are adjacent when some :math:`y` is compatible with both),
@@ -126,57 +250,60 @@ def korner_graph_entropy(pxy, max_sets=5000, iters=5000):
 
         H_K(X) = \\min_{X \\in U \\in \\Gamma} I[X:U],
 
-    with :math:`\\Gamma` the maximal independent sets. In the extension profile it is
-    :math:`H[X] - \\max x` on the edge :math:`U - X - Y`, :math:`H[X|Y, U] = 0`
-    :cite:`li2018extended`. The minimization is convex and solved by Blahut-Arimoto
-    style alternating minimization.
+    with :math:`\\Gamma` the maximal independent sets. In the extension profile it fixes
+    the point :math:`(x, H[Y|X] + x, x)` with :math:`x = H[X] - H_K(X)` on the edge
+    :math:`U - X - Y`, :math:`H[X|Y, U] = 0` :cite:`li2018extended`.
+
+    The graph is first reduced by substitution :cite:`korner1973coding`: values with the
+    same support set are adjacent twins, so each class collapses to one vertex at a cost of
+    :math:`p(\\text{class}) H[X|\\text{class}]`; a disconnected graph contributes the
+    weighted entropies of its components, and a join (disconnected complement) adds the
+    entropy of the part masses. Only prime graphs enumerate maximal independent sets, on
+    which the convex minimization is solved by Blahut-Arimoto style alternating
+    minimization.
 
     Parameters
     ----------
     pxy : np.ndarray
         The joint pmf p(x, y).
     max_sets : int
-        Give up (return None) if the graph has more maximal independent sets.
+        Give up (return None) if a prime graph has more maximal independent sets.
     iters : int
         Alternating-minimization iterations.
+    reduce : bool
+        Whether to apply the reductions (False enumerates on the full graph, for testing).
 
     Returns
     -------
     h_k : float, None
         The graph entropy.
-    joint : np.ndarray, None
-        The optimal p(x, y, u).
     """
     import networkx as nx
 
+    pxy = np.asarray(pxy, dtype=float)
+    pxy = pxy[pxy.sum(1) > 0] / pxy.sum()
+    support = pxy > 0
     px = pxy.sum(1)
-    xs = np.flatnonzero(px > 0)
-    support = pxy[xs] > 0
+    if reduce:
+        classes = {}
+        for i, row in enumerate(support):
+            classes.setdefault(row.tobytes(), []).append(i)
+        groups = list(classes.values())
+        masses = np.array([px[g].sum() for g in groups])
+        twins = sum(m * _h(px[g] / m) for g, m in zip(groups, masses, strict=True))
+        patterns = np.array([support[g[0]] for g in groups])
+    else:
+        masses, twins, patterns = px, 0.0, support
     graph = nx.Graph()
-    graph.add_nodes_from(range(len(xs)))
-    for a in range(len(xs)):
-        for b in range(a + 1, len(xs)):
-            if np.any(support[a] & support[b]):
-                graph.add_edge(a, b)
-    sets = []
-    for clique in nx.find_cliques(nx.complement(graph)):
-        sets.append(clique)
-        if len(sets) > max_sets:
-            return None, None
-    member = np.zeros((len(xs), len(sets)), dtype=bool)
-    for u, s in enumerate(sets):
-        member[s, u] = True
-    p = px[xs]
-    r = np.full(len(sets), 1 / len(sets))
-    for _ in range(iters):
-        q = np.where(member, r[None, :], 0.0)
-        q /= q.sum(1, keepdims=True)
-        r = p @ q
-    joint = np.zeros(pxy.shape + (len(sets),))
-    joint[xs] = pxy[xs][:, :, None] * q[:, None, :]
-    pu = joint.sum((0, 1))
-    h_k = _h(p) + _h(pu) - _h(joint.sum(1))
-    return h_k, joint
+    graph.add_nodes_from(range(len(masses)))
+    graph.add_edges_from(
+        (a, b) for a in range(len(masses)) for b in range(a + 1, len(masses)) if np.any(patterns[a] & patterns[b])
+    )
+    p = dict(enumerate(masses))
+    if not reduce:
+        return _prime_graph_entropy(graph, p, max_sets, iters)
+    h = _graph_entropy(graph, p, max_sets, iters)
+    return None if h is None else twins + h
 
 
 class ExtensionProfile:
@@ -581,10 +708,13 @@ class ExtensionProfile:
         """Körner graph-entropy points :cite:`korner1973coding,li2018extended` and their values."""
         points, values = [], {}
         for pxy, tag, swap in ((self.pxy, "X", False), (self.pxy.T, "Y", True)):
-            h_k, joint = korner_graph_entropy(pxy)
+            h_k = korner_graph_entropy(pxy)
             values[tag] = h_k
-            if joint is not None:
-                p = _profile(joint)
+            if h_k is not None:
+                # U - X - Y and H[X|Y, U] = 0 give z = x and y = H[Y|X] + x.
+                h_a, h_b_given_a = (self.h_y, self.h_x_given_y) if swap else (self.h_x, self.h_y_given_x)
+                x = h_a - h_k
+                p = np.array([x, h_b_given_a + x, x])
                 points.append(p[[1, 0, 2]] if swap else p)
         return points, values
 

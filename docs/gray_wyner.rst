@@ -147,7 +147,7 @@ is a compact convex body. The Gray-Wyner region is its image under :math:`(R_0, 
 
 .. note::
 
-   Every plotted point is attained by an explicit :math:`W`, so the drawn hull is an inner approximation. The boundary searches are non-convex; the excess functional information and Körner graph entropy are exact but enumerate :math:`|\mathcal{Y}|^{|\mathcal{X}|}` functions and the maximal independent sets of the characteristic graph, respectively, and return ``None`` when those are too many.
+   Every plotted point is attained by an explicit :math:`W`, so the drawn hull is an inner approximation. The boundary searches are non-convex. The excess functional information and Körner graph entropy are exact. Both first apply exact reductions: for :math:`\Psi`, splitting on the Gács-Körner common part and reducing each variable to its minimal sufficient statistic about the other; for :math:`H_K`, merging twins and recursing through disjoint unions and joins of the characteristic graph. They then enumerate the :math:`|\mathcal{Y}|^{|\mathcal{X}|}` functions of each reduced block, or the maximal independent sets of each prime graph, and return ``None`` when those are still too many.
 
 Spectral diagnostics
 --------------------

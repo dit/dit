@@ -82,12 +82,57 @@ def test_excess_functional_information_bounds(weights):
 
 def test_korner_graph_entropy():
     # Full support: the characteristic graph is complete, so H_K = H[X].
-    h_k, _ = korner_graph_entropy(ExtensionProfile(dsbs(0.2)).pxy)
-    assert h_k == pytest.approx(1, abs=1e-6)
+    assert korner_graph_entropy(ExtensionProfile(dsbs(0.2)).pxy) == pytest.approx(1, abs=1e-6)
     # A common bit plus independent private bits: two cliques, so H_K = H[X] - 1.
     d = dit.Distribution([(g, a, g, b) for g in "01" for a in "01" for b in "01"], [1 / 8] * 8)
-    h_k, _ = korner_graph_entropy(ExtensionProfile(d, rvs=[[0, 1], [2, 3]]).pxy)
-    assert h_k == pytest.approx(1, abs=1e-6)
+    assert korner_graph_entropy(ExtensionProfile(d, rvs=[[0, 1], [2, 3]]).pxy) == pytest.approx(1, abs=1e-6)
+
+
+def _layered(*pmfs):
+    """p(x, y) of independent layers, X and Y each the tuple of the layer variables."""
+    p = np.ones((1, 1))
+    for q in pmfs:
+        p = np.einsum("ab,cd->acbd", p, q).reshape(p.shape[0] * q.shape[0], p.shape[1] * q.shape[1])
+    return p
+
+
+def _dsbs_pmf(c):
+    return np.array([[1 - c, c], [c, 1 - c]]) / 2
+
+
+@settings(max_examples=40, deadline=None)
+@given(st.lists(st.sampled_from([0.0, 0.0, 0.1, 0.3, 0.5, 1.0]), min_size=9, max_size=9))
+def test_reductions_match_brute_force(weights):
+    """The exact reductions agree with the raw programs (sparse supports exercise them)."""
+    pxy = np.reshape(weights, (3, 3))
+    if pxy.sum() == 0:
+        return
+    pxy = pxy / pxy.sum()
+    psi, _ = excess_functional_information(pxy)
+    raw, _ = excess_functional_information(pxy, reduce=False)
+    assert psi == pytest.approx(raw, abs=1e-7)
+    assert korner_graph_entropy(pxy) == pytest.approx(korner_graph_entropy(pxy, reduce=False), abs=1e-6)
+
+
+def test_reductions_on_layered_source():
+    """A giant bit times a DSBS: small enough for the raw programs to check the reductions."""
+    pxy = _layered(np.diag([0.5, 0.5]), _dsbs_pmf(0.2))
+    assert excess_functional_information(pxy)[0] == pytest.approx(excess_functional_information(pxy, reduce=False)[0])
+    assert korner_graph_entropy(pxy) == pytest.approx(korner_graph_entropy(pxy, reduce=False), abs=1e-6)
+
+
+def test_reductions_scale_to_the_witness():
+    """giant (x) DSBS(0.1) (x) DSBS(0.3) (x) private bits: 16 x 16, far too big unreduced.
+
+    Psi is strictly subadditive here (0.520 < 0.550, the sum over layers), and the
+    characteristic graph is two cliques, so H_K = H[X] - 1 = 3.
+    """
+    pxy = _layered(np.diag([0.5, 0.5]), _dsbs_pmf(0.1), _dsbs_pmf(0.3), np.full((2, 2), 0.25))
+    psi, height = excess_functional_information(pxy)
+    assert height == pytest.approx(1 + 1.16980, abs=1e-4)
+    assert psi == pytest.approx(0.52009, abs=1e-4)
+    assert psi < (0.8 - (1 - _h(0.1))) + (0.4 - (1 - _h(0.3))) - 1e-3
+    assert korner_graph_entropy(pxy) == pytest.approx(3, abs=1e-6)
 
 
 def test_named_points_dsbs():
