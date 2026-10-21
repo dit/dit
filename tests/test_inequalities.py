@@ -31,7 +31,7 @@ from dit.multivariate import (
 from dit.multivariate import (
     wyner_common_information as C,
 )
-from dit.utils.testing import distributions, markov_chains
+from dit.utils.testing import channel_inputs, distributions, markov_chains
 from tests._backends import backends
 
 epsilon = 1e-4
@@ -73,6 +73,11 @@ def _dfz_rhs(dist, coeffs):
     return rhs
 
 
+def _as_dist(pmf):
+    """Wrap a 1-D pmf as a Distribution over outcomes '0', '1', ..."""
+    return Distribution([str(i) for i in range(len(pmf))], pmf)
+
+
 @given(dist=distributions())
 def test_entropy_upper_bound(dist):
     """
@@ -91,6 +96,28 @@ def test_pinskers_inequality(dist1, dist2):
     dkl = relative_entropy(dist1, dist2)
     vd = variational_distance(dist1, dist2)
     assert dkl >= vd**2 / (2 * np.log(2)) - epsilon
+
+
+@given(triple=channel_inputs())
+def test_data_processing_inequality_tv(triple):
+    """
+    TV(P, Q) >= TV(PT, QT) for any channel T.
+    """
+    p, q, T = triple
+    tv_in = variational_distance(_as_dist(p), _as_dist(q))
+    tv_out = variational_distance(_as_dist(p @ T), _as_dist(q @ T))
+    assert tv_out <= tv_in + epsilon
+
+
+@given(triple=channel_inputs())
+def test_data_processing_inequality_dkl(triple):
+    """
+    DKL(P||Q) >= DKL(PT||QT) for any channel T.
+    """
+    p, q, T = triple
+    dkl_in = relative_entropy(_as_dist(p), _as_dist(q))
+    dkl_out = relative_entropy(_as_dist(p @ T), _as_dist(q @ T))
+    assert dkl_out <= dkl_in + epsilon
 
 
 @given(dist=distributions(alphabets=(10, 10), nondegenerate=True))
