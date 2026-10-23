@@ -126,6 +126,32 @@ Because these *maximize* rates, they need signed weights, which ``GrayWynerOptim
 
    Unlike the region of tension, which tensorizes exactly, the mutual information region is only superadditive :cite:`li2018extended`.
 
+Drawing the extension profile
+-----------------------------
+
+For a pair, the extension profile :cite:`matveev2026beyond`
+
+.. math::
+
+   \mathrm{Ext}(X, Y) = \{(\H{X \mid W},\ \H{Y \mid W},\ \I{X : Y \mid W})\}
+
+is a compact convex body. The Gray-Wyner region is its image under :math:`(R_0, R_1, R_2) = (\H{XY} - x - y + z,\ x,\ y)` together with everything above it, so ``ExtensionProfile`` places every operating point on one picture. Under that map the Pangloss plane :math:`R_0 + R_1 + R_2 = \H{XY}` is exactly the bottom face :math:`z = 0`. Only directions :math:`(\alpha, \beta, -1)` with :math:`\alpha, \beta \le 1` (non-negative rate weights) reach the boundary of the Gray-Wyner region; the rest of the body carries points that only the mutual information region :cite:`li2018extended` sees. ``ExtensionProfile`` computes:
+
+* the lower boundary, sampled over every downward direction written as :math:`\alpha + i\beta = r e^{i\theta}`, continuing each optimum along :math:`r` and relaxing every grid point against its neighbours, with the bottom face snapped to :math:`z = 0`; and the upper boundary over upward directions;
+* the bounds :math:`\mathrm{Ext}_{\min}` (the hull of :math:`W = XY, X, Y,` const) and the Shannon outer bound :math:`\mathrm{Ext}_{\max}` :cite:`matveev2026beyond`;
+* realizer points of the Gács-Körner :cite:`Gacs1973`, Wyner :cite:`wyner1975common`, exact :cite:`kumar2014exact`, functional and MSS :cite:`james2017multivariate` common informations, the Kamath edges :cite:`kamath2010dual` (whose far ends are the necessary-conditional-entropy points :cite:`cuff2010coordination`), and the entanglement :cite:`makarychev2002class`;
+* the relaxed-Wyner :cite:`gastpar2019relaxed` and :math:`\beta`-common :cite:`yu2017generalized` curves, and the information-bottleneck :cite:`tishby2000information` and privacy-funnel :cite:`makhdoumi2014information` arcs of the two zero-leakage faces;
+* the communication rate for distributed channel synthesis with common-randomness rate :math:`t` :cite:`cuff2013distributed`, :math:`C(t, X \to Y) = \min_{X - U - Y} \max\{\I{X : U},\ \I{XY : U} - t\}`, whose optimal :math:`U` runs along the bottom-face rim from the Wyner point to the Kamath point;
+* the points invisible to the Gray-Wyner region :cite:`li2018extended`: the excess functional information :cite:`li2018strong` (:func:`excess_functional_information`, exact by a linear program over random functions :math:`f : \mathcal{X} \to \mathcal{Y}`), Körner's graph entropy :cite:`korner1973coding` (:func:`korner_graph_entropy`), the maximum rate for perfect privacy :cite:`rassouli2021perfect` (the end of the privacy-funnel arc), and the three interaction informations, drawn as separate points; the asymmetric private one is the far end of the edge :math:`\{x = \H{X},\ z = y\}` whose near end is the excess-functional-information corner.
+
+``ExtensionProfile.plot`` (or :func:`plot_extension_profile`) draws all of it as an interactive Plotly figure: drag to rotate, scroll to zoom, toggle features from the legend, and hover for coordinates and Gray-Wyner rates. Plotly is an optional dependency (``pip install 'dit[optional]'``).
+
+The same features can be drawn in two other coordinate systems. ``ExtensionProfile.plot_mutual_information_region`` (or :func:`plot_mutual_information_region`) draws the mutual information region :math:`\{(\I{X : W}, \I{Y : W}, \I{XY : W})\}` :cite:`li2018extended`. It is the invertible affine image :math:`(\H{X} - x,\ \H{Y} - y,\ \H{XY} - x - y + z)` of the extension profile, so it carries exactly the same information. ``ExtensionProfile.plot_tension_region`` (or :func:`plot_tension_region`) draws the region of tension :math:`\{(\I{Y : W \mid X}, \I{X : W \mid Y}, \I{X : Y \mid W})\}` plus the positive orthant :cite:`prabhakaran2014assisted`. Its axis intercepts are the necessary conditional entropies :math:`\H{Y \dagger X}` and :math:`\H{X \dagger Y}`, and the Gács-Körner gap :math:`\I{X : Y} - \K{X : Y}`. Like the Gray-Wyner region, it sees only part of the shape function: directions with :math:`\alpha, \beta \geq 0` and :math:`\alpha + \beta \leq 1`.
+
+.. note::
+
+   Every plotted point is attained by an explicit :math:`W`, so the drawn hull is an inner approximation. The boundary searches are non-convex. The excess functional information and Körner graph entropy are exact. Both first apply exact reductions: for :math:`\Psi`, splitting on the Gács-Körner common part and reducing each variable to its minimal sufficient statistic about the other; for :math:`H_K`, merging twins and recursing through disjoint unions and joins of the characteristic graph. They then enumerate the :math:`|\mathcal{Y}|^{|\mathcal{X}|}` functions of each reduced block, or the maximal independent sets of each prime graph, and return ``None`` when those are still too many.
+
 Spectral diagnostics
 --------------------
 
@@ -186,6 +212,21 @@ The tension region and the shape function:
 
    In [12]: ShapeFunction(d, num=21).plot();
 
+The extension profile, with every distinguished point:
+
+.. ipython::
+   :verbatim:
+
+   In [13]: from dit.rate_distortion import ExtensionProfile
+
+   In [14]: ep = ExtensionProfile(d, seed=0)
+
+   In [15]: features = ep.compute()
+
+   In [16]: ep.excess_functional_information, ep.korner
+
+   In [17]: ep.plot(features).show()
+
 APIs
 ====
 
@@ -196,6 +237,19 @@ APIs
 
 .. autoclass:: ShapeFunction
    :members:
+
+.. autoclass:: ExtensionProfile
+   :members:
+
+.. autofunction:: plot_extension_profile
+
+.. autofunction:: plot_mutual_information_region
+
+.. autofunction:: plot_tension_region
+
+.. autofunction:: excess_functional_information
+
+.. autofunction:: korner_graph_entropy
 
 .. autofunction:: lossy_wyner_common_information
 

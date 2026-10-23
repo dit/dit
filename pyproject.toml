@@ -76,6 +76,7 @@ optional = [
     "matplotlib",
     "numdifftools",
     "pint",
+    "plotly>=5",
     "pycddlib-standalone",
     "pypoman",
     "scikit-learn",
