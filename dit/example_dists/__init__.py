@@ -3,7 +3,13 @@ A selection of generic distributions which could be useful.
 """
 
 from .circuits import And, ImperfectRdn, Or, Rdn, RdnXor, Subtle, Unq, Xor
-from .common_information import noisy_copies, symmetric_common_information_witness
+from .common_information import (
+    erasure_channel,
+    noisy_copies,
+    reverse_erasure_channel,
+    symmetric_common_information_witness,
+    task_assignment,
+)
 from .dice import iid_sum, summed_dice
 from .empirical import bach, blood_types, car, congress, corelli, penguins, student, titanic
 from .genetic_code import genetic_code

@@ -64,8 +64,37 @@ pull :math:`\operatorname{M}` below :math:`\operatorname{H}`, so the assembled
 witness strictly separates the whole chain. For ``n = 2`` the CAEKL and dual total
 correlation coincide with the mutual information, giving one fewer distinct rung.
 
+Closed-Form Examples
+====================
+
+A few distributions from the coordination and channel-synthesis literature have
+closed-form common informations, which makes them useful checks for the
+optimizers :cite:`cuff2010coordination,cuff2013distributed`.
+
+:func:`erasure_channel` is a fair bit through an erasure channel, and
+:func:`reverse_erasure_channel` is the same channel run backwards.
+:func:`task_assignment` deals ``n`` distinct tasks uniformly from ``k``. For
+``n = 2`` (the "scatter" channel) its Wyner common information is
+:math:`2 - \log_2 \frac{\lceil k \rceil_2}{\lceil k \rceil_2 - 1}`, where
+:math:`\lceil k \rceil_2` rounds ``k`` up to an even number. For ``n = 3`` and
+``k`` divisible by three it is
+:math:`3 \log_2 3 - \log_2 \frac{k}{k-1} - \log_2 \frac{k}{k-2}`.
+
+.. ipython::
+
+   In [9]: from dit.example_dists import task_assignment
+
+   In [10]: from dit.shannon import mutual_information
+
+   In [11]: d = task_assignment(4)
+
+   In [12]: mutual_information(d, [0], [1])
+
 APIs
 ====
 
 .. autofunction:: noisy_copies
 .. autofunction:: symmetric_common_information_witness
+.. autofunction:: erasure_channel
+.. autofunction:: reverse_erasure_channel
+.. autofunction:: task_assignment

@@ -796,7 +796,8 @@ class ExtensionProfile:
 
         a minimization over the bottom face of the extension profile. Its optimal ``U`` runs
         along the bottom-face rim from the Wyner point (``t = 0``) towards the Kamath point,
-        where ``C(t) = I[X:Y]``.
+        where ``C(t) = I[X:Y]``. This interpolates the rim for plotting; for the rate at a
+        single ``t``, optimized directly, use `dit.multivariate.channel_synthesis_rate`.
 
         Parameters
         ----------
