@@ -32,6 +32,7 @@ _COLORS = {
     "interaction informations": "#a6761d",
     "perfect privacy": "#006d2c",
     "channel synthesis": "#6a51a3",
+    "public channel synthesis": "#9e9ac8",
 }
 
 
@@ -385,9 +386,18 @@ def _extension_traces(go, profile, features, show_upper, show_gray_wyner_rates):
             )
         )
 
+    # On the bottom face, the common randomness used at a corner point is I[Y:W|X] = H[Y|X] - y
+    # (tension coordinate τ1) and the decoder's local randomness is H[Y|W] = y; mirrored for Y → X.
+    synthesis_directions = (
+        ("X → Y", "Y", "X", 1, profile.h_y_given_x),
+        ("Y → X", "X", "Y", 0, profile.h_x_given_y),
+    )
+
     if "channel synthesis" in features:
         ts, curves = features["channel synthesis"]
-        for n, ((values, pts_cs), tag) in enumerate(zip(curves, ("X → Y", "Y → X"), strict=True)):
+        for n, ((values, pts_cs), (tag, out, inp, axis, h_cond)) in enumerate(
+            zip(curves, synthesis_directions, strict=True)
+        ):
             traces.append(
                 line(
                     pts_cs,
@@ -397,8 +407,39 @@ def _extension_traces(go, profile, features, show_upper, show_gray_wyner_rates):
                     group="cs",
                     showlegend=n == 0,
                     text=[
-                        hover(f"channel synthesis {tag}", p, f"<br>common randomness t = {t:.3f}<br>C(t) = {c:.3f}")
+                        hover(
+                            f"channel synthesis {tag}",
+                            p,
+                            f"<br>common randomness t = {t:.3f}<br>C(t) = {c:.3f}"
+                            f"<br>common randomness used I[{out}:W|{inp}] = {h_cond - p[axis]:.3f}"
+                            f"<br>decoder local randomness H[{out}|W] = {p[axis]:.3f}",
+                        )
                         for p, t, c in zip(pts_cs, ts, values, strict=True)
+                    ],
+                )
+            )
+
+    if "public channel synthesis" in features:
+        ts, curves = features["public channel synthesis"]
+        for n, ((values, pts_cs), (tag, out, _, axis, _)) in enumerate(zip(curves, synthesis_directions, strict=True)):
+            keep = np.isfinite(values)
+            traces.append(
+                line(
+                    pts_cs[keep],
+                    "public channel synthesis C_pub(t)",
+                    _COLORS["public channel synthesis"],
+                    width=7,
+                    dash="dash",
+                    group="pcs",
+                    showlegend=n == 0,
+                    text=[
+                        hover(
+                            f"public channel synthesis {tag}",
+                            p,
+                            f"<br>common randomness t = {t:.3f}<br>C_pub(t) = {c:.3f}"
+                            f"<br>decoder local randomness H[{out}|W] = {p[axis]:.3f}",
+                        )
+                        for p, t, c in zip(pts_cs[keep], ts[keep], values[keep], strict=True)
                     ],
                 )
             )
@@ -656,6 +697,12 @@ def plot_tension_region(profile, features, height=850):
     are the ones the region of tension does not see. Its axis intercepts are marked:
     :math:`\\tau_3 = I[X:Y] - K[X:Y]` (the Gács-Körner point) and
     :math:`\\tau_1, \\tau_2` the necessary conditional entropies (the Kamath points).
+
+    The channel-synthesis curve lies on the face :math:`\\tau_3 = 0`, where
+    :math:`C(t, X \\to Y) = I[X:Y] + \\min_{\\tau_3 = 0} \\{\\tau_2 + (\\tau_1 - t)^+\\}`
+    :cite:`cuff2013distributed`: its common-randomness rate is read off the
+    :math:`\\tau_1` axis, from the Wyner point to the :math:`\\tau_1` intercept
+    :math:`H[Y \\dagger X]`.
 
     Parameters
     ----------

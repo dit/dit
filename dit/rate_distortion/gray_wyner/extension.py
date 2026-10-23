@@ -785,6 +785,65 @@ class ExtensionProfile:
         points = [np.array([self.h_x, self.h_y - g_xy, i]), np.array([self.h_x - g_yx, self.h_y, i])]
         return points, {"X -> Y": g_xy, "Y -> X": g_yx}
 
+    def _bottom_rim(self, lower):
+        """
+        Densely sampled boundary of the bottom face :math:`I[X:Y|W] = 0`, as ``(x, y)`` pairs.
+
+        Every rate used by channel synthesis is affine on the bottom face, so its optima
+        over the (convex) face lie on this rim.
+        """
+        base = np.vstack([lower.reshape(-1, 3), *self.probes.values(), *self.kamath[0]])
+        base = base[np.abs(base[:, 2]) < 1e-9][:, :2]
+        try:
+            ring = base[ConvexHull(base).vertices]
+        except QhullError:  # the bottom face is a point or a segment
+            ring = base
+        ring = np.vstack([ring, ring[:1]])
+        return np.vstack([np.linspace(a, b, 60, endpoint=False) for a, b in zip(ring[:-1], ring[1:], strict=True)])
+
+    def public_channel_synthesis(self, lower, num=45):
+        """
+        The communication rate for distributed channel synthesis over a public channel
+        with common-randomness rate ``t`` :cite:`cuff2013distributed`,
+
+        .. math::
+
+            C_{pub}(t, X \\to Y) = \\min_{X - U - Y,\\ I[XY:U] \\le t} I[X:U].
+
+        The public message must look independent of the synthesized pair, so the common
+        randomness must cover all of :math:`I[XY:U]`: the curve starts at the Wyner point,
+        ``t`` equal to the Wyner common information, and reaches ``C = I[X:Y]`` at
+        ``U = Y``, where ``t = H[Y]``. In the mutual information region it is the lower
+        edge of the bottom face's projection onto the :math:`(I[X:U], I[XY:U])` plane.
+
+        Parameters
+        ----------
+        lower : np.ndarray
+            Lower-boundary points (from `lower_boundary`); their ``z = 0`` subset gives the rim.
+        num : int
+            Number of values of ``t``.
+
+        Returns
+        -------
+        ts : np.ndarray
+            The common-randomness rates.
+        curves : list of (np.ndarray, np.ndarray)
+            ``[(values, points) for X -> Y, (values, points) for Y -> X]``.
+        """
+        rim = self._bottom_rim(lower)
+        v_xy = self.h_xy - rim[:, 0] - rim[:, 1]
+        ts = np.linspace(v_xy.min(), max(self.h_x, self.h_y), num)
+        curves = []
+        for v_a in (self.h_x - rim[:, 0], self.h_y - rim[:, 1]):
+            values, points = [], []
+            for t in ts:
+                cost = np.where(v_xy <= t + 1e-12, v_a, np.inf)
+                k = int(np.argmin(cost))
+                values.append(cost[k])
+                points.append([rim[k, 0], rim[k, 1], 0.0])
+            curves.append((np.array(values), np.array(points)))
+        return ts, curves
+
     def channel_synthesis(self, lower, num=45):
         """
         The communication rate for distributed channel synthesis with common-randomness rate
@@ -798,6 +857,11 @@ class ExtensionProfile:
         along the bottom-face rim from the Wyner point (``t = 0``) towards the Kamath point,
         where ``C(t) = I[X:Y]``. This interpolates the rim for plotting; for the rate at a
         single ``t``, optimized directly, use `dit.multivariate.channel_synthesis_rate`.
+
+        In region-of-tension coordinates, :math:`I[X:U] = I[X:Y] + \\tau_2` and the common
+        randomness used at a corner point is :math:`I[Y:U|X] = \\tau_1`, so
+        :math:`C(t) = I[X:Y] + \\min_{\\tau_3 = 0} \\{\\tau_2 + (\\tau_1 - t)^+\\}`. The decoder
+        needs local randomness :math:`H[Y|U]`, the extension-profile ``y`` coordinate.
 
         Parameters
         ----------
@@ -814,14 +878,7 @@ class ExtensionProfile:
         curves : list of (np.ndarray, np.ndarray)
             ``[(values, points) for X -> Y, (values, points) for Y -> X]``.
         """
-        base = np.vstack([lower.reshape(-1, 3), *self.probes.values(), *self.kamath[0]])
-        base = base[np.abs(base[:, 2]) < 1e-9][:, :2]
-        try:
-            ring = base[ConvexHull(base).vertices]
-        except QhullError:  # the bottom face is a point or a segment
-            ring = base
-        ring = np.vstack([ring, ring[:1]])
-        rim = np.vstack([np.linspace(a, b, 60, endpoint=False) for a, b in zip(ring[:-1], ring[1:], strict=True)])
+        rim = self._bottom_rim(lower)
         _, kv = self.kamath
         t_max = 1.1 * max(kv["necessary conditional entropy Y -> X"], kv["necessary conditional entropy X -> Y"], 1e-9)
         ts = np.linspace(0, t_max, num)
@@ -867,6 +924,7 @@ class ExtensionProfile:
         interaction_points, interaction_values = self.interaction_information
         perfect_points, perfect_values = self.perfect_privacy
         cs_ts, cs_curves = self.channel_synthesis(low)
+        pcs_ts, pcs_curves = self.public_channel_synthesis(low)
         entanglement_point, entanglement = self.entanglement
         features = {
             "lower": low.reshape(-1, 3),
@@ -892,6 +950,7 @@ class ExtensionProfile:
             "perfect privacy": perfect_points,
             "perfect privacy values": perfect_values,
             "channel synthesis": (cs_ts, cs_curves),
+            "public channel synthesis": (pcs_ts, pcs_curves),
         }
         if slow:
             features["Wyner"] = self.wyner(niter=niter)
