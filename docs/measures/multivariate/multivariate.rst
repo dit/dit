@@ -69,6 +69,7 @@ These measures all somehow measure shared information, but do not equal the mutu
 
    gk_common_information
    wyner_common_information
+   channel_synthesis
    exact_common_information
    functional_common_information
    kamath_common_information

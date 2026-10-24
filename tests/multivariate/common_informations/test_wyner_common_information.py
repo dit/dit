@@ -2,9 +2,11 @@
 Tests for dit.multivariate.wyner_common_information
 """
 
+import numpy as np
 import pytest
 
 from dit import Distribution as D
+from dit.example_dists import task_assignment
 from dit.multivariate import wyner_common_information as C
 from dit.multivariate.common_informations.wyner_common_information import WynerCommonInformation
 from dit.shannon import entropy
@@ -75,3 +77,24 @@ def test_wci3(i, x0):
     x0["x0"] = wci._optima.copy()
     c = wci.objective(wci._optima)
     assert c == pytest.approx(C_sbec(p), abs=1e-3)
+
+
+@pytest.mark.flaky(reruns=5)
+@pytest.mark.parametrize("m", [3, 4, 5])
+def test_wci_task_assignment_pair(m):
+    """
+    Test two distinct tasks from m against Cuff, Permuter, and Cover (2010) Example 7.
+    """
+    even = m + m % 2
+    c = C(task_assignment(m), [[0], [1]])
+    assert c == pytest.approx(2 - np.log2(even / (even - 1)), abs=2e-3)
+
+
+def test_wci_task_assignment_triple():
+    """
+    Test three distinct tasks from k against Cuff, Permuter, and Cover (2010) Example 6. Larger k divisible by three
+    (e.g. 6, with a 217-symbol auxiliary variable) are too slow to optimize in the test suite.
+    """
+    k = 3
+    c = C(task_assignment(k, 3))
+    assert c == pytest.approx(3 * np.log2(3) - np.log2(k / (k - 1)) - np.log2(k / (k - 2)), abs=1e-6)

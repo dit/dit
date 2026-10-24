@@ -8,6 +8,7 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 import dit
+from dit.example_dists import erasure_channel
 from dit.exceptions import ditException
 from dit.rate_distortion import ExtensionProfile, excess_functional_information, korner_graph_entropy
 
@@ -183,6 +184,35 @@ def test_channel_synthesis():
         assert np.all(points[:, 2] == 0)
 
 
+def test_channel_synthesis_erasure_curve():
+    """
+    The profile's C(t) tracks the closed-form erasure-channel curve of Cuff (2013), Section II-F, from above: the
+    sampled bottom face is an inner approximation, so the curve can only overestimate the rate.
+    """
+    p = 0.3
+    ep = ExtensionProfile(erasure_channel(p), seed=11)
+    ts, curves = ep.channel_synthesis(ep.lower_boundary(num_theta=16, num_radii=9))
+    rs = np.linspace(1 - p, min(2 * (1 - p), 1), 2001)
+    exact = np.array([min(max(r, _h(p) + r * (1 - _h(min((1 - p) / r, 1 - 1e-12))) - t) for r in rs) for t in ts])
+    gap = curves[0][0] - exact
+    assert gap.min() >= -1e-6
+    assert gap.max() <= 3e-2
+
+
+def test_public_channel_synthesis():
+    """The public curve runs from the Wyner point to U = Y, where the rate is I[X:Y]."""
+    c = 0.1
+    ep = ExtensionProfile(dsbs(c), seed=12)
+    ts, curves = ep.public_channel_synthesis(ep.lower_boundary(num_theta=8, num_radii=9))
+    q = (1 - np.sqrt(1 - 2 * c)) / 2
+    assert ts[0] == pytest.approx(1 + _h(c) - 2 * _h(q), abs=1e-3)
+    for values, points in curves:
+        assert values[0] == pytest.approx(1 - _h(q), abs=1e-3)
+        assert values[-1] == pytest.approx(ep.mutual_information, abs=1e-6)
+        assert np.all(np.diff(values) <= 1e-12)
+        assert np.all(points[:, 2] == 0)
+
+
 def test_wyner_point_dsbs():
     c = 0.3
     ep = ExtensionProfile(dsbs(c), seed=2)
@@ -240,9 +270,13 @@ def test_plot():
         "privacy funnel (both zero-leakage faces)",
         "excess functional information Ψ",
         "Körner graph entropy",
+        "channel synthesis C(t)",
+        "public channel synthesis C_pub(t)",
         "probe W's",
     ):
         assert name in names
+    cs = next(t for t in fig.data if t.name == "channel synthesis C(t)")
+    assert "decoder local randomness H[Y|W]" in cs.text[0]
 
 
 def test_plot_degenerate_body():
@@ -282,6 +316,11 @@ def test_plot_tension_region():
     fig = ep.plot_tension_region(_quick(ep))
     names = {t.name for t in fig.data}
     assert "region of tension (lower boundary)" in names
+    # The channel-synthesis curve lies on tau_3 = 0, with the common randomness used read off tau_1.
+    cs = next(t for t in fig.data if t.name == "channel synthesis C(t)")
+    assert np.allclose(np.asarray(cs.z) - 0.008, 0, atol=1e-9)
+    used = float(cs.text[0].split("I[Y:W|X] = ")[1].split("<br>")[0])
+    assert used == pytest.approx(cs.x[0] - 0.008, abs=1e-3)  # the overlay lift also shifts tau_1
     intercepts = next(t for t in fig.data if t.name == "axis intercepts")
     xyz = np.c_[intercepts.x, intercepts.y, np.asarray(intercepts.z) - 0.008]
     # No common part, so tau_3 = I; the MSS of Y for X is Y, so tau_1 = H[Y|X] = h(c).

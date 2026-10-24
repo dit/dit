@@ -37,13 +37,16 @@ the middle of the chain), and a private fair bit :math:`P_i` (which opens
 of eight symbols, so the witness is exchangeable with :math:`2^{2n+1}` outcomes.
 """
 
-from itertools import product
+from itertools import permutations, product
 
 from ..distribution import Distribution
 
 __all__ = (
+    "erasure_channel",
     "noisy_copies",
+    "reverse_erasure_channel",
     "symmetric_common_information_witness",
+    "task_assignment",
 )
 
 # BSC crossover q, per n, each verified to strictly separate the whole chain. n=2
@@ -152,3 +155,93 @@ def symmetric_common_information_witness(n=3, q=None):
                     outcome = tuple(str(4 * giant + 2 * (latent ^ e) + p) for e, p in zip(noise, private, strict=True))
                     pmf[outcome] = pmf.get(outcome, 0.0) + weight * 0.5**n
     return Distribution(list(pmf), list(pmf.values()))
+
+
+def erasure_channel(p):
+    r"""
+    A fair bit passed through a binary erasure channel.
+
+    The input :math:`X` is a fair bit and the output :math:`Y` equals :math:`X`
+    with probability :math:`1 - p`, and is the erasure symbol ``e`` otherwise. Its
+    Wyner common information is :cite:`cuff2013distributed`
+
+    .. math::
+
+       \operatorname{C}[X : Y] = \begin{cases} 1 & p < 1/2, \\ h(p) & p \ge 1/2, \end{cases}
+
+    where :math:`h` is the binary entropy, while :math:`\I{X : Y} = 1 - p` and the
+    necessary conditional entropy is :math:`\H{Y \dagger X} = h(p)`.
+
+    Parameters
+    ----------
+    p : float
+        The erasure probability, in :math:`[0, 1]`.
+
+    Returns
+    -------
+    d : Distribution
+        The joint distribution of input and output.
+    """
+    return Distribution(["00", "0e", "1e", "11"], [(1 - p) / 2, p / 2, p / 2, (1 - p) / 2])
+
+
+def reverse_erasure_channel(p):
+    r"""
+    The binary erasure channel run backwards.
+
+    The input :math:`X` is the erasure symbol ``e`` with probability :math:`p`
+    and otherwise a fair bit; the output :math:`Y` copies a bit and replaces ``e``
+    with a fair coin flip :cite:`cuff2013distributed`. It is
+    :func:`erasure_channel` with input and output exchanged.
+
+    Parameters
+    ----------
+    p : float
+        The erasure probability, in :math:`[0, 1]`.
+
+    Returns
+    -------
+    d : Distribution
+        The joint distribution of input and output.
+    """
+    return Distribution(["00", "e0", "e1", "11"], [(1 - p) / 2, p / 2, p / 2, (1 - p) / 2])
+
+
+def task_assignment(k, n=2):
+    r"""
+    ``n`` distinct tasks dealt uniformly at random from ``k``.
+
+    The distribution is uniform over ``n``-tuples of distinct values from
+    ``range(k)`` :cite:`cuff2010coordination`. For ``n = 2`` this is the
+    "scatter" channel of :cite:`cuff2013distributed`, uniform over :math:`x \ne y`,
+    with
+
+    .. math::
+
+       \I{X : Y} = \log_2 \frac{k}{k - 1}, \qquad
+       \H{Y \dagger X} = \log_2 (k - 1), \qquad
+       \operatorname{C}[X : Y] = 2 - \log_2 \frac{\lceil k \rceil_2}{\lceil k \rceil_2 - 1},
+
+    where :math:`\lceil k \rceil_2` is ``k`` rounded up to an even number. For
+    ``n = 3`` and ``k`` divisible by three, the Wyner common information is
+
+    .. math::
+
+       \operatorname{C}[X : Y : Z] = 3 \log_2 3 - \log_2 \frac{k}{k - 1} - \log_2 \frac{k}{k - 2}.
+
+    Parameters
+    ----------
+    k : int
+        The number of tasks.
+    n : int
+        The number of variables, each assigned a different task. Defaults to 2.
+
+    Returns
+    -------
+    d : Distribution
+        The uniform distribution over the :math:`k! / (k - n)!` assignments.
+    """
+    if not 1 <= n <= k:
+        raise ValueError("n must be between 1 and k")
+    outcomes = [tuple(str(t) for t in o) for o in permutations(range(k), n)]
+    return Distribution(outcomes, [1 / len(outcomes)] * len(outcomes))
