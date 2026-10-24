@@ -3,7 +3,7 @@ Various algorithms related to manipulating or measuring properties of
 distributions.
 """
 
-from .channelcapacity import channel_capacity, channel_capacity_joint
+from .channelcapacity import channel_capacity, channel_capacity_cost, channel_capacity_joint, sibson_capacity
 from .convex_maximization import *
 from .ipf import *
 from .lattice import insert_join, insert_meet
