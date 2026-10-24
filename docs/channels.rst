@@ -91,6 +91,59 @@ Capacity
 capacity together with a capacity-achieving input. For a joint
 distribution, use :func:`~dit.algorithms.channel_capacity_joint`.
 
+The capacity is computed with the Blahut-Arimoto algorithm
+:cite:`Blahut1972,Arimoto1972` (see also :cite:`Cover2006`, Section 10.8).
+Write :math:`q = r P` for the output distribution induced by an input
+:math:`r`, and :math:`D_x = D(P_x \| q)`. Then
+
+.. math::
+
+   \sum_x r(x) D_x = \I{X : Y} \leq C \leq \max_x D_x,
+
+and the iteration stops once these two bounds agree to within
+``max(atol, rtol * C)`` bits. The returned capacity is therefore certified
+rather than merely stationary. Three options trade speed for generality:
+
+- ``method='accelerated'`` (the default) takes the step
+  :math:`r \leftarrow r\, e^{\mu D}` of :cite:`matz2004information` with the
+  adaptive :math:`\mu_k = D(r_k \| r_{k-1}) / D(q_k \| q_{k-1}) \geq 1`. When
+  that step would decrease the mutual information, the classic step
+  :math:`\mu = 1` is taken instead. (The paper prints the reciprocal ratio,
+  which is at most 1 by data processing and contradicts its own monotonicity
+  bound.) ``method='ba'`` is the classic iteration.
+- ``eliminate=True`` iterates on a growing active set of inputs
+  :cite:`sayir2000iterating`. It adds inputs that violate the Kuhn-Tucker
+  condition :math:`D_x \leq C` and stops when none do. That condition is the
+  upper bound above, taken over the full alphabet. This pays off when only a
+  few of many inputs are used at capacity.
+- Weakly symmetric channels (:cite:`Cover2006`, Theorem 7.2.1) are solved in
+  closed form. So are square nonsingular channels whose optimal input uses
+  every symbol: there :math:`D_x = C` for all :math:`x` is a linear system in
+  :math:`\log q`. That closed form is used only when its own bound gap
+  certifies it. No canonical reference for it is cited here.
+
+Duplicate inputs and outputs that are never produced are removed before
+iterating.
+
+:func:`~dit.algorithms.channel_capacity_cost` adds an average cost constraint
+:math:`\mathbb{E}[c(X)] \leq B` through Blahut's Lagrangian form
+:cite:`Blahut1972`, and :func:`~dit.algorithms.sibson_capacity` computes
+Sibson's capacity of order :math:`\alpha`. The latter is the maximum over inputs of
+:func:`~dit.other.sibson_mutual_information`, and it equals the Rényi radius
+:math:`\min_q \max_x D_\alpha(P_x \| q)` :cite:`csiszar1995generalized`.
+
+.. ipython::
+
+   In [1]: from dit.algorithms import channel_capacity_cost, sibson_capacity
+
+   In [2]: channel_capacity_cost(bsc, cost=[0, 1], budget=0.2)[0]
+
+   In [3]: sibson_capacity(bsc, order=2)[0]
+
 .. autofunction:: dit.algorithms.channel_capacity
 
 .. autofunction:: dit.algorithms.channel_capacity_joint
+
+.. autofunction:: dit.algorithms.channel_capacity_cost
+
+.. autofunction:: dit.algorithms.sibson_capacity

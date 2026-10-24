@@ -28,6 +28,9 @@ def hamming_distortion(p_x, p_y_x):
     return distortion
 
 
+hamming_distortion.q_independent = True
+
+
 def residual_entropy_distortion(p_x, p_y_x):
     """ """
     p_xy = p_x[:, np.newaxis] * p_y_x

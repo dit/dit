@@ -22,6 +22,19 @@ By introducing a Lagrange multiplier, we can transform this constrained optimiza
 
 where minimizing at each :math:`\beta` produces a point on the curve.
 
+``RDCurve`` minimizes :math:`\mathcal{L}` with the Blahut-Arimoto algorithm
+:cite:`Blahut1972,Arimoto1972`, which alternates
+:math:`q(\hat{x}|x) \propto q(\hat{x}) 2^{-\beta d(x, \hat{x})}` with
+:math:`q(\hat{x}) = \sum_x p(x) q(\hat{x}|x)` (see also :cite:`Cover2006`,
+Section 10.8). When the distortion does not depend on :math:`q` (as for the
+Hamming distortion) the problem is convex, so two deterministic starts suffice,
+and the iteration stops once Blahut's upper and lower bounds on
+:math:`\min \mathcal{L}` agree. With :math:`c(x) = \sum_{\hat{x}} q(\hat{x}) 2^{-\beta d(x, \hat{x})}`,
+those bounds differ by
+:math:`\log_2 \max_{\hat{x}} \sum_x p(x) 2^{-\beta d(x, \hat{x})} / c(x)`.
+Distortions that depend on :math:`q` (residual entropy, the information
+bottleneck) are not convex and keep multiple random restarts.
+
 Example
 -------
 
