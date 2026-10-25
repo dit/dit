@@ -1,11 +1,11 @@
 .. generalized_divergences.rst
-.. py:module:: dit.divergences.generalized_divergences
+.. py:currentmodule:: dit.divergences
 
 ***********************
 Generalized Divergences
 ***********************
 
-Several one-parameter families extend the :doc:`kullback_leibler_divergence`.
+Several one-parameter families extend the :doc:`/measures/divergences/kullback_leibler_divergence`.
 ``dit`` implements the :math:`\alpha`-divergence, Hellinger divergence,
 Rényi divergence, Tsallis divergence, and a generic Csiszár
 :math:`f`-divergence :cite:`Cover2006`.
@@ -26,15 +26,27 @@ Rényi divergence, Tsallis divergence, and a generic Csiszár
    In [5]: tsallis_divergence(p, q, alpha=2)
    Out[5]: 0.25
 
+Several of these divergences are built from the Hellinger sum
+:math:`\sum_x p(x)^\alpha q(x)^{1-\alpha}`, which is available directly as
+:py:func:`hellinger_sum`.
+
 API
 ===
 
 .. autofunction:: alpha_divergence
+   :no-index:
 
 .. autofunction:: hellinger_divergence
+   :no-index:
 
 .. autofunction:: renyi_divergence
+   :no-index:
 
 .. autofunction:: tsallis_divergence
+   :no-index:
 
 .. autofunction:: f_divergence
+   :no-index:
+
+.. autofunction:: hellinger_sum
+   :no-index:

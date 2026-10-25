@@ -211,8 +211,8 @@ class PID_CI(BaseSynergyPID):
 
     References
     ----------
-    .. [1] A. F. C. Gomes and M. A. T. Figueiredo, "A Measure of Synergy Based on
-           Union Information", Entropy 26, 271, 2024.
+    A. F. C. Gomes and M. A. T. Figueiredo, "A Measure of Synergy Based on
+    Union Information", Entropy 26, 271, 2024.
     """
 
     _name = "I_∪^CI"

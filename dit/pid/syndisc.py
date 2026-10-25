@@ -185,7 +185,7 @@ class SyndiscOptimizer(BaseAuxVarOptimizer):
         }
 
     def _compute_bound(self):
-        """Upper bound on |V| from the Caratheodory-Fenchel theorem."""
+        """Upper bound on ``|V|`` from the Caratheodory-Fenchel theorem."""
         return prod(self._shape[i] for i in self._source_indices) + 1
 
     def _squared_mi(self, x, mi_fn):
@@ -548,7 +548,7 @@ class ModifiedSynDisc(SynDisc):
     Gutknecht, Makkeh & Wibral (2023), "From Babel to Boole: The Logical
     Organization of Information Decompositions", arXiv:2306.00734v2.
 
-    Identical to SynDisc except that singleton constraint nodes (|alpha| = 1)
+    Identical to SynDisc except that singleton constraint nodes (``|alpha| = 1``)
     use conditional mutual information I(T : a^C | a) instead of the
     optimization-based synergistic disclosure.  This enforces the PID
     consistency condition: for every source collection a, the sum of atoms
@@ -575,7 +575,7 @@ class ModifiedSynDisc(SynDisc):
         """
         Compute the modified synergistic disclosure for a lattice node.
 
-        For singleton constraints (|alpha| = 1), returns I(T : a^C | a)
+        For singleton constraints (``|alpha| = 1``), returns I(T : a^C | a)
         rather than the optimization-based S_alpha.  All other nodes
         delegate to the parent implementation.
         """

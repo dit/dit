@@ -69,13 +69,13 @@ class OneWaySKAR(BaseOneWaySKAR):
 
     def _get_u_bound(self):
         """
-        |U| <= |X|^2: each of the |X| values of V needs its own |X| values of U.
+        ``|U| <= |X|^2``: each of the ``|X|`` values of V needs its own ``|X|`` values of U.
         """
         return self._shape[0] ** 2
 
     def _get_v_bound(self):
         """
-        |V| <= |X|
+        ``|V| <= |X|``
         """
         return self._shape[0]
 
@@ -198,10 +198,10 @@ def one_way_skar(dist, X, Y, Z, niter=None, bound_u=None, bound_v=None, backend=
         The number of hops to perform during optimization.
     bound_u : int, None
         The bound to use on the size of the variable U. If none, use the
-        theoretical bound of |X|^2.
+        theoretical bound of ``|X|^2``.
     bound_v : int, None
         The bound to use on the size of the variable V. If none, use the
-        theoretical bound of |X|.
+        theoretical bound of ``|X|``.
     backend : str
         The optimization backend. One of ``'numpy'`` (default),
         ``'jax'``, or ``'torch'``.

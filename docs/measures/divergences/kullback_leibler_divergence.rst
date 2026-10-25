@@ -1,5 +1,5 @@
 .. kullback_leiber_divergence.rst
-.. py:module:: dit.divergences.kullback_leibler_divergence
+.. py:currentmodule:: dit.divergences
 
 ***************************
 Kullback-Leibler Divergence
@@ -20,8 +20,8 @@ distribution :math:`q`. This can be seen through the following identity:
 
    \DKL{p || q} = \xH{p || q} - \H{p}
 
-Where the :doc:`cross_entropy` quantifies the total cost of encoding :math:`p`
-using :math:`q`, and the :doc:`../multivariate/entropy` quantifies the true,
+Where the :doc:`/measures/divergences/cross_entropy` quantifies the total cost of encoding :math:`p`
+using :math:`q`, and the :doc:`/measures/multivariate/entropy` quantifies the true,
 minimum cost of encoding :math:`p`. For example, let's consider the cost of
 representing a biased coin by a fair one:
 
@@ -60,4 +60,8 @@ with equality if and only if :math:`p = q`. This makes it a `premetric
 API
 ===
 
+:py:func:`relative_entropy` is an alias for
+:py:func:`kullback_leibler_divergence`.
+
 .. autofunction:: kullback_leibler_divergence
+   :no-index:

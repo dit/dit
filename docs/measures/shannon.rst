@@ -1,5 +1,5 @@
 .. shannon.rst
-.. py:module:: dit.shannon.shannon
+.. py:currentmodule:: dit.shannon
 
 **********************
 Basic Shannon measures
@@ -62,10 +62,28 @@ The entropy of multiple variables is computed in a similar manner:
 Its intuition is also the same: the average number of binary questions required to identify a joint event from the distribution.
 
 
+For a bare probability vector (or a stack of them, one per row) rather than a
+:class:`~dit.Distribution`, use :py:func:`entropy_pmf`:
+
+.. ipython::
+
+   In [7]: import numpy as np
+
+   In [8]: from dit.shannon import entropy_pmf
+
+   @doctest float
+   In [9]: entropy_pmf(np.array([1/2, 1/4, 1/4]))
+   Out[9]: 1.5
+
+
 API
 ---
 
 .. autofunction:: entropy
+   :no-index:
+
+.. autofunction:: entropy_pmf
+   :no-index:
 
 
 Conditional Entropy
@@ -81,21 +99,21 @@ As a simple example, consider two identical variables:
 
 .. ipython::
 
-   In [7]: d = dit.Distribution(['HH', 'TT'], [1/2, 1/2])
+   In [10]: d = dit.Distribution(['HH', 'TT'], [1/2, 1/2])
 
    @doctest float
-   In [8]: dit.shannon.conditional_entropy(d, [0], [1])
-   Out[8]: 0.0
+   In [11]: dit.shannon.conditional_entropy(d, [0], [1])
+   Out[11]: 0.0
 
 We see that knowing the second variable tells us everything about the first, leaving zero entropy. On the other end of the spectrum, two independent variables:
 
 .. ipython::
 
-   In [9]: d = dit.Distribution(['HH', 'HT', 'TH', 'TT'], [1/4]*4)
+   In [12]: d = dit.Distribution(['HH', 'HT', 'TH', 'TT'], [1/4]*4)
 
    @doctest float
-   In [10]: dit.shannon.conditional_entropy(d, [0], [1])
-   Out[10]: 1.0
+   In [13]: dit.shannon.conditional_entropy(d, [0], [1])
+   Out[13]: 1.0
 
 Here, the second variable tells us nothing about the first so we are left with the one bit of information a coin flip has.
 
@@ -104,6 +122,7 @@ API
 ---
 
 .. autofunction:: conditional_entropy
+   :no-index:
 
 .. _mutual_information:
 
@@ -134,16 +153,16 @@ Meaning that the information that :math:`X` carries about :math:`Y` is equal to 
 
    The mutual information generalized to the multivariate case in three different ways:
 
-   :doc:`multivariate/coinformation`
+   :doc:`/measures/multivariate/coinformation`
       Generalized as the information which *all* variables contribute to.
 
-   :doc:`multivariate/total_correlation`
+   :doc:`/measures/multivariate/total_correlation`
       Generalized as the sum of the information in the individual variables minus the information in the whole.
 
-   :doc:`multivariate/dual_total_correlation`
+   :doc:`/measures/multivariate/dual_total_correlation`
       Generalized as the joint entropy minus the entropy of each variable conditioned on the others.
 
-   :doc:`multivariate/caekl_mutual_information`
+   :doc:`/measures/multivariate/caekl_mutual_information`
       Generalized as the smallest quantity that can be subtracted from the joint, and from each part of a partition of all the variables, such that the joint entropy minus this quantity is equal to the sum of each partition entropy minus this quantity.
 
 
@@ -151,6 +170,7 @@ API
 ---
 
 .. autofunction:: mutual_information
+   :no-index:
 
 
 Visualization of Information
@@ -166,14 +186,14 @@ information in and shared between random variables. These diagrams are called
 This first image pictographically shades the area of the i-diagram which
 contains the information corresponding to :math:`\H{X_0}`.
 
-.. image:: ../images/idiagrams/h_x.png
+.. image:: /images/idiagrams/h_x.png
    :alt: The entropy :math:`\H{X_0}`
    :width: 342px
    :align: center
 
 Similarly, this one shades the information corresponding to :math:`\H{X_1}`.
 
-.. image:: ../images/idiagrams/h_y.png
+.. image:: /images/idiagrams/h_y.png
    :alt: The entropy :math:`\H{X_1}`
    :width: 342px
    :align: center
@@ -182,7 +202,7 @@ This image shades the information corresponding to :math:`\H{X_0, X_1}`. Notice
 that it is the union of the prior two, and not their sum (e.g. that overlap
 region is not double-counted).
 
-.. image:: ../images/idiagrams/h_xy.png
+.. image:: /images/idiagrams/h_xy.png
    :alt: The joint entropy :math:`\H{X_0, X_1}`
    :width: 342px
    :align: center
@@ -191,14 +211,14 @@ Next, the conditional entropy of :math:`X_0` conditioned on :math:`X_1`,
 :math:`\H{X_0 | X_1}`, is displayed. It consists of the area contained in the
 :math:`X_0` circle but not contained in :math:`X_1` circle.
 
-.. image:: ../images/idiagrams/h_xgy.png
+.. image:: /images/idiagrams/h_xgy.png
    :alt: The conditional entropy :math:`\H{X_0 | X_1}`
    :width: 342px
    :align: center
 
 In the same vein, here the conditional entropy :math:`\H{X_1 | X_0}` is shaded.
 
-.. image:: ../images/idiagrams/h_ygx.png
+.. image:: /images/idiagrams/h_ygx.png
    :alt: The conditional entropy :math:`\H{X_1 | X_0}`
    :width: 342px
    :align: center
@@ -206,7 +226,7 @@ In the same vein, here the conditional entropy :math:`\H{X_1 | X_0}` is shaded.
 Finally, the mutual information between :math:`X_0` and :math:`X_1`,
 :math:`I{X_0 : X_1}` is drawn. It is the region where the two circles overlap.
 
-.. image:: ../images/idiagrams/i_xy.png
+.. image:: /images/idiagrams/i_xy.png
    :alt: The mutual information :math:`\I{X_0 : X_1}`
    :width: 342px
    :align: center

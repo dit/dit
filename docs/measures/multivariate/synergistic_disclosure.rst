@@ -1,5 +1,5 @@
 .. synergistic_disclosure.rst
-.. py:module:: dit.multivariate.synergistic_disclosure
+.. py:currentmodule:: dit.multivariate
 
 .. _synergistic_disclosure:
 
@@ -18,7 +18,7 @@ constraint set :math:`\alpha`:
 
 ``dit`` exposes both the scalar functions in this module and the lattice
 decomposition :class:`~dit.pid.syndisc.SynDisc` / :class:`~dit.pid.syndisc.ModifiedSynDisc`
-(see :doc:`../pid`).
+(see :doc:`/decompositions/pid`).
 
 .. ipython::
 
@@ -34,10 +34,13 @@ API
 ===
 
 .. autofunction:: synergistic_disclosure
+   :no-index:
 
 .. autofunction:: backbone_disclosure
+   :no-index:
 
 .. autofunction:: self_synergy
+   :no-index:
 
 :func:`~dit.multivariate.modified_synergistic_disclosure` is the
 singleton-constraint shortcut used by :class:`~dit.pid.ModifiedSynDisc`.

@@ -12,6 +12,7 @@ primary_domain = "py"
 
 extensions = [
     "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
     "sphinx.ext.coverage",
     "sphinx.ext.mathjax",
@@ -22,9 +23,73 @@ extensions = [
     "IPython.sphinxext.ipython_console_highlighting",
     "IPython.sphinxext.ipython_directive",
     "matplotlib.sphinxext.plot_directive",
+    "sphinx_reredirects",
 ]
 
+# Pages moved in the 2026 docs reorganization; keep the old URLs working.
+# Targets are relative to the old page's location.
+_MOVED = {
+    "generalinfo": "getting_started/overview",
+    "notation": "background/notation",
+    "stumbling": "background/stumbling",
+    "zreferences": "background/references",
+    "operations": "distributions/operations",
+    "symbolic": "distributions/symbolic",
+    "hypothesis": "distributions/hypothesis",
+    "measures/pid": "decompositions/pid",
+    "profiles": "decompositions/profiles",
+    "visualization": "decompositions/visualization",
+    "channels": "channels/channels",
+    "channelorder": "channels/channelorder",
+    "coding": "channels/coding",
+    "rate_distortion": "channels/rate_distortion",
+    "gray_wyner": "channels/gray_wyner",
+    "inference": "estimation/inference",
+    "optimization": "estimation/optimization",
+    **{
+        f"measures/multivariate/{name}": f"measures/common_informations/{name}"
+        for name in [
+            "beta_common_information",
+            "channel_synthesis",
+            "exact_common_information",
+            "functional_common_information",
+            "gk_common_information",
+            "kamath_common_information",
+            "maxent_function",
+            "mss_common_information",
+            "stochastic_gk_common_information",
+            "tension_common_information",
+            "wyner_common_information",
+        ]
+    },
+}
+redirects = {old: "../" * old.count("/") + f"{new}.html" for old, new in _MOVED.items()}
+
 bibtex_bibfiles = ["references.bib"]
+
+# The API reference (docs/api/) is generated from each subpackage's public
+# namespace. Most subpackages re-export via star imports without ``__all__``,
+# so imported members must be included and then filtered to objects defined
+# inside dit (see ``_skip_foreign_members``).
+autosummary_generate = True
+autosummary_imported_members = True
+autodoc_default_options = {"member-order": "bysource"}
+# Render numpydoc "Methods" sections as plain lists rather than method
+# directives, which would collide with the autodoc ``:members:`` entries.
+napoleon_custom_sections = [("Methods", "params_style")]
+
+
+def _skip_foreign_members(app, what, name, obj, skip, options):
+    """Hide objects that a dit namespace merely imports from elsewhere."""
+    module = getattr(obj, "__module__", None)
+    if isinstance(module, str) and not module.startswith("dit"):
+        return True
+    return None
+
+
+def setup(app):
+    app.connect("autodoc-skip-member", _skip_foreign_members)
+
 
 ipython_mplbackend = "agg"
 ipython_execlines = [

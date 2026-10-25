@@ -1,5 +1,5 @@
 .. divergences.rst
-.. py:module:: dit.divergences
+.. py:currentmodule:: dit.divergences
 
 ***********
 Divergences

@@ -81,17 +81,25 @@ API
 ===
 
 .. automethod:: Distribution.__getitem__
+   :no-index:
 
 .. automethod:: Distribution.sel
+   :no-index:
 
 .. automethod:: Distribution.event_probability
+   :no-index:
 
 .. automethod:: Distribution.set_rv_names
+   :no-index:
 
 .. automethod:: Distribution.set_base
+   :no-index:
 
 .. automethod:: Distribution.copy
+   :no-index:
 
 .. automethod:: Distribution.rand
+   :no-index:
 
 .. automethod:: Distribution.normalize
+   :no-index:

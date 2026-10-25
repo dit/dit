@@ -87,7 +87,7 @@ storage format. Dimension names become random-variable names:
 :meth:`Distribution.from_array` is the same idea with an explicit alphabet
 list. :meth:`Distribution.from_factors` rebuilds a joint from a marginal and
 a compatible conditional (the inverse of chain-rule multiplication; see
-:doc:`algebra`). :meth:`Distribution.from_rv_discrete` wraps a frozen
+:doc:`/distributions/algebra`). :meth:`Distribution.from_rv_discrete` wraps a frozen
 ``scipy.stats.rv_discrete``.
 
 Sparse vs dense
@@ -99,19 +99,25 @@ Zero-probability outcomes can be dropped from the printed table
 checks that free-variable slices are normalized.
 
 Symbolic probabilities are constructed with :mod:`dit.symbolic`; see
-:doc:`../symbolic`.
+:doc:`/distributions/symbolic`.
 
 API
 ===
 
 .. automethod:: Distribution.__init__
+   :no-index:
 
 .. automethod:: Distribution.from_ndarray
+   :no-index:
 
 .. automethod:: Distribution.from_array
+   :no-index:
 
 .. automethod:: Distribution.from_factors
+   :no-index:
 
 .. automethod:: Distribution.from_rv_discrete
+   :no-index:
 
 .. automethod:: Distribution.is_approx_equal
+   :no-index:

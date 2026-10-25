@@ -22,7 +22,7 @@ acceptable_base_strings = {"linear", "e"}
 
 def get_ops(base):
     """
-    Returns an *Operations instance, depending on the base.
+    Returns an Operations instance (linear or log), depending on the base.
 
     Parameters
     ----------

@@ -103,7 +103,7 @@ def sigma_algebra(C, X=None):
 
     Notes
     -----
-    The algorithm run time is generally exponential in |X|, the size of X.
+    The algorithm run time is generally exponential in ``|X|``, the size of X.
 
     """
     from itertools import product

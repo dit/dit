@@ -197,15 +197,19 @@ class PID_DeltaLambda(BaseBivariatePID):
     The delta-lambda PID from Venkatesh, Gurushankar & Schamberg (2023).
 
     A Lagrangian generalization that interpolates between the delta-PID
-    and the BROJA PID via a parameter lambda:
+    and the BROJA PID via a parameter lambda::
 
         delta_lambda(M : X \ Y) = inf_{P(X'|MY)} E_M[D_KL(P(X|M) || P(X'|M))]
                                   + lambda * I(M; X' | Y)
 
-    Redundancy is symmetrized:
+    Redundancy is symmetrized::
+
         RI = min{ I(M;X) - delta_lambda(M:X\Y), I(M;Y) - delta_lambda(M:Y\X) }
 
-    Parameters (pass via keyword arguments to constructor)
+    The following parameters are passed as keyword arguments to the
+    constructor.
+
+    Parameters
     ----------
     lam : float
         Lagrange multiplier (default 1.0). Large values approach the

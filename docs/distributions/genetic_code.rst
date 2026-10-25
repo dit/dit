@@ -1,5 +1,5 @@
 .. genetic_code.rst
-.. py:module:: dit.example_dists.genetic_code
+.. py:currentmodule:: dit.example_dists
 
 The Genetic Code
 ================
@@ -47,3 +47,4 @@ APIs
 ====
 
 .. autofunction:: genetic_code
+   :no-index:

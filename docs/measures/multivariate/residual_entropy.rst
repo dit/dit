@@ -1,11 +1,11 @@
 .. residual_entropy.rst
-.. py:currentmodule:: dit.multivariate.dual_total_correlation
+.. py:currentmodule:: dit.multivariate
 
 ****************
 Residual Entropy
 ****************
 
-The residual entropy, or erasure entropy, is a dual to the :doc:`dual_total_correlation`. It is dual in the sense that together they form the entropy of the distribution.
+The residual entropy, or erasure entropy, is a dual to the :doc:`/measures/multivariate/dual_total_correlation`. It is dual in the sense that together they form the entropy of the distribution.
 
 .. math::
 
@@ -14,7 +14,7 @@ The residual entropy, or erasure entropy, is a dual to the :doc:`dual_total_corr
 
 The residual entropy was originally proposed in :cite:`Verdu2008` to quantify the information lost by sporatic erasures in a channel. The idea here is that only the information uncorrelated with other random variables is lost if that variable is erased.
 
-If a joint distribution consists of independent random variables, the residual entropy is equal to the :doc:`entropy`:
+If a joint distribution consists of independent random variables, the residual entropy is equal to the :doc:`/measures/multivariate/entropy`:
 
 .. ipython::
 
@@ -50,12 +50,12 @@ Visualization
 
 The residual entropy consists of all the unshared information in the distribution. That is, it is the information in each variable not overlapping with any other.
 
-.. image:: ../../images/idiagrams/r_xy.png
+.. image:: /images/idiagrams/r_xy.png
    :alt: The residual entropy :math:`\R{X : Y}`
    :width: 342px
    :align: center
 
-.. image:: ../../images/idiagrams/r_xyz.png
+.. image:: /images/idiagrams/r_xyz.png
    :alt: The residual entropy :math:`\R{X : Y : Z}`
    :width: 357px
    :align: center
@@ -64,4 +64,9 @@ The residual entropy consists of all the unshared information in the distributio
 API
 ===
 
+:py:func:`independent_information` and :py:func:`variation_of_information` are
+aliases for :py:func:`residual_entropy`; for two variables the residual entropy
+is the variation of information :math:`\H{X | Y} + \H{Y | X}`.
+
 .. autofunction:: residual_entropy
+   :no-index:

@@ -1,5 +1,5 @@
 .. union_information.rst
-.. py:module:: dit.multivariate.union_information
+.. py:currentmodule:: dit.multivariate
 
 .. _union_information:
 
@@ -46,15 +46,19 @@ entropy*. The *unique entropy* of one group relative to another is
    Out[7]: 0.0
 
 The related partial entropy decomposition :math:`H_{\mathrm{mos}}` is
-documented with the :doc:`../pid`.
+documented with the :doc:`/decompositions/pid`.
 
 API
 ===
 
 .. autofunction:: union_entropy
+   :no-index:
 
 .. autofunction:: intersection_entropy
+   :no-index:
 
 .. autofunction:: synergistic_entropy
+   :no-index:
 
 .. autofunction:: unique_entropy
+   :no-index:

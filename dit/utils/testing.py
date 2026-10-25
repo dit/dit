@@ -32,17 +32,17 @@ def channel_pairs(draw, input_size=(2, 4), output_y_size=(2, 4), output_z_size=(
     draw : function
         Hypothesis sampling function.
     input_size : int or (int, int)
-        Size (or range) of the input alphabet |S|.
+        Size (or range) of the input alphabet ``|S|``.
     output_y_size : int or (int, int)
-        Size (or range) of the kappa output alphabet |Y|.
+        Size (or range) of the kappa output alphabet ``|Y|``.
     output_z_size : int or (int, int)
-        Size (or range) of the mu output alphabet |Z|.
+        Size (or range) of the mu output alphabet ``|Z|``.
 
     Returns
     -------
-    mu : ndarray, shape (|S|, |Z|)
+    mu : ndarray, shape (``|S|``, ``|Z|``)
         Channel P(Z|S).
-    kappa : ndarray, shape (|S|, |Y|)
+    kappa : ndarray, shape (``|S|``, ``|Y|``)
         Channel P(Y|S).
     """
 
@@ -83,17 +83,17 @@ def channel_inputs(draw, input_size=(2, 6), output_size=(2, 6)):
     draw : function
         Hypothesis sampling function.
     input_size : int or (int, int)
-        Size (or range) of the common input alphabet |X|.
+        Size (or range) of the common input alphabet ``|X|``.
     output_size : int or (int, int)
-        Size (or range) of the channel output alphabet |Y|.
+        Size (or range) of the channel output alphabet ``|Y|``.
 
     Returns
     -------
-    p : ndarray, shape (|X|,)
+    p : ndarray, shape (``|X|``,)
         The first pmf.
-    q : ndarray, shape (|X|,)
+    q : ndarray, shape (``|X|``,)
         The second pmf.
-    T : ndarray, shape (|X|, |Y|)
+    T : ndarray, shape (``|X|``, ``|Y|``)
         Channel P(Y|X).
     """
 
@@ -135,17 +135,17 @@ def degraded_channel_pairs(draw, input_size=(2, 4), output_z_size=(2, 4), output
     draw : function
         Hypothesis sampling function.
     input_size : int or (int, int)
-        Size (or range) of the input alphabet |S|.
+        Size (or range) of the input alphabet ``|S|``.
     output_z_size : int or (int, int)
-        Size (or range) of the mu output alphabet |Z|.
+        Size (or range) of the mu output alphabet ``|Z|``.
     output_y_size : int or (int, int)
-        Size (or range) of the kappa output alphabet |Y|.
+        Size (or range) of the kappa output alphabet ``|Y|``.
 
     Returns
     -------
-    mu : ndarray, shape (|S|, |Z|)
+    mu : ndarray, shape (``|S|``, ``|Z|``)
         The dominating channel.
-    kappa : ndarray, shape (|S|, |Y|)
+    kappa : ndarray, shape (``|S|``, ``|Y|``)
         The degraded channel, kappa = mu @ lam.
     """
 

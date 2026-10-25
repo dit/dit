@@ -1,5 +1,5 @@
 .. multivariate.rst
-.. py:module:: dit.multivariate
+.. py:currentmodule:: dit.multivariate
 
 ************
 Multivariate
@@ -57,46 +57,9 @@ It is perhaps illustrative to consider how each of these measures behaves on two
 | :math:`n` | 1 | :math:`(-1)^n` | :math:`n` | 1 | 1 | :math:`(-1)^n` | 1  | 1 | :math:`n` | :math:`\frac{1}{n-1}` |
 +-----------+---+----------------+-----------+---+---+----------------+----+---+-----------+-----------------------+
 
-
-.. _common informations:
-
-Common Informations
-===================
-These measures all somehow measure shared information, but do not equal the mutual information in the bivariate case.
-
-.. toctree::
-   :maxdepth: 1
-
-   gk_common_information
-   wyner_common_information
-   channel_synthesis
-   exact_common_information
-   functional_common_information
-   kamath_common_information
-   maxent_function
-   mss_common_information
-   beta_common_information
-   stochastic_gk_common_information
-   tension_common_information
-
-The directed Kamath–Anantharam quantity
-:func:`~dit.multivariate.directed_kamath_common_information` is documented on
-the :doc:`kamath_common_information` page.
-
-Ordering
---------
-
-The common information measures (together with the :doc:`dual_total_correlation` and :doc:`caekl_mutual_information`) form an ordering:
-
-.. math::
-
-   \K{X_{0:n}} \leq \J{X_{0:n}}
-               \leq \B{X_{0:n}}
-               \leq \C{X_{0:n}}
-               \leq \G{X_{0:n}}
-               \leq \F{X_{0:n}}
-               \leq U(X_{0:n})
-               \leq \M{X_{0:n}}
+Measures of shared information that do *not* reduce to the mutual information
+in the bivariate case (Gács–Körner, Wyner, exact, …) are collected on the
+:ref:`common informations` page.
 
 Others
 ======

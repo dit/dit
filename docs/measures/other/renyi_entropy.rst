@@ -1,11 +1,11 @@
 .. renyi_entropy.rst
-.. py:module:: dit.other.renyi_entropy
+.. py:currentmodule:: dit.other
 
 *************
 Rényi Entropy
 *************
 
-The Rényi entropy is a spectrum of generalizations to the Shannon :doc:`../multivariate/entropy`:
+The Rényi entropy is a spectrum of generalizations to the Shannon :doc:`/measures/multivariate/entropy`:
 
 .. math::
 
@@ -115,7 +115,8 @@ Further, the following inequality holds in the other direction:
 API
 ===
 
-See also :doc:`sibson_mutual_information` for the Sibson (:math:`\alpha`-)
+See also :doc:`/measures/other/sibson_mutual_information` for the Sibson (:math:`\alpha`-)
 generalization of mutual information built from Rényi divergence.
 
 .. autofunction:: renyi_entropy
+   :no-index:

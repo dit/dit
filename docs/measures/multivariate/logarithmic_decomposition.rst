@@ -1,5 +1,5 @@
 .. logarithmic_decomposition.rst
-.. py:module:: dit.multivariate.logarithmic_decomposition
+.. py:currentmodule:: dit.multivariate
 
 .. _logarithmic_decomposition:
 
@@ -40,3 +40,4 @@ API
 :mod:`dit.multivariate.logarithmic_decomposition`.
 
 .. autofunction:: logarithmic_decomposition
+   :no-index:

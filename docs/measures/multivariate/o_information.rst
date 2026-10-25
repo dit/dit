@@ -1,5 +1,5 @@
 .. o_information.rst
-.. py:module:: dit.multivariate.o_information
+.. py:currentmodule:: dit.multivariate
 
 .. _o_information:
 
@@ -33,7 +33,7 @@ it is :math:`-1` bit:
    In [4]: o_information(Xor())
    Out[4]: -1.0
 
-The :doc:`cohesion` interpolates between :math:`\T{}` and :math:`\B{}` at
+The :doc:`/measures/multivariate/cohesion` interpolates between :math:`\T{}` and :math:`\B{}` at
 finite order :math:`k`; the O-information is the single-number summary
 :math:`T - B`.
 
@@ -41,3 +41,4 @@ API
 ===
 
 .. autofunction:: o_information
+   :no-index:

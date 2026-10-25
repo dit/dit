@@ -64,9 +64,9 @@ def perturb_support(pmf, eps=0.1, shape="ball", prng=None):
     For details on the isometric log-ratio transformation see [1]_.
 
     .. [1] J. J. Egozcue, V. Pawlowsky-Glahn, G. Mateu-Figueras, C.
-    Barceló-Vidal. Isometric Logratio Transformations for Compositional
-    Data Analysis, Mathematical Geology. April 2003, Volume 35, Issue 3,
-    pp 279-300. http://dx.doi.org/10.1023/A:1023818214614
+       Barceló-Vidal. Isometric Logratio Transformations for Compositional
+       Data Analysis, Mathematical Geology. April 2003, Volume 35, Issue 3,
+       pp 279-300. http://dx.doi.org/10.1023/A:1023818214614
 
     """
     if prng is None:

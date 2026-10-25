@@ -1,5 +1,5 @@
 .. sibson_mutual_information.rst
-.. py:module:: dit.other.sibson_mutual_information
+.. py:currentmodule:: dit.other
 
 *************************
 Sibson Mutual Information
@@ -50,11 +50,16 @@ Two conditional Sibson measures from Esposito et al. (2021) are provided:
   symmetric in :math:`X` and :math:`Y`.
 
 .. autofunction:: sibson_mutual_information
+   :no-index:
 
 .. autofunction:: sibson_mutual_information_pmf
+   :no-index:
 
 .. autofunction:: maximal_leakage
+   :no-index:
 
 .. autofunction:: sibson_conditional_mutual_information_y_given_z
+   :no-index:
 
 .. autofunction:: sibson_conditional_mutual_information_z
+   :no-index:

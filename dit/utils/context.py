@@ -35,7 +35,7 @@ def cd(newpath):
 @contextlib.contextmanager
 def named_tempfile(*args, **kwargs):
     """
-    Calls tempfile.NamedTemporaryFile(*kwargs) with delete=False.
+    Calls ``tempfile.NamedTemporaryFile(*args, **kwargs)`` with ``delete=False``.
 
     The file is deleted after the context.
 

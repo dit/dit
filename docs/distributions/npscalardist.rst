@@ -8,7 +8,7 @@ Numeric Outcomes
 When a :class:`~dit.Distribution` is one-dimensional with numeric outcomes —
 a six-sided die, a binomial count — arithmetic operators transform the
 **outcomes**. This is distinct from named-variable multiplication, which
-implements the chain rule (see :doc:`algebra`).
+implements the chain rule (see :doc:`/distributions/algebra`).
 
 Playing with numeric distributions
 ----------------------------------

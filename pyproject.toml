@@ -99,6 +99,7 @@ docs = [
     "ipython",
     "nbconvert",
     "sphinx",
+    "sphinx-reredirects",
     "sphinx-rtd-theme",
     "sphinxcontrib-bibtex",
     "python-ternary",

@@ -1,5 +1,5 @@
 .. other.rst
-.. py:module:: dit.other
+.. py:currentmodule:: dit.other
 
 **************
 Other Measures

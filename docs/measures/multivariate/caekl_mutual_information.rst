@@ -1,5 +1,5 @@
 .. caekl_mutual_information.rst
-.. py:module:: dit.multivariate.caekl_mutual_information
+.. py:currentmodule:: dit.multivariate
 
 .. _caekl_mutual_information:
 
@@ -56,3 +56,4 @@ API
 ===
 
 .. autofunction:: caekl_mutual_information
+   :no-index:

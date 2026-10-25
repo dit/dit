@@ -1,5 +1,5 @@
 .. s_information.rst
-.. py:module:: dit.multivariate.s_information
+.. py:currentmodule:: dit.multivariate
 
 .. _s_information:
 
@@ -7,7 +7,7 @@
 S-Information
 *************
 
-The S-information (also known as the exogenous information) :cite:`rosas2019quantifying` quantifies the total amount of dependency between each individual variable and the rest of a system. It is defined as the sum of the :doc:`total_correlation` :math:`\T{}` and the :doc:`dual_total_correlation` :math:`\B{}`:
+The S-information (also known as the exogenous information) :cite:`rosas2019quantifying` quantifies the total amount of dependency between each individual variable and the rest of a system. It is defined as the sum of the :doc:`/measures/multivariate/total_correlation` :math:`\T{}` and the :doc:`/measures/multivariate/dual_total_correlation` :math:`\B{}`:
 
 .. math::
 
@@ -19,7 +19,7 @@ Equivalently, it is the sum, over each variable, of the mutual information betwe
 
    \S{X_{0:n}} = \sum_{i=0}^{n-1} \I{X_i : X_{\{0:n\} \setminus i}}
 
-The S-information is a special case of both the :math:`\Delta^k` and :math:`\Gamma^k` measures at :math:`k = 0`; see :doc:`delta_gamma`.
+The S-information is a special case of both the :math:`\Delta^k` and :math:`\Gamma^k` measures at :math:`k = 0`; see :doc:`/measures/multivariate/delta_gamma`.
 
 .. ipython::
 
@@ -38,3 +38,4 @@ API
 ===
 
 .. autofunction:: s_information
+   :no-index:

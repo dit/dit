@@ -158,8 +158,8 @@ class PID_Deg(BaseBivariatePID):
 
     References
     ----------
-    .. [1] A. Kolchinsky, "A Novel Approach to the Partial Information
-           Decomposition", Entropy 24, 403, 2022.
+    A. Kolchinsky, "A Novel Approach to the Partial Information
+    Decomposition", Entropy 24, 403, 2022.
     """
 
     _name = "I_d∩"

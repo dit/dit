@@ -1,5 +1,5 @@
 .. delta_gamma.rst
-.. py:module:: dit.multivariate.delta_gamma
+.. py:currentmodule:: dit.multivariate
 
 .. _delta_gamma:
 
@@ -9,13 +9,13 @@ Delta^k and Gamma^k
 
 The :math:`\Delta^k` and :math:`\Gamma^k` measures :cite:`varley2026faces` form a parameterized family of higher-order information measures. They unify several existing multivariate measures by recognizing them as special cases tuned by an integer order parameter :math:`k`.
 
-:math:`\Delta^k` is defined in terms of the S-information :math:`\mathcal{S}` and the :doc:`total_correlation` :math:`\mathcal{T}`:
+:math:`\Delta^k` is defined in terms of the S-information :math:`\mathcal{S}` and the :doc:`/measures/multivariate/total_correlation` :math:`\mathcal{T}`:
 
 .. math::
 
    \Delta^k(X_{0:n}) = \mathcal{S}(X_{0:n}) - k\mathcal{T}(X_{0:n})
 
-Since the S-information is the sum of the total correlation and the :doc:`dual_total_correlation` :math:`\mathcal{D}`, this is equivalent to :math:`\Delta^k = \mathcal{D} + (1 - k)\mathcal{T}`. It is arranged into a hierarchy of increasingly high-order synergies: if :math:`\Delta^k(X) < 0` the system is dominated by interactions of order greater than :math:`k`, while if :math:`\Delta^k(X) > 0` it is dominated by interactions of order lower than :math:`k`.
+Since the S-information is the sum of the total correlation and the :doc:`/measures/multivariate/dual_total_correlation` :math:`\mathcal{D}`, this is equivalent to :math:`\Delta^k = \mathcal{D} + (1 - k)\mathcal{T}`. It is arranged into a hierarchy of increasingly high-order synergies: if :math:`\Delta^k(X) < 0` the system is dominated by interactions of order greater than :math:`k`, while if :math:`\Delta^k(X) > 0` it is dominated by interactions of order lower than :math:`k`.
 
 :math:`\Gamma^k` is the entropic conjugate of :math:`\Delta^k`, obtained by exchanging the roles of the total correlation and dual total correlation:
 
@@ -58,4 +58,6 @@ API
 ===
 
 .. autofunction:: delta_k
+   :no-index:
 .. autofunction:: gamma_k
+   :no-index:

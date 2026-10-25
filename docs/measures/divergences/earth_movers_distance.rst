@@ -1,5 +1,5 @@
 .. earth_movers_distance.rst
-.. py:module:: dit.divergences.earth_movers_distance
+.. py:currentmodule:: dit.divergences
 
 Earth Mover's Distance
 ======================
@@ -38,7 +38,9 @@ API
 ---
 
 .. autofunction:: earth_movers_distance
+   :no-index:
 
 The optimal transport plan achieving this distance is itself a joint distribution (coupling) whose marginals are the two input distributions. It can be obtained directly:
 
 .. autofunction:: earth_movers_distance_coupling
+   :no-index:

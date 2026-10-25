@@ -1,5 +1,5 @@
 .. jensen_shannon_divergence.rst
-.. py:module:: dit.divergences.jensen_shannon_divergence
+.. py:currentmodule:: dit.divergences
 
 *************************
 Jensen-Shannon Divergence
@@ -63,7 +63,7 @@ If we make that concave function :math:`\Psi` the Shannon entropy :math:`\H{}`, 
 
 .. note::
 
-   Some people look at the Jensen-Rényi divergence (where :math:`\Psi` is the :doc:`../other/renyi_entropy`) and the Jensen-Tsallis divergence (where :math:`\Psi` is the :doc:`../other/tsallis_entropy`).
+   Some people look at the Jensen-Rényi divergence (where :math:`\Psi` is the :doc:`/measures/other/renyi_entropy`) and the Jensen-Tsallis divergence (where :math:`\Psi` is the :doc:`/measures/other/tsallis_entropy`).
 
 
 Metric
@@ -75,7 +75,7 @@ The square root of the Jensen-Shannon divergence, :math:`\sqrt{\JSD{}}`, is a tr
 Relationship to the Other Measures
 ==================================
 
-The Jensen-Shannon divergence can be derived from other, more well known information measures; notably the :doc:`kullback_leibler_divergence` and the :ref:`mutual_information`.
+The Jensen-Shannon divergence can be derived from other, more well known information measures; notably the :doc:`/measures/divergences/kullback_leibler_divergence` and the :ref:`mutual_information`.
 
 
 Kullback-Leibler divergence
@@ -103,3 +103,4 @@ API
 ===
 
 .. autofunction:: jensen_shannon_divergence
+   :no-index:

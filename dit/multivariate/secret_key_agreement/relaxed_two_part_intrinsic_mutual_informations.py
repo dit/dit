@@ -58,9 +58,9 @@ class RelaxedTwoPartIMIMixin:
         crvs : list
             The indices of Z (Eve).
         bound_j : int, None
-            Bound on the size of J. If None, use |X||Y||Z|.
+            Bound on the size of J. If None, use ``|X||Y||Z|``.
         bound_zbar : int, None
-            Bound on the size of the corrupted Z. If None, use |Z|, which
+            Bound on the size of the corrupted Z. If None, use ``|Z|``, which
             suffices :cite:`christandl2003property`.
         """
         if not crvs:
@@ -199,9 +199,9 @@ def relaxed_two_part_intrinsic_mutual_information(
     bounds : [int], None
         Bounds on the size of J to sweep over. Each yields a valid upper bound,
         and the smallest is returned. If None, use (2, 3, 4, None), where None
-        means |X||Y||Z|.
+        means ``|X||Y||Z|``.
     bound_zbar : int, None
-        Bound on the size of the corrupted Z. If None, use |Z|.
+        Bound on the size of the corrupted Z. If None, use ``|Z|``.
     backend : str
         The optimization backend. One of ``'numpy'`` (default), ``'jax'``, or
         ``'torch'``.

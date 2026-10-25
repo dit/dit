@@ -61,3 +61,6 @@ dit/inference/pycounts.c
 dit.code-workspace
 newrelic_agent.log
 __marimo__
+
+# autosummary output
+docs/api/generated/

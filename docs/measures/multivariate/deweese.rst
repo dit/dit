@@ -1,5 +1,5 @@
 .. deweese.rst
-.. py:module:: dit.multivariate.deweese
+.. py:currentmodule:: dit.multivariate
 
 .. _deweese coinformation:
 
@@ -18,21 +18,6 @@ Mike DeWeese has introduced a family of multivariate information measures based 
    In [1]: from dit.example_dists import dyadic, triadic
 
    In [2]: print(triadic)
-   Class:          Distribution
-   Alphabet:       ('0', '1', '2', '3') for all rvs
-   Base:           linear
-   Outcome Class:  str
-   Outcome Length: 3
-   RV Names:       None
-   x     p(x)
-   000   1/8
-   022   1/8
-   111   1/8
-   133   1/8
-   202   1/8
-   220   1/8
-   313   1/8
-   331   1/8
 
 
 This particular distribution has zero :ref:`coinformation`:
@@ -65,6 +50,10 @@ API
 ===
 
 .. autofunction:: deweese_coinformation
+   :no-index:
 .. autofunction:: deweese_total_correlation
+   :no-index:
 .. autofunction:: deweese_dual_total_correlation
+   :no-index:
 .. autofunction:: deweese_caekl_mutual_information
+   :no-index:
