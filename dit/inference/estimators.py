@@ -19,7 +19,10 @@ __all__ = (
     "entropy_from_counts",
     "conditional_mutual_information",
     "jackknife_entropy",
+    "dispersion_entropy",
+    "lz76_complexity",
     "lz_entropy_rate",
+    "multiscale_permutation_entropy",
     "permutation_entropy",
     "weighted_permutation_entropy",
 )
@@ -825,3 +828,145 @@ def weighted_permutation_entropy(ts, order=3, delay=1, normalize=False, ties="fi
     p = p[p > 0]
     h = float(-np.sum(p * np.log2(p)))
     return h / np.log2(factorial(order)) if normalize else h
+
+
+def multiscale_permutation_entropy(
+    ts, scale, order=3, delay=1, normalize=False, estimator="plugin", ties="first", prng=None
+):
+    """
+    The permutation entropy of a series coarse-grained at scales 1 through
+    `scale` :cite:`Aziz2005`.
+
+    At scale :math:`s` the series is replaced by the means of consecutive,
+    non-overlapping blocks of :math:`s` values :cite:`Costa2002`, and
+    :func:`permutation_entropy` is applied to the result.
+
+    Parameters
+    ----------
+    ts : array_like
+        The real-valued series.
+    scale : int
+        The largest scale.
+    order, delay, normalize, estimator, ties, prng
+        See :func:`permutation_entropy`.
+
+    Returns
+    -------
+    h : np.ndarray
+        The permutation entropy at each scale, in bits; entry ``s - 1`` is scale ``s``.
+    """
+    ts = np.asarray(ts, dtype=float)
+    out = np.empty(scale)
+    for s in range(1, scale + 1):
+        blocks = len(ts) // s
+        coarse = ts[: blocks * s].reshape(blocks, s).mean(axis=1)
+        out[s - 1] = permutation_entropy(coarse, order, delay, normalize, estimator, ties, prng)
+    return out
+
+
+def dispersion_entropy(ts, classes=3, order=3, delay=1, mapping="ncdf", normalize=False, estimator="plugin"):
+    """
+    The dispersion entropy of a real-valued series :cite:`Rostaghi2016`.
+
+    Each value is mapped to one of `classes` levels, through the normal CDF with
+    the series' mean and standard deviation (``mapping='ncdf'``) or by min-max
+    scaling (``'linear'``): a scaled value :math:`y \\in [0, 1]` gets class
+    :math:`\\min(\\lfloor c y \\rfloor + 1, c)`. The dispersion entropy is the
+    entropy of the length-`order` patterns of classes, taken `delay` apart.
+    Unlike :func:`permutation_entropy` it keeps amplitude information and has
+    no ties to break.
+
+    Parameters
+    ----------
+    ts : array_like
+        The real-valued series.
+    classes : int
+        The number of classes :math:`c`.
+    order, delay : int
+        The pattern length :math:`m` and the delay between its entries.
+    mapping : {'ncdf', 'linear'}
+        How values are scaled to :math:`[0, 1]` before classing.
+    normalize : bool
+        Divide by :math:`m \\log_2 c`, giving a value in :math:`[0, 1]`.
+    estimator : str
+        See :func:`entropy_from_counts`; alphabet-dependent estimators use
+        :math:`c^m` patterns.
+
+    Returns
+    -------
+    h : float
+        The dispersion entropy, in bits. It is 0 for a constant series.
+    """
+    from scipy.special import ndtr
+
+    ts = np.asarray(ts, dtype=float)
+    if mapping == "ncdf":
+        scale = np.std(ts)
+        y = ndtr((ts - ts.mean()) / scale) if scale > 0 else None
+    elif mapping == "linear":
+        spread = ts.max() - ts.min()
+        y = (ts - ts.min()) / spread if spread > 0 else None
+    else:
+        raise ValueError("`mapping` must be 'ncdf' or 'linear'.")
+    if y is None:
+        return 0.0
+    z = np.minimum(np.floor(classes * y).astype(np.int64), classes - 1)
+    n = len(z) - (order - 1) * delay
+    if n < 1:
+        raise ValueError("The series is too short for this `order` and `delay`.")
+    patterns = np.stack([z[k * delay : k * delay + n] for k in range(order)], axis=1)
+    counts = np.unique(patterns, axis=0, return_counts=True)[1]
+    h = _entropy(counts, estimator, classes**order)
+    return h / (order * np.log2(classes)) if normalize else h
+
+
+def lz76_complexity(data, normalize=False):
+    """
+    The Lempel–Ziv (1976) complexity of a sequence :cite:`Lempel1976`.
+
+    This is the number :math:`c(n)` of phrases in the exhaustive history of the
+    sequence: scanning left to right, each phrase is the shortest string that
+    does not occur earlier (overlaps allowed), computed with the algorithm of
+    Kaspar & Schuster :cite:`Kaspar1987`. For example ``0001101001000101``
+    parses as ``0 | 001 | 10 | 100 | 1000 | 101``, so :math:`c = 6`.
+
+    Parameters
+    ----------
+    data : iterable
+        The sequence; rows of a 2D array are joint symbols.
+    normalize : bool
+        Return :math:`c(n) \\log_k(n) / n` for an alphabet of :math:`k` observed
+        symbols. For a stationary ergodic source this converges to the entropy
+        rate divided by :math:`\\log_2 k`; random sequences score near 1. A
+        constant sequence is normalized with :math:`k = 2`.
+
+    Returns
+    -------
+    c : int or float
+        The phrase count, or its normalization.
+    """
+    codes = _dense(data)
+    n = len(codes)
+    if n == 0:
+        return 0
+    c, start, i, k, k_max = 1, 1, 0, 1, 1
+    while start + k <= n:
+        if codes[i + k - 1] == codes[start + k - 1]:
+            k += 1
+            if start + k > n:
+                c += 1
+                break
+        else:
+            k_max = max(k_max, k)
+            i += 1
+            if i == start:
+                c += 1
+                start += k_max
+                if start + 1 > n:
+                    break
+                i, k, k_max = 0, 1, 1
+            else:
+                k = 1
+    if not normalize:
+        return c
+    return c * np.log(n) / np.log(max(len(np.unique(codes)), 2)) / n

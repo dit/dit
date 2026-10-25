@@ -165,6 +165,15 @@ of occurrence, broken by negligible noise, or kept as their own patterns
 :func:`weighted_permutation_entropy` weights each window by its variance, which
 restores some amplitude information :cite:`Fadlallah2013` and serves as a
 model-free predictability measure :cite:`Garland2014`.
+:func:`multiscale_permutation_entropy` repeats the permutation entropy on
+block-averaged versions of the series at successive scales :cite:`Aziz2005,Costa2002`.
+:func:`dispersion_entropy` instead classes the values themselves into :math:`c`
+levels and takes the entropy of the length-:math:`m` class patterns
+:cite:`Rostaghi2016`, keeping amplitude information and avoiding ties.
+
+For symbolic sequences, :func:`lz76_complexity` counts the phrases of the
+Lempel–Ziv (1976) exhaustive history :cite:`Lempel1976,Kaspar1987`; normalized, it
+is a compression-based estimate of the entropy rate, like :func:`lz_entropy_rate`.
 
 Consecutive windows with :math:`\tau = 1` share :math:`m - 1` values, so each
 pattern can be followed by only :math:`m` of the :math:`m!` patterns. Those
@@ -271,6 +280,12 @@ API
 .. autofunction:: permutation_entropy
 
 .. autofunction:: weighted_permutation_entropy
+
+.. autofunction:: multiscale_permutation_entropy
+
+.. autofunction:: dispersion_entropy
+
+.. autofunction:: lz76_complexity
 
 .. autofunction:: dist_from_timeseries
 
