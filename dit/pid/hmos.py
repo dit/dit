@@ -15,9 +15,7 @@ where h(A_i) = -log p(A_i) is the joint surprisal of source group A_i.
 
 import numpy as np
 
-from ..utils import build_table
-from .ped import BasePED
-from .pid import sort_key
+from .ped import PointwisePED
 
 __all__ = (
     "PED_MOS",
@@ -108,7 +106,7 @@ def h_mos(d, sources, target=None):
     return sum(d[outcome] * val for outcome, val in pw.items())
 
 
-class PED_MOS(BasePED):
+class PED_MOS(PointwisePED):
     """
     The min-of-surprisals partial entropy decomposition.
 
@@ -116,109 +114,12 @@ class PED_MOS(BasePED):
     Information Content", Entropy 22(2), 216.
     https://doi.org/10.3390/e22020216
 
-    When ``pointwise=True``, per-outcome redundancies and PI atoms are also
-    computed via Mobius inversion on the lattice.  Theorem 5 of the paper
-    guarantees that every pointwise PI atom is non-negative.
+    This is the :math:`h_{\\min}` decomposition. When ``pointwise=True``,
+    per-outcome redundancies and PI atoms are also computed via Mobius
+    inversion on the lattice.  Theorem 5 of the paper guarantees that every
+    pointwise PI atom is non-negative.
     """
 
     _name = "H_mos"
     _measure = staticmethod(h_mos)
-
-    def __init__(self, dist, sources=None, pointwise=False, **kwargs):
-        """
-        Parameters
-        ----------
-        dist : Distribution
-            The distribution to compute the decomposition on.
-        sources : iter of iters, None
-            The set of variables to include. If None, `dist.rvs` is used.
-        pointwise : bool
-            If True, also compute per-outcome redundancies and PI atoms.
-        """
-        self._pointwise = pointwise
-        self._pw_reds = {}
-        self._pw_pis = {}
-        super().__init__(dist, sources=sources, **kwargs)
-
-    def _compute(self):
-        super()._compute()
-        if self._pointwise:
-            self._compute_pointwise()
-
-    def _compute_pointwise(self):
-        """Compute pointwise redundancies and PI atoms for all lattice nodes."""
-        for node in self._lattice:
-            self._pw_reds[node] = h_mos_pw(self._dist, node, self._target, **self._kwargs)
-
-        any_node = next(iter(self._pw_reds))
-        outcomes = list(self._pw_reds[any_node].keys())
-
-        for node in reversed(list(self._lattice)):
-            pw_pi = {}
-            for o in outcomes:
-                desc_sum = sum(self._pw_pis[n][o] for n in self._lattice.descendants(node))
-                pw_pi[o] = self._pw_reds[node].get(o, 0.0) - desc_sum
-            self._pw_pis[node] = pw_pi
-
-    def get_pw_red(self, node):
-        """
-        Pointwise redundancy values for *node*.
-
-        Returns
-        -------
-        pw_red : dict
-            ``{outcome: float}``
-        """
-        return self._pw_reds[node]
-
-    def get_pw_pi(self, node):
-        """
-        Pointwise PI atom values for *node*.
-
-        Returns
-        -------
-        pw_pi : dict
-            ``{outcome: float}``
-        """
-        return self._pw_pis[node]
-
-    def pw_to_string(self, outcome=None, digits=4):
-        """
-        Create a table of pointwise PED values.
-
-        Parameters
-        ----------
-        outcome : tuple, optional
-            If given, show values for this single outcome. Otherwise show all.
-        digits : int
-            Precision for display.
-
-        Returns
-        -------
-        table : str
-        """
-        if not self._pw_pis:
-            return "(pointwise PED not computed -- pass pointwise=True)"
-
-        any_node = next(iter(self._pw_pis))
-        all_outcomes = list(self._pw_pis[any_node].keys())
-        outcomes = [outcome] if outcome is not None else all_outcomes
-        red_string = "h_r"
-        pi_string = "h_d"
-
-        columns = [self._name, "outcome", red_string, pi_string]
-        dist_name = getattr(self._dist, "name", "")
-        base_title = f"{self._name} (pointwise)"
-        title = f"{base_title} | {dist_name}" if dist_name else base_title
-        table = build_table(columns, title=title)
-        table.float_format[red_string] = f"{digits + 2}.{digits}"
-        table.float_format[pi_string] = f"{digits + 2}.{digits}"
-
-        for node in sorted(self._lattice, key=sort_key(self._lattice)):
-            node_label = "".join("{{{}}}".format(":".join(map(str, n))) for n in node)
-            for o in outcomes:
-                red_val = self._pw_reds[node].get(o, 0.0)
-                pi_val = self._pw_pis[node].get(o, 0.0)
-                table.add_row([node_label, str(o), red_val, pi_val])
-
-        return table.get_string()
+    _pw_measure = staticmethod(h_mos_pw)

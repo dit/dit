@@ -8,7 +8,46 @@ from ..utils import build_table
 from .measures import __all_pids
 from .pid import sort_key
 
-__all__ = ("compare_measures", "pointwise_pid_table")
+__all__ = ("compare_measures", "pointwise_pid_table", "representational_complexity")
+
+
+def representational_complexity(decomposition, comparator=min):
+    """
+    The representational complexity of a partial information (or entropy)
+    decomposition :cite:`ehrlich2023measure`.
+
+    Each atom :math:`\\alpha` gets a degree, the number of sources in its
+    smallest group (``comparator=min``, as in Ehrlich et al.) or its largest
+    (``comparator=max``), and the complexity is the atom-weighted mean degree:
+
+    .. math::
+
+        C = \\frac{\\sum_\\alpha \\deg(\\alpha) \\Pi(\\alpha)}{\\sum_\\alpha \\Pi(\\alpha)}
+
+    It ranges from 1 (all redundant) to the number of sources (all synergistic).
+
+    Parameters
+    ----------
+    decomposition : BasePID
+        A computed PID or PED, such as :class:`PID_SX` or :class:`PED_SX`.
+    comparator : {min, max}
+        How the sizes of an atom's groups are reduced to its degree.
+
+    Returns
+    -------
+    complexity : float
+    """
+    if comparator not in (min, max):
+        raise ValueError("`comparator` must be `min` or `max`.")
+    sources = [set(s) for s in decomposition._sources]
+
+    def degree(group):
+        return sum(source <= set(group) for source in sources)
+
+    nodes = list(decomposition._lattice)
+    atoms = np.array([decomposition.get_pi(node) for node in nodes])
+    degrees = np.array([comparator(degree(group) for group in node) for node in nodes])
+    return float(atoms @ degrees / atoms.sum())
 
 
 def compare_measures(dist, pids=__all_pids, inputs=None, output=None, name="", digits=5):
