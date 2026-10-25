@@ -19,7 +19,17 @@ from .estimators import (
     permutation_entropy,
     weighted_permutation_entropy,
 )
-from .knn_estimators import differential_entropy_knn, total_correlation_ksg
+from .gaussian_copula import copula_normalize, gaussian_copula_mutual_information
+from .knn_estimators import (
+    cross_entropy_knn,
+    differential_entropy_knn,
+    jensen_shannon_divergence_knn,
+    kullback_leibler_divergence_knn,
+    mutual_information_mixed_ksg,
+    renyi_entropy_knn,
+    total_correlation_ksg,
+    tsallis_entropy_knn,
+)
 from .markov_order import MarkovOrderTest, markov_order_test, select_markov_order
 from .posterior import EntropyRatePosterior, entropy_rate_posterior
 from .surrogates import (

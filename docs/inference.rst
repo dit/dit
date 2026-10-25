@@ -229,6 +229,30 @@ rate control, and network inference live in the companion package
 `infoflow <https://github.com/dit/infoflow>`_, which builds on these estimators
 and null generators.
 
+Continuous and mixed data
+=========================
+
+:func:`differential_entropy_knn` and :func:`total_correlation_ksg` estimate
+differential entropies and (conditional) total correlations from nearest-neighbor
+distances. The same distances give:
+
+* :func:`cross_entropy_knn` and :func:`kullback_leibler_divergence_knn` — the
+  cross entropy and divergence of two sampled densities :cite:`Leonenko2008,Wang2009`.
+* :func:`jensen_shannon_divergence_knn` — the Jensen–Shannon divergence
+  :cite:`Lin1991`, from the entropy of the pooled samples.
+* :func:`renyi_entropy_knn` and :func:`tsallis_entropy_knn` — differential
+  Rényi and Tsallis entropies of order :math:`q < k + 1` :cite:`Leonenko2008`.
+  Orders below 1 converge slowly.
+* :func:`mutual_information_mixed_ksg` — the mixed KSG estimator, which handles
+  variables that are discrete, continuous, or a mixture (with point masses)
+  :cite:`Gao2017`.
+
+:func:`gaussian_copula_mutual_information` instead rank-transforms each variable
+to a standard normal and computes the information of the Gaussian with the
+resulting covariance :cite:`Ince2017`. It lower-bounds the information, is
+unaffected by monotone transformations of the marginals, and stays stable in
+many dimensions.
+
 API
 ===
 
@@ -291,4 +315,20 @@ API
 .. autofunction:: differential_entropy_knn
 
 .. autofunction:: total_correlation_ksg
+
+.. autofunction:: cross_entropy_knn
+
+.. autofunction:: kullback_leibler_divergence_knn
+
+.. autofunction:: jensen_shannon_divergence_knn
+
+.. autofunction:: renyi_entropy_knn
+
+.. autofunction:: tsallis_entropy_knn
+
+.. autofunction:: mutual_information_mixed_ksg
+
+.. autofunction:: gaussian_copula_mutual_information
+
+.. autofunction:: copula_normalize
 
