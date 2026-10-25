@@ -14,6 +14,7 @@ from .estimators import (
     entropy_1,
     entropy_2,
     entropy_from_counts,
+    jackknife_entropy,
     lz_entropy_rate,
     permutation_entropy,
     weighted_permutation_entropy,
