@@ -284,7 +284,9 @@ def test_consistency(estimator, weights):
     counts = np.round(p * 200_000)
     q = counts / counts.sum()
     truth = -np.sum(q * np.log2(q))
-    assert entropy_from_counts(counts, estimator) == pytest.approx(truth, abs=1e-3)
+    # the minimax pseudocount sqrt(N) / K shrinks only as 1 / sqrt(N)
+    tolerance = 1e-2 if estimator == "bayes_minimax" else 1e-3
+    assert entropy_from_counts(counts, estimator) == pytest.approx(truth, abs=tolerance)
 
 
 @settings(max_examples=30, deadline=None)
