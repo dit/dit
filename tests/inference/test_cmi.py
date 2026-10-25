@@ -55,6 +55,24 @@ def test_cmi_matches_plugin_distribution():
     assert conditional_mutual_information(y[1:], x[:-1], y[:-1]) == pytest.approx(expected)
 
 
+def test_cmi_alphabet_sizes():
+    """
+    Alphabet-dependent estimators see product alphabets, not the observed joint support.
+    """
+    rng = np.random.default_rng(3)
+    x, y = rng.integers(0, 3, 60), rng.integers(0, 4, 60)
+    plugin = conditional_mutual_information(x, y)
+    assert conditional_mutual_information(x, y, alphabet_sizes=(3, 4)) == pytest.approx(plugin)
+    default = conditional_mutual_information(x, y, estimator="bayes_jeffreys")
+    assert conditional_mutual_information(x, y, estimator="bayes_jeffreys", alphabet_sizes=(3, 4)) == pytest.approx(
+        default
+    )
+    wider = conditional_mutual_information(x, y, estimator="bayes_jeffreys", alphabet_sizes=(6, 8))
+    assert wider != pytest.approx(default)
+    with pytest.raises(ValueError):
+        conditional_mutual_information(x, y, alphabet_sizes=(2, 4))
+
+
 def test_cmi_conditioning_removes_common_cause():
     rng = np.random.default_rng(2)
     z = rng.integers(0, 2, 5000)

@@ -96,6 +96,30 @@ overlapping words of a sequence. The ``estimator`` argument selects:
   priors chosen to make the prior on the entropy nearly uniform
   :cite:`Nemenman2002`. It needs the number of possible outcomes
   (``alphabet_size``); :func:`block_entropy` supplies ``len(alphabet) ** L``.
+* ``'zhang'`` — Zhang's estimator, whose bias decays exponentially in the
+  sample size :cite:`Zhang2012`, computed as in :cite:`Lozano2017`.
+* ``'chao_wang_jost'`` — an estimator built from the rate at which new outcomes
+  are discovered :cite:`Chao2013`.
+* ``'shrink'`` — the James–Stein shrinkage of the empirical distribution toward
+  uniform :cite:`Hausser2009`.
+* ``'bayes_jeffreys'``, ``'bayes_laplace'``, ``'bayes_perks'``,
+  ``'bayes_minimax'`` — the plug-in entropy of the Dirichlet posterior mean with
+  concentration :math:`1/2` :cite:`Krichevsky1981`, :math:`1`, :math:`1/K` and
+  :math:`\sqrt{N}/K` :cite:`Hausser2009`.
+* ``'ansb'`` — the asymptotic NSB estimate for :math:`N \ll K`, from the number
+  of coincidences :cite:`Nemenman2004`.
+* ``'bonachela'`` — a short-series estimator that balances bias and variance
+  :cite:`Bonachela2008`.
+* ``'good_turing'`` — the plug-in entropy of the simple Good–Turing
+  probabilities :cite:`Gale1995`.
+* ``'jackknife'`` — the delete-one jackknife of the plug-in estimate
+  :cite:`Efron1981`. :func:`jackknife_entropy` jackknifes any estimator and
+  also returns the jackknife variance.
+
+``'nsb'``, ``'shrink'``, the ``'bayes_*'`` estimators and ``'good_turing'``
+depend on the number of possible outcomes :math:`K`. Pass ``alphabet_size`` (or
+a count vector including zeros); :func:`conditional_mutual_information` takes
+``alphabet_sizes`` and uses products of them for its joint terms.
 
 :func:`conditional_entropy_rate` estimates
 :math:`h_L = \operatorname{H}[X_L \mid X_{0:L}]`, which decreases to the entropy
@@ -218,6 +242,8 @@ API
 .. autofunction:: entropy_2
 
 .. autofunction:: entropy_from_counts
+
+.. autofunction:: jackknife_entropy
 
 .. autofunction:: block_entropy
 

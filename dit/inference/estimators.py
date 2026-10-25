@@ -17,6 +17,7 @@ __all__ = (
     "entropy_2",
     "entropy_from_counts",
     "conditional_mutual_information",
+    "jackknife_entropy",
     "lz_entropy_rate",
     "permutation_entropy",
     "weighted_permutation_entropy",
@@ -184,6 +185,192 @@ def _nsb(counts, N, K=None):
     return float(np.sum(w * posterior_mean) / np.sum(w))
 
 
+def _alphabet(counts, K):
+    K = len(counts) if K is None else K
+    if len(counts) > K:
+        raise ValueError("`alphabet_size` is smaller than the number of observed outcomes.")
+    return K
+
+
+def _plugin_with_unseen(p_seen, p_unseen, unseen):
+    """
+    The entropy (nats) of `p_seen` plus `unseen` outcomes of probability `p_unseen` each.
+    """
+    h = -np.sum(p_seen * np.log(p_seen))
+    if unseen and p_unseen > 0:
+        h -= unseen * p_unseen * np.log(p_unseen)
+    return h
+
+
+def _zhang(counts, N, K=None):
+    """
+    Zhang's estimator, computed as in Lozano et al.: for each distinct count
+    :math:`n`, :math:`\\sum_{v=1}^{N-n} \\frac{1}{v} \\prod_{j=0}^{v-1} \\frac{N-n-j}{N-1-j}`.
+    """
+    N = int(N)
+    h = 0.0
+    for n, mult in zip(*np.unique(counts.astype(np.int64), return_counts=True), strict=True):
+        j = np.arange(N - n)
+        term = np.sum(np.cumprod((N - n - j) / (N - 1 - j)) / (j + 1))
+        h += mult * n / N * term
+    return h
+
+
+def _harmonic(n):
+    """
+    The harmonic numbers :math:`H_n = \\sum_{k=1}^{n} 1/k`, elementwise.
+    """
+    return digamma(np.asarray(n, dtype=float) + 1) + np.euler_gamma
+
+
+def _chao_wang_jost(counts, N, K=None):
+    """
+    The Chao–Wang–Jost estimator, from the discovery rate of new outcomes.
+    """
+    N = int(N)
+    f1, f2 = np.sum(counts == 1), np.sum(counts == 2)
+    if f2 > 0:
+        A = 2 * f2 / ((N - 1) * f1 + 2 * f2)
+    elif f1 > 0:
+        A = 2 / ((N - 1) * (f1 - 1) + 2)
+    else:
+        A = 1.0
+    seen = counts[counts < N]
+    h = np.sum(seen / N * (_harmonic(N - 1) - _harmonic(seen - 1)))
+    if f1 == 0 or A >= 1:
+        return h
+    return h + f1 / N * _cwj_tail(A, N)
+
+
+def _cwj_tail(A, N, series=None):
+    """
+    :math:`(1 - A)^{1 - N} (-\\ln A - \\sum_{r=1}^{N-1} (1 - A)^r / r)`, which also
+    equals :math:`\\sum_{m \\geq 1} (1 - A)^m / (N + m - 1)`. The closed form
+    cancels catastrophically (and overflows) unless :math:`A N` is small, so it is
+    used only when :math:`A` is too small for the series to converge quickly.
+    """
+    log_q = np.log1p(-A)
+    if series is None:
+        series = -log_q * 1e6 >= 40
+    if series:
+        m = np.arange(1, int(np.ceil(-40 / log_q)) + 1)
+        return np.sum(np.exp(m * log_q) / (N + m - 1))
+    r = np.arange(1, N)
+    return np.exp((1 - N) * log_q) * (-np.log(A) - np.sum(np.exp(r * log_q) / r))
+
+
+def _shrink(counts, N, K=None):
+    """
+    The James–Stein shrinkage estimator: the plug-in entropy of the empirical
+    distribution shrunk toward uniform with the Hausser–Strimmer intensity.
+    """
+    K = _alphabet(counts, K)
+    u = counts / N
+    unseen = K - len(counts)
+    t = 1 / K
+    spread = np.sum((t - u) ** 2) + unseen * t**2
+    lam = 1.0 if N <= 1 or spread == 0 else float(np.clip((1 - np.sum(u**2)) / ((N - 1) * spread), 0, 1))
+    return _plugin_with_unseen(lam * t + (1 - lam) * u, lam * t, unseen)
+
+
+def _bayes(alpha):
+    """
+    The plug-in entropy of the posterior mean under a symmetric Dirichlet prior.
+    `alpha` maps ``(N, K)`` to the concentration parameter.
+    """
+
+    def estimator(counts, N, K=None):
+        K = _alphabet(counts, K)
+        a = alpha(N, K)
+        total = N + K * a
+        return _plugin_with_unseen((counts + a) / total, a / total, K - len(counts))
+
+    return estimator
+
+
+def _ansb(counts, N, K=None):
+    """
+    The asymptotic NSB estimate, :math:`(\\gamma - \\ln 2) + 2 \\ln N - \\psi(\\Delta)`
+    with :math:`\\Delta` the number of coincidences.
+    """
+    coincidences = N - len(counts)
+    if coincidences <= 0:
+        raise ValueError("The ANSB estimator needs at least one repeated outcome.")
+    return np.euler_gamma - np.log(2) + 2 * np.log(N) - digamma(coincidences)
+
+
+def _bonachela(counts, N, K=None):
+    """
+    Bonachela et al.'s balanced estimator over the observed outcomes.
+    """
+    N = int(N)
+    # sum_{j = n + 2}^{N + 2} 1/j = H_{N + 2} - H_{n + 1}
+    return np.sum((counts + 1) * (_harmonic(N + 2) - _harmonic(counts + 1))) / (N + 2)
+
+
+def _good_turing(counts, N, K=None):
+    """
+    The plug-in entropy of the simple Good–Turing probabilities of Gale and
+    Sampson. The unseen mass :math:`N_1 / N` is shared equally among the
+    `K - len(counts)` unseen outcomes, or dropped (and the rest renormalized)
+    when there are none.
+    """
+    K = _alphabet(counts, K)
+    r, n_r = np.unique(counts.astype(np.int64), return_counts=True)
+    if len(r) < 2:
+        return _plugin(counts, N)
+    q = np.concatenate([[0], r[:-1]])
+    t = np.concatenate([r[1:], [2 * r[-1] - q[-1]]])
+    z = n_r / (0.5 * (t - q))
+    slope, intercept = np.polyfit(np.log(r), np.log(z), 1)
+    observed = dict(zip(r.tolist(), n_r.tolist(), strict=True))
+    r_star = np.empty(len(r))
+    use_turing = True
+    for i, (ri, ni) in enumerate(zip(r, n_r, strict=True)):
+        lgt = (ri + 1) * (1 + 1 / ri) ** slope
+        nxt = observed.get(int(ri) + 1)
+        if use_turing and nxt is not None:
+            turing = (ri + 1) * nxt / ni
+            if abs(turing - lgt) > 1.96 * np.sqrt((ri + 1) ** 2 * nxt / ni**2 * (1 + nxt / ni)):
+                r_star[i] = turing
+                continue
+        use_turing = False
+        r_star[i] = lgt
+    unseen = K - len(counts)
+    p0 = observed.get(1, 0) / N if unseen else 0.0
+    p_r = (1 - p0) * r_star / np.sum(n_r * r_star)
+    p_seen = p_r[np.searchsorted(r, counts.astype(np.int64))]
+    return _plugin_with_unseen(p_seen, p0 / unseen if unseen else 0.0, unseen)
+
+
+def _jackknife(estimator):
+    """
+    The delete-one jackknife bias correction of `estimator`.
+    """
+
+    def corrected(counts, N, K=None):
+        return _jackknife_parts(estimator, counts, N, K)[0]
+
+    return corrected
+
+
+def _jackknife_parts(estimator, counts, N, K):
+    """
+    The jackknifed estimate (nats) and the jackknife variance (nats squared).
+    """
+    if N < 2:
+        return estimator(counts, N, K), 0.0
+    loo = np.empty(len(counts))
+    for i in range(len(counts)):
+        reduced = counts.copy()
+        reduced[i] -= 1
+        loo[i] = estimator(reduced[reduced > 0], N - 1, K)
+    mean = np.sum(counts * loo) / N
+    estimate = N * estimator(counts, N, K) - (N - 1) * mean
+    variance = (N - 1) / N * np.sum(counts * (loo - mean) ** 2)
+    return estimate, variance
+
+
 ENTROPY_ESTIMATORS = {
     "plugin": _plugin,
     "miller_madow": _miller_madow,
@@ -191,6 +378,17 @@ ENTROPY_ESTIMATORS = {
     "grassberger": _grassberger,
     "chao_shen": _chao_shen,
     "nsb": _nsb,
+    "zhang": _zhang,
+    "chao_wang_jost": _chao_wang_jost,
+    "shrink": _shrink,
+    "bayes_jeffreys": _bayes(lambda N, K: 0.5),
+    "bayes_laplace": _bayes(lambda N, K: 1.0),
+    "bayes_perks": _bayes(lambda N, K: 1 / K),
+    "bayes_minimax": _bayes(lambda N, K: np.sqrt(N) / K),
+    "ansb": _ansb,
+    "bonachela": _bonachela,
+    "good_turing": _good_turing,
+    "jackknife": _jackknife(_plugin),
 }
 
 
@@ -217,10 +415,38 @@ def entropy_from_counts(counts, estimator="plugin", alphabet_size=None):
         * ``'nsb'`` — the Nemenman–Shafee–Bialek Bayesian estimator, which
           averages Dirichlet priors so that the prior on the entropy is
           nearly uniform :cite:`Nemenman2002`. Needs `alphabet_size`.
+        * ``'zhang'`` — Zhang's estimator, whose bias decays exponentially in
+          :math:`N` :cite:`Zhang2012`, computed as in :cite:`Lozano2017`.
+        * ``'chao_wang_jost'`` — the estimator of Chao, Wang & Jost, built from
+          the rate at which new outcomes are discovered :cite:`Chao2013`.
+        * ``'shrink'`` — the plug-in entropy of the James–Stein shrinkage of the
+          empirical distribution toward uniform :cite:`Hausser2009`. Needs
+          `alphabet_size`.
+        * ``'bayes_jeffreys'``, ``'bayes_laplace'``, ``'bayes_perks'``,
+          ``'bayes_minimax'`` — the plug-in entropy of the posterior mean under
+          a symmetric Dirichlet prior with concentration :math:`1/2`
+          (Krichevsky–Trofimov :cite:`Krichevsky1981`), :math:`1`,
+          :math:`1/K`, and :math:`\\sqrt{N}/K` :cite:`Hausser2009`. Need
+          `alphabet_size`.
+        * ``'ansb'`` — the asymptotic NSB estimate
+          :math:`(\\gamma - \\ln 2) + 2 \\ln N - \\psi(\\Delta)`, with
+          :math:`\\Delta` the number of coincidences (samples minus distinct
+          outcomes), for :math:`N \\ll K` :cite:`Nemenman2004`. It raises if
+          there are no coincidences and is badly biased when :math:`N` is
+          comparable to :math:`K`.
+        * ``'bonachela'`` — Bonachela, Hinrichsen & Muñoz's estimator, which
+          balances bias and variance on short series rather than minimizing
+          bias :cite:`Bonachela2008`. It sums over the observed outcomes.
+        * ``'good_turing'`` — the plug-in entropy of the simple Good–Turing
+          probabilities :cite:`Gale1995`. The unseen mass :math:`N_1/N` is
+          shared among the unseen outcomes implied by `alphabet_size`.
+        * ``'jackknife'`` — the delete-one jackknife of the plug-in estimate
+          :cite:`Efron1981`; see :func:`jackknife_entropy` to jackknife any
+          estimator.
     alphabet_size : int, None
-        The number of possible outcomes :math:`K`, used by ``'nsb'``. Defaults to
-        ``len(counts)``, so pass a count vector that includes the zero counts or
-        set this explicitly.
+        The number of possible outcomes :math:`K`, used by ``'nsb'``,
+        ``'shrink'``, the ``'bayes_*'`` estimators and ``'good_turing'``. Defaults to ``len(counts)``, so pass a count vector
+        that includes the zero counts or set this explicitly.
 
     Returns
     -------
@@ -251,6 +477,46 @@ def _entropy(counts, estimator, alphabet_size=None):
     if N == 0:
         return 0.0
     return float(fn(counts, N, alphabet_size) / np.log(2))
+
+
+def jackknife_entropy(counts, estimator="plugin", alphabet_size=None):
+    """
+    The delete-one jackknife of an entropy estimator, with its variance.
+
+    With :math:`\\hat{H}_{-i}` the estimate after removing one sample of outcome
+    :math:`i`, the jackknifed estimate is
+    :math:`N \\hat{H} - \\frac{N-1}{N} \\sum_i n_i \\hat{H}_{-i}`, which removes the
+    :math:`1/N` term of the bias, and the jackknife variance is
+    :math:`\\frac{N-1}{N} \\sum_i n_i (\\hat{H}_{-i} - \\bar{H})^2` :cite:`Efron1981`.
+
+    Parameters
+    ----------
+    counts : array_like
+        The number of times each outcome was observed. Zeros are ignored.
+    estimator : str
+        The estimator to jackknife; see :func:`entropy_from_counts`.
+    alphabet_size : int, None
+        See :func:`entropy_from_counts`.
+
+    Returns
+    -------
+    h : float
+        The jackknifed entropy estimate, in bits.
+    variance : float
+        The jackknife estimate of its variance, in bits squared.
+    """
+    try:
+        fn = ENTROPY_ESTIMATORS[estimator]
+    except KeyError:
+        raise ValueError(f"Unknown estimator {estimator!r}; choose from {sorted(ENTROPY_ESTIMATORS)}.") from None
+    counts = np.asarray(counts, dtype=float)
+    K = len(counts) if alphabet_size is None else alphabet_size
+    counts = counts[counts > 0]
+    N = counts.sum()
+    if N == 0:
+        return 0.0, 0.0
+    h, var = _jackknife_parts(fn, counts, N, K)
+    return float(h / np.log(2)), float(var / np.log(2) ** 2)
 
 
 def block_entropy(data, length, estimator="plugin"):
@@ -386,17 +652,19 @@ def _pair(a, b):
     return _dense(a * (int(b.max()) + 1) + b)
 
 
-def _cmi_codes(x, y, z, estimator):
+def _cmi_codes(x, y, z, estimator, sizes=None):
     """
-    :math:`I[x : y \\mid z]` in bits from dense integer codes.
+    :math:`I[x : y \\mid z]` in bits from dense integer codes. `sizes` gives the
+    alphabet sizes of `x`, `y` and `z`; joint alphabets are their products.
     """
+    Kx, Ky, Kz = sizes if sizes is not None else (x.max() + 1, y.max() + 1, z.max() + 1)
 
-    def H(codes):
-        return _entropy(np.bincount(codes), estimator)
+    def H(codes, K):
+        return _entropy(np.bincount(codes), estimator, int(K))
 
     xz, yz = _pair(x, z), _pair(y, z)
     xyz = _pair(xz, y)
-    return H(xz) + H(yz) - H(xyz) - H(z)
+    return H(xz, Kx * Kz) + H(yz, Ky * Kz) - H(xyz, Kx * Ky * Kz) - H(z, Kz)
 
 
 def _check_joint(*codes):
@@ -409,7 +677,7 @@ def _check_joint(*codes):
     check_sampling(len(np.unique(joint)), len(joint), stacklevel=3)
 
 
-def conditional_mutual_information(x, y, z=None, estimator="plugin"):
+def conditional_mutual_information(x, y, z=None, estimator="plugin", alphabet_sizes=None):
     """
     Estimate :math:`I[X : Y \\mid Z]` in bits from paired samples.
 
@@ -422,6 +690,11 @@ def conditional_mutual_information(x, y, z=None, estimator="plugin"):
     estimator : str
         The entropy estimator applied to each term; see
         :func:`~dit.inference.entropy_from_counts`.
+    alphabet_sizes : tuple of int, None
+        The numbers of possible outcomes of `x`, `y` and `z`, used by estimators
+        that need an alphabet size (such as ``'nsb'`` or ``'shrink'``); each
+        joint term gets the product of its variables' sizes. Defaults to the
+        number of distinct observed values of each variable.
 
     Returns
     -------
@@ -430,7 +703,13 @@ def conditional_mutual_information(x, y, z=None, estimator="plugin"):
     x, y = _dense(x), _dense(y)
     z = np.zeros_like(x) if z is None else _dense(z)
     _check_joint(x, y, z)
-    return _cmi_codes(x, y, z, estimator)
+    sizes = None
+    if alphabet_sizes is not None:
+        sizes = tuple(alphabet_sizes) + (1,) * (3 - len(alphabet_sizes))
+        observed = (x.max() + 1, y.max() + 1, z.max() + 1)
+        if any(s < o for s, o in zip(sizes, observed, strict=True)):
+            raise ValueError("`alphabet_sizes` are smaller than the numbers of observed values.")
+    return _cmi_codes(x, y, z, estimator, sizes)
 
 
 def permutation_entropy(ts, order=3, delay=1, normalize=False, estimator="plugin", ties="first", prng=None):
