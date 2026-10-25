@@ -116,8 +116,23 @@ overlapping words of a sequence. The ``estimator`` argument selects:
   :cite:`Efron1981`. :func:`jackknife_entropy` jackknifes any estimator and
   also returns the jackknife variance.
 
-``'nsb'``, ``'shrink'``, the ``'bayes_*'`` estimators and ``'good_turing'``
-depend on the number of possible outcomes :math:`K`. Pass ``alphabet_size`` (or
+For heavily undersampled data a further group trades speed for accuracy:
+
+* ``'panzeri_treves'`` — a Miller–Madow-style correction that counts the
+  relevant outcomes with a Bayesian estimate :cite:`Panzeri1996`.
+* ``'quadratic_extrapolation'`` — extrapolates the plug-in entropy of
+  subsamples of size :math:`N`, :math:`N/2` and :math:`N/4` to infinite data
+  :cite:`Strong1998`; dit uses the exact expected subsample entropies.
+* ``'wu_yang'`` — the minimax-rate polynomial estimator :cite:`Wu2016`.
+* ``'bub'`` — Paninski's best-upper-bound estimator :cite:`Paninski2003`.
+* ``'unseen'`` — Valiant & Valiant's linear-programming estimate of the
+  unseen part of the distribution :cite:`Valiant2017`.
+* ``'pym'`` — the Pitman–Yor mixture posterior mean, for heavy-tailed
+  distributions on unbounded alphabets :cite:`Archer2014`.
+
+``'nsb'``, ``'shrink'``, the ``'bayes_*'`` estimators, ``'good_turing'``,
+``'panzeri_treves'``, ``'wu_yang'`` and ``'bub'`` depend on the number of
+possible outcomes :math:`K`. Pass ``alphabet_size`` (or
 a count vector including zeros); :func:`conditional_mutual_information` takes
 ``alphabet_sizes`` and uses products of them for its joint terms.
 

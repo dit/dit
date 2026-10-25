@@ -5,6 +5,7 @@ Various methods for estimating information quantities from samples.
 import numpy as np
 from scipy.special import digamma, gammaln, polygamma
 
+from ._advanced_estimators import _bub, _panzeri_treves, _pym, _quadratic_extrapolation, _unseen, _wu_yang
 from ._symbols import check_sampling, standardize_trials, word_counts
 from .counts import get_counts
 
@@ -389,6 +390,12 @@ ENTROPY_ESTIMATORS = {
     "bonachela": _bonachela,
     "good_turing": _good_turing,
     "jackknife": _jackknife(_plugin),
+    "panzeri_treves": _panzeri_treves,
+    "quadratic_extrapolation": _quadratic_extrapolation,
+    "wu_yang": _wu_yang,
+    "bub": _bub,
+    "unseen": _unseen,
+    "pym": _pym,
 }
 
 
@@ -443,9 +450,28 @@ def entropy_from_counts(counts, estimator="plugin", alphabet_size=None):
         * ``'jackknife'`` — the delete-one jackknife of the plug-in estimate
           :cite:`Efron1981`; see :func:`jackknife_entropy` to jackknife any
           estimator.
+        * ``'panzeri_treves'`` — plug-in plus :math:`(\\tilde{R} - 1)/2N`, with
+          :math:`\\tilde{R}` a Bayesian count of the relevant outcomes
+          :cite:`Panzeri1996`.
+        * ``'quadratic_extrapolation'`` — fits
+          :math:`H_\\infty + b/n + c/n^2` to the plug-in entropy at
+          :math:`n = N, N/2, N/4` :cite:`Strong1998`, using the exact expected
+          entropy of random subsamples rather than a particular split.
+        * ``'wu_yang'`` — the minimax-rate estimator built from the best
+          polynomial approximation of :math:`-p \\ln p` :cite:`Wu2016`. Its
+          degree, :math:`\\lfloor 1.6 \\ln K \\rfloor`, is capped at 22.
+        * ``'bub'`` — Paninski's best-upper-bound estimator, linear in the
+          count histogram, minimizing a bound on the worst-case error
+          :cite:`Paninski2003`. It is meant for :math:`N/K \\lesssim 100`.
+        * ``'unseen'`` — the entropy of the probability histogram recovered by
+          linear programming from the fingerprint :cite:`Valiant2017`.
+        * ``'pym'`` — the posterior mean under a mixture of Pitman–Yor
+          process priors, suited to heavy-tailed distributions on unbounded
+          alphabets :cite:`Archer2014`. It raises without repeated outcomes.
     alphabet_size : int, None
         The number of possible outcomes :math:`K`, used by ``'nsb'``,
-        ``'shrink'``, the ``'bayes_*'`` estimators and ``'good_turing'``. Defaults to ``len(counts)``, so pass a count vector
+        ``'shrink'``, the ``'bayes_*'`` estimators, ``'good_turing'``,
+        ``'panzeri_treves'``, ``'wu_yang'`` and ``'bub'``. Defaults to ``len(counts)``, so pass a count vector
         that includes the zero counts or set this explicitly.
 
     Returns
