@@ -808,3 +808,106 @@ source-group surprisals:
    In [28]: from dit.pid import PED_MOS
 
    In [29]: print(PED_MOS(dit.Distribution(['00','01','10','11'], [0.25]*4)))
+
+This is the decomposition that later work, such as :cite:`varley2023partial`, calls :math:`h_{\min}`.
+
+.. py:module:: dit.pid.hsx
+
+:math:`H_{\mathrm{sx}}`
+-----------------------
+
+Varley et al. :cite:`varley2023partial` define the redundant entropy of an antichain :math:`\alpha = \{A_1, \ldots, A_k\}` through shared probability mass exclusions: the surprisal of the event that *at least one* source group takes its observed value,
+
+.. math::
+
+   H_{\mathrm{sx}}(\alpha) = \mathbb{E}\left[-\log P\left(\bigcup_i \{A_i = a_i\}\right)\right]
+
+This is the entropy analogue of :math:`\Isx{\bullet}`. Like :class:`PED_MOS`, it accepts ``pointwise=True`` to keep the per-outcome atoms.
+
+.. ipython::
+
+   In [30]: from dit.pid import PED_SX
+
+   In [31]: print(PED_SX(dit.Distribution(['00','01','10','11'], [0.25]*4)))
+   +--------------------------+
+   |           H_sx           |
+   +--------+--------+--------+
+   |  H_sx  |  H_r   |  H_d   |
+   +--------+--------+--------+
+   | {0:1}  | 2.0000 | 0.4150 |
+   |  {0}   | 1.0000 | 0.5850 |
+   |  {1}   | 1.0000 | 0.5850 |
+   | {0}{1} | 0.4150 | 0.4150 |
+   +--------+--------+--------+
+
+Unlike :math:`H_{\mathrm{cs}}`, which gives these independent bits no redundant entropy, :math:`H_{\mathrm{sx}}` counts the :math:`\log_2 4/3` bits it takes to exclude the outcome that matches neither observed value.
+
+
+.. py:module:: dit.pid.gid
+
+Generalized Information Decomposition
+=====================================
+
+The local Kullback-Leibler divergence :math:`\log q(x)/p(x)` of a posterior :math:`q` from a prior :math:`p` is the difference :math:`h_p(x) - h_q(x)` of two local entropies. Varley :cite:`varley2024generalized` therefore decomposes :math:`\DKL{q || p}` over the redundancy lattice as the posterior expectation of the difference between the prior's and the posterior's pointwise partial entropy atoms. With the product of marginals as prior this decomposes the total correlation; with the uniform distribution, the negentropy. :class:`GID` takes ``measure='sx'`` (:class:`PED_SX`) or ``measure='mos'`` (:class:`PED_MOS`).
+
+.. ipython::
+
+   In [32]: from dit.pid import GID
+
+   In [33]: from dit.distconst import product_distribution
+
+   In [34]: d = dit.example_dists.Xor()
+
+   In [35]: gid = GID(d, product_distribution(d))
+
+   @doctest float
+   In [36]: sum(gid[node] for node in gid._lattice)
+   Out[36]: 1.0
+
+.. autoclass:: GID
+   :members: get_pi, get_red, get_pw_pi, to_string
+
+
+.. py:module:: dit.pid.phiid
+
+Integrated Information Decomposition
+====================================
+
+The integrated information decomposition (:math:`\Phi\mathrm{ID}`) :cite:`mediano2019beyond,mediano2025toward` decomposes the mutual information between a set of sources (typically a system's past) and a set of targets (its future) over the *product* of the two redundancy lattices. An atom :math:`\alpha \to \beta` is information carried by the sources in the mode :math:`\alpha` and by the targets in the mode :math:`\beta`. For two sources and two targets there are 16 atoms, including persistent redundancy :math:`\{0\}\{1\} \to \{2\}\{3\}`, information transfer :math:`\{0\} \to \{3\}`, and downward causation :math:`\{0:1\} \to \{2\}`.
+
+The atoms are the Mobius inversion of a *double redundancy* :math:`I_\partial(\alpha \to \beta)`. :class:`PhiID` provides three:
+
+* ``measure='mmi'``: :math:`\min_{i,j} \I{A_i : B_j}` :cite:`mediano2019beyond`.
+* ``measure='pm'``: the expectation of :math:`\min_i h(a_i) + \min_j h(b_j) - \min_{i,j} h(a_i, b_j)`, after :cite:`finn2020generalised`.
+* ``measure='sx'``: the expectation of :math:`h_{\mathrm{sx}}(\alpha) + h_{\mathrm{sx}}(\beta) - h_{\mathrm{sx}}(\{A_i \cup B_j\})` :cite:`varley2023decomposing`.
+
+The atoms always sum to :math:`\I{X : Y}`, but individual atoms can be negative.
+
+.. ipython::
+
+   In [37]: from dit.pid import PhiID
+
+   In [38]: d = dit.Distribution(['0000', '1111'], [1/2, 1/2])
+
+   @doctest float
+   In [39]: PhiID(d)[(((0,), (1,)), ((2,), (3,)))]
+   Out[39]: 1.0
+
+.. autoclass:: PhiID
+   :members: get_pi, get_red, get_pw_pi, get_pw_red, nodes, to_string
+
+
+Representational Complexity
+===========================
+
+Ehrlich et al. :cite:`ehrlich2023measure` summarize a decomposition by the atom-weighted average degree of synergy: each atom is assigned the number of sources in its smallest group, so purely redundant (or unique) information has degree 1 and information available only from all :math:`n` sources jointly has degree :math:`n`.
+
+.. ipython::
+
+   In [40]: from dit.pid.helpers import representational_complexity
+
+   @doctest float
+   In [41]: representational_complexity(PED_SX(dit.example_dists.Xor()))
+   Out[41]: 1.1225562489182657
+
+.. autofunction:: dit.pid.helpers.representational_complexity

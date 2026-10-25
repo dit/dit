@@ -3,6 +3,7 @@ Multivariate measures of information. Some are direct extensions of Shannon's
 measures and others are more distantly related.
 """
 
+from .alpha_synergy import *
 from .caekl_mutual_information import *
 from .cohesion import *
 from .coinformation import *
