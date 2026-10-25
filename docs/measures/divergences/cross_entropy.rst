@@ -1,5 +1,5 @@
 .. cross_entropy.rst
-.. py:module:: dit.divergences.cross_entropy
+.. py:currentmodule:: dit.divergences
 
 *************
 Cross Entropy
@@ -66,3 +66,4 @@ API
 ===
 
 .. autofunction:: cross_entropy
+   :no-index:

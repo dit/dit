@@ -1,11 +1,11 @@
 .. extropy.rst
-.. py:module:: dit.other.extropy
+.. py:currentmodule:: dit.other
 
 *******
 Extropy
 *******
 
-The extropy :cite:`Lad2011` is a dual to the :doc:`../multivariate/entropy`. It is defined by:
+The extropy :cite:`Lad2011` is a dual to the :doc:`/measures/multivariate/entropy`. It is defined by:
 
 .. math::
 
@@ -38,3 +38,4 @@ API
 ===
 
 .. autofunction:: extropy
+   :no-index:

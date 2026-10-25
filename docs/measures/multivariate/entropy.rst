@@ -1,5 +1,5 @@
 .. entropy.rst
-.. py:module:: dit.multivariate.entropy
+.. py:currentmodule:: dit.multivariate
 
 *******
 Entropy
@@ -49,12 +49,12 @@ Visualization
 
 Below we have a pictoral representation of the joint entropy for both 2 and 3 variable joint distributions.
 
-.. image:: ../../images/idiagrams/h_xy.png
+.. image:: /images/idiagrams/h_xy.png
    :alt: The entropy :math:`\H{X, Y}`
    :width: 342px
    :align: center
 
-.. image:: ../../images/idiagrams/h_xyz.png
+.. image:: /images/idiagrams/h_xyz.png
    :alt: The entropy :math:`\H{X, Y, Z}`
    :width: 357px
    :align: center
@@ -64,3 +64,4 @@ API
 ===
 
 .. autofunction:: entropy
+   :no-index:

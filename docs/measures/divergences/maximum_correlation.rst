@@ -1,5 +1,5 @@
 .. maximum_correlation.rst
-.. py:module:: dit.divergences.maximum_correlation
+.. py:currentmodule:: dit.divergences
 
 *******************
 Maximum Correlation
@@ -34,3 +34,4 @@ API
 ===
 
 .. autofunction:: maximum_correlation
+   :no-index:

@@ -253,9 +253,9 @@ class PID_LN(BaseBivariatePID):
 
     References
     ----------
-    .. [1] A. F. C. Gomes and M. A. T. Figueiredo, "Orders between
-           Channels and Implications for Partial Information
-           Decomposition", Entropy 25, 975, 2023.
+    A. F. C. Gomes and M. A. T. Figueiredo, "Orders between
+    Channels and Implications for Partial Information
+    Decomposition", Entropy 25, 975, 2023.
     """
 
     _name = "I_ln∩"

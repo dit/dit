@@ -14,7 +14,7 @@ The class tracks which dimensions are **free** (being described) versus
 **given** (conditioned on). A joint :math:`p(X,Y,Z)` has three free variables
 and no given variables; a conditional :math:`p(Z \mid X,Y)` has free variable
 :math:`Z` and given variables :math:`X,Y`. That metadata is what makes the
-chain-rule algebra in :doc:`algebra` work.
+chain-rule algebra in :doc:`/distributions/algebra` work.
 
 By default, unnamed variables are called ``X0``, ``X1``, … . Call
 :meth:`~dit.Distribution.set_rv_names` to give them readable names.
@@ -73,14 +73,15 @@ The header ``p(Z|X,Y)`` is the distribution's notation: free variables before
 the bar, given variables after. Native :meth:`~dit.Distribution.condition_on`
 returns that single conditional, not a list of slices.
 
-See also the :doc:`../symbolic` page for sympy-valued probabilities.
+See also the :doc:`/distributions/symbolic` page for sympy-valued probabilities.
 
 .. toctree::
+   :maxdepth: 1
 
-   npdist.rst
-   algebra.rst
-   accessors.rst
-   npscalardist.rst
-   constructors.rst
-   genetic_code.rst
-   common_information.rst
+   npdist
+   algebra
+   accessors
+   npscalardist
+   constructors
+   genetic_code
+   common_information

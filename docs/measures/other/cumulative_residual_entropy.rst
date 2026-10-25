@@ -1,5 +1,5 @@
 .. cumulative_residual_entropy.rst
-.. py:module:: dit.other.cumulative_residual_entropy
+.. py:currentmodule:: dit.other
 
 ***************************
 Cumulative Residual Entropy
@@ -9,7 +9,7 @@ The cumulative residual entropy :cite:`Rao2004` is an alternative to the differe
 
 .. note::
 
-   The Cumulative Residual Entropy is unrelated to :doc:`../multivariate/residual_entropy`.
+   The Cumulative Residual Entropy is unrelated to :doc:`/measures/multivariate/residual_entropy`.
 
 .. math::
 
@@ -83,13 +83,17 @@ API
 ===
 
 .. autofunction:: cumulative_residual_entropy
+   :no-index:
 
 .. autofunction:: generalized_cumulative_residual_entropy
+   :no-index:
 
 
 Conditional Forms
 -----------------
 
 .. autofunction:: conditional_cumulative_residual_entropy
+   :no-index:
 
 .. autofunction:: conditional_generalized_cumulative_residual_entropy
+   :no-index:

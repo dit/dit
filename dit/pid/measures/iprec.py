@@ -34,7 +34,7 @@ __all__ = ("PID_Prec",)
 
 class PID_Prec(BasePID):
     """
-    The I_\\prec measure defined by Kolchinsky.
+    The :math:`I_{\\prec}` measure defined by Kolchinsky.
     """
 
     _name = "I_≺"
@@ -42,9 +42,9 @@ class PID_Prec(BasePID):
     @staticmethod
     def get_solution_information(d, sources, target, n_q=None):
         """
-        Compute I_prec(inputs : output) =
-            \\max I[Q : output] such that Q \\prec X_i
-        and return information about value and optimal Q
+        Compute :math:`I_{\\prec}(\\text{inputs} : \\text{output}) =
+        \\max I[Q : \\text{output}]` such that :math:`Q \\prec X_i`, and
+        return information about the value and optimal Q.
 
         Parameters
         ----------

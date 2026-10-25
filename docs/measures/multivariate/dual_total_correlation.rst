@@ -1,5 +1,5 @@
 .. dual_total_correlation.rst
-.. py:module:: dit.multivariate.dual_total_correlation
+.. py:currentmodule:: dit.multivariate
 
 .. _dual_total_correlation:
 .. _dual total correlation:
@@ -15,7 +15,7 @@ The dual total correlation :cite:`Han1975linear`, or binding information :cite:`
    \B{X_{0:n}} &= \H{X_{0:n}} - \sum \H{X_i | X_{\{0..n\}/i}} \\
                &= - \sum_{x_{0:n} \in X_{0:n}} p(x_{0:n}) \log_2 \frac{p(x_{0:n})}{\prod p(x_i|x_{\{0:n\}/i})}
 
-In a sense the binding information captures the same information that the :doc:`total_correlation` does, in that both measures are zero or non-zero together. However, the two measures take on very different quantitative values for different distributions. By way of example, the type of distribution that maximizes the total correlation is a "giant bit":
+In a sense the binding information captures the same information that the :doc:`/measures/multivariate/total_correlation` does, in that both measures are zero or non-zero together. However, the two measures take on very different quantitative values for different distributions. By way of example, the type of distribution that maximizes the total correlation is a "giant bit":
 
 .. ipython::
 
@@ -51,7 +51,7 @@ For the same distribution, the dual total correlation takes on a relatively low 
 Relationship to Other Measures
 ==============================
 
-The dual total correlation obeys particular bounds related to both the :doc:`entropy` and the :doc:`total_correlation`:
+The dual total correlation obeys particular bounds related to both the :doc:`/measures/multivariate/entropy` and the :doc:`/measures/multivariate/total_correlation`:
 
 .. math::
 
@@ -64,13 +64,48 @@ Visualization
 
 The binding information, as seen below, consists equally of the information shared among the variables.
 
-.. image:: ../../images/idiagrams/b_xyz.png
+.. image:: /images/idiagrams/b_xyz.png
    :alt: The dual total correlation :math:`\B{X : Y : Z}`
    :width: 357px
    :align: center
 
 
+Generalized Dual Total Correlation
+==================================
+
+The dual total correlation is the sum of every atom of the information diagram
+shared by at least two variables. Allowing a different threshold gives the
+generalized dual total correlation: the sum of all (conditional)
+co-informations over at least ``order`` variables. Order 1 is the joint
+entropy, order 2 is the dual total correlation, and order :math:`n` is the
+:ref:`coinformation`:
+
+.. ipython::
+
+   In [9]: from dit.multivariate import generalized_dual_total_correlation
+
+   In [10]: xor = dit.example_dists.Xor()
+
+   @doctest float
+   In [11]: generalized_dual_total_correlation(xor, 1)
+   Out[11]: 2.0
+
+   @doctest float
+   In [12]: generalized_dual_total_correlation(xor, 2)
+   Out[12]: 2.0
+
+   @doctest float
+   In [13]: generalized_dual_total_correlation(xor, 3)
+   Out[13]: -1.0
+
+
 API
 ===
 
+:py:func:`binding_information` is an alias for :py:func:`dual_total_correlation`.
+
 .. autofunction:: dual_total_correlation
+   :no-index:
+
+.. autofunction:: generalized_dual_total_correlation
+   :no-index:

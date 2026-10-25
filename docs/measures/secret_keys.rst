@@ -1,5 +1,5 @@
 .. secret_keys.rst
-.. py:module:: dit.multivariate.secret_key_agreement
+.. py:currentmodule:: dit.multivariate
 
 .. _secret key agreement:
 
@@ -34,7 +34,6 @@ Intuitively, this means there exists some procedure such that, for every :math:`
 
 There are three general classes of secret key agreement rates, depending on which parties are permitted to communicate. We discuss them below.
 
-.. py:module:: dit.multivariate.secret_key_agreement.no_communication
 
 No Communication
 ================
@@ -45,9 +44,8 @@ In the case that neither Alice nor Bob are permitted communication, the no-commu
 
    \operatorname{S}[X : Y || Z] = \I{X \meet Y | Z}
 
-where :math:`X \meet Y` is the :ref:`Gács-Körner Common Information` variable.
+where :math:`X \meet Y` is the :ref:`Gács-Körner Common Information` variable. It is computed by :py:func:`no_communication_skar`.
 
-.. py:module:: dit.multivariate.secret_key_agreement.secrecy_capacity
 
 Secrecy Capacity
 ----------------
@@ -59,7 +57,8 @@ In this case we arrive at a maximum secret-key agreement rate known as the *secr
 
    \operatorname{S_C}[X \rightarrow Y || Z] = \displaystyle \max_{U - X - YZ} \I{U : Y} - \I{U : Z}
 
-.. py:module:: dit.multivariate.secret_key_agreement.one_way_skar
+It is computed by :py:func:`secrecy_capacity_skar`.
+
 
 One-Way Communication
 =====================
@@ -70,9 +69,8 @@ If only Alice is allowed to publicly broadcast information, the secret key agree
 
    \operatorname{S}[X \rightarrow Y || Z] = \displaystyle \max_{V - U - X - YZ} \I{U : Y | V} - \I{U : Z | V}
 
-:cite:`ahlswede1993common`. It suffices to take :math:`|V| \leq |X|` and :math:`|U| \leq |X|^2` :cite:`elgamal2011network`: :math:`V` splits Alice's distribution into at most :math:`|X|` parts, and :math:`U` splits each of those into at most :math:`|X|` further parts.
+:cite:`ahlswede1993common`. It suffices to take :math:`|V| \leq |X|` and :math:`|U| \leq |X|^2` :cite:`elgamal2011network`: :math:`V` splits Alice's distribution into at most :math:`|X|` parts, and :math:`U` splits each of those into at most :math:`|X|` further parts. It is computed by :py:func:`one_way_skar`.
 
-.. py:module:: dit.multivariate.secret_key_agreement.two_way_skar
 
 Two-Way Communication
 =====================
@@ -84,7 +82,6 @@ Lower Bounds
 
 The first few lower bounds on two-way secret key agreement rate are simply symmetrized forms of the more restricted secret key agreement rates.
 
-.. py:module:: dit.multivariate.secret_key_agreement.trivial_bounds
 
 Lower Intrinsic Mutual Information
 **********************************
@@ -100,7 +97,6 @@ The first lower bound on the secret key agreement rate is known in ``dit`` as th
          0
       \end{cases}
 
-.. py:module:: dit.multivariate.secret_key_agreement.skar_lower_bounds
 
 Secrecy Capacity
 ****************
@@ -130,7 +126,6 @@ A tighter bound is given by the :py:func:`necessary_intrinsic_mutual_information
          \displaystyle \max_{V - U - Y - XZ} \I{U : X | V} - \I{U : Z | V}
       \end{cases}
 
-.. py:module:: dit.multivariate.secret_key_agreement.interactive_intrinsic_mutual_informations
 
 Interactive Intrinsic Mutual Information
 ****************************************
@@ -141,7 +136,6 @@ Interactive Intrinsic Mutual Information
       \sum_{i \textrm{even}} \I{U_i : Y | U_{0 \ldots i}} - \I{U_i : Z | U_{0 \ldots i}} + \\
       \sum_{i \textrm{odd}}  \I{U_i : X | U_{0 \ldots i}} - \I{U_i : Z | U_{0 \ldots i}}
 
-.. py:module:: dit.multivariate.secret_key_agreement.iterated_discarding
 
 Iterated Public Discarding
 **************************
@@ -158,8 +152,6 @@ For example, the W distribution, :math:`\{100, 010, 001\}` uniformly, has a one-
 Upper Bounds
 ------------
 
-.. py:module:: dit.multivariate.secret_key_agreement.trivial_bounds
-   :no-index:
 
 Upper Intrinsic Mutual Information
 ***********************************
@@ -169,7 +161,6 @@ The secret key agreement rate is trivially upper bounded by:
 
    \min\{ \I{X : Y}, \I{X : Y | Z} \}
 
-.. py:module:: dit.multivariate.secret_key_agreement.intrinsic_mutual_informations
 
 .. _intrinsic mutual information:
 
@@ -185,7 +176,6 @@ The :py:func:`intrinsic_mutual_information` :cite:`maurer1997intrinsic` is defin
 It is straightforward to see that :math:`p(\overline{z} | z)` being a constant achieves :math:`\I{X : Y}`, and :math:`p(\overline{z} | z)` being the identity achieves :math:`\I{X : Y | Z}`.
 ``dit`` uses both corruptions as seeds of the basin-hopping search, so the minima it considers always include these two values.
 
-.. py:module:: dit.multivariate.secret_key_agreement.reduced_intrinsic_mutual_informations
 
 .. _reduced intrinsic mutual information:
 
@@ -208,7 +198,6 @@ Although written as a nested minimization, the inner intrinsic mutual informatio
 
 This is how ``dit`` computes it, with :math:`|\overline{Z}| \leq |Z| |U|` from the corresponding bound for the intrinsic mutual information :cite:`renner2003new`.
 
-.. py:module:: dit.multivariate.secret_key_agreement.minimal_intrinsic_mutual_informations
 
 .. _minimal intrinsic mutual information:
 
@@ -221,7 +210,6 @@ The :ref:`Reduced Intrinsic Mutual Information` can be further reduced into the 
 
    \I{X : Y \downarrow\downarrow\downarrow Z} = \min_{U} \I{X : Y | U} + \I{XY : U | Z}
 
-.. py:module:: dit.multivariate.secret_key_agreement.two_part_intrinsic_mutual_informations
 
 Two-Part Intrinsic Mutual Information
 *************************************
@@ -235,7 +223,6 @@ The :py:func:`two_part_intrinsic_mutual_information` :cite:`gohari2010informatio
 The inner maximization is the one-way secret key agreement rate from :math:`XY` to :math:`J` with :math:`Z` eavesdropping.
 No cardinality bound on :math:`J` is known, so the bound cannot be computed exactly :cite:`gohari2017comments`; any particular :math:`J` still yields a valid upper bound, provided the inner maximization is solved exactly.
 
-.. py:module:: dit.multivariate.secret_key_agreement.relaxed_two_part_intrinsic_mutual_informations
 
 Relaxed Two-Part Intrinsic Mutual Information
 *********************************************
@@ -251,7 +238,6 @@ Since :math:`\I{XY : J \downarrow Z} \leq \I{XY : J | Z}`, it is never larger th
 Unlike the latter, it is a single joint minimization over two channels, with :math:`|\overline{Z}| \leq |Z|` :cite:`christandl2003property`.
 Restricting the size of :math:`J` or stopping at a local optimum can therefore only loosen it, never invalidate it, which is why :py:func:`two_way_skar` uses it in place of the two-part bound.
 
-.. py:module:: dit.multivariate.secret_key_agreement.less_noisy_intrinsic_mutual_information
 
 Less-Noisy Intrinsic Mutual Information
 ***************************************
@@ -304,6 +290,40 @@ Most of the above bounds have straightforward multivariate generalizations. Thes
 
    \B{X_0 : \ldots : X_n \downarrow\downarrow\downarrow Z} = \min_{U} \B{X_0 : \ldots : X_n | U} + \I{X_0, \ldots, X_n : U | Z}
 
+Each upper bound is available with the :ref:`total_correlation`, the
+:ref:`dual_total_correlation`, or the :ref:`caekl_mutual_information` in place of
+the mutual information. In the bivariate case all three coincide with the
+bound above. The ``*_mutual_information`` names are aliases for the total
+correlation forms.
+
+.. list-table::
+   :header-rows: 1
+
+   * - Bound
+     - Total correlation
+     - Dual total correlation
+     - CAEKL mutual information
+   * - Upper
+     - :py:func:`upper_intrinsic_total_correlation`
+     - :py:func:`upper_intrinsic_dual_total_correlation`
+     - :py:func:`upper_intrinsic_caekl_mutual_information`
+   * - Intrinsic
+     - :py:func:`intrinsic_total_correlation`
+     - :py:func:`intrinsic_dual_total_correlation`
+     - :py:func:`intrinsic_caekl_mutual_information`
+   * - Reduced intrinsic
+     - :py:func:`reduced_intrinsic_total_correlation`
+     - :py:func:`reduced_intrinsic_dual_total_correlation`
+     - :py:func:`reduced_intrinsic_CAEKL_mutual_information`
+   * - Minimal intrinsic
+     - :py:func:`minimal_intrinsic_total_correlation`
+     - :py:func:`minimal_intrinsic_dual_total_correlation`
+     - :py:func:`minimal_intrinsic_CAEKL_mutual_information`
+   * - Two-part intrinsic
+     - :py:func:`two_part_intrinsic_total_correlation`
+     - :py:func:`two_part_intrinsic_dual_total_correlation`
+     - :py:func:`two_part_intrinsic_CAEKL_mutual_information`
+
 Examples
 --------
 
@@ -320,19 +340,6 @@ First, we consider the distribution ``intrinsic_1``:
 .. ipython::
 
    In [3]: print(intrinsic_1)
-   Class:          Distribution
-   Alphabet:       ('0', '1', '2', '3') for all rvs
-   Base:           linear
-   Outcome Class:  str
-   Outcome Length: 3
-   RV Names:       None
-   x     p(x)
-   000   1/8
-   011   1/8
-   101   1/8
-   110   1/8
-   222   1/4
-   333   1/4
 
 With upper bounds:
 
@@ -357,19 +364,6 @@ Next, let's consider the distribution ``intrinsic_2``:
 .. ipython::
 
    In [7]: print(intrinsic_2)
-   Class:          Distribution
-   Alphabet:       (('0', '1', '2', '3'), ('0', '1', '2', '3'), ('0', '1'))
-   Base:           linear
-   Outcome Class:  str
-   Outcome Length: 3
-   RV Names:       None
-   x     p(x)
-   000   1/8
-   011   1/8
-   101   1/8
-   110   1/8
-   220   1/4
-   331   1/4
 
 In this case, :math:`Z` no longer can distinguish between the case where :math:`X` and :math:`Y` can agree on a secret bit, and when they can not, because she can not determine when they are in the :math:`01` regime or in the :math:`23` regime:
 
@@ -416,24 +410,6 @@ The ``xor_key`` source has binary :math:`X` and :math:`Y` with any joint distrib
    Out[15]: 0.12451124978365313
 
 
-Secret key agreement asks how much key can be extracted from :math:`p(x, y, z)`. The reverse question asks how much secret key Alice and Bob must consume to *form* :math:`p(x, y, z)`: starting from shared secret bits, they use local operations and public communication to produce :math:`X^N Y^N`, such that Eve could simulate the public transcript by processing :math:`Z^N`. The minimal rate is the :py:func:`secret_key_cost`, also called the information of formation :cite:`renner2003bounds`. Winter found a single-letter formula for it :cite:`winter2005secret,chitambar2016private`:
-
-.. math::
-
-   \operatorname{K_c}[X : Y || Z] = \min_{\substack{XY - Z - U \\ X - UV - Y}} \I{XY : V | U}
-
-with :math:`|U| \leq |Z| + 1` and :math:`|V| \leq |X||Y|`. For each choice of :math:`U` the inner minimization is the conditional :doc:`Wyner common information </measures/multivariate/wyner_common_information>` :math:`\C{X : Y | U}`, so the secret key cost is a Wyner common information minimized over degradations of :math:`Z`, just as the :ref:`Intrinsic Mutual Information` minimizes the conditional mutual information. Since :math:`\C{X : Y | U} \geq \I{X : Y | U}`,
-
-.. math::
-
-   S[X \leftrightarrow Y || Z] \leq \I{X : Y \downarrow Z} \leq \operatorname{K_c}[X : Y || Z] \leq \min\{ \C{X : Y}, \C{X : Y | Z} \}
-
-where the middle inequality is due to :cite:`renner2003bounds`. When :math:`Z` is independent of :math:`XY`, the secret key cost is the Wyner common information :math:`\C{X : Y}`.
-
-``dit`` builds the second Markov chain into the parametrization, as it does for the Wyner common information: :math:`U` is a channel from :math:`Z`, :math:`V` a channel from :math:`XU`, and a copy :math:`Y'` a channel from :math:`UV`, subject to :math:`XY'U` being distributed as :math:`XYU`. As with all of these optimizations, the result is a local minimum, and so an upper bound on the secret key cost.
-
-For ``intrinsic_2``, :math:`\I{X : Y \downarrow Z} = \C{X : Y | Z} = 1.5`, so forming it costs 1.5 bits of secret key, while only 1 bit can be extracted from it. For ``bound_information`` :cite:`pauwels2026bipartite`, no key can be extracted, but the intrinsic mutual information is positive, and so is the cost of forming it; ``dit`` finds roughly :math:`0.026` bits.
-
 Sources with Known Rates
 ************************
 
@@ -457,7 +433,6 @@ Exact secret key agreement rates are known for only a few sources, and ``dit`` i
    In [18]: chitambar_two_way.secret_rate
    Out[18]: 0.2
 
-.. py:module:: dit.multivariate.secret_key_agreement.multiterminal_skar
 
 Multiterminal Secret Key Capacity
 =================================
@@ -498,10 +473,34 @@ Helpers can create key where none existed. If Alice and Bob hold independent uni
    Out[21]: 1.0
 
 .. autofunction:: secret_key_capacity
+   :no-index:
 
 .. autofunction:: omniscience_rate
+   :no-index:
 
-.. py:module:: dit.multivariate.secret_key_agreement.secret_key_cost
 
 Secret Key Cost
 ===============
+
+Secret key agreement asks how much key can be extracted from :math:`p(x, y, z)`. The reverse question asks how much secret key Alice and Bob must consume to *form* :math:`p(x, y, z)`: starting from shared secret bits, they use local operations and public communication to produce :math:`X^N Y^N`, such that Eve could simulate the public transcript by processing :math:`Z^N`. The minimal rate is the :py:func:`secret_key_cost`, also called the information of formation :cite:`renner2003bounds`. Winter found a single-letter formula for it :cite:`winter2005secret,chitambar2016private`:
+
+.. math::
+
+   \operatorname{K_c}[X : Y || Z] = \min_{\substack{XY - Z - U \\ X - UV - Y}} \I{XY : V | U}
+
+with :math:`|U| \leq |Z| + 1` and :math:`|V| \leq |X||Y|`. For each choice of :math:`U` the inner minimization is the conditional :doc:`Wyner common information </measures/common_informations/wyner_common_information>` :math:`\C{X : Y | U}`, so the secret key cost is a Wyner common information minimized over degradations of :math:`Z`, just as the :ref:`Intrinsic Mutual Information` minimizes the conditional mutual information. Since :math:`\C{X : Y | U} \geq \I{X : Y | U}`,
+
+.. math::
+
+   S[X \leftrightarrow Y || Z] \leq \I{X : Y \downarrow Z} \leq \operatorname{K_c}[X : Y || Z] \leq \min\{ \C{X : Y}, \C{X : Y | Z} \}
+
+where the middle inequality is due to :cite:`renner2003bounds`. When :math:`Z` is independent of :math:`XY`, the secret key cost is the Wyner common information :math:`\C{X : Y}`.
+
+``dit`` builds the second Markov chain into the parametrization, as it does for the Wyner common information: :math:`U` is a channel from :math:`Z`, :math:`V` a channel from :math:`XU`, and a copy :math:`Y'` a channel from :math:`UV`, subject to :math:`XY'U` being distributed as :math:`XYU`. As with all of these optimizations, the result is a local minimum, and so an upper bound on the secret key cost.
+
+For ``intrinsic_2``, :math:`\I{X : Y \downarrow Z} = \C{X : Y | Z} = 1.5`, so forming it costs 1.5 bits of secret key, while only 1 bit can be extracted from it. For ``bound_information`` :cite:`pauwels2026bipartite`, no key can be extracted, but the intrinsic mutual information is positive, and so is the cost of forming it; ``dit`` finds roughly :math:`0.026` bits.
+
+:py:func:`information_of_formation` is an alias for :py:func:`secret_key_cost`.
+
+.. autofunction:: secret_key_cost
+   :no-index:

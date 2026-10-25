@@ -58,18 +58,19 @@ class PID_Delta(BaseBivariatePID):
     """
     The delta-PID based on weighted output KL deficiency.
 
-    The deficiency delta(M : X \\ Y) measures how well Y can simulate X
+    The deficiency ``delta(M : X \\ Y)`` measures how well Y can simulate X
     for making decisions about M, via the expected KL divergence between
-    the true channel P(X|M) and the best approximation P(X'|Y) composed
-    with P(Y|M).
+    the true channel ``P(X|M)`` and the best approximation ``P(X'|Y)``
+    composed with ``P(Y|M)``.
 
-    Redundancy is symmetrized via the minimum:
+    Redundancy is symmetrized via the minimum::
+
         RI = min{ I(M;X) - delta(M:X\\Y), I(M;Y) - delta(M:Y\\X) }
 
     References
     ----------
-    .. [1] P. K. Banerjee et al., "Unique informations and deficiencies",
-           Allerton Conference, 2018.
+    P. K. Banerjee et al., "Unique informations and deficiencies",
+    Allerton Conference, 2018.
     """
 
     _name = "I_\u03b4"

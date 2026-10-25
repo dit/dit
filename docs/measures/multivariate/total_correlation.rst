@@ -1,5 +1,5 @@
 .. total_correlation.rst
-.. py:module:: dit.multivariate.total_correlation
+.. py:currentmodule:: dit.multivariate
 
 .. _total_correlation:
 .. _total correlation:
@@ -65,7 +65,7 @@ Visualization
 
 The total correlation consists of all information that is shared among the variables, and weights each piece according to how many variables it is shared among.
 
-.. image:: ../../images/idiagrams/t_xyz.png
+.. image:: /images/idiagrams/t_xyz.png
    :alt: The total correlation :math:`\T{X : Y : Z}`
    :width: 357px
    :align: center
@@ -75,3 +75,4 @@ API
 ===
 
 .. autofunction:: total_correlation
+   :no-index:

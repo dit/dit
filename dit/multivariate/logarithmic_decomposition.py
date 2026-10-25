@@ -61,9 +61,9 @@ def _loss(probs):
 
 def _interior_loss(probs):
     """
-    Interior loss mu(p1, ..., pn) via Mobius inversion of L.
+    Interior loss mu(p1, ..., pn) via Mobius inversion of L::
 
-    mu(p1,...,pn) = sum_{S subset {p1,...,pn}} (-1)^{n-|S|} L(S)
+        mu(p1,...,pn) = sum_{S subset {p1,...,pn}} (-1)^{n-|S|} L(S)
 
     Parameters
     ----------
@@ -96,7 +96,7 @@ class LogarithmicDecomposition:
     Given a distribution over a joint outcome space Omega, this class
     computes:
 
-    - The atom space Delta(Omega): all subsets of Omega with |S| >= 2.
+    - The atom space Delta(Omega): all subsets of Omega with ``|S| >= 2``.
     - The interior-loss measure mu(b) for each atom b.
     - The content Delta(X) for each random variable X: atoms that cross
       a partition boundary.
@@ -112,7 +112,7 @@ class LogarithmicDecomposition:
 
     Notes
     -----
-    The number of atoms is 2^|Omega| - |Omega| - 1, so this is practical
+    The number of atoms is ``2^|Omega| - |Omega| - 1``, so this is practical
     only for small outcome spaces (up to ~15-20 outcomes).
 
     Examples
@@ -155,7 +155,7 @@ class LogarithmicDecomposition:
     @property
     def atoms(self) -> set[frozenset]:
         """
-        All logarithmic atoms Delta(Omega): subsets of Omega with |S| >= 2.
+        All logarithmic atoms Delta(Omega): subsets of Omega with ``|S| >= 2``.
 
         Returns
         -------
@@ -198,7 +198,7 @@ class LogarithmicDecomposition:
         Parameters
         ----------
         atom : frozenset
-            A subset of Omega with |atom| >= 2.
+            A subset of Omega with ``|atom| >= 2``.
 
         Returns
         -------

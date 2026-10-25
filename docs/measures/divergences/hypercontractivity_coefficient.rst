@@ -1,5 +1,5 @@
 .. hypercontractivity_coefficient.rst
-.. py:module:: dit.divergences.hypercontractivity_coefficient
+.. py:currentmodule:: dit.divergences
 
 ******************************
 Hypercontractivity Coefficient
@@ -32,3 +32,4 @@ API
 ===
 
 .. autofunction:: hypercontractivity_coefficient
+   :no-index:

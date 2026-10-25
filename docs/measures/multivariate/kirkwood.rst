@@ -1,5 +1,5 @@
 .. kirkwood.rst
-.. py:module:: dit.multivariate.kirkwood
+.. py:currentmodule:: dit.multivariate
 
 .. _kirkwood_mutual_information:
 .. _kirkwood:
@@ -99,5 +99,7 @@ API
 ===
 
 .. autofunction:: kirkwood_mutual_information
+   :no-index:
 
 .. autofunction:: ouroboros_mutual_information
+   :no-index:

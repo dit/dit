@@ -14,6 +14,15 @@ We first have the Shannon-like measures. These quantities are based on sums and 
    shannon
    multivariate/multivariate
 
+Common informations quantify shared information through constructions (common
+random variables, auxiliary channels, sufficient statistics) rather than sums of
+entropies; in the bivariate case they do not reduce to the mutual information:
+
+.. toctree::
+   :maxdepth: 2
+
+   common_informations/common_informations
+
 This next group of measures can not be represented on information diagrams, and can not really be directly compared to the measures above:
 
 .. toctree::

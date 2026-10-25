@@ -808,8 +808,8 @@ class RVFunctions:
         number of equivalence classes, n, determines the number of values for
         the random variable. The values are integers from 0 to n-1, but if the
         outcome class of the distribution is string, then this function will
-        use the first n letters from:
-            '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        use the first n letters of
+        ``'0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'``
         as values for the random variable. So random variables with more than
         62 outcomes are not supported by this function.
 

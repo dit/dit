@@ -1,5 +1,5 @@
 .. common_information.rst
-.. py:module:: dit.example_dists.common_information
+.. py:currentmodule:: dit.example_dists
 
 Common-Information Witnesses
 ============================
@@ -94,7 +94,12 @@ APIs
 ====
 
 .. autofunction:: noisy_copies
+   :no-index:
 .. autofunction:: symmetric_common_information_witness
+   :no-index:
 .. autofunction:: erasure_channel
+   :no-index:
 .. autofunction:: reverse_erasure_channel
+   :no-index:
 .. autofunction:: task_assignment
+   :no-index:

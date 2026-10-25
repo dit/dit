@@ -1,11 +1,11 @@
 .. perplexity.rst
-.. py:module:: dit.other.perplexity
+.. py:currentmodule:: dit.other
 
 **********
 Perplexity
 **********
 
-The perplexity is a trivial measure to make the :doc:`../multivariate/entropy` more intuitive:
+The perplexity is a trivial measure to make the :doc:`/measures/multivariate/entropy` more intuitive:
 
 .. math::
 
@@ -36,3 +36,4 @@ API
 ===
 
 .. autofunction:: perplexity
+   :no-index:

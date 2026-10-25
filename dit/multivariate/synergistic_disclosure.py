@@ -116,8 +116,8 @@ def modified_synergistic_disclosure(dist, sources, target, alpha, niter=None, bo
     """
     Compute the modified synergistic disclosure for a single constraint alpha.
 
-    For singleton alpha (|alpha| = 1), returns I(T : a^C | a) instead of
-    the optimization-based S_alpha.  For |alpha| >= 2, falls back to the
+    For singleton alpha (``|alpha| = 1``), returns I(T : a^C | a) instead of
+    the optimization-based S_alpha.  For ``|alpha| >= 2``, falls back to the
     standard synergistic disclosure.
 
     Gutknecht, Makkeh & Wibral (2023), "From Babel to Boole: The Logical
@@ -135,9 +135,9 @@ def modified_synergistic_disclosure(dist, sources, target, alpha, niter=None, bo
         Each inner list gives source-list indices (0-based) specifying
         which sources form each constraint subgroup.
     niter : int, None
-        Number of basin-hopping restarts (used only for |alpha| >= 2).
+        Number of basin-hopping restarts (used only for ``|alpha| >= 2``).
     bound : int, None
-        Cardinality bound on V (used only for |alpha| >= 2).
+        Cardinality bound on V (used only for ``|alpha| >= 2``).
 
     Returns
     -------

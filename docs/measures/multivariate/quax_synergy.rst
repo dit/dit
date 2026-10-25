@@ -1,5 +1,5 @@
 .. quax_synergy.rst
-.. py:module:: dit.multivariate.quax_synergy
+.. py:currentmodule:: dit.multivariate
 
 .. _quax_synergy:
 
@@ -28,5 +28,7 @@ API
 ===
 
 .. autofunction:: quax_synergy
+   :no-index:
 
 .. autofunction:: max_synergistic_entropy
+   :no-index:

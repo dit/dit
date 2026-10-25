@@ -38,7 +38,7 @@ class InteractiveSKARMixin:
         rounds : int
             The number of communication rounds to utilize. Defaults to 2.
         bound_func : func
-            A function over i, |X|, |Y| which returns the bound on variable U_i.
+            A function over i, ``|X|``, ``|Y|`` which returns the bound on variable U_i.
         """
         from .intrinsic_mutual_informations import intrinsic_total_correlation
 
@@ -165,7 +165,7 @@ def interactive_intrinsic_mutual_information(
     rounds : int
         The number of rounds of communication to allow. Defaults to 2.
     bound_func : func
-        A function over i, |X|, |Y| which returns the bound on variable U_i.
+        A function over i, ``|X|``, ``|Y|`` which returns the bound on variable U_i.
     niter : int, None
         The number of hops to perform during optimization.
     backend : str

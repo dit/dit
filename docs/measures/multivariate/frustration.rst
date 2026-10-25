@@ -1,5 +1,5 @@
 .. frustration.rst
-.. py:module:: dit.multivariate.frustration
+.. py:currentmodule:: dit.multivariate
 
 .. _frustration:
 .. _pairwise_frustration:
@@ -101,5 +101,7 @@ API
 ===
 
 .. autofunction:: frustration
+   :no-index:
 
 .. autofunction:: pairwise_frustration
+   :no-index:

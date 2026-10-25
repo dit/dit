@@ -1,5 +1,5 @@
 .. alpha_synergy.rst
-.. py:module:: dit.multivariate.alpha_synergy
+.. py:currentmodule:: dit.multivariate
 
 .. _alpha_synergy:
 
@@ -30,11 +30,16 @@ Because the local divergence :math:`\log q(x)/p(x)` is a difference of local ent
 Removing one variable of XOR loses nothing, since it is a function of the other two, but removing any two loses a bit each time.
 
 .. autofunction:: alpha_synergistic_entropy
+   :no-index:
 
 .. autofunction:: partial_entropy_spectrum
+   :no-index:
 
 .. autofunction:: partial_kullback_leibler_spectrum
+   :no-index:
 
 .. autofunction:: partial_total_correlation_spectrum
+   :no-index:
 
 .. autofunction:: partial_information_spectrum
+   :no-index:

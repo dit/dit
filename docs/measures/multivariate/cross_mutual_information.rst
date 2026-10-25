@@ -1,5 +1,5 @@
 .. cross_mutual_information.rst
-.. py:module:: dit.multivariate.cross_mutual_information
+.. py:currentmodule:: dit.multivariate
 
 .. _cross_mutual_information:
 
@@ -50,6 +50,10 @@ API
 ===
 
 .. autofunction:: cross_coinformation
+   :no-index:
 .. autofunction:: cross_total_correlation
+   :no-index:
 .. autofunction:: cross_dual_total_correlation
+   :no-index:
 .. autofunction:: cross_caekl_mutual_information
+   :no-index:

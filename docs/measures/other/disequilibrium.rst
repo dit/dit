@@ -1,17 +1,17 @@
 .. other.rst
-.. py:module:: dit.other.disequilibrium
+.. py:currentmodule:: dit.other.disequilibrium
 
 **************************************
 Disequilibrium and the LMPR Complexity
 **************************************
 
-Lamberti, Martin, Plastino, and Rosso have proposed a complexity measure :cite:`Lamberti2004` disigned around the idea of being a measure of "distance from equilibrium", or disequilibrium, multiplied by a measure of "randomness". Here, they measure "randomness" by the (normalized) :doc:`../multivariate/entropy`:
+Lamberti, Martin, Plastino, and Rosso have proposed a complexity measure :cite:`Lamberti2004` disigned around the idea of being a measure of "distance from equilibrium", or disequilibrium, multiplied by a measure of "randomness". Here, they measure "randomness" by the (normalized) :doc:`/measures/multivariate/entropy`:
 
 .. math::
 
    \H{X}/\log_2{|X|}
 
-and the disequilibrium as a (normalized) :doc:`../divergences/jensen_shannon_divergence`:
+and the disequilibrium as a (normalized) :doc:`/measures/divergences/jensen_shannon_divergence`:
 
 .. math::
 
@@ -45,5 +45,7 @@ API
 ===
 
 .. autofunction:: disequilibrium
+   :no-index:
 
 .. autofunction:: LMPR_complexity
+   :no-index:

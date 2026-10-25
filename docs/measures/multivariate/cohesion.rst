@@ -1,5 +1,5 @@
 .. cohesion.rst
-.. py:module:: dit.multivariate.cohesion
+.. py:currentmodule:: dit.multivariate
 
 ********
 Cohesion
@@ -14,7 +14,7 @@ mutual information which interpolates between the :ref:`total_correlation`
    C_k[X_0 : X_1 : \dotsc : X_n] = \sum_{\substack{A \subset [n]}{|A| = k}} \H{X_A} - \binom{n - 1}{k - 1} \H{X_0, X_1, \dotsc, X_n}
 
 The later O-information of :cite:`rosas2019quantifying` is the single
-difference :math:`\T{} - \B{}`; see :doc:`o_information`.
+difference :math:`\T{} - \B{}`; see :doc:`/measures/multivariate/o_information`.
 
 On a three-variable giant bit, :math:`C_1 = 2` (total correlation) and
 :math:`C_2 = 1` (dual total correlation):
@@ -39,3 +39,4 @@ API
 ===
 
 .. autofunction:: cohesion
+   :no-index:

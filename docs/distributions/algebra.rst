@@ -145,7 +145,7 @@ Numeric-outcome ``*`` is different
 
 On unnamed one-dimensional numeric distributions, ``+``, ``*``, ``%``, and
 friends transform **outcomes** (two dice, scaling a die, …). See
-:doc:`npscalardist`. Named-variable ``*`` is always the chain rule.
+:doc:`/distributions/npscalardist`. Named-variable ``*`` is always the chain rule.
 
 Compatibility ``condition_on``
 ------------------------------
@@ -171,9 +171,13 @@ API
 ===
 
 .. automethod:: Distribution.marginal
+   :no-index:
 
 .. automethod:: Distribution.marginalize
+   :no-index:
 
 .. automethod:: Distribution.condition_on
+   :no-index:
 
 .. automethod:: Distribution.coalesce
+   :no-index:

@@ -1,5 +1,5 @@
 .. coinformation.rst
-.. py:module:: dit.multivariate.coinformation
+.. py:currentmodule:: dit.multivariate
 
 .. _coinformation:
 
@@ -62,7 +62,7 @@ Visualization
 
 The co-information can be visuallized on an i-diagram as below, where only the centermost atom is shaded:
 
-.. image:: ../../images/idiagrams/i_xyz.png
+.. image:: /images/idiagrams/i_xyz.png
    :alt: The co-information :math:`\I{X : Y : Z}`
    :width: 357px
    :align: center
@@ -72,3 +72,4 @@ API
 ===
 
 .. autofunction:: coinformation
+   :no-index:

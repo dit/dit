@@ -1,5 +1,5 @@
 .. variational_distance.rst
-.. py:module:: dit.divergences.variational_distance
+.. py:currentmodule:: dit.divergences
 
 **********************
 Variational Distance
@@ -35,9 +35,13 @@ API
 ===
 
 .. autofunction:: variational_distance
+   :no-index:
 
 .. autofunction:: hellinger_distance
+   :no-index:
 
 .. autofunction:: bhattacharyya_coefficient
+   :no-index:
 
 .. autofunction:: chernoff_information
+   :no-index:

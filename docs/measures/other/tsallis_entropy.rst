@@ -1,5 +1,5 @@
 .. tsallis_entropy.rst
-.. py:module:: dit.other.tsallis_entropy
+.. py:currentmodule:: dit.other
 
 ***************
 Tsallis Entropy
@@ -38,3 +38,4 @@ API
 ===
 
 .. autofunction:: tsallis_entropy
+   :no-index:

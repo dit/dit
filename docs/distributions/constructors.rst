@@ -5,7 +5,7 @@
 Constructors and examples
 =========================
 
-Besides the :class:`~dit.Distribution` constructors on :doc:`npdist`,
+Besides the :class:`~dit.Distribution` constructors on :doc:`/distributions/npdist`,
 :mod:`dit` ships helpers for building joints and a catalog of named examples.
 
 ``dit.distconst``
@@ -14,7 +14,10 @@ Besides the :class:`~dit.Distribution` constructors on :doc:`npdist`,
 These are imported at the package root:
 
 - :func:`~dit.uniform` / :func:`~dit.uniform_distribution` / :func:`~dit.uniform_like`
-- :func:`~dit.mixture_distribution` — convex combination of distributions
+  / :func:`~dit.uniform_scalar_distribution`
+- :func:`~dit.mixture_distribution` — convex combination of distributions;
+  :func:`~dit.mixture_distribution2` is a faster variant for distributions that
+  already share an identically ordered sample space and support
 - :func:`~dit.product_distribution` — product of specified marginals of a joint
 - :func:`~dit.kirkwood_approximation` / :func:`~dit.lancaster_approximation` /
   :func:`~dit.fejer_riesz_approximation` — order-:math:`k` multiplicative,
@@ -24,10 +27,24 @@ These are imported at the package root:
   function of existing variables
 - :func:`~dit.noisy` / :func:`~dit.erasure` — pass each variable through a
   noisy or erasure channel
-- :func:`~dit.random_distribution` / :func:`~dit.simplex_grid` —
-  random or gridded pmfs
+- :func:`~dit.random_distribution` / :func:`~dit.random_scalar_distribution` /
+  :func:`~dit.simplex_grid` — random or gridded pmfs
+- :func:`~dit.all_dist_structures` / :func:`~dit.random_dist_structure` /
+  :class:`~dit.DistributionEnumerator` — enumerate (or sample) the uniform
+  distributions over subsets of the joint events, useful for exhaustive searches
+- :func:`~dit.modify_outcomes` — relabel each outcome through a function
+- :func:`~dit.joint_from_factors` — build :math:`p(X, Y)` from :math:`p(X)` and
+  :math:`p(Y | X)`
 - :func:`~dit.distribution_from_bayesnet` — joint from a NetworkX Bayesian
   network whose nodes carry local distributions
+- :func:`~dit.copypmf` — copy of a distribution's pmf as a NumPy array, in a
+  chosen base
+- :class:`~dit.SampleSpace`, :class:`~dit.ScalarSampleSpace`,
+  :class:`~dit.CartesianProduct` — sample-space objects describing the set of
+  possible outcomes
+
+The full signatures of everything exported at the package root are in the
+:doc:`API reference </api/generated/dit>`.
 
 .. ipython::
 
@@ -141,19 +158,28 @@ API
 ===
 
 .. autofunction:: dit.uniform
+   :no-index:
 
 .. autofunction:: dit.uniform_distribution
+   :no-index:
 
 .. autofunction:: dit.mixture_distribution
+   :no-index:
 
 .. autofunction:: dit.product_distribution
+   :no-index:
 
 .. autofunction:: dit.kirkwood_approximation
+   :no-index:
 
 .. autofunction:: dit.lancaster_approximation
+   :no-index:
 
 .. autofunction:: dit.fejer_riesz_approximation
+   :no-index:
 
 .. autofunction:: dit.insert_rvf
+   :no-index:
 
 .. autofunction:: dit.distribution_from_bayesnet
+   :no-index:

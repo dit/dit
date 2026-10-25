@@ -21,21 +21,25 @@ def maximize_convex_function(f, A_ineq, b_ineq, A_eq=None, b_eq=None):
     pypoman library to create a list of extreme points, and then evaluating the
     objective function on each point.
 
-        Parameters
-        ----------
-        f : function
-            Objective function to maximize
-        A_ineq : matrix
-            Specifies inequalities matrix, should be num_inequalities x num_variables
-        b_ineq : array
-            Specifies inequalities vector, should be num_inequalities long
-        A_eq : matrix
-            Specifies equalities matrix, should be num_equalities x num_variables
-        b_eq : array
-            Specifies equalities vector, should be num_equalities long
+    Parameters
+    ----------
+    f : function
+        Objective function to maximize
+    A_ineq : matrix
+        Specifies inequalities matrix, should be num_inequalities x num_variables
+    b_ineq : array
+        Specifies inequalities vector, should be num_inequalities long
+    A_eq : matrix
+        Specifies equalities matrix, should be num_equalities x num_variables
+    b_eq : array
+        Specifies equalities vector, should be num_equalities long
 
-        Returns tuple optimal_extreme_point, maximum_function_value
-
+    Returns
+    -------
+    optimal_extreme_point : np.ndarray
+        The extreme point at which the maximum is attained.
+    maximum_function_value : float
+        The maximum value of ``f``.
     """
 
     best_x, best_val = None, -np.inf

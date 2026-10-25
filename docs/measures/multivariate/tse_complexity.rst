@@ -1,5 +1,5 @@
 .. tse_complexity.rst
-.. py:module:: dit.multivariate.tse_complexity
+.. py:currentmodule:: dit.multivariate
 
 **************
 TSE Complexity
@@ -37,3 +37,4 @@ API
 ===
 
 .. autofunction:: tse_complexity
+   :no-index:

@@ -1,5 +1,5 @@
 .. transmission.rst
-.. py:module:: dit.multivariate.transmission
+.. py:currentmodule:: dit.multivariate
 
 .. _transmission:
 
@@ -14,7 +14,7 @@ The transmission :cite:`zwick2004overview`, denoted :math:`T`, is the central er
    T(\text{structure}) = \DKL{p}{q_{\text{structure}}}
                        = U(q_{\text{structure}}) - U(p)
 
-where :math:`q_{\text{structure}}` is the maximum entropy reconstruction (see :doc:`/optimization`) matching the specified marginals of :math:`p`, and :math:`U` is the Shannon entropy.
+where :math:`q_{\text{structure}}` is the maximum entropy reconstruction (see :doc:`/estimation/optimization`) matching the specified marginals of :math:`p`, and :math:`U` is the Shannon entropy.
 
 A structure is specified as a list of marginals, each a list of variable indices. For example, ``[[0, 1], [1, 2]]`` is the structure ``AB:BC``.
 
@@ -24,7 +24,7 @@ A structure is specified as a list of marginals, each a list of variable indices
 
    In [2]: xor = dit.example_dists.Xor()
 
-The default structure is the *independence model* (each variable on its own), for which the transmission equals the :doc:`total_correlation`:
+The default structure is the *independence model* (each variable on its own), for which the transmission equals the :doc:`/measures/multivariate/total_correlation`:
 
 .. ipython::
 
@@ -58,7 +58,7 @@ Because the parity information in ``xor`` lives entirely in the three-way intera
 Model Complexity
 ================
 
-Reconstructability analysis trades transmission (model error) against model complexity, measured by the degrees of freedom of the structure: the number of free parameters needed to specify the maximum entropy distribution. Together, transmission and degrees of freedom for every structure in the lattice form the "decomposition spectrum"; see the dependency decomposition in :doc:`/profiles`.
+Reconstructability analysis trades transmission (model error) against model complexity, measured by the degrees of freedom of the structure: the number of free parameters needed to specify the maximum entropy distribution. Together, transmission and degrees of freedom for every structure in the lattice form the "decomposition spectrum"; see the dependency decomposition in :doc:`/decompositions/profiles`.
 
 .. ipython::
 
@@ -71,5 +71,7 @@ API
 ===
 
 .. autofunction:: transmission
+   :no-index:
 
 .. autofunction:: dit.algorithms.degrees_of_freedom
+   :no-index:

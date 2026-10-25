@@ -1,5 +1,5 @@
 .. negentropy.rst
-.. py:module:: dit.other.negentropy
+.. py:currentmodule:: dit.other
 
 **********
 Negentropy
@@ -30,3 +30,4 @@ API
 ===
 
 .. autofunction:: negentropy
+   :no-index:

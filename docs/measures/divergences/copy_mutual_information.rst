@@ -1,5 +1,5 @@
 .. copy_mutual_information.rst
-.. py:module:: dit.divergences.copy_mutual_information
+.. py:currentmodule:: dit.divergences
 
 ***********************
 Copy Mutual Information
@@ -49,3 +49,4 @@ API
 ---
 
 .. autofunction:: copy_mutual_information
+   :no-index:
