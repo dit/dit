@@ -39,8 +39,11 @@ class PolarCode(LinearCode):
         The block length; must be a power of two.
     k : int
         The number of information bits.
-    channel : Distribution
-        The channel used both to select the frozen set and to decode.
+    channel : Distribution or object
+        The channel used both to select the frozen set and to decode. It must
+        provide a Bhattacharyya parameter; to decode over a channel that does
+        not (e.g. one with memory), design on a memoryless channel and pass the
+        other channel to :meth:`decode`.
     """
 
     def __init__(self, n, k, channel):
@@ -78,10 +81,9 @@ class PolarCode(LinearCode):
         channel = channel if channel is not None else self.channel
         if channel is None:
             raise ditException("Polar decoding requires a channel.")
-        from ._channel import log_likelihoods
+        from ._channel import symbol_llrs
 
-        llr_map = log_likelihoods(channel)
-        llrs = [llr_map[y] for y in received]
+        llrs = symbol_llrs(channel, received)
         decisions = [None] * self.n
         self._sc(llrs, list(range(self.n)), decisions)
         return [decisions[i] for i in self.info_indices]

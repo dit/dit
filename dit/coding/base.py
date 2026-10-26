@@ -125,8 +125,9 @@ class ChannelCoding(ABC):
 
     Parameters
     ----------
-    channel : Distribution, None
-        The channel, as a conditional distribution ``p(output | input)``.
+    channel : Distribution, object, None
+        The channel, as a conditional distribution ``p(output | input)`` or any
+        object implementing the channel protocol (see :func:`as_channel`).
     radix : int
         The size of the code alphabet. Default is 2 (binary).
     """
@@ -147,8 +148,8 @@ class ChannelCoding(ABC):
         Decode a received word back into a message.
 
         Soft-decision decoders use `channel` (a conditional ``p(Y|X)``
-        distribution) to form log-likelihood ratios; hard-decision decoders
-        ignore it.
+        distribution, or any object implementing the channel protocol) to form
+        log-likelihoods; hard-decision decoders ignore it.
         """
 
     @abstractmethod
@@ -157,25 +158,37 @@ class ChannelCoding(ABC):
         The number of message symbols transmitted per channel use.
         """
 
-    def capacity_gap(self, channel):
+    def capacity_gap(self, channel, **kwargs):
         """
         The gap between the channel capacity and the code rate.
 
         Parameters
         ----------
-        channel : Distribution
-            The channel, as a conditional distribution ``p(Y|X)``.
+        channel : Distribution or object
+            The channel: a conditional distribution ``p(Y|X)``, or any object
+            implementing the channel protocol (see :func:`as_channel`) and
+            providing ``capacity()``.
+        kwargs : dict
+            Passed to the channel's ``capacity()``.
 
         Returns
         -------
-        gap : float
+        gap : float or tuple
             ``capacity(channel) - rate``, in bits per channel use. Positive when
-            the code operates below capacity.
+            the code operates below capacity. When the channel only brackets its
+            capacity, a ``(lower, upper)`` bracket on the gap.
         """
-        from ..algorithms import channel_capacity
+        from ._channel import as_channel
 
-        capacity, _ = channel_capacity(channel)
-        return capacity - self.rate()
+        channel = as_channel(channel)
+        if not hasattr(channel, "capacity"):
+            raise ditException("This channel does not report a capacity.")
+        capacity = channel.capacity(**kwargs)
+        rate = self.rate()
+        if isinstance(capacity, tuple):
+            lower, upper = capacity
+            return (lower - rate, upper - rate)
+        return capacity - rate
 
     def probability_of_error(self, channel, method="auto", samples=10000, prng=None):
         """
@@ -188,8 +201,10 @@ class ChannelCoding(ABC):
 
         Parameters
         ----------
-        channel : Distribution
-            The channel, as a conditional distribution ``p(Y|X)``.
+        channel : Distribution or object
+            The channel: a conditional distribution ``p(Y|X)``, or any object
+            implementing the channel protocol (see :func:`as_channel`), such as
+            a finite-state channel with memory.
         method : str
             ``'exact'``, ``'montecarlo'``, or ``'auto'`` (exact when small).
         samples : int
@@ -206,10 +221,10 @@ class ChannelCoding(ABC):
 
         import numpy as np
 
-        from ._channel import channel_arrays
+        from ._channel import as_channel
 
-        inputs, outputs, P = channel_arrays(channel)
-        in_index = {v: i for i, v in enumerate(inputs)}
+        channel = as_channel(channel)
+        outputs = channel.outputs
         k = self.message_length
         n = len(self.encode((0,) * k))
 
@@ -220,20 +235,14 @@ class ChannelCoding(ABC):
             total = 0.0
             for message in itertools.product((0, 1), repeat=k):
                 codeword = self.encode(message)
-                rows = [P[in_index[bit]] for bit in codeword]
-                for cols in itertools.product(range(len(outputs)), repeat=n):
-                    prob = 1.0
-                    for i, j in enumerate(cols):
-                        prob *= rows[i][j]
-                        if prob == 0.0:
-                            break
-                    if prob == 0.0:
+                for received in itertools.product(outputs, repeat=n):
+                    score = channel.log_likelihood(codeword, received)
+                    if score == -np.inf:
                         continue
-                    received = tuple(outputs[j] for j in cols)
                     decoded = tuple(self.decode(received, channel=channel))
                     if decoded != tuple(message):
-                        total += prob
-            return total / (2**k)
+                        total += np.exp(score)
+            return float(total / (2**k))
 
         if prng is None:
             prng = np.random.default_rng()
@@ -241,7 +250,7 @@ class ChannelCoding(ABC):
         for _ in range(samples):
             message = tuple(int(b) for b in prng.integers(0, 2, size=k))
             codeword = self.encode(message)
-            received = tuple(outputs[prng.choice(len(outputs), p=P[in_index[bit]])] for bit in codeword)
+            received = tuple(channel.sample(codeword, prng))
             decoded = tuple(self.decode(received, channel=channel))
             if decoded != message:
                 errors += 1

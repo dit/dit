@@ -149,19 +149,22 @@ Channel coding
 
 A *channel code* adds redundancy to a message so that it can be recovered after
 transmission over a noisy channel. All channel codes in :mod:`dit.coding` are
-binary (over :math:`\mathrm{GF}(2)`), and a channel is supplied as a conditional
+binary (over :math:`\mathrm{GF}(2)`). The usual channel is a conditional
 :class:`~dit.Distribution` :math:`p(Y \mid X)` -- a discrete memoryless channel
 applied independently to each transmitted symbol. The :doc:`/channels/channels` page
 catalogs ready-made channels, including :func:`~dit.example_channels.binary_symmetric_channel`
 and :func:`~dit.example_channels.binary_erasure_channel` (re-exported from
-:mod:`dit.coding` for convenience).
+:mod:`dit.coding` for convenience). Channels with memory can be attached too; see
+:ref:`channel-protocol`.
 
 Every channel code derives from :class:`ChannelCoding`, which provides the
 information-theoretic evaluation common to all of them:
 
 - :meth:`~ChannelCoding.capacity_gap` -- ``channel_capacity(channel) - rate``, the
   gap to the channel coding theorem's limit :cite:`Cover2006` (capacity is
-  computed with the Blahut–Arimoto solver described on :doc:`/channels/channels`),
+  computed with the Blahut–Arimoto solver described on :doc:`/channels/channels`;
+  a channel that only brackets its capacity yields a ``(lower, upper)`` bracket
+  on the gap),
 - :meth:`~ChannelCoding.probability_of_error` -- the block-error probability under
   the code's own decoder, computed exactly for small codes (enumerating every
   message and received word) or by Monte Carlo otherwise.
@@ -214,6 +217,49 @@ channel its exact block-error probability matches the closed form
    In [6]: code.probability_of_error(bsc, method='exact')
 
    In [7]: 1 - 0.95**7 - 7 * 0.05 * 0.95**6
+
+.. _channel-protocol:
+
+Channels with memory
+~~~~~~~~~~~~~~~~~~~~
+
+Codes do not require a :class:`~dit.Distribution`: every channel-aware method
+first calls :func:`as_channel`, which wraps a conditional distribution as a
+:class:`MemorylessChannel` and accepts any other object implementing a small
+duck-typed protocol:
+
+- ``inputs`` and ``outputs`` -- the alphabets, as tuples,
+- ``log_likelihood(codeword, received)`` -- :math:`\log p(y^n \mid x^n)`, used
+  by maximum-likelihood decoding and by the exact block-error probability,
+- ``sample(codeword, prng)`` -- one received word, used by Monte Carlo,
+- ``symbol_log_likelihoods(received)`` -- an ``(n, len(inputs))`` array of
+  :math:`\log p(y^n \mid x_i = a)` up to a per-row constant, from which belief
+  propagation, successive cancellation, and soft Viterbi form their
+  per-position metrics,
+- optionally ``capacity(**kwargs)`` (a float or a ``(lower, upper)`` bracket) and
+  ``bhattacharyya()`` (needed only to *design* a polar code).
+
+A finite-state channel :math:`T(y, s' \mid s, x)` computes ``log_likelihood``
+with the forward algorithm and ``symbol_log_likelihoods`` with the
+forward-backward (BCJR) recursions :cite:`Bahl1974` under uniform i.i.d. inputs
+-- the standard separate detect-then-decode approach. Maximum-likelihood decoding
+and the exact error probability remain exact over such a channel; the per-symbol
+decoders are approximate because they ignore the correlations the channel
+induces between positions.
+
+An object may also define ``__dit_channel__()`` returning a protocol object, so
+another library can make its own channel types attachable without :mod:`dit`
+knowing about them. For example, :mod:`sofic` finite-state channels (Mealy
+machines such as the trapdoor channel) work directly:
+
+.. code-block:: python
+
+   from dit.coding import hamming
+   from sofic.examples import trapdoor
+
+   code = hamming(3)
+   code.probability_of_error(trapdoor(), method='exact')
+   code.capacity_gap(trapdoor())   # a (lower, upper) bracket
 
 APIs
 ====
@@ -291,6 +337,13 @@ APIs
 
 .. autofunction:: fibonacci
    :no-index:
+
+.. autofunction:: as_channel
+   :no-index:
+
+.. autoclass:: MemorylessChannel
+   :no-index:
+   :members:
 
 .. autoclass:: LinearCode
    :no-index:

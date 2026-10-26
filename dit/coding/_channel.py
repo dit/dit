@@ -1,10 +1,25 @@
 """
 Channel helpers for the channel-coding evaluation layer.
 
-A channel is a conditional :class:`~dit.Distribution` ``p(Y | X)``, matching what
-:func:`dit.algorithms.channel_capacity` consumes. Concrete example channels (the
-binary symmetric channel, binary erasure channel, ...) live in
-:mod:`dit.example_channels`.
+The channel codes in :mod:`dit.coding` talk to a channel through a small
+duck-typed protocol, so any object implementing it can be attached to a code:
+
+- ``inputs``, ``outputs`` -- the input and output alphabets, as tuples;
+- ``log_likelihood(codeword, received)`` -- :math:`\\log p(y^n \\mid x^n)`;
+- ``sample(codeword, prng)`` -- one received word, as a tuple;
+- ``symbol_log_likelihoods(received)`` -- an ``(n, len(inputs))`` array whose
+  ``[i, a]`` entry is :math:`\\log p(y^n \\mid x_i = a)` up to a per-row
+  constant. For a memoryless channel this is :math:`\\log p(y_i \\mid a)`; a
+  channel with hidden state can compute it by the forward-backward (BCJR)
+  recursions :cite:`Bahl1974` under uniform i.i.d. inputs;
+- optionally ``capacity(**kwargs)`` -- a float, or a ``(lower, upper)`` bracket;
+- optionally ``bhattacharyya()`` -- required only to construct a polar code.
+
+A conditional :class:`~dit.Distribution` ``p(Y | X)`` is wrapped as a
+:class:`MemorylessChannel`. Any other object may either implement the protocol
+directly or provide a ``__dit_channel__()`` method returning an object that does.
+Concrete example channels (the binary symmetric channel, binary erasure
+channel, ...) live in :mod:`dit.example_channels`.
 """
 
 import itertools
@@ -15,9 +30,15 @@ import numpy as np
 from ..exceptions import ditException
 
 __all__ = (
+    "MemorylessChannel",
+    "as_channel",
     "channel_arrays",
     "log_likelihoods",
 )
+
+_LLR_CLIP = 40.0
+
+_PROTOCOL = ("inputs", "outputs", "log_likelihood", "sample", "symbol_log_likelihoods")
 
 
 def channel_arrays(channel):
@@ -66,9 +87,137 @@ def channel_arrays(channel):
     return _combo(in_coords), _combo(out_coords), P
 
 
+class MemorylessChannel:
+    """
+    A discrete memoryless channel, applying ``p(Y | X)`` independently to each symbol.
+
+    Parameters
+    ----------
+    dist : Distribution
+        A conditional distribution ``p(Y | X)``.
+    """
+
+    def __init__(self, dist):
+        inputs, outputs, P = channel_arrays(dist)
+        self.dist = dist
+        self.inputs = tuple(inputs)
+        self.outputs = tuple(outputs)
+        self.P = P
+        self._in_index = {v: i for i, v in enumerate(self.inputs)}
+        self._out_index = {v: j for j, v in enumerate(self.outputs)}
+
+    def log_likelihood(self, codeword, received):
+        """
+        The log-probability ``log p(received | codeword)``.
+        """
+        score = 0.0
+        for x, y in zip(codeword, received, strict=True):
+            p = self.P[self._in_index[x], self._out_index[y]]
+            if p <= 0:
+                return -np.inf
+            score += log(p)
+        return score
+
+    def sample(self, codeword, prng):
+        """
+        Pass `codeword` through the channel once.
+        """
+        n_out = len(self.outputs)
+        return tuple(self.outputs[prng.choice(n_out, p=self.P[self._in_index[x]])] for x in codeword)
+
+    def symbol_log_likelihoods(self, received):
+        """
+        The ``(n, len(inputs))`` array of ``log p(y_i | x)``.
+        """
+        cols = [self._out_index[y] for y in received]
+        with np.errstate(divide="ignore"):
+            return np.log(self.P[:, cols].T)
+
+    def capacity(self):
+        """
+        The channel capacity, in bits per channel use.
+        """
+        from ..algorithms import channel_capacity
+
+        capacity, _ = channel_capacity(self.dist)
+        return capacity
+
+    def bhattacharyya(self):
+        """
+        The Bhattacharyya parameter of a binary-input channel.
+        """
+        if list(self.inputs) != [0, 1]:
+            raise ditException("The Bhattacharyya parameter requires a binary-input channel.")
+        return float(sum(sqrt(self.P[0, j] * self.P[1, j]) for j in range(self.P.shape[1])))
+
+
+def as_channel(channel):
+    """
+    Coerce `channel` to an object implementing the channel protocol.
+
+    Parameters
+    ----------
+    channel : Distribution or object
+        A conditional distribution ``p(Y | X)``; an object with a
+        ``__dit_channel__()`` method; or an object already implementing the
+        channel protocol described in :mod:`dit.coding._channel`.
+
+    Returns
+    -------
+    channel : object
+        An object implementing the channel protocol.
+    """
+    from ..distribution import Distribution
+
+    if isinstance(channel, Distribution):
+        return MemorylessChannel(channel)
+    hook = getattr(channel, "__dit_channel__", None)
+    if hook is not None:
+        channel = hook()
+    if all(hasattr(channel, name) for name in _PROTOCOL):
+        return channel
+    raise ditException(
+        "A channel must be a conditional Distribution p(Y | X) or implement the channel protocol "
+        "(inputs, outputs, log_likelihood, sample, symbol_log_likelihoods)."
+    )
+
+
+def _clipped_llr(l0, l1):
+    if l0 == -np.inf and l1 == -np.inf:
+        return 0.0
+    if l1 == -np.inf:
+        return _LLR_CLIP
+    if l0 == -np.inf:
+        return -_LLR_CLIP
+    return max(-_LLR_CLIP, min(_LLR_CLIP, l0 - l1))
+
+
+def symbol_llrs(channel, received):
+    """
+    Per-position log-likelihood ratios ``log p(y | x_i = 0) / p(y | x_i = 1)``.
+
+    Parameters
+    ----------
+    channel : Distribution or object
+        A binary-input channel (see :func:`as_channel`).
+    received : sequence
+        The received word.
+
+    Returns
+    -------
+    llrs : list of float
+        One LLR per received position, clipped to a finite range.
+    """
+    channel = as_channel(channel)
+    if list(channel.inputs) != [0, 1]:
+        raise ditException("Soft decoding requires a binary-input channel with inputs {0, 1}.")
+    S = channel.symbol_log_likelihoods(received)
+    return [_clipped_llr(S[i, 0], S[i, 1]) for i in range(len(received))]
+
+
 def log_likelihoods(channel):
     """
-    Per-output-symbol log-likelihood ratios for a binary-input channel.
+    Per-output-symbol log-likelihood ratios for a binary-input memoryless channel.
 
     Parameters
     ----------
@@ -84,20 +233,9 @@ def log_likelihoods(channel):
     inputs, outputs, P = channel_arrays(channel)
     if list(inputs) != [0, 1]:
         raise ditException("Soft decoding requires a binary-input channel with inputs {0, 1}.")
-    clip = 40.0
-    llr = {}
-    for j, y in enumerate(outputs):
-        p0, p1 = P[0, j], P[1, j]
-        if p0 <= 0 and p1 <= 0:
-            value = 0.0
-        elif p1 <= 0:
-            value = clip
-        elif p0 <= 0:
-            value = -clip
-        else:
-            value = max(-clip, min(clip, log(p0) - log(p1)))
-        llr[y] = value
-    return llr
+    with np.errstate(divide="ignore"):
+        L = np.log(P)
+    return {y: _clipped_llr(L[0, j], L[1, j]) for j, y in enumerate(outputs)}
 
 
 def bhattacharyya(channel):
@@ -106,14 +244,17 @@ def bhattacharyya(channel):
 
     Parameters
     ----------
-    channel : Distribution
-        A conditional distribution ``p(Y | X)`` with binary input ``{0, 1}``.
+    channel : Distribution or object
+        A binary-input channel (see :func:`as_channel`) providing ``bhattacharyya()``.
 
     Returns
     -------
     Z : float
     """
-    inputs, _, P = channel_arrays(channel)
-    if list(inputs) != [0, 1]:
-        raise ditException("The Bhattacharyya parameter requires a binary-input channel.")
-    return float(sum(sqrt(P[0, j] * P[1, j]) for j in range(P.shape[1])))
+    channel = as_channel(channel)
+    if not hasattr(channel, "bhattacharyya"):
+        raise ditException(
+            "This channel has no Bhattacharyya parameter, so it cannot design a polar code. "
+            "Construct the code on a memoryless design channel and pass this channel to decode()."
+        )
+    return channel.bhattacharyya()
