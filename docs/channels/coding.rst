@@ -437,19 +437,26 @@ APIs
    :no-index:
 
 .. autofunction:: convolutional
+   :no-index:
 
 .. autoclass:: FeedbackCode
+   :no-index:
    :members: start, next_input, update, decode, transmit, performance, probability_of_error, expected_uses, rate, capacity_gap
 
 .. autoclass:: ErasureARQ
+   :no-index:
 
 .. autoclass:: StopAndWaitARQ
+   :no-index:
 
 .. autoclass:: HorsteinCode
+   :no-index:
 
 .. autofunction:: erasure_arq
+   :no-index:
 
 .. autofunction:: stop_and_wait_arq
+   :no-index:
 
 .. autofunction:: horstein
    :no-index:
