@@ -116,6 +116,20 @@ overlapping words of a sequence. The ``estimator`` argument selects:
   :cite:`Efron1981`. :func:`jackknife_entropy` jackknifes any estimator and
   also returns the jackknife variance.
 
+For heavily undersampled data a further group trades speed for accuracy:
+
+* ``'panzeri_treves'`` — a Miller–Madow-style correction that counts the
+  relevant outcomes with a Bayesian estimate :cite:`Panzeri1996`.
+* ``'quadratic_extrapolation'`` — extrapolates the plug-in entropy of
+  subsamples of size :math:`N`, :math:`N/2` and :math:`N/4` to infinite data
+  :cite:`Strong1998`; dit uses the exact expected subsample entropies.
+* ``'wu_yang'`` — the minimax-rate polynomial estimator :cite:`Wu2016`.
+* ``'bub'`` — Paninski's best-upper-bound estimator :cite:`Paninski2003`.
+* ``'unseen'`` — Valiant & Valiant's linear-programming estimate of the
+  unseen part of the distribution :cite:`Valiant2017`.
+* ``'pym'`` — the Pitman–Yor mixture posterior mean, for heavy-tailed
+  distributions on unbounded alphabets :cite:`Archer2014`.
+
 The accepted names are the keys of the ``dit.inference.ENTROPY_ESTIMATORS``
 registry, so ``list(ENTROPY_ESTIMATORS)`` enumerates them; the registry's values
 are internal implementations, so always select an estimator by name.
@@ -132,8 +146,9 @@ sequence, counting every overlapping word of a given length:
 
    In [9]: entropy_from_counts(counts, estimator='miller_madow')
 
-``'nsb'``, ``'shrink'``, the ``'bayes_*'`` estimators and ``'good_turing'``
-depend on the number of possible outcomes :math:`K`. Pass ``alphabet_size`` (or
+``'nsb'``, ``'shrink'``, the ``'bayes_*'`` estimators, ``'good_turing'``,
+``'panzeri_treves'``, ``'wu_yang'`` and ``'bub'`` depend on the number of
+possible outcomes :math:`K`. Pass ``alphabet_size`` (or
 a count vector including zeros); :func:`conditional_mutual_information` takes
 ``alphabet_sizes`` and uses products of them for its joint terms.
 
@@ -166,6 +181,15 @@ of occurrence, broken by negligible noise, or kept as their own patterns
 :func:`weighted_permutation_entropy` weights each window by its variance, which
 restores some amplitude information :cite:`Fadlallah2013` and serves as a
 model-free predictability measure :cite:`Garland2014`.
+:func:`multiscale_permutation_entropy` repeats the permutation entropy on
+block-averaged versions of the series at successive scales :cite:`Aziz2005,Costa2002`.
+:func:`dispersion_entropy` instead classes the values themselves into :math:`c`
+levels and takes the entropy of the length-:math:`m` class patterns
+:cite:`Rostaghi2016`, keeping amplitude information and avoiding ties.
+
+For symbolic sequences, :func:`lz76_complexity` counts the phrases of the
+Lempel–Ziv (1976) exhaustive history :cite:`Lempel1976,Kaspar1987`; normalized, it
+is a compression-based estimate of the entropy rate, like :func:`lz_entropy_rate`.
 
 Consecutive windows with :math:`\tau = 1` share :math:`m - 1` values, so each
 pattern can be followed by only :math:`m` of the :math:`m!` patterns. Those
@@ -230,6 +254,30 @@ rate control, and network inference live in the companion package
 `infoflow <https://github.com/dit/infoflow>`_, which builds on these estimators
 and null generators.
 
+Continuous and mixed data
+=========================
+
+:func:`differential_entropy_knn` and :func:`total_correlation_ksg` estimate
+differential entropies and (conditional) total correlations from nearest-neighbor
+distances. The same distances give:
+
+* :func:`cross_entropy_knn` and :func:`kullback_leibler_divergence_knn` — the
+  cross entropy and divergence of two sampled densities :cite:`Leonenko2008,Wang2009`.
+* :func:`jensen_shannon_divergence_knn` — the Jensen–Shannon divergence
+  :cite:`Lin1991`, from the entropy of the pooled samples.
+* :func:`renyi_entropy_knn` and :func:`tsallis_entropy_knn` — differential
+  Rényi and Tsallis entropies of order :math:`q < k + 1` :cite:`Leonenko2008`.
+  Orders below 1 converge slowly.
+* :func:`mutual_information_mixed_ksg` — the mixed KSG estimator, which handles
+  variables that are discrete, continuous, or a mixture (with point masses)
+  :cite:`Gao2017`.
+
+:func:`gaussian_copula_mutual_information` instead rank-transforms each variable
+to a standard normal and computes the information of the Gaussian with the
+resulting covariance :cite:`Ince2017`. It lower-bounds the information, is
+unaffected by monotone transformations of the marginals, and stays stable in
+many dimensions.
+
 API
 ===
 
@@ -255,6 +303,15 @@ API
    :no-index:
 
 .. autofunction:: weighted_permutation_entropy
+   :no-index:
+
+.. autofunction:: multiscale_permutation_entropy
+   :no-index:
+
+.. autofunction:: dispersion_entropy
+   :no-index:
+
+.. autofunction:: lz76_complexity
    :no-index:
 
 .. autofunction:: dist_from_timeseries
@@ -326,3 +383,26 @@ API
 .. autofunction:: total_correlation_ksg
    :no-index:
 
+.. autofunction:: cross_entropy_knn
+   :no-index:
+
+.. autofunction:: kullback_leibler_divergence_knn
+   :no-index:
+
+.. autofunction:: jensen_shannon_divergence_knn
+   :no-index:
+
+.. autofunction:: renyi_entropy_knn
+   :no-index:
+
+.. autofunction:: tsallis_entropy_knn
+   :no-index:
+
+.. autofunction:: mutual_information_mixed_ksg
+   :no-index:
+
+.. autofunction:: gaussian_copula_mutual_information
+   :no-index:
+
+.. autofunction:: copula_normalize
+   :no-index:
