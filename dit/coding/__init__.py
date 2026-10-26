@@ -13,6 +13,9 @@ convolutional codes -- and evaluates them against an arbitrary channel (decoding
 block-error probability, and gap to capacity). A channel is a conditional
 :class:`~dit.Distribution` ``p(Y|X)`` or any object implementing the channel
 protocol of :func:`as_channel`, such as a finite-state channel with memory.
+Feedback codes (erasure ARQ, stop-and-wait ARQ, Horstein's bisection scheme)
+see each channel output before choosing the next input; see
+:mod:`dit.coding.feedback`.
 """
 
 from ..example_channels import binary_erasure_channel, binary_symmetric_channel
@@ -29,6 +32,15 @@ from .codes import (
     shannon_fano_elias,
 )
 from .convolutional import ConvolutionalCode, convolutional
+from .feedback import (
+    ErasureARQ,
+    FeedbackCode,
+    HorsteinCode,
+    StopAndWaitARQ,
+    erasure_arq,
+    horstein,
+    stop_and_wait_arq,
+)
 from .ldpc import LDPCCode, gallager, ldpc
 from .linear import LinearCode
 from .polar import PolarCode, polar
@@ -53,12 +65,16 @@ from .universal import (
 __all__ = (
     "ChannelCoding",
     "ConvolutionalCode",
+    "ErasureARQ",
+    "FeedbackCode",
+    "HorsteinCode",
     "LDPCCode",
     "LinearCode",
     "MemorylessChannel",
     "PolarCode",
     "PolarSourceCode",
     "SourceCoding",
+    "StopAndWaitARQ",
     "SymbolCode",
     "TunstallCode",
     "as_channel",
@@ -68,12 +84,14 @@ __all__ = (
     "elias_delta",
     "elias_gamma",
     "elias_omega",
+    "erasure_arq",
     "fano",
     "fibonacci",
     "gallager",
     "golay",
     "golomb",
     "hamming",
+    "horstein",
     "huffman",
     "ldpc",
     "length_limited_huffman",
@@ -88,6 +106,7 @@ __all__ = (
     "source_bhattacharyya",
     "source_high_entropy_set",
     "source_polarization_profile",
+    "stop_and_wait_arq",
     "tunstall",
     "unary",
     "universal_code",
