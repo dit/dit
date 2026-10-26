@@ -13,7 +13,18 @@ duck-typed protocol, so any object implementing it can be attached to a code:
   channel with hidden state can compute it by the forward-backward (BCJR)
   recursions :cite:`Bahl1974` under uniform i.i.d. inputs;
 - optionally ``capacity(**kwargs)`` -- a float, or a ``(lower, upper)`` bracket;
-- optionally ``bhattacharyya()`` -- required only to construct a polar code.
+- optionally ``bhattacharyya()`` -- required only to construct a polar code;
+- optionally ``feedback_initial()`` and ``feedback_step(belief, x)`` -- the
+  channel one use at a time, required only by the feedback codes of
+  :mod:`dit.coding.feedback`. ``belief`` summarizes everything the transmitter
+  knows about the channel's hidden state from the inputs it sent and the
+  outputs fed back (``None`` for a memoryless channel), and
+  ``feedback_step`` returns every ``(y, p(y | x, belief), next_belief)``
+  with nonzero probability;
+- optionally ``feedback_capacity(**kwargs)`` -- the capacity with feedback,
+  used by :meth:`~dit.coding.feedback.FeedbackCode.capacity_gap`. Without it
+  ``capacity()`` is used, which is correct for memoryless channels since
+  feedback does not increase their capacity :cite:`Cover2006`.
 
 A conditional :class:`~dit.Distribution` ``p(Y | X)`` is wrapped as a
 :class:`MemorylessChannel`. Any other object may either implement the protocol
@@ -132,6 +143,19 @@ class MemorylessChannel:
         cols = [self._out_index[y] for y in received]
         with np.errstate(divide="ignore"):
             return np.log(self.P[:, cols].T)
+
+    def feedback_initial(self):
+        """
+        The transmitter's initial belief about the channel; ``None``, since there is no state.
+        """
+        return None
+
+    def feedback_step(self, belief, x):
+        """
+        The outcomes ``(y, p(y | x), None)`` of one channel use with input `x`.
+        """
+        row = self.P[self._in_index[x]]
+        return [(y, float(p), None) for y, p in zip(self.outputs, row, strict=True) if p > 0]
 
     def capacity(self):
         """
