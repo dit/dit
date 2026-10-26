@@ -81,6 +81,17 @@ def test_errors():
         partial_kullback_leibler_spectrum(d, D(["000", "111"], [1 / 2] * 2))
 
 
+@pytest.mark.parametrize("tiny", [2.5e-226, 3.6e-308, 4.9e-309])
+def test_spectra_tiny_probabilities(tiny):
+    """
+    Near-underflow probabilities neither overflow the local spectra nor drop
+    out of the product of the marginals.
+    """
+    d = D(["010", "111", "100"], [1 - 2 * tiny, tiny, tiny])
+    assert partial_entropy_spectrum(d).sum() == pytest.approx(entropy(d), abs=1e-6)
+    assert partial_total_correlation_spectrum(d).sum() == pytest.approx(total_correlation(d), abs=1e-6)
+
+
 @settings(max_examples=10, deadline=None)
 @given(dist=distributions(alphabets=(2, 2, 2)))
 def test_spectra_sum_to_parent(dist):

@@ -18,7 +18,6 @@ from itertools import combinations
 
 import numpy as np
 
-from ..distconst import product_distribution
 from ..helpers import normalize_rvs
 
 __all__ = (
@@ -58,20 +57,39 @@ def _marginal(pmf, codes, subset):
     return np.bincount(inverse, weights=pmf)[inverse]
 
 
+def _spectra(log_marginal, n, definition):
+    """
+    The partial entropy spectrum of each outcome, shape ``(outcomes, n)``, in
+    bits, given ``log_marginal(subset)``: the log2-probability of each
+    outcome's restriction to `subset`.
+    """
+    combine = _COMBINE[definition]
+    log_joint = log_marginal(tuple(range(n)))
+    synergies = np.zeros((len(log_joint), n + 1))
+    for alpha in range(1, n + 1):
+        losses = [
+            log_marginal(tuple(i for i in range(n) if i not in a)) - log_joint for a in combinations(range(n), alpha)
+        ]
+        synergies[:, alpha] = combine(losses, axis=0)
+    return np.diff(synergies, axis=1)
+
+
 def _local_spectra(pmf, codes, definition):
     """
     The partial entropy spectrum of each outcome, shape ``(outcomes, n)``, in bits.
     """
+    return _spectra(lambda subset: np.log2(_marginal(pmf, codes, subset)), codes.shape[1], definition)
+
+
+def _product_local_spectra(pmf, codes, definition):
+    """
+    The local spectra of the product of the marginals, at each outcome of the
+    joint. Built from single-variable log-probabilities, since the product's
+    probabilities can underflow to zero.
+    """
     n = codes.shape[1]
-    combine = _COMBINE[definition]
-    synergies = np.zeros((len(pmf), n + 1))
-    for alpha in range(1, n + 1):
-        losses = [
-            np.log2(_marginal(pmf, codes, tuple(i for i in range(n) if i not in a)) / pmf)
-            for a in combinations(range(n), alpha)
-        ]
-        synergies[:, alpha] = combine(losses, axis=0)
-    return np.diff(synergies, axis=1)
+    log_marginals = np.column_stack([np.log2(_marginal(pmf, codes, (i,))) for i in range(n)])
+    return _spectra(lambda subset: log_marginals[:, list(subset)].sum(axis=1), n, definition)
 
 
 def _check_definition(definition):
@@ -192,9 +210,10 @@ def partial_total_correlation_spectrum(dist, rvs=None, definition="min"):
     spectrum : ndarray
         The spectrum, in bits.
     """
+    _check_definition(definition)
     rvs, _ = normalize_rvs(dist, rvs, None)
-    d = dist.coalesce(rvs)
-    return partial_kullback_leibler_spectrum(d, product_distribution(d), definition=definition)
+    _, pmf, codes = _codes(dist, rvs)
+    return pmf @ (_product_local_spectra(pmf, codes, definition) - _local_spectra(pmf, codes, definition))
 
 
 def partial_information_spectrum(dist, rvs, target, definition="min"):
