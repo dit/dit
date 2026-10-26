@@ -145,19 +145,14 @@ class LinearCode(ChannelCoding):
         return list(self._codeword_to_message(codeword))
 
     def _ml_decode(self, received, channel):
-        from ._channel import channel_arrays
+        from ._channel import as_channel
 
-        inputs, outputs, P = channel_arrays(channel)
-        in_index = {v: i for i, v in enumerate(inputs)}
-        out_index = {v: i for i, v in enumerate(outputs)}
+        channel = as_channel(channel)
         self._ensure_codewords()
-        cols = [out_index[y] for y in received]
+        received = tuple(received)
         best, best_score = None, None
         for codeword in self._codewords:
-            score = 0.0
-            for i, bit in enumerate(codeword):
-                p = P[in_index[bit], cols[i]]
-                score += np.log(p) if p > 0 else -np.inf
+            score = channel.log_likelihood(tuple(codeword), received)
             if best_score is None or score > best_score:
                 best, best_score = codeword, score
         return list(self._codeword_to_message(best))

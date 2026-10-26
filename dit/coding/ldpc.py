@@ -54,10 +54,9 @@ class LDPCCode(LinearCode):
         return self._belief_propagation(received, channel)
 
     def _belief_propagation(self, received, channel):
-        from ._channel import log_likelihoods
+        from ._channel import symbol_llrs
 
-        llr_map = log_likelihoods(channel)
-        L = np.array([llr_map[y] for y in received], dtype=float)
+        L = np.array(symbol_llrs(channel, received), dtype=float)
         n, m = self.n, self.H.shape[0]
 
         # Variable-to-check and check-to-variable messages.

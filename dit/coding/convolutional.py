@@ -8,8 +8,6 @@ with zero-termination; decoding is the Viterbi algorithm over the trellis
 given.
 """
 
-from math import log
-
 from ..exceptions import ditException
 from .base import ChannelCoding
 
@@ -87,13 +85,13 @@ class ConvolutionalCode(ChannelCoding):
         n = self.n_outputs
         steps = len(received) // n
         chunks = [tuple(received[i * n : (i + 1) * n]) for i in range(steps)]
-        metric = self._branch_metric(channel)
+        metric = self._branch_metric(channel, received, chunks)
 
         inf = float("inf")
         path = [inf] * self._n_states
         path[0] = 0.0
         backpointers = []
-        for chunk in chunks:
+        for step in range(steps):
             new_path = [inf] * self._n_states
             back = [-1] * self._n_states
             for state in range(self._n_states):
@@ -101,7 +99,7 @@ class ConvolutionalCode(ChannelCoding):
                     continue
                 for bit in (0, 1):
                     next_state, outputs = self._transitions[(state, bit)]
-                    cost = path[state] + metric(outputs, chunk)
+                    cost = path[state] + metric(outputs, step)
                     if cost < new_path[next_state]:
                         new_path[next_state] = cost
                         back[next_state] = (state, bit)
@@ -119,26 +117,23 @@ class ConvolutionalCode(ChannelCoding):
         inputs.reverse()
         return inputs[: self._message_length]
 
-    def _branch_metric(self, channel):
+    def _branch_metric(self, channel, received, chunks):
         if channel is None:
 
-            def metric(outputs, chunk):
-                return sum(o != r for o, r in zip(outputs, chunk, strict=True))
+            def metric(outputs, step):
+                return sum(o != r for o, r in zip(outputs, chunks[step], strict=True))
 
             return metric
 
-        from ._channel import channel_arrays
+        from ._channel import as_channel
 
-        inputs, outputs_alpha, P = channel_arrays(channel)
-        in_index = {v: i for i, v in enumerate(inputs)}
-        out_index = {v: i for i, v in enumerate(outputs_alpha)}
+        channel = as_channel(channel)
+        in_index = {v: i for i, v in enumerate(channel.inputs)}
+        S = channel.symbol_log_likelihoods(tuple(received[: len(chunks) * self.n_outputs]))
+        n = self.n_outputs
 
-        def metric(outputs, chunk):
-            cost = 0.0
-            for o, r in zip(outputs, chunk, strict=True):
-                p = P[in_index[o], out_index[r]]
-                cost += -log(p) if p > 0 else float("inf")
-            return cost
+        def metric(outputs, step):
+            return -float(sum(S[step * n + j, in_index[o]] for j, o in enumerate(outputs)))
 
         return metric
 

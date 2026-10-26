@@ -9,12 +9,14 @@ optimal, ...).
 
 The channel-coding half builds binary (GF(2)) channel codes -- linear block codes
 (repetition, parity-check, Hamming, Reed-Muller, Golay), LDPC, polar, and
-convolutional codes -- and evaluates them against an arbitrary channel given as a
-conditional :class:`~dit.Distribution` ``p(Y|X)`` (decoding, block-error
-probability, and gap to capacity).
+convolutional codes -- and evaluates them against an arbitrary channel (decoding,
+block-error probability, and gap to capacity). A channel is a conditional
+:class:`~dit.Distribution` ``p(Y|X)`` or any object implementing the channel
+protocol of :func:`as_channel`, such as a finite-state channel with memory.
 """
 
 from ..example_channels import binary_erasure_channel, binary_symmetric_channel
+from ._channel import MemorylessChannel, as_channel
 from .base import ChannelCoding, SourceCoding
 from .block_codes import golay, hamming, parity_check, reed_muller, repetition
 from .codes import (
@@ -53,11 +55,13 @@ __all__ = (
     "ConvolutionalCode",
     "LDPCCode",
     "LinearCode",
+    "MemorylessChannel",
     "PolarCode",
     "PolarSourceCode",
     "SourceCoding",
     "SymbolCode",
     "TunstallCode",
+    "as_channel",
     "binary_erasure_channel",
     "binary_symmetric_channel",
     "convolutional",
