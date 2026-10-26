@@ -237,7 +237,10 @@ duck-typed protocol:
   propagation, successive cancellation, and soft Viterbi form their
   per-position metrics,
 - optionally ``capacity(**kwargs)`` (a float or a ``(lower, upper)`` bracket) and
-  ``bhattacharyya()`` (needed only to *design* a polar code).
+  ``bhattacharyya()`` (needed only to *design* a polar code),
+- optionally ``feedback_initial()``, ``feedback_step(belief, x)`` and
+  ``feedback_capacity(**kwargs)``, used only by the
+  :ref:`feedback codes <feedback-codes>`.
 
 A finite-state channel :math:`T(y, s' \mid s, x)` computes ``log_likelihood``
 with the forward algorithm and ``symbol_log_likelihoods`` with the
@@ -260,6 +263,54 @@ machines such as the trapdoor channel) work directly:
    code = hamming(3)
    code.probability_of_error(trapdoor(), method='exact')
    code.capacity_gap(trapdoor())   # a (lower, upper) bracket
+
+.. _feedback-codes:
+
+Codes with feedback
+~~~~~~~~~~~~~~~~~~~
+
+With a noiseless feedback link the transmitter sees each output before
+choosing the next input, so a code is a strategy
+:math:`x_t = f(m, y_{0:t})` and the number of channel uses :math:`N` may be
+random. Feedback does not increase the capacity of a memoryless channel
+:cite:`Cover2006`, but it makes capacity-achieving schemes much simpler and
+improves the error exponent :cite:`Burnashev1976`. On channels with memory
+it can raise the capacity itself; the trapdoor channel goes from about
+:math:`0.58` bits without feedback to :math:`\log_2 \varphi \approx 0.694`
+with it :cite:`Permuter2008`.
+
+A :class:`FeedbackCode` keeps a state that both ends know, updated from each
+output alone. The channel is stepped one use at a time through
+``feedback_initial()`` and ``feedback_step(belief, x)``, which returns every
+``(y, p(y | x, belief), next_belief)``; :class:`MemorylessChannel` provides
+both, and a finite-state channel uses the normalized forward vector as its
+belief. The exact block-error probability and :math:`\mathbb{E}[N]` come from
+walking the tree of outputs, merging branches that reach the same state, and
+the rate is :math:`k / \mathbb{E}[N]`.
+
+- :func:`erasure_arq` resends each bit until it arrives unerased. On the binary
+  erasure channel it is zero-error with :math:`\mathbb{E}[N] = k / (1 - \epsilon)`,
+  so it achieves capacity exactly.
+- :func:`stop_and_wait_arq` resends a block code's codeword until the received
+  word is a codeword; it fails only when the error pattern is itself a codeword.
+- :func:`horstein` is Horstein's bisection scheme :cite:`Horstein1963`: send
+  whether the message lies above the receiver's posterior median, stopping
+  after ``n`` uses or once the posterior reaches ``1 - delta``. Posterior
+  matching :cite:`Shayevitz2011` generalizes it, and the Schalkwijk--Kailath
+  scheme :cite:`Schalkwijk1966` is its Gaussian-channel analogue (not
+  implemented, since :mod:`dit` channels are discrete).
+
+.. ipython::
+
+   In [1]: from dit.coding import erasure_arq, horstein, binary_erasure_channel, binary_symmetric_channel
+
+   In [2]: erasure_arq(3).performance(binary_erasure_channel(0.3), method='exact')
+
+   In [3]: 3 / 0.7
+
+   In [4]: bsc = binary_symmetric_channel(0.1)
+
+   In [5]: [horstein(3, n=n).probability_of_error(bsc, method='exact') for n in (4, 8, 12)]
 
 APIs
 ====
@@ -386,4 +437,26 @@ APIs
    :no-index:
 
 .. autofunction:: convolutional
+   :no-index:
+
+.. autoclass:: FeedbackCode
+   :no-index:
+   :members: start, next_input, update, decode, transmit, performance, probability_of_error, expected_uses, rate, capacity_gap
+
+.. autoclass:: ErasureARQ
+   :no-index:
+
+.. autoclass:: StopAndWaitARQ
+   :no-index:
+
+.. autoclass:: HorsteinCode
+   :no-index:
+
+.. autofunction:: erasure_arq
+   :no-index:
+
+.. autofunction:: stop_and_wait_arq
+   :no-index:
+
+.. autofunction:: horstein
    :no-index:
