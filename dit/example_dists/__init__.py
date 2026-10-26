@@ -16,5 +16,12 @@ from .genetic_code import genetic_code
 from .giant_bit import giant_bit, jeff
 from .mdbsi import dyadic, triadic
 from .n_mod_m import n_mod_m
-from .nonsignalling_boxes import pr_box
+from .nonsignalling_boxes import (
+    chsh_value,
+    correlated_pr_box,
+    is_nonsignalling,
+    pr_box,
+    pr_box_d,
+    tripartite_pr_box,
+)
 from .numeric import bernoulli, binomial, hypergeometric, multinomial, uniform

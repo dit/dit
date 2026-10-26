@@ -144,7 +144,27 @@ Parametric and hand-built examples:
   :func:`~dit.example_dists.binomial`, :func:`~dit.example_dists.multinomial`
 - Structured joints: :func:`~dit.example_dists.giant_bit`,
   :func:`~dit.example_dists.n_mod_m`, :func:`~dit.example_dists.dyadic`,
-  :func:`~dit.example_dists.triadic`, :func:`~dit.example_dists.pr_box`
+  :func:`~dit.example_dists.triadic`
+- Non-signalling boxes: :func:`~dit.example_dists.pr_box`,
+  :func:`~dit.example_dists.pr_box_d`, :func:`~dit.example_dists.tripartite_pr_box`,
+  :func:`~dit.example_dists.correlated_pr_box`
+
+Non-signalling boxes
+~~~~~~~~~~~~~~~~~~~~
+
+A box is a joint distribution over uniformly distributed inputs and the outputs they produce, such as :math:`(X, Y, A, B)` for two parties. The PR box :cite:`popescu1994quantum` satisfies :math:`a \oplus b = xy`. :func:`~dit.example_dists.pr_box_d` generalizes it to :math:`d` outputs with :math:`b - a \equiv xy \pmod d` :cite:`barrett2005nonlocal`. :func:`~dit.example_dists.tripartite_pr_box` extends it to three parties with :math:`a \oplus b \oplus c = xyz` :cite:`barrett2005popescu`. :func:`~dit.example_dists.correlated_pr_box` mixes the PR box with the fully correlated box :math:`a \oplus b = 0`, which is the family that non-locality distillation protocols act on :cite:`brunner2009nonlocality`. All of these constructors name their variables by default.
+
+:func:`~dit.example_dists.chsh_value` returns the CHSH value of a binary bipartite box :cite:`clauser1969proposed`. Local boxes have a CHSH value of at most 2, quantum boxes at most :math:`2\sqrt{2}`, and the PR box reaches the algebraic maximum of 4. :func:`~dit.example_dists.is_nonsignalling` checks that no party's input changes the other parties' output statistics :cite:`barrett2005nonlocal`:
+
+.. ipython::
+
+   In [10]: from dit.example_dists import chsh_value, correlated_pr_box, is_nonsignalling, pr_box
+
+   In [11]: chsh_value(pr_box(0.5)), chsh_value(correlated_pr_box(0.5), inputs="XY", outputs="AB")
+   Out[11]: (2.0, 3.0)
+
+   In [12]: is_nonsignalling(pr_box(), inputs="XY", outputs="AB")
+   Out[12]: True
 
 Empirical constructors under :mod:`dit.example_dists.empirical`
 (:func:`~dit.example_dists.titanic`, :func:`~dit.example_dists.penguins`,
