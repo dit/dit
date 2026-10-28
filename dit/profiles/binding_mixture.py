@@ -19,6 +19,7 @@ import numpy as np
 
 from ..algorithms.mixture_of_products import mixture_of_products_dists
 from ..multivariate import dual_total_correlation as B
+from ..utils.deprecation import renamed_kwarg
 from .base_profile import BaseProfile, profile_docstring
 from .information_partitions import DependencyDecomposition
 
@@ -49,14 +50,16 @@ class BindingMixtureProfile(BaseProfile):  # noqa: D101
     _name = "Binding Mixture Profile"
     xlabel = "mixture components k"
 
+    @renamed_kwarg("max_iter", "maxiter")
+    @renamed_kwarg("seed", "rng")
     def __init__(
         self,
         dist,
         k_max=None,
         *,
         n_init=12,
-        max_iter=200,
-        seed=0,
+        maxiter=200,
+        rng=0,
         early_stop=True,
     ):
         """
@@ -66,14 +69,14 @@ class BindingMixtureProfile(BaseProfile):  # noqa: D101
             The distribution to profile.
         k_max : int or None
             Maximum mixture cardinality (default ``min(8, |X|)``).
-        n_init, max_iter, seed, early_stop
+        n_init, maxiter, rng, early_stop
             Passed through to
             :func:`~dit.algorithms.mixture_of_products.mixture_of_products_dists`.
         """
         self._k_max = k_max
         self._n_init = n_init
-        self._max_iter = max_iter
-        self._seed = seed
+        self._maxiter = maxiter
+        self._rng = rng
         self._early_stop = early_stop
         super().__init__(dist)
 
@@ -85,8 +88,8 @@ class BindingMixtureProfile(BaseProfile):  # noqa: D101
             self.dist,
             k_max=self._k_max,
             n_init=self._n_init,
-            max_iter=self._max_iter,
-            seed=self._seed,
+            maxiter=self._maxiter,
+            rng=self._rng,
             early_stop=self._early_stop,
         )
         bindings = [float(B(d)) for d in dists]

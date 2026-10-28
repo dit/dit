@@ -9,6 +9,7 @@ import numpy as np
 import dit
 
 from ..exceptions import ditException
+from ..utils.deprecation import renamed_kwarg
 
 __all__ = (
     "convex_combination",
@@ -19,7 +20,8 @@ __all__ = (
 )
 
 
-def perturb_support(pmf, eps=0.1, shape="ball", prng=None):
+@renamed_kwarg("prng", "rng")
+def perturb_support(pmf, eps=0.1, shape="ball", rng=None):
     """
     Returns a new distribution with all nonzero probabilities perturbed.
 
@@ -51,7 +53,7 @@ def perturb_support(pmf, eps=0.1, shape="ball", prng=None):
         centered around `pmf` in ilr coordinates. For 'ball' a point is chosen
         uniformly from the unit circle centered around the pmf in ilr
         coordinates. In both cases, the region is then scaled by `eps`.
-    prng : NumPy RandomState
+    rng : np.random.Generator, np.random.RandomState, int, None
         A random number generator. If `None`, then `dit.math.prng` is used.
 
     Returns
@@ -69,8 +71,7 @@ def perturb_support(pmf, eps=0.1, shape="ball", prng=None):
        pp 279-300. http://dx.doi.org/10.1023/A:1023818214614
 
     """
-    if prng is None:
-        prng = dit.math.prng
+    rng = dit.math.as_random_state(rng)
 
     pmf_2d = np.atleast_2d(pmf)
     out = np.zeros_like(pmf_2d)
@@ -81,9 +82,9 @@ def perturb_support(pmf, eps=0.1, shape="ball", prng=None):
         p1 = row[idx]
         p1_ilr = dit.math.aitchison.ilr(p1)
         if shape == "square":
-            delta = eps * (prng.rand(*p1_ilr.shape) - 0.5)
+            delta = eps * (rng.rand(*p1_ilr.shape) - 0.5)
         elif shape == "ball":
-            delta = eps * dit.math.ball(p1_ilr.shape[0], prng=prng)
+            delta = eps * dit.math.ball(p1_ilr.shape[0], rng=rng)
         else:
             msg = f"Shape {shape} not recognized."
             raise ditException(msg)
@@ -97,7 +98,8 @@ def perturb_support(pmf, eps=0.1, shape="ball", prng=None):
     return out
 
 
-def replace_zeros(pmf, delta, rand=True, prng=None):
+@renamed_kwarg("prng", "rng")
+def replace_zeros(pmf, delta, rand=True, rng=None):
     """
     Replaces zeros in a pmf with values smaller than `eps`.
 
@@ -132,7 +134,7 @@ def replace_zeros(pmf, delta, rand=True, prng=None):
         When `True`, the replacement values for zero elements are random
         numbers less than `delta`. When `False`, the replacement values are
         equal to `delta`.
-    prng : NumPy RandomState
+    rng : np.random.Generator, np.random.RandomState, int, None
         A random number generator used to select replacement values when
         `rand` is `True`. If None, then `dit.math.prng` is used.
 
@@ -161,22 +163,22 @@ def replace_zeros(pmf, delta, rand=True, prng=None):
     London, pp. 191–201.
 
     """
-    if prng is None:
-        prng = dit.math.prng
+    rng = dit.math.as_random_state(rng)
 
     pmf = np.asarray(pmf, dtype=float)
     pmfs = np.atleast_2d(pmf)
     zeros = pmfs == 0
 
     replacements = np.zeros(pmfs.shape, dtype=float)
-    replacements[zeros] = delta * prng.rand(zeros.sum()) if rand else delta
+    replacements[zeros] = delta * rng.rand(zeros.sum()) if rand else delta
 
     d = np.where(zeros, replacements, pmfs * (1 - replacements.sum(axis=-1, keepdims=True)))
 
     return d.reshape(pmf.shape)
 
 
-def jittered(pmf, jitter=1e-5, zeros=True, prng=None):
+@renamed_kwarg("prng", "rng")
+def jittered(pmf, jitter=1e-5, zeros=True, rng=None):
     """
     Jitters the elements of `pmf`.
 
@@ -191,7 +193,7 @@ def jittered(pmf, jitter=1e-5, zeros=True, prng=None):
         If `True`, the zeros in `pmf` are first replaced using `jitter` as
         the `delta` parameter in :meth:`replace_zeros`. If `False`, only the
         nonzero elements in `pmf` are jittered.
-    prng : NumPy RandomState
+    rng : np.random.Generator, np.random.RandomState, int, None
         A random number generator used to select replacement values when
         `rand` is `True`. If None, then `dit.math.prng` is used.
 
@@ -211,12 +213,11 @@ def jittered(pmf, jitter=1e-5, zeros=True, prng=None):
     replace_zeros, perturb_support
 
     """
-    if prng is None:
-        prng = dit.math.prng
+    rng = dit.math.as_random_state(rng)
 
-    d = replace_zeros(pmf, jitter, prng=prng) if zeros else pmf
+    d = replace_zeros(pmf, jitter, rng=rng) if zeros else pmf
 
-    d = perturb_support(d, jitter, prng=prng)
+    d = perturb_support(d, jitter, rng=rng)
 
     return d
 

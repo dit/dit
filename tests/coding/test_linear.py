@@ -103,7 +103,7 @@ def test_probability_of_error_montecarlo_close_to_exact():
     code = hamming(3)
     channel = binary_symmetric_channel(0.05)
     exact = code.probability_of_error(channel, method="exact")
-    mc = code.probability_of_error(channel, method="montecarlo", samples=20000, prng=np.random.default_rng(0))
+    mc = code.probability_of_error(channel, method="montecarlo", samples=20000, rng=np.random.default_rng(0))
     assert mc == pytest.approx(exact, abs=0.02)
 
 

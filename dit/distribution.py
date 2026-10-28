@@ -43,6 +43,7 @@ except ImportError:  # pragma: no cover
 
 from .math import prng as _default_prng
 from .math.ops import get_ops
+from .utils.deprecation import renamed_kwarg
 
 __all__ = ("Distribution",)
 
@@ -181,6 +182,7 @@ class Distribution:
     # Construction
     # ─────────────────────────────────────────────────────────────────────
 
+    @renamed_kwarg("prng", "rng")
     def __init__(
         self,
         data,
@@ -194,7 +196,7 @@ class Distribution:
         trim=True,
         sort=True,
         validate=True,
-        prng=None,
+        rng=None,
     ):
         """
         Initialize an Distribution.
@@ -241,7 +243,7 @@ class Distribution:
             Ignored (alphabets are always sorted).
         validate : bool
             If True, validate normalisation after construction.
-        prng : random state, optional
+        rng : random state, optional
             Pseudo-random number generator. Defaults to ``dit.math.prng``.
 
         Examples
@@ -262,7 +264,7 @@ class Distribution:
         """
         _check_xarray()
 
-        self.prng = _default_prng if prng is None else prng
+        self.prng = _default_prng if rng is None else rng
         _rv_names_explicit = rv_names is not None
 
         if not trim:
@@ -879,7 +881,8 @@ class Distribution:
 
         return powerset(list(self.sample_space()))
 
-    def rand(self, size=None, rand=None, prng=None):
+    @renamed_kwarg("prng", "rng")
+    def rand(self, size=None, rand=None, rng=None):
         """
         Return a random sample from the distribution.
 
@@ -889,12 +892,12 @@ class Distribution:
             Number of samples. None for a single sample.
         rand : float, array, or None
             Pre-generated random numbers. None to generate internally.
-        prng : random state, optional
+        rng : random state, optional
             Random number generator. Defaults to ``self.prng``.
         """
         import dit.math
 
-        return dit.math.sample(self, size, rand, prng)
+        return dit.math.sample(self, size, rand, rng)
 
     @property
     def rvs(self):
@@ -2230,7 +2233,8 @@ class Distribution:
     # ── Classmethods ──────────────────────────────────────────────────
 
     @classmethod
-    def from_ndarray(cls, ndarray, base=None, prng=None):
+    @renamed_kwarg("prng", "rng")
+    def from_ndarray(cls, ndarray, base=None, rng=None):
         """
         Construct from a multi-dimensional numpy ndarray interpreted as a pmf.
 
@@ -2242,13 +2246,14 @@ class Distribution:
         ----------
         ndarray : np.ndarray
         base : str or float, optional
-        prng : random state, optional
+        rng : random state, optional
         """
         outcomes, pmf = zip(*np.ndenumerate(ndarray), strict=True)
-        return cls(list(outcomes), list(pmf), base=base or "linear", prng=prng)
+        return cls(list(outcomes), list(pmf), base=base or "linear", rng=rng)
 
     @classmethod
-    def from_rv_discrete(cls, ssrv, base=None, prng=None):
+    @renamed_kwarg("prng", "rng")
+    def from_rv_discrete(cls, ssrv, base=None, rng=None):
         """
         Construct from a ``scipy.stats.rv_discrete`` instance.
 
@@ -2259,11 +2264,11 @@ class Distribution:
             attributes (as produced by ``rv_discrete(values=...)``).
         base : str or float, optional
             Probability base. Defaults to ``'linear'``.
-        prng : random state, optional
+        rng : random state, optional
         """
         outcomes = [(int(x),) for x in ssrv.xk]
         pmf = list(ssrv.pk)
-        return cls(outcomes, pmf, base=base or "linear", prng=prng)
+        return cls(outcomes, pmf, base=base or "linear", rng=rng)
 
     # ─────────────────────────────────────────────────────────────────────
     # Information-theoretic convenience methods

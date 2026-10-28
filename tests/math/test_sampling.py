@@ -10,7 +10,7 @@ import dit.math.sampling as module
 from dit.exceptions import ditException
 
 
-# sample(dist, size=None, rand=None, prng=None):
+# sample(dist, size=None, rand=None, rng=None):
 def test_sample1():
     # Basic sample
     d = dit.example_dists.Xor()
@@ -29,7 +29,7 @@ def test_sample2():
     # Specified prng
     d = dit.example_dists.Xor()
     dit.math.prng.seed(0)
-    x = module.sample(d, prng=dit.math.prng)
+    x = module.sample(d, rng=dit.math.prng)
     assert x == ("1", "0", "1")
 
 
@@ -49,10 +49,17 @@ def test_sample4():
 
 
 def test_sample5():
-    # Bad prng
+    # Integer seeds and Generators are accepted and reproducible.
     d = dit.example_dists.Xor()
-    with pytest.raises(ditException):
-        module.sample(d, prng=3)
+    assert module.sample(d, 5, rng=3) == module.sample(d, 5, rng=3)
+    gen_a, gen_b = np.random.default_rng(7), np.random.default_rng(7)
+    assert module.sample(d, 5, rng=gen_a) == module.sample(d, 5, rng=gen_b)
+
+
+def test_prng_keyword_is_deprecated():
+    d = dit.example_dists.Xor()
+    with pytest.warns(DeprecationWarning):
+        assert module.sample(d, 5, prng=3) == module.sample(d, 5, rng=3)
 
 
 def test_sample6():
@@ -91,7 +98,7 @@ def test_ball_smoke():
     assert np.allclose(x, x_)
 
     dit.math.prng.seed(0)
-    x = module.ball(3, prng=dit.math.prng)
+    x = module.ball(3, rng=dit.math.prng)
     assert np.allclose(x, x_)
 
 
@@ -149,7 +156,7 @@ def test_norm_smoketest():
 
     # prng is not None
     dit.math.prng.seed(0)
-    x = module.norm(d, prng=dit.math.prng)
+    x = module.norm(d, rng=dit.math.prng)
     assert np.allclose(x, x_)
 
     # size is not None
@@ -214,14 +221,14 @@ def test_norm_toomany():
 def test__annulus2_nosize():
     # When size is None, it should just return the sample.
     prng = np.random.RandomState()
-    samples = dit.math.sampling._annulus2(0, 1, size=None, prng=prng)
+    samples = dit.math.sampling._annulus2(0, 1, size=None, rng=prng)
     assert samples.shape == (2,)
 
 
 def test__annulus2_size():
     # When size is not None, it should return an array of the samples.
     prng = np.random.RandomState()
-    samples = dit.math.sampling._annulus2(0, 1, size=1, prng=prng)
+    samples = dit.math.sampling._annulus2(0, 1, size=1, rng=prng)
     assert samples.shape == (1, 2)
 
 
@@ -237,5 +244,5 @@ def test_annulus2_size():
     # When size is not None, it should return an array of the samples.
     prng = np.random.RandomState()
     pmf = np.array([1 / 3] * 3)
-    samples = dit.math.sampling.annulus2(pmf, 0, 1, size=3, prng=prng)
+    samples = dit.math.sampling.annulus2(pmf, 0, 1, size=3, rng=prng)
     assert samples.shape == (3, 3)

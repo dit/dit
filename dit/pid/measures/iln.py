@@ -33,6 +33,7 @@ import numpy as np
 from scipy.optimize import minimize
 
 from ...channelorder._utils import channels_from_joint
+from ...utils.deprecation import renamed_kwarg
 from ..pid import BaseBivariatePID
 from .ideg import _degradation_channel
 from .imc import _mi_bits, _mi_grad_wrt_K, _params_to_stochastic, _softmax_vjp
@@ -261,7 +262,8 @@ class PID_LN(BaseBivariatePID):
     _name = "I_ln∩"
 
     @staticmethod
-    def _measure(d, sources, target, n_points=None, niter=None, seed=None):
+    @renamed_kwarg("seed", "rng")
+    def _measure(d, sources, target, n_points=None, niter=None, rng=None):
         """
         Compute the less-noisy II redundancy for a pair of sources.
 
@@ -277,7 +279,7 @@ class PID_LN(BaseBivariatePID):
             Number of sampled simplex points for the curvature constraints.
         niter : int or None
             Number of optimization starts.
-        seed : int or None
+        rng : int or None
             Random seed.
 
         Returns
@@ -292,4 +294,4 @@ class PID_LN(BaseBivariatePID):
 
         kappa_a, kappa_b, pi_t = channels_from_joint(d_coal, [tgt], [src_a], [src_b])
 
-        return _less_noisy_ii([kappa_a, kappa_b], pi_t, n_points=n_points, niter=niter, seed=seed)
+        return _less_noisy_ii([kappa_a, kappa_b], pi_t, n_points=n_points, niter=niter, seed=rng)

@@ -2,12 +2,15 @@
 The tightest known upper bound on two-way secret key agreement rate.
 """
 
+from debtcollector import moves
+
 from ...distribution import Distribution
 from .base_skar_optimizers import BaseTwoPartIntrinsicMutualInformation
 
 __all__ = (
     "two_part_intrinsic_total_correlation",
     "two_part_intrinsic_dual_total_correlation",
+    "two_part_intrinsic_caekl_mutual_information",
     "two_part_intrinsic_CAEKL_mutual_information",
 )
 
@@ -96,7 +99,14 @@ class TwoPartIntrinsicCAEKLMutualInformation(BaseTwoPartIntrinsicMutualInformati
         return self._caekl_mutual_information(rvs, crvs)
 
 
-two_part_intrinsic_CAEKL_mutual_information = TwoPartIntrinsicCAEKLMutualInformation.functional()
+two_part_intrinsic_caekl_mutual_information = TwoPartIntrinsicCAEKLMutualInformation.functional()
+two_part_intrinsic_CAEKL_mutual_information = moves.moved_function(
+    two_part_intrinsic_caekl_mutual_information,
+    "two_part_intrinsic_CAEKL_mutual_information",
+    __name__,
+    version="2.4",
+    removal_version="3.0",
+)
 
 
 def two_part_intrinsic_mutual_information_constructor(func):  # pragma: no cover

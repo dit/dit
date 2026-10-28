@@ -5,6 +5,8 @@ Various methods for binning real-valued data.
 import numpy as np
 from boltons.iterutils import pairwise
 
+from ..utils.deprecation import renamed_kwarg
+
 __all__ = (
     "binned",
     "ordinal_patterns",
@@ -122,12 +124,12 @@ def _windows(ts, length, delay):
     return np.stack([ts[k * delay : k * delay + n] for k in range(length)], axis=1)
 
 
-def _break_ties(windows, ties, prng):
+def _break_ties(windows, ties, rng):
     if ties == "noise":
         from ._symbols import as_generator
 
         scale = np.abs(windows).max() if windows.size else 1.0
-        return windows + as_generator(prng).uniform(0, 1e-10 * max(scale, 1.0), size=windows.shape)
+        return windows + as_generator(rng).uniform(0, 1e-10 * max(scale, 1.0), size=windows.shape)
     if ties not in ("first", "distinct"):
         raise ValueError(f"Unknown ties rule {ties!r}; use 'first', 'noise', or 'distinct'.")
     return windows
@@ -147,7 +149,8 @@ def _lehmer(perms):
     return codes
 
 
-def ordinal_patterns(ts, order=3, delay=1, ties="first", prng=None):
+@renamed_kwarg("prng", "rng")
+def ordinal_patterns(ts, order=3, delay=1, ties="first", rng=None):
     """
     Map each delay window of a real-valued series to its ordinal pattern.
 
@@ -168,7 +171,7 @@ def ordinal_patterns(ts, order=3, delay=1, ties="first", prng=None):
         How equal values are ranked. ``'first'`` ranks the earlier occurrence
         lower (the usual convention); ``'noise'`` adds negligible random noise;
         ``'distinct'`` keeps ties as their own patterns :cite:`Bian2012`.
-    prng : None, int, Generator, RandomState
+    rng : None, int, Generator, RandomState
         Source of randomness for ``ties='noise'``.
 
     Returns
@@ -183,10 +186,10 @@ def ordinal_patterns(ts, order=3, delay=1, ties="first", prng=None):
     from ._symbols import Trials, is_trials
 
     if is_trials(ts):
-        return Trials(ordinal_patterns(t, order, delay, ties, prng) for t in ts)
+        return Trials(ordinal_patterns(t, order, delay, ties, rng) for t in ts)
     if order < 2 or delay < 1:
         raise ValueError("`order` must be at least 2 and `delay` at least 1.")
-    windows = _break_ties(_windows(ts, order, delay), ties, prng)
+    windows = _break_ties(_windows(ts, order, delay), ties, rng)
     if ties == "distinct":
         ranks = np.stack([np.unique(w, return_inverse=True)[1].ravel() for w in windows]) if len(windows) else windows
         return (ranks.astype(np.int64) * order ** np.arange(order)[::-1]).sum(axis=1)
@@ -194,7 +197,8 @@ def ordinal_patterns(ts, order=3, delay=1, ties="first", prng=None):
     return _lehmer(perms)
 
 
-def relative_rank(ts, order=3, delay=1, ties="first", prng=None):
+@renamed_kwarg("prng", "rng")
+def relative_rank(ts, order=3, delay=1, ties="first", rng=None):
     """
     The rank of each value among the `order` values preceding it.
 
@@ -216,7 +220,7 @@ def relative_rank(ts, order=3, delay=1, ties="first", prng=None):
     ties : {'first', 'noise', 'distinct'}
         ``'first'`` counts earlier equal values as smaller; ``'distinct'`` counts
         only strictly smaller values; ``'noise'`` adds negligible noise first.
-    prng : None, int, Generator, RandomState
+    rng : None, int, Generator, RandomState
         Source of randomness for ``ties='noise'``.
 
     Returns
@@ -227,10 +231,10 @@ def relative_rank(ts, order=3, delay=1, ties="first", prng=None):
     from ._symbols import Trials, is_trials
 
     if is_trials(ts):
-        return Trials(relative_rank(t, order, delay, ties, prng) for t in ts)
+        return Trials(relative_rank(t, order, delay, ties, rng) for t in ts)
     if order < 1 or delay < 1:
         raise ValueError("`order` and `delay` must be positive.")
-    windows = _break_ties(_windows(ts, order + 1, delay), ties, prng)
+    windows = _break_ties(_windows(ts, order + 1, delay), ties, rng)
     present = windows[:, -1:]
     past = windows[:, :-1]
     if ties == "distinct":

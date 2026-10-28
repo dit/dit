@@ -31,6 +31,7 @@ from scipy.optimize import minimize
 from ..algorithms.optutil import prepare_dist
 from ..distribution import Distribution
 from ..exceptions import ditException
+from ..utils.deprecation import renamed_kwarg
 
 __all__ = (
     "lift_marginal",
@@ -90,7 +91,8 @@ def lift_marginal(outs, pmf, alph, S, mode="uniform"):
     return q / q.sum()
 
 
-def fit_marginal_lift_mixture(dist, order, mode="uniform", n_init=12, seed=0):
+@renamed_kwarg("seed", "rng")
+def fit_marginal_lift_mixture(dist, order, mode="uniform", n_init=12, rng=0):
     """
     Fit a convex combination of lifts of marginals of order at most ``order``.
 
@@ -124,7 +126,7 @@ def fit_marginal_lift_mixture(dist, order, mode="uniform", n_init=12, seed=0):
         raise ValueError(msg)
     cons = {"type": "eq", "fun": lambda x: float(x.sum() - 1.0)}
     best = None
-    rng = np.random.default_rng(seed)
+    rng = np.random.default_rng(rng)
     for _ in range(n_init):
         x0 = rng.dirichlet(np.ones(nb))
         res = minimize(
@@ -155,7 +157,8 @@ def fit_marginal_lift_mixture(dist, order, mode="uniform", n_init=12, seed=0):
     }
 
 
-def marginal_lift_dists(dist, k_max=None, mode="uniform", n_init=12, seed=0):
+@renamed_kwarg("seed", "rng")
+def marginal_lift_dists(dist, k_max=None, mode="uniform", n_init=12, rng=0):
     """
     Ladder of marginal-lift mixtures for orders :math:`0,\\ldots,k_{\\max}`.
 
@@ -179,7 +182,9 @@ def marginal_lift_dists(dist, k_max=None, mode="uniform", n_init=12, seed=0):
             dists.append(q)
             metas.append({"labels": [()], "alpha": np.array([1.0]), "L2": None})
         else:
-            fit = fit_marginal_lift_mixture(dist, k, mode=mode, n_init=n_init, seed=seed + k)
+            fit = fit_marginal_lift_mixture(
+                dist, k, mode=mode, n_init=n_init, rng=rng + k if isinstance(rng, int) else rng
+            )
             dists.append(fit["dist"])
             metas.append({key: fit[key] for key in ("labels", "alpha", "L2")})
     return dists, metas

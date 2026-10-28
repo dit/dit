@@ -9,6 +9,7 @@ Sibling of :class:`~dit.profiles.MFlatConnectedInformations`: both approximate
 import numpy as np
 
 from ..algorithms.marginal_lifts import marginal_lift_dists
+from ..utils.deprecation import renamed_kwarg
 from .base_profile import BaseProfile, profile_docstring
 
 __all__ = ("MarginalLiftProfile",)
@@ -32,7 +33,8 @@ class MarginalLiftProfile(BaseProfile):  # noqa: D101
     _name = "Marginal Lift Profile"
     xlabel = "marginal order k"
 
-    def __init__(self, dist, k_max=None, mode="uniform", n_init=12, seed=0):
+    @renamed_kwarg("seed", "rng")
+    def __init__(self, dist, k_max=None, mode="uniform", n_init=12, rng=0):
         """
         Parameters
         ----------
@@ -41,13 +43,13 @@ class MarginalLiftProfile(BaseProfile):  # noqa: D101
             Highest marginal order (default: number of variables).
         mode : {'uniform', 'product'}
             Lift of each marginal to the full joint.
-        n_init, seed
+        n_init, rng
             Convex-combination optimizer controls.
         """
         self._k_max = k_max
         self._mode = mode
         self._n_init = n_init
-        self._seed = seed
+        self._rng = rng
         super().__init__(dist)
 
     def _compute(self):
@@ -56,7 +58,7 @@ class MarginalLiftProfile(BaseProfile):  # noqa: D101
             k_max=self._k_max,
             mode=self._mode,
             n_init=self._n_init,
-            seed=self._seed,
+            rng=self._rng,
         )
         # L2 residual of each rung vs P (order 0 computed explicitly).
         from copy import deepcopy

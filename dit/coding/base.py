@@ -20,6 +20,7 @@ from math import log2
 
 from ..exceptions import ditException
 from ..shannon import entropy
+from ..utils.deprecation import renamed_kwarg
 
 __all__ = (
     "ChannelCoding",
@@ -190,7 +191,8 @@ class ChannelCoding(ABC):
             return (lower - rate, upper - rate)
         return capacity - rate
 
-    def probability_of_error(self, channel, method="auto", samples=10000, prng=None):
+    @renamed_kwarg("prng", "rng")
+    def probability_of_error(self, channel, method="auto", samples=10000, rng=None):
         """
         The block error probability of the code over a channel.
 
@@ -209,7 +211,7 @@ class ChannelCoding(ABC):
             ``'exact'``, ``'montecarlo'``, or ``'auto'`` (exact when small).
         samples : int
             The number of Monte Carlo samples.
-        prng : numpy.random.Generator, None
+        rng : numpy.random.Generator, None
             The random number generator for Monte Carlo sampling.
 
         Returns
@@ -244,13 +246,13 @@ class ChannelCoding(ABC):
                         total += np.exp(score)
             return float(total / (2**k))
 
-        if prng is None:
-            prng = np.random.default_rng()
+        if rng is None:
+            rng = np.random.default_rng()
         errors = 0
         for _ in range(samples):
-            message = tuple(int(b) for b in prng.integers(0, 2, size=k))
+            message = tuple(int(b) for b in rng.integers(0, 2, size=k))
             codeword = self.encode(message)
-            received = tuple(channel.sample(codeword, prng))
+            received = tuple(channel.sample(codeword, rng))
             decoded = tuple(self.decode(received, channel=channel))
             if decoded != message:
                 errors += 1

@@ -92,7 +92,7 @@ def test_region_validity():
     h_joint = float(entropy(d))
     h_sum = float(entropy(d, [0])) + float(entropy(d, [1]))
 
-    points = gw.region(num=8, niter=2, maxiter=250, seed=1)
+    points = gw.region(num=8, niter=2, maxiter=250, rng=1)
 
     sums = []
     for p in points:
@@ -115,7 +115,9 @@ def test_lossless_budget_matches_none():
     dm = [hamming_matrix(2), hamming_matrix(2)]
 
     lossless = GrayWynerNetwork(d).rate_point([1, 1, 1], niter=3, maxiter=300)
-    zero_budget = GrayWynerNetwork(d, distortions=dm, bounds=[0.0, 0.0]).rate_point([1, 1, 1], niter=3, maxiter=300)
+    zero_budget = GrayWynerNetwork(d, distortions=dm, distortion_bounds=[0.0, 0.0]).rate_point(
+        [1, 1, 1], niter=3, maxiter=300
+    )
 
     # equal weights minimize the total rate (the well-defined quantity); the
     # individual R_0 split along the min sum-rate face is not unique.
@@ -138,7 +140,9 @@ def test_lossy_wyner_decreasing():
     dm = [hamming_matrix(2), hamming_matrix(2)]
 
     c0 = float(lossy_wyner_common_information(d, niter=4, maxiter=400))
-    c_big = float(lossy_wyner_common_information(d, bounds=[0.45, 0.45], distortions=dm, niter=5, maxiter=500))
+    c_big = float(
+        lossy_wyner_common_information(d, distortion_bounds=[0.45, 0.45], distortions=dm, niter=5, maxiter=500)
+    )
     assert c_big < c0 - 0.1
 
 

@@ -2,12 +2,15 @@
 The reduced intrinsic mutual information.
 """
 
+from debtcollector import moves
+
 from ...distribution import Distribution
 from .base_skar_optimizers import BaseReducedIntrinsicMutualInformation
 
 __all__ = (
     "reduced_intrinsic_total_correlation",
     "reduced_intrinsic_dual_total_correlation",
+    "reduced_intrinsic_caekl_mutual_information",
     "reduced_intrinsic_CAEKL_mutual_information",
 )
 
@@ -126,7 +129,14 @@ class ReducedIntrinsicCAEKLMutualInformation(BaseReducedIntrinsicMutualInformati
         return grad
 
 
-reduced_intrinsic_CAEKL_mutual_information = ReducedIntrinsicCAEKLMutualInformation.functional()
+reduced_intrinsic_caekl_mutual_information = ReducedIntrinsicCAEKLMutualInformation.functional()
+reduced_intrinsic_CAEKL_mutual_information = moves.moved_function(
+    reduced_intrinsic_caekl_mutual_information,
+    "reduced_intrinsic_CAEKL_mutual_information",
+    __name__,
+    version="2.4",
+    removal_version="3.0",
+)
 
 
 def reduced_intrinsic_mutual_information_constructor(func):  # pragma: no cover

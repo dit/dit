@@ -79,13 +79,13 @@ def is_trials(data):
     return isinstance(data, Trials)
 
 
-def as_generator(prng=None):
+def as_generator(rng=None):
     """
-    Coerce `prng` into a :class:`numpy.random.Generator`.
+    Coerce `rng` into a :class:`numpy.random.Generator`.
 
     Parameters
     ----------
-    prng : None, int, Generator, RandomState
+    rng : None, int, Generator, RandomState
         If None, a generator is seeded from ``dit.math.prng`` so that
         ``dit.math.prng.seed(...)`` makes results reproducible. Integers are
         used as seeds.
@@ -94,15 +94,15 @@ def as_generator(prng=None):
     -------
     rng : numpy.random.Generator
     """
-    if isinstance(prng, np.random.Generator):
-        return prng
-    if isinstance(prng, np.random.RandomState):
-        return np.random.default_rng(prng.randint(2**32, dtype=np.uint64))
-    if prng is None:
+    if isinstance(rng, np.random.Generator):
+        return rng
+    if isinstance(rng, np.random.RandomState):
+        return np.random.default_rng(rng.randint(2**32, dtype=np.uint64))
+    if rng is None:
         from ..math import prng as default_prng
 
         return np.random.default_rng(default_prng.randint(2**32, dtype=np.uint64))
-    return np.random.default_rng(prng)
+    return np.random.default_rng(rng)
 
 
 def standardize(data):

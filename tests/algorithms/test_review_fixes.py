@@ -15,7 +15,7 @@ from dit.utils.optimization import BasinHoppingCallBack
 
 
 def test_min_residual_entropy_objective_is_residual_entropy():
-    d = dit.random_distribution(3, 2, prng=np.random.RandomState(1))
+    d = dit.random_distribution(3, 2, rng=np.random.RandomState(1))
     opt = MinResidualEntropyOptimizer(d, [[0], [1], [2]])
     opt.objective = MethodType(opt._objective(), opt)
     pmf = opt.construct_joint(opt._vpmf[opt._free])

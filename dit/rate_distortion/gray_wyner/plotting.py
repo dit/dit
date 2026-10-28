@@ -51,7 +51,7 @@ class GrayWynerPlotter(BasePlotter):
         return fig
 
     @staticmethod
-    def plot_tension(network, num=20, niter=None, maxiter=1000, seed=None, ax=None):
+    def plot_tension(network, num=20, niter=None, maxiter=1000, rng=None, ax=None):
         """
         Plot the lower boundary of the region of tension of a pair.
 
@@ -71,7 +71,7 @@ class GrayWynerPlotter(BasePlotter):
             Number of basin hops per point.
         maxiter : int
             Inner optimizer iterations.
-        seed : int, None
+        rng : int, np.random.Generator, None
             Seed for the random weight sampler.
         ax : mpl.Axis, None
             A 3D axis to draw on. If None, a new figure is created.
@@ -85,7 +85,7 @@ class GrayWynerPlotter(BasePlotter):
             msg = f"The tension region is plottable for 2 sources, not {network.n}."
             raise ditException(msg)
 
-        points = network.tension_region(num=num, niter=niter, maxiter=maxiter, seed=seed)
+        points = network.tension_region(num=num, niter=niter, maxiter=maxiter, rng=rng)
         xs = np.array([p.tensions[0] for p in points])
         ys = np.array([p.tensions[1] for p in points])
         zs = np.array([p.residual for p in points])

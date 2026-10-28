@@ -5,6 +5,7 @@ Various methods for estimating information quantities from samples.
 import numpy as np
 from scipy.special import digamma, gammaln, polygamma
 
+from ..utils.deprecation import renamed_kwarg
 from ._advanced_estimators import _bub, _panzeri_treves, _pym, _quadratic_extrapolation, _unseen, _wu_yang
 from ._symbols import check_sampling, standardize_trials, word_counts
 from .counts import get_counts
@@ -741,7 +742,8 @@ def conditional_mutual_information(x, y, z=None, estimator="plugin", alphabet_si
     return _cmi_codes(x, y, z, estimator, sizes)
 
 
-def permutation_entropy(ts, order=3, delay=1, normalize=False, estimator="plugin", ties="first", prng=None):
+@renamed_kwarg("prng", "rng")
+def permutation_entropy(ts, order=3, delay=1, normalize=False, estimator="plugin", ties="first", rng=None):
     """
     The permutation entropy of a real-valued series :cite:`Bandt2002`.
 
@@ -762,7 +764,7 @@ def permutation_entropy(ts, order=3, delay=1, normalize=False, estimator="plugin
         See :func:`entropy_from_counts`; ``'nsb'`` uses :math:`m!` outcomes.
     ties : {'first', 'noise', 'distinct'}
         See :func:`~dit.inference.ordinal_patterns`.
-    prng : None, int, Generator, RandomState
+    rng : None, int, Generator, RandomState
         Source of randomness for ``ties='noise'``.
 
     Returns
@@ -774,7 +776,7 @@ def permutation_entropy(ts, order=3, delay=1, normalize=False, estimator="plugin
     from ._symbols import is_trials
     from .binning import ordinal_patterns
 
-    patterns = ordinal_patterns(ts, order, delay, ties, prng)
+    patterns = ordinal_patterns(ts, order, delay, ties, rng)
     codes = np.concatenate(list(patterns)) if is_trials(patterns) else patterns
     K = factorial(order)
     counts = np.unique(codes, return_counts=True)[1]
@@ -783,7 +785,8 @@ def permutation_entropy(ts, order=3, delay=1, normalize=False, estimator="plugin
     return h / np.log2(K) if normalize else h
 
 
-def weighted_permutation_entropy(ts, order=3, delay=1, normalize=False, ties="first", prng=None):
+@renamed_kwarg("prng", "rng")
+def weighted_permutation_entropy(ts, order=3, delay=1, normalize=False, ties="first", rng=None):
     """
     The weighted permutation entropy of a real-valued series :cite:`Fadlallah2013`.
 
@@ -803,7 +806,7 @@ def weighted_permutation_entropy(ts, order=3, delay=1, normalize=False, ties="fi
         Divide by :math:`\\log_2 m!`.
     ties : {'first', 'noise', 'distinct'}
         See :func:`~dit.inference.ordinal_patterns`.
-    prng : None, int, Generator, RandomState
+    rng : None, int, Generator, RandomState
         Source of randomness for ``ties='noise'``.
 
     Returns
@@ -818,7 +821,7 @@ def weighted_permutation_entropy(ts, order=3, delay=1, normalize=False, ties="fi
     series = list(ts) if is_trials(ts) else [ts]
     codes, weights = [], []
     for s in series:
-        codes.append(ordinal_patterns(s, order, delay, ties, prng))
+        codes.append(ordinal_patterns(s, order, delay, ties, rng))
         weights.append(np.var(_windows(s, order, delay), axis=1))
     codes, weights = np.concatenate(codes), np.concatenate(weights)
     total = weights.sum()
@@ -830,8 +833,9 @@ def weighted_permutation_entropy(ts, order=3, delay=1, normalize=False, ties="fi
     return h / np.log2(factorial(order)) if normalize else h
 
 
+@renamed_kwarg("prng", "rng")
 def multiscale_permutation_entropy(
-    ts, scale, order=3, delay=1, normalize=False, estimator="plugin", ties="first", prng=None
+    ts, scale, order=3, delay=1, normalize=False, estimator="plugin", ties="first", rng=None
 ):
     """
     The permutation entropy of a series coarse-grained at scales 1 through
@@ -847,7 +851,7 @@ def multiscale_permutation_entropy(
         The real-valued series.
     scale : int
         The largest scale.
-    order, delay, normalize, estimator, ties, prng
+    order, delay, normalize, estimator, ties, rng
         See :func:`permutation_entropy`.
 
     Returns
@@ -860,7 +864,7 @@ def multiscale_permutation_entropy(
     for s in range(1, scale + 1):
         blocks = len(ts) // s
         coarse = ts[: blocks * s].reshape(blocks, s).mean(axis=1)
-        out[s - 1] = permutation_entropy(coarse, order, delay, normalize, estimator, ties, prng)
+        out[s - 1] = permutation_entropy(coarse, order, delay, normalize, estimator, ties, rng)
     return out
 
 

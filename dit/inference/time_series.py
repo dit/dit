@@ -5,6 +5,7 @@ Infer distributions from time series.
 import numpy as np
 
 from .. import modify_outcomes
+from ..utils.deprecation import renamed_kwarg
 from ._symbols import Trials, is_trials
 from .counts import distribution_from_data
 from .markov_order import select_markov_order
@@ -19,7 +20,8 @@ def _as_rows(observations):
     return list(map(tuple, observations))
 
 
-def dist_from_timeseries(observations, history_length=1, base="linear", max_history=None, prng=None):
+@renamed_kwarg("prng", "rng")
+def dist_from_timeseries(observations, history_length=1, base="linear", max_history=None, rng=None):
     """
     Infer a distribution from time series observations. For each variable, infer a
     `history_length` past and a single observation present.
@@ -42,7 +44,7 @@ def dist_from_timeseries(observations, history_length=1, base="linear", max_hist
         The largest history length considered when `history_length` is a
         string. Defaults to the largest ``L`` with ``M**(L + 1) <= N / 5``,
         for ``M`` joint symbols and ``N`` observations.
-    prng : None, int, Generator, RandomState
+    rng : None, int, Generator, RandomState
         Source of randomness for ``'auto'`` / ``'exact'``.
 
     Returns
@@ -65,7 +67,7 @@ def dist_from_timeseries(observations, history_length=1, base="linear", max_hist
         if max_history is None:
             M = max(len(set(rows)), 2)
             max_history = max(int(np.log(len(rows) / 5) / np.log(M)) - 1, 0)
-        history_length = select_markov_order(observations, max_history, method=method, prng=prng)
+        history_length = select_markov_order(observations, max_history, method=method, rng=rng)
 
     d = distribution_from_data(observations, L=history_length + 1, base=base)
 

@@ -7,6 +7,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from ..exceptions import ditException
+from ..utils.deprecation import renamed_kwarg
 from .blahut_arimoto import blahut_arimoto_ib
 
 __all__ = (
@@ -283,15 +284,17 @@ def _initial_assignments(n_x, n_clusters, restart, rng):
     return assignments.astype(int)
 
 
+@renamed_kwarg("max_iters", "maxiter")
+@renamed_kwarg("random_state", "rng")
 def sequential_ib(
     p_xy,
     beta,
     n_clusters=None,
     initial_assignments=None,
-    max_iters=100,
+    maxiter=100,
     restarts=25,
     tol=1e-10,
-    random_state=None,
+    rng=None,
 ):
     r"""
     Compute a deterministic information bottleneck by hard reassignment.
@@ -313,13 +316,13 @@ def sequential_ib(
         Maximum number of bottleneck states. If None, use ``|X|``.
     initial_assignments : np.ndarray, None
         Optional hard assignments to use as the first restart.
-    max_iters : int
+    maxiter : int
         Maximum coordinate-descent sweeps per restart.
     restarts : int
         Number of random restarts.
     tol : float
         Minimum objective improvement required to accept a reassignment.
-    random_state : int, np.random.Generator, None
+    rng : int, np.random.Generator, None
         Random seed or generator for stochastic restarts.
 
     Returns
@@ -339,14 +342,14 @@ def sequential_ib(
     if not 1 <= n_clusters <= n_x:
         msg = "n_clusters must be between 1 and |X|."
         raise ditException(msg)
-    if max_iters < 0:
-        msg = "max_iters must be non-negative."
+    if maxiter < 0:
+        msg = "maxiter must be non-negative."
         raise ditException(msg)
     if restarts < 0:
         msg = "restarts must be non-negative."
         raise ditException(msg)
 
-    rng = random_state if isinstance(random_state, np.random.Generator) else np.random.default_rng(random_state)
+    rng = np.random.default_rng(rng)
 
     starts = []
     if initial_assignments is not None:
@@ -373,7 +376,7 @@ def sequential_ib(
         converged = False
         iterations = 0
 
-        for _iteration in range(1, max_iters + 1):
+        for _iteration in range(1, maxiter + 1):
             iterations = _iteration
             changed = False
             for x in range(n_x):

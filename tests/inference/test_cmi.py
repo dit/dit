@@ -36,11 +36,11 @@ def test_cmi_independent_and_copy():
 
 def test_stationary_bootstrap_shape_and_blocks():
     data = np.arange(100)
-    resamples = stationary_bootstrap(data, n=5, mean_block_length=10, prng=0)
+    resamples = stationary_bootstrap(data, n=5, mean_block_length=10, rng=0)
     assert resamples.shape == (5, 100)
     steps = np.diff(resamples, axis=1) % 100
     assert np.mean(steps == 1) > 0.8
-    multi = stationary_bootstrap(np.stack([data, -data], axis=1), n=2, prng=0)
+    multi = stationary_bootstrap(np.stack([data, -data], axis=1), n=2, rng=0)
     assert np.array_equal(multi[..., 0], -multi[..., 1])
 
 

@@ -7,7 +7,7 @@ import pytest
 from dit.example_dists import giant_bit, n_mod_m
 from dit.exceptions import ditException
 from dit.multivariate.secret_key_agreement import (
-    two_part_intrinsic_CAEKL_mutual_information,
+    two_part_intrinsic_caekl_mutual_information,
     two_part_intrinsic_dual_total_correlation,
     two_part_intrinsic_total_correlation,
 )
@@ -60,7 +60,7 @@ def test_tpidtc1(dist, value, backend):
 )
 def test_tpicaekl1(dist, value, backend):
     """ """
-    tpicaekl = two_part_intrinsic_CAEKL_mutual_information(
+    tpicaekl = two_part_intrinsic_caekl_mutual_information(
         dist, [[0], [1]], [2], bound_j=2, bound_u=2, bound_v=2, backend=backend
     )
     assert tpicaekl == pytest.approx(value, abs=1e-6)

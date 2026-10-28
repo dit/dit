@@ -126,7 +126,7 @@ For *additive* building blocks (Amari ANOVA / fixed marginal lifts), see
 
     In [21]: gb = dit.Distribution(['000', '111'], [0.5, 0.5])
 
-    In [22]: q2 = fit_mixture_of_products(gb, k=2, n_init=8, seed=0)['dist']
+    In [22]: q2 = fit_mixture_of_products(gb, k=2, n_init=8, rng=0)['dist']
 
     In [23]: print(round(dit.divergences.kullback_leibler_divergence(gb, q2), 8))
     0.0

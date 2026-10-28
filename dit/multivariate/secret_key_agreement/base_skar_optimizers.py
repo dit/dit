@@ -203,10 +203,10 @@ class IntrinsicMIMixin:
         """
 
         @unitful
-        def intrinsic(dist, rvs=None, crvs=None, niter=None, bound=None, backend="numpy"):
+        def intrinsic(dist, rvs=None, crvs=None, niter=None, bound=None, backend="numpy", rng=None):
             actual_cls = _make_backend_subclass(cls, backend)
             opt = actual_cls(dist, rvs=rvs, crvs=crvs, bound=bound)
-            opt.optimize(niter=niter)
+            opt.optimize(rng=rng, niter=niter)
             val = opt.objective(opt._optima)
             return float(val.detach().cpu().item()) if hasattr(val, "detach") else float(val)
 
@@ -233,6 +233,9 @@ class IntrinsicMIMixin:
         backend : str
             The optimization backend. One of ``'numpy'`` (default),
             ``'jax'``, or ``'torch'``.
+        rng : np.random.Generator, int, None
+            Source of randomness for the optimizer.
+
         """
 
         return intrinsic
@@ -305,19 +308,19 @@ class MoreIntrinsicMIMixin:
         """
 
         @unitful
-        def intrinsic(dist, rvs=None, crvs=None, niter=None, bounds=None, backend="numpy"):
+        def intrinsic(dist, rvs=None, crvs=None, niter=None, bounds=None, backend="numpy", rng=None):
             if bounds is None:
                 bounds = (2, 3, 4, None)
 
             actual_cls = _make_backend_subclass(cls, backend)
 
-            def _run(bound, rng):
+            def _run(bound, task_rng):
                 opt = actual_cls(dist, rvs=rvs, crvs=crvs, bound=bound)
-                opt.optimize(niter=niter, rng=rng)
+                opt.optimize(niter=niter, rng=task_rng)
                 val = opt.objective(opt._optima)
                 return float(val.detach().cpu().item()) if hasattr(val, "detach") else float(val)
 
-            candidates = parallel_sweep(_run, bounds)
+            candidates = parallel_sweep(_run, bounds, base_seed=rng)
             return min(candidates)
 
         intrinsic.__doc__ = f"""
@@ -343,6 +346,9 @@ class MoreIntrinsicMIMixin:
             backend : str
                 The optimization backend. One of ``'numpy'`` (default),
                 ``'jax'``, or ``'torch'``.
+            rng : np.random.Generator, int, None
+                Source of randomness for the optimizer.
+
             """
 
         return intrinsic
@@ -506,19 +512,19 @@ class ReducedIntrinsicMIMixin:
         """
 
         @unitful
-        def reduced_intrinsic(dist, rvs=None, crvs=None, niter=None, bounds=None, backend="numpy"):
+        def reduced_intrinsic(dist, rvs=None, crvs=None, niter=None, bounds=None, backend="numpy", rng=None):
             if bounds is None:
                 bounds = (2, 3, 4, None)
 
             actual_cls = _make_backend_subclass(cls, backend)
 
-            def _run(bound, rng):
+            def _run(bound, task_rng):
                 opt = actual_cls(dist, rvs=rvs, crvs=crvs, bound=bound)
-                opt.optimize(niter=niter, rng=rng)
+                opt.optimize(niter=niter, rng=task_rng)
                 val = opt.objective(opt._optima)
                 return float(val.detach().cpu().item()) if hasattr(val, "detach") else float(val)
 
-            candidates = parallel_sweep(_run, bounds)
+            candidates = parallel_sweep(_run, bounds, base_seed=rng)
             return min(candidates)
 
         reduced_intrinsic.__doc__ = f"""
@@ -544,6 +550,9 @@ class ReducedIntrinsicMIMixin:
             backend : str
                 The optimization backend. One of ``'numpy'`` (default),
                 ``'jax'``, or ``'torch'``.
+            rng : np.random.Generator, int, None
+                Source of randomness for the optimizer.
+
             """
 
         return reduced_intrinsic
@@ -821,6 +830,7 @@ class TwoPartIMIMixin:
             bound_u=None,
             bound_v=None,
             backend="numpy",
+            rng=None,
         ):
             bounds = {
                 (2, 2, 2),
@@ -829,15 +839,17 @@ class TwoPartIMIMixin:
 
             actual_cls = _make_backend_subclass(cls, backend)
 
-            def _run(triple, rng):
+            def _run(triple, task_rng):
                 b_j, b_u, b_v = triple
                 opt = actual_cls(dist, rvs=rvs, crvs=crvs, bound_j=b_j, bound_u=b_u, bound_v=b_v)
                 opt._backend = backend
-                opt.optimize(niter=niter, rng=rng)
+                opt.optimize(niter=niter, rng=task_rng)
                 val = opt.objective(opt._optima)
                 return float(val.detach().cpu().item()) if hasattr(val, "detach") else float(val)
 
-            candidates = parallel_sweep(_run, sorted(bounds, key=lambda t: tuple((c is None, c) for c in t)))
+            candidates = parallel_sweep(
+                _run, sorted(bounds, key=lambda t: tuple((c is None, c) for c in t)), base_seed=rng
+            )
 
             return min(candidates)
 
@@ -870,6 +882,9 @@ class TwoPartIMIMixin:
             backend : str
                 The optimization backend. One of ``'numpy'`` (default),
                 ``'jax'``, or ``'torch'``.
+            rng : np.random.Generator, int, None
+                Source of randomness for the optimizer.
+
             """
 
         return two_part_intrinsic

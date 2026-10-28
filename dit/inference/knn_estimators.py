@@ -8,6 +8,7 @@ from scipy.special import digamma, gammaln
 
 from dit.utils import flatten
 
+from ..utils.deprecation import renamed_kwarg
 from ._symbols import as_generator
 
 __all__ = (
@@ -22,7 +23,7 @@ __all__ = (
 )
 
 
-def _fuzz(data, noise, prng=None):
+def _fuzz(data, noise, rng=None):
     """
     Add noise to the data.
 
@@ -32,7 +33,7 @@ def _fuzz(data, noise, prng=None):
         Data.
     noise : float
         The standard deviation of the normally-distributed noise to add to data.
-    prng : None, int, Generator, RandomState
+    rng : None, int, Generator, RandomState
         Source of randomness.
 
     Returns
@@ -41,11 +42,12 @@ def _fuzz(data, noise, prng=None):
         The fuzzed data.
     """
     data = data.astype(np.float64)
-    data += as_generator(prng).normal(0.0, noise, size=data.shape)
+    data += as_generator(rng).normal(0.0, noise, size=data.shape)
     return data
 
 
-def differential_entropy_knn(data, rvs=None, k=4, noise=1e-10, prng=None):
+@renamed_kwarg("prng", "rng")
+def differential_entropy_knn(data, rvs=None, k=4, noise=1e-10, rng=None):
     """
     Compute the *differential* entropy of `data` using a k-nearest neighbors density estimator.
 
@@ -59,7 +61,7 @@ def differential_entropy_knn(data, rvs=None, k=4, noise=1e-10, prng=None):
         The number of nearest neighbors to use.
     noise : float
         The standard deviation of the normally-distributed noise to add to data.
-    prng : None, int, Generator, RandomState
+    rng : None, int, Generator, RandomState
         Source of randomness for the noise.
 
     Returns
@@ -74,7 +76,7 @@ def differential_entropy_knn(data, rvs=None, k=4, noise=1e-10, prng=None):
     if rvs is None:
         rvs = list(range(data.shape[1]))
 
-    data = _fuzz(data, noise, prng)
+    data = _fuzz(data, noise, rng)
 
     d = len(rvs)
 
@@ -92,7 +94,8 @@ def _as_samples(data):
     return data[:, None] if data.ndim == 1 else data
 
 
-def cross_entropy_knn(x, y, k=4, noise=1e-10, prng=None):
+@renamed_kwarg("prng", "rng")
+def cross_entropy_knn(x, y, k=4, noise=1e-10, rng=None):
     """
     Estimate the differential cross entropy :math:`-\\mathbb{E}_P[\\log q(X)]`
     from samples `x` of :math:`P` and `y` of :math:`Q` :cite:`Leonenko2008`.
@@ -113,7 +116,7 @@ def cross_entropy_knn(x, y, k=4, noise=1e-10, prng=None):
         The number of nearest neighbors.
     noise : float
         The standard deviation of the normally-distributed noise added to break ties.
-    prng : None, int, Generator, RandomState
+    rng : None, int, Generator, RandomState
         Source of randomness for the noise.
 
     Returns
@@ -121,7 +124,7 @@ def cross_entropy_knn(x, y, k=4, noise=1e-10, prng=None):
     xh : float
         The estimated cross entropy, in bits.
     """
-    rng = as_generator(prng)
+    rng = as_generator(rng)
     x, y = _fuzz(_as_samples(x), noise, rng), _fuzz(_as_samples(y), noise, rng)
     nu = cKDTree(y).query(x, k, p=np.inf)[0]
     nu = nu if nu.ndim == 1 else nu[:, -1]
@@ -130,7 +133,8 @@ def cross_entropy_knn(x, y, k=4, noise=1e-10, prng=None):
     return h / np.log(2)
 
 
-def kullback_leibler_divergence_knn(x, y, k=4, noise=1e-10, prng=None):
+@renamed_kwarg("prng", "rng")
+def kullback_leibler_divergence_knn(x, y, k=4, noise=1e-10, rng=None):
     """
     Estimate :math:`D_{KL}[P \\| Q]` from samples `x` of :math:`P` and `y` of :math:`Q`.
 
@@ -149,7 +153,7 @@ def kullback_leibler_divergence_knn(x, y, k=4, noise=1e-10, prng=None):
         The number of nearest neighbors.
     noise : float
         The standard deviation of the normally-distributed noise added to break ties.
-    prng : None, int, Generator, RandomState
+    rng : None, int, Generator, RandomState
         Source of randomness for the noise.
 
     Returns
@@ -157,7 +161,7 @@ def kullback_leibler_divergence_knn(x, y, k=4, noise=1e-10, prng=None):
     dkl : float
         The estimated divergence, in bits.
     """
-    rng = as_generator(prng)
+    rng = as_generator(rng)
     x, y = _fuzz(_as_samples(x), noise, rng), _fuzz(_as_samples(y), noise, rng)
     rho = cKDTree(x).query(x, k + 1, p=np.inf)[0][:, -1]
     nu = cKDTree(y).query(x, k, p=np.inf)[0]
@@ -167,7 +171,8 @@ def kullback_leibler_divergence_knn(x, y, k=4, noise=1e-10, prng=None):
     return dkl / np.log(2)
 
 
-def jensen_shannon_divergence_knn(x, y, k=4, noise=1e-10, prng=None):
+@renamed_kwarg("prng", "rng")
+def jensen_shannon_divergence_knn(x, y, k=4, noise=1e-10, rng=None):
     """
     Estimate the Jensen–Shannon divergence of :math:`P` and :math:`Q` from samples.
 
@@ -185,7 +190,7 @@ def jensen_shannon_divergence_knn(x, y, k=4, noise=1e-10, prng=None):
         The number of nearest neighbors.
     noise : float
         The standard deviation of the normally-distributed noise added to break ties.
-    prng : None, int, Generator, RandomState
+    rng : None, int, Generator, RandomState
         Source of randomness for the noise.
 
     Returns
@@ -193,20 +198,20 @@ def jensen_shannon_divergence_knn(x, y, k=4, noise=1e-10, prng=None):
     jsd : float
         The estimated divergence, in bits.
     """
-    rng = as_generator(prng)
+    rng = as_generator(rng)
     x, y = _as_samples(x), _as_samples(y)
     pi = len(x) / (len(x) + len(y))
-    h = lambda data: differential_entropy_knn(data, k=k, noise=noise, prng=rng)  # noqa: E731
+    h = lambda data: differential_entropy_knn(data, k=k, noise=noise, rng=rng)  # noqa: E731
     return h(np.concatenate([x, y])) - pi * h(x) - (1 - pi) * h(y)
 
 
-def _renyi_information(data, order, k, noise, prng):
+def _renyi_information(data, order, k, noise, rng):
     """
     The Leonenko–Pronzato–Savani estimate of :math:`\\int f^q`.
     """
     if not order < k + 1:
         raise ValueError("The estimator needs `order` < `k` + 1.")
-    data = _fuzz(_as_samples(data), noise, prng)
+    data = _fuzz(_as_samples(data), noise, rng)
     N, d = data.shape
     rho = cKDTree(data).query(data, k + 1, p=np.inf)[0][:, -1]
     # zeta_i = (N - 1) C_k V_d rho_i^d with C_k = (Gamma(k) / Gamma(k + 1 - q))^(1 / (1 - q)), V_d = 2^d
@@ -214,7 +219,8 @@ def _renyi_information(data, order, k, noise, prng):
     return np.exp((1 - order) * log_zeta).mean()
 
 
-def renyi_entropy_knn(data, order, k=4, noise=1e-10, prng=None):
+@renamed_kwarg("prng", "rng")
+def renyi_entropy_knn(data, order, k=4, noise=1e-10, rng=None):
     """
     Estimate the differential Rényi entropy
     :math:`\\frac{1}{1 - q} \\log \\int f^q` from samples :cite:`Leonenko2008`.
@@ -230,7 +236,7 @@ def renyi_entropy_knn(data, order, k=4, noise=1e-10, prng=None):
         The number of nearest neighbors.
     noise : float
         The standard deviation of the normally-distributed noise added to break ties.
-    prng : None, int, Generator, RandomState
+    rng : None, int, Generator, RandomState
         Source of randomness for the noise.
 
     Returns
@@ -239,11 +245,12 @@ def renyi_entropy_knn(data, order, k=4, noise=1e-10, prng=None):
         The estimated Rényi entropy, in bits.
     """
     if order == 1:
-        return differential_entropy_knn(_as_samples(data), k=k, noise=noise, prng=prng)
-    return np.log2(_renyi_information(data, order, k, noise, prng)) / (1 - order)
+        return differential_entropy_knn(_as_samples(data), k=k, noise=noise, rng=rng)
+    return np.log2(_renyi_information(data, order, k, noise, rng)) / (1 - order)
 
 
-def tsallis_entropy_knn(data, order, k=4, noise=1e-10, prng=None):
+@renamed_kwarg("prng", "rng")
+def tsallis_entropy_knn(data, order, k=4, noise=1e-10, rng=None):
     """
     Estimate the differential Tsallis entropy
     :math:`\\frac{1}{q - 1} \\left(1 - \\int f^q\\right)` from samples :cite:`Leonenko2008`.
@@ -259,7 +266,7 @@ def tsallis_entropy_knn(data, order, k=4, noise=1e-10, prng=None):
         The number of nearest neighbors.
     noise : float
         The standard deviation of the normally-distributed noise added to break ties.
-    prng : None, int, Generator, RandomState
+    rng : None, int, Generator, RandomState
         Source of randomness for the noise.
 
     Returns
@@ -268,8 +275,8 @@ def tsallis_entropy_knn(data, order, k=4, noise=1e-10, prng=None):
         The estimated Tsallis entropy.
     """
     if order == 1:
-        return differential_entropy_knn(_as_samples(data), k=k, noise=noise, prng=prng) * np.log(2)
-    return (1 - _renyi_information(data, order, k, noise, prng)) / (order - 1)
+        return differential_entropy_knn(_as_samples(data), k=k, noise=noise, rng=rng) * np.log(2)
+    return (1 - _renyi_information(data, order, k, noise, rng)) / (order - 1)
 
 
 def mutual_information_mixed_ksg(x, y, k=5):
@@ -322,7 +329,7 @@ def mutual_information_mixed_ksg(x, y, k=5):
     return mi / np.log(2)
 
 
-def _total_correlation_ksg_scipy(data, rvs, crvs=None, k=4, noise=1e-10, prng=None):
+def _total_correlation_ksg_scipy(data, rvs, crvs=None, k=4, noise=1e-10, rng=None):
     """
     Compute the total correlation from observations. The total correlation is computed between the columns
     specified in `rvs`, given the columns specified in `crvs`. This utilizes the KSG kNN density estimator,
@@ -340,7 +347,7 @@ def _total_correlation_ksg_scipy(data, rvs, crvs=None, k=4, noise=1e-10, prng=No
         The number of nearest neighbors to use in estimating the local kernel density.
     noise : float
         The standard deviation of the normally-distributed noise to add to the data.
-    prng : None, int, Generator, RandomState
+    rng : None, int, Generator, RandomState
         Source of randomness for the noise.
 
     Returns
@@ -353,7 +360,7 @@ def _total_correlation_ksg_scipy(data, rvs, crvs=None, k=4, noise=1e-10, prng=No
     The total correlation is computed in bits, not nats as most KSG estimators do.
     """
     # KSG suggest adding noise (to break symmetries?)
-    data = _fuzz(data, noise, prng)
+    data = _fuzz(data, noise, rng)
 
     if crvs is None:
         crvs = []
@@ -399,7 +406,7 @@ def _total_correlation_ksg_scipy(data, rvs, crvs=None, k=4, noise=1e-10, prng=No
     return tc / log_2
 
 
-def _total_correlation_ksg_sklearn(data, rvs, crvs=None, k=4, noise=1e-10, prng=None):
+def _total_correlation_ksg_sklearn(data, rvs, crvs=None, k=4, noise=1e-10, rng=None):
     """
     Compute the total correlation from observations. The total correlation is computed between the columns
     specified in `rvs`, given the columns specified in `crvs`. This utilizes the KSG kNN density estimator,
@@ -417,7 +424,7 @@ def _total_correlation_ksg_sklearn(data, rvs, crvs=None, k=4, noise=1e-10, prng=
         The number of nearest neighbors to use in estimating the local kernel density.
     noise : float
         The standard deviation of the normally-distributed noise to add to the data.
-    prng : None, int, Generator, RandomState
+    rng : None, int, Generator, RandomState
         Source of randomness for the noise.
 
     Returns
@@ -432,7 +439,7 @@ def _total_correlation_ksg_sklearn(data, rvs, crvs=None, k=4, noise=1e-10, prng=
     This implementation uses scikit-learn.
     """
     # KSG suggest adding noise (to break symmetries?)
-    data = _fuzz(data, noise, prng)
+    data = _fuzz(data, noise, rng)
 
     if crvs is None:
         crvs = []

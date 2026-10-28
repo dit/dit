@@ -6,6 +6,8 @@ import numpy as np
 
 import dit.exceptions
 
+from ..utils.deprecation import renamed_kwarg
+
 __all__ = (
     "sample",
     "ball",
@@ -14,7 +16,8 @@ __all__ = (
 )
 
 
-def sample(dist, size=None, rand=None, prng=None):
+@renamed_kwarg("prng", "rng")
+def sample(dist, size=None, rand=None, rng=None):
     """Returns a sample from a discrete distribution.
 
     Parameters
@@ -30,11 +33,11 @@ def sample(dist, size=None, rand=None, prng=None):
         a NumPy array of random numbers.  In either situation, if `rand` is
         `None`, then the random number(s) will be drawn from a pseudo random
         number generator.
-    prng : random number generator
+    rng : np.random.Generator, np.random.RandomState, int, None
         A random number generator with a `rand' method that returns a random
         number between 0 and 1 when called with no arguments. If unspecified,
         then we use the random number generator on the distribution. Thus,
-        the `dist` must have a `prng` attribute if `prng` is None.
+        the `dist` must have a `rng` attribute if `rng` is None.
 
     Returns
     -------
@@ -46,10 +49,9 @@ def sample(dist, size=None, rand=None, prng=None):
     n = 1 if size is None else size
 
     if rand is None:
-        if prng is None:
-            prng = dist.prng
+        rng = dist.prng if rng is None else dit.math.as_random_state(rng)
         try:
-            rand = prng.rand(n)
+            rand = rng.rand(n)
         except AttributeError as err:
             msg = "The random number generator must support a `rand()' call."
             raise dit.exceptions.ditException(msg) from err
@@ -154,7 +156,8 @@ def _samples_discrete__python(pmf, rands, out=None):
     return out
 
 
-def ball(n, size=None, prng=None):
+@renamed_kwarg("prng", "rng")
+def ball(n, size=None, rng=None):
     """
     Return random samples within an n-dimensional standard ball of radius 1.
 
@@ -162,7 +165,7 @@ def ball(n, size=None, prng=None):
     ----------
     size : int
         The number of samples to draw from the unit n-ball.
-    prng : NumPy RandomState
+    rng : np.random.Generator, np.random.RandomState, int, None
         A random number generator. If `None`, then `dit.math.prng` is used.
 
     Returns
@@ -173,12 +176,11 @@ def ball(n, size=None, prng=None):
     """
     s = 1 if size is None else size
 
-    if prng is None:
-        prng = dit.math.prng
+    rng = dit.math.as_random_state(rng)
 
     # The alternative versions _2ball and _3ball_cylinder were slower in
     # timings. So we do not use them.
-    samples = _ball(n, s, prng)
+    samples = _ball(n, s, rng)
 
     if size is None:
         samples = samples[0]
@@ -186,7 +188,7 @@ def ball(n, size=None, prng=None):
     return samples
 
 
-def _ball(n, size, prng):
+def _ball(n, size, rng):
     """
     Return `size` samples from the unit n-ball.
 
@@ -205,13 +207,13 @@ def _ball(n, size, prng):
     .. [1] http://math.stackexchange.com/a/87238
 
     """
-    R = prng.rand(size, 1) ** (1 / n)
-    X = prng.randn(size, n)
+    R = rng.rand(size, 1) ** (1 / n)
+    X = rng.randn(size, n)
     norm = np.sqrt((X**2).sum(axis=1))[..., np.newaxis]
     return (R * X) / norm
 
 
-def _2ball(size, prng):
+def _2ball(size, rng):
     """
     Return `size` samples from the unit 2-ball.
 
@@ -232,8 +234,8 @@ def _2ball(size, prng):
     """
     # This ends up not being faster due to the fancy indexing.
     # In Cython, we'd do better.
-    theta = 2 * np.pi * prng.rand(size)
-    u = prng.rand(size) + prng.rand(size)
+    theta = 2 * np.pi * rng.rand(size)
+    u = rng.rand(size) + rng.rand(size)
     cond = u > 1
     u[cond] = 2 - u[cond]
     x = u * np.cos(theta)
@@ -241,7 +243,7 @@ def _2ball(size, prng):
     return np.array([x, y]).transpose()
 
 
-def _3ball_cylinder(size, prng):
+def _3ball_cylinder(size, rng):
     """
     Return `size` samples from the unit 3-ball.
 
@@ -261,16 +263,17 @@ def _3ball_cylinder(size, prng):
 
     """
     # This also ends up being slower than _ball.
-    R = prng.rand(size) ** (1 / 3)
-    z = 2 * prng.rand(size) - 1
-    theta = 2 * np.pi * prng.rand(size)
+    R = rng.rand(size) ** (1 / 3)
+    z = 2 * rng.rand(size) - 1
+    theta = 2 * np.pi * rng.rand(size)
     r = np.sqrt(R**2 - z**2)
     x = r * np.cos(theta)
     y = r * np.sin(theta)
     return np.array([x, y, z]).transpose()
 
 
-def norm(pmf, ilrcov=None, size=None, prng=None):
+@renamed_kwarg("prng", "rng")
+def norm(pmf, ilrcov=None, size=None, rng=None):
     """
     Returns normally distributed mass functions with mean equal to `pmf`.
 
@@ -288,7 +291,7 @@ def norm(pmf, ilrcov=None, size=None, prng=None):
         If `None`, then an identity matrix is used as the covariance matrix.
     size : int
         The number of samples to draw. Default is to return a single sample.
-    prng : NumPy RandomState
+    rng : np.random.Generator, np.random.RandomState, int, None
         A random number generator. If `None`, then `dit.math.prng` is used.
 
     Return
@@ -297,8 +300,7 @@ def norm(pmf, ilrcov=None, size=None, prng=None):
         The samples. If `size` is `None`, then a single sample is returned.
 
     """
-    if prng is None:
-        prng = dit.math.prng
+    rng = dit.math.as_random_state(rng)
 
     pmf = np.asarray(pmf)
     if len(pmf.shape) != 1:
@@ -338,23 +340,23 @@ def norm(pmf, ilrcov=None, size=None, prng=None):
 
     k = 1 if size is None else size
 
-    samples = _norm(ilrmean, ilrcov, k, prng)
+    samples = _norm(ilrmean, ilrcov, k, rng)
     if size is None:
         samples = samples[0]
     return samples
 
 
-def _norm(ilrmean, ilrcov, size, prng):
+def _norm(ilrmean, ilrcov, size, rng):
     """
     Low-level sampling of normally distributed pmfs about a mean pmf.
 
     """
-    samples = prng.multivariate_normal(ilrmean, ilrcov, size)
+    samples = rng.multivariate_normal(ilrmean, ilrcov, size)
     samples = dit.math.aitchison.ilr_inv(samples)
     return samples
 
 
-def _annulus2(rmin, rmax, size=None, prng=None):
+def _annulus2(rmin, rmax, size=None, rng=None):
     """
     Return samples uniformly distributed within an annulus of a 2-sphere.
 
@@ -366,7 +368,7 @@ def _annulus2(rmin, rmax, size=None, prng=None):
         The maximum radius.
     size : int
         The number of samples to draw.
-    prng : NumPy RandomState
+    rng : np.random.Generator, np.random.RandomState, int, None
         A random number generator. If `None`, then `dit.math.prng` is used.
 
     Returns
@@ -381,13 +383,12 @@ def _annulus2(rmin, rmax, size=None, prng=None):
     """
     s = 1 if size is None else size
 
-    if prng is None:
-        prng = dit.math.prng
+    rng = dit.math.as_random_state(rng)
 
-    U = prng.rand(s)
+    U = rng.rand(s)
     r = np.sqrt(U * (rmax**2 - rmin**2) + rmin**2)
 
-    theta = prng.rand(s) * 2 * np.pi
+    theta = rng.rand(s) * 2 * np.pi
 
     samples = np.array([r * np.cos(theta), r * np.sin(theta)])
     samples = samples.transpose()
@@ -398,7 +399,8 @@ def _annulus2(rmin, rmax, size=None, prng=None):
     return samples
 
 
-def annulus2(pmf, rmin, rmax, size=None, prng=None):
+@renamed_kwarg("prng", "rng")
+def annulus2(pmf, rmin, rmax, size=None, rng=None):
     """
     Returns pmfs uniformly distributed in an annulus around `pmf`.
 
@@ -414,7 +416,7 @@ def annulus2(pmf, rmin, rmax, size=None, prng=None):
         The maximum radius.
     size : int
         The number of samples to draw.
-    prng : NumPy RandomState
+    rng : np.random.Generator, np.random.RandomState, int, None
         A random number generator. If `None`, then `dit.math.prng` is used.
 
     Returns
@@ -423,7 +425,7 @@ def annulus2(pmf, rmin, rmax, size=None, prng=None):
         Points within the annulus around `pmf`.
 
     """
-    samples = _annulus2(rmin, rmax, size, prng)
+    samples = _annulus2(rmin, rmax, size, rng)
     ilrpmf = dit.math.aitchison.ilr(np.asarray(pmf))
     samples += ilrpmf
     samples = dit.math.aitchison.ilr_inv(samples)

@@ -348,12 +348,12 @@ ladder, only the *measure* is :math:`B`) and from
 
    In [51]: from dit.algorithms import fit_mixture_of_products, mixture_of_products_dists
 
-   In [52]: gb = BindingMixtureProfile(ex2, k_max=4, n_init=8, seed=0)
+   In [52]: gb = BindingMixtureProfile(ex2, k_max=4, n_init=8, rng=0)
 
    In [53]: print(round(gb.profile[2], 6))
    1.0
 
-   In [54]: xor_prof = BindingMixtureProfile(ex4, k_max=4, n_init=10, seed=0, early_stop=False)
+   In [54]: xor_prof = BindingMixtureProfile(ex4, k_max=4, n_init=10, rng=0, early_stop=False)
 
    In [55]: print(round(sum(xor_prof.profile.values()), 6))
    2.0

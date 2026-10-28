@@ -32,6 +32,7 @@ from itertools import product
 import numpy as np
 
 from ..distribution import Distribution
+from ..utils.deprecation import renamed_kwarg
 from .optutil import prepare_dist
 
 __all__ = (
@@ -76,14 +77,14 @@ def _component_logprob(pi, conds, X):
     return log_comp
 
 
-def _em_once(pmf, X, sizes, k, *, max_iter, tol, rng):
+def _em_once(pmf, X, sizes, k, *, maxiter, tol, rng):
     """Single EM run. Returns (loglik, q_pmf, pi, conds, I_xv, H_v)."""
     n_out, n = X.shape
     pi = rng.dirichlet(np.ones(k))
     conds = [rng.dirichlet(np.ones(s), size=k) for s in sizes]
     prev_ll = ll = -np.inf
 
-    for _ in range(max_iter):
+    for _ in range(maxiter):
         log_comp = _component_logprob(pi, conds, X)
         m = log_comp.max(axis=0, keepdims=True)
         comp = np.exp(log_comp - m)
@@ -133,14 +134,16 @@ def _em_once(pmf, X, sizes, k, *, max_iter, tol, rng):
     return ll, q, pi, conds, float(ixv), hv
 
 
+@renamed_kwarg("max_iter", "maxiter")
+@renamed_kwarg("seed", "rng")
 def fit_mixture_of_products(
     dist,
     k,
     *,
     n_init=12,
-    max_iter=200,
+    maxiter=200,
     tol=1e-10,
-    seed=0,
+    rng=0,
 ):
     """
     Fit a :math:`k`-mixture of product distributions to ``dist`` by EM.
@@ -151,12 +154,12 @@ def fit_mixture_of_products(
         Target joint.
     k : int
         Number of mixture components.
-    n_init, max_iter : int
+    n_init, maxiter : int
         Random restarts and EM iteration cap.
     tol : float
         Log-likelihood convergence tolerance.
-    seed : int
-        RNG seed for restarts.
+    rng : np.random.Generator, int, None
+        Source of randomness for the restarts.
 
     Returns
     -------
@@ -173,11 +176,11 @@ def fit_mixture_of_products(
         msg = "n_init must be at least 1."
         raise ValueError(msg)
     outcomes, pmf, X, sizes = _dense_table(dist)
-    rng = np.random.default_rng(seed)
+    rng = np.random.default_rng(rng)
     best = None
     for _ in range(n_init):
         run_rng = np.random.default_rng(rng.integers(0, 2**31 - 1))
-        cand = _em_once(pmf, X, sizes, k, max_iter=max_iter, tol=tol, rng=run_rng)
+        cand = _em_once(pmf, X, sizes, k, maxiter=maxiter, tol=tol, rng=run_rng)
         if best is None or cand[0] > best[0]:
             best = cand
 
@@ -194,14 +197,16 @@ def fit_mixture_of_products(
     }
 
 
+@renamed_kwarg("max_iter", "maxiter")
+@renamed_kwarg("seed", "rng")
 def mixture_of_products_dists(
     dist,
     k_max=None,
     *,
     n_init=12,
-    max_iter=200,
+    maxiter=200,
     tol=1e-10,
-    seed=0,
+    rng=0,
     early_stop=True,
     kl_tol=1e-8,
 ):
@@ -213,8 +218,8 @@ def mixture_of_products_dists(
     dist : Distribution
     k_max : int or None
         Maximum number of components.  Default ``min(8, |X|)``.
-    n_init, max_iter, tol, seed
-        Passed to :func:`fit_mixture_of_products` (seed offset by ``k``).
+    n_init, maxiter, tol, rng
+        Passed to :func:`fit_mixture_of_products` (an integer seed is offset by ``k``).
     early_stop : bool
         If True, stop once :math:`D(P\\Vert Q^{(k)}) <` ``kl_tol``.
     kl_tol : float
@@ -244,9 +249,9 @@ def mixture_of_products_dists(
             dist,
             k,
             n_init=n_init,
-            max_iter=max_iter,
+            maxiter=maxiter,
             tol=tol,
-            seed=seed + 17 * k,
+            rng=rng + 17 * k if isinstance(rng, int) else rng,
         )
         dists.append(fit["dist"])
         entry = {key: fit[key] for key in ("I_xv", "H_v", "loglik", "pi", "conds")}

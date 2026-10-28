@@ -14,6 +14,7 @@ from .distribution import Distribution
 from .exceptions import ditException
 from .helpers import normalize_rvs, parse_rvs
 from .utils import digits, powerset
+from .utils.deprecation import renamed_kwarg
 from .validate import validate_pmf
 
 __all__ = (
@@ -247,7 +248,8 @@ def modify_outcomes(dist, ctor):
     return d
 
 
-def random_scalar_distribution(n, base=None, alpha=None, prng=None):
+@renamed_kwarg("prng", "rng")
+def random_scalar_distribution(n, base=None, alpha=None, rng=None):
     """
     Returns a random scalar distribution over `n` outcomes.
 
@@ -271,8 +273,7 @@ def random_scalar_distribution(n, base=None, alpha=None, prng=None):
     """
     import dit.math
 
-    if prng is None:
-        prng = dit.math.prng
+    rng = dit.math.as_random_state(rng)
 
     try:
         nOutcomes = len(n)
@@ -285,7 +286,7 @@ def random_scalar_distribution(n, base=None, alpha=None, prng=None):
     elif len(alpha) != nOutcomes:
         raise ditException("Number of concentration parameters must be `n`.")
 
-    pmf = prng.dirichlet(alpha)
+    pmf = rng.dirichlet(alpha)
     d.pmf = pmf
 
     # Maybe we should use ditParams['base'] when base is None?
@@ -295,7 +296,8 @@ def random_scalar_distribution(n, base=None, alpha=None, prng=None):
     return d
 
 
-def random_distribution(outcome_length, alphabet_size, base=None, alpha=None, prng=None):
+@renamed_kwarg("prng", "rng")
+def random_distribution(outcome_length, alphabet_size, base=None, alpha=None, rng=None):
     """
     Returns a random distribution drawn uniformly from the simplex.
 
@@ -331,8 +333,7 @@ def random_distribution(outcome_length, alphabet_size, base=None, alpha=None, pr
     """
     import dit.math
 
-    if prng is None:
-        prng = dit.math.prng
+    rng = dit.math.as_random_state(rng)
 
     d = uniform_distribution(outcome_length, alphabet_size)
 
@@ -341,7 +342,7 @@ def random_distribution(outcome_length, alphabet_size, base=None, alpha=None, pr
     elif len(alpha) != len(d):
         raise ditException("Invalid number of concentration parameters.")
 
-    pmf = prng.dirichlet(alpha)
+    pmf = rng.dirichlet(alpha)
     d.pmf = pmf
 
     # Maybe we should use ditParams['base'] when base is None?

@@ -7,6 +7,7 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.stats import chi2
 
+from ..utils.deprecation import renamed_kwarg
 from ._symbols import Trials, as_generator, check_sampling, standardize_trials, word_codes
 from .surrogates import _whittle_trials
 
@@ -103,13 +104,14 @@ def _statistics(trials, order, M):
     return h_long, h_short, chi_sq, dof, total
 
 
+@renamed_kwarg("prng", "rng")
 def markov_order_test(
     data,
     order=1,
     statistic="entropy_rate",
     method="exact",
     n_surrogates=1000,
-    prng=None,
+    rng=None,
 ):
     """
     Test the null hypothesis that `data` is Markov of order `order` against the
@@ -135,7 +137,7 @@ def markov_order_test(
         :math:`G = 2 N \\ln 2 \\, (h_n - h_{n+1})`.
     n_surrogates : int
         The number of surrogates for the exact test.
-    prng : None, int, Generator, RandomState
+    rng : None, int, Generator, RandomState
         Source of randomness.
 
     Returns
@@ -157,10 +159,10 @@ def markov_order_test(
     surrogate draws every trial independently from its own surrogate set, which
     is the exact conditional null given all trials' counts.
     """
-    return _markov_order_test(data, order, statistic, method, n_surrogates, prng, check=True)
+    return _markov_order_test(data, order, statistic, method, n_surrogates, rng, check=True)
 
 
-def _markov_order_test(data, order, statistic, method, n_surrogates, prng, check):
+def _markov_order_test(data, order, statistic, method, n_surrogates, rng, check):
     if statistic not in ("entropy_rate", "chi2"):
         raise ValueError(f"Unknown statistic {statistic!r}.")
     if method not in ("exact", "asymptotic"):
@@ -183,7 +185,7 @@ def _markov_order_test(data, order, statistic, method, n_surrogates, prng, check
             pvalue = chi2.sf(g, dof) if dof > 0 else 1.0
         return MarkovOrderTest(order, statistic, value, float(pvalue), dof, None, int(total))
 
-    rng = as_generator(prng)
+    rng = as_generator(rng)
     surrogates = _whittle_trials(trials, order, n_surrogates, rng)
     null = np.empty(n_surrogates)
     for i, s in enumerate(surrogates):
@@ -211,13 +213,14 @@ def _log_likelihoods(trials, max_order, M):
     return np.array(lls)
 
 
+@renamed_kwarg("prng", "rng")
 def select_markov_order(
     data,
     max_order,
     method="exact",
     alpha=0.05,
     n_surrogates=1000,
-    prng=None,
+    rng=None,
 ):
     """
     Estimate the Markov order of `data`.
@@ -240,7 +243,7 @@ def select_markov_order(
         The significance level for the testing methods.
     n_surrogates : int
         The number of surrogates per test for ``'exact'``.
-    prng : None, int, Generator, RandomState
+    rng : None, int, Generator, RandomState
         Source of randomness.
 
     Returns
@@ -264,7 +267,7 @@ def select_markov_order(
     top = word_codes(trials, max_order + 1, M)
     check_sampling(len(np.unique(top)), len(top), M, max_order + 1)
     if method in ("exact", "chi2"):
-        rng = as_generator(prng)
+        rng = as_generator(rng)
         for n in range(max_order):
             result = _markov_order_test(
                 Trials(trials),

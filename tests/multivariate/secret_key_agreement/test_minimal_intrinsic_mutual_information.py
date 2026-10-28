@@ -9,7 +9,7 @@ from dit.exceptions import ditException
 from dit.multivariate import entropy
 from dit.multivariate.secret_key_agreement.minimal_intrinsic_mutual_informations import (
     MinimalIntrinsicTotalCorrelation,
-    minimal_intrinsic_CAEKL_mutual_information,
+    minimal_intrinsic_caekl_mutual_information,
     minimal_intrinsic_dual_total_correlation,
     minimal_intrinsic_total_correlation,
 )
@@ -45,7 +45,7 @@ def test_3(dist, backend):
     """
     Test against known values.
     """
-    mimi = minimal_intrinsic_CAEKL_mutual_information(dist, [[0], [1]], [2], bounds=(3,), niter=100, backend=backend)
+    mimi = minimal_intrinsic_caekl_mutual_information(dist, [[0], [1]], [2], bounds=(3,), niter=100, backend=backend)
     assert mimi == pytest.approx(dist.secret_rate, abs=1e-2)
 
 

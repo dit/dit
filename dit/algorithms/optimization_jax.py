@@ -1210,7 +1210,7 @@ class BaseJaxOptimizer(metaclass=ABCMeta):
         result : OptimizeResult
             The result of the optimization.
         """
-        self._rng = rng
+        self._rng = rng if rng is None or isinstance(rng, np.random.Generator) else np.random.default_rng(rng)
 
         try:
             callable(self.objective)

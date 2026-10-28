@@ -6,7 +6,7 @@ duck-typed protocol, so any object implementing it can be attached to a code:
 
 - ``inputs``, ``outputs`` -- the input and output alphabets, as tuples;
 - ``log_likelihood(codeword, received)`` -- :math:`\\log p(y^n \\mid x^n)`;
-- ``sample(codeword, prng)`` -- one received word, as a tuple;
+- ``sample(codeword, rng)`` -- one received word, as a tuple;
 - ``symbol_log_likelihoods(received)`` -- an ``(n, len(inputs))`` array whose
   ``[i, a]`` entry is :math:`\\log p(y^n \\mid x_i = a)` up to a per-row
   constant. For a memoryless channel this is :math:`\\log p(y_i \\mid a)`; a
@@ -39,6 +39,7 @@ from math import log, sqrt
 import numpy as np
 
 from ..exceptions import ditException
+from ..utils.deprecation import renamed_kwarg
 
 __all__ = (
     "MemorylessChannel",
@@ -129,12 +130,13 @@ class MemorylessChannel:
             score += log(p)
         return score
 
-    def sample(self, codeword, prng):
+    @renamed_kwarg("prng", "rng")
+    def sample(self, codeword, rng):
         """
         Pass `codeword` through the channel once.
         """
         n_out = len(self.outputs)
-        return tuple(self.outputs[prng.choice(n_out, p=self.P[self._in_index[x]])] for x in codeword)
+        return tuple(self.outputs[rng.choice(n_out, p=self.P[self._in_index[x]])] for x in codeword)
 
     def symbol_log_likelihoods(self, received):
         """

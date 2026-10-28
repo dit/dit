@@ -118,7 +118,7 @@ def test_ldpc_constructor_and_gallager_guards():
     assert code.n == 7
     with pytest.raises(ditException):
         gallager(12, 4, 4)  # requires wc < wr
-    # A default PRNG path (prng=None).
+    # A default PRNG path (rng=None).
     assert gallager(12, 2, 4).H.shape == (6, 12)
 
 

@@ -103,7 +103,7 @@ def test_random_scalar_distribution():
     pmf = np.array([0.297492727853, 0.702444212002, 6.30601451072e-05])
     for prng in [None, dit.math.prng]:
         dit.math.prng.seed(1)
-        d = dit.random_scalar_distribution(3, prng=prng)
+        d = dit.random_scalar_distribution(3, rng=prng)
         assert d.outcomes == (0, 1, 2)
         assert np.allclose(d.pmf, pmf)
 
@@ -129,7 +129,7 @@ def test_random_distribution():
     outcomes = ((0, 0), (0, 1), (1, 0), (1, 1))
     for prng in [None, dit.math.prng]:
         dit.math.prng.seed(1)
-        d = dit.random_distribution(2, 2, prng=prng)
+        d = dit.random_distribution(2, 2, rng=prng)
         assert d.outcomes == outcomes
         assert np.allclose(d.pmf, pmf)
 

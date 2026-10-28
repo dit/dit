@@ -7,6 +7,8 @@ from debtcollector import removals
 
 import dit
 
+from ..utils.deprecation import renamed_kwarg
+
 __all__ = (
     "Bunch",
     "CVXOPT_Template",
@@ -100,7 +102,8 @@ class CVXOPT_Template:  # noqa: N801
     Template for convex minimization on probability distributions.
     """
 
-    def __init__(self, dist, tol=None, prng=None):
+    @renamed_kwarg("prng", "rng")
+    def __init__(self, dist, tol=None, rng=None):
         """
         Initialize optimizer.
 
@@ -110,7 +113,7 @@ class CVXOPT_Template:  # noqa: N801
             The distribution that is used during optimization.
         tol : float | None
             The desired convergence tolerance.
-        prng : RandomState
+        rng : RandomState
             A NumPy-compatible pseudorandom number generator.
 
         """
@@ -122,9 +125,9 @@ class CVXOPT_Template:  # noqa: N801
         self.n_symbols = len(dist.alphabet[0])
         self.n_elements = len(self.pmf)
 
-        if prng is None:
-            prng = np.random.RandomState()
-        self.prng = prng
+        if rng is None:
+            rng = np.random.RandomState()
+        self.prng = rng
 
         if tol is None:
             tol = {}
