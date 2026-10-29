@@ -26,6 +26,15 @@ Rényi divergence, Tsallis divergence, and a generic Csiszár
    In [5]: tsallis_divergence(p, q, alpha=2)
    Out[5]: 0.25
 
+   @doctest float
+   In [6]: renyi_divergence(p, q, alpha=float('inf'))
+   Out[6]: 0.5849625007211562
+
+At :math:`\alpha = \infty` the Rényi divergence is the max-divergence
+:math:`D_\infty(p \| q) = \log_2 \max_x p(x) / q(x)`, the maximum taken over the
+support of :math:`p`; above, :math:`\log_2 \frac{3/4}{1/2} = \log_2 1.5`. It is
+infinite unless :math:`q` covers the support of :math:`p`.
+
 Several of these divergences are built from the Hellinger sum
 :math:`\sum_x p(x)^\alpha q(x)^{1-\alpha}`, which is available directly as
 :py:func:`hellinger_sum`.

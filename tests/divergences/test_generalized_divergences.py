@@ -188,9 +188,32 @@ def test_renyi_values():
     assert renyi_divergence(d1, d2, 1 / 2) == pytest.approx(np.log2(2))
     assert renyi_divergence(d2, d3, 1 / 2) == pytest.approx(np.log2(2))
     assert renyi_divergence(d1, d3, 1 / 2) == pytest.approx(np.inf)
+    assert renyi_divergence(d1, d2, np.inf) == pytest.approx(np.log2(2))
+    assert renyi_divergence(d3, d2, np.inf) == pytest.approx(np.log2(2))
+    assert renyi_divergence(d2, d3, np.inf) == pytest.approx(np.inf)
 
 
-@pytest.mark.parametrize("alpha", [0, 1, 2, 0.5])
+def test_renyi_infinity_is_limit():
+    """
+    The Renyi divergence of order infinity is the max-divergence, the limit of
+    the divergences of increasing order.
+    """
+    p = Distribution(["0", "1", "2"], [1 / 2, 1 / 3, 1 / 6])
+    q = Distribution(["0", "1", "2"], [1 / 3, 1 / 3, 1 / 3])
+    d_inf = renyi_divergence(p, q, np.inf)
+    assert d_inf == pytest.approx(np.log2(3 / 2))
+    assert renyi_divergence(p, q, 2) <= renyi_divergence(p, q, 20) <= d_inf
+    assert renyi_divergence(p, q, 200) == pytest.approx(d_inf, abs=1e-2)
+
+    joint1 = Distribution(["00", "11"], [2 / 5, 3 / 5])
+    joint2 = Distribution(["00", "01", "10", "11"], [1 / 4] * 4)
+    assert renyi_divergence(joint1, joint2, np.inf) == pytest.approx(np.log2(12 / 5))
+    assert renyi_divergence(joint1, joint2, np.inf, rvs=[0]) == pytest.approx(np.log2(6 / 5))
+    with pytest.raises(ditException):
+        renyi_divergence(d4, d1, np.inf)
+
+
+@pytest.mark.parametrize("alpha", [0, 1, 2, 0.5, np.inf])
 def test_renyi(alpha):
     """
     Consistency test for Renyi entropy and Renyi divergence

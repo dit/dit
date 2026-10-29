@@ -208,7 +208,9 @@ def renyi_divergence(dist1, dist2, alpha=1, rvs=None):
     dist2 : Distribution
         The second distribution in the Renyi divergence.
     alpha : float, 1
-        The divergence is a one parameter family in alpha.
+        The divergence is a one parameter family in alpha. ``alpha=1`` is the
+        Kullback-Leibler divergence, and ``alpha=np.inf`` is the max-divergence,
+        ``log2 max_x p(x) / q(x)`` over the support of `dist1`.
     rvs : list, None
         The indexes of the random variable used to calculate the
         Renyi divergence between. If None, then the Renyi
@@ -228,6 +230,10 @@ def renyi_divergence(dist1, dist2, alpha=1, rvs=None):
     # D_R = log D_alpha / (alpha-1)
     if alpha == 1:
         div = kullback_leibler_divergence(dist1, dist2, rvs=rvs)
+    elif alpha == np.inf:
+        ps, qs = _union_pmfs(dist1, dist2, rvs)
+        support = ps > 0
+        div = np.inf if (qs[support] <= 0).any() else np.log2(np.max(ps[support] / qs[support]))
     else:
         s = hellinger_sum(dist1, dist2, rvs=rvs, alpha=alpha)
         div = np.log2(s) / (alpha - 1.0)

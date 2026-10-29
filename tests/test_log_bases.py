@@ -58,6 +58,7 @@ LOG_PAIRWISE = [
     lambda p, q: jensen_shannon_divergence([p, q]),
     chernoff_information,
     lambda p, q: renyi_divergence(p, q, 2),
+    lambda p, q: renyi_divergence(p, q, np.inf),
 ]
 
 UNITLESS_PAIRWISE = [
