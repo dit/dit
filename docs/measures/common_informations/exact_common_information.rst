@@ -35,6 +35,11 @@ Kumar **et. al.** :cite:`kumar2014exact` have shown that the exact common inform
    In [6]: G(d2, [[0, 2], [1, 3]])
    Out[6]: 1.7524948651314414
 
+The per-copy cost of generating many copies at once therefore falls below
+:math:`\G{X : Y}`; its limit is the
+:doc:`/measures/common_informations/exact_common_information_rate`, which for this
+distribution is :math:`2/3`.
+
 API
 ===
 

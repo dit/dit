@@ -11,6 +11,7 @@ Divergences are measures of comparison between distributions:
    :maxdepth: 1
 
    cross_entropy
+   maximal_cross_entropy
    kullback_leibler_divergence
    jensen_shannon_divergence
    earth_movers_distance

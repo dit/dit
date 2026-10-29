@@ -19,6 +19,28 @@ from tests._backends import backends
 xor = D(["000", "011", "101", "110"], [1 / 4] * 4)
 
 
+def dsbs(p):
+    """The doubly symmetric binary source with crossover `p`."""
+    return D(["00", "01", "10", "11"], [(1 - p) / 2, p / 2, p / 2, (1 - p) / 2])
+
+
+def h2(p):
+    """The binary entropy, elementwise."""
+    with np.errstate(divide="ignore", invalid="ignore"):
+        return np.nan_to_num(-p * np.log2(p) - (1 - p) * np.log2(1 - p))
+
+
+def dsbs_exact_rate(p, t):
+    """
+    The exact synthesis rate of the doubly symmetric binary source, from Yu and Tan (2020) Theorem 3.
+    """
+    a0, b0 = (1 - p) / 2, p / 2
+    a = np.linspace(0, p, 200_001)
+    b = (p - a) / (1 - 2 * a)
+    sum_rate = np.log2(1 / a0) + (a + b) * np.log2(a0 / b0) - h2(a) - h2(b)
+    return np.min(np.maximum(1 - h2(a), sum_rate - t))
+
+
 def h(p):
     return entropy(p)
 
@@ -153,3 +175,46 @@ def test_monotone(dist):
     assert all(a >= b - 1e-3 for a, b in zip(rates, rates[1:], strict=False))
     assert rates[-1] >= mutual_information(dist, [0], [1]) - 1e-6
     assert rates[0] <= wyner_common_information(dist) + 1e-3
+
+
+@pytest.mark.flaky(reruns=3)
+@pytest.mark.parametrize("t", [0.0, 0.2, 0.4])
+def test_exact_dsbs(t):
+    """
+    Exact synthesis of the doubly symmetric binary source matches Yu and Tan's Theorem 3, and costs more than
+    approximate synthesis.
+    """
+    d = dsbs(0.2)
+    rate = channel_synthesis_rate(d, [0], [1], common_randomness=t, exact=True)
+    assert rate == pytest.approx(dsbs_exact_rate(0.2, t), abs=2e-4)
+    assert rate > channel_synthesis_rate(d, [0], [1], common_randomness=t) + 0.01
+
+
+def test_exact_mutual_information():
+    """
+    With H[Y|X] of common randomness, exact synthesis needs only the mutual information.
+    """
+    d = dsbs(0.2)
+    t = conditional_entropy(d, [1], [0])
+    rate = channel_synthesis_rate(d, [0], [1], common_randomness=t, exact=True)
+    assert rate == pytest.approx(mutual_information(d, [0], [1]))
+
+
+@pytest.mark.flaky(reruns=3)
+def test_exact_erasure():
+    """
+    Without common randomness, exact synthesis of the erasure channel costs its Wyner common information.
+    """
+    assert channel_synthesis_rate(erasure_channel(0.7), [0], [1], exact=True) == pytest.approx(h(0.7), abs=1e-4)
+
+
+def test_exact_unsupported():
+    """
+    Exact synthesis is defined for a single private output without conditioning.
+    """
+    with pytest.raises(ditException):
+        channel_synthesis_rate(xor, [0], [[1], [2]], exact=True)
+    with pytest.raises(ditException):
+        channel_synthesis_rate(erasure_channel(0.3), [0], [1], common_randomness=1.0, public=True, exact=True)
+    with pytest.raises(ditException):
+        channel_synthesis_rate(xor, [0], [1], crvs=[2], exact=True)

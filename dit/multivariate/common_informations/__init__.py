@@ -5,6 +5,7 @@ Various common informations.
 from .beta_common_information import beta_common_information
 from .channel_synthesis import channel_synthesis_rate
 from .exact_common_information import exact_common_information
+from .exact_common_information_rate import exact_common_information_rate, exact_common_information_rate_bounds
 from .functional_common_information import functional_common_information, functional_variable
 from .gk_common_information import gk_common_information
 from .kamath_common_information import (

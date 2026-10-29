@@ -18,6 +18,7 @@ mutual information in the bivariate case. All of them are importable from
    wyner_common_information
    channel_synthesis
    exact_common_information
+   exact_common_information_rate
    functional_common_information
    kamath_common_information
    maxent_function
@@ -49,3 +50,7 @@ The common information measures (together with the
                \leq \F{X_{0:n}}
                \leq U(X_{0:n})
                \leq \M{X_{0:n}}
+
+For a pair of variables the :doc:`/measures/common_informations/exact_common_information_rate`
+:math:`\bar{G}` fits between the Wyner and exact common informations:
+:math:`\C{X : Y} \leq \bar{G}[X : Y] \leq \G{X : Y}`.
