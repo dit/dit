@@ -57,7 +57,8 @@ def _joint_table(dist, rv, crvs):
     d.make_dense()
     shape = [len(a) for a in d.alphabet]
     P = np.asarray(d.pmf, dtype=float).reshape(shape)
-    x_alphabet = list(d.alphabet[0])
+    # Each group is a single variable, so its coalesced symbols are 1-tuples.
+    x_alphabet = [a[0] for a in d.alphabet[0]]
     if len(x_alphabet) != 2:
         raise ditException(f"Source polarization requires a binary variable, got alphabet {x_alphabet}.")
     return P, x_alphabet
@@ -123,7 +124,8 @@ def _polarized_joint(dist, block_length, rv, crvs):
     for combo in itertools.product(copies, repeat=N):
         xs = [0 if o[0][0] == x_zero else 1 for o in combo]
         us = polar_transform(xs)
-        ys = tuple(sym for o in combo for sym in o[0][1:])
+        # Side-information symbols are stored stringified (coalesce wraps each in a 1-tuple).
+        ys = tuple(str(sym[0]) for o in combo for sym in o[0][1:])
         prob = 1.0
         for o in combo:
             prob *= o[1]
@@ -377,7 +379,7 @@ class PolarSourceCode(SourceCoding):
 
     def _x_bits(self, x_block):
         """Map a block of source outcomes to ``0/1`` bits."""
-        # The stored alphabet is stringified, so match on str(value) first.
+        # Match on str(value) first, so that e.g. 1 and '1' name the same symbol.
         alphabet = [str(a) for a in self._x_alphabet]
         bits = []
         for value in x_block:

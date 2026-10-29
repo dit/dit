@@ -238,11 +238,13 @@ class Distribution:
         sparse : bool
             If True, ``outcomes`` and ``pmf`` only report non-zero entries.
         trim : bool
-            Ignored (kept for API compatibility).
+            If False, zero-probability outcomes are kept (implies
+            ``sparse=False``).
         sort : bool
             Ignored (alphabets are always sorted).
         validate : bool
-            If True, validate normalisation after construction.
+            If True, check that the given pmf is nonnegative and normalized,
+            raising ``ValueError`` otherwise.
         rng : random state, optional
             Pseudo-random number generator. Defaults to ``dit.math.prng``.
 
@@ -271,10 +273,14 @@ class Distribution:
             sparse = False
 
         # -- Dispatch: build a DataArray if outcomes were provided ----------
+        # Only user-supplied (outcomes, pmf) input is validated; DataArrays
+        # come from internal operations that may be intentionally unnormalized.
+        validate_input = False
         if isinstance(data, xr.DataArray):
             # Original path: DataArray passed directly
             da = data
         else:
+            validate_input = validate
             # Outcomes path: data is outcomes (sequence or dict)
             if isinstance(data, dict):
                 outcomes = list(data.keys())
@@ -394,6 +400,9 @@ class Distribution:
         self._sparse = sparse
         self._meta = {"is_joint": True, "is_numerical": True, "is_sparse": sparse}
         self._rv_names_set = _rv_names_explicit
+
+        if validate_input:
+            self.validate()
 
     @classmethod
     def from_distribution(cls, dist, rv_names=None):
@@ -1479,6 +1488,9 @@ class Distribution:
                     raise ValueError(f"Distribution sums to {total}, expected 1.0")
             return True
 
+        if np.any(arr.values < -atol):
+            raise ValueError(f"Distribution has negative probabilities: {arr.values[arr.values < -atol]}")
+
         if self._is_unconditional():
             total = float(arr.sum())
             if not np.isclose(total, 1.0, atol=atol):
@@ -1648,7 +1660,7 @@ class Distribution:
             p = float(p)
             if p == 0:
                 continue
-            dim_val = {d: v for d, v in zip(dims, combo, strict=True)}
+            dim_val = {d: (v.item() if hasattr(v, "item") else v) for d, v in zip(dims, combo, strict=True)}
             inner = [tuple(dim_val[name] for name in grp) for grp in groups]
             key = inner[0] if len(groups) == 1 and extract else tuple(inner)
             accum[key] += p
@@ -1666,25 +1678,19 @@ class Distribution:
             rv_names = [f"X{i}" for i in range(n_vars)]
             return Distribution(outcomes, pmf_vals, rv_names=rv_names)
 
-        # Outcomes are tuples of tuples, e.g. (('0','0'), ('1',)).
-        # Each position is a coalesced variable whose alphabet entries are
-        # themselves tuples.  xarray can't use tuples as coordinates, so
-        # we serialise them to strings for the coordinate labels.
+        # Outcomes are tuples of tuples, e.g. (('0','0'), ('1',)): each
+        # coalesced variable's symbols are tuples of the original symbols.
         n_vars = len(groups)
         rv_names = [f"X{i}" for i in range(n_vars)]
 
-        def _label(t):
-            """Convert a tuple to a compact string label."""
-            return ",".join(str(v.item() if hasattr(v, "item") else v) for v in t)
-
         alphabets_raw = [sorted({o[i] for o in outcomes}) for i in range(n_vars)]
-        alphabets_str = [[_label(t) for t in alpha] for alpha in alphabets_raw]
-        coords = {name: alpha for name, alpha in zip(rv_names, alphabets_str, strict=True)}
+        coords = {name: _coord_values(alpha) for name, alpha in zip(rv_names, alphabets_raw, strict=True)}
 
         shape = tuple(len(a) for a in alphabets_raw)
         arr = np.zeros(shape)
+        index_maps = [{v: j for j, v in enumerate(alpha)} for alpha in alphabets_raw]
         for outcome, p in zip(outcomes, pmf_vals, strict=True):
-            idx = tuple(alphabets_raw[i].index(outcome[i]) for i in range(n_vars))
+            idx = tuple(index_maps[i][outcome[i]] for i in range(n_vars))
             arr[idx] = p
 
         data = xr.DataArray(arr, dims=rv_names, coords=coords)
@@ -2443,20 +2449,7 @@ class Distribution:
             sel = dict(zip(self.data.dims, key, strict=True))
             try:
                 return self._coerce_prob(self.data.sel(sel))
-            except KeyError:
-                pass
-
-            # Coalesced distributions have string coords; key elements may
-            # be tuples from Distribution-style outcome construction.
-            def _serialize(v):
-                if isinstance(v, tuple):
-                    return ",".join(str(x) for x in v)
-                return v
-
-            sel2 = {d: _serialize(v) for d, v in zip(self.data.dims, key, strict=True)}
-            try:
-                return self._coerce_prob(self.data.sel(sel2))
-            except KeyError as exc:
+            except (KeyError, TypeError, ValueError) as exc:
                 raise InvalidOutcome(msg=f"Outcome {key!r} is not in the sample space.") from exc
         raise InvalidOutcome(msg=f"Invalid outcome: {key!r}")
 
@@ -2565,8 +2558,8 @@ class Distribution:
             self.free_vars == other.free_vars and self.given_vars == other.given_vars and self.data.equals(other.data)
         )
 
-    def __hash__(self):
-        return hash((self.free_vars, self.given_vars, tuple(self.outcomes), tuple(float(p) for p in self.pmf)))
+    # Distributions are mutable and compare by value, so they are unhashable.
+    __hash__ = None
 
     def is_approx_equal(self, other, atol=1e-9, rtol=None):
         """

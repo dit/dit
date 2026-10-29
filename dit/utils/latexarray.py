@@ -8,13 +8,11 @@ import subprocess  # noqa: S404
 import tempfile
 
 import numpy as np
-from debtcollector import removals
 
 from .context import cd, named_tempfile, tempdir
 from .misc import default_opener
 
 __all__ = (
-    "printoptions",
     "to_latex",
     "to_pdf",
 )
@@ -24,22 +22,6 @@ __all__ = (
 #
 # Includes hack to prevent NumPy from removing trailing zeros.
 #
-@contextlib.contextmanager
-def _printoptions(strip_zeros=True, **kwargs):
-    """Temporarily set numpy print options, keeping trailing zeros by default."""
-    if strip_zeros:
-        kwargs["trim"] = "k"
-    with np.printoptions(**kwargs):
-        yield
-
-
-@removals.remove(message="Please use numpy.printoptions instead.", version="1.2.3")
-@contextlib.contextmanager
-def printoptions(strip_zeros=True, **kwargs):
-    with _printoptions(strip_zeros=strip_zeros, **kwargs):
-        yield
-
-
 def to_latex__numerical(a, decimals, tab):
     # The elements of each column are aligned on the decimal, if present.
     # Spacing is automatically adjusted depending on if `a` contains negative
@@ -79,13 +61,7 @@ def to_latex__numerical(a, decimals, tab):
     # In general, we could just use the rounded array and map(str, row),
     # but NumPy strips trailing zeros on floats (undesirably). So we make
     # use of the context manager to prevent that.
-    options = {
-        "precision": decimals,
-        "suppress": True,
-        "strip_zeros": False,
-        "threshold": nCols + 1,
-    }
-    with _printoptions(**options):
+    with np.printoptions(precision=decimals, suppress=True, threshold=nCols + 1):
         lines = []
         for row in array:
             # Strip [ and ], remove newlines, and split on whitespace

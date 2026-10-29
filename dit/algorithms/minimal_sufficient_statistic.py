@@ -2,8 +2,6 @@
 Functions for computing minimal sufficient statistics.
 """
 
-from collections import defaultdict
-
 from ..helpers import flatten, normalize_rvs, parse_rvs
 from ..math import sigma_algebra
 from ..samplespace import CartesianProduct
@@ -74,20 +72,21 @@ def mss_sigalg(dist, rvs, about=None):
     """
     mapping = parse_rvs(dist, rvs)[1]
 
-    partition = defaultdict(list)
+    # (representative conditional, outcomes) pairs; distributions are unhashable.
+    partition = []
 
     md, cds = dist.condition_on(rvs=about, crvs=rvs)
 
     for marg, cd in zip(md.outcomes, cds, strict=True):
         matches = [o for o in dist.outcomes if partial_match(o, marg, mapping)]
-        for c in partition:
+        for c, block in partition:
             if c.is_approx_equal(cd):
-                partition[c].extend(matches)
+                block.extend(matches)
                 break
         else:
-            partition[cd].extend(matches)
+            partition.append((cd, matches))
 
-    mss_sa = sigma_algebra(map(frozenset, partition.values()))
+    mss_sa = sigma_algebra(frozenset(block) for _, block in partition)
 
     return mss_sa
 

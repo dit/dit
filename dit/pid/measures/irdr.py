@@ -149,9 +149,8 @@ class PID_RDR(BasePID):
         # construct pointwise marginal channels
         p_Sx_g_Tt = []  # p_Sx_g_Tt structure: [(p_t[t1], [p_S1_g_Tt1, p_S2_g_Tt1, ...]), ...]
         for t in p_t.outcomes:
-            # Unwrap single-element tuple outcomes (Distribution produces
-            # 1-tuples for single-variable marginals, Distribution produces scalars).
-            t_cmp = t[0] if isinstance(t, tuple) and len(t) == 1 else t
+            # The coalesced target symbol is the tuple of the target's values.
+            t_cmp = t if isinstance(t, tuple) else (t,)
             p_SxTt = []  # pointwise joint distributions
             for p_ST in p_SxT:
                 # convert target to binary variable

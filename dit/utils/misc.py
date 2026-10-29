@@ -7,9 +7,6 @@ import subprocess  # noqa: S404
 import sys
 from collections import OrderedDict
 from collections.abc import Iterable
-from itertools import tee
-
-from debtcollector import removals
 
 __all__ = (
     "default_opener",
@@ -27,7 +24,6 @@ __all__ = (
     "require_keys",
     "str_product",
     "digits",
-    "pairwise",
 )
 
 
@@ -557,11 +553,3 @@ def digits(n, base, alphabet=None, pad=0, big_endian=True):
         sequence = [alphabet[i] for i in sequence]
 
     return sequence
-
-
-@removals.remove(message="Use boltons.iterutils.pairwise instead.", version="1.0.1")
-def pairwise(iterable):
-    "s -> (s0,s1), (s1,s2), (s2, s3), ..."
-    a, b = tee(iterable)
-    next(b, None)
-    return zip(a, b, strict=False)

@@ -6,7 +6,6 @@ Mathematical tools for dit.
 import numpy as np
 
 from . import aitchison, combinatorics, pmfops
-from .equal import allclose, close
 from .fraction import approximate_fraction
 from .misc import *
 from .ops import LinearOperations, LogOperations, get_ops

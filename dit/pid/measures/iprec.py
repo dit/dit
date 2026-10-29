@@ -74,7 +74,8 @@ class PID_Prec(BasePID):
         pjoint = d.coalesce(list(sources) + [target])
         target_rvndx = len(pjoint.rvs) - 1
         pY = pjoint.marginal([target_rvndx])
-        probs_y = np.array([pY[y] for y in pjoint.alphabet[target_rvndx]])
+        # pY has a single (coalesced) variable, so each outcome is the 1-tuple (y,).
+        probs_y = np.array([pY[(y,)] for y in pjoint.alphabet[target_rvndx]])
         n_y = len(pY)
 
         if not (n_q is None or (isinstance(n_q, int) and n_q >= 1)):

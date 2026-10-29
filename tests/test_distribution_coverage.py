@@ -329,7 +329,7 @@ def test_is_approx_equal_alphabet_mismatch_unnamed():
 
 
 def test_normalize_log_unconditional():
-    d = Distribution(["00", "11"], [0.4, 0.4], base=2)
+    d = Distribution(["00", "11"], [0.4, 0.4], base=2, validate=False)
     d.normalize()
     lin = d.copy(base="linear")
     assert sum(lin.pmf) == pytest.approx(1.0)
@@ -432,8 +432,9 @@ def test_setitem_string_scalar_dist():
     assert d["red"] == pytest.approx(0.25)
 
 
-def test_hash():
-    assert isinstance(hash(joint()), int)
+def test_unhashable():
+    with pytest.raises(TypeError):
+        hash(joint())
 
 
 def test_sample_space_override_non_cartesian():
