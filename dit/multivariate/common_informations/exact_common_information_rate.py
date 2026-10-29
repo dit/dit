@@ -460,7 +460,7 @@ def _refine(opt, x, maxiter):
             method="SLSQP",
             bounds=[(0, 1)] * x.size,
             constraints=[{"type": "eq", "fun": match}],
-            options={"maxiter": maxiter, "ftol": 1e-12},
+            options={"maxiter": maxiter or 1000, "ftol": 1e-12},
         )
         if np.abs(match(res.x)).max() <= _MATCH_TOL:
             refined.append(res.x)
