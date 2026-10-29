@@ -17,6 +17,15 @@ the least rate of common randomness, compressed with variable-length codes, from
 
    \C{X : Y} \leq \bar{G}[X : Y] \leq \G{X : Y}.
 
+Yu and Tan :cite:`yu2020exact2` show that fixed-length codes reach the same rate if exactness is relaxed in a specific way. A uniformly distributed common message at rate :math:`R`, read by two independent decoders, induces some :math:`P_{X^n Y^n}`. The :math:`\infty`-Rényi common information is
+
+.. math::
+
+   T_\infty[X : Y] = \inf\left\{ R : \lim_{n \to \infty} D_\infty\left(P_{X^n Y^n} \middle\| p_{XY}^{\otimes n}\right) = 0 \right\},
+   \qquad D_\infty(P \| Q) = \log_2 \max_z \frac{P(z)}{Q(z)},
+
+and it equals :math:`\bar{G}[X : Y]`. The synthesized distribution may fall short of the target anywhere, but it may overshoot it only by a vanishing factor. Putting the relative entropy, which never exceeds :math:`D_\infty`, in place of :math:`D_\infty` gives back the Wyner common information.
+
 Bounds
 ======
 
@@ -34,7 +43,13 @@ where the lower bound replaces the pairing of :math:`p_{X|w}` with :math:`p_{Y|w
    \Gamma^{(o)}[X : Y] = \min_{X - W - Y} -\H{X, Y | W}
      + \min_{q \in \mathcal{C}(p_W, p_W)} \sum_{w, w'} q(w, w') \mathbb{H}(p_{X|w}, p_{Y|w'} \| p_{XY}).
 
-Replacing :math:`\mathbb{H}` by the cross entropy of the product coupling turns :math:`\Gamma` into Wyner's :math:`\I{X, Y : W}`, so the upper bound is at least the Wyner common information, and it is at most :math:`\H{W}` for every :math:`W`, so it never exceeds :math:`\G{X : Y}`. It equals the Wyner common information when some :math:`W` achieving the Wyner common information makes one of :math:`p_{X|w}, p_{Y|w}` deterministic for every :math:`w`, as for the erasure channel. For the doubly symmetric binary source with crossover :math:`p` the bounds meet:
+For a single auxiliary variable, write :math:`\Gamma_W` for the minimized expression and :math:`Q_w = p_{X|w} p_{Y|w}`. Each maximal cross entropy, less the entropies of :math:`p_{X|w}` and :math:`p_{Y|w}`, is the largest :math:`\mathbb{E}_r \log_2 (Q_w / p_{XY})` over couplings :math:`r` of :math:`p_{X|w}` and :math:`p_{Y|w}`. The product coupling :math:`r = Q_w` bounds it below and the largest single ratio bounds it above, so
+
+.. math::
+
+   \I{X, Y : W} = \sum_w p(w) D(Q_w \| p_{XY}) \leq \Gamma_W \leq \sum_w p(w) D_\infty(Q_w \| p_{XY}) \leq \H{W},
+
+where the last step holds because :math:`p(w) Q_w \leq p_{XY}`. Hence :math:`\C{X : Y} \leq \Gamma[X : Y] \leq \G{X : Y}`. The upper bound equals the Wyner common information exactly when some :math:`W` attaining the Wyner common information makes :math:`p_{XY}` a product distribution on each :math:`\operatorname{supp} p_{X|w} \times \operatorname{supp} p_{Y|w}` :cite:`yu2020exact2`; for instance, when one of :math:`p_{X|w}, p_{Y|w}` is deterministic for every :math:`w`, as for the erasure channel. For the doubly symmetric binary source with crossover :math:`p` the bounds meet:
 
 .. math::
 

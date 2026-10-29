@@ -13,7 +13,12 @@ draws of :math:`p(x, y)`. It is
                   = \inf_n \frac{1}{n} \G{X^n : Y^n},
 
 where :math:`\G{X : Y}` is the one-shot :func:`exact_common_information`, which
-is subadditive. Yu and Tan :cite:`yu2020exact2,yu2020exact1` bound the rate with the
+is subadditive. Yu and Tan :cite:`yu2020exact2` show that it is also the
+:math:`\infty`-Rényi common information: the least rate of a uniform,
+fixed-length common message from which the two parties can generate
+:math:`P_{X^n Y^n}` with :math:`D_\infty(P_{X^n Y^n} \| p_{XY}^{\otimes n}) \to 0`,
+where :math:`D_\infty(P \| Q) = \log_2 \max_z P(z) / Q(z)`. They bound the rate
+:cite:`yu2020exact2,yu2020exact1` with the
 :func:`~dit.divergences.maximal_cross_entropy` :math:`\mathbb{H}`:
 
 .. math::
@@ -857,10 +862,12 @@ def exact_common_information_rate(dist, rvs=None, block_length=1, niter=None, ma
     Every feasible :math:`W` achieves its value, so the result is a valid upper
     bound even when the optimizer misses the minimum. It lies between the Wyner
     common information and the one-shot :func:`exact_common_information`,
-    equals the Wyner common information when some optimal :math:`W` makes one of
-    :math:`p_{X|w}, p_{Y|w}` deterministic for every :math:`w` (as for the
-    erasure channel), and equals :math:`\bar{G}` for the doubly symmetric binary
-    source.
+    equals the Wyner common information exactly when some :math:`W` attaining
+    the Wyner common information makes :math:`p_{XY}` a product distribution on
+    each :math:`\operatorname{supp} p_{X|w} \times \operatorname{supp} p_{Y|w}`
+    (for instance when one of :math:`p_{X|w}, p_{Y|w}` is deterministic for
+    every :math:`w`, as for the erasure channel), and equals :math:`\bar{G}` for
+    the doubly symmetric binary source.
 
     With ``block_length=N`` the bound is also applied to :math:`n` i.i.d. copies
     of the pair, returning :math:`\min_{n \leq N} \Gamma[X^n : Y^n] / n`, which
