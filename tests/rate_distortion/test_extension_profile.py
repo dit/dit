@@ -57,7 +57,7 @@ def test_probes_are_vertices_of_ext_max():
 
 def test_support_point_shannon_forced():
     """S(1/2, 1/2) = (H[X|Y] + H[Y|X]) / 2 for every pair."""
-    ep = ExtensionProfile(dsbs(0.2), seed=0)
+    ep = ExtensionProfile(dsbs(0.2), rng=0)
     p = ep.support_point((0.5, 0.5, -1))
     assert 0.5 * p[0] + 0.5 * p[1] - p[2] == pytest.approx((ep.h_x_given_y + ep.h_y_given_x) / 2, abs=1e-6)
     assert within_ext_max(ep, p)
@@ -138,7 +138,7 @@ def test_reductions_scale_to_the_witness():
 
 def test_named_points_dsbs():
     c = 0.3
-    ep = ExtensionProfile(dsbs(c), seed=1)
+    ep = ExtensionProfile(dsbs(c), rng=1)
     # Gács-Körner: no common part, so W = const.
     assert np.allclose(ep.gacs_korner, ep.probes["W = const"])
     # Kamath: the MSS of Y for X is Y itself.
@@ -173,7 +173,7 @@ def test_perfect_privacy():
 def test_channel_synthesis():
     """C(0) is Wyner's common information; enough common randomness brings C(t) down to I[X:Y]."""
     c = 0.1
-    ep = ExtensionProfile(dsbs(c), seed=7)
+    ep = ExtensionProfile(dsbs(c), rng=7)
     low = ep.lower_boundary(num_theta=8, num_radii=9)
     ts, curves = ep.channel_synthesis(low)
     q = (1 - np.sqrt(1 - 2 * c)) / 2
@@ -190,7 +190,7 @@ def test_channel_synthesis_erasure_curve():
     sampled bottom face is an inner approximation, so the curve can only overestimate the rate.
     """
     p = 0.3
-    ep = ExtensionProfile(erasure_channel(p), seed=11)
+    ep = ExtensionProfile(erasure_channel(p), rng=11)
     ts, curves = ep.channel_synthesis(ep.lower_boundary(num_theta=16, num_radii=9))
     rs = np.linspace(1 - p, min(2 * (1 - p), 1), 2001)
     exact = np.array([min(max(r, _h(p) + r * (1 - _h(min((1 - p) / r, 1 - 1e-12))) - t) for r in rs) for t in ts])
@@ -202,7 +202,7 @@ def test_channel_synthesis_erasure_curve():
 def test_public_channel_synthesis():
     """The public curve runs from the Wyner point to U = Y, where the rate is I[X:Y]."""
     c = 0.1
-    ep = ExtensionProfile(dsbs(c), seed=12)
+    ep = ExtensionProfile(dsbs(c), rng=12)
     ts, curves = ep.public_channel_synthesis(ep.lower_boundary(num_theta=8, num_radii=9))
     q = (1 - np.sqrt(1 - 2 * c)) / 2
     assert ts[0] == pytest.approx(1 + _h(c) - 2 * _h(q), abs=1e-3)
@@ -215,7 +215,7 @@ def test_public_channel_synthesis():
 
 def test_wyner_point_dsbs():
     c = 0.3
-    ep = ExtensionProfile(dsbs(c), seed=2)
+    ep = ExtensionProfile(dsbs(c), rng=2)
     p = ep.wyner(niter=2)
     q = (1 - np.sqrt(1 - 2 * c)) / 2
     assert p[2] == pytest.approx(0, abs=1e-6)
@@ -224,7 +224,7 @@ def test_wyner_point_dsbs():
 
 def test_lower_boundary_reaches_wyner_rim():
     c = 0.1
-    ep = ExtensionProfile(dsbs(c), seed=3)
+    ep = ExtensionProfile(dsbs(c), rng=3)
     low = ep.lower_boundary(num_theta=8, num_radii=9).reshape(-1, 3)  # 8 angles include theta = pi/4
     assert all(within_ext_max(ep, p) for p in low)
     q = (1 - np.sqrt(1 - 2 * c)) / 2
@@ -235,7 +235,7 @@ def test_lower_boundary_reaches_wyner_rim():
 def test_information_bottleneck_is_mrs_gerber():
     """On a DSBS the IB arc is the Mrs. Gerber curve x = h(c * h^{-1}(y))."""
     c = 0.1
-    ep = ExtensionProfile(dsbs(c), seed=4)
+    ep = ExtensionProfile(dsbs(c), rng=4)
     arc = ep.information_bottleneck(num=8)[0]
 
     def mgl(s):
@@ -257,7 +257,7 @@ def _quick(ep):
 
 def test_plot():
     pytest.importorskip("plotly")
-    ep = ExtensionProfile(dsbs(0.2), seed=5)
+    ep = ExtensionProfile(dsbs(0.2), rng=5)
     fig = ep.plot(_quick(ep))
     names = {t.name for t in fig.data}
     for name in (
@@ -282,7 +282,7 @@ def test_plot():
 def test_plot_degenerate_body():
     """X = Y: the profile is the segment {(t, t, t)}, so there is no surface to draw."""
     pytest.importorskip("plotly")
-    ep = ExtensionProfile(giant_bit(), seed=6)
+    ep = ExtensionProfile(giant_bit(), rng=6)
     names = {t.name for t in ep.plot(_quick(ep)).data}
     assert "lower boundary of Ext" not in names
     assert "Gács–Körner" in names
@@ -290,7 +290,7 @@ def test_plot_degenerate_body():
 
 def test_plot_mutual_information_region():
     pytest.importorskip("plotly")
-    ep = ExtensionProfile(dsbs(0.2), seed=8)
+    ep = ExtensionProfile(dsbs(0.2), rng=8)
     features = _quick(ep)
     fig = ep.plot_mutual_information_region(features)
     names = {t.name for t in fig.data}
@@ -312,7 +312,7 @@ def test_plot_mutual_information_region():
 def test_plot_tension_region():
     pytest.importorskip("plotly")
     c = 0.2
-    ep = ExtensionProfile(dsbs(c), seed=9)
+    ep = ExtensionProfile(dsbs(c), rng=9)
     fig = ep.plot_tension_region(_quick(ep))
     names = {t.name for t in fig.data}
     assert "region of tension (lower boundary)" in names
@@ -329,7 +329,7 @@ def test_plot_tension_region():
 
 def test_region_plots_degenerate_body():
     pytest.importorskip("plotly")
-    ep = ExtensionProfile(giant_bit(), seed=10)
+    ep = ExtensionProfile(giant_bit(), rng=10)
     features = _quick(ep)
     assert ep.plot_mutual_information_region(features).data
     assert "region of tension (lower boundary)" not in {t.name for t in ep.plot_tension_region(features).data}

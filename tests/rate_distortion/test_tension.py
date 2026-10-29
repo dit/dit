@@ -191,7 +191,7 @@ def test_region_views_agree_with_rates():
 
     # One sweep, converted four ways: each `region` call re-runs a stochastic
     # optimizer, so comparing separate sweeps would compare different points.
-    rates = network.region(num=4, niter=1, maxiter=200, seed=3)
+    rates = network.region(num=4, niter=1, maxiter=200, rng=3)
 
     for point in rates:
         tension = rates_to_tension(point, marginals, joint)
@@ -333,7 +333,7 @@ def test_plot_tension_and_shape():
     from dit.rate_distortion.gray_wyner.plotting import GrayWynerPlotter
 
     network = GrayWynerNetwork(dsbs())
-    assert GrayWynerPlotter.plot_tension(network, num=3, niter=1, maxiter=200, seed=0) is not None
+    assert GrayWynerPlotter.plot_tension(network, num=3, niter=1, maxiter=200, rng=0) is not None
     assert ShapeFunction(dsbs(), num=3, niter=1, maxiter=200).plot() is not None
     assert ShapeFunction(dit.example_dists.Xor(), num=3, niter=1, maxiter=200).plot() is not None
 

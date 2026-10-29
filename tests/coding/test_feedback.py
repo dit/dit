@@ -139,7 +139,7 @@ def test_stop_and_wait_max_rounds_falls_back_to_correction():
     code = stop_and_wait_arq(hamming(3), max_rounds=1)
     channel = binary_symmetric_channel(0.05)
     assert code.expected_uses(channel, method="montecarlo", samples=200) == 7
-    assert code.probability_of_error(channel, method="montecarlo", samples=4000, prng=np.random.default_rng(0)) == (
+    assert code.probability_of_error(channel, method="montecarlo", samples=4000, rng=np.random.default_rng(0)) == (
         pytest.approx(hamming(3).probability_of_error(channel, method="exact"), abs=0.02)
     )
 
@@ -167,7 +167,7 @@ def test_horstein_on_a_noiseless_channel_is_binary_search():
 def test_horstein_exact_matches_montecarlo():
     code, channel = horstein(2, n=6), binary_symmetric_channel(0.15)
     exact = code.probability_of_error(channel, method="exact")
-    sampled = code.probability_of_error(channel, method="montecarlo", samples=20000, prng=np.random.default_rng(1))
+    sampled = code.probability_of_error(channel, method="montecarlo", samples=20000, rng=np.random.default_rng(1))
     assert sampled == pytest.approx(exact, abs=0.01)
 
 
@@ -175,7 +175,7 @@ def test_horstein_posterior_stopping_controls_error_and_respects_capacity():
     p, delta = 0.1, 0.01
     channel = binary_symmetric_channel(p)
     code = horstein(4, delta=delta)
-    pe, uses = code.performance(channel, method="montecarlo", samples=3000, prng=np.random.default_rng(2))
+    pe, uses = code.performance(channel, method="montecarlo", samples=3000, rng=np.random.default_rng(2))
     assert pe <= 2 * delta
     capacity = 1 + p * np.log2(p) + (1 - p) * np.log2(1 - p)
     assert 4 / uses < capacity

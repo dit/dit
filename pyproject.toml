@@ -287,7 +287,6 @@ allowed-unresolved-imports = [
     "prettytable.**",
     # Cython compiled extensions (may not be built)
     "dit.inference.pycounts.**",
-    "dit.math._close.**",
     "dit.math._samplediscrete.**",
 ]
 

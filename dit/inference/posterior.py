@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from ..utils.deprecation import renamed_kwarg
 from ._symbols import as_generator, standardize_trials, word_codes
 
 __all__ = (
@@ -63,7 +64,8 @@ def _stationary(P, M, tol=1e-12, max_iter=100_000):
     return pi
 
 
-def entropy_rate_posterior(data, order, prior=0.5, n_samples=1000, prng=None):
+@renamed_kwarg("prng", "rng")
+def entropy_rate_posterior(data, order, prior=0.5, n_samples=1000, rng=None):
     """
     Posterior samples of the entropy rate under an order-`order` Markov model.
 
@@ -86,7 +88,7 @@ def entropy_rate_posterior(data, order, prior=0.5, n_samples=1000, prng=None):
         ``1`` the uniform prior.
     n_samples : int
         The number of posterior draws.
-    prng : None, int, Generator, RandomState
+    rng : None, int, Generator, RandomState
         Source of randomness.
 
     Returns
@@ -110,7 +112,7 @@ def entropy_rate_posterior(data, order, prior=0.5, n_samples=1000, prng=None):
     n_histories = M**order
     if n_histories > _MAX_HISTORIES:
         raise ValueError(f"{M}**{order} histories is too many; lower the order.")
-    rng = as_generator(prng)
+    rng = as_generator(rng)
 
     words = word_codes(trials, order + 1, M)
     counts = np.bincount(words, minlength=n_histories * M).reshape(n_histories, M).astype(float)

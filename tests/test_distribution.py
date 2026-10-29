@@ -171,7 +171,7 @@ class TestOutcomesPmfConstruction:
 
     def test_with_custom_base(self):
         """Can specify a log base."""
-        xrd = Distribution(["00", "11"], [0.5, 0.5], rv_names=["X", "Y"], base=2)
+        xrd = Distribution(["00", "11"], [-1.0, -1.0], rv_names=["X", "Y"], base=2)
         assert xrd.is_log()
         assert xrd.get_base() == 2
 
@@ -1420,11 +1420,12 @@ class TestSelLoopVectorized:
         np.testing.assert_allclose(np.asarray(c.pmf).sum(), 1.0)
 
         # Marginal over the second variable must match summing the joint.
+        # Each coalesced symbol is the tuple of its group's values.
         c2 = d.coalesce([["X0"], ["X1"]])
         truth = self._truth()
-        p_y = {"0": 0.0, "1": 0.0}
+        p_y = {("0",): 0.0, ("1",): 0.0}
         for outcome, p in truth.items():
-            p_y[outcome[1]] += p
+            p_y[(outcome[1],)] += p
         got_y = {}
         for (_x, y), p in c2.zipped():
             got_y[y] = got_y.get(y, 0.0) + p

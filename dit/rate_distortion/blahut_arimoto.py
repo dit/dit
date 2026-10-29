@@ -9,6 +9,7 @@ import numpy as np
 from ..algorithms.optimization import _resolve_n_jobs
 from ..divergences.pmf import relative_entropy
 from ..math.sampling import sample_simplex
+from ..utils.deprecation import renamed_kwarg
 from .distortions import hamming_distortion
 from .rate_distortion import RateDistortionResult
 
@@ -22,7 +23,7 @@ __all__ = (
 # Rate-Distortion
 
 
-def _blahut_arimoto(p_x, beta, q_y_x, distortion, max_iters=10_000, tol=1e-12):
+def _blahut_arimoto(p_x, beta, q_y_x, distortion, maxiter=10_000, tol=1e-12):
     """
     Perform the Blahut-Arimoto algorithm.
 
@@ -36,7 +37,7 @@ def _blahut_arimoto(p_x, beta, q_y_x, distortion, max_iters=10_000, tol=1e-12):
         The initial condition to work with.
     distortion : np.ndarray
         The distortion matrix.
-    max_iters : int
+    maxiter : int
         The maximum number of iterations.
     tol : float
         For a ``q_independent`` distortion, stop once Blahut's bounds on the
@@ -110,7 +111,7 @@ def _blahut_arimoto(p_x, beta, q_y_x, distortion, max_iters=10_000, tol=1e-12):
     # certify convergence. Otherwise stop when the channel itself stops moving:
     # D alone can stall near the critical slope long before the Lagrangian has
     # converged.
-    for _ in range(max_iters):
+    for _ in range(maxiter):
         q_y = next_q_y(q_y_x)
         if fixed:
             if bound_gap(q_y, tilted) < tol:
@@ -134,7 +135,8 @@ def _blahut_arimoto(p_x, beta, q_y_x, distortion, max_iters=10_000, tol=1e-12):
     return result, q
 
 
-def blahut_arimoto(p_x, beta, distortion=hamming_distortion, max_iters=10_000, restarts=100):
+@renamed_kwarg("max_iters", "maxiter")
+def blahut_arimoto(p_x, beta, distortion=hamming_distortion, maxiter=10_000, restarts=100):
     """
     Perform a robust form of the Blahut-Arimoto algorithms.
 
@@ -148,7 +150,7 @@ def blahut_arimoto(p_x, beta, distortion=hamming_distortion, max_iters=10_000, r
         The initial condition to work with.
     distortion : np.ndarray
         The distortion matrix.
-    max_iters : int
+    maxiter : int
         The maximum number of iterations.
     restarts : int
         The number of initial conditions to try. A distortion marked
@@ -185,7 +187,7 @@ def blahut_arimoto(p_x, beta, distortion=hamming_distortion, max_iters=10_000, r
         inits.append(q_y_x)
 
     def _run(q_y_x):
-        return _blahut_arimoto(p_x=p_x, beta=beta, q_y_x=q_y_x, distortion=distortion, max_iters=max_iters)
+        return _blahut_arimoto(p_x=p_x, beta=beta, q_y_x=q_y_x, distortion=distortion, maxiter=maxiter)
 
     n_jobs = _resolve_n_jobs(len(inits))
     if n_jobs > 1:
@@ -202,7 +204,8 @@ def blahut_arimoto(p_x, beta, distortion=hamming_distortion, max_iters=10_000, r
 # Information Bottleneck
 
 
-def blahut_arimoto_ib(p_xy, beta, divergence=relative_entropy, max_iters=100, restarts=250):  # pragma: no cover
+@renamed_kwarg("max_iters", "maxiter")
+def blahut_arimoto_ib(p_xy, beta, divergence=relative_entropy, maxiter=100, restarts=250):  # pragma: no cover
     """
     Perform a robust form of the Blahut-Arimoto algorithms.
 
@@ -216,7 +219,7 @@ def blahut_arimoto_ib(p_xy, beta, divergence=relative_entropy, max_iters=100, re
         The initial condition to work with.
     divergence : func
         The divergence measure to construct a distortion from: D(p(Y|x)||q(Y|t)).
-    max_iters : int
+    maxiter : int
         The maximum number of iterations.
     restarts : int
         The number of initial conditions to try.
@@ -249,7 +252,7 @@ def blahut_arimoto_ib(p_xy, beta, divergence=relative_entropy, max_iters=100, re
         distortions = np.asarray([divergence(a, b) for a in p_y_x for b in q_y_t]).reshape(len(p_y_x), len(q_y_t))
         return distortions
 
-    rd, q_xt = blahut_arimoto(p_x=p_x, beta=beta, distortion=distortion, max_iters=max_iters, restarts=restarts)
+    rd, q_xt = blahut_arimoto(p_x=p_x, beta=beta, distortion=distortion, maxiter=maxiter, restarts=restarts)
 
     sums = q_xt.sum(axis=1, keepdims=True)
     q_t_x = q_xt / sums

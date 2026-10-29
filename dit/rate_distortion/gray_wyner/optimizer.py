@@ -33,6 +33,7 @@ from scipy.optimize import minimize
 from ...algorithms import BaseAuxVarOptimizer
 from ...exceptions import ditException
 from ...math import prod
+from ...utils.deprecation import renamed_kwarg
 
 __all__ = (
     "GrayWynerOptimizer",
@@ -68,6 +69,7 @@ class GrayWynerOptimizer(BaseAuxVarOptimizer):
 
     name = "gray-wyner"
 
+    @renamed_kwarg("bounds", "distortion_bounds")
     def __init__(
         self,
         dist,
@@ -75,7 +77,7 @@ class GrayWynerOptimizer(BaseAuxVarOptimizer):
         rvs=None,
         crvs=None,
         distortions=None,
-        bounds=None,
+        distortion_bounds=None,
         markov=False,
         bound=None,
         allow_signed=False,
@@ -102,7 +104,7 @@ class GrayWynerOptimizer(BaseAuxVarOptimizer):
             A length-``n`` list giving, for each decoder, either ``None``
             (lossless reconstruction) or a square distortion matrix
             ``d[x_i, x_hat_i]``. If None, every decoder is lossless.
-        bounds : list, None
+        distortion_bounds : list, None
             A length-``n`` list of per-decoder distortion budgets ``D_i``.
             Ignored for lossless decoders. If None, every budget is 0.
         markov : bool
@@ -143,9 +145,9 @@ class GrayWynerOptimizer(BaseAuxVarOptimizer):
             raise ditException(msg)
 
         distortions = [None] * n if distortions is None else list(distortions)
-        budgets = [0.0] * n if bounds is None else [float(b) for b in bounds]
+        budgets = [0.0] * n if distortion_bounds is None else [float(b) for b in distortion_bounds]
         if len(distortions) != n or len(budgets) != n:
-            msg = f"`distortions` and `bounds` must each have length {n}."
+            msg = f"`distortions` and `distortion_bounds` must each have length {n}."
             raise ditException(msg)
 
         # A decoder is lossy only when it has both a distortion matrix and a

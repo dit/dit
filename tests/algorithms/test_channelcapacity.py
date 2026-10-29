@@ -256,7 +256,7 @@ def test_does_not_stop_early(method, eliminate):
 
 def test_max_iters_warns():
     with pytest.warns(RuntimeWarning, match="did not reach tolerance"):
-        cc, _ = channel_capacity(STOPS_EARLY, atol=1e-12, rtol=0, max_iters=3, method="ba")
+        cc, _ = channel_capacity(STOPS_EARLY, atol=1e-12, rtol=0, maxiter=3, method="ba")
     assert cc < 0.742122012970905
 
 

@@ -12,7 +12,7 @@ from dit.multivariate import (
     coinformation,
     entropy,
     intrinsic_total_correlation,
-    reduced_intrinsic_CAEKL_mutual_information,
+    reduced_intrinsic_caekl_mutual_information,
     reduced_intrinsic_dual_total_correlation,
     reduced_intrinsic_total_correlation,
     total_correlation,
@@ -35,7 +35,7 @@ _dists = [
 _measures = [
     reduced_intrinsic_total_correlation,
     reduced_intrinsic_dual_total_correlation,
-    reduced_intrinsic_CAEKL_mutual_information,
+    reduced_intrinsic_caekl_mutual_information,
 ]
 
 

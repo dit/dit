@@ -26,6 +26,7 @@ import numpy as np
 
 from ..example_channels.binary import ERASURE
 from ..exceptions import ditException
+from ..utils.deprecation import renamed_kwarg
 from . import _gf2
 
 __all__ = (
@@ -120,7 +121,8 @@ class FeedbackCode(ABC):
 
     # ── evaluation ───────────────────────────────────────────────────────
 
-    def transmit(self, message, channel, prng=None, max_uses=_MAX_USES):
+    @renamed_kwarg("prng", "rng")
+    def transmit(self, message, channel, rng=None, max_uses=_MAX_USES):
         """
         Send `message` across `channel` once.
 
@@ -130,7 +132,7 @@ class FeedbackCode(ABC):
             The ``k`` message bits.
         channel : Distribution or object
             The channel, implementing ``feedback_initial`` and ``feedback_step``.
-        prng : numpy.random.Generator, None
+        rng : numpy.random.Generator, None
             The random number generator.
         max_uses : int
             Stop (and decode) after this many channel uses regardless.
@@ -143,8 +145,8 @@ class FeedbackCode(ABC):
             The number of channel uses.
         """
         channel = _feedback_channel(channel)
-        if prng is None:
-            prng = np.random.default_rng()
+        if rng is None:
+            rng = np.random.default_rng()
         message = tuple(int(b) for b in message)
         state, belief, uses = self.start(channel), channel.feedback_initial(), 0
         while uses < max_uses:
@@ -153,7 +155,7 @@ class FeedbackCode(ABC):
                 break
             outcomes = channel.feedback_step(belief, x)
             probs = np.array([p for _, p, _ in outcomes])
-            y, _, belief = outcomes[prng.choice(len(outcomes), p=probs / probs.sum())]
+            y, _, belief = outcomes[rng.choice(len(outcomes), p=probs / probs.sum())]
             state = self.update(state, y)
             uses += 1
         return tuple(self.decode(state)), uses
@@ -188,18 +190,19 @@ class FeedbackCode(ABC):
                 layer = following
         return errors / 2**self.k, uses_total / 2**self.k
 
-    def _montecarlo(self, channel, samples, prng, max_uses):
-        if prng is None:
-            prng = np.random.default_rng()
+    def _montecarlo(self, channel, samples, rng, max_uses):
+        if rng is None:
+            rng = np.random.default_rng()
         errors, uses_total = 0, 0
         for _ in range(samples):
-            message = tuple(int(b) for b in prng.integers(0, 2, size=self.k))
-            decoded, uses = self.transmit(message, channel, prng=prng, max_uses=max_uses)
+            message = tuple(int(b) for b in rng.integers(0, 2, size=self.k))
+            decoded, uses = self.transmit(message, channel, rng=rng, max_uses=max_uses)
             errors += decoded != message
             uses_total += uses
         return errors / samples, uses_total / samples
 
-    def performance(self, channel, method="auto", samples=10000, prng=None, max_uses=_MAX_USES):
+    @renamed_kwarg("prng", "rng")
+    def performance(self, channel, method="auto", samples=10000, rng=None, max_uses=_MAX_USES):
         """
         The block error probability and the expected number of channel uses.
 
@@ -213,7 +216,7 @@ class FeedbackCode(ABC):
             exceeds about a million branches.
         samples : int
             The number of Monte Carlo samples.
-        prng : numpy.random.Generator, None
+        rng : numpy.random.Generator, None
             The random number generator for Monte Carlo sampling.
         max_uses : int
             Transmission is cut off (and decoded) after this many channel uses,
@@ -234,7 +237,7 @@ class FeedbackCode(ABC):
                 pass
         elif method != "montecarlo":
             raise ditException(f"Unknown method {method!r}; use 'exact', 'montecarlo' or 'auto'.")
-        return self._montecarlo(channel, samples, prng, max_uses)
+        return self._montecarlo(channel, samples, rng, max_uses)
 
     def probability_of_error(self, channel, **kwargs):
         """

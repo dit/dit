@@ -48,7 +48,7 @@ from ..algorithms.channelcapacity import channel_capacity
 from ..distconst import insert_rvf, modify_outcomes
 from ..distribution import Distribution
 from ..exceptions import OptimizationException, ditException
-from ..helpers import flatten, normalize_rvs, parse_rvs
+from ..helpers import normalize_rvs, parse_rvs
 from ..math import prod, sample_simplex
 from ..utils import powerset
 from ..utils.optimization import (
@@ -1269,7 +1269,7 @@ class BaseTorchOptimizer(metaclass=ABCMeta):
         result : OptimizeResult
             The result of the optimization.
         """
-        self._rng = rng
+        self._rng = rng if rng is None or isinstance(rng, np.random.Generator) else np.random.default_rng(rng)
 
         try:
             callable(self.objective)
@@ -1958,16 +1958,11 @@ class BaseAuxVarTorchOptimizer(BaseNonConvexTorchOptimizer):
 
         alphabets = list(self._alphabet)
 
-        try:
-            # if all outcomes are strings, make new variable strings too.
-            "".join(flatten(alphabets))
-            for bound in self._aux_bounds:
-                alphabets += [(digits + ascii_letters)[:bound]]
-            string = True
-        except TypeError:
-            for bound in self._aux_bounds:
-                alphabets += [list(range(bound))]
-            string = False
+        # if all outcomes are strings, make new variable strings too. Tuple
+        # symbols (e.g. from coalesce) are not strings, even when their entries are.
+        string = all(isinstance(symbol, str) for alphabet in alphabets for symbol in alphabet)
+        for bound in self._aux_bounds:
+            alphabets += [(digits + ascii_letters)[:bound]] if string else [list(range(bound))]
 
         joint = _to_numpy(self.construct_full_joint(x))
         outcomes, pmf = zip(*[(o, p) for o, p in np.ndenumerate(joint) if p > cutoff], strict=True)

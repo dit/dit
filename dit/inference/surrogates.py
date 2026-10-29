@@ -14,6 +14,7 @@ from collections import defaultdict
 import numpy as np
 from scipy.special import gammaln
 
+from ..utils.deprecation import renamed_kwarg
 from ._symbols import Trials, as_generator, decode, is_trials, standardize, standardize_trials, word_codes
 
 __all__ = (
@@ -147,7 +148,8 @@ def _random_trail(start, end, successors, rng):
     return symbols
 
 
-def whittle_surrogates(data, order=1, n=1, prng=None):
+@renamed_kwarg("prng", "rng")
+def whittle_surrogates(data, order=1, n=1, rng=None):
     """
     Draw surrogates that exactly preserve the ``(order + 1)``-gram counts.
 
@@ -169,7 +171,7 @@ def whittle_surrogates(data, order=1, n=1, prng=None):
         The Markov order to preserve. ``order=0`` is a random permutation.
     n : int
         The number of surrogates.
-    prng : None, int, Generator, RandomState
+    rng : None, int, Generator, RandomState
         Source of randomness.
 
     Returns
@@ -185,7 +187,7 @@ def whittle_surrogates(data, order=1, n=1, prng=None):
     drawing a random Eulerian trail of the ``order``-word de Bruijn multigraph
     from a random last-exit arborescence :cite:`Kandel1996`.
     """
-    rng = as_generator(prng)
+    rng = as_generator(rng)
     if order < 0:
         raise ValueError("`order` must be non-negative.")
     if is_trials(data):
@@ -221,7 +223,8 @@ def _whittle_trials(trials, order, n, rng):
     return [[draws[i] for draws in per_trial] for i in range(n)]
 
 
-def shift_surrogates(data, n=1, prng=None):
+@renamed_kwarg("prng", "rng")
+def shift_surrogates(data, n=1, rng=None):
     """
     Circularly shift `data` by uniformly random nonzero offsets.
 
@@ -236,7 +239,7 @@ def shift_surrogates(data, n=1, prng=None):
         :class:`~dit.inference.Trials` is shifted independently.
     n : int
         The number of surrogates.
-    prng : None, int, Generator, RandomState
+    rng : None, int, Generator, RandomState
         Source of randomness.
 
     Returns
@@ -244,7 +247,7 @@ def shift_surrogates(data, n=1, prng=None):
     surrogates : np.ndarray or list of Trials
         Shape ``(n,) + np.shape(data)``, or a list of `n` :class:`Trials`.
     """
-    rng = as_generator(prng)
+    rng = as_generator(rng)
     if is_trials(data):
         per_trial = [shift_surrogates(t, n, rng) for t in data]
         return [Trials(draws[i] for draws in per_trial) for i in range(n)]
@@ -254,7 +257,8 @@ def shift_surrogates(data, n=1, prng=None):
     return np.stack([np.roll(data, s, axis=0) for s in shifts])
 
 
-def block_surrogates(data, block_length, n=1, prng=None):
+@renamed_kwarg("prng", "rng")
+def block_surrogates(data, block_length, n=1, rng=None):
     """
     Randomly permute contiguous blocks of `data`.
 
@@ -270,7 +274,7 @@ def block_surrogates(data, block_length, n=1, prng=None):
         The length of each block; the final block may be shorter.
     n : int
         The number of surrogates.
-    prng : None, int, Generator, RandomState
+    rng : None, int, Generator, RandomState
         Source of randomness.
 
     Returns
@@ -280,7 +284,7 @@ def block_surrogates(data, block_length, n=1, prng=None):
     """
     if block_length < 1:
         raise ValueError("`block_length` must be positive.")
-    rng = as_generator(prng)
+    rng = as_generator(rng)
     if is_trials(data):
         per_trial = [block_surrogates(t, block_length, n, rng) for t in data]
         return [Trials(draws[i] for draws in per_trial) for i in range(n)]
@@ -289,7 +293,8 @@ def block_surrogates(data, block_length, n=1, prng=None):
     return np.stack([np.concatenate([blocks[j] for j in rng.permutation(len(blocks))]) for _ in range(n)])
 
 
-def stationary_bootstrap(data, n=1, mean_block_length=None, prng=None):
+@renamed_kwarg("prng", "rng")
+def stationary_bootstrap(data, n=1, mean_block_length=None, rng=None):
     """
     Resample a series with the stationary bootstrap :cite:`Politis1994`.
 
@@ -307,7 +312,7 @@ def stationary_bootstrap(data, n=1, mean_block_length=None, prng=None):
         The number of resamples.
     mean_block_length : float, None
         The mean block length; defaults to ``N ** (1 / 3)``.
-    prng : None, int, Generator, RandomState
+    rng : None, int, Generator, RandomState
         Source of randomness.
 
     Returns
@@ -315,7 +320,7 @@ def stationary_bootstrap(data, n=1, mean_block_length=None, prng=None):
     resamples : np.ndarray or list of Trials
         Shape ``(n,) + np.shape(data)``, or a list of `n` :class:`Trials`.
     """
-    rng = as_generator(prng)
+    rng = as_generator(rng)
     if is_trials(data):
         picks = rng.integers(0, len(data), size=(n, len(data)))
         return [Trials(data[j] for j in row) for row in picks]

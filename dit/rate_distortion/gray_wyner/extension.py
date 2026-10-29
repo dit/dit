@@ -28,6 +28,7 @@ from scipy.spatial import ConvexHull, QhullError
 from scipy.special import softmax
 
 from ...exceptions import ditException
+from ...utils.deprecation import renamed_kwarg
 
 __all__ = (
     "ExtensionProfile",
@@ -330,11 +331,12 @@ class ExtensionProfile:
     bound : int, None
         Cardinality of the auxiliary W in the boundary optimizations. If None,
         ``min(support + 2, 8)``.
-    seed : int, None
-        Seed for the optimizers' random starts.
+    rng : int, numpy.random.Generator, None
+        Seed or generator for the optimizers' random starts.
     """
 
-    def __init__(self, dist, rvs=None, bound=None, seed=None):
+    @renamed_kwarg("seed", "rng")
+    def __init__(self, dist, rvs=None, bound=None, rng=None):
         if rvs is None:
             if dist.outcome_length() != 2:
                 msg = "ExtensionProfile needs `rvs` unless the distribution has exactly two variables."
@@ -354,7 +356,7 @@ class ExtensionProfile:
         self.pair = d
         self._live = self.pxy > 0
         self.bound = bound if bound is not None else min(int(self._live.sum()) + 2, 8)
-        self._rng = np.random.default_rng(seed)
+        self._rng = np.random.default_rng(rng)
 
         self.h_x = _h(self.pxy.sum(1))
         self.h_y = _h(self.pxy.sum(0))

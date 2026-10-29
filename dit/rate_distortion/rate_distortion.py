@@ -202,7 +202,7 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
         Construct a functional form of the optimizer.
         """
 
-        def rate_distortion(dist, beta=0.0, rv=None, crvs=None, bound=None):
+        def rate_distortion(dist, beta=0.0, rv=None, crvs=None, bound=None, niter=None, maxiter=None, rng=None):
             """
                 Compute a rate-distortion point.
 
@@ -218,6 +218,12 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
                     The indices to condition on. If None, use none.
                 bound : int, None
                     Bound the size of the compressed variable.
+                niter : int, None
+                    The number of basin hops to perform.
+                maxiter : int, None
+                    The number of iterations of the optimization subroutine.
+                rng : np.random.Generator, int, None
+                    Source of randomness for the optimizer.
 
             Returns
             -------
@@ -225,7 +231,7 @@ class BaseRateDistortion(BaseAuxVarOptimizer):
                     The optimal rate-distortion pair.
             """
             rd = cls(dist, beta=beta, rv=rv, crvs=crvs, bound=bound)
-            rd.optimize()
+            rd.optimize(niter=niter, maxiter=maxiter, rng=rng)
             pmf = rd.construct_joint(rd._optima)
             result = RateDistortionResult(rd.rate(pmf), rd.distortion(pmf))
             return result

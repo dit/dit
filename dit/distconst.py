@@ -14,6 +14,7 @@ from .distribution import Distribution
 from .exceptions import ditException
 from .helpers import normalize_rvs, parse_rvs
 from .utils import digits, powerset
+from .utils.deprecation import renamed_kwarg
 from .validate import validate_pmf
 
 __all__ = (
@@ -22,6 +23,7 @@ __all__ = (
     "noisy",
     "erasure",
     "modify_outcomes",
+    "join_symbols",
     "random_scalar_distribution",
     "random_distribution",
     "simplex_grid",
@@ -247,7 +249,60 @@ def modify_outcomes(dist, ctor):
     return d
 
 
-def random_scalar_distribution(n, base=None, alpha=None, prng=None):
+def join_symbols(dist):
+    """
+    Join each variable's tuple-of-strings symbols into single string symbols.
+
+    :meth:`Distribution.coalesce` labels each new variable with tuples of the
+    grouped variables' symbols, e.g. ``('0', '1')``. This concatenates every
+    such tuple into a string, ``'01'``, matching dit's usual outcome style.
+    Variables whose symbols are not all tuples of strings are left unchanged,
+    as are the probabilities, base, variable names, and dense or sparse
+    representation.
+
+    Parameters
+    ----------
+    dist : Distribution
+        The distribution whose symbols should be joined.
+
+    Returns
+    -------
+    d : Distribution
+        A copy of `dist` with joined symbols.
+
+    Raises
+    ------
+    ditException
+        If joining would give two distinct symbols of a variable the same
+        string (e.g. ``('0', '10')`` and ``('01', '0')``), which would merge
+        their probabilities.
+
+    Examples
+    --------
+    >>> d = dit.Distribution(['000', '011', '101', '110'], [1 / 4] * 4)
+    >>> dit.join_symbols(d.coalesce([[0, 1], [2]])).outcomes
+    (('00', '0'), ('01', '1'), ('10', '1'), ('11', '0'))
+    """
+    d = dist.copy()
+    for dim in d.data.dims:
+        symbols = list(d.data.coords[dim].values)
+        if not all(isinstance(s, tuple) and all(isinstance(part, str) for part in s) for s in symbols):
+            continue
+        joined = ["".join(s) for s in symbols]
+        if len(set(joined)) < len(joined):
+            first = {}
+            for symbol, label in zip(symbols, joined, strict=True):
+                if label in first:
+                    msg = f"Joining the symbols of {dim!r} would merge {first[label]!r} and {symbol!r} into {label!r}."
+                    raise ditException(msg)
+                first[label] = symbol
+        # Joining can reorder the symbols, and alphabets are kept sorted.
+        d.data = d.data.assign_coords({dim: joined}).sortby(dim)
+    return d
+
+
+@renamed_kwarg("prng", "rng")
+def random_scalar_distribution(n, base=None, alpha=None, rng=None):
     """
     Returns a random scalar distribution over `n` outcomes.
 
@@ -271,8 +326,7 @@ def random_scalar_distribution(n, base=None, alpha=None, prng=None):
     """
     import dit.math
 
-    if prng is None:
-        prng = dit.math.prng
+    rng = dit.math.as_random_state(rng)
 
     try:
         nOutcomes = len(n)
@@ -285,7 +339,7 @@ def random_scalar_distribution(n, base=None, alpha=None, prng=None):
     elif len(alpha) != nOutcomes:
         raise ditException("Number of concentration parameters must be `n`.")
 
-    pmf = prng.dirichlet(alpha)
+    pmf = rng.dirichlet(alpha)
     d.pmf = pmf
 
     # Maybe we should use ditParams['base'] when base is None?
@@ -295,7 +349,8 @@ def random_scalar_distribution(n, base=None, alpha=None, prng=None):
     return d
 
 
-def random_distribution(outcome_length, alphabet_size, base=None, alpha=None, prng=None):
+@renamed_kwarg("prng", "rng")
+def random_distribution(outcome_length, alphabet_size, base=None, alpha=None, rng=None):
     """
     Returns a random distribution drawn uniformly from the simplex.
 
@@ -331,8 +386,7 @@ def random_distribution(outcome_length, alphabet_size, base=None, alpha=None, pr
     """
     import dit.math
 
-    if prng is None:
-        prng = dit.math.prng
+    rng = dit.math.as_random_state(rng)
 
     d = uniform_distribution(outcome_length, alphabet_size)
 
@@ -341,7 +395,7 @@ def random_distribution(outcome_length, alphabet_size, base=None, alpha=None, pr
     elif len(alpha) != len(d):
         raise ditException("Invalid number of concentration parameters.")
 
-    pmf = prng.dirichlet(alpha)
+    pmf = rng.dirichlet(alpha)
     d.pmf = pmf
 
     # Maybe we should use ditParams['base'] when base is None?

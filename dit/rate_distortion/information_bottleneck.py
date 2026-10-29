@@ -352,7 +352,9 @@ class InformationBottleneck(BaseAuxVarOptimizer):
             The function which performs this optimization.
         """
 
-        def information_bottleneck(dist, beta, alpha=1.0, rvs=None, crvs=None, bound=None):
+        def information_bottleneck(
+            dist, beta, alpha=1.0, rvs=None, crvs=None, bound=None, niter=None, maxiter=None, rng=None
+        ):
             """
             Compute an information bottleneck point.
 
@@ -372,6 +374,12 @@ class InformationBottleneck(BaseAuxVarOptimizer):
                 The random variables to condition on.
             bound : int, None
                 The bound on the size of the statistic. If None, use the size of X.
+            niter : int, None
+                The number of basin hops to perform.
+            maxiter : int, None
+                The number of iterations of the optimization subroutine.
+            rng : np.random.Generator, int, None
+                Source of randomness for the optimizer.
             """
             ib = cls(
                 dist=dist,
@@ -381,7 +389,7 @@ class InformationBottleneck(BaseAuxVarOptimizer):
                 crvs=crvs,
                 bound=bound,
             )
-            ib.optimize()
+            ib.optimize(niter=niter, maxiter=maxiter, rng=rng)
             pmf = ib.construct_joint(ib._optima)
             complexity = ib.complexity(pmf)
             relevance = ib.relevance(pmf)

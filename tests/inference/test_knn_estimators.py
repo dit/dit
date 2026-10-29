@@ -106,8 +106,8 @@ def test_knn_prng_reproducible():
     """
     data = np.repeat(np.arange(4.0), 25).reshape(-1, 1)
     data = np.hstack([data, data % 2])
-    assert differential_entropy_knn(data, prng=3) == differential_entropy_knn(data, prng=3)
-    assert total_correlation_ksg(data, [[0], [1]], prng=3) == total_correlation_ksg(data, [[0], [1]], prng=3)
+    assert differential_entropy_knn(data, rng=3) == differential_entropy_knn(data, rng=3)
+    assert total_correlation_ksg(data, [[0], [1]], rng=3) == total_correlation_ksg(data, [[0], [1]], rng=3)
 
 
 @pytest.mark.parametrize("estimator", [_total_correlation_ksg_scipy, _total_correlation_ksg_sklearn])
@@ -125,5 +125,5 @@ def test_cmi_ksg_high_dimensional_condition(estimator):
     x = 0.5 * z.sum(axis=1) + rng.normal(size=n)
     y = x + 0.5 * z.sum(axis=1) + rng.normal(size=n)
     data = np.column_stack([x, y, z])
-    cmi = estimator(data, [[0], [1]], [2, 3, 4, 5], k=4, prng=0)
+    cmi = estimator(data, [[0], [1]], [2, 3, 4, 5], k=4, rng=0)
     assert cmi == pytest.approx(0.5, abs=0.05)

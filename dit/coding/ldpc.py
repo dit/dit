@@ -10,6 +10,7 @@ An :class:`LDPCCode` is a linear code defined by a sparse parity-check matrix
 import numpy as np
 
 from ..exceptions import ditException
+from ..utils.deprecation import renamed_kwarg
 from . import _gf2
 from .linear import LinearCode
 
@@ -113,7 +114,8 @@ def ldpc(H, channel=None, max_iterations=50):
     return LDPCCode(H, channel=channel, max_iterations=max_iterations)
 
 
-def gallager(n, wc, wr, prng=None, channel=None):
+@renamed_kwarg("prng", "rng")
+def gallager(n, wc, wr, rng=None, channel=None):
     """
     Build a regular Gallager LDPC code.
 
@@ -125,7 +127,7 @@ def gallager(n, wc, wr, prng=None, channel=None):
         The column weight (variable degree).
     wr : int
         The row weight (check degree); ``wc < wr``.
-    prng : numpy.random.Generator, None
+    rng : numpy.random.Generator, None
         The random number generator used to permute the sub-bands.
     channel : Distribution, None
         A default channel.
@@ -138,8 +140,8 @@ def gallager(n, wc, wr, prng=None, channel=None):
         raise ditException("Gallager construction requires n divisible by wr.")
     if not 0 < wc < wr:
         raise ditException("Gallager construction requires 0 < wc < wr.")
-    if prng is None:
-        prng = np.random.default_rng()
+    if rng is None:
+        rng = np.random.default_rng()
 
     band_rows = n // wr
     base = np.zeros((band_rows, n), dtype=int)
@@ -148,7 +150,7 @@ def gallager(n, wc, wr, prng=None, channel=None):
 
     bands = [base]
     for _ in range(wc - 1):
-        permutation = prng.permutation(n)
+        permutation = rng.permutation(n)
         bands.append(base[:, permutation])
     H = np.vstack(bands)
     return LDPCCode(H, channel=channel)

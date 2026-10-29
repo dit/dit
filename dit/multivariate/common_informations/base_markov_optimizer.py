@@ -243,7 +243,9 @@ class MarkovVarMixin:
         """
 
         @unitful
-        def common_info(dist, rvs=None, crvs=None, niter=None, maxiter=1000, polish=1e-6, bound=None, backend="numpy"):
+        def common_info(
+            dist, rvs=None, crvs=None, niter=None, maxiter=1000, polish=1e-6, bound=None, backend="numpy", rng=None
+        ):
             if backend == "symbolic" or (backend == "numpy" and dist.is_symbolic()):
                 from .symbolic_solve import symbolic_common_information
 
@@ -259,7 +261,7 @@ class MarkovVarMixin:
 
             actual_cls = _make_backend_subclass(cls, backend)
             ci = actual_cls(dist, rvs, crvs, bound)
-            ci.optimize(niter=niter, maxiter=maxiter, polish=polish)
+            ci.optimize(rng=rng, niter=niter, maxiter=maxiter, polish=polish)
             val = ci.objective(ci._optima)
             val = float(val.detach().cpu().item()) if hasattr(val, "detach") else float(val)
             # Every common information is provably bounded below by the dual
@@ -299,6 +301,9 @@ class MarkovVarMixin:
         backend : str
             The optimization backend to use. One of ``'numpy'`` (default),
             ``'jax'``, or ``'torch'``.
+
+        rng : np.random.Generator, int, None
+            Source of randomness for the optimizer.
 
         Returns
         -------

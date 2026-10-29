@@ -19,6 +19,7 @@ import dit
 from ..cdisthelpers import cdist_array
 from ..exceptions import ditException
 from ..utils import unitful
+from ..utils.deprecation import renamed_kwarg
 
 __all__ = (
     "channel_capacity",
@@ -64,7 +65,7 @@ def _kl(a, b):
     return float(np.sum(a[mask] * np.log(a[mask] / np.maximum(b[mask], _TINY))))
 
 
-def _blahut_arimoto(P, plogp, logr, tol, max_iters, accelerated, offset=None):
+def _blahut_arimoto(P, plogp, logr, tol, maxiter, accelerated, offset=None):
     """
     Iterate Blahut-Arimoto on the channel ``P`` from the log-input ``logr``.
 
@@ -78,7 +79,7 @@ def _blahut_arimoto(P, plogp, logr, tol, max_iters, accelerated, offset=None):
         Initial (normalized) log input distribution.
     tol : callable
         Maps the current lower bound (nats) to the allowed bound gap (nats).
-    max_iters : int
+    maxiter : int
         Maximum number of iterations.
     accelerated : bool
         Use the accelerated update ``r <- r exp(mu D)`` of
@@ -113,7 +114,7 @@ def _blahut_arimoto(P, plogp, logr, tol, max_iters, accelerated, offset=None):
     upper = float(D.max())
     mu = 1.0
     iters = 0
-    while upper - lower > tol(lower) and iters < max_iters:
+    while upper - lower > tol(lower) and iters < maxiter:
         iters += 1
         new_logr, new_r = _normalize_log(logr + mu * D)
         new_q, new_D = evaluate(new_r)
@@ -132,7 +133,7 @@ def _blahut_arimoto(P, plogp, logr, tol, max_iters, accelerated, offset=None):
     return logr, r, q, D, lower, upper, iters
 
 
-def _active_set(P, plogp, tol, max_iters, accelerated, offset=None):
+def _active_set(P, plogp, tol, maxiter, accelerated, offset=None):
     """
     Blahut-Arimoto restricted to a growing set of inputs :cite:`sayir2000iterating`.
 
@@ -157,7 +158,7 @@ def _active_set(P, plogp, tol, max_iters, accelerated, offset=None):
             plogp[active],
             logr,
             tol,
-            max_iters - total_iters,
+            maxiter - total_iters,
             accelerated,
             sub_offset,
         )
@@ -166,7 +167,7 @@ def _active_set(P, plogp, tol, max_iters, accelerated, offset=None):
         if offset is not None:
             D = D + offset
         upper = max(upper, float(D.max()))
-        if upper - lower <= tol(lower) or len(active) == n or total_iters >= max_iters:
+        if upper - lower <= tol(lower) or len(active) == n or total_iters >= maxiter:
             break
         inactive = np.setdiff1d(np.arange(n), active)
         violators = inactive[D[inactive] > lower + tol(lower)]
@@ -257,12 +258,12 @@ def _tolerance(rtol, atol):
     return tol
 
 
-def _warn_unconverged(name, max_iters, lower, upper):
-    msg = f"{name} did not reach tolerance in {max_iters} iterations; the value is in [{lower}, {upper}] bits."
+def _warn_unconverged(name, maxiter, lower, upper):
+    msg = f"{name} did not reach tolerance in {maxiter} iterations; the value is in [{lower}, {upper}] bits."
     warnings.warn(msg, RuntimeWarning, stacklevel=4)
 
 
-def _capacity(P, rtol, atol, max_iters, method, eliminate):
+def _capacity(P, rtol, atol, maxiter, method, eliminate):
     """
     Compute the capacity (bits) and an optimal input pmf of the channel ``P``.
     """
@@ -292,12 +293,12 @@ def _capacity(P, rtol, atol, max_iters, method, eliminate):
 
     accelerated = method == "accelerated"
     if eliminate and len(R) > 2:
-        r, lower, upper, _ = _active_set(R, plogp, tol, max_iters, accelerated)
+        r, lower, upper, _ = _active_set(R, plogp, tol, maxiter, accelerated)
     else:
         logr = np.full(len(R), -np.log(len(R)))
-        _, r, _, _, lower, upper, _ = _blahut_arimoto(R, plogp, logr, tol, max_iters, accelerated)
+        _, r, _, _, lower, upper, _ = _blahut_arimoto(R, plogp, logr, tol, maxiter, accelerated)
     if upper - lower > tol(lower):
-        _warn_unconverged("Blahut-Arimoto", max_iters, lower / _LN2, upper / _LN2)
+        _warn_unconverged("Blahut-Arimoto", maxiter, lower / _LN2, upper / _LN2)
     pmf[keep] = r
     return lower / _LN2, pmf
 
@@ -330,12 +331,13 @@ def _channel_array(cdists):
         return cdist_array(cdists, base="linear", mode="dense"), False
 
 
+@renamed_kwarg("max_iters", "maxiter")
 def channel_capacity(
     cdists,
     marginal=None,
     rtol=None,
     atol=None,
-    max_iters=100_000,
+    maxiter=100_000,
     method="accelerated",
     eliminate=False,
 ):
@@ -363,7 +365,7 @@ def channel_capacity(
     atol : float or None
         Absolute tolerance on the capacity, in bits. Defaults to
         ditParams['atol'].
-    max_iters : int
+    maxiter : int
         Maximum number of Blahut-Arimoto iterations. A ``RuntimeWarning`` is
         raised if the bounds have not met by then.
     method : {'accelerated', 'ba'}
@@ -393,7 +395,7 @@ def channel_capacity(
             msg = "len(mdist) != len(cdists)"
             raise ditException(msg)
 
-    cc, pmf = _capacity(carr, rtol, atol, max_iters, method, eliminate)
+    cc, pmf = _capacity(carr, rtol, atol, maxiter, method, eliminate)
 
     if marginal is not None:
         if is_xr_conditional and isinstance(marginal, Distribution):
@@ -439,7 +441,8 @@ def channel_capacity_joint(dist, input_, output, marginal=False):
         return cc
 
 
-def channel_capacity_cost(cdists, cost, budget, rtol=None, atol=None, max_iters=100_000, method="accelerated"):
+@renamed_kwarg("max_iters", "maxiter")
+def channel_capacity_cost(cdists, cost, budget, rtol=None, atol=None, maxiter=100_000, method="accelerated"):
     """
     Capacity of a channel whose inputs carry a cost, under an average budget.
 
@@ -462,7 +465,7 @@ def channel_capacity_cost(cdists, cost, budget, rtol=None, atol=None, max_iters=
         Relative tolerance. Defaults to ditParams['rtol'].
     atol : float or None
         Absolute tolerance in bits. Defaults to ditParams['atol'].
-    max_iters : int
+    maxiter : int
         Maximum Blahut-Arimoto iterations per value of the multiplier.
     method : {'accelerated', 'ba'}
         As in :func:`channel_capacity`.
@@ -502,7 +505,7 @@ def channel_capacity_cost(cdists, cost, budget, rtol=None, atol=None, max_iters=
     n = P.shape[0]
     cheapest = np.flatnonzero(cost <= c_min + 1e-12)
     if budget <= c_min + 1e-12:
-        cc, sub = _capacity(P[cheapest], rtol, atol, max_iters, method, False)
+        cc, sub = _capacity(P[cheapest], rtol, atol, maxiter, method, False)
         pmf = np.zeros(n)
         pmf[cheapest] = sub
         return cc, pmf, np.inf
@@ -517,10 +520,10 @@ def channel_capacity_cost(cdists, cost, budget, rtol=None, atol=None, max_iters=
 
     def solve(s):
         offset = None if s == 0 else -s * _LN2 * cost
-        logr, r, _, _, lower, upper, _ = _blahut_arimoto(R, plogp, state["logr"], tol, max_iters, accelerated, offset)
+        logr, r, _, _, lower, upper, _ = _blahut_arimoto(R, plogp, state["logr"], tol, maxiter, accelerated, offset)
         state["logr"] = logr
         if upper - lower > tol(lower):
-            _warn_unconverged("Blahut-Arimoto", max_iters, lower / _LN2, upper / _LN2)
+            _warn_unconverged("Blahut-Arimoto", maxiter, lower / _LN2, upper / _LN2)
         return r, lower / _LN2
 
     r, lagrangian = solve(0.0)
@@ -539,7 +542,8 @@ def channel_capacity_cost(cdists, cost, budget, rtol=None, atol=None, max_iters=
     return lagrangian + s * budget, r, s
 
 
-def sibson_capacity(cdists, order, rtol=None, atol=None, max_iters=100_000):
+@renamed_kwarg("max_iters", "maxiter")
+def sibson_capacity(cdists, order, rtol=None, atol=None, maxiter=100_000):
     """
     Sibson's capacity of order alpha, ``C_alpha = max_p I_alpha(X : Y)``.
 
@@ -567,7 +571,7 @@ def sibson_capacity(cdists, order, rtol=None, atol=None, max_iters=100_000):
         Relative tolerance. Defaults to ditParams['rtol'].
     atol : float or None
         Absolute tolerance in bits. Defaults to ditParams['atol'].
-    max_iters : int
+    maxiter : int
         Maximum number of iterations.
 
     Returns
@@ -587,7 +591,7 @@ def sibson_capacity(cdists, order, rtol=None, atol=None, max_iters=100_000):
     P = np.asarray(P, dtype=float)
     n = P.shape[0]
     if order == 1:
-        return channel_capacity(P, rtol=rtol, atol=atol, max_iters=max_iters)
+        return channel_capacity(P, rtol=rtol, atol=atol, maxiter=maxiter)
     P = P[:, P.sum(axis=0) > 0]
     if np.isinf(order):
         return float(np.log2(P.max(axis=0).sum())), np.full(n, 1 / n)
@@ -609,7 +613,7 @@ def sibson_capacity(cdists, order, rtol=None, atol=None, max_iters=100_000):
     upper = float(D.max())
     mu = max(1.0, a)
     iters = 0
-    while upper - lower > tol(lower) and iters < max_iters:
+    while upper - lower > tol(lower) and iters < maxiter:
         iters += 1
         slack = 1e-3 * (upper - lower) + 64 * np.finfo(float).eps * abs(lower)
         while True:
@@ -623,5 +627,5 @@ def sibson_capacity(cdists, order, rtol=None, atol=None, max_iters=100_000):
         logr, D, lower = new_logr, new_D, new_lower
         upper = float(D.max())
     if upper - lower > tol(lower):
-        _warn_unconverged("sibson_capacity", max_iters, lower / _LN2, upper / _LN2)
+        _warn_unconverged("sibson_capacity", maxiter, lower / _LN2, upper / _LN2)
     return lower / _LN2, np.exp(logr)

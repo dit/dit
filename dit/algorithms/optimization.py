@@ -26,7 +26,7 @@ from ..algorithms.channelcapacity import channel_capacity
 from ..distconst import insert_rvf, modify_outcomes
 from ..distribution import Distribution
 from ..exceptions import OptimizationException, ditException
-from ..helpers import flatten, normalize_rvs, parse_rvs
+from ..helpers import normalize_rvs, parse_rvs
 from ..math import prod, sample_simplex
 from ..utils import powerset
 from ..utils.optimization import (
@@ -119,9 +119,10 @@ def parallel_sweep(func, items, *, base_seed=None):
         Called as ``func(item, rng)`` where ``rng`` is a ``Generator``.
     items : iterable
         The independent work items.
-    base_seed : int, None
-        Seed offset for the per-task generators. If None, a seed is drawn once
-        (serially) from the global ``np.random`` state.
+    base_seed : int, np.random.Generator, None
+        Seed offset for the per-task generators. A Generator contributes one
+        draw; if None, a seed is drawn once (serially) from the global
+        ``np.random`` state.
 
     Returns
     -------
@@ -135,6 +136,8 @@ def parallel_sweep(func, items, *, base_seed=None):
 
     if base_seed is None:
         base_seed = int(np.random.randint(0, 2**31 - 1))
+    elif isinstance(base_seed, np.random.Generator):
+        base_seed = int(base_seed.integers(0, 2**31 - 1))
     rngs = [np.random.default_rng(base_seed + i) for i in range(n)]
 
     n_jobs = _resolve_n_jobs(n)
@@ -1083,7 +1086,7 @@ class BaseOptimizer(metaclass=ABCMeta):
             Whether to use a callback to track the performance of the optimization.
             Generally, this should be False as it adds some significant time to the
             optimization.
-        rng : np.random.Generator, None
+        rng : np.random.Generator, int, None
             An optional random number generator used for all randomness in this
             optimization (random initial conditions and the basin-hopping step).
             When None (default), the global ``np.random`` state is used,
@@ -1095,7 +1098,7 @@ class BaseOptimizer(metaclass=ABCMeta):
         result : OptimizeResult
             The result of the optimization.
         """
-        self._rng = rng
+        self._rng = rng if rng is None or isinstance(rng, np.random.Generator) else np.random.default_rng(rng)
 
         try:
             callable(self.objective)
@@ -2054,16 +2057,11 @@ class BaseAuxVarOptimizer(BaseNonConvexOptimizer):
 
         alphabets = list(self._alphabet)
 
-        try:
-            # if all outcomes are strings, make new variable strings too.
-            "".join(flatten(alphabets))
-            for bound in self._aux_bounds:
-                alphabets += [(digits + ascii_letters)[:bound]]
-            string = True
-        except TypeError:
-            for bound in self._aux_bounds:
-                alphabets += [list(range(bound))]
-            string = False
+        # if all outcomes are strings, make new variable strings too. Tuple
+        # symbols (e.g. from coalesce) are not strings, even when their entries are.
+        string = all(isinstance(symbol, str) for alphabet in alphabets for symbol in alphabet)
+        for bound in self._aux_bounds:
+            alphabets += [(digits + ascii_letters)[:bound]] if string else [list(range(bound))]
 
         joint = self.construct_full_joint(x)
         outcomes, pmf = zip(*[(o, p) for o, p in np.ndenumerate(joint) if p > cutoff], strict=True)

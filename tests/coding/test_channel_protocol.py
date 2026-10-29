@@ -186,7 +186,7 @@ def test_hidden_state_error_probability():
                 expected += brute_force_likelihood(channel, code.encode(m), received) / 2
     exact = code.probability_of_error(channel, method="exact")
     assert exact == pytest.approx(expected)
-    estimate = code.probability_of_error(channel, method="montecarlo", samples=4000, prng=np.random.default_rng(0))
+    estimate = code.probability_of_error(channel, method="montecarlo", samples=4000, rng=np.random.default_rng(0))
     assert estimate == pytest.approx(exact, abs=0.02)
 
 

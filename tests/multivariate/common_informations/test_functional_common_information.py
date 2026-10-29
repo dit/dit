@@ -203,7 +203,7 @@ def test_product_component_is_a_single_block():
 
 def test_random_three_by_three():
     """A generic 27-outcome distribution (intractable for partition search) solves quickly."""
-    d = random_distribution(3, 3, prng=np.random.RandomState(0))
+    d = random_distribution(3, 3, rng=np.random.RandomState(0))
     stats: dict = {}
     h = functional_markov_chain(d, _stats=stats)
     _assert_valid_partition(d, None, None, h, stats["partition"])

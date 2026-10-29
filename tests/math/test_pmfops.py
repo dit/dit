@@ -147,7 +147,7 @@ def test_replace_nonzero_norand():
 def test_jittered_zeros():
     d = np.array([0.25, 0.75, 0.0])
     prng = np.random.RandomState(1)
-    x = module.jittered(d, jitter=1e-5, zeros=True, prng=prng)
+    x = module.jittered(d, jitter=1e-5, zeros=True, rng=prng)
     x_ = np.array([2.49998269e-01, 7.49997561e-01, 4.17024317e-06])
     assert np.allclose(x, x_)
 
@@ -155,7 +155,7 @@ def test_jittered_zeros():
 def test_jittered():
     d = np.array([0.25, 0.75, 0.0])
     prng = np.random.RandomState(1)
-    x = module.jittered(d, jitter=1e-5, zeros=False, prng=prng)
+    x = module.jittered(d, jitter=1e-5, zeros=False, rng=prng)
     x_ = np.array([0.24999923, 0.75000077, 0.0])
     assert np.allclose(x, x_)
 

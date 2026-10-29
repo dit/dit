@@ -33,6 +33,8 @@ These are imported at the package root:
   :class:`~dit.DistributionEnumerator` — enumerate (or sample) the uniform
   distributions over subsets of the joint events, useful for exhaustive searches
 - :func:`~dit.modify_outcomes` — relabel each outcome through a function
+- :func:`~dit.join_symbols` — join tuple-of-strings symbols, such as those
+  made by :meth:`~dit.Distribution.coalesce`, into string symbols
 - :func:`~dit.joint_from_factors` — build :math:`p(X, Y)` from :math:`p(X)` and
   :math:`p(Y | X)`
 - :func:`~dit.distribution_from_bayesnet` — joint from a NetworkX Bayesian

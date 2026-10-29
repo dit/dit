@@ -68,7 +68,7 @@ def test_pid_ln_tied_rows():
             outcomes.append(f"{a}{b}{y}")
             pmf.append(w)
     d = Distribution(outcomes, pmf)
-    pid = PID_LN(d, ((0,), (1,)), (2,), seed=0)
+    pid = PID_LN(d, ((0,), (1,)), (2,), rng=0)
     assert 0.017 <= pid[RED] <= 0.0226
     assert pid[((0, 1),)] < -0.015
     assert pid[RED] >= PID_Deg(d, ((0,), (1,)), (2,))[RED] - 1e-6

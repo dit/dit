@@ -40,7 +40,7 @@ def _and():
 
 def test_fit_k1_is_product():
     d = _xor()
-    fit = fit_mixture_of_products(d, k=1, n_init=4, seed=1)
+    fit = fit_mixture_of_products(d, k=1, n_init=4, rng=1)
     # Product of marginals: D(P||Q) = T(P) = 1 for XOR.
     assert D(d, fit["dist"]) == pytest.approx(1.0, abs=1e-5)
     assert B(fit["dist"]) == pytest.approx(0.0, abs=1e-5)
@@ -48,7 +48,7 @@ def test_fit_k1_is_product():
 
 def test_giant_bit_exact_at_k2():
     d = _giant_bit()
-    fit = fit_mixture_of_products(d, k=2, n_init=8, seed=0)
+    fit = fit_mixture_of_products(d, k=2, n_init=8, rng=0)
     assert D(d, fit["dist"]) == pytest.approx(0.0, abs=1e-6)
     assert B(fit["dist"]) == pytest.approx(1.0, abs=1e-5)
     assert fit["I_xv"] == pytest.approx(1.0, abs=1e-5)
@@ -56,7 +56,7 @@ def test_giant_bit_exact_at_k2():
 
 def test_xor_needs_k4():
     d = _xor()
-    dists, meta = mixture_of_products_dists(d, k_max=4, n_init=10, seed=0, early_stop=False)
+    dists, meta = mixture_of_products_dists(d, k_max=4, n_init=10, rng=0, early_stop=False)
     assert meta[0]["forward_kl"] == pytest.approx(1.0, abs=1e-4)
     assert meta[3]["forward_kl"] == pytest.approx(0.0, abs=1e-5)
     assert B(dists[3]) == pytest.approx(2.0, abs=1e-5)
@@ -66,7 +66,7 @@ def test_binding_mixture_profile_sums_to_b():
     """ΔB atoms are nonnegative and sum to B(P)."""
     for factory in (_giant_bit, _xor, _w, _copy, _and):
         d = factory()
-        prof = BindingMixtureProfile(d, k_max=8, n_init=10, seed=0)
+        prof = BindingMixtureProfile(d, k_max=8, n_init=10, rng=0)
         vals = [prof.profile[k] for k in sorted(prof.profile)]
         assert all(v >= -1e-6 for v in vals)
         assert sum(vals) == pytest.approx(B(d), abs=1e-3)
@@ -74,7 +74,7 @@ def test_binding_mixture_profile_sums_to_b():
 
 def test_binding_mixture_giant_bit_mass_at_k2():
     d = _giant_bit()
-    prof = BindingMixtureProfile(d, k_max=4, n_init=8, seed=0)
+    prof = BindingMixtureProfile(d, k_max=4, n_init=8, rng=0)
     assert prof.profile[1] == pytest.approx(0.0, abs=1e-5)
     assert prof.profile[2] == pytest.approx(1.0, abs=1e-4)
     # Early stop once D≈0, so higher k may be absent.
@@ -83,13 +83,13 @@ def test_binding_mixture_giant_bit_mass_at_k2():
 
 def test_binding_mixture_copy_at_k2():
     d = _copy()
-    prof = BindingMixtureProfile(d, k_max=4, n_init=8, seed=0)
+    prof = BindingMixtureProfile(d, k_max=4, n_init=8, rng=0)
     assert sum(prof.profile[k] for k in prof.profile if k <= 2) == pytest.approx(1.0, abs=1e-3)
 
 
 def test_binding_mixture_xor_late():
     d = _xor()
-    prof = BindingMixtureProfile(d, k_max=4, n_init=10, seed=0, early_stop=False)
+    prof = BindingMixtureProfile(d, k_max=4, n_init=10, rng=0, early_stop=False)
     # Little binding at k=2; most arrives by k=4.
     assert prof.profile[2] < 0.5
     assert sum(prof.profile.values()) == pytest.approx(2.0, abs=1e-3)
@@ -119,7 +119,7 @@ def test_shared_randomness_matches_dd_with_b():
 
 def test_ladder_entropy_decreases():
     d = _and()
-    dists, _ = mixture_of_products_dists(d, k_max=3, n_init=8, seed=1)
+    dists, _ = mixture_of_products_dists(d, k_max=3, n_init=8, rng=1)
     ents = [H(q) for q in dists]
     assert ents[0] >= ents[-1] - 1e-6
 
@@ -131,6 +131,6 @@ def test_fit_k_must_be_positive():
 
 def test_mixture_ladder_default_kmax_and_early_stop():
     d = _giant_bit()
-    dists, meta = mixture_of_products_dists(d, n_init=6, seed=0, early_stop=True)
+    dists, meta = mixture_of_products_dists(d, n_init=6, rng=0, early_stop=True)
     assert len(dists) >= 2
     assert meta[-1]["forward_kl"] == pytest.approx(0.0, abs=1e-6)

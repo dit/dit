@@ -17,6 +17,7 @@ import dit
 from ..abstractdist import get_abstract_dist
 from ..exceptions import ditException
 from ..utils import basic_logger
+from ..utils.deprecation import renamed_kwarg
 from .frankwolfe import frank_wolfe
 from .optutil import CVXOPT_Template, _as_full_rank, _Bunch, op_runner
 
@@ -332,6 +333,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
         Quantifying Unique Information. Entropy 2014, 16, 2161-2183.
     """
 
+    @renamed_kwarg("prng", "rng")
     def __init__(
         self,
         dist,
@@ -341,7 +343,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
         extra_constraints=True,
         source_marginal=False,
         tol=None,
-        prng=None,
+        rng=None,
         verbose=None,
     ):
         """
@@ -374,7 +376,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
             is the mutual information between the sources and the target.
         tol : float | None
             The desired convergence tolerance.
-        prng : RandomState
+        rng : RandomState
             A NumPy-compatible pseudorandom number generator.
         verbose : int
             An integer representing the logging level ala the ``logging``
@@ -396,7 +398,7 @@ class MaximumConditionalEntropy(CVXOPT_Template):
         self.source_marginal = source_marginal
         self.verbose = verbose
 
-        super().__init__(self.dist, tol=tol, prng=prng)
+        super().__init__(self.dist, tol=tol, rng=rng)
 
     def prep(self):
         # We are going to remove all zero and fixed elements.
@@ -730,7 +732,8 @@ def demo():
 
 
 @removals.remove(message="Please see dit.pid.PID_BROJA.", version="1.0.1")
-def k_synergy(d, sources, target, k=2, extra_constraints=True, tol=None, prng=None, verbose=None):  # pragma: no cover
+@renamed_kwarg("prng", "rng")
+def k_synergy(d, sources, target, k=2, extra_constraints=True, tol=None, rng=None, verbose=None):  # pragma: no cover
     """
     Returns the `k`-synergy.
 
@@ -760,7 +763,7 @@ def k_synergy(d, sources, target, k=2, extra_constraints=True, tol=None, prng=No
         all q in the feasible set.
     tol : float | None
         The desired convergence tolerance.
-    prng : RandomState
+    rng : RandomState
         A NumPy-compatible pseudorandom number generator.
     verbose : int
         An integer representing the logging level ala the ``logging``
@@ -792,7 +795,7 @@ def k_synergy(d, sources, target, k=2, extra_constraints=True, tol=None, prng=No
         extra_constraints=extra_constraints,
         source_marginal=True,
         tol=tol,
-        prng=prng,
+        rng=rng,
         verbose=verbose,
     )
     pmf, _ = x.optimize()
@@ -805,7 +808,8 @@ def k_synergy(d, sources, target, k=2, extra_constraints=True, tol=None, prng=No
 
 
 @removals.remove(message="Please see dit.pid.PID_BROJA.", version="1.0.1")
-def k_informations(d, sources, target, extra_constraints=True, tol=None, prng=None, verbose=None):  # pragma: no cover
+@renamed_kwarg("prng", "rng")
+def k_informations(d, sources, target, extra_constraints=True, tol=None, rng=None, verbose=None):  # pragma: no cover
     """
     Returns the amount of :math:`I[sources:target]` captured by matching `k`-way
     marginals that include the target and the source marginal distribution.
@@ -830,7 +834,7 @@ def k_informations(d, sources, target, extra_constraints=True, tol=None, prng=No
         all q in the feasible set.
     tol : float | None
         The desired convergence tolerance.
-    prng : RandomState
+    rng : RandomState
         A NumPy-compatible pseudorandom number generator.
     verbose : int
         An integer representing the logging level ala the ``logging``
@@ -857,7 +861,7 @@ def k_informations(d, sources, target, extra_constraints=True, tol=None, prng=No
         extra_constraints=extra_constraints,
         source_marginal=True,
         tol=tol,
-        prng=prng,
+        rng=rng,
         verbose=verbose,
     )
     n = x.dist.outcome_length()
@@ -879,8 +883,9 @@ def k_informations(d, sources, target, extra_constraints=True, tol=None, prng=No
 
 
 @removals.remove(message="Please see dit.pid.PID_BROJA.", version="1.0.1")
+@renamed_kwarg("prng", "rng")
 def unique_informations(
-    d, sources, target, k=2, extra_constraints=True, tol=None, prng=None, verbose=None
+    d, sources, target, k=2, extra_constraints=True, tol=None, rng=None, verbose=None
 ):  # pragma: no cover
     """
     Returns the unique information each source has about the target.
@@ -905,7 +910,7 @@ def unique_informations(
         all q in the feasible set.
     tol : float | None
         The desired convergence tolerance.
-    prng : RandomState
+    rng : RandomState
         A NumPy-compatible pseudorandom number generator.
     verbose : int
         An integer representing the logging level ala the ``logging``
@@ -940,7 +945,7 @@ def unique_informations(
         k=k,
         extra_constraints=extra_constraints,
         tol=tol,
-        prng=prng,
+        rng=rng,
         verbose=verbose,
     )
     pmf, _ = x.optimize()

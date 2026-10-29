@@ -59,7 +59,7 @@ def test_ties():
     assert ordinal_patterns(x, 3).tolist() == [0, 0]
     distinct = ordinal_patterns(x, 3, ties="distinct")
     assert distinct[0] != distinct[1]
-    noisy = ordinal_patterns(x, 3, ties="noise", prng=0)
+    noisy = ordinal_patterns(x, 3, ties="noise", rng=0)
     assert noisy.max() < 6
     with pytest.raises(ValueError):
         ordinal_patterns(x, 3, ties="nope")

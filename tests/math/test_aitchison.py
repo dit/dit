@@ -410,7 +410,7 @@ def test_ilr_inv_underflow():
     prng.seed(0)
     tol = 1e-5
 
-    pmf_ = dit.math.pmfops.replace_zeros(d.pmf, tol, prng=prng)
+    pmf_ = dit.math.pmfops.replace_zeros(d.pmf, tol, rng=prng)
     ilrpmf = dit.math.aitchison.ilr(pmf_)
     pmf = dit.math.aitchison.ilr_inv(ilrpmf)
     assert np.allclose(pmf, pmf_)

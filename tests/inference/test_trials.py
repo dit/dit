@@ -68,7 +68,7 @@ def test_single_trial_matches_sequence():
 def test_whittle_trials_preserve_each_trial():
     trials = Trials([[0, 1, 1, 0, 1], [1, 1, 0, 0, 0, 1, 0]])
     assert whittle_count(trials, 1) == pytest.approx(whittle_count(trials[0], 1) + whittle_count(trials[1], 1))
-    for draw in whittle_surrogates(trials, 1, n=10, prng=0):
+    for draw in whittle_surrogates(trials, 1, n=10, rng=0):
         assert isinstance(draw, Trials)
         for s, t in zip(draw, trials, strict=True):
             assert s[0] == t[0]
@@ -77,7 +77,7 @@ def test_whittle_trials_preserve_each_trial():
 
 def test_shift_and_block_trials():
     trials = Trials([np.arange(6), np.arange(10, 14)])
-    for draw in shift_surrogates(trials, n=5, prng=0) + block_surrogates(trials, 2, n=5, prng=0):
+    for draw in shift_surrogates(trials, n=5, rng=0) + block_surrogates(trials, 2, n=5, rng=0):
         assert [sorted(s) for s in draw] == [sorted(t) for t in trials]
 
 
@@ -93,14 +93,14 @@ def test_markov_order_many_short_trials():
             x.append(x[-1] if rng.random() < 0.85 else 1 - x[-1])
         trials.append(x)
     trials = Trials(trials)
-    assert markov_order_test(trials, 0, n_surrogates=99, prng=0).pvalue < 0.05
+    assert markov_order_test(trials, 0, n_surrogates=99, rng=0).pvalue < 0.05
     assert select_markov_order(trials, 3, method="bic") == 1
-    assert select_markov_order(trials, 3, n_surrogates=99, prng=0) == 1
+    assert select_markov_order(trials, 3, n_surrogates=99, rng=0) == 1
 
 
 def test_stationary_bootstrap_trials():
     trials = Trials([[0], [1], [2]])
-    draws = stationary_bootstrap(trials, n=20, prng=0)
+    draws = stationary_bootstrap(trials, n=20, rng=0)
     assert all(isinstance(d, Trials) and len(d) == 3 for d in draws)
     assert {tuple(t) for d in draws for t in d} <= {(0,), (1,), (2,)}
 

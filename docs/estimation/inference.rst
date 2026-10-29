@@ -230,10 +230,10 @@ true order; all methods return longer histories as the sample grows.
 
    In [13]: x = np.cumsum(rng.random(500) < 0.2) % 2  # a sticky first-order chain
 
-   In [14]: markov_order_test(x, order=0, prng=0).pvalue < 0.05
+   In [14]: markov_order_test(x, order=0, rng=0).pvalue < 0.05
    Out[14]: True
 
-   In [15]: select_markov_order(x, max_order=4, prng=0)
+   In [15]: select_markov_order(x, max_order=4, rng=0)
    Out[15]: 1
 
 Conditional mutual information and resampling

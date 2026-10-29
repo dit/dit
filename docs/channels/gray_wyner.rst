@@ -197,7 +197,7 @@ The named corner points and the lossy common information:
 
    In [7]: dm = [hamming_matrix(2), hamming_matrix(2)]
 
-   In [8]: lossy_wyner_common_information(d, bounds=[0.1, 0.1], distortions=dm)
+   In [8]: lossy_wyner_common_information(d, distortion_bounds=[0.1, 0.1], distortions=dm)
 
 The tension region and the shape function:
 
@@ -219,7 +219,7 @@ The extension profile, with every distinguished point:
 
    In [13]: from dit.rate_distortion import ExtensionProfile
 
-   In [14]: ep = ExtensionProfile(d, seed=0)
+   In [14]: ep = ExtensionProfile(d, rng=0)
 
    In [15]: features = ep.compute()
 

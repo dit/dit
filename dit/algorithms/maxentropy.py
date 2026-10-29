@@ -32,6 +32,7 @@ from dit.abstractdist import AbstractDenseDistribution, get_abstract_dist
 
 from ..helpers import parse_rvs
 from ..utils import flatten
+from ..utils.deprecation import renamed_kwarg
 from .optutil import Bunch, CVXOPT_Template, _as_full_rank, as_full_rank, prepare_dist
 
 # from ..utils import powerset
@@ -487,7 +488,8 @@ class MarginalMaximumEntropy(MaximumEntropy):
     `k = 0` should reproduce the behavior of MaximumEntropy.
     """
 
-    def __init__(self, dist, k, tol=None, prng=None):
+    @renamed_kwarg("prng", "rng")
+    def __init__(self, dist, k, tol=None, rng=None):
         """
         Initialize optimizer.
 
@@ -500,7 +502,7 @@ class MarginalMaximumEntropy(MaximumEntropy):
 
         """
         self.k = k
-        super().__init__(dist, tol=tol, prng=prng)
+        super().__init__(dist, tol=tol, rng=rng)
 
     def prep(self):
 
@@ -580,7 +582,8 @@ class MomentMaximumEntropy(MaximumEntropy):
     `k = 0` should reproduce the behavior of MaximumEntropy.
     """
 
-    def __init__(self, dist, k, symbol_map, cumulative=True, with_replacement=True, tol=None, prng=None):
+    @renamed_kwarg("prng", "rng")
+    def __init__(self, dist, k, symbol_map, cumulative=True, with_replacement=True, tol=None, rng=None):
         """
         Initialize optimizer.
 
@@ -600,7 +603,7 @@ class MomentMaximumEntropy(MaximumEntropy):
             The standard Ising model selects without replacement.
         tol : float | None
             The desired convergence tolerance.
-        prng : RandomState
+        rng : RandomState
             A pseudorandom number generator.
 
         """
@@ -608,7 +611,7 @@ class MomentMaximumEntropy(MaximumEntropy):
         self.symbol_map = symbol_map
         self.cumulative = cumulative
         self.with_replacement = with_replacement
-        super().__init__(dist, tol=tol, prng=prng)
+        super().__init__(dist, tol=tol, rng=rng)
 
     def build_linear_equality_constraints(self):
         from cvxopt import matrix

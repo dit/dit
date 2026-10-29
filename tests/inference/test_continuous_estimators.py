@@ -89,10 +89,10 @@ def test_divergences_gaussian():
     p, q = rng.normal(0, s1, (n, 1)), rng.normal(0, s2, (n, 1))
     kl = (np.log(s2 / s1) + s1**2 / (2 * s2**2) - 0.5) / LN2
     ce = (0.5 * np.log(2 * np.pi * s2**2) + s1**2 / (2 * s2**2)) / LN2
-    assert kullback_leibler_divergence_knn(p, q, prng=0) == pytest.approx(kl, abs=0.03)
-    assert cross_entropy_knn(p, q, prng=0) == pytest.approx(ce, abs=0.03)
-    assert kullback_leibler_divergence_knn(p, q, prng=0) == pytest.approx(
-        cross_entropy_knn(p, q, prng=0) - differential_entropy_knn(p, prng=0), abs=1e-3
+    assert kullback_leibler_divergence_knn(p, q, rng=0) == pytest.approx(kl, abs=0.03)
+    assert cross_entropy_knn(p, q, rng=0) == pytest.approx(ce, abs=0.03)
+    assert kullback_leibler_divergence_knn(p, q, rng=0) == pytest.approx(
+        cross_entropy_knn(p, q, rng=0) - differential_entropy_knn(p, rng=0), abs=1e-3
     )
     xs = np.linspace(-15, 15, 300001)
     dx = xs[1] - xs[0]
@@ -106,7 +106,7 @@ def test_divergences_gaussian():
         - 0.25 * np.log2(2 * np.pi * np.e * s1**2)
         - 0.25 * np.log2(2 * np.pi * np.e * s2**2)
     )
-    assert jensen_shannon_divergence_knn(p, q, prng=0) == pytest.approx(jsd, abs=0.03)
+    assert jensen_shannon_divergence_knn(p, q, rng=0) == pytest.approx(jsd, abs=0.03)
 
 
 @pytest.mark.parametrize("order", [2.0, 3.0])
@@ -115,14 +115,14 @@ def test_renyi_tsallis_gaussian(order):
     d = 2
     data = rng.normal(size=(20000, d))
     integral = (2 * np.pi) ** (d * (1 - order) / 2) * order ** (-d / 2)
-    assert renyi_entropy_knn(data, order, prng=0) == pytest.approx(np.log2(integral) / (1 - order), abs=0.06)
-    assert tsallis_entropy_knn(data, order, prng=0) == pytest.approx((1 - integral) / (order - 1), abs=0.01)
+    assert renyi_entropy_knn(data, order, rng=0) == pytest.approx(np.log2(integral) / (1 - order), abs=0.06)
+    assert tsallis_entropy_knn(data, order, rng=0) == pytest.approx((1 - integral) / (order - 1), abs=0.01)
 
 
 def test_renyi_order_one_and_errors():
     rng = np.random.default_rng(5)
     data = rng.normal(size=(2000, 1))
-    assert renyi_entropy_knn(data, 1, prng=0) == pytest.approx(differential_entropy_knn(data, prng=0))
-    assert tsallis_entropy_knn(data, 1, prng=0) == pytest.approx(differential_entropy_knn(data, prng=0) * LN2)
+    assert renyi_entropy_knn(data, 1, rng=0) == pytest.approx(differential_entropy_knn(data, rng=0))
+    assert tsallis_entropy_knn(data, 1, rng=0) == pytest.approx(differential_entropy_knn(data, rng=0) * LN2)
     with pytest.raises(ValueError):
         renyi_entropy_knn(data, 6, k=4)

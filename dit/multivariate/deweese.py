@@ -149,7 +149,7 @@ class BaseDeWeeseOptimizer(BaseAuxVarOptimizer):
         """
 
         @unitful
-        def function(dist, rvs=None, crvs=None, niter=None, deterministic=False):
+        def function(dist, rvs=None, crvs=None, niter=None, deterministic=False, rng=None):
             """
             Compute the DeWeese {name}.
 
@@ -173,7 +173,7 @@ class BaseDeWeeseOptimizer(BaseAuxVarOptimizer):
                 The value of the DeWeese {name}.
             """
             opt = cls(dist, rvs=rvs, crvs=crvs, deterministic=deterministic)
-            opt.optimize(niter=niter)
+            opt.optimize(rng=rng, niter=niter)
             return cls._sign * opt.objective(opt._optima)
 
         function.__doc__ = function.__doc__.format(name=cls.name)
@@ -185,6 +185,9 @@ class DeWeeseCoInformation(BaseDeWeeseOptimizer):
     """
     The DeWeese Co-Information:
         I_D[X_0 : ... : X_n | Y] = max_{p(x'_i | x_i)} I[X'_0 : ... : X'_n | Y]
+        rng : np.random.Generator, int, None
+            Source of randomness for the optimizer.
+
     """
 
     name = "coinformation"

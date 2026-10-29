@@ -11,6 +11,7 @@ import numpy as np
 from ...algorithms.optimization import parallel_sweep
 from ...multivariate import entropy
 from ...utils import flatten
+from ...utils.deprecation import renamed_kwarg
 from .network import GrayWynerNetwork
 
 __all__ = ("GrayWynerCurve",)
@@ -21,13 +22,14 @@ class GrayWynerCurve:
     Compute the common-rate vs total-private-rate trade-off curve.
     """
 
+    @renamed_kwarg("bounds", "distortion_bounds")
     def __init__(
         self,
         dist,
         rvs=None,
         crvs=None,
         distortions=None,
-        bounds=None,
+        distortion_bounds=None,
         s_min=0.0,
         s_max=4.0,
         s_num=21,
@@ -48,7 +50,7 @@ class GrayWynerCurve:
             Variables to condition on.
         distortions : list, None
             Per-decoder distortion matrices (None entries are lossless).
-        bounds : list, None
+        distortion_bounds : list, None
             Per-decoder distortion budgets. If None, lossless.
         s_min, s_max : float
             The range of the private-rate weight ``s``. The weight vector at
@@ -72,7 +74,7 @@ class GrayWynerCurve:
             rvs=self.rvs,
             crvs=self.crvs,
             distortions=distortions,
-            bounds=bounds,
+            distortion_bounds=distortion_bounds,
             bound=bound,
         )
 

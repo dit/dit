@@ -3,6 +3,8 @@ The (generalized) cumulative residual entropy and conditional (generalized)
 cumulative residual entropy.
 """
 
+from collections import defaultdict
+
 import numpy as np
 from boltons.iterutils import pairwise
 
@@ -50,6 +52,19 @@ def _cumulative_residual_entropy(dist, generalized=False):
         term = (b - a) * pgx * np.log2(pgx) if pgx > 0 else 0.0
         terms.append(term)
     return -np.nansum(terms)
+
+
+def _value_distribution(values, pmf):
+    """
+    The distribution of `values` under `pmf`, merging repeated values.
+
+    Distinct conditioning outcomes often share a value (always, when the
+    variables are independent), so their probabilities must be summed.
+    """
+    totals = defaultdict(float)
+    for value, p in zip(values, pmf, strict=True):
+        totals[value] += p
+    return Distribution(list(totals), list(totals.values()))
 
 
 @unitful
@@ -176,7 +191,7 @@ def conditional_cumulative_residual_entropy(dist, rv, crvs=None):
         crvs = []
     mdist, cdists = dist.condition_on(crvs=crvs, rvs=[rv])
     cres = [cumulative_residual_entropy(cd, extract=True) for cd in cdists]
-    ccre = Distribution(cres, mdist.pmf)
+    ccre = _value_distribution(cres, mdist.pmf)
     return ccre
 
 
@@ -224,5 +239,5 @@ def conditional_generalized_cumulative_residual_entropy(dist, rv, crvs=None):
         crvs = []
     mdist, cdists = dist.condition_on(crvs=crvs, rvs=[rv])
     cres = [generalized_cumulative_residual_entropy(cd, extract=True) for cd in cdists]
-    ccre = Distribution(cres, mdist.pmf)
+    ccre = _value_distribution(cres, mdist.pmf)
     return ccre

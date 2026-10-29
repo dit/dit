@@ -53,13 +53,13 @@ def test_chi2_matches_contingency():
 @pytest.mark.parametrize("statistic", ["entropy_rate", "chi2"])
 def test_rejects_too_small_order(statistic):
     x = _chain(2, 3, 600, np.random.default_rng(1))
-    assert markov_order_test(x, 1, statistic=statistic, n_surrogates=200, prng=0).pvalue < 0.05
-    assert markov_order_test(x, 2, statistic=statistic, n_surrogates=200, prng=0).pvalue > 0.05
+    assert markov_order_test(x, 1, statistic=statistic, n_surrogates=200, rng=0).pvalue < 0.05
+    assert markov_order_test(x, 2, statistic=statistic, n_surrogates=200, rng=0).pvalue > 0.05
 
 
 def test_exact_pvalue_bounds():
     x = _chain(1, 2, 100, np.random.default_rng(2))
-    result = markov_order_test(x, 1, n_surrogates=99, prng=0)
+    result = markov_order_test(x, 1, n_surrogates=99, rng=0)
     assert 0.01 <= result.pvalue <= 1.0
     assert result.null.shape == (99,)
 
@@ -71,7 +71,7 @@ def test_exact_size():
     rng = np.random.default_rng(3)
     trials = 200
     rejections = sum(
-        markov_order_test(_chain(1, 3, 60, rng), 1, n_surrogates=99, prng=t).pvalue <= 0.05 for t in range(trials)
+        markov_order_test(_chain(1, 3, 60, rng), 1, n_surrogates=99, rng=t).pvalue <= 0.05 for t in range(trials)
     )
     assert rejections / trials < 0.1
 
@@ -79,7 +79,7 @@ def test_exact_size():
 @pytest.mark.parametrize("method", ["exact", "chi2", "aic", "bic"])
 def test_select_markov_order(method):
     x = _chain(2, 3, 1000, np.random.default_rng(4))
-    assert select_markov_order(x, 4, method=method, n_surrogates=200, prng=0) == 2
+    assert select_markov_order(x, 4, method=method, n_surrogates=200, rng=0) == 2
 
 
 def test_even_process_order_grows():
@@ -94,7 +94,7 @@ def test_even_process_order_grows():
 
 def test_dist_from_timeseries_auto():
     x = _chain(2, 2, 2000, np.random.default_rng(6))
-    d = dist_from_timeseries(x, history_length="auto", prng=0)
+    d = dist_from_timeseries(x, history_length="auto", rng=0)
     assert d.outcome_length() == 3
     d = dist_from_timeseries(x, history_length="bic")
     assert d.outcome_length() == 3

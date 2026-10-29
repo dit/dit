@@ -27,6 +27,7 @@ import numpy as np
 from scipy.optimize import minimize
 
 from ...channelorder._utils import channels_from_joint
+from ...utils.deprecation import renamed_kwarg
 from ..pid import BaseBivariatePID
 
 __all__ = ("PID_MC",)
@@ -255,7 +256,8 @@ class PID_MC(BaseBivariatePID):
     _name = "I_mc∩"
 
     @staticmethod
-    def _measure(d, sources, target, n_samples=None, niter=None, seed=None):
+    @renamed_kwarg("seed", "rng")
+    def _measure(d, sources, target, n_samples=None, niter=None, rng=None):
         """
         Compute the more-capable II redundancy for a pair of sources.
 
@@ -272,7 +274,7 @@ class PID_MC(BaseBivariatePID):
             more-capable constraints.  Defaults to max(50, 10*|T|).
         niter : int or None
             Number of optimization restarts.
-        seed : int or None
+        rng : int or None
             Random seed for simplex samples.
 
         Returns
@@ -297,5 +299,5 @@ class PID_MC(BaseBivariatePID):
             pi_t,
             n_samples=n_samples,
             niter=niter,
-            seed=seed,
+            seed=rng,
         )

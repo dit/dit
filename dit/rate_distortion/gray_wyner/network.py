@@ -7,9 +7,11 @@ that live at its corners.
 """
 
 import numpy as np
+from debtcollector import moves
 
 from ...algorithms.optimization import parallel_sweep
 from ...utils import flatten, unitful
+from ...utils.deprecation import renamed_kwarg
 from .optimizer import GrayWynerOptimizer
 from .region import (
     rates_to_extension,
@@ -39,22 +41,25 @@ class GrayWynerNetwork:
     distortions : list, None
         Per-decoder distortion matrices, or None entries for lossless
         decoders. If None, every decoder is lossless.
-    bounds : list, None
+    distortion_bounds : list, None
         Per-decoder distortion budgets ``D_i``. If None, all zero (lossless).
     bound : int, None
         Optional cap on the cardinality of the common auxiliary ``W``.
     """
 
-    def __init__(self, dist, rvs=None, crvs=None, distortions=None, bounds=None, bound=None):
+    bounds = moves.moved_read_only_property("bounds", "distortion_bounds", version="2.4", removal_version="3.0")
+
+    @renamed_kwarg("bounds", "distortion_bounds")
+    def __init__(self, dist, rvs=None, crvs=None, distortions=None, distortion_bounds=None, bound=None):
         self.dist = dist.copy()
         self.rvs = [[i] for i in flatten(dist.rvs)] if rvs is None else rvs
         self.crvs = crvs
         self.n = len(self.rvs)
         self.distortions = distortions
-        self.bounds = bounds
+        self.distortion_bounds = distortion_bounds
         self.bound = bound
 
-        self._lossless = bounds is None or all(b <= 0 for b in bounds)
+        self._lossless = distortion_bounds is None or all(b <= 0 for b in distortion_bounds)
 
         from ...multivariate import entropy
 
@@ -90,14 +95,15 @@ class GrayWynerNetwork:
             rvs=self.rvs,
             crvs=self.crvs,
             distortions=self.distortions,
-            bounds=self.bounds,
+            distortion_bounds=self.distortion_bounds,
             bound=self.bound,
             **kwargs,
         )
         opt.optimize(niter=niter, maxiter=maxiter, polish=polish, rng=rng)
         return opt.rates()
 
-    def region(self, num=20, niter=None, maxiter=1000, seed=None):
+    @renamed_kwarg("seed", "rng")
+    def region(self, num=20, niter=None, maxiter=1000, rng=None):
         """
         Sample the lower boundary of the achievable rate region.
 
@@ -114,7 +120,7 @@ class GrayWynerNetwork:
             Number of basin hops per point.
         maxiter : int
             Inner optimizer iterations.
-        seed : int, None
+        rng : int, np.random.Generator, None
             Seed for the random weight sampler.
 
         Returns
@@ -122,7 +128,7 @@ class GrayWynerNetwork:
         points : list of GrayWynerPoint
             The sampled boundary points.
         """
-        rng = np.random.default_rng(seed)
+        rng = np.random.default_rng(rng)
         dim = self.n + 1
 
         weights = list(np.eye(dim))  # vertices: pure common, pure each private
@@ -153,7 +159,8 @@ class GrayWynerNetwork:
         rates = self.rate_point(lambdas, **kwargs)
         return rates_to_tension(rates, self._marginal_entropies, self._joint_entropy)
 
-    def tension_region(self, num=20, niter=None, maxiter=1000, seed=None):
+    @renamed_kwarg("seed", "rng")
+    def tension_region(self, num=20, niter=None, maxiter=1000, rng=None):
         """
         Sample the lower boundary of the region of tension.
 
@@ -170,7 +177,7 @@ class GrayWynerNetwork:
             Number of basin hops per point.
         maxiter : int
             Inner optimizer iterations.
-        seed : int, None
+        rng : int, np.random.Generator, None
             Seed for the random weight sampler.
 
         Returns
@@ -178,10 +185,11 @@ class GrayWynerNetwork:
         points : list of TensionPoint
             The sampled boundary points.
         """
-        rates = self.region(num=num, niter=niter, maxiter=maxiter, seed=seed)
+        rates = self.region(num=num, niter=niter, maxiter=maxiter, rng=rng)
         return [rates_to_tension(point, self._marginal_entropies, self._joint_entropy) for point in rates]
 
-    def extension_profile(self, num=20, niter=None, maxiter=1000, seed=None):
+    @renamed_kwarg("seed", "rng")
+    def extension_profile(self, num=20, niter=None, maxiter=1000, rng=None):
         """
         Sample the lower boundary of the extension profile.
 
@@ -198,7 +206,7 @@ class GrayWynerNetwork:
             Number of basin hops per point.
         maxiter : int
             Inner optimizer iterations.
-        seed : int, None
+        rng : int, np.random.Generator, None
             Seed for the random weight sampler.
 
         Returns
@@ -206,10 +214,11 @@ class GrayWynerNetwork:
         points : list of ExtensionPoint
             The sampled boundary points.
         """
-        rates = self.region(num=num, niter=niter, maxiter=maxiter, seed=seed)
+        rates = self.region(num=num, niter=niter, maxiter=maxiter, rng=rng)
         return [rates_to_extension(point, self._joint_entropy) for point in rates]
 
-    def mutual_information_region(self, num=20, niter=None, maxiter=1000, seed=None):
+    @renamed_kwarg("seed", "rng")
+    def mutual_information_region(self, num=20, niter=None, maxiter=1000, rng=None):
         """
         Sample the lower boundary of the mutual information region.
 
@@ -226,7 +235,7 @@ class GrayWynerNetwork:
             Number of basin hops per point.
         maxiter : int
             Inner optimizer iterations.
-        seed : int, None
+        rng : int, np.random.Generator, None
             Seed for the random weight sampler.
 
         Returns
@@ -234,7 +243,7 @@ class GrayWynerNetwork:
         points : list of MutualInformationPoint
             The sampled boundary points.
         """
-        rates = self.region(num=num, niter=niter, maxiter=maxiter, seed=seed)
+        rates = self.region(num=num, niter=niter, maxiter=maxiter, rng=rng)
         return [rates_to_mutual_information(point, self._marginal_entropies) for point in rates]
 
     def _zero_tension_equalities(self, exclude=()):
@@ -361,7 +370,7 @@ class GrayWynerNetwork:
             return {
                 "lossy_wyner": lossy_wyner_common_information(
                     self.dist,
-                    bounds=self.bounds,
+                    distortion_bounds=self.distortion_bounds,
                     distortions=self.distortions,
                     rvs=self.rvs,
                     crvs=self.crvs,
@@ -379,9 +388,10 @@ class GrayWynerNetwork:
 
 
 @unitful
+@renamed_kwarg("bounds", "distortion_bounds")
 def lossy_wyner_common_information(
     dist,
-    bounds=None,
+    distortion_bounds=None,
     distortions=None,
     rvs=None,
     crvs=None,
@@ -402,7 +412,7 @@ def lossy_wyner_common_information(
     ----------
     dist : Distribution
         The source distribution.
-    bounds : list, None
+    distortion_bounds : list, None
         Per-decoder distortion budgets ``D_i``. If None (or all zero), the
         lossless Wyner common information is returned.
     distortions : list, None
@@ -423,7 +433,7 @@ def lossy_wyner_common_information(
     C : float
         The lossy Wyner common information.
     """
-    lossless = bounds is None or all(b <= 0 for b in bounds)
+    lossless = distortion_bounds is None or all(b <= 0 for b in distortion_bounds)
 
     if lossless:
         from ...multivariate import wyner_common_information
@@ -447,7 +457,7 @@ def lossy_wyner_common_information(
         rvs=rvs,
         crvs=crvs,
         distortions=distortions,
-        bounds=bounds,
+        distortion_bounds=distortion_bounds,
         bound=bound,
     )
     opt.optimize(niter=niter, maxiter=maxiter)

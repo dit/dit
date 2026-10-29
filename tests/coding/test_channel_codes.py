@@ -32,25 +32,25 @@ def test_ldpc_noiseless_roundtrip():
 
 def test_ldpc_error_rate_increases_with_noise():
     """A sparse Gallager code has a higher error rate at higher noise."""
-    code = gallager(20, 3, 5, prng=np.random.default_rng(0))
+    code = gallager(20, 3, 5, rng=np.random.default_rng(0))
     low = code.probability_of_error(
         binary_symmetric_channel(0.01),
         method="montecarlo",
         samples=1000,
-        prng=np.random.default_rng(1),
+        rng=np.random.default_rng(1),
     )
     high = code.probability_of_error(
         binary_symmetric_channel(0.1),
         method="montecarlo",
         samples=1000,
-        prng=np.random.default_rng(2),
+        rng=np.random.default_rng(2),
     )
     assert low < high
 
 
 def test_gallager_shape():
     """The Gallager construction produces the expected parity-check shape."""
-    code = gallager(12, 2, 4, prng=np.random.default_rng(0))
+    code = gallager(12, 2, 4, rng=np.random.default_rng(0))
     assert code.H.shape == (6, 12)
     assert all(code.H.sum(axis=1) == 4)  # row weight wr
     assert all(code.H.sum(axis=0) == 2)  # column weight wc
@@ -87,13 +87,13 @@ def test_polar_error_rate_increases_with_erasure():
         binary_erasure_channel(0.1),
         method="montecarlo",
         samples=3000,
-        prng=np.random.default_rng(0),
+        rng=np.random.default_rng(0),
     )
     high = code.probability_of_error(
         binary_erasure_channel(0.5),
         method="montecarlo",
         samples=3000,
-        prng=np.random.default_rng(1),
+        rng=np.random.default_rng(1),
     )
     assert low < high
 
