@@ -50,6 +50,32 @@ For a fair bit through an erasure channel with erasure probability :math:`p` (:f
 
 The :doc:`/channels/gray_wyner` extension profile also draws this curve (``ExtensionProfile.channel_synthesis``), approximated from points on the profile's boundary for plotting; :func:`channel_synthesis_rate` optimizes over :math:`U` directly.
 
+Exact Synthesis
+===============
+
+If the decoder must reproduce the joint distribution exactly rather than approximately, the message is compressed with variable-length codes and the rate rises. Yu and Tan :cite:`yu2020exact` show that
+
+.. math::
+
+   R(R_0) = \min_{X - U - Y} \max\left\{ \I{X : U},\ \Gamma_U - R_0 \right\},
+   \qquad
+   \Gamma_U = -\H{X, Y | U} + \sum_u p(u) \mathbb{H}(p_{X|u}, p_{Y|u} \| p_{XY}),
+
+is achievable, where :math:`\mathbb{H}` is the :doc:`/measures/divergences/maximal_cross_entropy`; :math:`\Gamma_U \geq \I{X, Y : U}`, so this rate is at least the approximate one. Without common randomness it is the upper bound on the :doc:`exact_common_information_rate`, and once :math:`R_0 \geq \H{Y | X}` both rates equal :math:`\I{X : Y}`. For the doubly symmetric binary source this rate is the exact synthesis rate, strictly above the approximate rate for small :math:`R_0`:
+
+.. ipython::
+   :verbatim:
+
+   In [5]: d = dit.Distribution(['00', '01', '10', '11'], [0.4, 0.1, 0.1, 0.4])
+
+   In [6]: [round(channel_synthesis_rate(d, [0], [1], common_randomness=t), 4) for t in (0.0, 0.2, 0.4)]
+   Out[6]: [0.7059, 0.5059, 0.3653]
+
+   In [7]: [round(channel_synthesis_rate(d, [0], [1], common_randomness=t, exact=True), 4) for t in (0.0, 0.2, 0.4)]
+   Out[7]: [0.7567, 0.5567, 0.3863]
+
+Pass ``exact=True`` for a single output without ``crvs`` over a private channel. Every auxiliary variable found reproduces the distribution exactly, so the result is an achievable rate even when the optimizer misses the minimum.
+
 API
 ===
 

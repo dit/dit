@@ -23,6 +23,7 @@ from .._backend import _make_backend_subclass
 from ..coinformation import coinformation
 from ..dual_total_correlation import dual_total_correlation
 from .base_markov_optimizer import MarkovVarOptimizer
+from .exact_common_information_rate import _exact_channel_synthesis_rate
 
 __all__ = ("channel_synthesis_rate",)
 
@@ -226,6 +227,7 @@ def channel_synthesis_rate(
     polish=1e-6,
     bound=None,
     backend="numpy",
+    exact=False,
 ):
     r"""
     The minimal communication rate for distributed channel synthesis
@@ -250,6 +252,24 @@ def channel_synthesis_rate(
     synthesized variables, the rate pair must instead satisfy
     :math:`R \ge \I{X : U}` and :math:`R_0 \ge \I{X, Y_1, \ldots, Y_m : U}`, so
     that :math:`R_0` must be at least the Wyner common information.
+
+    With ``exact=True`` the decoder must reproduce the joint distribution exactly
+    rather than approximately, using variable-length messages. Yu and Tan
+    :cite:`yu2020exact` show the rate
+
+    .. math::
+
+       R(R_0) = \min_{X - U - Y} \max\left\{ \I{X : U},\ \Gamma_U - R_0 \right\},
+       \qquad
+       \Gamma_U = -\H{X, Y | U} + \sum_u p(u) \mathbb{H}(p_{X|u}, p_{Y|u} \| p_{XY}),
+
+    is achievable, where :math:`\mathbb{H}` is the
+    :func:`~dit.divergences.maximal_cross_entropy`. It is at least the
+    approximate rate, equals it once :math:`R_0 \ge \H{Y | X}`, is the exact
+    synthesis rate of the doubly symmetric binary source, and without common
+    randomness is :func:`exact_common_information_rate`. Every auxiliary variable
+    found reproduces the distribution exactly, so the result is achievable even
+    when the optimizer misses the minimum.
 
     Parameters
     ----------
@@ -281,18 +301,33 @@ def channel_synthesis_rate(
     backend : str
         The optimization backend to use. One of ``'numpy'`` (default),
         ``'jax'``, or ``'torch'``.
+    exact : bool
+        Whether the distribution must be reproduced exactly. Requires a single
+        output, no `crvs`, a private channel, and the ``'numpy'`` backend.
+        Defaults to False.
 
     Returns
     -------
     rate : float
-        The minimal communication rate.
+        The minimal communication rate, or with ``exact=True`` the Yu-Tan
+        achievable rate.
 
     Raises
     ------
     ditException
         Raised if `public` is True and no auxiliary variable meets the
-        common-randomness budget, i.e. it is below the Wyner common information.
+        common-randomness budget, i.e. it is below the Wyner common information,
+        or if `exact` is True with an unsupported option.
     """
+    if exact:
+        groups = _as_groups(outputs)
+        if public or crvs or len(groups) != 1 or backend != "numpy":
+            msg = "Exact channel synthesis needs a single output, no crvs, a private channel, and the numpy backend."
+            raise ditException(msg)
+        return _exact_channel_synthesis_rate(
+            dist, [list(inputs), groups[0]], common_randomness, niter, maxiter, polish, bound
+        )
+
     rvs = [list(inputs), *_as_groups(outputs)]
     rvs, crvs = normalize_rvs(dist, rvs, crvs)
 

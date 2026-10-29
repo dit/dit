@@ -40,6 +40,9 @@ from .kullback_leibler_divergence import (
     kullback_leibler_divergence,
     relative_entropy,
 )
+from .maximal_cross_entropy import (
+    maximal_cross_entropy,
+)
 from .maximum_correlation import (
     maximum_correlation,
 )
