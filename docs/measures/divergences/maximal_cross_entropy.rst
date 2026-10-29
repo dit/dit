@@ -5,7 +5,7 @@
 Maximal Cross Entropy
 *********************
 
-The maximal cross entropy :cite:`yu2020exact` of a pair of marginals :math:`p_X, p_Y` relative to a joint distribution :math:`q(x, y)` is the largest :doc:`cross entropy <cross_entropy>`, relative to :math:`q`, of any joint distribution with those marginals:
+The maximal cross entropy :cite:`yu2020exact1` of a pair of marginals :math:`p_X, p_Y` relative to a joint distribution :math:`q(x, y)` is the largest :doc:`cross entropy <cross_entropy>`, relative to :math:`q`, of any joint distribution with those marginals:
 
 .. math::
 

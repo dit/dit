@@ -255,7 +255,7 @@ def channel_synthesis_rate(
 
     With ``exact=True`` the decoder must reproduce the joint distribution exactly
     rather than approximately, using variable-length messages. Yu and Tan
-    :cite:`yu2020exact` show the rate
+    :cite:`yu2020exact1` show the rate
 
     .. math::
 

@@ -20,7 +20,7 @@ the least rate of common randomness, compressed with variable-length codes, from
 Bounds
 ======
 
-No single-letter formula for :math:`\bar{G}` is known. Yu and Tan :cite:`yu2020on,yu2020exact` bound it using the :doc:`/measures/divergences/maximal_cross_entropy` :math:`\mathbb{H}`:
+No single-letter formula for :math:`\bar{G}` is known. Yu and Tan :cite:`yu2020exact2,yu2020exact1` bound it using the :doc:`/measures/divergences/maximal_cross_entropy` :math:`\mathbb{H}`:
 
 .. math::
 

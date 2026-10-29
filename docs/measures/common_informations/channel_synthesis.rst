@@ -53,7 +53,7 @@ The :doc:`/channels/gray_wyner` extension profile also draws this curve (``Exten
 Exact Synthesis
 ===============
 
-If the decoder must reproduce the joint distribution exactly rather than approximately, the message is compressed with variable-length codes and the rate rises. Yu and Tan :cite:`yu2020exact` show that
+If the decoder must reproduce the joint distribution exactly rather than approximately, the message is compressed with variable-length codes and the rate rises. Yu and Tan :cite:`yu2020exact1` show that
 
 .. math::
 

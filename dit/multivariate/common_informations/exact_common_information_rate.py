@@ -13,7 +13,7 @@ draws of :math:`p(x, y)`. It is
                   = \inf_n \frac{1}{n} \G{X^n : Y^n},
 
 where :math:`\G{X : Y}` is the one-shot :func:`exact_common_information`, which
-is subadditive. Yu and Tan :cite:`yu2020on,yu2020exact` bound the rate with the
+is subadditive. Yu and Tan :cite:`yu2020exact2,yu2020exact1` bound the rate with the
 :func:`~dit.divergences.maximal_cross_entropy` :math:`\mathbb{H}`:
 
 .. math::
@@ -846,7 +846,7 @@ def _base(dist):
 def exact_common_information_rate(dist, rvs=None, block_length=1, niter=None, maxiter=1000, polish=1e-6, bound=None):
     r"""
     An upper bound on the exact common information rate :cite:`kumar2014exact`,
-    from Yu and Tan :cite:`yu2020on,yu2020exact`:
+    from Yu and Tan :cite:`yu2020exact2,yu2020exact1`:
 
     .. math::
 
@@ -911,7 +911,7 @@ def exact_common_information_rate_bounds(
 
     The upper bound is :func:`exact_common_information_rate`. The lower bound is
     the larger of the Wyner common information and the Yu-Tan bound
-    :cite:`yu2020on,yu2020exact`
+    :cite:`yu2020exact2,yu2020exact1`
 
     .. math::
 

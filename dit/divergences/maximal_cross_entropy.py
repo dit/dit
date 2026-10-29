@@ -2,7 +2,7 @@ r"""
 The maximal cross entropy over couplings.
 
 For a target joint distribution :math:`q(x, y)` and a pair of marginals
-:math:`p_X, p_Y`, the maximal cross entropy :cite:`yu2020exact` is the largest
+:math:`p_X, p_Y`, the maximal cross entropy :cite:`yu2020exact1` is the largest
 cross entropy, relative to :math:`q`, of any joint distribution with those
 marginals:
 
@@ -208,7 +208,7 @@ def _coalesced(dist, rvs):
 @unitful
 def maximal_cross_entropy(dist1, dist2=None, rvs=None):
     r"""
-    The maximal cross entropy :cite:`yu2020exact`: the largest cross entropy,
+    The maximal cross entropy :cite:`yu2020exact1`: the largest cross entropy,
     relative to `dist2`, of any joint distribution whose marginals on the two
     groups of variables in `rvs` match those of `dist1`,
 
