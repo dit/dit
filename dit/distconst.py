@@ -23,6 +23,7 @@ __all__ = (
     "noisy",
     "erasure",
     "modify_outcomes",
+    "join_symbols",
     "random_scalar_distribution",
     "random_distribution",
     "simplex_grid",
@@ -245,6 +246,58 @@ def modify_outcomes(dist, ctor):
     outcomes = list(newdist.keys())
     pmf = np.array(list(newdist.values()))
     d = dist.__class__(outcomes, pmf, base=dist.get_base())
+    return d
+
+
+def join_symbols(dist):
+    """
+    Join each variable's tuple-of-strings symbols into single string symbols.
+
+    :meth:`Distribution.coalesce` labels each new variable with tuples of the
+    grouped variables' symbols, e.g. ``('0', '1')``. This concatenates every
+    such tuple into a string, ``'01'``, matching dit's usual outcome style.
+    Variables whose symbols are not all tuples of strings are left unchanged,
+    as are the probabilities, base, variable names, and dense or sparse
+    representation.
+
+    Parameters
+    ----------
+    dist : Distribution
+        The distribution whose symbols should be joined.
+
+    Returns
+    -------
+    d : Distribution
+        A copy of `dist` with joined symbols.
+
+    Raises
+    ------
+    ditException
+        If joining would give two distinct symbols of a variable the same
+        string (e.g. ``('0', '10')`` and ``('01', '0')``), which would merge
+        their probabilities.
+
+    Examples
+    --------
+    >>> d = dit.Distribution(['000', '011', '101', '110'], [1 / 4] * 4)
+    >>> dit.join_symbols(d.coalesce([[0, 1], [2]])).outcomes
+    (('00', '0'), ('01', '1'), ('10', '1'), ('11', '0'))
+    """
+    d = dist.copy()
+    for dim in d.data.dims:
+        symbols = list(d.data.coords[dim].values)
+        if not all(isinstance(s, tuple) and all(isinstance(part, str) for part in s) for s in symbols):
+            continue
+        joined = ["".join(s) for s in symbols]
+        if len(set(joined)) < len(joined):
+            first = {}
+            for symbol, label in zip(symbols, joined, strict=True):
+                if label in first:
+                    msg = f"Joining the symbols of {dim!r} would merge {first[label]!r} and {symbol!r} into {label!r}."
+                    raise ditException(msg)
+                first[label] = symbol
+        # Joining can reorder the symbols, and alphabets are kept sorted.
+        d.data = d.data.assign_coords({dim: joined}).sortby(dim)
     return d
 
 

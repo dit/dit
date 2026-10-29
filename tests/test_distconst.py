@@ -475,6 +475,48 @@ def test_coarsegrain():
     assert np.allclose(d2.pmf, [0.25, 0.75])
 
 
+def test_join_symbols_coalesced():
+    d = dit.Distribution(["000", "011", "101", "110"], [1 / 4] * 4)
+    pair = dit.join_symbols(d.coalesce([[0, 1], [2]]))
+    assert pair.outcomes == (("00", "0"), ("01", "1"), ("10", "1"), ("11", "0"))
+    assert np.allclose(pair.pmf, [1 / 4] * 4)
+    single = dit.join_symbols(d.coalesce([[0, 1]]))
+    assert single.alphabet == (("00", "01", "10", "11"),)
+
+
+def test_join_symbols_preserves_structure():
+    d = dit.Distribution([(("0", "1"), "a"), (("1", "0"), "b")], [1 / 2, 1 / 2], rv_names=["X", "Y"])
+    d.make_dense()
+    d.set_base(2)
+    j = dit.join_symbols(d)
+    assert j.dims == ("X", "Y")
+    assert j.get_base() == 2
+    assert j.alphabet == (("01", "10"), ("a", "b"))
+    assert len(j.outcomes) == 4  # zero-probability outcomes are kept
+    assert np.allclose(j.data.values, d.data.values)
+    assert d.alphabet[0] == (("0", "1"), ("1", "0"))  # the input is unchanged
+
+
+def test_join_symbols_keeps_alphabet_sorted():
+    # ('a', 'z') < ('ab', 'a') as tuples, but 'aba' < 'az' as strings.
+    d = dit.Distribution([(("a", "z"),), (("ab", "a"),)], [0.3, 0.7])
+    j = dit.join_symbols(d)
+    assert j.alphabet == (("aba", "az"),)
+    assert j[("az",)] == pytest.approx(0.3)
+    assert j[("aba",)] == pytest.approx(0.7)
+
+
+def test_join_symbols_leaves_non_string_tuples():
+    d = dit.Distribution([(0, 0), (1, 1)], [1 / 2, 1 / 2]).coalesce([[0, 1]])
+    assert dit.join_symbols(d).outcomes == d.outcomes
+
+
+def test_join_symbols_collision():
+    d = dit.Distribution([(("0", "10"),), (("01", "0"),)], [1 / 2, 1 / 2])
+    with pytest.raises(ditException, match="would merge"):
+        dit.join_symbols(d)
+
+
 def test_noisy():
     """
     Test noisy

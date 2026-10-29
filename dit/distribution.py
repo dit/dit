@@ -1629,7 +1629,8 @@ class Distribution:
         combination of original variables.  The result is a joint
         ``Distribution`` over ``len(rvs)`` new random variables whose
         outcomes are tuples (or the inner values when ``extract=True``
-        with a single group).
+        with a single group). Symbols that are tuples of strings can be
+        joined back into strings with :func:`~dit.join_symbols`.
 
         Parameters
         ----------
