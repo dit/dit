@@ -201,6 +201,36 @@ solver:
 
    In [9]: IBCurve(d, variant='dib', method='sequential', beta_num=26).plot();
 
+Fixed Rate
+----------
+
+Instead of a Lagrange multiplier, :class:`InformationBottleneckRate` fixes the
+complexity and maximizes the relevance:
+
+.. math::
+
+   F(R) = \max_{q(\hat{x}|x), \I{X : \hat{X}} \leq R} \I{\hat{X} : Y}
+
+This is the information bottleneck curve as a function of the rate. It is
+concave, so its points are Lagrangian optima, but where it has straight
+segments a sweep over :math:`\beta` returns only their endpoints. As with the
+privacy funnel, the size of :math:`\hat{X}` is bounded by :math:`|X| + 1`. For
+a doubly symmetric binary source with crossover :math:`p`, Mrs. Gerber's lemma
+:cite:`wyner1973theorem` gives
+:math:`F(R) = 1 - h\left(p \star h^{-1}(1 - R)\right)`, where
+:math:`a \star b = a (1 - b) + b (1 - a)`:
+
+.. ipython::
+
+   In [10]: from dit.rate_distortion import information_bottleneck_rate
+
+   In [11]: dsbs = dit.Distribution(['00', '01', '10', '11'], [0.45, 0.05, 0.05, 0.45])
+
+   In [12]: information_bottleneck_rate(dsbs, 0.5, rng=0)
+
+Each stage of the :ref:`higher-order common information
+<higher_order_common_information>` is a bottleneck of this kind.
+
 Privacy Funnel
 ==============
 
@@ -312,6 +342,12 @@ APIs
    :no-index:
 
 .. autoclass:: InformationBottleneckDivergence
+   :no-index:
+
+.. autoclass:: InformationBottleneckRate
+   :no-index:
+
+.. autofunction:: information_bottleneck_rate
    :no-index:
 
 .. autoclass:: PFCurve

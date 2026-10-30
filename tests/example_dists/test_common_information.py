@@ -2,7 +2,7 @@
 Tests for dit.example_dists.common_information
 """
 
-from itertools import permutations, product
+from itertools import combinations, permutations, product
 
 import pytest
 
@@ -106,6 +106,36 @@ def test_noisy_no_shared_or_private(workhorse):
     """
     assert float(K(workhorse)) == pytest.approx(0.0, abs=1e-9)
     assert float(M(workhorse)) == pytest.approx(float(H(workhorse)))
+
+
+def test_noisy_heterogeneous():
+    """
+    With a crossover q_i per copy, copies i and j disagree with probability
+    q_i (1 - q_j) + q_j (1 - q_i), and the number of copies is the number of
+    crossovers.
+    """
+    qs = [0.05, 0.1, 0.2]
+    d = noisy_copies(qs)
+    assert d.outcome_length() == 3
+    table = {tuple(o): p for o, p in d.zipped()}
+    for i, j in combinations(range(3), 2):
+        disagree = sum(p for o, p in table.items() if o[i] != o[j])
+        assert disagree == pytest.approx(qs[i] * (1 - qs[j]) + qs[j] * (1 - qs[i]))
+
+
+def test_noisy_heterogeneous_matches_scalar():
+    """
+    Equal per-copy crossovers give the exchangeable source.
+    """
+    assert noisy_copies([0.1] * 4).is_approx_equal(noisy_copies(0.1, 4))
+
+
+def test_noisy_heterogeneous_bad_n():
+    """
+    ``n`` must agree with the number of crossovers.
+    """
+    with pytest.raises(ValueError, match="number of crossovers"):
+        noisy_copies([0.1, 0.2], n=3)
 
 
 # ---------------------------------------------------------------------------

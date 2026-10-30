@@ -11,6 +11,8 @@ from .information_bottleneck import (
     GeneralizedInformationBottleneck,
     InformationBottleneck,
     InformationBottleneckDivergence,
+    InformationBottleneckRate,
+    information_bottleneck_rate,
 )
 from .privacy_funnel import (
     PrivacyFunnel,
