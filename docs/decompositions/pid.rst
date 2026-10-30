@@ -487,6 +487,9 @@ Drawing from the reconstructability analysis work of Zwick :cite:`zwick2004overv
 
 The measure of Mages & Rohner :cite:`mages2023measure` can be interpreted as a pointwise version of :math:`\Ibroja{\bullet}` to provide a non-negative partial information decomposition for an arbitrary number of sources.
 It obtains its operational interpretation from valuating the reachable decision regions (achievable type I/II error pairs) for each state of the target variable.
+For each target outcome :math:`y`, each source defines a binary-input channel for the event :math:`Y = y`, and its reachable decision region is bounded by its ROC curve.
+The union information of a collection of sources is the pointwise information of the convex hull of their regions (their join), averaged over :math:`y`, and redundancies follow from the union information of sub-collections by inclusion-exclusion :cite:`mages2023measure,mages2024nonnegative`.
+``dit`` computes each join as the upper concave envelope of the ROC curves, and computes the union information of each collection once for the whole lattice.
 
 .. autoclass:: PID_RDR
    :no-index:
