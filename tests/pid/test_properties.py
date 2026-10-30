@@ -20,6 +20,7 @@ from dit.pid import (
     PID_RR,
     PID_SX,
     PID_WB,
+    PID_Deg,
     PID_Delta,
     PID_Do,
     PID_Prec,
@@ -143,6 +144,23 @@ def test_scr_holds(pid):
         k = rng.integers(5, 17)
         d = Distribution(list(rng.choice(outcomes, size=k, replace=False)), rng.dirichlet(np.ones(k)))
         assert pid(d).check("SCR", atol=1e-9)
+
+
+def test_scr_prec():
+    """
+    I_prec fails the source chain rule on the counterexample, where it also has a negative atom.
+    """
+    pid = PID_Prec(MAX_MIN)
+    assert pid.check("SCR").max_violation == pytest.approx(0.5)
+    assert not pid.check("LP1")
+
+
+def test_rdr_degenerate_conditionals():
+    """
+    I_rdr handles the constant sources and targets of conditional decompositions.
+    """
+    assert PID_RDR(AND_XOR, [[0], [1]], [2, 3]).check("TC")
+    assert not PID_RDR(MAX_MIN).check("SCR")
 
 
 def test_scr_context():
@@ -354,7 +372,21 @@ def test_claims_corrections():
     assert str(PID_RDR.claims()["BP"]) == "✗!"
     assert not PID_GK(SAME).check("*")
     assert not PID_RR(bivariates["rdn xor"]).check("LB")
-    assert not PID_RDR(COPY, [[0], [1]], [2, 3]).check("BP")
+    check = PID_RDR(COPY, [[0], [1]], [2, 3]).check("BP")
+    assert not check
+    assert "must not vanish" in str(check)
+
+
+def test_claims_degradation():
+    """
+    PID_Deg computes the redundancy of PID_Prec for two sources only, so it takes the claims for I_prec.
+    """
+    deg, prec = PID_Deg.claims(), PID_Prec.claims()
+    assert deg["LP1"].holds is None
+    assert deg["LP"].holds is False
+    assert str(deg["*"]) == "✓!"
+    for key in set(prec) - {"LP1", "LP"}:
+        assert deg[key].holds == prec[key].holds
 
 
 def test_claims_local_positivity():
@@ -383,7 +415,7 @@ def test_claims_cover_known_measures_and_properties():
         assert set(claims) <= set(PROPERTIES)
 
 
-@pytest.mark.parametrize("pid", [PID_WB, PID_MMI, PID_GK, PID_SX, PID_PM, PID_CCS])
+@pytest.mark.parametrize("pid", [PID_WB, PID_MMI, PID_GK, PID_SX, PID_PM, PID_CCS, PID_Deg, PID_Prec, PID_RDR])
 def test_claims_agree_with_checks(pid):
     """
     No claim made without caveat is contradicted on small examples.

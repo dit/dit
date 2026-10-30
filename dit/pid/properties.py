@@ -77,6 +77,8 @@ class Violation:
         return 0.0
 
     def __str__(self):
+        if self.relation == "!=":
+            return f"{self.where}: got {self.lhs:.6g}"
         return f"{self.where}: needs {self.lhs:.6g} {self.relation} {self.rhs:.6g}"
 
 
@@ -568,11 +570,11 @@ def _check_blackwell(pid, atol):
         tested += 1
         inferior = bool(blackwell_order_joint(pid._dist, list(target), list(source), list(other)))
         vanishes = abs(unique) <= atol
+        s, o = _label([source]), _label([other])
         if inferior and not vanishes:
-            where = f"{_label([source])} is Blackwell inferior to {_label([other])}, so pi({_label([source])})"
-            violations.append(Violation(where, unique, 0.0, "="))
+            violations.append(Violation(f"pi({s}) must vanish, as {s} is Blackwell inferior to {o}", unique, 0.0, "="))
         elif vanishes and not inferior:
-            where = f"{_label([source])} is not Blackwell inferior to {_label([other])}, so pi({_label([source])})"
+            where = f"pi({s}) must not vanish, as {s} is not Blackwell inferior to {o}"
             violations.append(Violation(where, unique, 0.0, "!="))
     holds = (not violations) if tested else None
     return PropertyCheck("BP", holds, tested, violations)
@@ -1214,6 +1216,18 @@ def _local_positivity_claim(lp0, lp1):
     return Claim(True, source=lp0.source)
 
 
+def _two_source_claims(claims, caveat):
+    """
+    The claims for an implementation of a measure that is restricted to two sources.
+    """
+    restricted = {
+        key: Claim(claim.holds, claim.mark, "; ".join(c for c in (claim.caveat, caveat) if c), claim.source)
+        for key, claim in claims.items()
+    }
+    restricted["LP1"] = Claim(None, caveat="defined only for two sources", source=claims["LP1"].source)
+    return restricted
+
+
 def _build_claims():
     claims = defaultdict(dict)
     for key, row in _TABLE5.items():
@@ -1222,6 +1236,9 @@ def _build_claims():
                 claims[measure][key] = _table5_claim(entry, key)
     for (measure, key), claim in _TABLE5_CORRECTIONS.items():
         claims[measure][key] = claim
+    # PID_Deg computes the redundancy of PID_Prec (Kolchinsky's Blackwell redundancy, the
+    # degradation redundancy of Gomes & Figueiredo), but only for two sources.
+    claims["PID_Deg"] = _two_source_claims(claims["PID_Prec"], "as for I_prec, which PID_Deg computes for two sources")
     for table in claims.values():
         table["LP"] = _local_positivity_claim(table["LP0"], table["LP1"])
     for measure, claim in _source_chain_rule_claims().items():
