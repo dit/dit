@@ -7,19 +7,20 @@ https://arxiv.org/abs/1908.08642
 Given a joint distribution p_{Y,X_1,X_2}, this redundancy measure is
 given by the solution to the following optimization problem:
 
-R = min_{s_{Q|Y}} I_s(Y;Q)
+R = max_{s_{Q|Y}} I_s(Y;Q)
              s.t. s_{Q|Y} ⪯ p_{X_i|Y} ∀i
 
 This can in turn be re-written as:
- R = min_{s_{Q|Y},s_{Q|X_1}, .., s_{Q|X_n}} I_s(Y;Q)
+ R = max_{s_{Q|Y},s_{Q|X_1}, .., s_{Q|X_n}} I_s(Y;Q)
      s.t. ∀i,q,y : Σ_{x_i} s(q|x_i) p(x_i,y) = s(q|y)p(y)
 
-Note that this is optimization problem involes a maximization of
-a convex function subject to a system of linear constraints.  This
-system of linear constraints defines a convex polytope, and the maximum
-of the function will lie at one of the vertices of the polytope.  We
-proceed by finding these vertices, iterating over them, and finding
-the vertex with the largest value of I(Y;Q).
+This is the maximization of a convex function subject to a system of linear
+constraints. It is the same quantity as the degradation intersection
+information of `ideg`, and by default it is computed exactly by the same
+linear program over the extreme rays of the cone of common degradations. If
+the cardinality of Q is fixed, the maximum is instead found by enumerating the
+vertices of the polytope of degradation channels and evaluating I(Y;Q) at
+each one.
 """
 
 import numpy as np
@@ -28,13 +29,46 @@ from scipy.special import entr
 from ...algorithms.convex_maximization import maximize_convex_function
 from ...shannon import mutual_information
 from ..pid import BasePID
+from .ideg import _degradation_lp
 
 __all__ = ("PID_Prec",)
+
+
+def _lp_solution(pjoint, target_rvndx, probs_y):
+    """
+    Compute I_prec and an optimal Q by the linear program over the extreme rays of the
+    cone of common degradations.
+    """
+    channels = []
+    for rvndx in range(len(pjoint.rvs)):
+        if rvndx == target_rvndx:
+            continue
+        pYSource = pjoint.marginal([rvndx, target_rvndx])
+        joint = np.array(
+            [
+                [pYSource[pYSource._outcome_ctor((x, y))] for x in pjoint.alphabet[rvndx]]
+                for y in pjoint.alphabet[target_rvndx]
+            ]
+        )
+        channels.append(joint / probs_y[:, None])
+
+    v_opt, lambdas = _degradation_lp(channels, probs_y)
+
+    sol = {"p(Q,Y)": (probs_y[:, None] * (channels[0] @ lambdas[0])).T}
+    for rvndx, lam in enumerate(lambdas):
+        sol[f"p(Q|X{rvndx})"] = lam.T
+    return v_opt, sol
 
 
 class PID_Prec(BasePID):
     """
     The :math:`I_{\\prec}` measure defined by Kolchinsky.
+
+    This is the degradation intersection information of
+    :class:`~dit.pid.PID_Deg`, for any number of sources. By default it is
+    computed exactly, by the same linear program over the extreme rays of the
+    cone of common degradations. Passing ``n_q`` fixes the cardinality of the
+    redundancy variable and finds the maximum by vertex enumeration instead.
     """
 
     _name = "I_≺"
@@ -56,10 +90,12 @@ class PID_Prec(BasePID):
             The target variable.
         n_q : int (default None)
             The cardinality of the redundancy random variable Q. If not specified,
-            then use the cardinality from Theorem A1 in the paper (this cardinality
-            is always sufficient). Choosing a lower cardinality by setting n_q can
-            dramatically speed up computation, but at the cost of only providing a
-            lower bound on the Blackwell redundancy
+            the exact maximum is computed by a linear program over the extreme rays
+            of the cone of common degradations, and Q needs at most the cardinality
+            from Theorem A1 in the paper. If specified, the maximum over Q with this
+            cardinality is computed by enumerating the vertices of the polytope of
+            degradation channels (which requires pypoman); a cardinality below that
+            of Theorem A1 may only give a lower bound on the Blackwell redundancy.
 
         Returns
         -------
@@ -85,6 +121,14 @@ class PID_Prec(BasePID):
             # Trivial case where target or redundancy has a single outcome, redundancy has to be 0
             return 0, {}
 
+        for rvndx in range(len(pjoint.rvs)):
+            mP = pjoint.marginal([rvndx])  # the marginal distribution over the current R.V.
+            if len(mP._outcomes_index) != len(pjoint.alphabet[rvndx]):
+                raise Exception("All marginals should have full support (to proceed, drop outcomes with 0 probability)")
+
+        if n_q is None:
+            return _lp_solution(pjoint, target_rvndx, probs_y)
+
         # variablesQgiven holds ppl variables that represent conditional probability
         # values of s(Q=q|X_i=x_i) for different sources i, as well as s(Q=q|Y=y)
         # for the target Y (recall that Q is our redundancy random variable)
@@ -92,19 +136,9 @@ class PID_Prec(BasePID):
 
         var_ix = 0  # counter for tracking how many variables we've created
 
-        if n_q is None:
-            # Calculate the maximum number of outcomes we will require for Q, per Theorem A1
-            n_q = (
-                sum([len(alphabet) - 1 for rvndx, alphabet in enumerate(pjoint.alphabet) if rvndx != target_rvndx]) + 1
-            )
-
         # Iterate over all the random variables (R.V.s): i.e., all the sources + the target
         for rvndx, _rv in enumerate(pjoint.rvs):
             variablesQgiven[rvndx] = {}
-
-            mP = pjoint.marginal([rvndx])  # the marginal distribution over the current R.V.
-            if len(mP._outcomes_index) != len(pjoint.alphabet[rvndx]):
-                raise Exception("All marginals should have full support (to proceed, drop outcomes with 0 probability)")
 
             # Iterate over outcomes of current R.V.
             for v_ix, _v in enumerate(pjoint.alphabet[rvndx]):

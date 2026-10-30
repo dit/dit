@@ -1,124 +1,160 @@
 """
-The I_rdr measure (reachable decision regions), by Mages & Rohner
+The I_rdr measure (reachable decision regions) of Mages & Rohner.
 
-https://arxiv.org/abs/2407.04415
+For each target outcome t, a source S defines a binary-input channel for the event
+T = t, and the decisions it allows form a convex region bounded by its ROC curve.
+The union information of a collection of sources is the pointwise information of
+the convex hull of their regions (their join), averaged over t, and the redundancy
+of an antichain follows from the union information of its sub-collections by
+inclusion-exclusion.
+
+References
+----------
+.. [1] T. Mages and C. Rohner, "Decomposing and Tracing Mutual Information by
+       Quantifying Reachable Decision Regions", Entropy 25, 1014, 2023.
+.. [2] T. Mages, E. Anastasiadi and C. Rohner, "Non-Negative Decomposition of
+       Multivariate Information: From Minimum to Blackwell-Specific Information",
+       Entropy 26, 424, 2024.
 """
 
-from functools import reduce
+from itertools import combinations
 
 import numpy as np
-from scipy.spatial import ConvexHull
 
-from ..pid import BasePID
+from ..pid import BasePID, _pid_coerce
 
 __all__ = ("PID_RDR",)
 
 
-PRECISION = 14
+# Points of ROC curves closer than this in both coordinates are taken to be equal.
+_TOL = 1e-12
 
 
-def r_prec(x, prec=PRECISION):
+def _roc_curves(dist, source, target, p_t):
     """
-    Rounding a float to precision
+    ROC curves of the binary-input channels from the events T = t to a source.
 
     Parameters
     ----------
-    x : Float
-        input value
-    pred: Int
-        rounding precision
+    dist : Distribution
+        The joint distribution.
+    source : iterable
+        The source variables.
+    target : iterable
+        The target variables.
+    p_t : dict
+        The probability of each target value t with 0 < p(t) < 1.
 
     Returns
     -------
-    y : float
-        rounded result
+    curves : dict
+        For each t in `p_t`, the vertices (false positive rate, true positive rate)
+        of the ROC curve of the source for the event T = t, from (0, 0) to (1, 1).
     """
-    return np.round(x, prec)
+    pairs = dist.coalesce([list(source), list(target)]).to_dict()
+    symbols = {s: i for i, s in enumerate(dict.fromkeys(s for s, _ in pairs))}
+    targets = {t: j for j, t in enumerate(p_t)}
+    joint = np.zeros((len(symbols), len(targets)))
+    for (s, t), p in pairs.items():
+        if t in targets:
+            joint[symbols[s], targets[t]] += p
+
+    curves = {}
+    for t, j in targets.items():
+        hit = joint[:, j]
+        miss = np.delete(joint, j, axis=1).sum(axis=1)
+        ratio = np.divide(hit, miss, out=np.full_like(hit, np.inf), where=miss > 0)
+        order = np.argsort(-ratio, kind="stable")
+        # Dividing the cumulative sums by their totals ends every curve exactly at (1, 1).
+        fpr = np.cumsum(miss[order])
+        tpr = np.cumsum(hit[order])
+        curves[t] = np.vstack([[0.0, 0.0], np.column_stack([fpr / fpr[-1], tpr / tpr[-1]])])
+    return curves
 
 
-def condition_pw(p_Tt, p_STt):
+def _upper_envelope(points):
     """
-    Compute set of vectors corresponding to the conditional pointwise channel (zonotope vectors)
+    Vertices of the upper concave envelope of points in the unit square that include
+    (0, 0) and (1, 1), from (0, 0) to (1, 1), by the monotone chain algorithm.
 
-    Parameters
-    ----------
-    p_Tt : Float
-        Probability of P(T=t)
-    p_STt : dict
-        dictionary corresponding to the joint distribution of P(S,Tt)
-
-    Returns
-    -------
-    p_S_g_Tt : list of tuples
-        set of vectors specifying P(S|Tt)
+    Points which are numerically equal are merged, so that the envelope has no
+    spurious edges of rounding-error size.
     """
-    s_alphabet = {x[0] for x in p_STt}
-    # return list of tuples with target order (True,False)
-    return [(p_STt.get((s, True), 0) / p_Tt, p_STt.get((s, False), 0) / (1 - p_Tt)) for s in s_alphabet]
+    points = points[np.lexsort((points[:, 1], points[:, 0]))]
+    hull = []
+    for p in points:
+        while hull and np.all(np.abs(p - hull[-1]) <= _TOL):
+            p = np.maximum(p, hull.pop())
+        while len(hull) >= 2:
+            (x0, y0), (x1, y1) = hull[-2], hull[-1]
+            if (x1 - x0) * (p[1] - y0) - (y1 - y0) * (p[0] - x0) < 0:
+                break
+            hull.pop()
+        hull.append(p)
+    return np.array(hull)
 
 
-def cv_hull(p_S1_g_Tt, p_S2_g_Tt):
+def _pointwise_information(p, envelope):
     """
-    Compute convex hull of two pointwise channels (blackwell joint of binary input channels)
-
-    Parameters
-    ----------
-    p_S1_g_Tt : list of tuples
-        set of vectors specifying P(S1|Tt)
-    p_S2_g_Tt : list of tuples
-        set of vectors specifying P(S2|Tt)
-
-    Returns
-    -------
-    p_S2vS2_g_Tt : list of tuples
-        set of vectors specifying their convex hull
+    Pointwise information about the event T = t, of probability `p`, of the channel
+    whose ROC curve is `envelope`: sum_k x_k log2(x_k / (p x_k + (1 - p) y_k)), over
+    the edges (y_k, x_k) of the envelope (Equation 28a of Mages & Rohner).
     """
-    # sort by likelihood ratio (construct zonotope)
-    channel1 = sorted(p_S1_g_Tt, key=lambda x: x[0] / x[1] if x[1] != 0 else np.inf, reverse=True)
-    channel2 = sorted(p_S2_g_Tt, key=lambda x: x[0] / x[1] if x[1] != 0 else np.inf, reverse=True)
-    # check dimensionality > 1 (causes issues in ConvexHull function)
-    if len({x[0] / x[1] if x[1] != 0 else np.inf for x in (channel1 + channel2)}) > 1:
-        # generate zonotopes and their convex hull
-        points1 = reduce(lambda p, v: p + [(p[-1][0] + v[0], p[-1][1] + v[1])], channel1[1:], [channel1[0]])
-        points2 = reduce(lambda p, v: p + [(p[-1][0] + v[0], p[-1][1] + v[1])], channel2[1:], [channel2[0]])
-        hull = ConvexHull([(b, a) for a, b in ([(0.0, 0.0)] + points1 + points2)])
-        hull_points = [(a, b) for b, a in hull.points[hull.vertices].tolist()]
-        # generate resulting channel from vertices
-        hull_points = sorted([x for x in hull_points if x not in ((0, 0), (0.0, 0.0))])
-        diff_list = zip([(0.0, 0.0)] + hull_points[:-1], hull_points, strict=True)
-        return [(r_prec(n[0] - m[0]), r_prec(n[1] - m[1])) for m, n in diff_list]
-    return [(1, 1)]
+    y, x = np.clip(np.diff(envelope, axis=0), 0.0, None).T
+    x, y = x[x > 0], y[x > 0]
+    return float(np.sum(x * np.log2(x / (p * x + (1 - p) * y))))
 
 
-def i_pw(p_Tt, p_Sx_g_Tt):
+class _UnionInformation:
     """
-    Compute pointwise valuation function (Equation 28a and 28b)
-
-    Parameters
-    ----------
-    p_Tt : Float
-        Probability of P(T=t)
-    p_Sx_g_Tt : list of list of tuples
-        conditional probabilities of the pointwise channels
-
-    Returns
-    -------
-    i : float
-        pointwise valuation
+    The I_rdr union information of collections of sources, caching the ROC curve of
+    each source and the union information of each collection.
     """
-    if len(p_Sx_g_Tt) == 0:
-        return 0
-    if len(p_Sx_g_Tt) == 1:
-        # Equation 28a
-        return np.nansum([x * np.log2(x / (p_Tt * x + (1 - p_Tt) * y)) for x, y in p_Sx_g_Tt[0] if x != 0.0])
-    # Equation 28b
-    pw_joint = [cv_hull(p_Sx_g_Tt[0], x) for x in p_Sx_g_Tt[1:]]
-    return i_pw(p_Tt, [p_Sx_g_Tt[0]]) + i_pw(p_Tt, p_Sx_g_Tt[1:]) - i_pw(p_Tt, pw_joint)
+
+    def __init__(self, dist, target):
+        self._dist = dist
+        self._target = tuple(target)
+        p_t = dist.coalesce([list(target)]).to_dict()
+        self._p_t = {t: p for (t,), p in p_t.items() if 0 < p < 1}
+        self._curves = {}
+        self._values = {}
+
+    def _source_curves(self, source):
+        if source not in self._curves:
+            self._curves[source] = _roc_curves(self._dist, source, self._target, self._p_t)
+        return self._curves[source]
+
+    def __call__(self, collection):
+        """
+        The union information of a collection of sources, sum_t p(t) i(t; join).
+        """
+        key = tuple(sorted(tuple(source) for source in collection))
+        if key not in self._values:
+            curves = [self._source_curves(source) for source in key]
+            self._values[key] = sum(
+                p * _pointwise_information(p, _upper_envelope(np.vstack([c[t] for c in curves])))
+                for t, p in self._p_t.items()
+            )
+        return self._values[key]
+
+
+def _redundancy(union, sources):
+    """
+    The redundancy of an antichain of sources, by inclusion-exclusion over the union
+    information of its sub-collections.
+    """
+    sources = [tuple(source) for source in sources]
+    return sum((-1) ** (k + 1) * union(sub) for k in range(1, len(sources) + 1) for sub in combinations(sources, k))
 
 
 class PID_RDR(BasePID):
     """
-    The Mages & Rohner partial information decomposition.
+    The reachable decision regions partial information decomposition of Mages & Rohner.
+
+    For each target outcome, the union information of a collection of sources is the
+    pointwise information of the join of their reachable decision regions, the convex
+    hull of their ROC curves. Redundancies follow by inclusion-exclusion, and the
+    union information of each collection is computed once for the whole lattice.
     """
 
     _name = "I_rdr"
@@ -126,11 +162,11 @@ class PID_RDR(BasePID):
     @staticmethod
     def _measure(dist, sources, target):
         """
-        Compute I_rdr(sources : target) = I(meet(sources) : target)
+        Compute I_rdr(sources : target) by inclusion-exclusion over union information.
 
         Parameters
         ----------
-        d : Distribution
+        dist : Distribution
             The distribution to compute i_rdr for.
         sources : iterable of iterables
             The source variables.
@@ -142,24 +178,15 @@ class PID_RDR(BasePID):
         irdr : float
             The value of I_rdr.
         """
-        # marginals with target as second variable
-        p_SxT = [dist.coalesce((source, target)) for source in sources]
-        p_t = dist.marginal(target)
+        return _redundancy(_UnionInformation(dist, target), sources)
 
-        # construct pointwise marginal channels
-        p_Sx_g_Tt = []  # p_Sx_g_Tt structure: [(p_t[t1], [p_S1_g_Tt1, p_S2_g_Tt1, ...]), ...]
-        for t in p_t.outcomes:
-            # The coalesced target symbol is the tuple of the target's values.
-            t_cmp = t if isinstance(t, tuple) else (t,)
-            p_SxTt = []  # pointwise joint distributions
-            for p_ST in p_SxT:
-                # convert target to binary variable
-                p_STt = [((key[0], key[1] == t_cmp), val) for key, val in p_ST.to_dict().items()]
-                # aggregate identical states
-                p_STt = reduce(lambda d, x: d.update({x[0]: d.get(x[0], 0) + x[1]}) or d, p_STt, {})
-                p_SxTt.append(p_STt)
-            # convert maginals to conditionals (pointwise channels)
-            p_Sx_g_Tt.append((p_t[t], [condition_pw(p_t[t], x) for x in p_SxTt]))
-
-        # compute result (Equation 28c)
-        return sum(p_Tt * i_pw(p_Tt, p_S_g_Tt) for p_Tt, p_S_g_Tt in p_Sx_g_Tt if 0.0 < p_Tt < 1.0)
+    def _compute(self):
+        """
+        Compute every redundancy from union information shared across the lattice.
+        """
+        missing = [node for node in self._lattice if node not in self._reds]
+        if missing:
+            union = _UnionInformation(self._dist, self._target)
+            for node in missing:
+                self._reds[node] = _pid_coerce(self._scaled(_redundancy(union, node)))
+        super()._compute()

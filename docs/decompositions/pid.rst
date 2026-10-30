@@ -487,6 +487,9 @@ Drawing from the reconstructability analysis work of Zwick :cite:`zwick2004overv
 
 The measure of Mages & Rohner :cite:`mages2023measure` can be interpreted as a pointwise version of :math:`\Ibroja{\bullet}` to provide a non-negative partial information decomposition for an arbitrary number of sources.
 It obtains its operational interpretation from valuating the reachable decision regions (achievable type I/II error pairs) for each state of the target variable.
+For each target outcome :math:`y`, each source defines a binary-input channel for the event :math:`Y = y`, and its reachable decision region is bounded by its ROC curve.
+The union information of a collection of sources is the pointwise information of the convex hull of their regions (their join), averaged over :math:`y`, and redundancies follow from the union information of sub-collections by inclusion-exclusion :cite:`mages2023measure,mages2024nonnegative`.
+``dit`` computes each join as the upper concave envelope of the ROC curves, and computes the union information of each collection once for the whole lattice.
 
 .. autoclass:: PID_RDR
    :no-index:
@@ -509,6 +512,14 @@ The degradation intersection information of Kolchinsky :cite:`kolchinsky2022nove
 .. math::
 
    \Ideg{X_{0:n} \to Y} = \max_{Q :\; Q \preceq_d X_i \;\forall i} \I{Q : Y}
+
+The feasible degradation channels form a polytope and :math:`\I{Q : Y}` is convex, but the maximum can be found without enumerating the vertices of that polytope.
+Each outcome :math:`q` of :math:`Q` corresponds to the vector of its degradation probabilities :math:`(p(q \mid x_0), \ldots, p(q \mid x_{n-1}))`, which lies in a polyhedral cone.
+These vectors add up to the all-ones vector, and :math:`\I{Q : Y}` is a sum over the outcomes of a convex, positively homogeneous function of them.
+Splitting an outcome along the extreme rays of the cone therefore never decreases :math:`\I{Q : Y}`, so the redundancy is the value of a linear program over the extreme rays, whose solution is also an optimal :math:`Q`.
+This formulation is due to André F. C. Gomes.
+``dit`` enumerates the rays with cddlib when it is installed (from the ``optional`` extra), and otherwise with an exact implementation of the double description method.
+Passing ``method='local'`` instead runs a local search over the vertices of the polytope, which only gives a lower bound.
 
 .. autoclass:: PID_Deg
    :no-index:
@@ -669,9 +680,10 @@ Kolchinsky :cite:`kolchinsky2022novel` defines a redundancy measure using the Bl
 
 .. math::
 
-   \Iprec{X_{0:n} \to Y} = \min_{s_{Q|Y}} \I{Y : Q} \quad \text{s.t.} \quad s_{Q|Y} \preceq p_{X_i|Y} \;\;\forall i
+   \Iprec{X_{0:n} \to Y} = \max_{s_{Q|Y}} \I{Y : Q} \quad \text{s.t.} \quad s_{Q|Y} \preceq p_{X_i|Y} \;\;\forall i
 
-The constraint set is a convex polytope and the objective is convex, so the optimum lies at a vertex.
+This is the same quantity as :math:`\Ideg{\bullet}`, for any number of sources, and by default it is computed by the same linear program over the extreme rays of the cone of common degradations.
+Passing ``n_q`` fixes the cardinality of :math:`Q`; the maximum is then found by enumerating the vertices of the constraint polytope, since the objective is convex.
 
 .. autoclass:: PID_Prec
    :no-index:
