@@ -37,6 +37,7 @@ the middle of the chain), and a private fair bit :math:`P_i` (which opens
 of eight symbols, so the witness is exchangeable with :math:`2^{2n+1}` outcomes.
 """
 
+from collections.abc import Iterable
 from itertools import permutations, product
 
 from ..distribution import Distribution
@@ -57,7 +58,7 @@ __all__ = (
 _TUNED_Q = {2: (1 - 0.4**0.5) / 2, 3: 0.10, 4: 0.15, 5: 0.15}
 
 
-def noisy_copies(q, n=3):
+def noisy_copies(q, n=None):
     r"""
     ``n`` noisy copies of a latent fair bit: the ``n``-variable doubly symmetric
     binary source.
@@ -78,28 +79,43 @@ def noisy_copies(q, n=3):
     strictly separates the CAEKL, dual total correlation, Wyner
     :cite:`wyner1975common`, exact :cite:`kumar2014exact`, and functional common
     informations. For ``n = 2`` it is Wyner's doubly symmetric binary source, with
-    crossover :math:`2 q (1 - q)`.
+    crossover :math:`2 q (1 - q)`. Its higher-order common information is
+    :math:`1 - h\left(\tfrac{1}{2}(1 - (1 - 2q)^{2^{n-1}})\right)`, where :math:`h`
+    is the binary entropy :cite:`ostergaard2024higher`.
+
+    Each copy may instead have its own crossover :math:`q_i`, in which case the
+    copies are no longer exchangeable.
 
     Parameters
     ----------
-    q : float
+    q : float or sequence of floats
         The binary symmetric channel crossover :math:`P(X_i \ne Z)`, in
-        :math:`[0, 1/2]`.
-    n : int
-        The number of noisy copies. Defaults to 3.
+        :math:`[0, 1/2]`, or one crossover per copy.
+    n : int, None
+        The number of noisy copies. Defaults to 3, or to the number of
+        crossovers when ``q`` is a sequence.
 
     Returns
     -------
     d : Distribution
         The ``n``-variable doubly symmetric binary source, over ``n`` binary
         variables with :math:`2^n` outcomes.
+
+    Raises
+    ------
+    ValueError
+        Raised if ``n`` differs from the number of crossovers.
     """
+    qs = list(q) if isinstance(q, Iterable) else [q] * (3 if n is None else n)
+    if n is not None and n != len(qs):
+        msg = "n must equal the number of crossovers"
+        raise ValueError(msg)
     pmf = {}
     for z in (0, 1):
-        for bits in product((0, 1), repeat=n):
+        for bits in product((0, 1), repeat=len(qs)):
             weight = 0.5
-            for b in bits:
-                weight *= q if b != z else (1 - q)
+            for b, q_i in zip(bits, qs, strict=True):
+                weight *= q_i if b != z else (1 - q_i)
             outcome = tuple(str(b) for b in bits)
             pmf[outcome] = pmf.get(outcome, 0.0) + weight
     return Distribution(list(pmf), list(pmf.values()))

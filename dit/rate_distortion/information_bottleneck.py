@@ -6,13 +6,15 @@ import numpy as np
 
 from ..algorithms import BaseAuxVarOptimizer
 from ..divergences.pmf import relative_entropy
-from ..exceptions import ditException
+from ..exceptions import OptimizationException, ditException
 
 __all__ = (
     "DeterministicInformationBottleneck",
     "GeneralizedInformationBottleneck",
     "InformationBottleneck",
     "InformationBottleneckDivergence",
+    "InformationBottleneckRate",
+    "information_bottleneck_rate",
 )
 
 
@@ -57,6 +59,9 @@ class InformationBottleneck(BaseAuxVarOptimizer):
     """
 
     _shotgun = 10
+
+    # The Lagrangian needs at most |X||Z| symbols; a rate constraint adds one more.
+    _extra_symbols = 0
 
     def __init__(self, dist, beta, alpha=1.0, rvs=None, crvs=None, bound=None):
         """
@@ -103,7 +108,7 @@ class InformationBottleneck(BaseAuxVarOptimizer):
         self._z = {2}
         self._t = {3}
 
-        tbound = self._shape[0] * self._shape[2]
+        tbound = self._shape[0] * self._shape[2] + self._extra_symbols
         # tbound = int(np.ceil(perplexity(dist, rvs[0])))
         bound = min([bound, tbound]) if bound is not None else tbound
 
@@ -130,12 +135,13 @@ class InformationBottleneck(BaseAuxVarOptimizer):
         """
         return partition_encoders(self._aux_vars[0].shape, self._max_partition_seeds)
 
-    def _fixed_point(self, enc, iters=500, tol=1e-10):
+    def _fixed_point(self, enc, iters=500, tol=1e-10, beta=None):
         """
         Iterate the information bottleneck self-consistent equations
         :cite:`tishby2000information`, p(t|x) ∝ p(t) exp(-beta KL[p(y|x) || p(y|t)]),
-        separately for each value of Z.
+        separately for each value of Z. ``beta`` defaults to the optimizer's.
         """
+        beta = self._beta if beta is None else beta
         enc = enc.copy()
         for z in range(enc.shape[1]):
             p_xy = self._pmf[:, :, z]
@@ -153,7 +159,7 @@ class InformationBottleneck(BaseAuxVarOptimizer):
                         p_y_x[:, :, None] > 0, np.log(p_y_x[:, :, None] / np.maximum(p_y_t[None], 1e-300)), 0.0
                     )
                 kl = (p_y_x[:, :, None] * ratio).sum(axis=1)
-                new = p_t[None, :] * np.exp(-self._beta * (kl - kl.min(axis=1, keepdims=True)))
+                new = p_t[None, :] * np.exp(-beta * (kl - kl.min(axis=1, keepdims=True)))
                 new /= new.sum(axis=1, keepdims=True)
                 done = np.abs(new - e).max() < tol
                 e = new
@@ -398,6 +404,218 @@ class InformationBottleneck(BaseAuxVarOptimizer):
         return information_bottleneck
 
 
+class InformationBottleneckRate(InformationBottleneck):
+    """
+    The information bottleneck at a fixed rate :cite:`tishby2000information`,
+
+    .. math::
+
+        F(R) = \\max_{p(t | x, z) : I[X : T | Z] \\leq R} I[Y : T | Z],
+
+    the information bottleneck curve as a function of the complexity. The curve
+    is concave and non-decreasing, and reaches ``I[X : Y | Z]``. A rate
+    constraint needs one symbol more than the Lagrangian, so the size of T is
+    bounded by ``|X||Z| + 1``.
+    """
+
+    _extra_symbols = 1
+
+    # SLSQP and polishing leave the optimum on the active constraint up to about
+    # this much slack.
+    _feasibility_tol = 1e-6
+
+    # Independent basin-hopping searches; a single one occasionally ends in a
+    # poor local maximum.
+    _restarts = 3
+
+    # Fixed points of the self-consistent equations at these betas lie near the
+    # curve over a range of rates, and seed the search.
+    _seed_betas = (1.0, 1.5, 2.0, 3.0, 5.0, 8.0, 13.0, 21.0, 50.0, 100.0)
+
+    def __init__(self, dist, rate, rvs=None, crvs=None, bound=None):
+        """
+        Initialize the bottleneck.
+
+        Parameters
+        ----------
+        dist : Distribution
+            The distribution of interest.
+        rate : float
+            The maximum complexity R, in bits.
+        rvs : iter of iters, None
+            The variables X and Y. If None, use ``dist.rvs``.
+        crvs : iter, None
+            The random variables to condition on.
+        bound : int, None
+            The bound on the size of T. If None, use ``|X||Z| + 1``.
+        """
+        if not rate >= 0.0:
+            msg = "rate must be non-negative."
+            raise ditException(msg)
+        self._rate = rate
+        super().__init__(dist=dist, beta=0.0, rvs=rvs, crvs=crvs, bound=bound)
+
+        complexity_g = self._conditional_mutual_information_grad(self._x, self._t, self._z)
+        self.constraints += [
+            {
+                "type": "ineq",
+                "fun": self._constraint_rate,
+                "jac": lambda x: -self._construct_joint_vjp(x, np.asarray(complexity_g(self.construct_joint(x)))),
+            },
+        ]
+
+    def _constraint_rate(self, x):
+        """
+        Non-negative when the complexity is within the rate.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            An optimization vector.
+
+        Returns
+        -------
+        slack : float
+            ``R - I[X : T | Z]``.
+        """
+        return self._rate - self.complexity(self.construct_joint(x))
+
+    def _objective(self):
+        """
+        The negated relevance.
+
+        Returns
+        -------
+        objective : func
+            The objective function.
+        """
+
+        def objective(self, x):
+            """
+            Compute -I[Y : T | Z].
+
+            Parameters
+            ----------
+            x : np.ndarray
+                An optimization vector.
+
+            Returns
+            -------
+            obj : float
+                The value of the objective.
+            """
+            return -self.relevance(self.construct_joint(x))
+
+        return objective
+
+    def _objective_gradient(self):
+        """
+        Analytic gradient of the negated relevance w.r.t. the joint.
+        """
+        relevance_g = self._conditional_mutual_information_grad(self._y, self._t, self._z)
+        return lambda pmf: -relevance_g(pmf)
+
+    def _seed_initials(self):
+        """
+        The constant and identity encoders, and fixed points of the
+        self-consistent equations over a range of betas.
+
+        Returns
+        -------
+        seeds : list of np.ndarray
+            Optimization vectors.
+        """
+        shape = self._aux_vars[0].shape
+        rng = np.random.default_rng() if self._rng is None else self._rng
+        seeds = [self.construct_constant_initial(), self.construct_copy_initial()]
+        for beta in self._seed_betas:
+            enc = rng.dirichlet(np.ones(shape[-1]), size=shape[:-1])
+            seeds.append(self._fixed_point(enc, beta=beta).ravel())
+        return seeds
+
+    def optimize(self, *args, **kwargs):
+        """
+        Optimize a few times, then keep the most relevant feasible candidate
+        among the results, the seeds, and the deterministic encoders.
+
+        Parameters
+        ----------
+        args, kwargs
+            Passed to :meth:`BaseAuxVarOptimizer.optimize`.
+
+        Returns
+        -------
+        result : OptimizeResult
+            The result of the search.
+        """
+        optima = []
+        result = None
+        rng = kwargs.get("rng")
+        if rng is not None and not isinstance(rng, np.random.Generator):
+            # One generator for all restarts, so that they differ.
+            kwargs["rng"] = np.random.default_rng(rng)
+        for _ in range(self._restarts):
+            try:
+                result = BaseAuxVarOptimizer.optimize(self, *args, **kwargs)
+            except OptimizationException:
+                continue
+            optima.append(self._optima)
+        candidates = [*optima, *self._seed_initials(), *(enc.ravel() for enc in self._partition_encoders())]
+        feasible = [x for x in candidates if self._constraint_rate(x) >= -self._feasibility_tol]
+        # The constant encoder is always feasible.
+        self._optima = max(feasible, key=lambda x: self.relevance(self.construct_joint(x))).copy()
+        return result
+
+    @classmethod
+    def functional(cls):
+        """
+        Return a function which computes the result of this optimization.
+
+        Returns
+        -------
+        information_bottleneck_rate : func
+            The function which performs this optimization.
+        """
+
+        def information_bottleneck_rate(
+            dist, rate, rvs=None, crvs=None, bound=None, niter=None, maxiter=None, rng=None
+        ):
+            """
+            Compute the information bottleneck at a fixed rate: the largest
+            relevance ``I[Y : T | Z]`` of a representation T of X with
+            complexity ``I[X : T | Z] <= rate`` :cite:`tishby2000information`.
+
+            Parameters
+            ----------
+            dist : Distribution
+                The distribution of interest.
+            rate : float
+                The maximum complexity, in bits.
+            rvs : iter of iters, None
+                The variables X and Y. If None, use ``dist.rvs``.
+            crvs : iter, None
+                The random variables to condition on.
+            bound : int, None
+                The bound on the size of T. If None, use ``|X||Z| + 1``.
+            niter : int, None
+                The number of basin hops to perform.
+            maxiter : int, None
+                The number of iterations of the optimization subroutine.
+            rng : np.random.Generator, int, None
+                Source of randomness for the optimizer.
+
+            Returns
+            -------
+            relevance : float
+                The maximal relevance.
+            """
+            ib = cls(dist=dist, rate=rate, rvs=rvs, crvs=crvs, bound=bound)
+            ib.optimize(niter=niter, maxiter=maxiter, rng=rng)
+            return max(float(ib.relevance(ib.construct_joint(ib._optima))), 0.0)
+
+        return information_bottleneck_rate
+
+
 class InformationBottleneckDivergence(InformationBottleneck):
     """
     A generalized information bottleneck which uses a distortion equal to
@@ -567,3 +785,6 @@ class DeterministicInformationBottleneck(GeneralizedInformationBottleneck):
             crvs=crvs,
             bound=bound,
         )
+
+
+information_bottleneck_rate = InformationBottleneckRate.functional()

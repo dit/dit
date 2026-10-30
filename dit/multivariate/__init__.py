@@ -14,6 +14,7 @@ from .deweese import *
 from .dual_total_correlation import *
 from .entropy import *
 from .frustration import *
+from .higher_order_common_information import *
 from .interaction_information import *
 from .kirkwood import *
 from .logarithmic_decomposition import *
