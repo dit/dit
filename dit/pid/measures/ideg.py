@@ -200,6 +200,16 @@ def _outcome_information(pi_t, columns):
     return terms.sum(axis=1)
 
 
+def _ray_program(channels, pi_t, rays, offsets):
+    """
+    The linear program over the extreme rays `rays`: the largest sum of their contributions
+    to I(Q; T) whose weighted rays add up to the all-ones vector.
+    """
+    columns = rays[:, offsets[0] : offsets[1]] @ channels[0].T
+    values = _outcome_information(pi_t, columns)
+    return linprog(-values, A_eq=rays.T, b_eq=np.ones(offsets[-1]), bounds=(0, None), method="highs")
+
+
 def _degradation_lp(channels, pi_t):
     """
     Compute I_d^∩ exactly, by a linear program over the extreme rays of the cone of
@@ -221,9 +231,13 @@ def _degradation_lp(channels, pi_t):
         K_Q = K^(i) @ Λ_i for every i.
     """
     rays, offsets = _extreme_rays(channels)
-    columns = rays[:, offsets[0] : offsets[1]] @ channels[0].T
-    values = _outcome_information(pi_t, columns)
-    res = linprog(-values, A_eq=rays.T, b_eq=np.ones(offsets[-1]), bounds=(0, None), method="highs")
+    res = _ray_program(channels, pi_t, rays, offsets)
+    if res.status != 0:
+        # On ill-conditioned channels the rays from cddlib can pass verification and still
+        # miss some extreme rays, so that the constant degradation is not a combination of
+        # them and the program is infeasible. The exact rays always contain it.
+        rays = np.clip(_extreme_rays_exact(channels), 0.0, None)
+        res = _ray_program(channels, pi_t, rays, offsets)
     if res.status != 0:
         raise RuntimeError(f"The linear program for I_d^∩ failed: {res.message}")
     used = res.x > 1e-12

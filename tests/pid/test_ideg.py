@@ -219,3 +219,21 @@ def test_pid_deg_without_cdd(monkeypatch):
     monkeypatch.setattr(ideg, "_extreme_rays_cdd", unavailable)
     for seed, value in enumerate(values):
         assert PID_Deg._measure(_random_dist(seed, 3), RED, (2,)) == pytest.approx(value, abs=1e-9)
+
+
+def test_degradation_lp_missing_rays(monkeypatch):
+    """
+    If the rays from cddlib miss some extreme rays, so that the constant degradation is not
+    a combination of them, the exact rays are used instead.
+    """
+    values = [PID_Deg._measure(_random_dist(seed, 3), RED, (2,)) for seed in range(3)]
+    extreme_rays = ideg._extreme_rays
+
+    def incomplete(channels, tol=1e-9):
+        rays, offsets = extreme_rays(channels, tol)
+        rays = rays[~np.isclose(rays, 1).all(axis=1)]
+        return rays[:1], offsets
+
+    monkeypatch.setattr(ideg, "_extreme_rays", incomplete)
+    for seed, value in enumerate(values):
+        assert PID_Deg._measure(_random_dist(seed, 3), RED, (2,)) == pytest.approx(value, abs=1e-9)
