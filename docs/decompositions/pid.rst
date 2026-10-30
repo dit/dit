@@ -136,6 +136,19 @@ This axiom states that redundancy can not increase when replacing the output by 
 
 It first appeared in :cite:`bertschinger2013shared` and was expanded upon in :cite:`rauh2017extractable`.
 
+Source Chain Rule
+^^^^^^^^^^^^^^^^^
+
+If a context :math:`C` of sources is known, collections that each contain it share all of its information, plus what the remaining collections share once it is known :cite:`gutknecht2026partial`:
+
+.. math::
+
+   \Icap{\mathcal{A}_1 C, \ldots, \mathcal{A}_k C : Y} = \I{C : Y} + \Icap{\mathcal{A}_1, \ldots, \mathcal{A}_k : Y | C}
+
+where the conditional redundancy averages the redundancy under each :math:`p(\cdot | C = c)`. It holds exactly when conditioning on the context regroups the atoms by the further sources that unlock them. With three or more sources it is incompatible with nonnegative atoms.
+
+These and the other properties proposed in the literature can be checked on any decomposition; see `Checking Properties`_.
+
 Measures
 ========
 
@@ -975,3 +988,108 @@ pointwise measure such as :math:`\Isx{\bullet}`:
 .. autofunction:: dit.pid.helpers.compare_measures
 
 .. autofunction:: dit.pid.helpers.pointwise_pid_table
+
+
+Checking Properties
+===================
+
+Liardi et al. :cite:`liardi2026landscape` catalogue the properties proposed for redundancy measures, and which measures satisfy them. :meth:`~dit.pid.pid.BasePID.check` tests one property on a computed decomposition. Its result is truthy when the property holds, and lists the comparisons that fail. Here :math:`\Imin{\bullet}` violates the source chain rule on the distribution of Gutknecht :cite:`gutknecht2026partial`, in which a third source decides which of the first two copies the target, while :math:`\Isx{\bullet}` satisfies it:
+
+.. ipython::
+
+   In [45]: from dit.pid.distributions import trivariates
+
+   In [46]: d = trivariates['max min']
+
+   In [47]: print(PID_WB(d).check('SCR'))
+
+   @doctest
+   In [48]: bool(PID_SX(d).check('SCR'))
+   Out[48]: True
+
+:meth:`~dit.pid.pid.BasePID.check_properties` checks every property, next to what the literature claims for the measure; :meth:`~dit.pid.pid.BasePID.claims` returns just the claims, and :func:`~dit.pid.helpers.property_table` prints those of several measures:
+
+.. ipython::
+
+   In [49]: print(PID_WB(bivariates['and']).check_properties())
+
+   In [50]: from dit.pid.helpers import property_table
+
+   In [51]: property_table(pids=[PID_WB, PID_MMI, PID_GK, PID_SX], props=['LP', 'TC', 'SCR'])
+
+Properties are named by the keys of :cite:`liardi2026landscape`, or by name (e.g. ``'source_chain_rule'``):
+
+.. list-table::
+   :header-rows: 1
+   :widths: 8 22 70
+
+   * - Key
+     - Property
+     - Check
+   * - SR
+     - self-redundancy
+     - The redundancy of each single collection is its mutual information with the target.
+   * - S0
+     - weak symmetry
+     - Recompute with the sources reordered (``orders``).
+   * - M0
+     - weak monotonicity
+     - Redundancy does not decrease up the lattice, and dropping a collection that determines another changes nothing.
+   * - GP
+     - global positivity
+     - Every redundancy is nonnegative.
+   * - LP0, LP1, LP
+     - local positivity
+     - Every atom is nonnegative; LP0 concerns two sources, LP1 three or more.
+   * - IID, ID
+     - (independent) identity
+     - The redundancy of two sources about a target copying them, on fixed copy distributions; a property of the measure, not of this distribution.
+   * - TM
+     - target monotonicity
+     - Recompute with each target variable dropped.
+   * - TC
+     - target chain rule
+     - Recompute with the first target variable, and with the rest given it (``split``).
+   * - SE
+     - subset equality
+     - Dropping a collection that determines another changes nothing.
+   * - LB
+     - lower bound
+     - Each redundancy is at least the information the Gács-Körner meet of its collections carries about the target.
+   * - TE
+     - target equality
+     - Adding a copy of the target to the sources changes nothing.
+   * - M1
+     - strong monotonicity
+     - M0 and TE, and dropping a collection that determines the target changes nothing.
+   * - S1
+     - strong symmetry
+     - Exchanging the target with any source changes nothing.
+   * - \*
+     - assumption (\*)
+     - Recompute under :math:`p(y) \prod_i p(x_i | y)`, which has the same source-target marginals.
+   * - BP
+     - Blackwell property
+     - A unique information vanishes exactly when its source is Blackwell inferior to the other (two sources).
+   * - AD
+     - additivity
+     - Recompute on two independent copies of the system, or on it and ``other``.
+   * - CO, DI
+     - continuity, differentiability
+     - Not checkable on a single distribution.
+   * - EI
+     - equivalence-class invariance
+     - Recompute with every alphabet relabeled.
+   * - SCR
+     - source chain rule
+     - Recompute the decomposition of the other sources given each context (``context``).
+
+Comparisons use the absolute tolerance ``atol`` (1e-5 by default); measures computed by numerical optimization may need a looser one. Checks that recompute the decomposition run the measure again, several times; additivity squares every alphabet, which is prohibitive for measures that search exhaustively or optimize large auxiliary variables, so leave it out of ``props`` for them. Two-source measures do not define the redundancy of three or more collections, so comparisons that need one are undetermined, and their claims concern two sources only.
+
+The claims transcribe Table 5 of :cite:`liardi2026landscape`, whose footnote marks they keep († two sources only, § full support only, ‡ the pointwise version holds, ∥ global, \* supported by simulations), and the source chain rule results of :cite:`gutknecht2026partial`. Entries marked ! correct Table 5: by its own appendix, :math:`I_{\prec}` satisfies (\*); identical sources show that :math:`\Iwedge{\bullet}` violates (\*); 'rdn xor' shows that :math:`\Irr{\bullet}` violates the lower bound; and the correlated two-bit copy shows that :math:`I_{rdr}` satisfies only one direction of the Blackwell property.
+
+.. autoclass:: dit.pid.properties.PropertyCheck
+   :no-index:
+   :members:
+
+.. autofunction:: dit.pid.helpers.property_table
