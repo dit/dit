@@ -147,8 +147,8 @@ Convex Maximization over Polytopes
 ==================================
 
 Some measures, such as the :math:`\Iprec{\bullet}` partial information
-decomposition (:class:`~dit.pid.PID_Prec`), need the maximum of a convex
-function over a polytope.
+decomposition (:class:`~dit.pid.PID_Prec`) with a fixed cardinality ``n_q``,
+need the maximum of a convex function over a polytope.
 :func:`~dit.algorithms.maximize_convex_function` exploits the fact that the
 maximum is attained at a vertex: it enumerates the vertices of
 :math:`\{x : A_{\text{ineq}} x \leq b_{\text{ineq}},\ A_{\text{eq}} x = b_{\text{eq}}\}`
