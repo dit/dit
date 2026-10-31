@@ -1051,7 +1051,8 @@ def check_properties(pid, props=None, atol=1e-5):
     dist_name = getattr(pid._dist, "name", "")
     title = f"Properties of {pid._name}" + (f" | {dist_name}" if dist_name else "")
     claims = claims_for(type(pid))
-    if len(pid._sources) > 2 and claims.get("LP1", Claim(False)).holds is None:
+    two_source = isinstance(pid, (BaseBivariatePID, BaseUniquePID)) or claims.get("LP1", Claim(False)).holds is None
+    if len(pid._sources) > 2 and two_source:
         title += " (claims concern two sources)"
     return PropertyReport(title, checks, claims)
 

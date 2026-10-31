@@ -123,6 +123,18 @@ def test_report_two_source_claims():
     assert "claims concern two sources" in report.title
 
 
+def test_report_two_source_measure():
+    """
+    I_△ is defined for two sources, and dit fills a lattice of three from the redundancies
+    of pairs of collections. That is not monotone on 'max min', but Table 5's monotonicity
+    concerns two sources.
+    """
+    report = PID_CT(MAX_MIN).check_properties(props=["M0"])
+    assert not report["M0"]
+    assert "claims concern two sources" in report.title
+    assert "claims concern two sources" not in PID_Prec(MAX_MIN).check_properties(props=["SR"]).title
+
+
 def test_scr_counterexample():
     """
     I_min violates the source chain rule on the counterexample of Gutknecht (2026).
