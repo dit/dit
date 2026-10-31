@@ -4,8 +4,11 @@ Tests for dit.pid.measures.idelta.
 
 import pytest
 
+from dit import Distribution
+from dit.exceptions import ditException
 from dit.pid.distributions import bivariates
 from dit.pid.measures.idelta import PID_Delta
+from dit.pid.measures.ideltalambda import PID_DeltaLambda
 
 
 def test_pid_delta_synergy():
@@ -56,3 +59,20 @@ def test_pid_delta_unique_copy():
     assert pid[((0,),)] == pytest.approx(1.0, abs=1e-4)
     assert pid[((1,),)] == pytest.approx(0.0, abs=1e-4)
     assert pid[((0,), (1,))] == pytest.approx(0.0, abs=1e-4)
+
+
+AND3 = Distribution(["0000", "0010", "0100", "0110", "1000", "1010", "1100", "1111"], [1 / 8] * 8)
+
+
+@pytest.mark.parametrize("pid", [PID_Delta, PID_DeltaLambda])
+def test_three_sources(pid):
+    """
+    These redundancies are only defined for two sources. With three, the redundancies of
+    pairs are computed and the rest of the lattice is filled in where it can be, rather
+    than unpacking three sources into two.
+    """
+    with pytest.raises(ditException, match="two sources"):
+        pid._measure(AND3, ((0,), (1,), (2,)), (3,))
+    decomposition = pid(AND3)
+    assert decomposition.get_red(((0,), (1,))) == pytest.approx(0.1379, abs=1e-3)
+    assert decomposition.consistent

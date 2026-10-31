@@ -17,6 +17,7 @@ References
 
 from ...channelorder._utils import channels_from_joint
 from ...channelorder.deficiency import weighted_output_kl_deficiency
+from ...exceptions import ditException
 from ...multivariate import coinformation
 from ..pid import BaseBivariatePID
 
@@ -94,6 +95,10 @@ class PID_Delta(BaseBivariatePID):
         ri : float
             The delta-PID redundancy.
         """
+        if len(sources) != 2:
+            msg = f"I_delta is only defined for two sources, {len(sources)} given."
+            raise ditException(msg)
+
         source_a, source_b = sources
 
         delta_ab = _kl_deficiency(d, source_a, source_b, target)

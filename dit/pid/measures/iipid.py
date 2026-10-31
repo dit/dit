@@ -14,6 +14,7 @@ Reference:
 """
 
 from ...algorithms.optimization import BaseAuxVarOptimizer, BaseConvexOptimizer
+from ...exceptions import ditException
 from ...multivariate import coinformation
 from ..pid import BaseBivariatePID
 
@@ -137,6 +138,10 @@ class PID_IPID(BaseBivariatePID):
         ri : float
             The I-PID redundancy.
         """
+        if len(sources) != 2:
+            msg = f"I_IPID is only defined for two sources, {len(sources)} given."
+            raise ditException(msg)
+
         source_a, source_b = sources
 
         delta_ab = _information_deficiency(d, source_a, source_b, target, bound=bound, niter=niter)

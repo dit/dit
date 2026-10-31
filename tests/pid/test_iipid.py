@@ -4,6 +4,8 @@ Tests for dit.pid.measures.iipid (I-PID).
 
 import pytest
 
+from dit import Distribution
+from dit.exceptions import ditException
 from dit.pid.distributions import bivariates
 from dit.pid.measures.iipid import PID_IPID
 
@@ -90,3 +92,18 @@ def test_pid_ipid_and():
     assert pid[((0,),)] == pytest.approx(pid[((1,),)], abs=1e-3)
     assert pid[((0,), (1,))] >= -1e-3
     assert pid[((0, 1),)] >= -1e-3
+
+
+AND3 = Distribution(["0000", "0010", "0100", "0110", "1000", "1010", "1100", "1111"], [1 / 8] * 8)
+
+
+def test_three_sources():
+    """
+    The redundancy is only defined for two sources. With three, the redundancies of pairs
+    are computed and the rest of the lattice is filled in where it can be.
+    """
+    with pytest.raises(ditException, match="two sources"):
+        PID_IPID._measure(AND3, ((0,), (1,), (2,)), (3,))
+    pid = PID_IPID(AND3)
+    assert pid.get_red(((0,), (1,))) == pytest.approx(0.1379, abs=1e-3)
+    assert pid.consistent

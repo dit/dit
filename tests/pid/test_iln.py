@@ -113,3 +113,33 @@ def test_pid_ln_constant_target():
     assert pid[RED] == 0.0
     assert pid.complete
     assert pid.consistent
+
+
+AND3 = Distribution(["0000", "0010", "0100", "0110", "1000", "1010", "1100", "1111"], [1 / 8] * 8)
+
+
+def test_pid_ln_three_sources():
+    """
+    I_ln^∩ is defined for any number of sources. The three channels of the three-way AND
+    gate are identical, so the redundancy of all three is I(X_i : Y).
+    """
+    pid = PID_LN(AND3, [[0], [1], [2]], [3], rng=0)
+    assert pid.get_red(((0,), (1,), (2,))) == pytest.approx(0.13793, abs=1e-4)
+    assert pid.complete
+    assert pid.consistent
+
+
+@pytest.mark.flaky(reruns=5)
+def test_pid_ln_three_sources_ordering():
+    """
+    I_d^∩ <= I_ln^∩ <= I_mc^∩ with three sources too. Here the less-noisy redundancy,
+    about 0.0092 bits, exceeds the degradation redundancy, about 0.0082.
+    """
+    rng = np.random.default_rng(3)
+    outcomes = ["".join(map(str, o)) for o in itertools.product(range(2), repeat=4)]
+    d = Distribution(outcomes, rng.dirichlet(np.full(16, 0.5)))
+    node = ((0,), (1,), (2,))
+    deg = PID_Deg._measure(d, node, (3,))
+    ln = PID_LN._measure(d, node, (3,), rng=0)
+    mc = PID_MC._measure(d, node, (3,), rng=0)
+    assert deg + 5e-4 < ln <= mc + 1e-3
