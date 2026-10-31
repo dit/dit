@@ -526,6 +526,7 @@ The degradation intersection information of Kolchinsky :cite:`kolchinsky2022nove
 
    \Ideg{X_{0:n} \to Y} = \max_{Q :\; Q \preceq_d X_i \;\forall i} \I{Q : Y}
 
+This is the Blackwell redundancy :math:`\Iprec{\bullet}` in the notation of Gomes & Figueiredo, for any number of sources.
 The feasible degradation channels form a polytope and :math:`\I{Q : Y}` is convex, but the maximum can be found without enumerating the vertices of that polytope.
 Each outcome :math:`q` of :math:`Q` corresponds to the vector of its degradation probabilities :math:`(p(q \mid x_0), \ldots, p(q \mid x_{n-1}))`, which lies in a polyhedral cone.
 These vectors add up to the all-ones vector, and :math:`\I{Q : Y}` is a sum over the outcomes of a convex, positively homogeneous function of them.
@@ -689,7 +690,7 @@ No bound on :math:`|Q|` is known; it defaults to the largest source alphabet.
 :math:`\Iprec{\bullet}`
 -----------------------
 
-Kolchinsky :cite:`kolchinsky2022novel` defines a redundancy measure using the Blackwell precedence order on channels:
+Kolchinsky :cite:`kolchinsky2022novel` defines a redundancy measure using the Blackwell order on channels:
 
 .. math::
 
@@ -1084,9 +1085,9 @@ Properties are named by the keys of :cite:`liardi2026landscape`, or by name (e.g
      - source chain rule
      - Recompute the decomposition of the other sources given each context (``context``).
 
-Comparisons use the absolute tolerance ``atol`` (1e-5 by default); measures computed by numerical optimization may need a looser one. Checks that recompute the decomposition run the measure again, several times; additivity squares every alphabet, which is prohibitive for measures that search exhaustively or optimize large auxiliary variables, and slow for :math:`\Iprec{\bullet}` with three or more sources, whose cones of common degradations then have very many extreme rays, so leave it out of ``props`` for them. Two-source measures do not define the redundancy of three or more collections, so comparisons that need one are undetermined, and their claims concern two sources only.
+Comparisons use the absolute tolerance ``atol`` (1e-5 by default); measures computed by numerical optimization may need a looser one. Checks that recompute the decomposition run the measure again, several times; additivity squares every alphabet, which is prohibitive for measures that search exhaustively or optimize large auxiliary variables, and slow for :math:`\Iprec{\bullet}` and :math:`\Ideg{\bullet}` with three or more sources, whose cones of common degradations then have very many extreme rays, so leave it out of ``props`` for them. Two-source measures do not define the redundancy of three or more collections, so comparisons that need one are undetermined, and their claims concern two sources only.
 
-The claims transcribe Table 5 of :cite:`liardi2026landscape`, whose footnote marks they keep († two sources only, § full support only, ‡ the pointwise version holds, ∥ global, \* supported by simulations), and the source chain rule results of :cite:`gutknecht2026partial`. :math:`\Ideg{\bullet}` computes the same redundancy as :math:`\Iprec{\bullet}` for two sources, so it takes that column, with LP1 not applicable. Entries marked ! correct Table 5: by its own appendix, :math:`I_{\prec}` satisfies (\*); identical sources show that :math:`\Iwedge{\bullet}` violates (\*); 'rdn xor' shows that :math:`\Irr{\bullet}` violates the lower bound; and the correlated two-bit copy shows that :math:`I_{rdr}` satisfies only one direction of the Blackwell property.
+The claims transcribe Table 5 of :cite:`liardi2026landscape`, whose footnote marks they keep († two sources only, § full support only, ‡ the pointwise version holds, ∥ global, \* supported by simulations), and the source chain rule results of :cite:`gutknecht2026partial`. :math:`\Ideg{\bullet}` is the same measure as :math:`\Iprec{\bullet}`, so it takes that column. Entries marked ! correct Table 5: by its own appendix, :math:`I_{\prec}` satisfies (\*); identical sources show that :math:`\Iwedge{\bullet}` violates (\*); 'rdn xor' shows that :math:`\Irr{\bullet}` violates the lower bound; and the correlated two-bit copy shows that :math:`I_{rdr}` satisfies only one direction of the Blackwell property.
 
 .. autoclass:: dit.pid.properties.PropertyCheck
    :no-index:

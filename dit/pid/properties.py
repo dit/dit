@@ -1216,16 +1216,14 @@ def _local_positivity_claim(lp0, lp1):
     return Claim(True, source=lp0.source)
 
 
-def _two_source_claims(claims, caveat):
+def _same_measure_claims(claims, caveat):
     """
-    The claims for an implementation of a measure that is restricted to two sources.
+    The claims for another implementation of a measure.
     """
-    restricted = {
+    return {
         key: Claim(claim.holds, claim.mark, "; ".join(c for c in (claim.caveat, caveat) if c), claim.source)
         for key, claim in claims.items()
     }
-    restricted["LP1"] = Claim(None, caveat="defined only for two sources", source=claims["LP1"].source)
-    return restricted
 
 
 def _build_claims():
@@ -1236,9 +1234,9 @@ def _build_claims():
                 claims[measure][key] = _table5_claim(entry, key)
     for (measure, key), claim in _TABLE5_CORRECTIONS.items():
         claims[measure][key] = claim
-    # PID_Deg computes the redundancy of PID_Prec (Kolchinsky's Blackwell redundancy, the
-    # degradation redundancy of Gomes & Figueiredo), but only for two sources.
-    claims["PID_Deg"] = _two_source_claims(claims["PID_Prec"], "as for I_prec, which PID_Deg computes for two sources")
+    # PID_Deg is the degradation redundancy of Gomes & Figueiredo, which is Kolchinsky's
+    # Blackwell redundancy, the measure of PID_Prec.
+    claims["PID_Deg"] = _same_measure_claims(claims["PID_Prec"], "as for I_prec, the same measure")
     for table in claims.values():
         table["LP"] = _local_positivity_claim(table["LP0"], table["LP1"])
     for measure, claim in _source_chain_rule_claims().items():

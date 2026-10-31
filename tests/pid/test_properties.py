@@ -146,11 +146,12 @@ def test_scr_holds(pid):
         assert pid(d).check("SCR", atol=1e-9)
 
 
-def test_scr_prec():
+@pytest.mark.parametrize("pid", [PID_Prec, PID_Deg])
+def test_scr_prec(pid):
     """
     I_prec fails the source chain rule on the counterexample, where it also has a negative atom.
     """
-    pid = PID_Prec(MAX_MIN)
+    pid = pid(MAX_MIN)
     assert pid.check("SCR").max_violation == pytest.approx(0.5)
     assert not pid.check("LP1")
 
@@ -379,14 +380,15 @@ def test_claims_corrections():
 
 def test_claims_degradation():
     """
-    PID_Deg computes the redundancy of PID_Prec for two sources only, so it takes the claims for I_prec.
+    PID_Deg is the measure of PID_Prec, so it takes the claims for I_prec.
     """
     deg, prec = PID_Deg.claims(), PID_Prec.claims()
-    assert deg["LP1"].holds is None
-    assert deg["LP"].holds is False
+    assert list(deg) == list(prec)
     assert str(deg["*"]) == "✓!"
-    for key in set(prec) - {"LP1", "LP"}:
+    assert deg["LP1"].holds is False
+    for key in prec:
         assert deg[key].holds == prec[key].holds
+        assert deg[key].caveat.endswith("as for I_prec, the same measure")
 
 
 def test_claims_local_positivity():

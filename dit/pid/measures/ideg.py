@@ -6,6 +6,9 @@ about T while remaining a Blackwell degradation of every source channel:
 
     I_d^∩(Y1, ..., Yn → T) = max_{Q : Q ≤_d Y_i ∀i} I(Q; T)
 
+This is Kolchinsky's Blackwell redundancy I_≺ in the notation of Gomes &
+Figueiredo (2023), so it is the same measure as `iprec`.
+
 An outcome q of Q corresponds to the vector u_q = (Λ_1(q|·), ..., Λ_n(q|·)),
 which lies in the polyhedral cone C = {u ≥ 0 : K^(1) u_1 = K^(i) u_i ∀i}.
 The vectors of all outcomes add up to the all-ones vector, and
@@ -33,9 +36,38 @@ import numpy as np
 from scipy.optimize import linprog
 
 from ...channelorder._utils import channels_from_joint
-from ..pid import BaseBivariatePID
+from ...shannon import mutual_information
+from ..pid import BasePID
 
 __all__ = ("PID_Deg",)
+
+
+def _source_channels(d, sources, target):
+    """
+    The channels P(X_i | T) of two or more sources, and the target marginal P(T).
+
+    Parameters
+    ----------
+    d : Distribution
+        The joint distribution.
+    sources : iterable of iterables
+        The source variables.
+    target : iterable
+        The target variable.
+
+    Returns
+    -------
+    channels : list of ndarray
+        The channel of each source, shape (|T|, |X_i|), over the target values with
+        positive probability.
+    pi_t : ndarray
+        The probabilities of those target values.
+    """
+    d_coal = d.coalesce([list(source) for source in sources] + [list(target)])
+    first_source, *other_sources, tgt = d_coal.dims
+    pairs = [channels_from_joint(d_coal, [tgt], [first_source], [source]) for source in other_sources]
+    first, _, pi_t = pairs[0]
+    return [first] + [channel for _, channel, _ in pairs], pi_t
 
 
 def _mi_bits(pi_t, ch):
@@ -347,13 +379,15 @@ def _degradation_ii(channels, pi_t, bound=None, niter=None):
     return _degradation_channel(channels, pi_t, bound=bound, niter=niter)[0]
 
 
-class PID_Deg(BaseBivariatePID):
+class PID_Deg(BasePID):
     """
     Degradation intersection information I_d^∩ from Kolchinsky (2022).
 
     Redundancy is the maximum I(Q; T) such that Q is a Blackwell
-    degradation of every source channel.  Satisfies the Williams-Beer
-    axioms and the independent identity property (IIP).
+    degradation of every source channel, for any number of sources.  This
+    is the Blackwell redundancy of :class:`~dit.pid.PID_Prec`, in the
+    notation of Gomes & Figueiredo.  Satisfies the Williams-Beer axioms and
+    the independent identity property (IIP).
 
     By default the maximum is computed exactly, by a linear program over
     the extreme rays of the cone of common degradations (a formulation due
@@ -367,6 +401,10 @@ class PID_Deg(BaseBivariatePID):
     ----------
     A. Kolchinsky, "A Novel Approach to the Partial Information
     Decomposition", Entropy 24, 403, 2022.
+
+    A. F. C. Gomes and M. A. T. Figueiredo, "Orders between Channels and
+    Implications for Partial Information Decomposition", Entropy 25, 975,
+    2023.
     """
 
     _name = "I_d∩"
@@ -374,14 +412,14 @@ class PID_Deg(BaseBivariatePID):
     @staticmethod
     def _measure(d, sources, target, bound=None, niter=None, method=None):
         """
-        Compute the degradation II redundancy for a pair of sources.
+        Compute the degradation II redundancy of some sources.
 
         Parameters
         ----------
         d : Distribution
             The joint distribution.
         sources : iterable of iterables
-            The source variables (exactly two).
+            The source variables.
         target : iterable
             The target variable.
         bound : int or None
@@ -405,24 +443,12 @@ class PID_Deg(BaseBivariatePID):
         if method not in ("exact", "local"):
             raise ValueError(f"method must be 'exact' or 'local', not {method!r}")
 
-        source_a, source_b = sources
+        if len(sources) == 1:
+            return mutual_information(d, sources[0], target)
 
-        d_coal = d.coalesce([list(source_a), list(source_b), list(target)])
-        src_a, src_b, tgt = d_coal.dims
-
-        kappa_a, kappa_b, pi_t = channels_from_joint(
-            d_coal,
-            [tgt],
-            [src_a],
-            [src_b],
-        )
+        channels, pi_t = _source_channels(d, sources, target)
 
         if method == "exact":
-            return _degradation_lp([kappa_a, kappa_b], pi_t)[0]
+            return _degradation_lp(channels, pi_t)[0]
 
-        return _degradation_ii(
-            [kappa_a, kappa_b],
-            pi_t,
-            bound=bound,
-            niter=niter,
-        )
+        return _degradation_ii(channels, pi_t, bound=bound, niter=niter)
