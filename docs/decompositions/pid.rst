@@ -705,7 +705,10 @@ Kolchinsky :cite:`kolchinsky2022novel` defines a redundancy measure using the Bl
    \Iprec{X_{0:n} \to Y} = \max_{s_{Q|Y}} \I{Y : Q} \quad \text{s.t.} \quad s_{Q|Y} \preceq p_{X_i|Y} \;\;\forall i
 
 This is the same quantity as :math:`\Ideg{\bullet}`, for any number of sources, and by default it is computed by the same linear program over the extreme rays of the cone of common degradations.
-Passing ``n_q`` fixes the cardinality of :math:`Q`; the maximum is then found by enumerating the vertices of the constraint polytope, since the objective is convex.
+Passing ``n_q`` fixes the cardinality of :math:`Q`.
+Every outcome of :math:`Q` is a combination of extreme rays of that cone, and the objective is convex, so the maximum is attained at a vertex of the linear program's feasible polytope with the rays in its support grouped into the outcomes of :math:`Q`.
+Splitting an outcome never lowers the objective, so only the partitions of each support into ``n_q`` groups need be checked, and from the cardinality of Theorem A1 on, the value is that of the linear program.
+The vertices are enumerated in exact arithmetic.
 
 .. autoclass:: PID_Prec
    :no-index:

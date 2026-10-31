@@ -192,9 +192,8 @@ def test_pid_deg_three_sources_local():
 def test_pid_deg_beyond_local_search():
     """
     The local search stops short of the maximum on this distribution, while the
-    linear program agrees with exhaustive vertex enumeration.
+    linear program agrees with the maximum over Q with five outcomes.
     """
-    pytest.importorskip("pypoman")
     d = _random_dist(83, 3)
     exact = PID_Deg(d).get_red(RED)
     local = PID_Deg(d, method="local").get_red(RED)
@@ -294,3 +293,14 @@ def test_degradation_lp_missing_rays(monkeypatch):
     monkeypatch.setattr(ideg, "_extreme_rays", incomplete)
     for seed, value in enumerate(values):
         assert PID_Deg._measure(_random_dist(seed, 3), RED, (2,)) == pytest.approx(value, abs=1e-9)
+
+
+@pytest.mark.parametrize(("n", "k", "count"), [(1, 1, 1), (4, 1, 1), (4, 4, 1), (5, 2, 15), (6, 3, 90), (7, 4, 350)])
+def test_set_partitions(n, k, count):
+    """The partitions into k blocks are distinct, cover the items, and number S(n, k)."""
+    partitions = list(ideg._set_partitions(list(range(n)), k))
+    assert len(partitions) == count
+    assert len({frozenset(frozenset(block) for block in partition) for partition in partitions}) == count
+    for partition in partitions:
+        assert len(partition) == k
+        assert sorted(x for block in partition for x in block) == list(range(n))
