@@ -4,26 +4,13 @@ Method selection and fallback routing for bivariate BROJA solvers.
 
 from __future__ import annotations
 
-import logging
-from math import prod
-
 from ..exceptions import OptimizationException
 
 __all__ = (
-    "ADMUI_MIN_JOINT",
-    "SCIPY_MAX_JOINT",
     "broja_solve_bivariate",
     "ecos_available",
     "select_broja_method",
 )
-
-logger = logging.getLogger(__name__)
-
-# Tunable via bench/broja_methods_bench.py (initial conservative defaults).
-# Quick check (repeat=1): admui beats scipy at |XYZ|>=125 (e.g. uniform 5^3);
-# scipy remains faster on small/binary cases (|XYZ|<=64).
-SCIPY_MAX_JOINT = 64
-ADMUI_MIN_JOINT = 125
 
 _BROJA_METHODS = frozenset({"scipy", "admui", "cone", "auto"})
 
@@ -39,6 +26,10 @@ def ecos_available() -> bool:
 def select_broja_method(alphabet_sizes, method: str = "auto") -> str:
     """
     Choose a bivariate BROJA solver.
+
+    ``'auto'`` picks the exact exponential cone program when ECOS is installed, and
+    admUI otherwise. SLSQP (``'scipy'``) is only used when asked for: it often stops
+    short of the minimum, overstating the unique information.
 
     Parameters
     ----------
@@ -57,12 +48,7 @@ def select_broja_method(alphabet_sizes, method: str = "auto") -> str:
             raise ImportError(msg)
         return method
 
-    n_joint = prod(alphabet_sizes)
-    if n_joint < SCIPY_MAX_JOINT:
-        return "scipy"
-    if n_joint >= ADMUI_MIN_JOINT:
-        return "admui"
-    return "scipy"
+    return "cone" if ecos_available() else "admui"
 
 
 def _uniques_from_optimizer(broja, pmf, sources):
@@ -111,17 +97,18 @@ def _solve_cone(d, sources, target, **ecos_kwargs):
 
 
 def _methods_fallback_chain(primary: str) -> list[str]:
-    chain = [primary]
-    if primary != "scipy":
-        chain.append("scipy")
-    if ecos_available() and primary != "cone":
-        chain.append("cone")
-    return chain
+    """The primary method, then the others from the most reliable to the least."""
+    order = ["cone", "admui", "scipy"] if ecos_available() else ["admui", "scipy"]
+    return [primary] + [meth for meth in order if meth != primary]
 
 
 def broja_solve_bivariate(d, sources, target, *, maxiter=1000, method="auto", rng=None, **ecos_kwargs):
     """
     Compute BROJA unique informations with automatic fallback.
+
+    If a solver raises, the next most reliable one is tried. admUI returns its last
+    iterate, which matches the marginals, even if it has not converged within
+    `maxiter` iterations.
 
     Returns
     -------
@@ -137,7 +124,6 @@ def broja_solve_bivariate(d, sources, target, *, maxiter=1000, method="auto", rn
     primary = select_broja_method(alphabet_sizes, method)
 
     errors = []
-    results = {}
 
     for meth in _methods_fallback_chain(primary):
         try:
@@ -145,32 +131,15 @@ def broja_solve_bivariate(d, sources, target, *, maxiter=1000, method="auto", rn
                 uniques, meta = _solve_scipy(d, sources, target, maxiter, rng)
             elif meth == "admui":
                 uniques, meta = _solve_admui(d, sources, target, maxiter)
-                if not meta.get("converged", True):
-                    raise OptimizationException("admUI did not converge")
             elif meth == "cone":
                 uniques, meta = _solve_cone(d, sources, target, **ecos_kwargs)
                 if not meta.get("converged", True):
                     raise OptimizationException("cone solver feasibility check failed")
             else:
                 continue
-            results[meth] = uniques
         except Exception as exc:
             errors.append((meth, exc))
             continue
-
-        if len(results) >= 2:
-            refs = list(results.values())
-            delta = max(abs(refs[0][s] - refs[1][s]) for s in refs[0])
-            if delta > 1e-3 and ecos_available() and meth != "cone":
-                logger.warning(
-                    "BROJA methods disagree (Δ=%.4g); retrying with cone solver.",
-                    delta,
-                )
-                try:
-                    uniques, meta = _solve_cone(d, sources, target, **ecos_kwargs)
-                    return uniques, meta
-                except Exception:
-                    pass
 
         return uniques, meta
 

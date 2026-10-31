@@ -264,10 +264,10 @@ In a very intuitive effort, Bertschinger et al (henceforth BROJA) :cite:`bertsch
 
 For bivariate sources (two inputs), ``PID_BROJA`` accepts a ``method`` keyword selecting how the marginal-matching optimization is solved:
 
-* ``'scipy'`` (default for small alphabets under ``'auto'``) — SLSQP on the free joint pmf parameters.
-* ``'admui'`` — alternating divergence minimization :cite:`banerjee2017computing`.
+* ``'scipy'`` — SLSQP on the free joint pmf parameters. It can stop well short of the minimum, overstating the unique information, so ``'auto'`` does not use it.
+* ``'admui'`` — alternating divergence minimization :cite:`banerjee2017computing`. If it has not converged within ``maxiter`` iterations, its last iterate, which matches the marginals, is used.
 * ``'cone'`` — exponential cone program solved with ECOS :cite:`makkeh2018broja` (requires ``pip install dit[broja]``).
-* ``'auto'`` — picks ``scipy`` or ``admui`` by joint alphabet size, with fallback to the other methods on failure.
+* ``'auto'`` (the default) — picks ``cone`` if ECOS is installed and ``admui`` otherwise, falling back to the other methods if a solver fails.
 
 .. note::
 

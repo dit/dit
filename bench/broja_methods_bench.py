@@ -20,12 +20,7 @@ from math import prod
 import numpy as np
 
 import dit
-from dit.algorithms.broja_method import (
-    ADMUI_MIN_JOINT,
-    SCIPY_MAX_JOINT,
-    broja_solve_bivariate,
-    ecos_available,
-)
+from dit.algorithms.broja_method import broja_solve_bivariate, ecos_available
 from dit.algorithms.pid_broja import prepare_dist as broja_prepare_dist
 from dit.pid.distributions import bivariates
 
@@ -108,7 +103,6 @@ def run(repeat):
 
 def _summarize(results):
     lines = []
-    lines.append(f"Thresholds: SCIPY_MAX_JOINT={SCIPY_MAX_JOINT}, ADMUI_MIN_JOINT={ADMUI_MIN_JOINT}")
     if "admui" not in METHODS:
         lines.append("admui not run")
         return lines
