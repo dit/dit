@@ -428,6 +428,19 @@ contributing. We'll work with you to ensure that all pull requests are in a merg
 If you'd like to get in contact about anything, you can reach us through our
 `slack channel <https://dit-python.slack.com/>`_.
 
+Thanks
+------
+
+Thank you to everyone who has contributed bug reports or pull requests to ``dit``:
+Aaron Griffith, Abhishek Bhatia, @alimasn, André F. C. Gomes, Angus Forbes, Artemy Kolchinsky,
+Benjamin Lee, Bochen Zhao, Casper van Elteren, Charles Kemp, @d-jeon, Daniel Feldspar,
+David A. Ehrlich, Diego Volpatto, Elias Jaffe, Fabio Anza, Freya Behrens, Haochen Wu,
+Harald Schilly, Himanshu Mishra, @ivan-marroquin, Jaewon Chung, James K Johnson, Jan Olszak,
+Jeffrey Emenheiser, Juan Carlos Farah, Keenan Down, @kokokostation, Kunal Marwaha, Lee Junho,
+Longshan Du, @LuisHeinzlmeier, Marc Harper, Nathaniel Chen, @OrdinarySK, Pattarawat Chormai, QZP,
+Rion Brattig Correia, Robin Ince, Rodrigo Silva, Scott Sievert, Tai C. Huang, Talha Anwar,
+Thomas Kluyver, Tobias Mages, Vigneswaran Chandrasekaran, 赵丰 (Zhao Feng), and @zuiyanzuiyan.
+
 
 .. badges:
 
