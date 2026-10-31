@@ -11,6 +11,7 @@ from dit.pid import (
     PID_CCS,
     PID_CI,
     PID_CT,
+    PID_GH,
     PID_GK,
     PID_IG,
     PID_LN,
@@ -163,6 +164,21 @@ def test_rdr_degenerate_conditionals():
     """
     assert PID_RDR(AND_XOR, [[0], [1]], [2, 3]).check("TC")
     assert not PID_RDR(MAX_MIN).check("SCR")
+
+
+def test_gh_monotonicity():
+    """
+    I_GH violates weak monotonicity with three sources: adding the source {1:2}, which
+    contains {1}, lowers the redundancy of {0}{1}.
+    """
+    check = PID_GH(MAX_MIN).check("M0")
+    assert not check
+    violation = next(v for v in check.violations if v.where == "I_cap({0}{1}) <= I_cap({0}{1:2})")
+    assert violation.lhs == pytest.approx(0.0817, abs=1e-4)
+    assert violation.rhs == pytest.approx(0.0488, abs=1e-4)
+    assert PID_GH._measure(MAX_MIN, ((0,), (1,), (1, 2)), (3,)) == pytest.approx(0.0, abs=1e-9)
+    assert str(PID_GH.claims()["M0"]) == "✗!"
+    assert str(PID_GH.claims()["M1"]) == "✗!"
 
 
 def test_ln_degenerate_conditionals():
@@ -425,7 +441,7 @@ def test_claims_cover_known_measures_and_properties():
         assert set(claims) <= set(PROPERTIES)
 
 
-@pytest.mark.parametrize("pid", [PID_WB, PID_MMI, PID_GK, PID_SX, PID_PM, PID_CCS, PID_Deg, PID_Prec, PID_RDR])
+@pytest.mark.parametrize("pid", [PID_WB, PID_MMI, PID_GK, PID_SX, PID_PM, PID_CCS, PID_Deg, PID_Prec, PID_RDR, PID_GH])
 def test_claims_agree_with_checks(pid):
     """
     No claim made without caveat is contradicted on small examples.

@@ -1176,6 +1176,20 @@ _TABLE5_CORRECTIONS = {
         " only event by event (T = t against T != t), as for two correlated bits and a target copying both",
         "liardi2026landscape",
     ),
+    ("PID_GH", "M0"): Claim(
+        False,
+        "!",
+        "Table 5 marks the property, but the order Q - X - Y is not transitive, so adding a source that contains"
+        " another can lower the redundancy: on 'max min', I_GH({0}{1}) = 0.082, I_GH({0}{1:2}) = 0.049 and"
+        " I_GH({0}{1}{1:2}) = 0",
+        "liardi2026landscape",
+    ),
+    ("PID_GH", "M1"): Claim(
+        False,
+        "!",
+        "Table 5 marks the property, but it implies M0 (Theo. 6), which fails",
+        "liardi2026landscape",
+    ),
 }
 
 
