@@ -176,3 +176,14 @@ def test_union_bounds(dist):
 def test_self_redundancy(dist):
     """A single source's union information is its mutual information with the target."""
     assert union_ci(dist, [[0]], [2]) == pytest.approx(coinformation(dist, [[0], [2]]), abs=1e-9)
+
+
+def test_tiny_probabilities():
+    """
+    p(a) p(t) underflowed to 0 when both are about 1e-182, so the union information was
+    infinite and the decomposition undefined.
+    """
+    d = Distribution([(0, 0, 0), (1, 0, 1), (0, 1, 0)], [0.5, 1e-182, 0.5])
+    assert union_ci(d, [[0]], [2]) == pytest.approx(coinformation(d, [[0], [2]]), abs=1e-12)
+    assert synergy_ci(d, [[0], [1]], [2]) == pytest.approx(0.0, abs=1e-12)
+    assert PID_CI(d).complete
