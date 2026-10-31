@@ -6,6 +6,9 @@ about T while remaining a Blackwell degradation of every source channel:
 
     I_d^∩(Y1, ..., Yn → T) = max_{Q : Q ≤_d Y_i ∀i} I(Q; T)
 
+This is Kolchinsky's Blackwell redundancy I_≺ in the notation of Gomes &
+Figueiredo (2023), so it is the same measure as `iprec`.
+
 An outcome q of Q corresponds to the vector u_q = (Λ_1(q|·), ..., Λ_n(q|·)),
 which lies in the polyhedral cone C = {u ≥ 0 : K^(1) u_1 = K^(i) u_i ∀i}.
 The vectors of all outcomes add up to the all-ones vector, and
@@ -33,9 +36,38 @@ import numpy as np
 from scipy.optimize import linprog
 
 from ...channelorder._utils import channels_from_joint
-from ..pid import BaseBivariatePID
+from ...shannon import mutual_information
+from ..pid import BasePID
 
 __all__ = ("PID_Deg",)
+
+
+def _source_channels(d, sources, target):
+    """
+    The channels P(X_i | T) of two or more sources, and the target marginal P(T).
+
+    Parameters
+    ----------
+    d : Distribution
+        The joint distribution.
+    sources : iterable of iterables
+        The source variables.
+    target : iterable
+        The target variable.
+
+    Returns
+    -------
+    channels : list of ndarray
+        The channel of each source, shape (|T|, |X_i|), over the target values with
+        positive probability.
+    pi_t : ndarray
+        The probabilities of those target values.
+    """
+    d_coal = d.coalesce([list(source) for source in sources] + [list(target)])
+    first_source, *other_sources, tgt = d_coal.dims
+    pairs = [channels_from_joint(d_coal, [tgt], [first_source], [source]) for source in other_sources]
+    first, _, pi_t = pairs[0]
+    return [first] + [channel for _, channel, _ in pairs], pi_t
 
 
 def _mi_bits(pi_t, ch):
@@ -101,32 +133,28 @@ def _extreme_rays_cdd(rows, dim):
     return np.array([gen[1:] for gen in gens.array if gen[0] == 0], dtype=float).reshape(-1, dim)
 
 
-def _extreme_rays_exact(channels):
+def _double_description(equalities, dim):
     """
-    Extreme rays of the cone of common degradations by the double description method, in
-    exact integer arithmetic.
+    Extreme rays of {u >= 0 : a @ u = 0 for each a in `equalities`}, by the double
+    description method in exact integer arithmetic.
 
-    The (exactly represented) floating-point rows of each channel are first normalized
-    exactly, so that the constant degradation (the all-ones vector) lies in the cone.
     Starting from the unit vectors, which generate the orthant, each equality a @ u = 0
     keeps the rays on its hyperplane and adds, for each adjacent pair of rays on opposite
     sides of it, the ray where the face they span meets the hyperplane. Two rays are
     adjacent if no other ray vanishes on every coordinate on which both vanish.
-    """
-    exact = [[[Fraction(x) for x in row] for row in ch] for ch in channels]
-    exact = [[[x / sum(row) for x in row] for row in ch] for ch in exact]
-    sizes = [len(ch[0]) for ch in exact]
-    dim = sum(sizes)
-    equalities = []
-    for i in range(1, len(exact)):
-        start = sum(sizes[:i])
-        for row_0, row_i in zip(exact[0], exact[i], strict=True):
-            row = [Fraction(0)] * dim
-            row[: sizes[0]] = row_0
-            row[start : start + sizes[i]] = [-x for x in row_i]
-            scale = lcm(*(x.denominator for x in row))
-            equalities.append([int(x * scale) for x in row])
 
+    Parameters
+    ----------
+    equalities : list of list of int
+        The rows a of the equalities.
+    dim : int
+        The dimension of u.
+
+    Returns
+    -------
+    rays : ndarray, shape (n_rays, dim)
+        The extreme rays, each scaled to have largest entry 1.
+    """
     rays = [tuple(int(i == j) for j in range(dim)) for i in range(dim)]
     for a in equalities:
         values = [sum(x * y for x, y in zip(a, ray, strict=True)) for ray in rays]
@@ -146,6 +174,55 @@ def _extreme_rays_exact(channels):
                 new.append(tuple(x // g for x in ray))
         rays = new
     return np.array([[x / max(ray) for x in ray] for ray in rays], dtype=float).reshape(-1, dim)
+
+
+def _integer_row(row):
+    """Scale a row of fractions to integers."""
+    scale = lcm(*(x.denominator for x in row))
+    return [int(x * scale) for x in row]
+
+
+def _extreme_rays_exact(channels):
+    """
+    Extreme rays of the cone of common degradations by the double description method, in
+    exact integer arithmetic.
+
+    The (exactly represented) floating-point rows of each channel are first normalized
+    exactly, so that the constant degradation (the all-ones vector) lies in the cone.
+    """
+    exact = [[[Fraction(x) for x in row] for row in ch] for ch in channels]
+    exact = [[[x / sum(row) for x in row] for row in ch] for ch in exact]
+    sizes = [len(ch[0]) for ch in exact]
+    dim = sum(sizes)
+    equalities = []
+    for i in range(1, len(exact)):
+        start = sum(sizes[:i])
+        for row_0, row_i in zip(exact[0], exact[i], strict=True):
+            row = [Fraction(0)] * dim
+            row[: sizes[0]] = row_0
+            row[start : start + sizes[i]] = [-x for x in row_i]
+            equalities.append(_integer_row(row))
+    return _double_description(equalities, dim)
+
+
+def _verified_cdd_rays(rows, dim, tol=1e-9):
+    """
+    Extreme rays of {u >= 0 : rows @ u = 0} from cddlib, each scaled to have largest entry
+    1, or None if cddlib is not installed or its rays fail verification.
+    """
+    try:
+        rays = _extreme_rays_cdd(rows, dim)
+    except (ImportError, AttributeError, RuntimeError, ValueError):
+        return None
+    if rays is None or not len(rays):
+        return None
+    scale = np.abs(rays).max(axis=1, keepdims=True)
+    if not (scale > 0).all():
+        return None
+    rays = rays / scale
+    if rays.min() < -tol or (rows.size and np.abs(rays @ rows.T).max() > tol):
+        return None
+    return rays
 
 
 def _extreme_rays(channels, tol=1e-9):
@@ -170,20 +247,8 @@ def _extreme_rays(channels, tol=1e-9):
         Where each u_i starts in a ray, followed by the length of a ray.
     """
     rows, offsets = _cone_equalities(channels)
-    dim = offsets[-1]
-    try:
-        rays = _extreme_rays_cdd(rows, dim)
-    except (ImportError, AttributeError, RuntimeError, ValueError):
-        rays = None
-    if rays is not None and len(rays):
-        scale = np.abs(rays).max(axis=1, keepdims=True)
-        valid = bool((scale > 0).all())
-        if valid:
-            rays = rays / scale
-            valid = rays.min() >= -tol and (not rows.size or np.abs(rays @ rows.T).max() <= tol)
-        if not valid:
-            rays = None
-    if rays is None or not len(rays):
+    rays = _verified_cdd_rays(rows, offsets[-1], tol)
+    if rays is None:
         rays = _extreme_rays_exact(channels)
     return np.clip(rays, 0.0, None), offsets
 
@@ -198,6 +263,16 @@ def _outcome_information(pi_t, columns):
     with np.errstate(divide="ignore", invalid="ignore"):
         terms = np.where(joint > 0, joint * np.log2(columns / marginal), 0.0)
     return terms.sum(axis=1)
+
+
+def _ray_program(rays, columns, pi_t):
+    """
+    The linear program over the extreme rays `rays`: the largest sum of their contributions
+    to I(Q; T) whose weighted rays add up to the all-ones vector. Row r of `columns` is the
+    column of K_Q, up to scale, of an outcome of Q given by ray r.
+    """
+    values = _outcome_information(pi_t, columns)
+    return linprog(-values, A_eq=rays.T, b_eq=np.ones(rays.shape[1]), bounds=(0, None), method="highs")
 
 
 def _degradation_lp(channels, pi_t):
@@ -221,9 +296,13 @@ def _degradation_lp(channels, pi_t):
         K_Q = K^(i) @ Λ_i for every i.
     """
     rays, offsets = _extreme_rays(channels)
-    columns = rays[:, offsets[0] : offsets[1]] @ channels[0].T
-    values = _outcome_information(pi_t, columns)
-    res = linprog(-values, A_eq=rays.T, b_eq=np.ones(offsets[-1]), bounds=(0, None), method="highs")
+    res = _ray_program(rays, rays[:, offsets[0] : offsets[1]] @ channels[0].T, pi_t)
+    if res.status != 0:
+        # On ill-conditioned channels the rays from cddlib can pass verification and still
+        # miss some extreme rays, so that the constant degradation is not a combination of
+        # them and the program is infeasible. The exact rays always contain it.
+        rays = np.clip(_extreme_rays_exact(channels), 0.0, None)
+        res = _ray_program(rays, rays[:, offsets[0] : offsets[1]] @ channels[0].T, pi_t)
     if res.status != 0:
         raise RuntimeError(f"The linear program for I_d^∩ failed: {res.message}")
     used = res.x > 1e-12
@@ -333,13 +412,15 @@ def _degradation_ii(channels, pi_t, bound=None, niter=None):
     return _degradation_channel(channels, pi_t, bound=bound, niter=niter)[0]
 
 
-class PID_Deg(BaseBivariatePID):
+class PID_Deg(BasePID):
     """
     Degradation intersection information I_d^∩ from Kolchinsky (2022).
 
     Redundancy is the maximum I(Q; T) such that Q is a Blackwell
-    degradation of every source channel.  Satisfies the Williams-Beer
-    axioms and the independent identity property (IIP).
+    degradation of every source channel, for any number of sources.  This
+    is the Blackwell redundancy of :class:`~dit.pid.PID_Prec`, in the
+    notation of Gomes & Figueiredo.  Satisfies the Williams-Beer axioms and
+    the independent identity property (IIP).
 
     By default the maximum is computed exactly, by a linear program over
     the extreme rays of the cone of common degradations (a formulation due
@@ -353,6 +434,10 @@ class PID_Deg(BaseBivariatePID):
     ----------
     A. Kolchinsky, "A Novel Approach to the Partial Information
     Decomposition", Entropy 24, 403, 2022.
+
+    A. F. C. Gomes and M. A. T. Figueiredo, "Orders between Channels and
+    Implications for Partial Information Decomposition", Entropy 25, 975,
+    2023.
     """
 
     _name = "I_d∩"
@@ -360,14 +445,14 @@ class PID_Deg(BaseBivariatePID):
     @staticmethod
     def _measure(d, sources, target, bound=None, niter=None, method=None):
         """
-        Compute the degradation II redundancy for a pair of sources.
+        Compute the degradation II redundancy of some sources.
 
         Parameters
         ----------
         d : Distribution
             The joint distribution.
         sources : iterable of iterables
-            The source variables (exactly two).
+            The source variables.
         target : iterable
             The target variable.
         bound : int or None
@@ -391,24 +476,12 @@ class PID_Deg(BaseBivariatePID):
         if method not in ("exact", "local"):
             raise ValueError(f"method must be 'exact' or 'local', not {method!r}")
 
-        source_a, source_b = sources
+        if len(sources) == 1:
+            return mutual_information(d, sources[0], target)
 
-        d_coal = d.coalesce([list(source_a), list(source_b), list(target)])
-        src_a, src_b, tgt = d_coal.dims
-
-        kappa_a, kappa_b, pi_t = channels_from_joint(
-            d_coal,
-            [tgt],
-            [src_a],
-            [src_b],
-        )
+        channels, pi_t = _source_channels(d, sources, target)
 
         if method == "exact":
-            return _degradation_lp([kappa_a, kappa_b], pi_t)[0]
+            return _degradation_lp(channels, pi_t)[0]
 
-        return _degradation_ii(
-            [kappa_a, kappa_b],
-            pi_t,
-            bound=bound,
-            niter=niter,
-        )
+        return _degradation_ii(channels, pi_t, bound=bound, niter=niter)

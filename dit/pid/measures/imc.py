@@ -26,9 +26,10 @@ References
 import numpy as np
 from scipy.optimize import minimize
 
-from ...channelorder._utils import channels_from_joint
+from ...shannon import mutual_information
 from ...utils.deprecation import renamed_kwarg
-from ..pid import BaseBivariatePID
+from ..pid import BasePID
+from .ideg import _source_channels
 
 __all__ = ("PID_MC",)
 
@@ -236,12 +237,13 @@ def _more_capable_ii(channels, pi_t, n_q=None, n_samples=None, niter=None, seed=
     return best_mi
 
 
-class PID_MC(BaseBivariatePID):
+class PID_MC(BasePID):
     """
     More-capable intersection information I_mc^∩ from Gomes & Figueiredo.
 
     Redundancy is the maximum I(Q; T) such that K_Q is "less capable"
-    than every source channel for all input distributions.
+    than every source channel for all input distributions. Defined for any
+    number of sources.
 
     Because the constraint set is discretized, the computed value is an
     upper bound that tightens with more samples.
@@ -259,14 +261,14 @@ class PID_MC(BaseBivariatePID):
     @renamed_kwarg("seed", "rng")
     def _measure(d, sources, target, n_samples=None, niter=None, rng=None):
         """
-        Compute the more-capable II redundancy for a pair of sources.
+        Compute the more-capable II redundancy of some sources.
 
         Parameters
         ----------
         d : Distribution
             The joint distribution.
         sources : iterable of iterables
-            The source variables (exactly two).
+            The source variables.
         target : iterable
             The target variable.
         n_samples : int or None
@@ -282,22 +284,9 @@ class PID_MC(BaseBivariatePID):
         float
             The more-capable II redundancy (upper bound, in bits).
         """
-        source_a, source_b = sources
+        if len(sources) == 1:
+            return mutual_information(d, sources[0], target)
 
-        d_coal = d.coalesce([list(source_a), list(source_b), list(target)])
-        src_a, src_b, tgt = d_coal.dims
+        channels, pi_t = _source_channels(d, sources, target)
 
-        kappa_a, kappa_b, pi_t = channels_from_joint(
-            d_coal,
-            [tgt],
-            [src_a],
-            [src_b],
-        )
-
-        return _more_capable_ii(
-            [kappa_a, kappa_b],
-            pi_t,
-            n_samples=n_samples,
-            niter=niter,
-            seed=rng,
-        )
+        return _more_capable_ii(channels, pi_t, n_samples=n_samples, niter=niter, seed=rng)

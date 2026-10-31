@@ -21,6 +21,8 @@ __all__ = ("one_way_skar",)
 
 def _simplex_grid(k, max_points):
     """Regular grid on the probability simplex over ``k`` symbols."""
+    if k == 1:
+        return np.ones((1, 1))
     n = 1
     while comb(n + k, k - 1) <= max_points:
         n += 1

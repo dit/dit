@@ -444,6 +444,64 @@ class BasePID(metaclass=ABCMeta):
         """
         return True
 
+    def check(self, prop, atol=1e-5, **kwargs):
+        """
+        Check whether this decomposition satisfies a property.
+
+        Parameters
+        ----------
+        prop : str
+            The property, by key (e.g. 'SCR') or name (e.g. 'source_chain_rule').
+            See `dit.pid.properties.PROPERTIES`.
+        atol : float
+            The absolute tolerance of each comparison.
+        kwargs : dict
+            Options of the check: `context` (SCR), `split` (TC), `orders` (S0),
+            and `other` (AD).
+
+        Returns
+        -------
+        check : PropertyCheck
+            The result, with any violations; truthy if the property holds.
+        """
+        from .properties import check_property
+
+        return check_property(self, prop, atol=atol, **kwargs)
+
+    def check_properties(self, props=None, atol=1e-5):
+        """
+        Check several properties of this decomposition.
+
+        Parameters
+        ----------
+        props : iterable of str, None
+            The properties to check. If None, all of them.
+        atol : float
+            The absolute tolerance of each comparison.
+
+        Returns
+        -------
+        report : PropertyReport
+            The results, next to the properties claimed for this measure.
+        """
+        from .properties import check_properties
+
+        return check_properties(self, props=props, atol=atol)
+
+    @classmethod
+    def claims(cls):
+        """
+        The properties claimed for this measure in the literature.
+
+        Returns
+        -------
+        claims : dict
+            Maps property keys to Claims; empty if the measure is not covered.
+        """
+        from .properties import claims_for
+
+        return claims_for(cls)
+
 
 class BasePointwisePID(BasePID):
     """

@@ -119,10 +119,12 @@ def _mutual_information(arr):
     I(A; T) in bits, where T is the last axis of `arr` and A is all the others.
     """
     joint = arr.reshape(-1, arr.shape[-1])
-    p_a = joint.sum(axis=1, keepdims=True)
-    p_t = joint.sum(axis=0, keepdims=True)
+    p_a = np.broadcast_to(joint.sum(axis=1, keepdims=True), joint.shape)
+    p_t = np.broadcast_to(joint.sum(axis=0, keepdims=True), joint.shape)
     mask = joint > 0
-    return float(np.sum(joint[mask] * np.log2(joint[mask] / (p_a * p_t)[mask])))
+    # A difference of logarithms, since p(a) p(t) underflows when both are tiny.
+    terms = np.log2(joint[mask]) - np.log2(p_a[mask]) - np.log2(p_t[mask])
+    return float(np.sum(joint[mask] * terms))
 
 
 def _product_distribution(arr, partition):

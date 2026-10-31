@@ -1,6 +1,27 @@
 """
-The redundancy measure of Griffith & Ho.
+The redundancy measure of Griffith & Ho, their I_alpha:
+
+    I_GH(X_1, ..., X_n -> Y) = max_Q I(Q; Y)  such that  Q - X_i - Y for every i,
+
+where Q may depend on the sources and the target jointly.
+
+An outcome q of Q is given by u(z) = s(q | z) on the outcomes z of the sources and the
+target, and Q - X_i - Y says s(q | x_i, y) = s(q | x_i), a set of linear equalities in u.
+So the vectors of the outcomes lie in a polyhedral cone and add up to the all-ones
+vector, and I(Q; Y) is a sum over the outcomes of a convex, positively homogeneous
+function of them. As for the degradation redundancy of `ideg`, the maximum is therefore
+the value of a linear program over the extreme rays of the cone.
+
+References
+----------
+.. [1] V. Griffith and T. Ho, "Quantifying Redundant Information in Predicting a Target
+       Random Variable", Entropy 17, 4644, 2015.
+.. [2] A. Kolchinsky, "A Novel Approach to the Partial Information Decomposition",
+       Entropy 24, 403, 2022.
 """
+
+from collections import defaultdict
+from fractions import Fraction
 
 import numpy as np
 
@@ -8,8 +29,95 @@ from ...algorithms.optimization import BaseAuxVarOptimizer, BaseConvexOptimizer,
 from ...math import prod
 from ...shannon import entropy, mutual_information
 from ..pid import BasePID
+from .ideg import _double_description, _integer_row, _ray_program, _verified_cdd_rays
 
 __all__ = ("PID_GH",)
+
+
+def _independence_cone(pjoint):
+    """
+    The equalities under which an outcome of Q is independent of the target given each
+    source.
+
+    Parameters
+    ----------
+    pjoint : Distribution
+        The distribution of the sources and the target, the last variable.
+
+    Returns
+    -------
+    exact : list of list of int
+        The rows a of the equalities a @ u = 0, on the outcomes z of positive probability,
+        scaled to integers.
+    rows : ndarray
+        The same rows in floating point, each scaled to have largest entry 1.
+    columns : ndarray, shape (|Y|, |Z|)
+        The map p(z | y) [z_y = y] from u to the column of K_Q, up to scale.
+    p_y : ndarray
+        The probabilities of the target values.
+    """
+    outcomes, probs = zip(*pjoint.zipped(), strict=True)
+    probs = [Fraction(float(p)) for p in probs]
+    targets = list(dict.fromkeys(z[-1] for z in outcomes))
+    p_y = defaultdict(Fraction)
+    for z, p in zip(outcomes, probs, strict=True):
+        p_y[z[-1]] += p
+
+    exact = []
+    for i in range(len(outcomes[0]) - 1):
+        p_x, p_xy = defaultdict(Fraction), defaultdict(Fraction)
+        for z, p in zip(outcomes, probs, strict=True):
+            p_x[z[i]] += p
+            p_xy[z[i], z[-1]] += p
+        for (x, y), q in p_xy.items():
+            # p(q, x, y) p(x) = p(q, x) p(x, y)
+            row = [
+                p * ((z[-1] == y) * p_x[x] - q) if z[i] == x else Fraction(0)
+                for z, p in zip(outcomes, probs, strict=True)
+            ]
+            if any(row):
+                exact.append(_integer_row(row))
+
+    rows = np.array([[float(a) for a in row] for row in exact]).reshape(-1, len(outcomes))
+    if rows.size:
+        rows /= np.abs(rows).max(axis=1, keepdims=True)
+    columns = np.array(
+        [[float(p / p_y[y]) if z[-1] == y else 0.0 for z, p in zip(outcomes, probs, strict=True)] for y in targets]
+    )
+    return exact, rows, columns, np.array([float(p_y[y]) for y in targets])
+
+
+def _gh_lp(pjoint):
+    """
+    Compute I_GH exactly, by a linear program over the extreme rays of the cone of
+    outcomes of Q which are independent of the target given each source.
+
+    Parameters
+    ----------
+    pjoint : Distribution
+        The distribution of the sources and the target, the last variable.
+
+    Returns
+    -------
+    igh : float
+        The value of I_GH, in bits.
+    """
+    exact, rows, columns, p_y = _independence_cone(pjoint)
+    if len(p_y) < 2:
+        return 0.0
+    dim = columns.shape[1]
+    rays = _verified_cdd_rays(rows, dim)
+    if rays is None:
+        rays = _double_description(exact, dim)
+    rays = np.clip(rays, 0.0, None)
+    res = _ray_program(rays, rays @ columns.T, p_y)
+    if res.status != 0:
+        # The rays from cddlib can pass verification and still miss some extreme rays.
+        rays = np.clip(_double_description(exact, dim), 0.0, None)
+        res = _ray_program(rays, rays @ columns.T, p_y)
+    if res.status != 0:
+        raise RuntimeError(f"The linear program for I_GH failed: {res.message}")
+    return max(0.0, -res.fun)
 
 
 class GHOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
@@ -145,12 +253,23 @@ class GHOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
 class PID_GH(BasePID):
     """
     The I_GH measure defined by Griffith & Ho.
+
+    Redundancy is the maximum I(Q; Y) over variables Q which are independent of the target
+    given each source. By default it is computed exactly, by a linear program over the
+    extreme rays of the cone of such outcomes of Q. Passing ``method='optimizer'`` instead
+    runs a local optimization of a bounded auxiliary variable, which only gives a lower
+    bound.
+
+    References
+    ----------
+    V. Griffith and T. Ho, "Quantifying Redundant Information in Predicting a Target Random
+    Variable", Entropy 17, 4644, 2015.
     """
 
     _name = "I_GH"
 
     @staticmethod
-    def _measure(d, sources, target):
+    def _measure(d, sources, target, method="exact"):
         """
         Compute I_GH(sources : target) =
             \\max I[Q : target] such that I[Q : Y | Xi] = 0
@@ -163,14 +282,22 @@ class PID_GH(BasePID):
             The source variables.
         target : iterable
             The target variable.
+        method : {'exact', 'optimizer'}
+            'exact' solves a linear program over the extreme rays of the cone of outcomes
+            of Q which are independent of the target given each source. 'optimizer' runs
+            a local optimization, which only gives a lower bound.
 
         Returns
         -------
         igh : float
             The value of I_GH.
         """
+        if method not in ("exact", "optimizer"):
+            raise ValueError(f"method must be 'exact' or 'optimizer', not {method!r}")
         if len(sources) == 1:
             return mutual_information(d, sources[0], target)
+        if method == "exact":
+            return _gh_lp(d.coalesce(list(sources) + [target]))
         md = d.coalesce(sources)
         upper_bound = prod(len(a) for a in md.alphabet) + 1
         for bound in range(upper_bound, md.outcome_length(), -1):

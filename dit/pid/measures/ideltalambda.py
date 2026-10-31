@@ -25,6 +25,7 @@ References
 import numpy as np
 
 from ...algorithms.optimization import BaseAuxVarOptimizer, BaseConvexOptimizer, parallel_sweep
+from ...exceptions import ditException
 from ...multivariate import coinformation
 from ..pid import BaseBivariatePID
 
@@ -247,6 +248,10 @@ class PID_DeltaLambda(BaseBivariatePID):
         ri : float
             The delta-lambda PID redundancy.
         """
+        if len(sources) != 2:
+            msg = f"I_delta_lambda is only defined for two sources, {len(sources)} given."
+            raise ditException(msg)
+
         source_a, source_b = sources
 
         def _run(args, rng):

@@ -32,10 +32,10 @@ References
 import numpy as np
 from scipy.optimize import minimize
 
-from ...channelorder._utils import channels_from_joint
+from ...shannon import mutual_information
 from ...utils.deprecation import renamed_kwarg
-from ..pid import BaseBivariatePID
-from .ideg import _degradation_lp
+from ..pid import BasePID
+from .ideg import _degradation_lp, _source_channels
 from .imc import _mi_bits, _mi_grad_wrt_K, _params_to_stochastic, _softmax_vjp
 
 __all__ = ("PID_LN",)
@@ -173,6 +173,10 @@ def _less_noisy_ii(channels, pi_t, n_q=None, n_points=None, niter=None, seed=Non
         The largest I(Q; T) found among candidates passing the dense check.
     """
     n_t = channels[0].shape[0]
+    if n_t < 2:
+        # A target with a single value carries no information, and its simplex has no
+        # tangent directions to sample.
+        return 0.0
     if n_q is None:
         n_q = max(ch.shape[1] for ch in channels)
     if n_points is None:
@@ -244,13 +248,14 @@ def _less_noisy_ii(channels, pi_t, n_q=None, n_points=None, niter=None, seed=Non
     return best_mi
 
 
-class PID_LN(BaseBivariatePID):
+class PID_LN(BasePID):
     """
     Less-noisy intersection information I_ln^∩ from Gomes & Figueiredo.
 
     Redundancy is the maximum I(Q; T) over channels K_Q such that every
     source channel is less noisy than K_Q; equivalently, no one-way secret key
-    can be agreed from T to Q against any single source.
+    can be agreed from T to Q against any single source. Defined for any
+    number of sources.
 
     References
     ----------
@@ -265,14 +270,14 @@ class PID_LN(BaseBivariatePID):
     @renamed_kwarg("seed", "rng")
     def _measure(d, sources, target, n_points=None, niter=None, rng=None):
         """
-        Compute the less-noisy II redundancy for a pair of sources.
+        Compute the less-noisy II redundancy of some sources.
 
         Parameters
         ----------
         d : Distribution
             The joint distribution.
         sources : iterable of iterables
-            The source variables (exactly two).
+            The source variables.
         target : iterable
             The target variable.
         n_points : int or None
@@ -287,11 +292,9 @@ class PID_LN(BaseBivariatePID):
         float
             The less-noisy II redundancy, in bits.
         """
-        source_a, source_b = sources
+        if len(sources) == 1:
+            return mutual_information(d, sources[0], target)
 
-        d_coal = d.coalesce([list(source_a), list(source_b), list(target)])
-        src_a, src_b, tgt = d_coal.dims
+        channels, pi_t = _source_channels(d, sources, target)
 
-        kappa_a, kappa_b, pi_t = channels_from_joint(d_coal, [tgt], [src_a], [src_b])
-
-        return _less_noisy_ii([kappa_a, kappa_b], pi_t, n_points=n_points, niter=niter, seed=rng)
+        return _less_noisy_ii(channels, pi_t, n_points=n_points, niter=niter, seed=rng)

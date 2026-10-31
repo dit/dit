@@ -72,3 +72,74 @@ def test_pid_ln_tied_rows():
     assert 0.017 <= pid[RED] <= 0.0226
     assert pid[((0, 1),)] < -0.015
     assert pid[RED] >= PID_Deg(d, ((0,), (1,)), (2,))[RED] - 1e-6
+
+
+def _from_channels(pi_t, *channels):
+    """Sources independent given the target, which is the last variable."""
+    outcomes, pmf = [], []
+    for t, p in enumerate(pi_t):
+        for ys in itertools.product(*(range(ch.shape[1]) for ch in channels)):
+            w = p * np.prod([ch[t, y] for ch, y in zip(channels, ys, strict=True)])
+            if w > 0:
+                outcomes.append((*ys, t))
+                pmf.append(w)
+    return Distribution(outcomes, pmf)
+
+
+@pytest.mark.flaky(reruns=5)
+def test_pid_ln_gomes_figueiredo():
+    """
+    Tables 3 and 4 of Gomes & Figueiredo (2023). In the first counterexample of Korner &
+    Marton the second channel is less noisy than the first without being a degradation,
+    so I_ln^∩ is I(T; Y2), about 0.004 bits, while I_d^∩ is about 0.002 bits. For the
+    channels of Americo et al. they conjecture that I_ln^∩ vanishes.
+    """
+    k1 = np.array([[0.25, 0.75], [0.35, 0.65]])
+    k2 = np.array([[0.675, 0.325], [0.745, 0.255]])
+    d = _from_channels([0.4, 0.6], k1, k2)
+    assert PID_LN(d, rng=0)[RED] == pytest.approx(0.00415, abs=5e-5)
+    k3 = np.array([[1, 0], [0, 1], [0.5, 0.5]])
+    k4 = np.array([[1, 0], [1, 0], [0.5, 0.5]])
+    assert PID_LN(_from_channels([0.3, 0.3, 0.4], k3, k4), rng=0)[RED] == pytest.approx(0.0, abs=1e-6)
+
+
+def test_pid_ln_constant_target():
+    """
+    A target with a single value, as in a conditional distribution, carries no
+    information. Its simplex has no tangent directions, which used to raise an error.
+    """
+    d = Distribution(["000", "010", "100", "110"], [1 / 4] * 4)
+    pid = PID_LN(d, ((0,), (1,)), (2,))
+    assert pid[RED] == 0.0
+    assert pid.complete
+    assert pid.consistent
+
+
+AND3 = Distribution(["0000", "0010", "0100", "0110", "1000", "1010", "1100", "1111"], [1 / 8] * 8)
+
+
+def test_pid_ln_three_sources():
+    """
+    I_ln^∩ is defined for any number of sources. The three channels of the three-way AND
+    gate are identical, so the redundancy of all three is I(X_i : Y).
+    """
+    pid = PID_LN(AND3, [[0], [1], [2]], [3], rng=0)
+    assert pid.get_red(((0,), (1,), (2,))) == pytest.approx(0.13793, abs=1e-4)
+    assert pid.complete
+    assert pid.consistent
+
+
+@pytest.mark.flaky(reruns=5)
+def test_pid_ln_three_sources_ordering():
+    """
+    I_d^∩ <= I_ln^∩ <= I_mc^∩ with three sources too. Here the less-noisy redundancy,
+    about 0.0092 bits, exceeds the degradation redundancy, about 0.0082.
+    """
+    rng = np.random.default_rng(3)
+    outcomes = ["".join(map(str, o)) for o in itertools.product(range(2), repeat=4)]
+    d = Distribution(outcomes, rng.dirichlet(np.full(16, 0.5)))
+    node = ((0,), (1,), (2,))
+    deg = PID_Deg._measure(d, node, (3,))
+    ln = PID_LN._measure(d, node, (3,), rng=0)
+    mc = PID_MC._measure(d, node, (3,), rng=0)
+    assert deg + 5e-4 < ln <= mc + 1e-3

@@ -9,4 +9,5 @@ from .hmos import PED_MOS
 from .hsx import PED_SX
 from .measures import *
 from .phiid import PhiID
+from .properties import Claim, PropertyCheck, PropertyReport
 from .syndisc import ModifiedSynDisc, SynDisc

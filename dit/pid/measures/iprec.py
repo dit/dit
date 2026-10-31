@@ -16,7 +16,8 @@ This can in turn be re-written as:
 
 This is the maximization of a convex function subject to a system of linear
 constraints. It is the same quantity as the degradation intersection
-information of `ideg`, and by default it is computed exactly by the same
+information of `ideg` (Gomes & Figueiredo's notation for this measure), and by
+default it is computed exactly by the same
 linear program over the extreme rays of the cone of common degradations. If
 the cardinality of Q is fixed, the maximum is instead found by enumerating the
 vertices of the polytope of degradation channels and evaluating I(Y;Q) at
@@ -64,9 +65,9 @@ class PID_Prec(BasePID):
     """
     The :math:`I_{\\prec}` measure defined by Kolchinsky.
 
-    This is the degradation intersection information of
-    :class:`~dit.pid.PID_Deg`, for any number of sources. By default it is
-    computed exactly, by the same linear program over the extreme rays of the
+    This is the same measure as :class:`~dit.pid.PID_Deg`, the degradation
+    intersection information of Gomes & Figueiredo. By default it is
+    computed exactly, by a linear program over the extreme rays of the
     cone of common degradations. Passing ``n_q`` fixes the cardinality of the
     redundancy variable and finds the maximum by vertex enumeration instead.
     """
@@ -83,7 +84,7 @@ class PID_Prec(BasePID):
         Parameters
         ----------
         d : Distribution
-            The distribution to compute i_min for.
+            The distribution to compute I_prec for.
         sources : iterable of iterables
             The source variables.
         target : iterable
@@ -103,9 +104,6 @@ class PID_Prec(BasePID):
             The value of I_prec.
         sol : dict
             Dictionary containing solution information
-
-        Returns
-        -------
         """
         pjoint = d.coalesce(list(sources) + [target])
         target_rvndx = len(pjoint.rvs) - 1

@@ -4,6 +4,7 @@ Tests for dit.pid.iskar.
 
 import pytest
 
+from dit import Distribution
 from dit.pid.distributions import bivariates
 from dit.pid.measures.iskar import (
     PID_SKAR_nw,
@@ -75,3 +76,13 @@ def test_pid_tw1():
     assert pid[((0,),)] == pytest.approx(0.125, abs=1e-4)
     assert pid[((1,),)] == pytest.approx(0.125, abs=1e-4)
     assert pid[((0, 1),)] == pytest.approx(0.0, abs=1e-4)
+
+
+def test_pid_owa_constant_source():
+    """
+    A constant source used to hang the one-way rate.
+    """
+    d = Distribution(["000", "101"], [1 / 2, 1 / 2])
+    pid = PID_SKAR_owa(d)
+    assert pid[((0,), (1,))] == pytest.approx(0.0, abs=1e-6)
+    assert pid[((0,),)] == pytest.approx(1.0, abs=1e-4)

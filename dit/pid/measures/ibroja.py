@@ -92,10 +92,10 @@ class PID_BROJA(BaseUniquePID):
 
     For two sources, ``method`` selects the bivariate solver:
 
-    - ``'scipy'`` — SLSQP on the marginal-matching polytope (default for small alphabets)
+    - ``'scipy'`` — SLSQP on the marginal-matching polytope, which can stop short of the minimum
     - ``'admui'`` — alternating divergence minimization (:cite:`banerjee2017computing`)
     - ``'cone'`` — exponential cone program via ECOS (:cite:`makkeh2018broja`)
-    - ``'auto'`` — size-based selection with scipy/cone fallbacks
+    - ``'auto'`` — ``'cone'`` if ECOS is installed and ``'admui'`` otherwise, with fallbacks
     """
 
     _name = "I_broja"

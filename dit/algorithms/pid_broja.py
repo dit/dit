@@ -264,9 +264,10 @@ def extra_constraints(dist, k):
             is_determined[outcome] = False
 
     # Need to find joint indexes j for which all p(a_i | b) = 1.
-    # For these j, p_j = q_j.
+    # For these j, p_j = q_j. The indexes are those of the dense pmf, so iterate over
+    # every outcome, not only those of positive probability.
     determined = {}
-    for i, (outcome, p) in enumerate(dist.zipped()):
+    for i, (outcome, p) in enumerate(zip(dist.outcomes, dist.pmf, strict=True)):
         if not (p > 0):
             continue
         target = dist._outcome_ctor([outcome[target] for target in target_rvs])
