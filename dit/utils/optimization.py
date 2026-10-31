@@ -134,8 +134,9 @@ class BasinHoppingCallBack:
         """
         x = x.copy()
 
-        eq_constraints = [float(c(x)) for c in self.eq_constraints]
-        ineq_constraints = [float(c(x)) for c in self.ineq_constraints]
+        # A constraint may be vector-valued: record its largest violation.
+        eq_constraints = [float(np.max(np.abs(np.atleast_1d(c(x))))) for c in self.eq_constraints]
+        ineq_constraints = [float(np.min(np.atleast_1d(c(x)))) for c in self.ineq_constraints]
         self.eq_candidates.append(Candidate(x, f, eq_constraints))
         self.ineq_candidates.append(Candidate(x, f, ineq_constraints))
 

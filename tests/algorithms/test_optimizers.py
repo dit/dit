@@ -107,6 +107,26 @@ def test_minent_no_worse_than_greedy(n_groups):
     assert H(meo.construct_dist()) <= -(nz * np.log2(nz)).sum() + 1e-6
 
 
+@pytest.mark.parametrize("seed", range(4))
+def test_minent_matches_marginals(seed):
+    """
+    The marginal constraints are linear equalities of full rank, so the optimum matches
+    the marginals to machine precision. A single squared deviation used to count as
+    satisfied below SLSQP's tolerance of 1e-7, leaving deviations of about 3e-4 that
+    could make the optimum look better than the greedy coupling. An integer seed also
+    used to crash the vertex seeds.
+    """
+    rng = np.random.default_rng(0)
+    margs = [rng.dirichlet(np.ones(4)) for _ in range(2)]
+    pmf = np.multiply.outer(*margs)
+    d = Distribution(["".join(map(str, idx)) for idx in np.ndindex(*pmf.shape)], pmf.ravel())
+    meo = MinEntOptimizer(d, [[0], [1]])
+    meo.optimize(rng=seed)
+    joint = meo.construct_joint(meo._optima)
+    assert joint.sum(axis=1) == pytest.approx(margs[0], abs=1e-10)
+    assert joint.sum(axis=0) == pytest.approx(margs[1], abs=1e-10)
+
+
 @pytest.mark.parametrize(
     "Optimizer",
     [
@@ -144,7 +164,7 @@ def test_analytic_gradients_match_fd(Optimizer):
         assert obj_an == pytest.approx(obj_fd, abs=1e-3)
 
         con_an = opt.constraint_match_marginals_jac(x)
-        con_fd = approx_fprime(x, lambda v: float(opt.constraint_match_marginals(v)), 1e-7)
+        con_fd = approx_fprime(x, opt.constraint_match_marginals, 1e-7)
         assert con_an == pytest.approx(con_fd, abs=1e-5)
 
 
