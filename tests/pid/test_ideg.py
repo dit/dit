@@ -132,12 +132,68 @@ def test_pid_deg_equals_pid_prec(name):
     assert PID_Deg(d).get_red(RED) == pytest.approx(PID_Prec(d).get_red(RED), abs=1e-9)
 
 
+def _from_channels(pi_t, *channels):
+    """Sources independent given the target, which is the last variable."""
+    outcomes, pmf = [], []
+    for t, p in enumerate(pi_t):
+        for ys in product(*(range(ch.shape[1]) for ch in channels)):
+            w = p * np.prod([ch[t, y] for ch, y in zip(channels, ys, strict=True)])
+            if w > 0:
+                outcomes.append((*ys, t))
+                pmf.append(w)
+    return Distribution(outcomes, pmf)
+
+
+def test_pid_deg_gomes_figueiredo():
+    """
+    Tables 3 and 4 of Gomes & Figueiredo (2023): the first counterexample of Korner &
+    Marton, where the channels are not degradations of each other but have a common
+    degradation, and channels of Americo et al. with only a constant common degradation.
+    """
+    k1 = np.array([[0.25, 0.75], [0.35, 0.65]])
+    k2 = np.array([[0.675, 0.325], [0.745, 0.255]])
+    assert PID_Deg(_from_channels([0.4, 0.6], k1, k2)).get_red(RED) == pytest.approx(0.002, abs=5e-4)
+    k3 = np.array([[1, 0], [0, 1], [0.5, 0.5]])
+    k4 = np.array([[1, 0], [1, 0], [0.5, 0.5]])
+    assert PID_Deg(_from_channels([0.3, 0.3, 0.4], k3, k4)).get_red(RED) == pytest.approx(0.0, abs=1e-9)
+
+
+AND3 = Distribution(["0000", "0010", "0100", "0110", "1000", "1010", "1100", "1111"], [1 / 8] * 8)
+SUM3 = Distribution([f"{a}{b}{c}{a + b + c}" for a, b, c in product(range(2), repeat=3)], [1 / 8] * 8)
+OVERLAP = Distribution(
+    [((a, b), (a, c), (a, e), (a, b, c, e)) for a, b, c, e in product(range(2), repeat=4)], [1 / 16] * 16
+)
+
+
+@pytest.mark.parametrize(("d", "value"), [(AND3, 0.13792538097), (SUM3, 0.31127812446), (OVERLAP, 1.0)])
+def test_pid_deg_three_sources(d, value):
+    """
+    I_d^∩ is defined for any number of sources. Table 3 of Kolchinsky (2022) gives the
+    redundancy of the three-way AND and SUM gates and of three sources sharing one bit,
+    and the decomposition is that of PID_Prec.
+    """
+    sources = [[0], [1], [2]]
+    deg, prec = PID_Deg(d, sources, [3]), PID_Prec(d, sources, [3])
+    assert deg.get_red(((0,), (1,), (2,))) == pytest.approx(value, abs=1e-9)
+    for node in deg._lattice:
+        assert deg.get_red(node) == pytest.approx(prec.get_red(node), abs=1e-9)
+    assert deg.complete
+    assert deg.consistent
+
+
+def test_pid_deg_three_sources_local():
+    """The local search also handles three sources, and gives a lower bound."""
+    node = ((0,), (1,), (2,))
+    local = PID_Deg._measure(AND3, node, (3,), method="local", niter=5)
+    assert local <= PID_Deg._measure(AND3, node, (3,)) + 1e-9
+    assert local == pytest.approx(0.1379, abs=1e-3)
+
+
 def test_pid_deg_beyond_local_search():
     """
     The local search stops short of the maximum on this distribution, while the
-    linear program agrees with exhaustive vertex enumeration.
+    linear program agrees with the maximum over Q with five outcomes.
     """
-    pytest.importorskip("pypoman")
     d = _random_dist(83, 3)
     exact = PID_Deg(d).get_red(RED)
     local = PID_Deg(d, method="local").get_red(RED)
@@ -219,3 +275,32 @@ def test_pid_deg_without_cdd(monkeypatch):
     monkeypatch.setattr(ideg, "_extreme_rays_cdd", unavailable)
     for seed, value in enumerate(values):
         assert PID_Deg._measure(_random_dist(seed, 3), RED, (2,)) == pytest.approx(value, abs=1e-9)
+
+
+def test_degradation_lp_missing_rays(monkeypatch):
+    """
+    If the rays from cddlib miss some extreme rays, so that the constant degradation is not
+    a combination of them, the exact rays are used instead.
+    """
+    values = [PID_Deg._measure(_random_dist(seed, 3), RED, (2,)) for seed in range(3)]
+    extreme_rays = ideg._extreme_rays
+
+    def incomplete(channels, tol=1e-9):
+        rays, offsets = extreme_rays(channels, tol)
+        rays = rays[~np.isclose(rays, 1).all(axis=1)]
+        return rays[:1], offsets
+
+    monkeypatch.setattr(ideg, "_extreme_rays", incomplete)
+    for seed, value in enumerate(values):
+        assert PID_Deg._measure(_random_dist(seed, 3), RED, (2,)) == pytest.approx(value, abs=1e-9)
+
+
+@pytest.mark.parametrize(("n", "k", "count"), [(1, 1, 1), (4, 1, 1), (4, 4, 1), (5, 2, 15), (6, 3, 90), (7, 4, 350)])
+def test_set_partitions(n, k, count):
+    """The partitions into k blocks are distinct, cover the items, and number S(n, k)."""
+    partitions = list(ideg._set_partitions(list(range(n)), k))
+    assert len(partitions) == count
+    assert len({frozenset(frozenset(block) for block in partition) for partition in partitions}) == count
+    for partition in partitions:
+        assert len(partition) == k
+        assert sorted(x for block in partition for x in block) == list(range(n))

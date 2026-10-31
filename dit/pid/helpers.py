@@ -7,8 +7,9 @@ import numpy as np
 from ..utils import build_table
 from .measures import __all_pids
 from .pid import sort_key
+from .properties import PROPERTIES, _resolve, claims_for
 
-__all__ = ("compare_measures", "pointwise_pid_table", "representational_complexity")
+__all__ = ("compare_measures", "pointwise_pid_table", "property_table", "representational_complexity")
 
 
 def representational_complexity(decomposition, comparator=min):
@@ -148,4 +149,30 @@ def pointwise_pid_table(dist, sources=None, target=None, pid_class=None, digits=
                 row.append(pid._pw_pis_minus[node][outcome])
         table.add_row(row)
 
+    print(table.get_string())
+
+
+def property_table(pids=None, props=None):
+    """
+    Print the properties claimed for PID measures in the literature.
+
+    Rows are properties and columns are measures: ✓ if the property is shown to
+    hold, ✗ if it is shown to fail, n.a. if it does not apply, and ? if the
+    literature is silent. Marks are the footnotes of Table 5 of
+    :cite:`liardi2026landscape`, and ! flags a corrected entry; see
+    `BasePID.claims` for the caveats.
+
+    Parameters
+    ----------
+    pids : iterable(BasePID), None
+        The PID classes to show. If None, every measure in
+        ``dit.pid.measures.__all_pids`` with claims.
+    props : iterable of str, None
+        The properties to show. If None, all of them.
+    """
+    pids = [pid for pid in __all_pids if claims_for(pid)] if pids is None else list(pids)
+    keys = list(PROPERTIES) if props is None else [_resolve(prop) for prop in props]
+    table = build_table(field_names=["property"] + [pid._name for pid in pids], title="Claimed PID properties")
+    for key in keys:
+        table.add_row([key] + [str(claims_for(pid).get(key, "?")) for pid in pids])
     print(table.get_string())

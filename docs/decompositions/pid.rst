@@ -136,6 +136,19 @@ This axiom states that redundancy can not increase when replacing the output by 
 
 It first appeared in :cite:`bertschinger2013shared` and was expanded upon in :cite:`rauh2017extractable`.
 
+Source Chain Rule
+^^^^^^^^^^^^^^^^^
+
+If a context :math:`C` of sources is known, collections that each contain it share all of its information, plus what the remaining collections share once it is known :cite:`gutknecht2026partial`:
+
+.. math::
+
+   \Icap{\mathcal{A}_1 C, \ldots, \mathcal{A}_k C : Y} = \I{C : Y} + \Icap{\mathcal{A}_1, \ldots, \mathcal{A}_k : Y | C}
+
+where the conditional redundancy averages the redundancy under each :math:`p(\cdot | C = c)`. It holds exactly when conditioning on the context regroups the atoms by the further sources that unlock them. With three or more sources it is incompatible with nonnegative atoms.
+
+These and the other properties proposed in the literature can be checked on any decomposition; see `Checking Properties`_.
+
 Measures
 ========
 
@@ -251,10 +264,10 @@ In a very intuitive effort, Bertschinger et al (henceforth BROJA) :cite:`bertsch
 
 For bivariate sources (two inputs), ``PID_BROJA`` accepts a ``method`` keyword selecting how the marginal-matching optimization is solved:
 
-* ``'scipy'`` (default for small alphabets under ``'auto'``) — SLSQP on the free joint pmf parameters.
-* ``'admui'`` — alternating divergence minimization :cite:`banerjee2017computing`.
+* ``'scipy'`` — SLSQP on the free joint pmf parameters. It can stop well short of the minimum, overstating the unique information, so ``'auto'`` does not use it.
+* ``'admui'`` — alternating divergence minimization :cite:`banerjee2017computing`. If it has not converged within ``maxiter`` iterations, its last iterate, which matches the marginals, is used.
 * ``'cone'`` — exponential cone program solved with ECOS :cite:`makkeh2018broja` (requires ``pip install dit[broja]``).
-* ``'auto'`` — picks ``scipy`` or ``admui`` by joint alphabet size, with fallback to the other methods on failure.
+* ``'auto'`` (the default) — picks ``cone`` if ECOS is installed and ``admui`` otherwise, falling back to the other methods if a solver fails.
 
 .. note::
 
@@ -513,6 +526,7 @@ The degradation intersection information of Kolchinsky :cite:`kolchinsky2022nove
 
    \Ideg{X_{0:n} \to Y} = \max_{Q :\; Q \preceq_d X_i \;\forall i} \I{Q : Y}
 
+This is the Blackwell redundancy :math:`\Iprec{\bullet}` in the notation of Gomes & Figueiredo, for any number of sources.
 The feasible degradation channels form a polytope and :math:`\I{Q : Y}` is convex, but the maximum can be found without enumerating the vertices of that polytope.
 Each outcome :math:`q` of :math:`Q` corresponds to the vector of its degradation probabilities :math:`(p(q \mid x_0), \ldots, p(q \mid x_{n-1}))`, which lies in a polyhedral cone.
 These vectors add up to the all-ones vector, and :math:`\I{Q : Y}` is a sum over the outcomes of a convex, positively homogeneous function of them.
@@ -587,11 +601,19 @@ As :math:`\lambda \to \infty` the measure recovers :math:`\Idelta{\bullet}`; as 
 :math:`\Igh{\bullet}`
 ---------------------
 
-The redundancy measure of Griffith & Ho :cite:`griffith2014intersection` constructs a shared-information quantity via an auxiliary-variable optimization over channels from the joint sources to an intersection variable.
+Griffith & Ho :cite:`griffith2015quantifying` define redundancy, their :math:`I_\alpha`, as the most information about the target carried by a variable that is independent of the target given each source:
 
-.. note::
+.. math::
 
-   TODO: confirm the canonical Griffith & Ho reference. The implementation in ``dit`` only identifies the authors; :cite:`griffith2014intersection` is used here as the best match among published Griffith papers in the PID literature.
+   \Igh{X_{0:n} \to Y} = \max_{Q :\; Q - X_i - Y \;\forall i} \I{Q : Y}
+
+where :math:`Q` may depend on the sources and the target jointly.
+Each condition :math:`Q - X_i - Y`, that is :math:`p(q \mid x_i, y) = p(q \mid x_i)`, is linear in the channel :math:`p(q \mid x_{0:n}, y)` :cite:`kolchinsky2022novel`, so as for :math:`\Ideg{\bullet}` the redundancy is the value of a linear program over the extreme rays of a polyhedral cone.
+The optimal :math:`Q` can need more values than the sources have; on 'erase' it needs four.
+Passing ``method='optimizer'`` instead runs a local optimization of a bounded auxiliary variable, which only gives a lower bound.
+
+Conditional independence implies the Blackwell order and is implied by a common function, so :math:`\Iwedge{\bullet} \leq \Igh{\bullet} \leq \Iprec{\bullet}`.
+Unlike the Blackwell order it is not transitive: :math:`Q - X_1 - Y` does not imply :math:`Q - (X_1, X_2) - Y`, so adding a source that contains another can lower the redundancy, and with three sources the redundancies need not be monotone on the lattice.
 
 .. autoclass:: PID_GH
    :no-index:
@@ -676,14 +698,17 @@ No bound on :math:`|Q|` is known; it defaults to the largest source alphabet.
 :math:`\Iprec{\bullet}`
 -----------------------
 
-Kolchinsky :cite:`kolchinsky2022novel` defines a redundancy measure using the Blackwell precedence order on channels:
+Kolchinsky :cite:`kolchinsky2022novel` defines a redundancy measure using the Blackwell order on channels:
 
 .. math::
 
    \Iprec{X_{0:n} \to Y} = \max_{s_{Q|Y}} \I{Y : Q} \quad \text{s.t.} \quad s_{Q|Y} \preceq p_{X_i|Y} \;\;\forall i
 
 This is the same quantity as :math:`\Ideg{\bullet}`, for any number of sources, and by default it is computed by the same linear program over the extreme rays of the cone of common degradations.
-Passing ``n_q`` fixes the cardinality of :math:`Q`; the maximum is then found by enumerating the vertices of the constraint polytope, since the objective is convex.
+Passing ``n_q`` fixes the cardinality of :math:`Q`.
+Every outcome of :math:`Q` is a combination of extreme rays of that cone, and the objective is convex, so the maximum is attained at a vertex of the linear program's feasible polytope with the rays in its support grouped into the outcomes of :math:`Q`.
+Splitting an outcome never lowers the objective, so only the partitions of each support into ``n_q`` groups need be checked, and from the cardinality of Theorem A1 on, the value is that of the linear program.
+The vertices are enumerated in exact arithmetic.
 
 .. autoclass:: PID_Prec
    :no-index:
@@ -975,3 +1000,108 @@ pointwise measure such as :math:`\Isx{\bullet}`:
 .. autofunction:: dit.pid.helpers.compare_measures
 
 .. autofunction:: dit.pid.helpers.pointwise_pid_table
+
+
+Checking Properties
+===================
+
+Liardi et al. :cite:`liardi2026landscape` catalogue the properties proposed for redundancy measures, and which measures satisfy them. :meth:`~dit.pid.pid.BasePID.check` tests one property on a computed decomposition. Its result is truthy when the property holds, and lists the comparisons that fail. Here :math:`\Imin{\bullet}` violates the source chain rule on the distribution of Gutknecht :cite:`gutknecht2026partial`, in which a third source decides which of the first two copies the target, while :math:`\Isx{\bullet}` satisfies it:
+
+.. ipython::
+
+   In [45]: from dit.pid.distributions import trivariates
+
+   In [46]: d = trivariates['max min']
+
+   In [47]: print(PID_WB(d).check('SCR'))
+
+   @doctest
+   In [48]: bool(PID_SX(d).check('SCR'))
+   Out[48]: True
+
+:meth:`~dit.pid.pid.BasePID.check_properties` checks every property, next to what the literature claims for the measure; :meth:`~dit.pid.pid.BasePID.claims` returns just the claims, and :func:`~dit.pid.helpers.property_table` prints those of several measures:
+
+.. ipython::
+
+   In [49]: print(PID_WB(bivariates['and']).check_properties())
+
+   In [50]: from dit.pid.helpers import property_table
+
+   In [51]: property_table(pids=[PID_WB, PID_MMI, PID_GK, PID_SX], props=['LP', 'TC', 'SCR'])
+
+Properties are named by the keys of :cite:`liardi2026landscape`, or by name (e.g. ``'source_chain_rule'``):
+
+.. list-table::
+   :header-rows: 1
+   :widths: 8 22 70
+
+   * - Key
+     - Property
+     - Check
+   * - SR
+     - self-redundancy
+     - The redundancy of each single collection is its mutual information with the target.
+   * - S0
+     - weak symmetry
+     - Recompute with the sources reordered (``orders``).
+   * - M0
+     - weak monotonicity
+     - Redundancy does not decrease up the lattice, and dropping a collection that determines another changes nothing.
+   * - GP
+     - global positivity
+     - Every redundancy is nonnegative.
+   * - LP0, LP1, LP
+     - local positivity
+     - Every atom is nonnegative; LP0 concerns two sources, LP1 three or more.
+   * - IID, ID
+     - (independent) identity
+     - The redundancy of two sources about a target copying them, on fixed copy distributions; a property of the measure, not of this distribution.
+   * - TM
+     - target monotonicity
+     - Recompute with each target variable dropped.
+   * - TC
+     - target chain rule
+     - Recompute with the first target variable, and with the rest given it (``split``).
+   * - SE
+     - subset equality
+     - Dropping a collection that determines another changes nothing.
+   * - LB
+     - lower bound
+     - Each redundancy is at least the information the Gács-Körner meet of its collections carries about the target.
+   * - TE
+     - target equality
+     - Adding a copy of the target to the sources changes nothing.
+   * - M1
+     - strong monotonicity
+     - M0 and TE, and dropping a collection that determines the target changes nothing.
+   * - S1
+     - strong symmetry
+     - Exchanging the target with any source changes nothing.
+   * - \*
+     - assumption (\*)
+     - Recompute under :math:`p(y) \prod_i p(x_i | y)`, which has the same source-target marginals.
+   * - BP
+     - Blackwell property
+     - A unique information vanishes exactly when its source is Blackwell inferior to the other (two sources).
+   * - AD
+     - additivity
+     - Recompute on two independent copies of the system, or on it and ``other``.
+   * - CO, DI
+     - continuity, differentiability
+     - Not checkable on a single distribution.
+   * - EI
+     - equivalence-class invariance
+     - Recompute with every alphabet relabeled.
+   * - SCR
+     - source chain rule
+     - Recompute the decomposition of the other sources given each context (``context``).
+
+Comparisons use the absolute tolerance ``atol`` (1e-5 by default); measures computed by numerical optimization may need a looser one. Checks that recompute the decomposition run the measure again, several times; additivity squares every alphabet, which is prohibitive for measures that search exhaustively or optimize large auxiliary variables, and slow for :math:`\Iprec{\bullet}` and :math:`\Ideg{\bullet}` with three or more sources, whose cones of common degradations then have very many extreme rays, so leave it out of ``props`` for them. Two-source measures do not define the redundancy of three or more collections, so comparisons that need one are undetermined, and their claims concern two sources only.
+
+The claims transcribe Table 5 of :cite:`liardi2026landscape`, whose footnote marks they keep († two sources only, § full support only, ‡ the pointwise version holds, ∥ global, \* supported by simulations), and the source chain rule results of :cite:`gutknecht2026partial`. :math:`\Ideg{\bullet}` is the same measure as :math:`\Iprec{\bullet}`, so it takes that column. Entries marked ! correct Table 5: by its own appendix, :math:`I_{\prec}` satisfies (\*); identical sources show that :math:`\Iwedge{\bullet}` violates (\*); 'rdn xor' shows that :math:`\Irr{\bullet}` violates the lower bound; the correlated two-bit copy shows that :math:`I_{rdr}` satisfies only one direction of the Blackwell property; and 'max min' shows that :math:`\Igh{\bullet}` violates weak monotonicity, and so strong monotonicity, since its order :math:`Q - X - Y` is not transitive.
+
+.. autoclass:: dit.pid.properties.PropertyCheck
+   :no-index:
+   :members:
+
+.. autofunction:: dit.pid.helpers.property_table

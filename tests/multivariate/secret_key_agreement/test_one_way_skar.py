@@ -40,3 +40,11 @@ def test_reverse_roles():
     """
     d = _erasure_vs_symmetric()
     assert one_way_skar(d, [0], [2], [1]) == pytest.approx(0.095816, abs=1e-5)
+
+
+def test_constant_alice():
+    """
+    A constant Alice shares no key; seeding used to loop forever on her one-point simplex.
+    """
+    d = Distribution(["000", "011"], [1 / 2, 1 / 2])
+    assert one_way_skar(d, [0], [1], [2]) == pytest.approx(0.0, abs=1e-6)

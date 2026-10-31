@@ -16,7 +16,7 @@ from ..utils import flatten
 from .ipf import ipf_dist
 from .maxentropy import marginal_constraints_generic
 from .optimization import BaseConvexOptimizer, BaseNonConvexOptimizer, BaseOptimizer
-from .optutil import prepare_dist
+from .optutil import _as_full_rank, prepare_dist
 from .pid_broja import extra_constraints as broja_extra_constraints
 from .pid_broja import prepare_dist as broja_prepare_dist
 
@@ -176,10 +176,37 @@ class BaseDistOptimizer(BaseOptimizer):
         pmf = vec.reshape(self._shape)
         return pmf
 
+    def _marginal_system(self):
+        """
+        The marginal constraints on the free entries, as a linear system of full row rank.
+
+        The marginals overlap (they all sum to the same total), so the system on the
+        whole pmf is rank deficient, which SLSQP cannot handle. It is reduced again
+        whenever a subclass changes the free entries.
+
+        Returns
+        -------
+        A : np.ndarray
+            The constraint matrix, with one column per free entry.
+        b : np.ndarray
+            The right-hand side.
+        """
+        key = tuple(self._free)
+        if getattr(self, "_marginal_key", None) != key:
+            fixed = np.setdiff1d(np.arange(len(self._vpmf)), self._free)
+            rhs = self._b - self._A[:, fixed] @ self._vpmf[fixed]
+            A, b, _ = _as_full_rank(self._A[:, list(self._free)], rhs)
+            self._marginal_key, self._marginal_A, self._marginal_b = key, A, b
+        return self._marginal_A, self._marginal_b
+
     def constraint_match_marginals(self, x):
         """
         Ensure that the joint distribution represented by the optimization
         vector matches that of the distribution.
+
+        The constraints are linear, so SLSQP satisfies them to machine precision.
+        A single squared deviation, as used before, counts as satisfied once it is
+        below SLSQP's tolerance of 1e-7, which leaves deviations of about 3e-4.
 
         Parameters
         ----------
@@ -188,23 +215,16 @@ class BaseDistOptimizer(BaseOptimizer):
 
         Returns
         -------
-        d : float
-            The deviation from the constraint.
+        d : np.ndarray
+            The residuals of the marginal constraints, reduced to full rank.
         """
-        pmf = self.construct_vector(x)
-        return sum((np.dot(self._A, pmf) - self._b) ** 2)
+        A, b = self._marginal_system()
+        return A @ np.asarray(x, dtype=float) - b
 
     def constraint_match_marginals_jac(self, x):
         """
-        Exact gradient of :meth:`constraint_match_marginals` w.r.t. the free
-        optimization variables.
-
-        The constraint is :math:`c(x) = \\sum_k (A p(x) - b)_k^2` where the free
-        entries of the pmf ``p`` are ``x``. Hence
-        :math:`\\nabla_p c = 2 A^\\top (A p - b)` and the gradient w.r.t. ``x``
-        is that vector restricted to the free indices. This is a smooth
-        quadratic with no singularities, so it is exact everywhere and replaces
-        SciPy's finite-difference jacobian for the constraint.
+        Jacobian of :meth:`constraint_match_marginals` w.r.t. the free
+        optimization variables: the constant matrix of the reduced system.
 
         Parameters
         ----------
@@ -214,11 +234,9 @@ class BaseDistOptimizer(BaseOptimizer):
         Returns
         -------
         jac : np.ndarray
-            The gradient, of length ``len(x)``.
+            The jacobian, with one row per constraint and one column per free entry.
         """
-        pmf = self.construct_vector(x)
-        grad_full = 2 * self._A.T @ (self._A @ pmf - self._b)
-        return grad_full[self._free]
+        return self._marginal_system()[0]
 
     def _jacobian(self, x):
         """
@@ -381,7 +399,7 @@ class MinEntOptimizer(BaseDistOptimizer, BaseNonConvexOptimizer):
         seeds : list of np.ndarray
             Full pmf vectors.
         """
-        rng = np.random.default_rng() if rng is None else rng
+        rng = np.random.default_rng(rng)
         seeds = []
         greedy = self._greedy_coupling()
         if greedy is not None:

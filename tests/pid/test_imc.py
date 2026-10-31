@@ -4,6 +4,7 @@ Tests for dit.pid.measures.imc (more-capable intersection information I_mc^∩).
 
 import pytest
 
+from dit import Distribution
 from dit.pid.distributions import bivariates
 from dit.pid.measures.ideg import PID_Deg
 from dit.pid.measures.imc import PID_MC
@@ -119,3 +120,14 @@ def test_pid_mc_nonnegative():
         d = bivariates[name]
         pid = PID_MC(d, ((0,), (1,)), (2,))
         assert pid.nonnegative, f"PID_MC not nonneg on '{name}'"
+
+
+AND3 = Distribution(["0000", "0010", "0100", "0110", "1000", "1010", "1100", "1111"], [1 / 8] * 8)
+
+
+def test_pid_mc_three_sources():
+    """
+    I_mc^∩ is defined for any number of sources. The three channels of the three-way AND
+    gate are identical, so the redundancy of all three is I(X_i : Y).
+    """
+    assert PID_MC._measure(AND3, ((0,), (1,), (2,)), (3,), rng=0) == pytest.approx(0.13793, abs=1e-3)

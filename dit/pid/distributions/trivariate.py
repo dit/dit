@@ -13,6 +13,7 @@ __all__ = (
     "dblxor",
     "giant_xor",
     "jeff_3",
+    "max_min",
     "null",
     "rdn",
     "shared_xor",
@@ -83,3 +84,7 @@ jeff_3 = jeff(3)
 anddup = uniform(["0000", "0100", "1010", "1111"])
 
 dblxor = uniform(["0000", "0011", "0103", "0112", "1002", "1013", "1101", "1110"])
+
+# the context S2 = C decides which of S0 = max(C, T), S1 = min(C, T) copies the
+# target; the source chain rule and local positivity disagree here (gutknecht2026partial)
+max_min = uniform(["0000", "1001", "1010", "1111"])
