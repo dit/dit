@@ -133,32 +133,28 @@ def _extreme_rays_cdd(rows, dim):
     return np.array([gen[1:] for gen in gens.array if gen[0] == 0], dtype=float).reshape(-1, dim)
 
 
-def _extreme_rays_exact(channels):
+def _double_description(equalities, dim):
     """
-    Extreme rays of the cone of common degradations by the double description method, in
-    exact integer arithmetic.
+    Extreme rays of {u >= 0 : a @ u = 0 for each a in `equalities`}, by the double
+    description method in exact integer arithmetic.
 
-    The (exactly represented) floating-point rows of each channel are first normalized
-    exactly, so that the constant degradation (the all-ones vector) lies in the cone.
     Starting from the unit vectors, which generate the orthant, each equality a @ u = 0
     keeps the rays on its hyperplane and adds, for each adjacent pair of rays on opposite
     sides of it, the ray where the face they span meets the hyperplane. Two rays are
     adjacent if no other ray vanishes on every coordinate on which both vanish.
-    """
-    exact = [[[Fraction(x) for x in row] for row in ch] for ch in channels]
-    exact = [[[x / sum(row) for x in row] for row in ch] for ch in exact]
-    sizes = [len(ch[0]) for ch in exact]
-    dim = sum(sizes)
-    equalities = []
-    for i in range(1, len(exact)):
-        start = sum(sizes[:i])
-        for row_0, row_i in zip(exact[0], exact[i], strict=True):
-            row = [Fraction(0)] * dim
-            row[: sizes[0]] = row_0
-            row[start : start + sizes[i]] = [-x for x in row_i]
-            scale = lcm(*(x.denominator for x in row))
-            equalities.append([int(x * scale) for x in row])
 
+    Parameters
+    ----------
+    equalities : list of list of int
+        The rows a of the equalities.
+    dim : int
+        The dimension of u.
+
+    Returns
+    -------
+    rays : ndarray, shape (n_rays, dim)
+        The extreme rays, each scaled to have largest entry 1.
+    """
     rays = [tuple(int(i == j) for j in range(dim)) for i in range(dim)]
     for a in equalities:
         values = [sum(x * y for x, y in zip(a, ray, strict=True)) for ray in rays]
@@ -178,6 +174,55 @@ def _extreme_rays_exact(channels):
                 new.append(tuple(x // g for x in ray))
         rays = new
     return np.array([[x / max(ray) for x in ray] for ray in rays], dtype=float).reshape(-1, dim)
+
+
+def _integer_row(row):
+    """Scale a row of fractions to integers."""
+    scale = lcm(*(x.denominator for x in row))
+    return [int(x * scale) for x in row]
+
+
+def _extreme_rays_exact(channels):
+    """
+    Extreme rays of the cone of common degradations by the double description method, in
+    exact integer arithmetic.
+
+    The (exactly represented) floating-point rows of each channel are first normalized
+    exactly, so that the constant degradation (the all-ones vector) lies in the cone.
+    """
+    exact = [[[Fraction(x) for x in row] for row in ch] for ch in channels]
+    exact = [[[x / sum(row) for x in row] for row in ch] for ch in exact]
+    sizes = [len(ch[0]) for ch in exact]
+    dim = sum(sizes)
+    equalities = []
+    for i in range(1, len(exact)):
+        start = sum(sizes[:i])
+        for row_0, row_i in zip(exact[0], exact[i], strict=True):
+            row = [Fraction(0)] * dim
+            row[: sizes[0]] = row_0
+            row[start : start + sizes[i]] = [-x for x in row_i]
+            equalities.append(_integer_row(row))
+    return _double_description(equalities, dim)
+
+
+def _verified_cdd_rays(rows, dim, tol=1e-9):
+    """
+    Extreme rays of {u >= 0 : rows @ u = 0} from cddlib, each scaled to have largest entry
+    1, or None if cddlib is not installed or its rays fail verification.
+    """
+    try:
+        rays = _extreme_rays_cdd(rows, dim)
+    except (ImportError, AttributeError, RuntimeError, ValueError):
+        return None
+    if rays is None or not len(rays):
+        return None
+    scale = np.abs(rays).max(axis=1, keepdims=True)
+    if not (scale > 0).all():
+        return None
+    rays = rays / scale
+    if rays.min() < -tol or (rows.size and np.abs(rays @ rows.T).max() > tol):
+        return None
+    return rays
 
 
 def _extreme_rays(channels, tol=1e-9):
@@ -202,20 +247,8 @@ def _extreme_rays(channels, tol=1e-9):
         Where each u_i starts in a ray, followed by the length of a ray.
     """
     rows, offsets = _cone_equalities(channels)
-    dim = offsets[-1]
-    try:
-        rays = _extreme_rays_cdd(rows, dim)
-    except (ImportError, AttributeError, RuntimeError, ValueError):
-        rays = None
-    if rays is not None and len(rays):
-        scale = np.abs(rays).max(axis=1, keepdims=True)
-        valid = bool((scale > 0).all())
-        if valid:
-            rays = rays / scale
-            valid = rays.min() >= -tol and (not rows.size or np.abs(rays @ rows.T).max() <= tol)
-        if not valid:
-            rays = None
-    if rays is None or not len(rays):
+    rays = _verified_cdd_rays(rows, offsets[-1], tol)
+    if rays is None:
         rays = _extreme_rays_exact(channels)
     return np.clip(rays, 0.0, None), offsets
 
@@ -232,14 +265,14 @@ def _outcome_information(pi_t, columns):
     return terms.sum(axis=1)
 
 
-def _ray_program(channels, pi_t, rays, offsets):
+def _ray_program(rays, columns, pi_t):
     """
     The linear program over the extreme rays `rays`: the largest sum of their contributions
-    to I(Q; T) whose weighted rays add up to the all-ones vector.
+    to I(Q; T) whose weighted rays add up to the all-ones vector. Row r of `columns` is the
+    column of K_Q, up to scale, of an outcome of Q given by ray r.
     """
-    columns = rays[:, offsets[0] : offsets[1]] @ channels[0].T
     values = _outcome_information(pi_t, columns)
-    return linprog(-values, A_eq=rays.T, b_eq=np.ones(offsets[-1]), bounds=(0, None), method="highs")
+    return linprog(-values, A_eq=rays.T, b_eq=np.ones(rays.shape[1]), bounds=(0, None), method="highs")
 
 
 def _degradation_lp(channels, pi_t):
@@ -263,13 +296,13 @@ def _degradation_lp(channels, pi_t):
         K_Q = K^(i) @ Λ_i for every i.
     """
     rays, offsets = _extreme_rays(channels)
-    res = _ray_program(channels, pi_t, rays, offsets)
+    res = _ray_program(rays, rays[:, offsets[0] : offsets[1]] @ channels[0].T, pi_t)
     if res.status != 0:
         # On ill-conditioned channels the rays from cddlib can pass verification and still
         # miss some extreme rays, so that the constant degradation is not a combination of
         # them and the program is infeasible. The exact rays always contain it.
         rays = np.clip(_extreme_rays_exact(channels), 0.0, None)
-        res = _ray_program(channels, pi_t, rays, offsets)
+        res = _ray_program(rays, rays[:, offsets[0] : offsets[1]] @ channels[0].T, pi_t)
     if res.status != 0:
         raise RuntimeError(f"The linear program for I_d^∩ failed: {res.message}")
     used = res.x > 1e-12

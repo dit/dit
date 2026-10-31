@@ -601,11 +601,19 @@ As :math:`\lambda \to \infty` the measure recovers :math:`\Idelta{\bullet}`; as 
 :math:`\Igh{\bullet}`
 ---------------------
 
-The redundancy measure of Griffith & Ho :cite:`griffith2014intersection` constructs a shared-information quantity via an auxiliary-variable optimization over channels from the joint sources to an intersection variable.
+Griffith & Ho :cite:`griffith2015quantifying` define redundancy, their :math:`I_\alpha`, as the most information about the target carried by a variable that is independent of the target given each source:
 
-.. note::
+.. math::
 
-   TODO: confirm the canonical Griffith & Ho reference. The implementation in ``dit`` only identifies the authors; :cite:`griffith2014intersection` is used here as the best match among published Griffith papers in the PID literature.
+   \Igh{X_{0:n} \to Y} = \max_{Q :\; Q - X_i - Y \;\forall i} \I{Q : Y}
+
+where :math:`Q` may depend on the sources and the target jointly.
+Each condition :math:`Q - X_i - Y`, that is :math:`p(q \mid x_i, y) = p(q \mid x_i)`, is linear in the channel :math:`p(q \mid x_{0:n}, y)` :cite:`kolchinsky2022novel`, so as for :math:`\Ideg{\bullet}` the redundancy is the value of a linear program over the extreme rays of a polyhedral cone.
+The optimal :math:`Q` can need more values than the sources have; on 'erase' it needs four.
+Passing ``method='optimizer'`` instead runs a local optimization of a bounded auxiliary variable, which only gives a lower bound.
+
+Conditional independence implies the Blackwell order and is implied by a common function, so :math:`\Iwedge{\bullet} \leq \Igh{\bullet} \leq \Iprec{\bullet}`.
+Unlike the Blackwell order it is not transitive: :math:`Q - X_1 - Y` does not imply :math:`Q - (X_1, X_2) - Y`, so adding a source that contains another can lower the redundancy, and with three sources the redundancies need not be monotone on the lattice.
 
 .. autoclass:: PID_GH
    :no-index:
