@@ -173,6 +173,10 @@ def _less_noisy_ii(channels, pi_t, n_q=None, n_points=None, niter=None, seed=Non
         The largest I(Q; T) found among candidates passing the dense check.
     """
     n_t = channels[0].shape[0]
+    if n_t < 2:
+        # A target with a single value carries no information, and its simplex has no
+        # tangent directions to sample.
+        return 0.0
     if n_q is None:
         n_q = max(ch.shape[1] for ch in channels)
     if n_points is None:

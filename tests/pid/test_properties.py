@@ -13,6 +13,7 @@ from dit.pid import (
     PID_CT,
     PID_GK,
     PID_IG,
+    PID_LN,
     PID_MMI,
     PID_PM,
     PID_RAV,
@@ -162,6 +163,13 @@ def test_rdr_degenerate_conditionals():
     """
     assert PID_RDR(AND_XOR, [[0], [1]], [2, 3]).check("TC")
     assert not PID_RDR(MAX_MIN).check("SCR")
+
+
+def test_ln_degenerate_conditionals():
+    """
+    I_ln handles the constant targets of conditional decompositions.
+    """
+    assert PID_LN(AND_XOR, [[0], [1]], [2, 3], rng=0).check("TC")
 
 
 def test_scr_context():
