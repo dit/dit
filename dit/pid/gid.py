@@ -15,6 +15,7 @@ import numpy as np
 from ..divergences import kullback_leibler_divergence
 from ..helpers import as_linear
 from ..utils import build_table
+from ._utils import _label
 from .hmos import PED_MOS
 from .hsx import PED_SX
 from .pid import _descendants, _unit_scale, sort_key
@@ -117,7 +118,7 @@ class GID:
         table.float_format[self._red_string] = f"{digits + 2}.{digits}"
         table.float_format[self._pi_string] = f"{digits + 2}.{digits}"
         for node in sorted(self._lattice, key=sort_key(self._lattice)):
-            label = "".join("{{{}}}".format(":".join(map(str, n))) for n in node)
+            label = _label(node)
             pi = self.get_pi(node)
             table.add_row([label, self.get_red(node), 0.0 if np.isclose(pi, 0) else pi])
         return table.get_string()

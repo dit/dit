@@ -30,15 +30,12 @@ import numpy as np
 from ..helpers import as_linear
 from ..multivariate import coinformation
 from ..utils import build_table, flatten
+from ._utils import _label
 from .hmos import h_mos_pw
 from .hsx import h_sx_pw
 from .pid import _descendants, _lattice_of, _unit_scale, sort_key
 
 __all__ = ("PhiID",)
-
-
-def _label(node):
-    return "".join("{{{}}}".format(":".join(map(str, group))) for group in node)
 
 
 class PhiID:

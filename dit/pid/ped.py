@@ -12,6 +12,7 @@ Concrete PED measures subclass ``BasePED`` and provide ``_name`` and
 from ..helpers import as_linear
 from ..multivariate import entropy
 from ..utils import build_table
+from ._utils import _label
 from .pid import BasePID, _descendants, _lattice_of, _unit_scale, _validate_sources, sort_key
 
 __all__ = (
@@ -164,7 +165,7 @@ class PointwisePED(BasePED):
         table.float_format[pi_string] = f"{digits + 2}.{digits}"
 
         for node in sorted(self._lattice, key=sort_key(self._lattice)):
-            node_label = "".join("{{{}}}".format(":".join(map(str, n))) for n in node)
+            node_label = _label(node)
             for o in outcomes:
                 red_val = self._pw_reds[node].get(o, 0.0)
                 pi_val = self._pw_pis[node].get(o, 0.0)
