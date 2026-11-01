@@ -75,22 +75,28 @@ jobs:
           echo "INCLUDE=$env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\include;$env:INCLUDE" >> $env:GITHUB_ENV
           echo "LIB=$env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\lib;$env:LIB" >> $env:GITHUB_ENV
 
+      # ECOS (the broja extra) enables BROJA's exact cone solver, which builds from source
+      # where ecos has no wheel (Python 3.13+). Windows runs without it, so the admUI
+      # fallback that installs without ECOS use stays tested end to end.
       - name: Install package and dependencies
-        run: uv sync --extra test --extra optional
+        run: uv sync --extra test --extra optional ${{ runner.os != 'Windows' && '--extra broja' || '' }}
 
+      # Coverage on the newest Python of every OS; Codecov merges the three reports, so
+      # code that runs only with ECOS (Linux, macOS) or without it (Windows) is counted.
       - name: Run tests
         env:
           COVERAGE_CORE: sysmon
         run: >-
           uv run pytest
-          ${{ (matrix.os == 'macos-latest' && matrix.python-version == '3.14') && '--cov-report=xml' || '--no-cov' }}
+          ${{ matrix.python-version == '3.14' && '--cov-report=xml' || '--no-cov' }}
 
       - name: Upload coverage
-        if: matrix.os == 'macos-latest' && matrix.python-version == '3.14'
+        if: matrix.python-version == '3.14'
         uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
+          name: ${{ matrix.os }}-python${{ matrix.python-version }}
           fail_ci_if_error: false
 
   lint:
