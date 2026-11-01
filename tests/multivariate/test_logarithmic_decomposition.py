@@ -6,6 +6,8 @@ Validates against known examples from:
   [2] Down & Mediano, arXiv:2409.04845 (algebraic / fixed-parity)
 """
 
+import importlib
+
 import numpy as np
 import pytest
 
@@ -408,3 +410,187 @@ class TestConvenience:
         ld = logarithmic_decomposition(d)
         assert isinstance(ld, LogarithmicDecomposition)
         assert _close(ld.coinformation([[0], [1], [2]]), -1.0)
+
+
+# ---------------------------------------------------------------------------
+# Degenerate inputs, log-probability pmfs, argument normalisation, caching
+# ---------------------------------------------------------------------------
+
+
+def _skewed_pair():
+    """Two dependent bits with distinct outcome probabilities."""
+    return dit.Distribution([(0, 0), (0, 1), (1, 0), (1, 1)], [0.1, 0.2, 0.3, 0.4])
+
+
+class TestDegenerateLoss:
+    def test_zero_mass_loss(self):
+        """A multiset of outcomes carrying no probability mass has no loss."""
+        assert _loss((0.0, 0.0)) == 0.0
+        assert _loss((0.0, 0.0, 0.0)) == 0.0
+
+    def test_interior_loss_below_degree_two(self):
+        """Fewer than two outcomes carry no interior loss."""
+        assert _interior_loss(()) == 0.0
+        assert _interior_loss((0.4,)) == 0.0
+
+    def test_homogeneous_of_degree_one(self):
+        """Scaling every probability by c scales L and mu by c."""
+        probs = (0.1, 0.2, 0.3)
+        for c in (0.5, 2.0, 7.0):
+            scaled = tuple(c * p for p in probs)
+            assert _loss(scaled) == pytest.approx(c * _loss(probs))
+            assert _interior_loss(scaled) == pytest.approx(c * _interior_loss(probs))
+
+
+class TestLossMethod:
+    @pytest.fixture
+    def ld(self):
+        return LogarithmicDecomposition(_skewed_pair())
+
+    def test_loss_of_omega_is_joint_entropy(self, ld):
+        """L(Omega) is the joint entropy of a normalised distribution."""
+        assert ld.loss(ld.omega) == pytest.approx(shannon_entropy(_skewed_pair()))
+
+    def test_loss_of_pair(self, ld):
+        """L({a, b}) = (pa + pb) * h(pa / (pa + pb)), with h the binary entropy."""
+        q = 0.1 / (0.1 + 0.4)
+        h = -(q * np.log2(q) + (1 - q) * np.log2(1 - q))
+        assert ld.loss(frozenset({(0, 0), (1, 1)})) == pytest.approx(0.5 * h)
+
+    def test_loss_is_sum_of_contained_atom_measures(self, ld):
+        """L(S) is the total measure of the atoms contained in S (inverse Mobius relation)."""
+        for subset in ld.atoms:
+            contained = [atom for atom in ld.atoms if atom <= subset]
+            assert ld.loss(subset) == pytest.approx(ld.measure_set(contained), abs=1e-12)
+
+    def test_outcomes_outside_omega_carry_nothing(self, ld):
+        """Unknown outcomes add no loss, and atoms containing them have zero measure."""
+        a, b, unknown = (0, 0), (1, 1), (2, 2)
+        assert ld.loss(frozenset({a})) == 0.0
+        assert ld.loss(frozenset({unknown, (3, 3)})) == 0.0
+        assert ld.loss(frozenset({a, b, unknown})) == pytest.approx(ld.loss(frozenset({a, b})))
+        assert ld.measure(frozenset({a, unknown})) == 0.0
+
+
+class TestLogPmf:
+    @pytest.mark.parametrize("base", [2, "e"])
+    def test_log_pmf_matches_linear(self, base):
+        """A log-probability pmf decomposes exactly like the linear one, in bits."""
+        d = _skewed_pair()
+        d_log = d.copy(base=base)
+        assert d_log.is_log()
+        ld, ld_log = LogarithmicDecomposition(d), LogarithmicDecomposition(d_log)
+        assert ld_log.omega == ld.omega
+        for atom in ld.atoms:
+            assert ld_log.measure(atom) == pytest.approx(ld.measure(atom), abs=1e-12)
+        assert ld_log.entropy() == pytest.approx(shannon_entropy(d))
+        assert ld_log.entropy([0]) == pytest.approx(shannon_entropy(d, [0]))
+        assert ld_log.coinformation() == pytest.approx(coinformation(d), abs=1e-12)
+
+
+class TestMeasureCache:
+    def test_measure_is_memoised(self, monkeypatch):
+        """Repeated measure() calls reuse the cached value instead of recomputing it."""
+        module = importlib.import_module(LogarithmicDecomposition.__module__)
+        calls = []
+        real_interior_loss = module._interior_loss
+
+        def counting_interior_loss(probs):
+            calls.append(probs)
+            return real_interior_loss(probs)
+
+        monkeypatch.setattr(module, "_interior_loss", counting_interior_loss)
+        ld = LogarithmicDecomposition(dit.example_dists.Xor())
+        atom = frozenset(ld.omega)
+        first = ld.measure(atom)
+        assert ld.measure(atom) == first
+        assert len(calls) == 1
+
+        # every atom is computed once, however many quantities use it
+        h = ld.entropy()
+        assert ld.entropy() == h
+        assert ld.coinformation() == pytest.approx(-1.0)
+        assert len(calls) == len(ld.atoms)
+
+
+class TestContentArguments:
+    @pytest.fixture
+    def ld(self):
+        return LogarithmicDecomposition(dit.example_dists.Xor())
+
+    def test_single_index(self, ld):
+        """A bare variable index is treated as a one-variable list."""
+        for i in range(3):
+            assert ld.content(i) == ld.content([i])
+            assert ld.entropy(i) == pytest.approx(1.0)
+
+    def test_grouped_indices_form_joint_variable(self, ld):
+        """Nested groups are flattened into one joint variable, whose content is the union."""
+        joint = ld.content([[0], [1]])
+        assert joint == ld.content([0, 1])
+        assert joint == ld.content([0]) | ld.content([1])
+        assert ld.entropy([[0], [1]]) == pytest.approx(2.0)
+
+    def test_default_content_is_every_atom(self, ld):
+        """With distinct joint outcomes, the content of all variables is every atom."""
+        assert ld.content() == ld.atoms
+
+
+class TestConstantVariable:
+    @pytest.fixture
+    def dist(self):
+        return dit.Distribution([(0, 0), (0, 1), (0, 2)], [0.2, 0.3, 0.5])
+
+    def test_constant_variable_has_empty_content(self, dist):
+        """A variable taking a single value induces no boundary: empty content, zero information."""
+        ld = LogarithmicDecomposition(dist)
+        assert ld.content([0]) == set()
+        assert ld.content(0) == set()
+        assert ld.generators(ld.content([0])) == set()
+        assert ld.entropy([0]) == 0.0
+        assert ld.mutual_information([[0], [1]]) == 0.0
+        assert ld.entropy([1]) == pytest.approx(shannon_entropy(dist, [1]))
+
+
+class TestZeroProbabilityOutcomes:
+    def test_dense_matches_sparse(self):
+        """Zero-probability outcomes contribute nothing to any information quantity."""
+        sparse = dit.Distribution([(0, 0), (1, 1)], [0.5, 0.5])
+        dense = sparse.copy()
+        dense.make_dense()
+        ld_sparse, ld_dense = LogarithmicDecomposition(sparse), LogarithmicDecomposition(dense)
+        assert ld_dense.measure(frozenset({(0, 0), (0, 1)})) == 0.0
+        assert ld_dense.entropy() == pytest.approx(ld_sparse.entropy())
+        assert ld_dense.entropy([0]) == pytest.approx(1.0)
+        assert ld_dense.coinformation() == pytest.approx(ld_sparse.coinformation())
+        assert ld_dense.coinformation() == pytest.approx(1.0)
+
+
+class TestDefaultGroups:
+    def test_coinformation_defaults_to_single_variables(self):
+        """With no groups, co-information is taken over every single variable."""
+        xor = dit.example_dists.Xor()
+        ld = LogarithmicDecomposition(xor)
+        assert ld.coinformation() == pytest.approx(-1.0)
+        assert ld.coinformation() == pytest.approx(ld.coinformation([[0], [1], [2]]))
+
+        pair = _skewed_pair()
+        assert LogarithmicDecomposition(pair).coinformation() == pytest.approx(coinformation(pair), abs=1e-12)
+
+    def test_atom_table_with_explicit_groups(self):
+        """Membership columns follow the requested groups and their measures add up to entropies."""
+        d = _skewed_pair()
+        ld = LogarithmicDecomposition(d)
+        table = ld.atom_table([[0], [0, 1]])
+        assert len(table) == len(ld.atoms) == 11
+        assert [row["degree"] for row in table] == sorted(row["degree"] for row in table)
+        content_0 = ld.content([0])
+        for row in table:
+            assert set(row) == {"atom", "degree", "measure", "Delta([0])", "Delta([0, 1])"}
+            assert row["degree"] == len(row["atom"])
+            assert row["measure"] == ld.measure(row["atom"])
+            assert row["Delta([0])"] == (row["atom"] in content_0)
+        h_0 = sum(row["measure"] for row in table if row["Delta([0])"])
+        h_01 = sum(row["measure"] for row in table if row["Delta([0, 1])"])
+        assert h_0 == pytest.approx(shannon_entropy(d, [0]))
+        assert h_01 == pytest.approx(shannon_entropy(d))
