@@ -12,6 +12,7 @@ from scipy.optimize import OptimizeResult, approx_fprime
 from dit import Distribution
 from dit.algorithms import maxent_dist
 from dit.algorithms.distribution_optimizers import (
+    BaseDistOptimizer,
     BROJAConEOptimizer,
     MaxCAEKLMutualInformationOptimizer,
     MaxCoInfoOptimizer,
@@ -110,16 +111,18 @@ def test_minent_no_worse_than_greedy(n_groups):
     assert H(meo.construct_dist()) <= -(nz * np.log2(nz)).sum() + 1e-6
 
 
+@pytest.mark.parametrize("dist_seed", [0, 1])
 @pytest.mark.parametrize("seed", range(4))
-def test_minent_matches_marginals(seed):
+def test_minent_matches_marginals(dist_seed, seed):
     """
-    The marginal constraints are linear equalities of full rank, so the optimum matches
-    the marginals to machine precision. A single squared deviation used to count as
-    satisfied below SLSQP's tolerance of 1e-7, leaving deviations of about 3e-4 that
-    could make the optimum look better than the greedy coupling. An integer seed also
-    used to crash the vertex seeds.
+    The optimum matches the marginals to machine precision. A single squared deviation
+    used to count as satisfied below SLSQP's tolerance of 1e-7, leaving deviations of
+    about 3e-4 that could make the optimum look better than the greedy coupling. SLSQP
+    still satisfies the constraints only to its tolerance, so the candidates are
+    projected onto them exactly. For dist_seed=1 the local search finds a better vertex
+    than any seed. An integer seed also used to crash the vertex seeds.
     """
-    rng = np.random.default_rng(0)
+    rng = np.random.default_rng(dist_seed)
     margs = [rng.dirichlet(np.ones(4)) for _ in range(2)]
     pmf = np.multiply.outer(*margs)
     d = Distribution(["".join(map(str, idx)) for idx in np.ndindex(*pmf.shape)], pmf.ravel())
@@ -128,6 +131,55 @@ def test_minent_matches_marginals(seed):
     joint = meo.construct_joint(meo._optima)
     assert joint.sum(axis=1) == pytest.approx(margs[0], abs=1e-10)
     assert joint.sum(axis=0) == pytest.approx(margs[1], abs=1e-10)
+
+
+def _dirichlet_product(seed, k=4):
+    """Two independent variables with Dirichlet marginals, and the marginals."""
+    rng = np.random.default_rng(seed)
+    margs = [rng.dirichlet(np.ones(k)) for _ in range(2)]
+    pmf = np.multiply.outer(*margs)
+    return Distribution(["".join(map(str, idx)) for idx in np.ndindex(*pmf.shape)], pmf.ravel()), margs
+
+
+def test_minent_inexact_local_optimum_is_projected(monkeypatch):
+    """
+    A local optimum on the greedy coupling's vertex but short of mass by 1e-7, as SLSQP's
+    tolerance allows, has a lower computed entropy than the exact vertex. It used to be
+    kept, missing the marginals by about 1e-8 (seen on Windows CI). Projected onto the
+    marginals, it is the exact vertex.
+    """
+    d, margs = _dirichlet_product(0)
+    meo = MinEntOptimizer(d, [[0], [1]])
+    meo.objective = MethodType(meo._objective(), meo)
+    greedy = meo._greedy_coupling()[meo._free]
+    assert meo.objective(greedy * (1 - 1e-7)) < meo.objective(greedy)
+
+    def inexact_local_search(self, *args, **kwargs):
+        self._optima = greedy * (1 - 1e-7)
+
+    monkeypatch.setattr(BaseDistOptimizer, "optimize", inexact_local_search)
+    meo.optimize(rng=0)
+    joint = meo.construct_joint(meo._optima)
+    np.testing.assert_allclose(joint.sum(axis=1), margs[0], rtol=0, atol=1e-12)
+    np.testing.assert_allclose(joint.sum(axis=0), margs[1], rtol=0, atol=1e-12)
+    np.testing.assert_allclose(meo._optima, greedy, rtol=0, atol=1e-12)
+
+
+def test_minent_projection_drops_entries_driven_negative():
+    """
+    Near a vertex, a local optimum can keep tiny extra entries. Removing excess mass by
+    least squares can drive such an entry negative; it is then dropped from the support
+    and the correction repeated, which recovers the exact vertex.
+    """
+    d, _ = _dirichlet_product(0)
+    meo = MinEntOptimizer(d, [[0], [1]])
+    greedy = meo._greedy_coupling()[meo._free]
+    off = np.flatnonzero(greedy == 0)[0]
+    x = greedy * (1 + 1e-7)
+    x[off] = 1e-9
+    projected = meo._project_onto_marginals(x)
+    assert projected[off] == 0
+    np.testing.assert_allclose(projected, greedy, rtol=0, atol=1e-14)
 
 
 @pytest.mark.parametrize(

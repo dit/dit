@@ -204,9 +204,10 @@ class BaseDistOptimizer(BaseOptimizer):
         Ensure that the joint distribution represented by the optimization
         vector matches that of the distribution.
 
-        The constraints are linear, so SLSQP satisfies them to machine precision.
-        A single squared deviation, as used before, counts as satisfied once it is
-        below SLSQP's tolerance of 1e-7, which leaves deviations of about 3e-4.
+        The constraints are linear, but SLSQP stops once their violation is below its
+        tolerance, so its optima can miss them by about 1e-7. A single squared deviation,
+        as used before, counts as satisfied once it is below SLSQP's tolerance of 1e-7,
+        which leaves deviations of about 3e-4.
 
         Parameters
         ----------
@@ -412,7 +413,8 @@ class MinEntOptimizer(BaseDistOptimizer, BaseNonConvexOptimizer):
 
     def optimize(self, *args, **kwargs):
         """
-        Optimize, then keep the best of the result and the vertex seeds.
+        Optimize, then keep the best of the result and the vertex seeds, each projected
+        exactly onto the marginal constraints.
 
         Parameters
         ----------
@@ -427,8 +429,38 @@ class MinEntOptimizer(BaseDistOptimizer, BaseNonConvexOptimizer):
         result = super().optimize(*args, **kwargs)
         if self._free:
             candidates = [self._optima] + [seed[self._free] for seed in self._seed_pmfs(kwargs.get("rng"))]
+            candidates = [self._project_onto_marginals(x) for x in candidates]
             self._optima = min(candidates, key=self.objective).copy()
         return result
+
+    def _project_onto_marginals(self, x):
+        """
+        Satisfy the marginal constraints exactly, changing only the positive entries.
+
+        SLSQP stops once the constraint violations are below its tolerance, so a local
+        optimum can miss the marginals by about 1e-7. A vector short of mass has a lower
+        computed entropy, which is enough to beat the exact vertex it approximates. The
+        least-squares correction on the support keeps zeros at zero, and is exact when
+        the support contains that of a vertex, as it does near one.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            An optimization vector.
+
+        Returns
+        -------
+        x : np.ndarray
+            The corrected optimization vector.
+        """
+        A, b = self._marginal_system()
+        x = np.clip(np.asarray(x, dtype=float), 0, None)
+        while True:  # each retry zeroes an entry, and zeros stay zero
+            support = x > 0
+            x[support] += np.linalg.lstsq(A[:, support], b - A @ x, rcond=None)[0]
+            if (x >= 0).all():
+                return x
+            x = np.clip(x, 0, None)
 
     def _objective_gradient(self):
         """Gradient of the ``+H`` objective w.r.t. the pmf."""
