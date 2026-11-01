@@ -28,7 +28,10 @@ from dit.symbolic import evaluate, symbolic_distribution, symbols
 
 sympy = pytest.importorskip("sympy")
 
-TOL = 1e-4  # numeric optimizer tolerance is ~1e-6; symbolic vs numeric within 1e-4
+# The numeric Markov optimizer meets its matching constraint only approximately, so its Wyner
+# value can fall short of the true minimum by ~1e-4 (2.2e-4 seen on macOS CI). A wrong closed
+# form is off by far more (Exact vs Wyner on the DSBS differ by ~0.1).
+TOL = 1e-3
 
 
 def _giant_bit(p):

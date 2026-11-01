@@ -2,6 +2,7 @@
 Tests for dit.algorithms.channelcapacity
 """
 
+import re
 import warnings
 
 import numpy as np
@@ -12,6 +13,7 @@ from scipy.optimize import minimize
 
 from dit import Distribution, joint_from_factors
 from dit.algorithms.channelcapacity import (
+    _active_set,
     _blahut_arimoto,
     _row_plogp,
     channel_capacity,
@@ -442,3 +444,106 @@ def test_sibson_increases_with_order():
 def test_sibson_bad_order():
     with pytest.raises(ditException):
         sibson_capacity(STOPS_EARLY, 0)
+
+
+# ── Iteration limits, step control and cost offsets ────────────────────
+
+
+def reported_interval(warning):
+    """
+    The [lower, upper] capacity interval (bits) stated by a non-convergence warning.
+    """
+    lower, upper = re.search(r"\[(.+), (.+)\] bits", str(warning.message)).groups()
+    return float(lower), float(upper)
+
+
+def sibson_terms(P, pmf, order):
+    """
+    Sibson's I_alpha at ``pmf`` and the divergences D_alpha(P_x || q) from Sibson's optimal
+    output q for ``pmf``, in bits. Their maximum bounds the capacity of order alpha.
+    """
+    g = (pmf @ P**order) ** (1 / order)
+    q = g / g.sum()
+    return order / (order - 1) * np.log2(g.sum()), np.log2(P**order @ q ** (1 - order)) / (order - 1)
+
+
+def test_cost_unknown_method():
+    P = np.array([[0.9, 0.1], [0.1, 0.9]])
+    with pytest.raises(ditException, match="Unknown method 'newton'; expected 'ba' or 'accelerated'"):
+        channel_capacity_cost(P, [0, 1], 0.5, method="newton")
+
+
+def test_cost_max_iters_warns():
+    """
+    With a budget that does not bind, the unconstrained iteration decides. Stopped early, it
+    warns with an interval containing the capacity, and returns the interval's lower end.
+    """
+    with pytest.warns(RuntimeWarning, match="did not reach tolerance in 2 iterations") as record:
+        cc, pmf, s = channel_capacity_cost(STOPS_EARLY, [0, 1, 2, 3], 10, atol=1e-12, rtol=0, maxiter=2)
+    lower, upper = reported_interval(record.pop(RuntimeWarning))
+    assert s == 0
+    assert cc == pytest.approx(lower, abs=1e-15)
+    assert lower < 0.742122012970905 < upper
+    assert capacity_bounds(STOPS_EARLY, pmf)[0] == pytest.approx(cc, abs=1e-12)
+
+
+def test_sibson_max_iters_warns():
+    """
+    Stopped early, Sibson's iteration warns with an interval containing C_alpha, and returns
+    I_alpha of the input it reached.
+    """
+    true, _ = sibson_capacity(STOPS_EARLY, 2.0, atol=1e-11, rtol=0)
+    with pytest.warns(RuntimeWarning, match="sibson_capacity did not reach tolerance in 2 iterations") as record:
+        cc, pmf = sibson_capacity(STOPS_EARLY, 2.0, atol=1e-12, rtol=0, maxiter=2)
+    lower, upper = reported_interval(record.pop(RuntimeWarning))
+    assert cc == pytest.approx(lower, abs=1e-15)
+    assert lower < true < upper
+    assert sibson_mutual_information_pmf(pmf[:, np.newaxis] * STOPS_EARLY, 2.0) == pytest.approx(cc, abs=1e-12)
+
+
+def test_sibson_halves_overshooting_step():
+    """
+    At order 0.05 the full step from the uniform input lowers I_alpha on this sparse channel,
+    so it is halved until I_alpha increases. The iteration still converges, as certified by
+    the Rényi radius bound.
+    """
+    P = np.array([[0.0, 0.7, 0.08, 0.22], [0.07, 0.0, 0.9, 0.03], [0.01, 0.99, 0.0, 0.0]])
+    order = 0.05
+    uniform = np.full(3, 1 / 3)
+    start, D = sibson_terms(P, uniform, order)
+    full_step = uniform * np.exp2(D - D.max())
+    assert sibson_terms(P, full_step / full_step.sum(), order)[0] < start - 0.1
+
+    with pytest.warns(RuntimeWarning, match="did not reach tolerance in 1 iterations"):
+        first, _ = sibson_capacity(P, order, maxiter=1)
+    assert first > start
+
+    cc, pmf = sibson_capacity(P, order, atol=1e-10, rtol=0)
+    lower, divergences = sibson_terms(P, pmf, order)
+    assert cc == pytest.approx(lower, abs=1e-12)
+    assert divergences.max() - lower <= 1e-10 + 1e-12
+
+
+def test_active_set_with_cost_offset():
+    """
+    With the per-input offset -s cost(x), the active-set iteration maximizes the Lagrangian
+    I(r) - s E_r[cost] as the plain iteration does, and certifies it over all inputs.
+    """
+    base = np.array([[0.9, 0.05, 0.05], [0.05, 0.9, 0.05], [0.05, 0.05, 0.9]])
+    weights = np.array([[0.5, 0.5, 0.0], [0.2, 0.3, 0.5], [1 / 3, 1 / 3, 1 / 3], [0.7, 0.1, 0.2], [0.1, 0.8, 0.1]])
+    P = np.vstack([base, weights @ base])
+    cost = np.array([0.0, 1.0, 2.0] + [0.5] * 5)
+    s = 0.3
+    offset = -s * np.log(2) * cost
+    plogp = _row_plogp(P)
+
+    def tol(lower):
+        return 1e-12
+
+    r, lower, upper, _ = _active_set(P, plogp, tol, 100_000, True, offset)
+    _, _, _, _, plain_lower, _, _ = _blahut_arimoto(P, plogp, np.zeros(len(P)), tol, 100_000, True, offset)
+    assert upper - lower <= 1e-12
+    assert lower == pytest.approx(plain_lower, abs=1e-11)
+    assert r.sum() == pytest.approx(1.0)
+    mutual_information, _ = capacity_bounds(P, r)
+    assert lower / np.log(2) == pytest.approx(mutual_information - s * (r @ cost), abs=1e-11)

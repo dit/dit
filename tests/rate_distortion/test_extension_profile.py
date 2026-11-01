@@ -333,3 +333,111 @@ def test_region_plots_degenerate_body():
     features = _quick(ep)
     assert ep.plot_mutual_information_region(features).data
     assert "region of tension (lower boundary)" not in {t.name for t in ep.plot_tension_region(features).data}
+
+
+# ── Give-up limits, the exact and β-common points, and boundary relaxation ───
+
+
+def independent_pair():
+    """X ~ Bernoulli(0.7) and Y ~ Bernoulli(0.4), independent."""
+    return dit.Distribution(["00", "01", "10", "11"], [0.18, 0.12, 0.42, 0.28])
+
+
+def test_excess_functional_information_gives_up_beyond_max_functions():
+    """A binary pair has 2**2 = 4 candidate functions: the program runs at max_functions=4 and gives up at 3."""
+    pxy = _dsbs_pmf(0.2)
+    _, height = excess_functional_information(pxy, max_functions=4)
+    assert height == pytest.approx(1 - 2 * 0.2, abs=1e-8)
+    for reduce in (True, False):
+        assert excess_functional_information(pxy, max_functions=3, reduce=reduce) == (None, None)
+
+
+def test_korner_graph_entropy_on_a_prime_graph():
+    """
+    The characteristic graph a - b - c - d (a path) is prime: it and its complement are connected, so neither
+    reduction applies and its maximal independent sets {a, c}, {a, d}, {b, d} are enumerated. The path is perfect
+    and self-complementary, so for uniform p(x) H_K = H[X] / 2 = 1 bit (Csiszár et al., 1990).
+    """
+    pxy = np.array([[2, 0, 0], [1, 1, 0], [0, 1, 1], [0, 0, 2]]) / 8
+    assert korner_graph_entropy(pxy) == pytest.approx(1, abs=1e-6)
+    assert korner_graph_entropy(pxy, max_sets=3) == pytest.approx(1, abs=1e-6)
+    assert korner_graph_entropy(pxy, max_sets=2) is None
+    assert korner_graph_entropy(pxy, max_sets=2, reduce=False) is None
+
+
+def test_profile_omits_points_beyond_exact_limits():
+    """
+    A band around the diagonal of a 32-cycle (x ~ y when |x - y| <= 1 mod 32) defeats both exact programs in both
+    directions: the random-function program needs 32**32 functions, and the characteristic graph, the square of the
+    cycle, has over 5000 maximal independent sets. The profile reports None and draws no point.
+    """
+    n = 32
+    outcomes = [(x, y % n) for x in range(n) for y in (x - 1, x, x + 1)]
+    ep = ExtensionProfile(dit.Distribution(outcomes, [1 / len(outcomes)] * len(outcomes)), rng=0)
+    points, values = ep.excess_functional_information
+    assert points == []
+    assert values == {"X -> Y": None, "Y -> X": None}
+    points, values = ep.korner
+    assert points == []
+    assert values == {"X": None, "Y": None}
+
+
+def test_exact_point():
+    """The realizer of the exact common information lies on the bottom face, at or beyond the Wyner point."""
+    ep = ExtensionProfile(independent_pair(), rng=0)
+    # X and Y are already independent, so W = const is optimal.
+    assert np.allclose(ep.exact(niter=1), [ep.h_x, ep.h_y, 0], atol=1e-3)
+
+    c = 0.2
+    ep = ExtensionProfile(dsbs(c), rng=0)
+    p = ep.exact(niter=1)
+    q = (1 - np.sqrt(1 - 2 * c)) / 2
+    assert p[2] == pytest.approx(0, abs=1e-6)
+    assert ep.h_xy - p[0] - p[1] >= 1 + _h(c) - 2 * _h(q) - 1e-6  # I[XY:W] >= Wyner's C
+    assert within_ext_max(ep, p, tol=1e-3)
+
+
+def test_beta_common_at_or_above_maximal_correlation():
+    """
+    For beta >= rho_m(X; Y) a constant W meets the constraint, so the point is W = const without optimizing: a DSBS
+    has rho_m = 1 - 2c, and an independent pair has rho_m = 0, which makes every default beta trivial.
+    """
+    ep = ExtensionProfile(dsbs(0.2))
+    betas, points = ep.beta_common(betas=[0.6, 0.9])
+    assert np.allclose(betas, [0.6, 0.9])
+    assert np.allclose(points, [ep.probes["W = const"]] * 2)
+
+    ep = ExtensionProfile(independent_pair())
+    betas, points = ep.beta_common()
+    assert betas.shape == (9,)
+    assert np.allclose(betas, 0, atol=1e-12)
+    assert np.allclose(points, [[ep.h_x, ep.h_y, 0]] * 9, atol=1e-12)
+
+
+def test_beta_common_below_maximal_correlation():
+    """
+    For beta < rho_m(X; Y) = 1 - 2c the point comes from the optimizer: W = const is infeasible, so I[XY:W] > 0,
+    and relaxing the beta = 0 constraint (Wyner's common information) can only lower it.
+    """
+    c = 0.2
+    ep = ExtensionProfile(dsbs(c), rng=0)
+    betas, points = ep.beta_common(betas=[0.5, 0.6], niter=1)
+    q = (1 - np.sqrt(1 - 2 * c)) / 2
+    i_xyw = ep.h_xy - points[0][0] - points[0][1] + points[0][2]
+    assert 1e-3 < i_xyw < 1 + _h(c) - 2 * _h(q)
+    assert within_ext_max(ep, points[0], tol=1e-3)
+    assert np.allclose(points[1], ep.probes["W = const"])
+
+
+def test_lower_boundary_relaxation_only_improves():
+    """max_passes=0 skips the neighbour relaxation; from the same seed, relaxing never lowers a support value."""
+    kwargs = {"num_theta": 4, "num_radii": 3, "r_min": 0.1, "r_max": 10.0}
+    raw = ExtensionProfile(dsbs(0.1), rng=0).lower_boundary(max_passes=0, **kwargs)
+    relaxed = ExtensionProfile(dsbs(0.1), rng=0).lower_boundary(**kwargs)
+    assert raw.shape == relaxed.shape == (4, 3, 3)
+
+    thetas = np.linspace(0, 2 * np.pi, 4, endpoint=False)
+    directions = np.array([[(np.cos(t), np.sin(t), -1 / r) for r in np.geomspace(0.1, 10.0, 3)] for t in thetas])
+    assert np.all((directions * relaxed).sum(-1) >= (directions * raw).sum(-1) - 1e-7)
+    ep = ExtensionProfile(dsbs(0.1))
+    assert all(within_ext_max(ep, p) for p in raw.reshape(-1, 3))

@@ -7,11 +7,13 @@ from types import MethodType
 
 import numpy as np
 import pytest
-from scipy.optimize import approx_fprime
+from scipy.optimize import OptimizeResult, approx_fprime
 
 from dit import Distribution
 from dit.algorithms import maxent_dist
 from dit.algorithms.distribution_optimizers import (
+    BaseDistOptimizer,
+    BROJAConEOptimizer,
     MaxCAEKLMutualInformationOptimizer,
     MaxCoInfoOptimizer,
     MaxDualTotalCorrelationOptimizer,
@@ -20,12 +22,14 @@ from dit.algorithms.distribution_optimizers import (
     MinDualTotalCorrelationOptimizer,
     MinEntOptimizer,
     MinResidualEntropyOptimizer,
+    marginal_maxent_dists,
 )
 from dit.distconst import uniform
 from dit.example_dists import Xor
 from dit.multivariate import coinformation as I
 from dit.multivariate import dual_total_correlation as B
 from dit.multivariate import entropy as H
+from dit.pid.distributions import bivariates
 
 
 @pytest.mark.parametrize(
@@ -107,16 +111,18 @@ def test_minent_no_worse_than_greedy(n_groups):
     assert H(meo.construct_dist()) <= -(nz * np.log2(nz)).sum() + 1e-6
 
 
+@pytest.mark.parametrize("dist_seed", [0, 1])
 @pytest.mark.parametrize("seed", range(4))
-def test_minent_matches_marginals(seed):
+def test_minent_matches_marginals(dist_seed, seed):
     """
-    The marginal constraints are linear equalities of full rank, so the optimum matches
-    the marginals to machine precision. A single squared deviation used to count as
-    satisfied below SLSQP's tolerance of 1e-7, leaving deviations of about 3e-4 that
-    could make the optimum look better than the greedy coupling. An integer seed also
-    used to crash the vertex seeds.
+    The optimum matches the marginals to machine precision. A single squared deviation
+    used to count as satisfied below SLSQP's tolerance of 1e-7, leaving deviations of
+    about 3e-4 that could make the optimum look better than the greedy coupling. SLSQP
+    still satisfies the constraints only to its tolerance, so the candidates are
+    projected onto them exactly. For dist_seed=1 the local search finds a better vertex
+    than any seed. An integer seed also used to crash the vertex seeds.
     """
-    rng = np.random.default_rng(0)
+    rng = np.random.default_rng(dist_seed)
     margs = [rng.dirichlet(np.ones(4)) for _ in range(2)]
     pmf = np.multiply.outer(*margs)
     d = Distribution(["".join(map(str, idx)) for idx in np.ndindex(*pmf.shape)], pmf.ravel())
@@ -125,6 +131,55 @@ def test_minent_matches_marginals(seed):
     joint = meo.construct_joint(meo._optima)
     assert joint.sum(axis=1) == pytest.approx(margs[0], abs=1e-10)
     assert joint.sum(axis=0) == pytest.approx(margs[1], abs=1e-10)
+
+
+def _dirichlet_product(seed, k=4):
+    """Two independent variables with Dirichlet marginals, and the marginals."""
+    rng = np.random.default_rng(seed)
+    margs = [rng.dirichlet(np.ones(k)) for _ in range(2)]
+    pmf = np.multiply.outer(*margs)
+    return Distribution(["".join(map(str, idx)) for idx in np.ndindex(*pmf.shape)], pmf.ravel()), margs
+
+
+def test_minent_inexact_local_optimum_is_projected(monkeypatch):
+    """
+    A local optimum on the greedy coupling's vertex but short of mass by 1e-7, as SLSQP's
+    tolerance allows, has a lower computed entropy than the exact vertex. It used to be
+    kept, missing the marginals by about 1e-8 (seen on Windows CI). Projected onto the
+    marginals, it is the exact vertex.
+    """
+    d, margs = _dirichlet_product(0)
+    meo = MinEntOptimizer(d, [[0], [1]])
+    meo.objective = MethodType(meo._objective(), meo)
+    greedy = meo._greedy_coupling()[meo._free]
+    assert meo.objective(greedy * (1 - 1e-7)) < meo.objective(greedy)
+
+    def inexact_local_search(self, *args, **kwargs):
+        self._optima = greedy * (1 - 1e-7)
+
+    monkeypatch.setattr(BaseDistOptimizer, "optimize", inexact_local_search)
+    meo.optimize(rng=0)
+    joint = meo.construct_joint(meo._optima)
+    np.testing.assert_allclose(joint.sum(axis=1), margs[0], rtol=0, atol=1e-12)
+    np.testing.assert_allclose(joint.sum(axis=0), margs[1], rtol=0, atol=1e-12)
+    np.testing.assert_allclose(meo._optima, greedy, rtol=0, atol=1e-12)
+
+
+def test_minent_projection_drops_entries_driven_negative():
+    """
+    Near a vertex, a local optimum can keep tiny extra entries. Removing excess mass by
+    least squares can drive such an entry negative; it is then dropped from the support
+    and the correction repeated, which recovers the exact vertex.
+    """
+    d, _ = _dirichlet_product(0)
+    meo = MinEntOptimizer(d, [[0], [1]])
+    greedy = meo._greedy_coupling()[meo._free]
+    off = np.flatnonzero(greedy == 0)[0]
+    x = greedy * (1 + 1e-7)
+    x[off] = 1e-9
+    projected = meo._project_onto_marginals(x)
+    assert projected[off] == 0
+    np.testing.assert_allclose(projected, greedy, rtol=0, atol=1e-14)
 
 
 @pytest.mark.parametrize(
@@ -341,3 +396,112 @@ def test_dtc_2():
     max_dtc.optimize()
     dp = max_dtc.construct_dist()
     assert B(dp) == pytest.approx(0.0, abs=1e-4)
+
+
+# ── construct_dist, minimum-entropy seeds, the cone optimizer, marginal_maxent_dists ──
+
+
+def test_construct_dist_explicit_vector_keeps_rv_names():
+    """
+    construct_dist builds the distribution of an explicit optimization vector: entries
+    below the cutoff are dropped, the rest renormalized, and the variable names kept.
+    """
+    d = Distribution(["000", "011", "101", "110"], [0.25] * 4)
+    d.set_rv_names("XYZ")
+    meo = MaxEntOptimizer(d, [["X"], ["Y"], ["Z"]])
+    x = 2 * np.array([0.25, 1e-9, 1e-9, 0.25, 1e-9, 0.25, 0.25, 1e-9])
+
+    dp = meo.construct_dist(x=x)
+    assert dp.get_rv_names() == ("X", "Y", "Z")
+    assert dp.is_approx_equal(Distribution(["000", "011", "101", "110"], [0.25] * 4))
+
+    dense = meo.construct_dist(x=x, sparse=False)
+    assert dense.get_rv_names() == ("X", "Y", "Z")
+    np.testing.assert_allclose(dense.pmf, [0.25, 0, 0, 0.25, 0, 0.25, 0.25, 0])
+
+
+@pytest.mark.parametrize("marginals", [[[0, 1, 2]], [[0, 1], [1, 2]], [[0], [1]]])
+def test_minent_greedy_coupling_needs_disjoint_cover(marginals):
+    """
+    The greedy coupling needs two or more disjoint groups covering every variable;
+    otherwise only linear-programming vertices of the marginal polytope seed the search.
+    """
+    d = Distribution(["000", "011", "101", "110"], [0.1, 0.2, 0.3, 0.4])
+    meo = MinEntOptimizer(d, marginals)
+    assert meo._greedy_coupling() is None
+
+    meo._n_vertex_seeds = 3
+    seeds = meo._seed_pmfs(rng=0)
+    assert len(seeds) == 3
+    rank = np.linalg.matrix_rank(meo._A)
+    for seed in seeds:
+        np.testing.assert_allclose(meo._A @ seed, meo._b, atol=1e-9)
+        assert seed.min() >= 0
+        assert np.count_nonzero(seed > 1e-12) <= rank
+
+
+def test_minent_seeds_skip_failed_linear_programs(monkeypatch):
+    """
+    Vertex seeds whose linear program returns no solution are skipped. The greedy coupling
+    that remains is already optimal here, as the only couplings of (1/2, 1/2) and
+    (3/5, 2/5) that are vertices have entropy H(1/2, 2/5, 1/10).
+    """
+    failed = OptimizeResult(x=None, success=False, status=2, message="forced failure")
+    monkeypatch.setattr("dit.algorithms.distribution_optimizers.linprog", lambda *args, **kwargs: failed)
+    d = Distribution(["00", "01", "10", "11"], [0.3, 0.2, 0.3, 0.2])
+    meo = MinEntOptimizer(d, [[0], [1]])
+
+    seeds = meo._seed_pmfs(rng=0)
+    assert len(seeds) == 1
+    np.testing.assert_allclose(seeds[0], [0.5, 0.0, 0.1, 0.4])
+
+    meo.optimize(niter=2, rng=0)
+    expected = -(0.5 * np.log2(0.5) + 0.4 * np.log2(0.4) + 0.1 * np.log2(0.1))
+    assert H(meo.construct_dist()) == pytest.approx(expected, abs=1e-6)
+
+
+def test_minent_fully_constrained_returns_input():
+    """When the marginals determine the joint there is nothing to optimize, and the input comes back."""
+    d = Distribution(["000", "011", "101", "110"], [0.1, 0.2, 0.3, 0.4])
+    meo = MinEntOptimizer(d, [[0, 1, 2]])
+    assert meo._free == []
+    assert meo.optimize() is None
+    assert meo.construct_dist().is_approx_equal(Distribution(["000", "011", "101", "110"], [0.1, 0.2, 0.3, 0.4]))
+
+
+def test_broja_cone_optimizer_and_gate():
+    """
+    The exponential-cone BROJA optimizer keeps each (source, target) marginal and gives the
+    AND gate's known decomposition: no unique information, so the redundancy, the
+    co-information of the optimum, equals I(X0 : Y).
+    """
+    pytest.importorskip("ecos")
+    d = bivariates["and"]
+    opt = BROJAConEOptimizer(d, [[0], [1]], [2])
+    assert opt.optimize() is None
+    assert opt._cone_meta["converged"]
+    assert opt._cone_meta["ui_source0"] == pytest.approx(0.0, abs=1e-6)
+    assert opt._cone_meta["ui_source1"] == pytest.approx(0.0, abs=1e-6)
+
+    p = np.zeros((2, 2, 2))
+    for x0, x1, y in [(0, 0, 0), (0, 1, 0), (1, 0, 0), (1, 1, 1)]:
+        p[x0, x1, y] = 0.25
+    q = opt.construct_joint(opt._optima)
+    np.testing.assert_allclose(q.sum(axis=1), p.sum(axis=1), atol=1e-6)
+    np.testing.assert_allclose(q.sum(axis=0), p.sum(axis=0), atol=1e-6)
+    assert I(opt.construct_dist()) == pytest.approx(I(d, [[0], [2]]), abs=1e-6)
+
+
+def test_marginal_maxent_dists_truncated_order():
+    """
+    With ``k_max`` below the number of variables the sequence stops at order ``k_max``
+    and omits the distribution itself. For the giant bit the pairwise marginals already
+    pin down the joint, so the entropies are 3, 3 and 1 bit.
+    """
+    dists = marginal_maxent_dists(Distribution(["000", "111"], [0.5, 0.5]), k_max=2)
+    assert [H(dist) for dist in dists] == pytest.approx([3, 3, 1])
+    assert dists[2].is_approx_equal(Distribution(["000", "111"], [0.5, 0.5]), atol=1e-6)
+
+    dists = marginal_maxent_dists(Distribution(["000", "111"], [0.5, 0.5]), k_max=1)
+    assert len(dists) == 2
+    np.testing.assert_allclose(dists[1].pmf, 1 / 8)

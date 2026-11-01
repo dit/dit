@@ -77,9 +77,10 @@ jobs:
 
       # ECOS (the broja extra) enables BROJA's exact cone solver, which builds from source
       # where ecos has no wheel (Python 3.13+). Windows runs without it, so the admUI
-      # fallback that installs without ECOS use stays tested end to end.
+      # fallback that installs without ECOS use stays tested end to end. sympy (the symbolic
+      # extra) is needed by tests/symbolic, which skip without it.
       - name: Install package and dependencies
-        run: uv sync --extra test --extra optional ${{ runner.os != 'Windows' && '--extra broja' || '' }}
+        run: uv sync --extra test --extra optional --extra symbolic ${{ runner.os != 'Windows' && '--extra broja' || '' }}
 
       # Coverage on the newest Python of every OS; Codecov merges the three reports, so
       # code that runs only with ECOS (Linux, macOS) or without it (Windows) is counted.
