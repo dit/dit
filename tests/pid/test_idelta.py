@@ -7,8 +7,10 @@ import pytest
 from dit import Distribution
 from dit.exceptions import ditException
 from dit.pid.distributions import bivariates
+from dit.pid.measures.ibroja import PID_BROJA
 from dit.pid.measures.idelta import PID_Delta
-from dit.pid.measures.ideltalambda import PID_DeltaLambda
+from dit.pid.measures.ideltalambda import PID_DeltaLambda, _delta_lambda
+from dit.pid.measures.immi import PID_MMI
 
 
 def test_pid_delta_synergy():
@@ -76,3 +78,17 @@ def test_three_sources(pid):
     decomposition = pid(AND3)
     assert decomposition.get_red(((0,), (1,))) == pytest.approx(0.1379, abs=1e-3)
     assert decomposition.consistent
+
+
+def test_pid_deltalambda_limits():
+    """
+    As lambda -> 0 the deficiency over lambda tends to the BROJA unique information, and the
+    redundancy to that of I_mmi; as lambda grows the redundancy tends to that of I_delta.
+    """
+    d = bivariates["boom"]
+    red = ((0,), (1,))
+    small = 1e-3
+    deficiency = _delta_lambda(d, (0,), (1,), (2,), lam=small, rng=0)
+    assert deficiency / small == pytest.approx(PID_BROJA(d)[((0,),)], abs=1e-3)
+    assert PID_DeltaLambda(d, lam=small).get_red(red) == pytest.approx(PID_MMI(d).get_red(red), abs=1e-3)
+    assert PID_DeltaLambda(d, lam=100.0).get_red(red) == pytest.approx(PID_Delta(d).get_red(red), abs=5e-3)
