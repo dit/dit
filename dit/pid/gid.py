@@ -17,7 +17,7 @@ from ..helpers import as_linear
 from ..utils import build_table
 from .hmos import PED_MOS
 from .hsx import PED_SX
-from .pid import _unit_scale, sort_key
+from .pid import _descendants, _unit_scale, sort_key
 
 __all__ = ("GID",)
 
@@ -95,7 +95,7 @@ class GID:
         """
         The redundant divergence of `node`: the sum of the atoms at and below it.
         """
-        return self._pis[node] + sum(self._pis[n] for n in self._lattice.descendants(node))
+        return self._pis[node] + sum(self._pis[n] for n in _descendants(self._lattice, node))
 
     def to_string(self, digits=4):
         """
