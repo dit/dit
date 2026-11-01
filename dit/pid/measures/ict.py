@@ -12,15 +12,22 @@ __all__ = ("PID_CT",)
 
 def i_triangle(d, source_0, source_1, target):
     """
-    Compute the path information, and if it is direct or not.
+    Compute the redundancy of Sigtermans: the information along the indirect path
+    through the other source, chosen by which sources have a direct path to the target.
 
     Parameters
     ----------
+    d : Distribution
+        The joint distribution.
+    source_0, source_1 : iterable
+        The source variables.
+    target : iterable
+        The target variable.
 
     Returns
     -------
-    direct_path : Bool
-        Whether Y -> Z exists or not.
+    red : float
+        The redundancy, in bits.
     """
     d = d.coalesce([source_0, source_1, target])
     d.make_dense()

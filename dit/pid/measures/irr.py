@@ -12,10 +12,11 @@ __all__ = ("PID_RR",)
 
 class PID_RR(BaseBivariatePID):
     """
-    The minimum mutual information partial information decomposition.
+    The rescaled redundancy of Goodwell & Kumar.
 
-    This measure is known to be accurate for gaussian random variables. It was also
-    briefly and tangentially studied by the BROJA team.
+    Redundancy interpolates between max(0, coinformation) and the minimum mutual
+    information, in proportion to the normalized dependence I(X_0 : X_1) / min_i H(X_i)
+    between the sources.
     """
 
     _name = "I_rr"
@@ -28,7 +29,7 @@ class PID_RR(BaseBivariatePID):
         Parameters
         ----------
         d : Distribution
-            The distribution to compute i_mmi for.
+            The distribution to compute i_rr for.
         sources : iterable of iterables
             The source variables.
         target : iterable

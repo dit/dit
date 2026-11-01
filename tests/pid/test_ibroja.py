@@ -40,7 +40,6 @@ def test_pid_broja1():
     test_pid_broja1_method("scipy")
 
 
-@pytest.mark.flaky(reruns=5)
 def test_pid_broja2():
     """
     Test ibroja on another generic distribution.
@@ -56,7 +55,6 @@ def test_pid_broja2():
             assert pid[atom] == pytest.approx(0.0, abs=1e-4)
 
 
-@pytest.mark.flaky(reruns=5)
 def test_pid_broja3():
     """
     Test that iproj and ibroja are the same on reduced or.
@@ -67,7 +65,6 @@ def test_pid_broja3():
     assert pid1 == pid2
 
 
-@pytest.mark.flaky(reruns=5)
 def test_pid_broja4():
     """
     Test that xor cat is incomplete, but nonnegative and consistent.
@@ -130,3 +127,40 @@ def test_broja_unconverged_admui(monkeypatch):
     uniques, meta = broja_method.broja_solve_bivariate(bivariates["and"], [(0,), (1,)], (2,), method="admui")
     assert meta["method"] == "admui"
     assert uniques[(0,)] == 0.5
+
+
+def test_pid_broja_three_sources_without_ecos(monkeypatch):
+    """
+    Without ECOS, as on CI, the unique informations of three sources are computed by admUI,
+    and the decomposition is consistent.
+    """
+
+    def no_cone(*args, **kwargs):  # pragma: no cover
+        raise AssertionError("the cone solver needs ECOS")
+
+    monkeypatch.setattr(broja_method, "ecos_available", lambda: False)
+    monkeypatch.setattr(broja_method, "_solve_cone", no_cone)
+    pid = PID_BROJA(trivariates["anddup"])
+    assert pid.consistent
+    assert pid[((0,), (1,), (2,))] == pytest.approx(0.31127812445913305, abs=1e-4)
+    assert pid[((0, 1), (1, 2))] == pytest.approx(0.5, abs=1e-4)
+
+
+def test_pid_broja_ecos_options():
+    """
+    Options of the ECOS solver are passed on to it.
+    """
+    pytest.importorskip("ecos")
+    pid = PID_BROJA(bivariates["and"], method="cone", feastol=1e-10, max_iters=200)
+    assert pid[((0,), (1,))] == pytest.approx(0.31127812445913305, abs=1e-6)
+
+
+def test_pid_broja_unknown_option():
+    """
+    A misspelt option is an error: the cone solver would reject it and the fallback to
+    admUI hide the mistake.
+    """
+    with pytest.raises(TypeError, match="PID_BROJA: unknown options"):
+        PID_BROJA(bivariates["and"], feastl=1e-10)
+    with pytest.raises(TypeError, match="unknown options"):
+        broja_method.broja_solve_bivariate(bivariates["and"], [(0,), (1,)], (2,), feastl=1e-10)

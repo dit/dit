@@ -13,6 +13,8 @@ Reference:
     "Capturing and Interpreting Unique Information", arXiv:2302.11873, 2023.
 """
 
+import numpy as np
+
 from ...algorithms.optimization import BaseAuxVarOptimizer, BaseConvexOptimizer
 from ...exceptions import ditException
 from ...multivariate import coinformation
@@ -73,7 +75,7 @@ class IPIDOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
         return objective
 
 
-def _information_deficiency(d, source, other, target, bound=None, niter=None):
+def _information_deficiency(d, source, other, target, bound=None, niter=None, rng=None):
     """
     Compute the information deficiency delta_I(M : source \\ other).
 
@@ -91,14 +93,17 @@ def _information_deficiency(d, source, other, target, bound=None, niter=None):
         Bound on |T|. Defaults to |M|.
     niter : int, None
         Number of optimization restarts.
+    rng : np.random.Generator, int, None
+        The randomness of the optimization.
 
     Returns
     -------
     delta : float
-        The information deficiency (non-negative).
+        The information deficiency (non-negative). The optimization is local, so this
+        is a lower bound on the supremum.
     """
     opt = IPIDOptimizer(d, source, other, target, bound=bound)
-    opt.optimize(niter=niter)
+    opt.optimize(niter=niter, rng=rng)
     delta = -opt.objective(opt._optima)
     return max(delta, 0.0)
 
@@ -116,7 +121,7 @@ class PID_IPID(BaseBivariatePID):
     _name = "I_IPID"
 
     @staticmethod
-    def _measure(d, sources, target, bound=None, niter=None):
+    def _measure(d, sources, target, bound=None, niter=None, rng=0):
         """
         Compute the I-PID redundancy for a pair of sources.
 
@@ -132,11 +137,15 @@ class PID_IPID(BaseBivariatePID):
             Bound on the cardinality of the auxiliary variable T.
         niter : int, None
             Number of optimization restarts.
+        rng : np.random.Generator, int, None
+            The randomness of the optimizations (0 by default, so that results are
+            reproducible).
 
         Returns
         -------
         ri : float
-            The I-PID redundancy.
+            The I-PID redundancy. The deficiencies are found by local optimization,
+            which bounds them from below, so this bounds the redundancy from above.
         """
         if len(sources) != 2:
             msg = f"I_IPID is only defined for two sources, {len(sources)} given."
@@ -144,8 +153,9 @@ class PID_IPID(BaseBivariatePID):
 
         source_a, source_b = sources
 
-        delta_ab = _information_deficiency(d, source_a, source_b, target, bound=bound, niter=niter)
-        delta_ba = _information_deficiency(d, source_b, source_a, target, bound=bound, niter=niter)
+        rng = rng if isinstance(rng, np.random.Generator) else np.random.default_rng(rng)
+        delta_ab = _information_deficiency(d, source_a, source_b, target, bound=bound, niter=niter, rng=rng)
+        delta_ba = _information_deficiency(d, source_b, source_a, target, bound=bound, niter=niter, rng=rng)
 
         mi_a = coinformation(d, [source_a, target])
         mi_b = coinformation(d, [source_b, target])

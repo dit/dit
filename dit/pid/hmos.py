@@ -36,10 +36,7 @@ def _compute_marginal_surprisals(d, sources):
     for src, marg in zip(sources, marginals, strict=True):
         src_surprisals = {}
         for outcome in d.outcomes:
-            marg_outcome = tuple(outcome[i] for i in src)
-            if len(marg_outcome) == 1:
-                marg_outcome = marg_outcome[0]
-            p_marg = marg[marg_outcome]
+            p_marg = marg[tuple(outcome[i] for i in src)]
             if p_marg > 0:
                 src_surprisals[outcome] = -np.log2(p_marg)
             else:

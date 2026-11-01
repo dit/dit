@@ -116,16 +116,11 @@ class PID_Prec(BasePID):
         n_y = len(pY)
 
         if not (n_q is None or (isinstance(n_q, int) and n_q >= 1)):
-            raise Exception("Parameter n_q should be None or positive integer")
+            raise ValueError("Parameter n_q should be None or positive integer")
 
         if n_y <= 1 or n_q == 1:
             # Trivial case where target or redundancy has a single outcome, redundancy has to be 0
             return 0, {}
-
-        for rvndx in range(len(pjoint.rvs)):
-            mP = pjoint.marginal([rvndx])  # the marginal distribution over the current R.V.
-            if len(mP._outcomes_index) != len(pjoint.alphabet[rvndx]):
-                raise Exception("All marginals should have full support (to proceed, drop outcomes with 0 probability)")
 
         return _solution(pjoint, target_rvndx, probs_y, n_q)
 

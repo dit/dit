@@ -268,7 +268,7 @@ class PID_LN(BasePID):
 
     @staticmethod
     @renamed_kwarg("seed", "rng")
-    def _measure(d, sources, target, n_points=None, niter=None, rng=None):
+    def _measure(d, sources, target, n_points=None, niter=None, rng=0):
         """
         Compute the less-noisy II redundancy of some sources.
 
@@ -285,7 +285,7 @@ class PID_LN(BasePID):
         niter : int or None
             Number of optimization starts.
         rng : int or None
-            Random seed.
+            Random seed (0 by default, so that results are reproducible).
 
         Returns
         -------

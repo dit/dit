@@ -14,7 +14,7 @@ from lattices.lattices import free_distributive_lattice
 from ..helpers import as_linear
 from ..multivariate import entropy
 from ..utils import build_table
-from .pid import BasePID, _transform, _unit_scale, sort_key
+from .pid import BasePID, _transform, _unit_scale, _validate_sources, sort_key
 
 __all__ = (
     "BasePED",
@@ -54,12 +54,14 @@ class BasePED(BasePID):
 
         self._kwargs = kwargs
         self._sources = tuple(map(tuple, sources))
+        _validate_sources(dist, self._sources)
         self._target = None
         self._lattice = _transform(free_distributive_lattice(self._sources))
         self._total = self._scaled(entropy(self._dist, rvs=self._sources))
         self._reds = {}
         self._pis = {}
-        self._compute()
+        self._computed = False
+        self._ensure_computed()
 
 
 class PointwisePED(BasePED):

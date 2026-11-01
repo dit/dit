@@ -8,11 +8,15 @@ Defines redundancy as:
 where ≤_mc is the "more capable" channel preorder: K_Q ≤_mc K^(i) iff
 I(Q; T) ≤ I(Y_i; T) for *every* input distribution P(T).
 
-The more-capable constraint set is convex but involves an uncountable
-family of inequalities.  Following the paper (Section 5.2, eq. 13), we
-discretize the input simplex with S sampled distributions and solve the
-resulting finite-constraint problem, which yields an upper bound that
-tightens as S grows.
+The more-capable constraint set involves an uncountable family of
+inequalities. Following the paper (Section 5.2, eq. 13), we discretize the
+input simplex with S sampled distributions and search the resulting
+finite-constraint problem with SLSQP from several starts, keeping the best
+candidate that satisfies the sampled constraints. Every common degradation of
+the sources is less capable than each of them, so the optimum of `ideg` is
+one of the candidates and the result is at least I_d^cap. The search is local
+and the constraints are sampled, so the result is neither a certified lower
+nor upper bound on I_mc^cap.
 
 References
 ----------
@@ -29,7 +33,7 @@ from scipy.optimize import minimize
 from ...shannon import mutual_information
 from ...utils.deprecation import renamed_kwarg
 from ..pid import BasePID
-from .ideg import _source_channels
+from .ideg import _degradation_lp, _source_channels
 
 __all__ = ("PID_MC",)
 
@@ -47,15 +51,29 @@ def _params_to_stochastic(params, n_rows, n_cols):
 
 def _mi_bits(pi_t, ch):
     """I(T; output) in bits for channel ch = P(output|T) given pi_t."""
-    eps = 1e-300
-    p_out = pi_t @ ch
-    mi = 0.0
-    for t in range(len(pi_t)):
-        for q in range(ch.shape[1]):
-            pj = pi_t[t] * ch[t, q]
-            if pj > eps:
-                mi += pj * np.log2(ch[t, q] / (p_out[q] + eps))
-    return mi
+    return float(_batch_mi(pi_t[None, :], ch)[0])
+
+
+def _batch_mi(pis, ch):
+    """
+    I(T; output) in bits for the channel ch = P(output|T), for each input distribution (row)
+    of `pis`.
+    """
+    joint = pis[:, :, None] * ch[None, :, :]
+    p_out = joint.sum(axis=1, keepdims=True)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        terms = np.where(joint > 1e-300, joint * np.log2(ch[None, :, :] / p_out), 0.0)
+    return terms.sum(axis=(1, 2))
+
+
+def _batch_mi_grad_wrt_K(pis, ch):
+    """
+    Gradient of :func:`_batch_mi` w.r.t. the channel, one (|T|, |Q|) slice per row of `pis`.
+    """
+    p_out = pis @ ch
+    with np.errstate(divide="ignore", invalid="ignore"):
+        log_ratio = np.log2(ch[None, :, :] / (p_out[:, None, :] + 1e-300))
+    return np.where(pis[:, :, None] > 0, pis[:, :, None] * log_ratio, 0.0)
 
 
 def _mi_grad_wrt_K(pi_t, ch):
@@ -146,7 +164,8 @@ def _more_capable_ii(channels, pi_t, n_q=None, n_samples=None, niter=None, seed=
     Returns
     -------
     float
-        Upper bound on I_mc^∩ (in bits).  Tightens as n_samples grows.
+        The largest I(Q; T) found among candidates satisfying the sampled
+        constraints (in bits).
     """
     n_t = channels[0].shape[0]
     sizes = [ch.shape[1] for ch in channels]
@@ -162,28 +181,26 @@ def _more_capable_ii(channels, pi_t, n_q=None, n_samples=None, niter=None, seed=
     sampled_pi = _constraint_distributions(n_t, n_samples, rng)
     sampled_pi = np.vstack([sampled_pi, pi_t.reshape(1, -1)])
 
-    # Pre-compute min_i I(Y_i; T) for each sampled distribution
-    mi_bounds = np.zeros(len(sampled_pi))
-    for k, pi_k in enumerate(sampled_pi):
-        mi_bounds[k] = min(_mi_bits(pi_k, ch) for ch in channels)
+    # min_i I(Y_i; T) for each sampled distribution
+    mi_bounds = np.min([_batch_mi(sampled_pi, ch) for ch in channels], axis=0)
 
     atol = 1e-6
     best_mi = 0.0
 
     def _check_and_update(k_q):
         nonlocal best_mi
-        for k in range(len(sampled_pi)):
-            if _mi_bits(sampled_pi[k], k_q) - mi_bounds[k] > atol:
-                return
-        mi = _mi_bits(pi_t, k_q)
-        if mi > best_mi:
-            best_mi = mi
+        if np.all(_batch_mi(sampled_pi, k_q) - mi_bounds <= atol):
+            best_mi = max(best_mi, _mi_bits(pi_t, k_q))
 
-    # Phase 1: try each source channel directly (always ≤_mc itself)
+    # Phase 1: each source channel, and an optimal common degradation, which is
+    # less capable than every source; so the result is at least I_d^cap
     for ch in channels:
         _check_and_update(ch)
+    _, lambdas = _degradation_lp(channels, pi_t)
+    k_deg = channels[0] @ lambdas[0]
+    _check_and_update(k_deg)
 
-    # Phase 2: SLSQP with inequality constraints from multiple starts
+    # Phase 2: SLSQP with the sampled inequality constraints from multiple starts
     n_params = n_t * n_q
 
     def _objective(params):
@@ -194,25 +211,22 @@ def _more_capable_ii(channels, pi_t, n_q=None, n_samples=None, niter=None, seed=
         k_q = _params_to_stochastic(params, n_t, n_q)
         return _softmax_vjp(k_q, -_mi_grad_wrt_K(pi_t, k_q))
 
-    constraint_list = []
-    for k_idx in range(len(sampled_pi)):
+    def _constraint(params):
+        k_q = _params_to_stochastic(params, n_t, n_q)
+        return mi_bounds - _batch_mi(sampled_pi, k_q)
 
-        def _con(params, _k=k_idx):
-            k_q = _params_to_stochastic(params, n_t, n_q)
-            return mi_bounds[_k] - _mi_bits(sampled_pi[_k], k_q)
+    def _constraint_jac(params):
+        k_q = _params_to_stochastic(params, n_t, n_q)
+        g = -_batch_mi_grad_wrt_K(sampled_pi, k_q)
+        inner = (g * k_q[None]).sum(axis=2, keepdims=True)
+        return (k_q[None] * (g - inner)).reshape(len(sampled_pi), -1)
 
-        def _con_jac(params, _k=k_idx):
-            k_q = _params_to_stochastic(params, n_t, n_q)
-            return _softmax_vjp(k_q, -_mi_grad_wrt_K(sampled_pi[_k], k_q))
+    constraints = [{"type": "ineq", "fun": _constraint, "jac": _constraint_jac}]
 
-        constraint_list.append({"type": "ineq", "fun": _con, "jac": _con_jac})
-
-    # Initial points: near each source channel, plus random
+    # Initial points: near each source channel, the common degradation, plus random
     init_points = []
-    for ch in channels:
-        if ch.shape[1] == n_q:
-            init_points.append(np.log(ch + 1e-10).ravel())
-        elif ch.shape[1] < n_q:
+    for ch in [*channels, k_deg]:
+        if ch.shape[1] <= n_q:
             padded = np.full((n_t, n_q), 1e-10)
             padded[:, : ch.shape[1]] = ch
             init_points.append(np.log(padded + 1e-10).ravel())
@@ -226,12 +240,11 @@ def _more_capable_ii(channels, pi_t, n_q=None, n_samples=None, niter=None, seed=
                 x0,
                 method="SLSQP",
                 jac=_objective_jac,
-                constraints=constraint_list,
+                constraints=constraints,
                 options={"maxiter": 300, "ftol": 1e-12},
             )
-            k_q = _params_to_stochastic(res.x, n_t, n_q)
-            _check_and_update(k_q)
-        except Exception:
+            _check_and_update(_params_to_stochastic(res.x, n_t, n_q))
+        except Exception:  # pragma: no cover
             continue
 
     return best_mi
@@ -245,8 +258,12 @@ class PID_MC(BasePID):
     than every source channel for all input distributions. Defined for any
     number of sources.
 
-    Because the constraint set is discretized, the computed value is an
-    upper bound that tightens with more samples.
+    The more-capable constraints are imposed at sampled input distributions and
+    the maximum is searched locally, from several starts that include an
+    optimal common degradation of the sources. The result is therefore at least
+    the degradation redundancy of :class:`~dit.pid.PID_Deg`, but is not a
+    certified bound on I_mc^cap. The search is seeded by `rng` (0 by default),
+    so results are reproducible.
 
     References
     ----------
@@ -259,7 +276,7 @@ class PID_MC(BasePID):
 
     @staticmethod
     @renamed_kwarg("seed", "rng")
-    def _measure(d, sources, target, n_samples=None, niter=None, rng=None):
+    def _measure(d, sources, target, n_samples=None, niter=None, rng=0):
         """
         Compute the more-capable II redundancy of some sources.
 
@@ -282,7 +299,7 @@ class PID_MC(BasePID):
         Returns
         -------
         float
-            The more-capable II redundancy (upper bound, in bits).
+            The more-capable II redundancy (in bits).
         """
         if len(sources) == 1:
             return mutual_information(d, sources[0], target)

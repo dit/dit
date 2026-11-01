@@ -2,10 +2,10 @@
 Classes implementing the partial information decomposition.
 """
 
-import contextlib
+import inspect
 from abc import ABCMeta, abstractmethod
-from copy import deepcopy
-from itertools import product
+from copy import copy
+from itertools import chain, product
 
 import networkx as nx
 import numpy as np
@@ -69,7 +69,8 @@ def sort_key(lattice):
 def _transform(lattice):
     """
     Transform a free distributive lattice from being frozensets of frozensets
-    of tuples of integers to being tuples of tuples of integers.
+    of sources (tuples of variables) to being tuples of tuples of variables:
+    each collection of sources becomes the sorted tuple of their variables.
 
     Parameters
     ----------
@@ -80,25 +81,113 @@ def _transform(lattice):
     -------
     tupled_lattice : Lattice
         The lattice, but with tuples in place of frozensets.
+
+    Raises
+    ------
+    ditException
+        If two nodes would become the same tuple, as happens when a source is
+        the union of other sources.
     """
 
     def tuplefy(n):
-        return tuple(sorted((tuple(sorted(sum(_, ()))) for _ in n), key=lambda tup: (len(tup), tup)))
+        return tuple(sorted((tuple(sorted(set(chain(*_)))) for _ in n), key=lambda tup: (len(tup), tup)))
 
-    def freeze(n):
-        return frozenset(frozenset((__,) for __ in _) for _ in n)
+    mapping = {}
+    inverse = {}
+    for node in lattice._lattice:
+        image = tuplefy(node)
+        if image in inverse:
+            first, second = ([sorted(map(list, c)) for c in n] for n in (inverse[image], node))
+            msg = (
+                f"The collections of sources {first} and {second} both have the variables {image}: "
+                "no source may contain another source or be the union of other sources."
+            )
+            raise ditException(msg)
+        mapping[node] = image
+        inverse[image] = node
 
-    tuple_lattice = deepcopy(lattice)
-
-    tuple_edges = [(tuplefy(e[0]), tuplefy(e[1])) for e in lattice._lattice.edges]
-    tuple_lattice._lattice = nx.DiGraph(tuple_edges)
-
-    tuple_lattice._relationship = lambda a, b: lattice._relationship(freeze(a), freeze(b))
-    tuple_lattice.top = tuplefy(lattice.top)
-    tuple_lattice.bottom = tuplefy(lattice.bottom)
-    tuple_lattice._ts = [tuplefy(n) for n in lattice._ts]
+    tuple_lattice = copy(lattice)
+    tuple_lattice._lattice = nx.relabel_nodes(lattice._lattice, mapping, copy=True)
+    tuple_lattice._relationship = lambda a, b: lattice._relationship(inverse[a], inverse[b])
+    tuple_lattice.top = mapping[lattice.top]
+    tuple_lattice.bottom = mapping[lattice.bottom]
+    tuple_lattice._ts = [mapping[n] for n in lattice._ts]
+    tuple_lattice._meet_table = None
+    tuple_lattice._join_table = None
+    tuple_lattice._mobius_cache = None
 
     return tuple_lattice
+
+
+def _validate_sources(dist, sources, target=None):
+    """
+    Check that the sources (and target) of a decomposition are well formed.
+
+    Parameters
+    ----------
+    dist : Distribution
+        The distribution of the decomposition.
+    sources : tuple of tuples
+        The sources.
+    target : tuple, None
+        The target, if there is one.
+
+    Raises
+    ------
+    ditException
+        If there are no sources, a source or the target is empty, two sources
+        are the same, or a source shares variables with the target.
+    """
+    if not sources:
+        raise ditException("A decomposition needs at least one source.")
+    names = [frozenset(dist._resolve_rv_names(list(source))) for source in sources]
+    if not all(names):
+        raise ditException(f"Sources must be nonempty: {sources}.")
+    if len(set(names)) < len(names):
+        raise ditException(f"The sources {sources} contain the same source twice.")
+    if target is not None:
+        target_names = frozenset(dist._resolve_rv_names(list(target)))
+        if not target_names:
+            raise ditException("The target must be nonempty.")
+        for source, name in zip(sources, names, strict=True):
+            if name & target_names:
+                raise ditException(f"The source {source} shares variables with the target {target}.")
+
+
+def _check_kwargs(cls, kwargs):
+    """
+    Check that the keyword arguments of a decomposition are accepted by its measure.
+
+    Parameters
+    ----------
+    cls : type
+        The decomposition.
+    kwargs : dict
+        The keyword arguments passed on to `cls._measure`.
+
+    Raises
+    ------
+    TypeError
+        If `cls._measure` (for pointwise decompositions, `cls._pointwise_measure`) does not
+        accept `kwargs`.
+    """
+    measure = cls._pointwise_measure if issubclass(cls, BasePointwisePID) else cls._measure
+    try:
+        signature = inspect.signature(measure, follow_wrapped=False)
+    except (TypeError, ValueError):  # pragma: no cover
+        return
+    try:
+        bound = signature.bind(None, None, None, **kwargs)
+    except TypeError as exc:
+        raise TypeError(f"{cls.__name__}: {exc}") from None
+    extra = getattr(cls, "_extra_options", None)
+    if extra is not None:
+        for name, param in signature.parameters.items():
+            if param.kind is param.VAR_KEYWORD:
+                unknown = sorted(set(bound.arguments.get(name, {})) - set(extra))
+                if unknown:
+                    msg = f"{cls.__name__}: unknown options {unknown}; the other options are {sorted(extra)}"
+                    raise TypeError(msg)
 
 
 def _unit_scale(dist):
@@ -106,6 +195,31 @@ def _unit_scale(dist):
     Factor converting bits into the units of `dist`'s log base (1 if linear).
     """
     return 1 / np.log2(dist.get_base(numerical=True)) if dist.is_log() else 1
+
+
+def _expectation(dist, pointwise):
+    """
+    The expectation of pointwise values over the outcomes of `dist` of positive probability.
+
+    Parameters
+    ----------
+    dist : Distribution
+        The distribution.
+    pointwise : dict
+        Maps outcomes to values.
+
+    Returns
+    -------
+    expectation : float
+        The probability-weighted sum of the values, ignoring outcomes of probability 0.
+    """
+    linear = dist.copy(base="linear") if dist.is_log() else dist
+    total = 0.0
+    for outcome, value in pointwise.items():
+        p = linear[outcome]
+        if p != 0:
+            total += p * value
+    return total
 
 
 class BasePID(metaclass=ABCMeta):
@@ -145,17 +259,19 @@ class BasePID(metaclass=ABCMeta):
 
         self._sources = tuple(map(tuple, sources))
         self._target = tuple(target)
+        _validate_sources(dist, self._sources, self._target)
+        _check_kwargs(type(self), kwargs)
         self._kwargs = kwargs
 
         self._lattice = _transform(free_distributive_lattice(self._sources))
-        self._inverse_lattice = self._lattice.inverse()
         self._total = self._scaled(coinformation(self._dist, [list(flatten(self._sources)), self._target]))
 
-        self._reds = {} if reds is None else reds
-        self._pis = {} if pis is None else pis
+        self._reds = {} if reds is None else dict(reds)
+        self._pis = {} if pis is None else dict(pis)
+        self._computed = False
 
         if compute:
-            self._compute()
+            self._ensure_computed()
 
     def _scaled(self, value):
         """
@@ -167,22 +283,27 @@ class BasePID(metaclass=ABCMeta):
             return {k: v * self._unit_scale for k, v in value.items()}
         return value * self._unit_scale
 
+    @staticmethod
     @abstractmethod
-    def _measure(self, node, target):
+    def _measure(dist, sources, target, **kwargs):
         """
-        Compute a redundancy value for `node`.
+        Compute a redundancy value for `sources`.
 
         Parameters
         ----------
-        node : tuple(tuples)
+        dist : Distribution
+            The (linear) distribution of the decomposition.
+        sources : tuple(tuples)
             The lattice node to compute the redundancy of.
-        target : iterable
-            The indices to consider the target/target of the PID.
+        target : tuple
+            The indices to consider the target of the PID.
+        kwargs : dict
+            The options of the measure, as passed to the decomposition.
 
         Returns
         -------
         red : float
-            The redundancy value.
+            The redundancy value, in bits.
         """
         pass
 
@@ -213,7 +334,7 @@ class BasePID(metaclass=ABCMeta):
         eq : bool
             If `self` and `other` are the same partial information decomposition.
         """
-        return all(np.isclose(self[node], other[node], atol=1e-5, rtol=1e-5) for node in self._lattice)
+        return all(np.isclose(self[node], other[node], atol=1e-5, rtol=1e-5, equal_nan=True) for node in self._lattice)
 
     def __ne__(self, other):
         """
@@ -271,26 +392,74 @@ class BasePID(metaclass=ABCMeta):
         """
         return self.to_string()
 
+    def _ensure_computed(self):
+        """
+        Compute the lattice of partial information values, once.
+        """
+        if not self._computed:
+            self._computed = True
+            try:
+                self._compute()
+            except BaseException:
+                self._computed = False
+                raise
+
     def _compute(self):
         """
         Method for precomputing elements of partial information lattice,
         if this is necessary.
         """
         for node in self._lattice:
-            if node not in self._reds:  # pragma: no branch
-                with contextlib.suppress(TypeError):
-                    self.get_red(node)
+            self.get_red(node)
 
         self._compute_mobius_inversion()
 
     def _compute_mobius_inversion(self):
         """
-        Perform as much of a Mobius inversion as possible.
+        Perform the Mobius inversion.
         """
         for node in reversed(list(self._lattice)):
-            if node not in self._pis:
-                with contextlib.suppress(TypeError, ditException):
-                    self.get_pi(node)
+            self.get_pi(node)
+
+    def _redundancy(self, node):
+        """
+        Compute the redundancy of `node`, in the units of the distribution.
+
+        Parameters
+        ----------
+        node : tuple of tuples
+            A node of the lattice.
+
+        Returns
+        -------
+        red : float
+            The redundancy of `node`.
+        """
+        return _pid_coerce(self._scaled(self._measure(self._dist, node, self._target, **self._kwargs)))
+
+    def _atom(self, node):
+        """
+        Compute the partial information of `node` by Mobius inversion.
+
+        Parameters
+        ----------
+        node : tuple of tuples
+            A node of the lattice.
+
+        Returns
+        -------
+        pi : float
+            The partial information of `node`.
+        """
+        return _pid_coerce(self.get_red(node) - sum(self.get_pi(n) for n in self._lattice.descendants(node)))
+
+    def _check_node(self, node, what):
+        """
+        Raise an informative error if `node` is not in the lattice.
+        """
+        if node not in self._lattice:
+            msg = f'Cannot get the {what} of "{node}" because it is not in the lattice of {self._sources}.'
+            raise ditException(msg)
 
     def get_red(self, node):
         """
@@ -307,9 +476,8 @@ class BasePID(metaclass=ABCMeta):
             The partial information associated with `node`.
         """
         if node not in self._reds:
-            if node not in self._lattice:
-                raise Exception(f'Cannot get redundancy associated with node "{node}" because it is in the lattice')
-            self._reds[node] = _pid_coerce(self._scaled(self._measure(self._dist, node, self._target, **self._kwargs)))
+            self._check_node(node, "redundancy")
+            self._reds[node] = self._redundancy(node)
 
         return self._reds[node]
 
@@ -328,13 +496,8 @@ class BasePID(metaclass=ABCMeta):
             The partial information associated with `node`.
         """
         if node not in self._pis:
-            if node not in self._lattice:
-                raise Exception(
-                    f'Cannot get partial information associated with node "{node}" because it is in the lattice'
-                )
-            self._pis[node] = _pid_coerce(
-                self.get_red(node) - sum(self.get_pi(n) for n in self._lattice.descendants(node))
-            )
+            self._check_node(node, "partial information")
+            self._pis[node] = self._atom(node)
 
         return self._pis[node]
 
@@ -427,7 +590,7 @@ class BasePID(metaclass=ABCMeta):
         nonnegative : bool
             True if all pi values are non-negative, False otherwise.
         """
-        self._compute()
+        self._ensure_computed()
 
         nonnegative = all(np.round(pi, 4) >= 0 for pi in self._pis.values() if not np.isnan(pi))
         return nonnegative
@@ -598,32 +761,35 @@ class BasePointwisePID(BasePID):
         joint distribution.
         """
         pw = cls._pointwise_measure(dist, sources, target, **kwargs)
-        # Always weight by linear probabilities regardless of the distribution's base
-        linear = dist.copy(base="linear") if dist.is_log() else dist
-        return np.nansum([linear[outcome] * val for outcome, val in pw.items()])
+        return _expectation(dist, pw)
 
     # ------------------------------------------------------------------
     # Computation
     # ------------------------------------------------------------------
 
     def _compute(self):
-        super()._compute()
         if self._pointwise:
             self._compute_pointwise()
+        super()._compute()
+        if self._pointwise:
+            any_node = next(iter(self._pw_reds))
+            outcomes = list(self._pw_reds[any_node].keys())
+            self._compute_pointwise_mobius(outcomes)
 
     def _compute_pointwise(self):
-        """Compute pointwise redundancies and PI atoms for all lattice nodes."""
+        """
+        Compute the pointwise redundancies of every lattice node, and the
+        redundancies they average to.
+        """
         for node in self._lattice:
             pw = self._scaled(self._pointwise_measure(self._dist, node, self._target, **self._kwargs))
             self._pw_reds[node] = pw
+            if node not in self._reds:
+                self._reds[node] = _pid_coerce(_expectation(self._dist, pw))
 
             parts = self._pointwise_measure_parts(self._dist, node, self._target, **self._kwargs)
             if parts is not None:
                 self._pw_reds_plus[node], self._pw_reds_minus[node] = (self._scaled(part) for part in parts)
-
-        any_node = next(iter(self._pw_reds))
-        outcomes = list(self._pw_reds[any_node].keys())
-        self._compute_pointwise_mobius(outcomes)
 
     def _compute_pointwise_mobius(self, outcomes):
         """Möbius inversion per outcome to obtain pointwise PI atoms."""
@@ -745,16 +911,32 @@ class BasePointwisePID(BasePID):
         return table.get_string()
 
 
+def _is_nan(value):
+    """
+    Whether `value` is a floating point nan (symbolic values never are).
+    """
+    return isinstance(value, (float, np.floating)) and np.isnan(value)
+
+
 class BaseIncompletePID(BasePID):
     """
     A special PID class for measures which do not compute the redundancy of an arbitrary antichain.
     Here we use various techniques to extend computed redundancy values to the rest of the lattice.
 
+    Every atom that the known redundancies and atoms determine through the Mobius inversion is
+    computed exactly. With `LATTICE_MONOTONICITY`, values are also filled in by assuming that the
+    measure is monotone on the lattice and that its atoms are nonnegative. Whatever remains unknown
+    is nan.
+
     Properties
     ----------
     LATTICE_MONOTONICITY : bool
+        Fill in values assuming monotone redundancies and nonnegative atoms.
     REDUCED_PID : bool
+        Take the redundancy of a node with fewer elements than there are sources from the
+        decomposition of its elements.
     SELF_REDUNDANCY : bool
+        The redundancy of a single source is its mutual information with the target.
     """
 
     LATTICE_MONOTONICITY = True
@@ -776,51 +958,74 @@ class BaseIncompletePID(BasePID):
         """
         equal_pi = super().__eq__(other)
         equal_red = (
-            np.isclose(self.get_red(node), other.get_red(node), atol=1e-5, rtol=1e-5) for node in self._lattice
+            np.isclose(self.get_red(node), other.get_red(node), atol=1e-5, rtol=1e-5, equal_nan=True)
+            for node in self._lattice
         )
         return equal_pi and all(equal_red)
 
-    def _compute_lattice_monotonicity(self):
+    def _redundancy(self, node):
+        """
+        The redundancy of a single source is its mutual information with the target; that of
+        any other node is found by filling in the whole lattice.
+        """
+        if len(node) == 1 and self.SELF_REDUNDANCY:
+            return self._scaled(coinformation(self._dist, [node[0], self._target]))
+        self._ensure_computed()
+        return self._reds[node]
+
+    def _atom(self, node):
+        """
+        Atoms are found by filling in the whole lattice.
+        """
+        self._ensure_computed()
+        return self._pis[node]
+
+    def _assume(self, values, kind, node, value):
+        """
+        Fill in a value which rests on the assumptions of `LATTICE_MONOTONICITY`.
+        """
+        if node not in values:
+            values[node] = value
+            self._assumed.add((kind, node))
+
+    def _compute_lattice_monotonicity(self, below, above):
         """
         Infer the redundancy and partial information of lattice elements via lattice monotonicity.
+
+        These values assume that the measure is monotone on the lattice and that its atoms
+        are nonnegative.
+
+        Parameters
+        ----------
+        below : dict
+            The nodes at or below each node.
+        above : dict
+            The nodes at or above each node.
         """
         # everything below a redundancy of 0 is a redundancy of 0
-        nodes = list(self._lattice)
-        while nodes:
-            node = nodes.pop(0)
+        for node in self._lattice:
             if node in self._reds and np.isclose(0, self._reds[node]):
-                for n in self._lattice.descendants(node):
-                    if n not in self._reds:
-                        self._reds[n] = 0
-                        nodes.remove(n)
+                for n in below[node]:
+                    self._assume(self._reds, "red", n, 0)
 
         # everything above a redundancy of I(sources, target) is I(sources, target)
-        nodes = list(reversed(list(self._lattice)))
-        while nodes:
-            node = nodes.pop(0)
+        for node in self._lattice:
             if node in self._reds and np.isclose(self._reds[node], self._total):
-                for n in self._lattice.ascendants(node):
-                    if n not in self._reds:
-                        self._reds[n] = self._total
-                        nodes.remove(n)
+                for n in above[node]:
+                    self._assume(self._reds, "red", n, self._total)
 
         # if redundancy of A == redundancy of B, then for all A -> C -> B, redundancy of C = redundancy of A, B
-        tops = [
-            node
-            for node in self._lattice
-            if node in self._reds and any((n not in self._reds) for n in self._lattice.covers(node))
-        ]
+        graph = self._lattice._lattice
+        tops = [node for node in self._lattice if node in self._reds and any(n not in self._reds for n in graph[node])]
         bottoms = [
             node
             for node in self._lattice
-            if node in self._reds and any((n not in self._reds) for n in self._inverse_lattice.covers(node))
+            if node in self._reds and any(n not in self._reds for n in graph.predecessors(node))
         ]
         for top, bottom in product(tops, bottoms):
             if np.isclose(self._reds[top], self._reds[bottom], atol=1e-5, rtol=1e-5):
-                for path in nx.all_simple_paths(self._lattice._lattice, top, bottom):
-                    for node in path[1:-1]:
-                        if node not in self._reds:
-                            self._reds[node] = self._reds[top]
+                for node in below[top] & above[bottom]:
+                    self._assume(self._reds, "red", node, self._reds[top])
 
         # once every redundancy is known the Mobius inversion is exact; the
         # heuristic below assumes nonnegative atoms, so it would override it.
@@ -838,132 +1043,179 @@ class BaseIncompletePID(BasePID):
                     if n in self._reds
                 )
             ):
-                self._pis[node] = 0
+                self._assume(self._pis, "pi", node, 0)
 
-    def _compute_attempt_linsolve(self):
+    def _compute_known_atoms(self, below):
         """
-        Infer a linear constraint matrix from missing PI values and the mobius inversion.
+        Mobius inversion where it applies directly: the atom of a node whose redundancy and whose
+        descendants' atoms are known, the redundancy of a node whose atoms are all known, and the
+        redundancy of the single child of a node whose redundancy and atom are known.
+
+        A value derived from an assumed value is itself assumed.
+
+        Parameters
+        ----------
+        below : dict
+            The nodes at or below each node.
         """
-        missing_rvs = [node for node in self._lattice if node not in self._pis]
-        if not missing_rvs:
+        assumed = self._assumed
+        changed = True
+        while changed:
+            changed = False
+            for node in reversed(self._lattice._ts):
+                if node in self._pis or node not in self._reds:
+                    continue
+                descendants = below[node] - {node}
+                if all(n in self._pis for n in descendants):
+                    self._pis[node] = self._reds[node] - sum(self._pis[n] for n in descendants)
+                    if ("red", node) in assumed or any(("pi", n) in assumed for n in descendants):
+                        assumed.add(("pi", node))
+                    changed = True
+            for node in self._lattice:
+                if node not in self._reds and all(n in self._pis for n in below[node]):
+                    self._reds[node] = sum(self._pis[n] for n in below[node])
+                    if any(("pi", n) in assumed for n in below[node]):
+                        assumed.add(("red", node))
+                    changed = True
+                covers = self._lattice._lattice[node]
+                if len(covers) == 1 and node in self._reds and node in self._pis:
+                    (child,) = covers
+                    if child not in self._reds:
+                        self._reds[child] = self._reds[node] - self._pis[node]
+                        if ("red", node) in assumed or ("pi", node) in assumed:
+                            assumed.add(("red", child))
+                        changed = True
+
+    def _solve_atoms(self, below, exact):
+        """
+        Solve the linear equations that the known values impose on the atoms: the redundancy of a
+        node is the sum of the atoms at and below it.
+
+        Parameters
+        ----------
+        below : dict
+            The nodes at or below each node.
+        exact : bool
+            Use only computed values, leaving out those resting on `LATTICE_MONOTONICITY`.
+
+        Returns
+        -------
+        solution : dict, None
+            The atoms that the equations determine, or None if the equations contradict each other.
+        """
+        nodes = self._lattice._ts
+        index = {node: i for i, node in enumerate(nodes)}
+        rows, rhs = [], []
+        for kind, values in (("red", self._reds), ("pi", self._pis)):
+            for node, value in values.items():
+                if exact and (kind, node) in self._assumed:
+                    continue
+                row = np.zeros(len(nodes))
+                row[[index[n] for n in below[node]] if kind == "red" else index[node]] = 1.0
+                rows.append(row)
+                rhs.append(value)
+        if not rows:
+            return {}
+        a, b = np.array(rows), np.array(rhs, dtype=float)
+        solution = np.linalg.lstsq(a, b, rcond=None)[0]
+        if np.abs(a @ solution - b).max() > 1e-5 * max(1.0, np.abs(b).max()):
+            return None
+        _, singular, vt = np.linalg.svd(a)
+        rank = int(np.sum(singular > 1e-9 * singular[0]))
+        null = vt[rank:]
+        identified = np.all(np.abs(null) < 1e-8, axis=0) if len(null) else np.ones(len(nodes), dtype=bool)
+        return {nodes[i]: float(solution[i]) for i in np.flatnonzero(identified)}
+
+    def _compute_identifiable(self, below):
+        """
+        Compute every atom that the known redundancies and atoms determine.
+
+        An atom is determined exactly when the null space of the equations the known values
+        impose vanishes in its coordinate. Atoms determined by computed values alone are exact,
+        whatever their sign. If the computed values contradict each other the decomposition is
+        inconsistent. Atoms that are determined only with the help of values assumed under
+        `LATTICE_MONOTONICITY` are kept only if they are all nonnegative, as those assumptions
+        require.
+
+        Parameters
+        ----------
+        below : dict
+            The nodes at or below each node.
+        """
+        values = chain(self._reds.values(), self._pis.values())
+        if not all(isinstance(value, (int, float, np.integer, np.floating)) for value in values):
+            return  # symbolic values: only the exact inversion of `_compute_known_atoms` applies
+        if all(node in self._pis for node in self._lattice):
             return
-
-        def predicate(nodes):
-            def inner(node):
-                a = node in self._reds
-                b = all((n in self._pis or n in nodes) for n in self._lattice.descendants(node, include=True))
-                return a and b
-
-            return inner
-
-        for rvs in reversed(list(powerset(missing_rvs))[1:]):
-            try:
-                lub = self._lattice.join(*rvs, predicate=predicate(rvs))
-            except ValueError:
-                continue
-
-            row = lambda node, rvs=rvs: [1 if (c in self._lattice.descendants(node, include=True)) else 0 for c in rvs]
-
-            A = np.array([row(node) for node in rvs if node in self._reds] + [[1] * len(rvs)])
-            b = np.array(
-                [self._reds[node] for node in rvs if node in self._reds]
-                + [
-                    self._reds[lub]
-                    - sum(self._pis[node] for node in self._lattice.descendants(lub, include=True) if node in self._pis)
-                ]
-            )
-            try:
-                new_pis = np.linalg.solve(A, b)
-                if np.all(new_pis > -1e-6):
-                    for node, pi in zip(rvs, new_pis, strict=True):
-                        self._pis[node] = pi
-
-                    for node in self._lattice:
-                        if node not in self._reds:
-                            with contextlib.suppress(KeyError):  # pragma: no cover
-                                self._reds[node] = sum(
-                                    self._pis[n] for n in self._lattice.descendants(node, include=True)
-                                )
-
-                    break
-
-            except:
-                pass
-
-    def _compute_single_child(self):
-        """
-        If a node has a single child, and both redundancies are known, then the PI of the node
-        is the difference in the redundancies.
-        """
-        # if a node has only a single child, and you know both its redundancy
-        # and its partial then you know the redundancy of the child
-        for node in self._lattice:
-            if node in self._reds and node in self._pis and len(self._lattice.covers(node)) == 1:
-                n = next(iter(self._lattice.covers(node)))
-                if n not in self._reds:
-                    self._reds[n] = self._reds[node] - self._pis[node]
+        exact = self._solve_atoms(below, exact=True)
+        if exact is None:
+            self._inconsistent = True
+            return
+        for node, value in exact.items():
+            self._pis.setdefault(node, value)
+        if self._assumed:
+            assumed = self._solve_atoms(below, exact=False)
+            new = {node: value for node, value in (assumed or {}).items() if node not in self._pis}
+            if new and all(value > -1e-6 for value in new.values()):
+                for node, value in new.items():
+                    self._assume(self._pis, "pi", node, value)
+        self._compute_known_atoms(below)
 
     def _compute(self):
         """
         Precompute the lattice of partial information values.
         Use a variety of methods to fill out as much of the lattice as possible.
         """
-        # set redundancies of single input sets to I(input, target) and
-        # plug in computed unique values
+        self._inconsistent = False
+        self._assumed = set()
+        below = {node: self._lattice.descendants(node, include=True) for node in self._lattice}
+        above = {node: self._lattice.ascendants(node, include=True) for node in self._lattice}
+
+        # set redundancies of single input sets to I(input, target)
         if self.SELF_REDUNDANCY:  # pragma: no branch
             for node in self._lattice:
                 if len(node) == 1:
                     self._reds[node] = self._scaled(coinformation(self._dist, [node[0], self._target]))
 
         if self.LATTICE_MONOTONICITY:  # pragma: no branch
-            self._compute_lattice_monotonicity()
+            self._compute_lattice_monotonicity(below, above)
 
         # if a node exists in a smaller PID, use that to compute redundancy (if possible)
         if self.REDUCED_PID:  # pragma: no branch
             for node in self._lattice:
                 if node not in self._reds and len(node) < len(self._sources):
-                    sub_pid = self.__class__(self._dist.copy(), node, self._target, **self._kwargs)
-                    self._reds[node] = self._scaled(sub_pid._reds[node])
+                    try:
+                        red = self.__class__(self._dist, node, self._target, **self._kwargs).get_red(node)
+                    except ditException:
+                        # the elements overlap so much that their own lattice is degenerate
+                        continue
+                    if not _is_nan(red):
+                        self._reds[node] = self._scaled(red)
 
         while True:
-            num_reds = len(self._reds)
-            num_pis = len(self._pis)
+            num_values = len(self._reds) + len(self._pis)
 
-            # if a node has a single child, their redundancies determine the node's partial information
-            self._compute_single_child()
+            self._compute_known_atoms(below)
+            self._compute_identifiable(below)
 
             # if the lattice is monotonic, then everything below a zero is zero, and everything above a max is max
             if self.LATTICE_MONOTONICITY:  # pragma: no branch
-                self._compute_lattice_monotonicity()
+                self._compute_lattice_monotonicity(below, above)
 
-            # do as much of the mobius inversion as possible
-            self._compute_mobius_inversion()
-
-            # see if the remaining pis can be solved with linear constraints
-            self._compute_attempt_linsolve()
-
-            if len(self._reds) == num_reds and len(self._pis) == num_pis:
+            if len(self._reds) + len(self._pis) == num_values:
                 break
 
-        # if we know all but one partial, we know the last
-        # note: this might be subsumed by _compute_attempt_linsolve
-        diff = set(self._lattice) - set(self._pis)
-        if len(diff) == 1:  # pragma: no cover
-            self._pis[diff.pop()] = self._total - sum(self._pis.values())
-
-        # if the sum of known PIs is I(sources, target), all other PIs are zero
-        # note: this might be subsumed by _compute_attempt_linsolve
-        if np.isclose(sum(self._pis.values()), self._total):
-            for node in self._lattice:
-                if node not in self._pis or np.isnan(self._pis[node]):  # pragma: no cover
-                    self._pis[node] = 0
+        # nonnegative atoms summing to I(sources, target) leave nothing for the others
+        missing = [node for node in self._lattice if node not in self._pis]
+        if self.LATTICE_MONOTONICITY and missing and np.isclose(sum(self._pis.values()), self._total):
+            for node in missing:
+                self._assume(self._pis, "pi", node, 0)
+            self._compute_known_atoms(below)
 
         # plug in nan for all unknown values
         for node in self._lattice:
-            if node not in self._reds:
-                self._reds[node] = np.nan
-            if node not in self._pis:
-                self._pis[node] = np.nan
+            self._reds.setdefault(node, np.nan)
+            self._pis.setdefault(node, np.nan)
 
     @BasePID.consistent.getter
     def consistent(self):
@@ -975,7 +1227,10 @@ class BaseIncompletePID(BasePID):
         valid : bool
             True if the lattice is self-consistent, False otherwise.
         """
-        self._compute()
+        self._ensure_computed()
+
+        if self._inconsistent:
+            return False
 
         if self.SELF_REDUNDANCY:  # pragma: no branch
             for node in self._lattice:
@@ -1004,7 +1259,7 @@ class BaseIncompletePID(BasePID):
         valid : bool
             True if the lattice is self-consistant, False otherwise.
         """
-        self._compute()
+        self._ensure_computed()
 
         return not any(np.isnan(pi) for pi in self._pis.values())
 
@@ -1016,11 +1271,12 @@ class BaseUniquePID(BaseIncompletePID):
 
     def _compute(self):
         """ """
-        uniques = self._scaled(self._measure(self._dist, self._sources, self._target, **self._kwargs))
-
-        for node in self._lattice:
-            if len(node) == 1 and node[0] in uniques and node not in self._pis:
-                self._pis[node] = uniques[node[0]]
+        # a single source has no other sources to share with, so its unique information is all of it
+        if len(self._sources) > 1:
+            uniques = self._scaled(self._measure(self._dist, self._sources, self._target, **self._kwargs))
+            for node in self._lattice:
+                if len(node) == 1 and node[0] in uniques and node not in self._pis and not _is_nan(uniques[node[0]]):
+                    self._pis[node] = uniques[node[0]]
 
         super()._compute()
 
@@ -1029,6 +1285,14 @@ class BaseBivariatePID(BaseIncompletePID):
     """
     PID class for measures which define only a bivariate measure of redundancy.
     """
+
+    def _redundancy(self, node):
+        """
+        The measure gives the redundancy of nodes with two elements directly.
+        """
+        if len(node) == 2:
+            return self._scaled(self._measure(self._dist, node, self._target, **self._kwargs))
+        return super()._redundancy(node)
 
     def _compute(self):
         """ """
@@ -1101,10 +1365,19 @@ class BaseSynergyPID(BaseIncompletePID):
         """
         return self._total - self.get_union(node)
 
+    def _redundancy(self, node):
+        """
+        The redundancy of a node, by inclusion-exclusion over the union information of its
+        sub-collections.
+        """
+        if len(node) > 1:
+            return _pid_coerce(sum((-1) ** (len(sub) + 1) * self.get_union(sub) for sub in powerset(node) if sub))
+        return super()._redundancy(node)
+
     def _compute(self):
         """ """
         for node in self._lattice:
             if len(node) > 1 and node not in self._reds:
-                self._reds[node] = sum((-1) ** (len(sub) + 1) * self.get_union(sub) for sub in powerset(node) if sub)
+                self._reds[node] = self._redundancy(node)
 
         super()._compute()

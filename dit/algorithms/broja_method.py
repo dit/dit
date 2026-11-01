@@ -102,6 +102,22 @@ def _methods_fallback_chain(primary: str) -> list[str]:
     return [primary] + [meth for meth in order if meth != primary]
 
 
+# the options of the ECOS solver (https://github.com/embotech/ecos-python)
+ECOS_OPTIONS = frozenset(
+    {
+        "verbose",
+        "feastol",
+        "abstol",
+        "reltol",
+        "feastol_inacc",
+        "abstol_inacc",
+        "reltol_inacc",
+        "max_iters",
+        "nitref",
+    }
+)
+
+
 def broja_solve_bivariate(d, sources, target, *, maxiter=1000, method="auto", rng=None, **ecos_kwargs):
     """
     Compute BROJA unique informations with automatic fallback.
@@ -118,6 +134,12 @@ def broja_solve_bivariate(d, sources, target, *, maxiter=1000, method="auto", rn
         Solver metadata including the method actually used.
     """
     from .pid_broja import prepare_dist as broja_prepare_dist
+
+    unknown = sorted(set(ecos_kwargs) - ECOS_OPTIONS)
+    if unknown:
+        # the cone solver would fail on them, and the fallback hide the mistake
+        msg = f"unknown options {unknown}; the solver options are those of ECOS: {sorted(ECOS_OPTIONS)}"
+        raise TypeError(msg)
 
     prepared = broja_prepare_dist(d, list(sources), list(target))
     alphabet_sizes = [len(a) for a in prepared.alphabet]

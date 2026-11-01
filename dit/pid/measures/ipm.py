@@ -27,7 +27,7 @@ class PID_PM(BasePointwisePID):
     _name = "I_±"
 
     @classmethod
-    def _pointwise_measure(cls, dist, sources, target, **kwargs):
+    def _pointwise_measure(cls, dist, sources, target):
         """
         Per-outcome pointwise redundancy:
         i_±(outcome) = min_h_s(outcome) - min_h_s|t(outcome)
@@ -38,7 +38,7 @@ class PID_PM(BasePointwisePID):
         return {outcome: plus[outcome] - minus[outcome] for outcome in plus}
 
     @staticmethod
-    def _pointwise_measure_parts(dist, sources, target, **kwargs):
+    def _pointwise_measure_parts(dist, sources, target):
         """
         Specificity (+) and ambiguity (-) components:
         * plus: min_h_s(outcome) = min over sources of -log2 P(s_i)

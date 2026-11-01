@@ -7,8 +7,11 @@ from ...profiles import DependencyDecomposition
 from ..pid import BaseUniquePID
 
 __all__ = (
-    "PID_dep",
     "PID_RA",
+    "PID_dep",
+    "PID_dep_a",
+    "PID_dep_b",
+    "PID_dep_c",
 )
 
 
@@ -112,22 +115,39 @@ class PID_RA(BaseUniquePID):
         return uniques
 
 
+def _full_dependency_decomposition(d, sources, target, maxiter=None):
+    """
+    The dependency decomposition of I(sources : target) over the lattice of all the
+    sources and the target, each a single variable: the sources are 0..n-1 and the
+    target is n.
+    """
+    n = len(sources)
+    dm = d.coalesce([*sources, target])
+    measure = {"I": lambda d: coinformation(d, [list(range(n)), [n]])}
+    return DependencyDecomposition(dm, list(range(n + 1)), measures=measure, maxiter=maxiter), n
+
+
 class PID_dep_a(BaseUniquePID):
     """
-    The dependency partial information decomposition, as defined by James at al.
+    An experimental variant of the dependency decomposition PID of James et al.
+
+    The unique information of a source is the least change in I(sources : target) among
+    the edges of the dependency lattice of all the sources and the target that add the
+    constraint of the source and the target. With two sources this is :class:`PID_dep`;
+    with more, :class:`PID_dep` coalesces the other sources into one variable.
 
     Notes
     -----
-    This alternative method behaves oddly with three or more sources.
+    Experimental: this alternative method behaves oddly with three or more sources, and
+    its lattice grows quickly with the number of sources.
     """
 
     _name = "I_dep_a"
 
     @staticmethod
-    def _measure(d, sources, target):  # pragma: no cover
+    def _measure(d, sources, target, maxiter=None):
         """
-        This computes unique information as min(delta(I(sources : target))) where delta
-        is taken over the dependency decomposition.
+        Compute the unique information of each source.
 
         Parameters
         ----------
@@ -137,43 +157,41 @@ class PID_dep_a(BaseUniquePID):
             The source variables.
         target : iterable
             The target variable.
+        maxiter : int, None
+            The maximum number of iterations of each maximum entropy optimization.
 
         Returns
         -------
         idepa : dict
             The value of I_dep_a for each individual source.
         """
-        var_to_index = {var: i for i, var in enumerate(sources + (target,))}
-        d = d.coalesce(sorted(var_to_index.keys(), key=lambda k: var_to_index[k]))
-        invars = [var_to_index[var] for var in sources]
-        outvar = [var_to_index[(var,)] for var in target]
-        measure = {"I": lambda d: coinformation(d, [invars, outvar])}
-        dd = DependencyDecomposition(d, list(var_to_index.values()), measures=measure)
-        uniques = {}
-        for source in sources:
-            constraint = frozenset((frozenset((var_to_index[source], var_to_index[target])),))
-            u = min(dd.delta(edge, "I") for edge in dd.edges(constraint))
-            uniques[source] = u
-        return uniques
+        dd, n = _full_dependency_decomposition(d, sources, target, maxiter=maxiter)
+        return {
+            source: min(dd.delta(edge, "I") for edge in dd.edges(frozenset([frozenset((i, n))])))
+            for i, source in enumerate(sources)
+        }
 
 
 class PID_dep_b(BaseUniquePID):
     """
-    The reduced dependency partial information decomposition, as defined by James at al.
+    An experimental, reduced variant of the dependency decomposition PID of James et al.
+
+    As :class:`PID_dep_a`, but only over the edges whose constraints among several
+    variables all involve the target, so that dependencies among the sources alone are
+    never constrained.
 
     Notes
     -----
-    This decomposition is known to be inconsistent.
+    Experimental: this decomposition is known to be inconsistent; for instance, its unique
+    informations for two copies of a source are inconsistent with self-redundancy.
     """
 
     _name = "I_dep_b"
 
     @staticmethod
-    def _measure(d, sources, target):  # pragma: no cover
+    def _measure(d, sources, target, maxiter=None):
         """
-        This computes unique information as min(delta(I(sources : target))) where delta
-        is taken over a restricted dependency decomposition which never constrains dependencies
-        among the sources.
+        Compute the unique information of each source.
 
         Parameters
         ----------
@@ -183,46 +201,44 @@ class PID_dep_b(BaseUniquePID):
             The source variables.
         target : iterable
             The target variable.
+        maxiter : int, None
+            The maximum number of iterations of each maximum entropy optimization.
 
         Returns
         -------
         idepb : dict
             The value of I_dep_b for each individual source.
         """
-        var_to_index = {var: i for i, var in enumerate(sources + (target,))}
-        target_index = var_to_index[target]
-        d = d.coalesce(sorted(var_to_index.keys(), key=lambda k: var_to_index[k]))
-        invars = [var_to_index[var] for var in sources]
-        outvar = [var_to_index[(var,)] for var in target]
-        measure = {"I": lambda d: coinformation(d, [invars, outvar])}
-        dd = DependencyDecomposition(d, list(var_to_index.values()), measures=measure)
-        uniques = {}
-        for source in sources:
-            constraint = frozenset((frozenset((var_to_index[source], target_index)),))
-            broja_style = lambda edge: all({target_index} < set(_) for _ in edge[0] if len(_) > 1)
-            edge_set = (edge for edge in dd.edges(constraint) if broja_style(edge))
-            u = min(dd.delta(edge, "I") for edge in edge_set)
-            uniques[source] = u
-        return uniques
+        dd, n = _full_dependency_decomposition(d, sources, target, maxiter=maxiter)
+
+        def broja_style(edge):
+            return all(n in constraint and len(constraint) > 1 for constraint in edge[0] if len(constraint) > 1)
+
+        return {
+            source: min(dd.delta(edge, "I") for edge in dd.edges(frozenset([frozenset((i, n))])) if broja_style(edge))
+            for i, source in enumerate(sources)
+        }
 
 
 class PID_dep_c(BaseUniquePID):
     """
-    The reduced dependency partial information decomposition, as defined by James at al.
+    An experimental, reduced variant of the dependency decomposition PID of James et al.
+
+    As :class:`PID_dep_a`, but only over the edges whose constraints include the joint
+    distribution of all the sources, so that the dependencies among the sources are always
+    kept.
 
     Notes
     -----
-    This decomposition can result in subadditive redundancy.
+    Experimental: this decomposition can result in subadditive redundancy.
     """
 
     _name = "I_dep_c"
 
     @staticmethod
-    def _measure(d, sources, target):  # pragma: no cover
+    def _measure(d, sources, target, maxiter=None):
         """
-        This computes unique information as min(delta(I(sources : target))) where delta
-        is taken over a restricted dependency decomposition which never constrains dependencies
-        among the sources.
+        Compute the unique information of each source.
 
         Parameters
         ----------
@@ -232,22 +248,21 @@ class PID_dep_c(BaseUniquePID):
             The source variables.
         target : iterable
             The target variable.
+        maxiter : int, None
+            The maximum number of iterations of each maximum entropy optimization.
 
         Returns
         -------
         idepc : dict
             The value of I_dep_c for each individual source.
         """
-        var_to_index = {var: i for i, var in enumerate(sources + (target,))}
-        d = d.coalesce(sorted(var_to_index.keys(), key=lambda k: var_to_index[k]))
-        invars = [var_to_index[var] for var in sources]
-        outvar = [var_to_index[(var,)] for var in target]
-        measure = {"I": lambda d: coinformation(d, [invars, outvar])}
-        dd = DependencyDecomposition(d, list(var_to_index.values()), measures=measure)
-        uniques = {}
-        for source in sources:
-            constraint = frozenset((frozenset((var_to_index[source], var_to_index[target])),))
-            edge_set = (edge for edge in dd.edges(constraint) if tuple(invars) in edge[0])
-            u = min(dd.delta(edge, "I") for edge in edge_set)
-            uniques[source] = u
-        return uniques
+        dd, n = _full_dependency_decomposition(d, sources, target, maxiter=maxiter)
+        sources_joint = frozenset(range(n))
+        return {
+            source: min(
+                dd.delta(edge, "I")
+                for edge in dd.edges(frozenset([frozenset((i, n))]))
+                if any(sources_joint <= constraint for constraint in edge[0])
+            )
+            for i, source in enumerate(sources)
+        }

@@ -52,10 +52,12 @@ def test_pid_gh3():
     assert pid[((0, 1),)] == pytest.approx(0.0, abs=1e-4)
 
 
+@pytest.mark.slow
 @pytest.mark.flaky(reruns=5)
 def test_pid_gh4():
     """
-    Test igh on a generic trivariate source distribution.
+    Test the local optimizer of igh on a generic trivariate source distribution. Its
+    auxiliary variable has 17 outcomes, which makes it slow; smaller bounds fall short.
     """
     events = ["0000", "0010", "0100", "0110", "1000", "1010", "1100", "1111"]
     d = Distribution(events, [1 / 8] * 8)
