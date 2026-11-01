@@ -775,3 +775,91 @@ def test_fejer_riesz_exact_on_products(dist, order):
     d = dit.product_distribution(dist)
     q = dit.fejer_riesz_approximation(d, order=order)
     assert dense_array(q) == pytest.approx(dense_array(d))
+
+
+# ── Constructor bases, insertion position, RVFunctions edge cases ──────────
+
+
+def test_random_scalar_distribution_base():
+    """Requesting a base returns the same random draw as log-probabilities."""
+    lin = dit.random_scalar_distribution(4, rng=np.random.default_rng(7))
+    log = dit.random_scalar_distribution(4, base=2, rng=np.random.default_rng(7))
+    assert log.get_base() == 2
+    assert log.outcomes == lin.outcomes
+    assert np.exp2(log.pmf) == pytest.approx(lin.pmf)
+
+
+def test_random_distribution_base():
+    """random_distribution honours `base`, drawing the same pmf for the same seed."""
+    lin = dit.random_distribution(2, 2, rng=3)
+    log = dit.random_distribution(2, 2, base="e", rng=3)
+    assert log.get_base() == "e"
+    assert log.outcomes == lin.outcomes
+    assert np.exp(log.pmf) == pytest.approx(lin.pmf)
+
+
+def test_uniform_scalar_distribution_base():
+    """A uniform distribution over 4 outcomes has log2-probability -2 everywhere."""
+    d = dit.uniform_scalar_distribution(4, base=2)
+    assert d.get_base() == 2
+    assert d.outcomes == (0, 1, 2, 3)
+    assert d.pmf == pytest.approx([-2.0] * 4)
+
+
+def test_uniform_base():
+    """uniform() with a base gives log-probabilities -log(n) over exactly the given outcomes."""
+    d = dit.uniform(["00", "01", "11"], base="e")
+    assert d.get_base() == "e"
+    assert d.outcomes == (("0", "0"), ("0", "1"), ("1", "1"))
+    assert d.pmf == pytest.approx([-np.log(3)] * 3)
+
+
+def test_insert_rvf_at_index():
+    """`index` places the new variable at that position, carrying each outcome's probability."""
+    d = dit.Distribution(["00", "01", "10", "11"], [0.1, 0.2, 0.3, 0.4])
+
+    def same(outcome):
+        return "s" if outcome[0] == outcome[1] else "d"
+
+    front = dit.insert_rvf(d, same, index=0)
+    assert front.to_dict() == pytest.approx(
+        {("s", "0", "0"): 0.1, ("d", "0", "1"): 0.2, ("d", "1", "0"): 0.3, ("s", "1", "1"): 0.4}
+    )
+    middle = dit.insert_rvf(d, same, index=1)
+    assert middle.to_dict() == pytest.approx(
+        {("0", "s", "0"): 0.1, ("0", "d", "1"): 0.2, ("1", "d", "0"): 0.3, ("1", "s", "1"): 0.4}
+    )
+    # Inserting after the last variable is the same as the default append.
+    assert dit.insert_rvf(d, same, index=2).to_dict() == pytest.approx(dit.insert_rvf(d, same).to_dict())
+
+
+def test_rvfunctions_requires_distribution():
+    """RVFunctions rejects anything that is not a Distribution."""
+    with pytest.raises(ditException, match="must be a Distribution instance"):
+        dit.RVFunctions([("0", "0"), ("1", "1")])
+
+
+def test_rvfunctions_from_mapping_without_force():
+    """With force=False mapping values are used verbatim, so they must already be sequences."""
+    d = dit.Distribution(["00", "01", "10", "11"], [1 / 4] * 4)
+    mapping = {("0", "0"): "a", ("0", "1"): "b", ("1", "0"): "b", ("1", "1"): "a"}
+    d2 = dit.insert_rvf(d, dit.RVFunctions(d).from_mapping(mapping, force=False))
+    assert d2.outcomes == (("0", "0", "a"), ("0", "1", "b"), ("1", "0", "b"), ("1", "1", "a"))
+
+    d = dit.Distribution([(0, 0), (0, 1), (1, 0), (1, 1)], [1 / 4] * 4)
+    func = dit.RVFunctions(d).from_mapping({(0, 0): 0, (0, 1): 1, (1, 0): 1, (1, 1): 0}, force=False)
+    assert func((0, 1)) == 1  # not wrapped into a 1-tuple
+    with pytest.raises(TypeError, match="not iterable"):
+        dit.insert_rvf(d, func)
+
+
+def test_product_distribution_named_rvs():
+    """With named variables the product is built from the marginals of the named variables."""
+    outcomes = ["00", "01", "10", "11"]
+    pmf = [0.5, 0.2, 0.1, 0.2]
+    d = dit.Distribution(outcomes, pmf, rv_names=["A", "B"])
+    prod = dit.product_distribution(d)
+    assert prod.outcomes == (("0", "0"), ("0", "1"), ("1", "0"), ("1", "1"))
+    # p(A) = (0.7, 0.3) and p(B) = (0.6, 0.4).
+    assert prod.pmf == pytest.approx(np.outer([0.7, 0.3], [0.6, 0.4]).ravel())
+    assert prod.is_approx_equal(dit.product_distribution(dit.Distribution(outcomes, pmf)))

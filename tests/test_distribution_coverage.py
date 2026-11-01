@@ -9,9 +9,11 @@ that the main test_distribution.py suite leaves uncovered.
 import numpy as np
 import pytest
 
-from dit import Distribution
+from dit import Distribution, pruned_samplespace
+from dit.distribution import _is_zero, _symbolic_nonzero_mask
 from dit.exceptions import InvalidOutcome
 from dit.samplespace import CartesianProduct
+from dit.symbolic import symbolic_distribution, symbols
 
 
 def die(n=6):
@@ -446,3 +448,228 @@ def test_sample_space_override_non_cartesian():
 def test_event_probability_scalar_outcomes():
     d = die(6)
     assert d.event_probability([1, 2, 3]) == pytest.approx(0.5)
+
+
+# ── Edge cases: undecidable zeros, symbolic paths, empty/trivial dists ─────
+
+
+@pytest.fixture
+def sympy():
+    """The sympy module; symbolic tests are skipped when it is not installed."""
+    return pytest.importorskip("sympy")
+
+
+class _Undecidable:
+    """A value whose comparison with zero has no truth value, like a sympy relational."""
+
+    def __eq__(self, other):
+        return self
+
+    def __bool__(self):
+        raise TypeError("truth value is undecidable")
+
+
+def test_undecidable_values_are_in_the_support():
+    """A value whose equality with zero cannot be decided is not a structural zero."""
+    assert _is_zero(0)
+    assert _is_zero(0.0)
+    assert not _is_zero(1e-300)
+    assert not _is_zero(_Undecidable())
+    values = np.array([0, _Undecidable(), 0.0, 0.5], dtype=object)
+    assert _symbolic_nonzero_mask(values).tolist() == [False, True, False, True]
+
+
+def test_symbolic_base_none_is_linear(sympy):
+    """base=None skips float-based auto-detection for a symbolic pmf and uses 'linear'."""
+    p = symbols("p")
+    d = Distribution(["0", "1"], [p, 1 - p], base=None)
+    assert d.is_symbolic()
+    assert d.get_base() == "linear"
+    assert list(d.pmf) == [p, 1 - p]
+
+
+def test_symbolic_dense_pmf_keeps_structural_zeros(sympy):
+    """A dense symbolic pmf reports every outcome, with exact zeros off the support."""
+    p = symbols("p")
+    d = symbolic_distribution(["00", "11"], [p, 1 - p])
+    assert list(d.pmf) == [p, 1 - p]
+    d.make_dense()
+    assert d.outcomes == (("0", "0"), ("0", "1"), ("1", "0"), ("1", "1"))
+    assert list(d.pmf) == [p, 0, 0, 1 - p]
+    assert len(d) == 4
+
+
+def test_symbolic_lookup_of_opaque_string_outcome(sympy):
+    """Looking up a multi-character scalar outcome keeps the exact symbolic probability."""
+    p = symbols("p")
+    d = symbolic_distribution(["red", "blue"], [p, 1 - p])
+    assert d.outcome_length() == 1
+    assert d["red"] == p
+    assert d["blue"] == 1 - p
+    assert isinstance(d["red"], sympy.Expr)
+
+
+def test_symbolic_condition_on(sympy):
+    """Conditioning a symbolic joint divides exactly by the symbolic marginal."""
+    a, b, c = symbols("a b c")
+    d = symbolic_distribution(["00", "01", "10", "11"], [a, b, c, 1 - a - b - c], rv_names=["X", "Y"])
+    cond = d.condition_on("X")
+    assert cond.is_symbolic()
+    assert cond.free_vars == {"Y"}
+    assert cond.given_vars == {"X"}
+    assert sympy.simplify(cond[("0", "0")] - a / (a + b)) == 0
+    assert sympy.simplify(cond[("1", "1")] - (1 - a - b - c) / (1 - a - b)) == 0
+    for x in "01":
+        assert sympy.simplify(cond[(x, "0")] + cond[(x, "1")]) == 1
+    assert cond.validate()
+
+
+def test_symbolic_validate_rejects_bad_total(sympy):
+    """A symbolic pmf without free symbols must sum exactly to one."""
+    third = sympy.Rational(1, 3)
+    with pytest.raises(ValueError, match="sums to 2/3"):
+        symbolic_distribution(["0", "1"], [third, third])
+
+
+def test_validate_negative_probabilities():
+    """Negative probabilities are rejected even when the pmf sums to one."""
+    with pytest.raises(ValueError, match="negative probabilities"):
+        Distribution(["0", "1"], [1.5, -0.5])
+    d = Distribution(["0", "1"], [1.5, -0.5], validate=False)
+    with pytest.raises(ValueError, match=r"negative probabilities: \[-0\.5\]"):
+        d.validate()
+    # Round-off below the tolerance is accepted.
+    assert Distribution(["0", "1"], [1 + 1e-12, -1e-12]).validate()
+
+
+def test_outcomes_index():
+    """_outcomes_index maps each reported outcome to its position in `outcomes`."""
+    d = Distribution(["00", "11"], [0.5, 0.5])
+    assert d._outcomes_index == {("0", "0"): 0, ("1", "1"): 1}
+    d.make_dense()
+    assert d._outcomes_index == {("0", "0"): 0, ("0", "1"): 1, ("1", "0"): 2, ("1", "1"): 3}
+
+
+def test_marginal_onto_no_variables():
+    """Marginalizing out every variable leaves the trivial distribution p() with mass one."""
+    t = joint().marginal([])
+    assert t.outcome_length() == 0
+    assert t.alphabet == ()
+    assert t.is_homogeneous()
+    assert t.outcomes == ((),)
+    assert t.pmf == pytest.approx([1.0])
+    assert t.to_string(exact=False).splitlines()[-2:] == ["x    p(x)", "()   1.0"]
+
+
+def test_condition_on_every_variable_gives_trivial_slices():
+    """Conditioning on all kept variables (dit-compat form) gives one trivial slice per outcome."""
+    d = joint()
+    marg, slices = d.condition_on(crvs=["X", "Y"])
+    assert marg.is_approx_equal(d)
+    assert len(slices) == 4
+    for s in slices:
+        assert s.outcome_length() == 0
+        assert float(s.data) == pytest.approx(1.0)
+    marg, slices = d.condition_on(["X"], rvs=[])
+    assert marg.pmf == pytest.approx([0.5, 0.5])
+    assert [float(s.data) for s in slices] == pytest.approx([1.0, 1.0])
+
+
+def test_zipped_over_pruned_sample_space():
+    """On a restricted sample space, zipped() skips its null outcomes and 'atoms' lists exactly it."""
+    d = pruned_samplespace(Distribution(["00", "11"], [0.5, 0.5]), sample_space=[("0", "1")])
+    assert list(d.zipped()) == [(("0", "0"), 0.5), (("1", "1"), 0.5)]
+    # ('1', '0') is in the Cartesian product of the alphabets but was pruned.
+    assert list(d.zipped("atoms")) == [(("0", "0"), 0.5), (("0", "1"), 0.0), (("1", "1"), 0.5)]
+
+
+def _table_body(html):
+    """The rows of the probability table in an HTML rendering of a distribution."""
+    return html.split("<tbody>")[1].split("</tbody>")[0]
+
+
+def test_display_lists_only_positive_outcomes():
+    """The plain-text and HTML tables of a joint distribution omit null outcomes."""
+    d = Distribution(["00", "11"], [0.25, 0.75], rv_names=["X", "Y"])
+    table = d._to_string(digits=2).split("\n\n")[1].splitlines()
+    assert table == ["X   Y      p", "0   0   0.25", "1   1   0.75"]
+    body = _table_body(d._to_html(digits=2))
+    assert body.count("<tr>") == 2
+    assert "0.25" in body
+    assert "0.75" in body
+
+
+def test_display_of_empty_distribution():
+    """A distribution without mass renders an explicit empty marker in text and HTML."""
+    d = Distribution(["00", "11"], [0.0, 0.0], rv_names=["X", "Y"], validate=False)
+    text = d._to_string()
+    assert "Notation:  p(X,Y)" in text
+    assert text.endswith("(empty distribution)")
+    body = _table_body(d._repr_html_())
+    assert body.count("<tr>") == 1
+    assert 'colspan="3"' in body
+    assert "(empty)" in body
+
+
+def test_coalesce_without_mass_raises():
+    """Coalescing needs at least one outcome with positive probability."""
+    d = Distribution(["00", "11"], [0.0, 0.0], validate=False)
+    with pytest.raises(ValueError, match="no non-zero outcomes to coalesce"):
+        d.coalesce([[0], [1]])
+
+
+def test_radd_nonzero_scalar_to_joint_is_unsupported():
+    """Only ``0 + p`` (as used by sum()) is defined for named distributions."""
+    d = joint()
+    assert d.__radd__(2) is NotImplemented
+    assert d.__radd__("x") is NotImplemented
+    with pytest.raises(TypeError, match="unsupported operand"):
+        2 + d
+
+
+def test_conditional_entropy_ignores_empty_slices():
+    """Conditional entropy averages over slices with mass; with no mass at all it is zero."""
+    alphabets = [[0, 1], [0, 1]]
+    half = Distribution.from_array(np.array([[0.5, 0.5], [0.0, 0.0]]), ["X", "Y"], alphabets, given_vars={"X"})
+    assert half.entropy() == pytest.approx(1.0)
+    empty = Distribution.from_array(np.zeros((2, 2)), ["X", "Y"], alphabets, given_vars={"X"})
+    assert empty.entropy() == 0.0
+
+
+def test_normalize_without_mass_leaves_zeros():
+    """Normalizing a distribution with zero total mass leaves it unchanged instead of making NaNs."""
+    d = Distribution(["00", "11"], [0.0, 0.0], validate=False)
+    d.normalize()
+    np.testing.assert_array_equal(d.to_numpy(), np.zeros((2, 2)))
+
+
+def test_matmul_pairs_colliding_string_symbols_as_tuples():
+    """Pairing falls back to tuples when concatenated strings would collide and merge mass."""
+    # '0' + '11' and '01' + '1' would both be '011'.
+    a = Distribution([("0",), ("01",)], [0.5, 0.5], rv_names=["X"])
+    b = Distribution([("1",), ("11",)], [0.5, 0.5], rv_names=["X"])
+    prod = a @ b
+    assert prod.get_rv_names() == ("X",)
+    assert prod.to_dict() == pytest.approx(
+        {(("0", "1"),): 0.25, (("0", "11"),): 0.25, (("01", "1"),): 0.25, (("01", "11"),): 0.25}
+    )
+
+
+def test_outcome_transforms_coerce_booleans_to_int():
+    """Boolean results of outcome transforms become the integer outcomes 0 and 1."""
+    d = die(6)
+    even = d._apply_outcome_fn(lambda o: o % 2 == 0)
+    assert even.to_dict() == pytest.approx({0: 0.5, 1: 0.5})
+    big = d._apply_outcome_fn(lambda o: np.bool_(o > 4))
+    assert big.to_dict() == pytest.approx({0: 2 / 3, 1: 1 / 3})
+    same = d._combine_independent(d, lambda a, b: a == b)
+    assert same.to_dict() == pytest.approx({0: 5 / 6, 1: 1 / 6})
+    # bool == int, so check the types to see the coercion.
+    assert all(type(o) is int for o in even.outcomes + big.outcomes + same.outcomes)
+
+
+def test_native_alphabet_converts_numpy_scalars():
+    """_native_alphabet turns numpy scalars into the equivalent Python values for display."""
+    clean = Distribution._native_alphabet(((np.int64(1), np.int64(2)), (np.str_("a"), "b")))
+    assert clean == ((1, 2), ("a", "b"))
+    assert [type(v) for alpha in clean for v in alpha] == [int, int, str, str]
