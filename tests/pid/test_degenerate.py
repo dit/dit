@@ -35,6 +35,7 @@ from dit.pid import (
     PID_Delta,
     PID_DeltaLambda,
     PID_dep,
+    PID_dep_b,
     PID_Do,
     PID_Prec,
     PID_Proj,
@@ -60,7 +61,7 @@ MEASURES = [pytest.param(measure, id=measure.__name__) for measure in __all_pids
 # measures known to give inconsistent unique informations (secret key rates and
 # reconstructability analysis), so that the values filled into a lattice depend on
 # which of the inconsistent equations are used
-INCONSISTENT = {PID_SKAR_nw, PID_SKAR_owa, PID_SKAR_owb, PID_SKAR_tw, PID_RA}
+INCONSISTENT = {PID_SKAR_nw, PID_SKAR_owa, PID_SKAR_owb, PID_SKAR_tw, PID_RA, PID_dep_b}
 
 # measures whose redundancy of two copies of a source is less than its information:
 # they fail subset equality (I_do, and I_ME* which equals it)
@@ -155,7 +156,7 @@ def test_duplicate_source(measure, name):
     atol = _atol(measure)
     if measure in NOT_SUBSET_EQUAL:
         assert pid.get_red(((0,), (1,))) < mi - 1e-3
-    else:
+    elif measure not in INCONSISTENT:
         assert pid.get_red(((0,), (1,))) == pytest.approx(mi, abs=atol)
         assert pid.get_pi(((0,),)) == pytest.approx(0.0, abs=atol)
         assert pid.get_pi(((1,),)) == pytest.approx(0.0, abs=atol)

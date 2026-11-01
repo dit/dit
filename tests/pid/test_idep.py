@@ -6,7 +6,7 @@ import pytest
 
 from dit.pid.distributions import bivariates, trivariates
 from dit.pid.measures.ibroja import PID_BROJA
-from dit.pid.measures.idep import PID_RA, PID_dep
+from dit.pid.measures.idep import PID_RA, PID_dep, PID_dep_a, PID_dep_b, PID_dep_c
 
 
 def test_pid_dep1():
@@ -78,3 +78,43 @@ def test_pid_ra2():
             assert pid[atom] == pytest.approx(1.0, abs=1e-4)
         else:
             assert pid[atom] == pytest.approx(0.0, abs=1e-4)
+
+
+@pytest.mark.parametrize("name", ["reduced or", "and", "sum", "diff", "boom", "erase"])
+def test_pid_dep_a_two_sources(name):
+    """
+    With two sources the full dependency lattice is the one of PID_dep.
+    """
+    d = bivariates[name]
+    pid_a, pid = PID_dep_a(d), PID_dep(d)
+    for node in pid._lattice:
+        assert pid_a[node] == pytest.approx(pid[node], abs=1e-6)
+
+
+def test_pid_dep_b_inconsistent():
+    """
+    The reduced decomposition I_dep_b is inconsistent, as documented.
+    """
+    pid = PID_dep_b(bivariates["simple"])
+    assert pid.get_red(((0,), (1,))) == pytest.approx(0.0817, abs=1e-4)
+    assert not pid.consistent
+
+
+@pytest.mark.parametrize("name, red", [("diff", 0.122556), ("and", 0.0), ("boom", 0.207519), ("erase", 0.130376)])
+def test_pid_dep_c(name, red):
+    """
+    I_dep_c keeps the dependencies among the sources on every edge it considers.
+    """
+    pid = PID_dep_c(bivariates[name])
+    assert pid.get_red(((0,), (1,))) == pytest.approx(red, abs=1e-4)
+    assert pid.consistent
+    assert pid.nonnegative
+
+
+@pytest.mark.parametrize("measure", [PID_dep_a, PID_dep_b, PID_dep_c])
+def test_pid_dep_variants_three_sources(measure):
+    """
+    The variants handle three sources (and a target of several variables).
+    """
+    pid = measure(trivariates["anddup"])
+    assert pid.get_red(((0,),)) == pytest.approx(pid._scaled(0.311278), abs=1e-4)

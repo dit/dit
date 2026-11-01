@@ -9,7 +9,7 @@ from .ict import PID_CT
 from .ideg import PID_Deg
 from .idelta import PID_Delta
 from .ideltalambda import PID_DeltaLambda
-from .idep import PID_RA, PID_dep
+from .idep import PID_RA, PID_dep, PID_dep_a, PID_dep_b, PID_dep_c
 from .ido import PID_Do
 from .igh import PID_GH
 from .iig import PID_IG
@@ -60,4 +60,8 @@ __all_pids = [
     PID_LN,
     PID_Do,
     PID_CI,
+    # experimental
+    PID_dep_a,
+    PID_dep_b,
+    PID_dep_c,
 ]
