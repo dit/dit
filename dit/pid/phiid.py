@@ -26,20 +26,16 @@ provided:
 from itertools import product
 
 import numpy as np
-from lattices.lattices import free_distributive_lattice
 
 from ..helpers import as_linear
 from ..multivariate import coinformation
 from ..utils import build_table, flatten
+from ._utils import _label
 from .hmos import h_mos_pw
 from .hsx import h_sx_pw
-from .pid import _transform, _unit_scale, sort_key
+from .pid import _descendants, _lattice_of, _unit_scale, sort_key
 
 __all__ = ("PhiID",)
-
-
-def _label(node):
-    return "".join("{{{}}}".format(":".join(map(str, group))) for group in node)
 
 
 class PhiID:
@@ -83,8 +79,8 @@ class PhiID:
         self._sources = tuple(map(tuple, sources))
         self._targets = tuple(map(tuple, targets))
         self._measure = measure
-        self._source_lattice = _transform(free_distributive_lattice(self._sources))
-        self._target_lattice = _transform(free_distributive_lattice(self._targets))
+        self._source_lattice = _lattice_of(self._sources)
+        self._target_lattice = _lattice_of(self._targets)
         self._nodes = list(product(self._source_lattice, self._target_lattice))
         self._total = self._scaled(
             coinformation(self._dist, [list(flatten(self._sources)), list(flatten(self._targets))])
@@ -127,8 +123,8 @@ class PhiID:
         The nodes strictly below `node` in the product order.
         """
         alpha, beta = node
-        below_a = [alpha, *self._source_lattice.descendants(alpha)]
-        below_b = [beta, *self._target_lattice.descendants(beta)]
+        below_a = [alpha, *_descendants(self._source_lattice, alpha)]
+        below_b = [beta, *_descendants(self._target_lattice, beta)]
         return [n for n in product(below_a, below_b) if n != node]
 
     def _compute_pointwise(self):

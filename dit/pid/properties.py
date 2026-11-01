@@ -23,6 +23,8 @@ from ..multivariate import coinformation
 from ..params import ditParams
 from ..shannon import conditional_entropy
 from ..utils import build_table
+from ._utils import _canonical, _conditionals, _from_table, _label, _node, _positions, _restricted, _support
+from .conditional import ConditionalPID, ContextualPID, _context_positions
 from .pid import BaseBivariatePID, BaseIncompletePID, BaseUniquePID
 
 __all__ = (
@@ -271,92 +273,6 @@ def _combine(key, checks, note=""):
 # ---------------------------------------------------------------------------
 
 
-def _label(node):
-    """
-    Label an antichain as in `BasePID.to_string`, e.g. '{0}{1:2}'.
-    """
-    return "".join("{" + ":".join(map(str, element)) + "}" for element in node)
-
-
-def _canonical(elements):
-    """
-    The lattice node of an antichain: minimal elements, ordered as in the lattice.
-    """
-    elements = {tuple(sorted(element)) for element in elements}
-    minimal = [e for e in elements if not any(set(o) < set(e) for o in elements)]
-    return tuple(sorted(minimal, key=lambda e: (len(e), e)))
-
-
-def _positions(node, sources):
-    """
-    The antichain `node` as a set of groups of positions in `sources`.
-    """
-    return frozenset(frozenset(j for j, s in enumerate(sources) if set(s) <= set(e)) for e in node)
-
-
-def _node(groups, sources, extra=()):
-    """
-    The lattice node whose elements join the sources at each group of positions, and `extra`.
-    """
-    return _canonical(tuple(chain(*(sources[j] for j in group), extra)) for group in groups)
-
-
-def _support(dist):
-    """
-    The (outcome, probability) pairs of the support of `dist`.
-    """
-    return [(outcome, p) for outcome, p in zip(dist.outcomes, dist.pmf, strict=True) if p > 0]
-
-
-def _from_table(table):
-    """
-    A Distribution from a mapping of outcome tuples to probabilities.
-    """
-    return Distribution(list(table), list(table.values()))
-
-
-def _layout(groups):
-    """
-    Consecutive variable indices for groups of the given sizes.
-    """
-    starts = np.cumsum([0] + [len(group) for group in groups])
-    return [tuple(range(a, b)) for a, b in zip(starts[:-1], starts[1:], strict=True)]
-
-
-def _restricted(dist, groups):
-    """
-    The joint distribution of the variable groups, placed consecutively.
-    """
-    columns = list(chain(*groups))
-    table = defaultdict(float)
-    for outcome, p in _support(dist):
-        table[tuple(outcome[c] for c in columns)] += p
-    return _from_table(table), _layout(groups)
-
-
-def _conditionals(dist, given, groups):
-    """
-    The distributions of the variable groups given each value of `given`.
-
-    Returns
-    -------
-    conditionals : list of (float, Distribution)
-        The probability of each value of `given`, and the conditional
-        distribution, with the groups placed consecutively.
-    layout : list of tuples
-        The indices of each group in the conditional distributions.
-    """
-    columns = list(chain(*groups))
-    tables = defaultdict(lambda: defaultdict(float))
-    for outcome, p in _support(dist):
-        tables[tuple(outcome[c] for c in given)][tuple(outcome[c] for c in columns)] += p
-    conditionals = []
-    for table in tables.values():
-        pz = sum(table.values())
-        conditionals.append((pz, _from_table({outcome: p / pz for outcome, p in table.items()})))
-    return conditionals, _layout(groups)
-
-
 def _with_copy(dist, rvs):
     """
     `dist` with a copy of the variables `rvs` appended, and the indices of the copy.
@@ -585,22 +501,12 @@ def _check_blackwell(pid, atol):
 # ---------------------------------------------------------------------------
 
 
-def _context_positions(pid, context):
-    """
-    Positions in the sources of the context, given as sources (or single variable indices).
-    """
-    keys = [tuple(sorted(c)) if isinstance(c, (list, tuple, set, frozenset)) else (c,) for c in context]
-    positions = set()
-    for key in keys:
-        matches = [j for j, source in enumerate(pid._sources) if tuple(sorted(source)) == key]
-        if not matches:
-            msg = f"{key} is not one of the sources {pid._sources}"
-            raise ValueError(msg)
-        positions.add(matches[0])
-    return tuple(sorted(positions))
-
-
 def _check_source_chain_rule(pid, atol, context=None):
+    """
+    Compare the contextual and the conditional decompositions given each context: by
+    Theorem 3.9 of :cite:`gutknecht2026partial` they agree exactly when the source chain
+    rule holds, and their redundancies are its two sides, less I(c : T).
+    """
     sources, target, n = pid._sources, pid._target, len(pid._sources)
     if context is None:
         contexts = [c for k in range(1, n - 1) for c in combinations(range(n), k)]
@@ -610,21 +516,16 @@ def _check_source_chain_rule(pid, atol, context=None):
     if not contexts:
         return tally.result("SCR", "has content only for three or more sources")
     for c in contexts:
-        rest = [j for j in range(n) if j not in c]
-        c_rvs = tuple(chain(*(sources[j] for j in c)))
-        mi_c = _mi(pid, pid._dist, c_rvs, target)
-        conditional = defaultdict(float)
-        conditionals, layout = _conditionals(pid._dist, c_rvs, [*(sources[j] for j in rest), target])
-        *rest_layout, target_layout = layout
-        for pz, dist in conditionals:
-            sub = _same_measure(pid, dist, rest_layout, target_layout)
-            for node in sub._lattice:
-                conditional[_positions(node, rest_layout)] += pz * _red(pid, sub, node)
-        for groups, value in conditional.items():
-            groups = [[rest[j] for j in group] for group in groups]
+        contextual = ContextualPID(pid, [sources[j] for j in c])
+        conditional = ConditionalPID(
+            type(pid), pid._dist, contextual._sources, target, crvs=contextual._crvs, **pid._kwargs
+        )
+        mi_c, c_rvs = contextual._mi, contextual._crvs
+        for node in contextual._lattice:
+            groups = _positions(node, sources)
             joined = _node(groups, sources, c_rvs)
-            where = f"I_cap({_label(joined)}) = I(c : T) + I_cap({_label(_node(groups, sources))} | c), c = {_label([c_rvs])}"
-            tally.equal(where, pid.get_red(joined), mi_c + value)
+            where = f"I_cap({_label(joined)}) = I(c : T) + I_cap({_label(node)} | c), c = {_label([c_rvs])}"
+            tally.equal(where, mi_c + contextual.get_red(node), mi_c + pid._scaled(conditional.get_red(node)))
     return tally.result("SCR")
 
 
@@ -650,7 +551,7 @@ def _check_target_chain_rule(pid, atol, split=None):
     conditional = defaultdict(float)
     conditionals, layout = _conditionals(pid._dist, first, [*sources, second])
     *source_layout, second_layout = layout
-    for pz, dist in conditionals:
+    for _, pz, dist in conditionals:
         sub = _same_measure(pid, dist, source_layout, second_layout)
         for node in sub._lattice:
             conditional[_positions(node, source_layout)] += pz * _red(pid, sub, node)

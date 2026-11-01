@@ -5,6 +5,7 @@ Classes implementing the partial information decomposition.
 import inspect
 from abc import ABCMeta, abstractmethod
 from copy import copy
+from functools import cache, lru_cache
 from itertools import chain, product
 
 import networkx as nx
@@ -16,6 +17,7 @@ from ..helpers import as_linear
 from ..multivariate import coinformation
 from ..params import ditParams
 from ..utils import build_table, flatten, powerset
+from ._utils import _label
 
 __all__ = (
     "BaseBivariatePID",
@@ -66,7 +68,7 @@ def sort_key(lattice):
     return key
 
 
-def _transform(lattice):
+def _transform(lattice, sources=None):
     """
     Transform a free distributive lattice from being frozensets of frozensets
     of sources (tuples of variables) to being tuples of tuples of variables:
@@ -76,6 +78,9 @@ def _transform(lattice):
     ----------
     lattice : Lattice
         The lattice to transform.
+    sources : tuple of tuples, None
+        If given, the sources of `lattice` are abstract, the i-th being ``(i,)``,
+        and stand for ``sources[i]``.
 
     Returns
     -------
@@ -89,15 +94,26 @@ def _transform(lattice):
         the union of other sources.
     """
 
+    def variables(source):
+        return source if sources is None else sources[source[0]]
+
     def tuplefy(n):
-        return tuple(sorted((tuple(sorted(set(chain(*_)))) for _ in n), key=lambda tup: (len(tup), tup)))
+        return tuple(
+            sorted(
+                (tuple(sorted(set(chain.from_iterable(map(variables, _))))) for _ in n),
+                key=lambda tup: (len(tup), tup),
+            )
+        )
+
+    def readable(n):
+        return [sorted(map(list, map(variables, c))) for c in n]
 
     mapping = {}
     inverse = {}
     for node in lattice._lattice:
         image = tuplefy(node)
         if image in inverse:
-            first, second = ([sorted(map(list, c)) for c in n] for n in (inverse[image], node))
+            first, second = (readable(n) for n in (inverse[image], node))
             msg = (
                 f"The collections of sources {first} and {second} both have the variables {image}: "
                 "no source may contain another source or be the union of other sources."
@@ -117,6 +133,74 @@ def _transform(lattice):
     tuple_lattice._mobius_cache = None
 
     return tuple_lattice
+
+
+@cache
+def _free_lattice(n):
+    """
+    The free distributive lattice on `n` abstract sources, the i-th being ``(i,)``. Building
+    it is the costly part of a decomposition's lattice (a tenth of a second for four
+    sources), so it is built once for each number of sources.
+    """
+    return free_distributive_lattice([(i,) for i in range(n)])
+
+
+@lru_cache(maxsize=256)
+def _lattice_of(sources):
+    """
+    The redundancy lattice of `sources`, a tuple of tuples of variables, with its nodes
+    labelled by tuples of tuples of variables (see `_transform`).
+
+    The lattice is shared by every decomposition of the same sources: it must not be
+    modified.
+    """
+    return _transform(_free_lattice(len(sources)), sources)
+
+
+def _order_sets(lattice):
+    """
+    The nodes strictly below, and strictly above, each node of `lattice`.
+
+    Computed in one pass from the bottom up and stored on the lattice, since descendant and
+    ascendant queries otherwise traverse (and, for ascendants, copy) the graph every time.
+
+    Returns
+    -------
+    below, above : dict
+        Map each node to the frozenset of the nodes strictly below, or above, it.
+    """
+    sets = getattr(lattice, "_dit_order_sets", None)
+    if sets is None:
+        graph = lattice._lattice
+        below = {}
+        for node in reversed(lattice._ts):
+            down = set(graph[node])
+            for child in graph[node]:
+                down |= below[child]
+            below[node] = frozenset(down)
+        above = {node: set() for node in below}
+        for node, down in below.items():
+            for n in down:
+                above[n].add(node)
+        sets = below, {node: frozenset(up) for node, up in above.items()}
+        lattice._dit_order_sets = sets
+    return sets
+
+
+def _descendants(lattice, node, include=False):
+    """
+    The nodes of `lattice` below `node`, including `node` if `include`.
+    """
+    below = _order_sets(lattice)[0][node]
+    return below | {node} if include else below
+
+
+def _ascendants(lattice, node, include=False):
+    """
+    The nodes of `lattice` above `node`, including `node` if `include`.
+    """
+    above = _order_sets(lattice)[1][node]
+    return above | {node} if include else above
 
 
 def _validate_sources(dist, sources, target=None):
@@ -263,7 +347,7 @@ class BasePID(metaclass=ABCMeta):
         _check_kwargs(type(self), kwargs)
         self._kwargs = kwargs
 
-        self._lattice = _transform(free_distributive_lattice(self._sources))
+        self._lattice = _lattice_of(self._sources)
         self._total = self._scaled(coinformation(self._dist, [list(flatten(self._sources)), self._target]))
 
         self._reds = {} if reds is None else dict(reds)
@@ -451,7 +535,7 @@ class BasePID(metaclass=ABCMeta):
         pi : float
             The partial information of `node`.
         """
-        return _pid_coerce(self.get_red(node) - sum(self.get_pi(n) for n in self._lattice.descendants(node)))
+        return _pid_coerce(self.get_red(node) - sum(self.get_pi(n) for n in _descendants(self._lattice, node)))
 
     def _check_node(self, node, what):
         """
@@ -526,7 +610,7 @@ class BasePID(metaclass=ABCMeta):
         table.float_format[pi_string] = f"{digits + 2}.{digits}"
 
         for node in sorted(self._lattice, key=sort_key(self._lattice)):
-            node_label = "".join("{{{}}}".format(":".join(map(str, n))) for n in node)
+            node_label = _label(node)
             red_value = self.get_red(node)
             pi_value = self.get_pi(node)
             if np.isclose(0, red_value, atol=10 ** -(digits - 1), rtol=10 ** -(digits - 1)):  # pragma: no cover
@@ -796,7 +880,7 @@ class BasePointwisePID(BasePID):
         for node in reversed(list(self._lattice)):
             pw_pi = {}
             for o in outcomes:
-                desc_sum = sum(self._pw_pis[n][o] for n in self._lattice.descendants(node))
+                desc_sum = sum(self._pw_pis[n][o] for n in _descendants(self._lattice, node))
                 pw_pi[o] = self._pw_reds[node].get(o, 0.0) - desc_sum
             self._pw_pis[node] = pw_pi
 
@@ -805,8 +889,8 @@ class BasePointwisePID(BasePID):
                 pw_pi_plus = {}
                 pw_pi_minus = {}
                 for o in outcomes:
-                    desc_sum_p = sum(self._pw_pis_plus[n][o] for n in self._lattice.descendants(node))
-                    desc_sum_m = sum(self._pw_pis_minus[n][o] for n in self._lattice.descendants(node))
+                    desc_sum_p = sum(self._pw_pis_plus[n][o] for n in _descendants(self._lattice, node))
+                    desc_sum_m = sum(self._pw_pis_minus[n][o] for n in _descendants(self._lattice, node))
                     pw_pi_plus[o] = self._pw_reds_plus[node].get(o, 0.0) - desc_sum_p
                     pw_pi_minus[o] = self._pw_reds_minus[node].get(o, 0.0) - desc_sum_m
                 self._pw_pis_plus[node] = pw_pi_plus
@@ -898,7 +982,7 @@ class BasePointwisePID(BasePID):
             table.float_format["pi-"] = f"{digits + 2}.{digits}"
 
         for node in sorted(self._lattice, key=sort_key(self._lattice)):
-            node_label = "".join("{{{}}}".format(":".join(map(str, n))) for n in node)
+            node_label = _label(node)
             for o in outcomes:
                 red_val = self._pw_reds[node].get(o, 0.0)
                 pi_val = self._pw_pis[node].get(o, 0.0)
@@ -1168,8 +1252,8 @@ class BaseIncompletePID(BasePID):
         """
         self._inconsistent = False
         self._assumed = set()
-        below = {node: self._lattice.descendants(node, include=True) for node in self._lattice}
-        above = {node: self._lattice.ascendants(node, include=True) for node in self._lattice}
+        below = {node: _descendants(self._lattice, node, include=True) for node in self._lattice}
+        above = {node: _ascendants(self._lattice, node, include=True) for node in self._lattice}
 
         # set redundancies of single input sets to I(input, target)
         if self.SELF_REDUNDANCY:  # pragma: no branch
@@ -1243,7 +1327,7 @@ class BaseIncompletePID(BasePID):
         # ensure that the mobius inversion holds
         for node in self._lattice:
             red = self.get_red(node)
-            parts = sum(self.get_pi(n) for n in self._lattice.descendants(node, include=True))
+            parts = sum(self.get_pi(n) for n in _descendants(self._lattice, node, include=True))
             if not np.isnan(red) and not np.isnan(parts) and not np.isclose(red, parts, atol=1e-5, rtol=1e-5):
                 return False
 

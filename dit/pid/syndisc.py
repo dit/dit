@@ -31,7 +31,7 @@ from ..helpers import as_linear
 from ..math import prod
 from ..multivariate import coinformation
 from ..utils import build_table, flatten
-from .pid import _unit_scale
+from .pid import _descendants, _unit_scale
 
 __all__ = ("ModifiedSynDisc", "SynDisc")
 
@@ -389,7 +389,7 @@ class SynDisc:
         atom : float
         """
         if node not in self._atoms:
-            desc_sum = sum(self.get_atom(n) for n in self._lattice.descendants(node))
+            desc_sum = sum(self.get_atom(n) for n in _descendants(self._lattice, node))
             self._atoms[node] = float(self.get_synergy(node) - desc_sum)
         return self._atoms[node]
 
