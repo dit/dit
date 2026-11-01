@@ -145,7 +145,7 @@ If a context :math:`C` of sources is known, collections that each contain it sha
 
    \Icap{\mathcal{A}_1 C, \ldots, \mathcal{A}_k C : Y} = \I{C : Y} + \Icap{\mathcal{A}_1, \ldots, \mathcal{A}_k : Y | C}
 
-where the conditional redundancy averages the redundancy under each :math:`p(\cdot | C = c)`. It holds exactly when conditioning on the context regroups the atoms by the further sources that unlock them. With three or more sources it is incompatible with nonnegative atoms.
+where the conditional redundancy averages the redundancy under each :math:`p(\cdot | C = c)`. It holds exactly when conditioning on the context regroups the atoms by the further sources that unlock them, that is, when the conditional and contextual decompositions agree (see `Conditional and Contextual Decompositions`_). With three or more sources it is incompatible with nonnegative atoms.
 
 These and the other properties proposed in the literature can be checked on any decomposition; see `Checking Properties`_.
 
@@ -157,6 +157,77 @@ We now turn our attention a variety of methods proposed to flesh out this partia
 .. ipython::
 
    In [11]: from dit.pid import *
+
+Each measure is a class, constructed from a distribution and, optionally, the sources and the target: by default every variable but the last is a source, and the last is the target. Measures differ in what they quantify directly:
+
+* a *redundancy* gives every node of the lattice, so the decomposition is complete for any number of sources;
+* a *pointwise* redundancy is the average of a redundancy of each outcome; ``pointwise=True`` also gives the decomposition of each outcome;
+* a *bivariate* redundancy is defined for two collections of sources;
+* a *unique information* is the information a source provides beyond all the others;
+* a *union information* is what any of several collections of sources provide; the redundancies follow by inclusion-exclusion.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 22 18 60
+
+   * - Measures
+     - Quantity
+     - Computed by
+   * - :class:`PID_WB`, :class:`PID_MMI`, :class:`PID_GK`
+     - redundancy
+     - closed form
+   * - :class:`PID_PM`, :class:`PID_SX`
+     - pointwise
+     - closed form
+   * - :class:`PID_CCS`
+     - redundancy
+     - maximum entropy
+   * - :class:`PID_Deg`, :class:`PID_Prec`, :class:`PID_GH`
+     - redundancy
+     - linear programs over extreme rays
+   * - :class:`PID_MC`, :class:`PID_LN`
+     - redundancy
+     - optimization under sampled constraints (approximate)
+   * - :class:`PID_RAV`
+     - redundancy
+     - search over partitions of the outcomes (small distributions)
+   * - :class:`PID_RDR`
+     - union information
+     - concave envelopes of ROC curves
+   * - :class:`PID_CI`
+     - union information
+     - optimization
+   * - :class:`PID_MES`, :class:`PID_Do`, :class:`PID_RR`
+     - bivariate
+     - closed form
+   * - :class:`PID_CT`
+     - bivariate
+     - exact
+   * - :class:`PID_Proj`, :class:`PID_IG`, :class:`PID_Delta`
+     - bivariate
+     - convex optimization
+   * - :class:`PID_IPID`, :class:`PID_DeltaLambda`
+     - bivariate
+     - nonconvex optimization from several starting points
+   * - :class:`PID_BROJA`
+     - unique information
+     - convex optimization (exponential cone or admUI)
+   * - :class:`PID_dep`, :class:`PID_RA`
+     - unique information
+     - maximum entropy
+   * - ``PID_SKAR_*``
+     - unique information
+     - secret key agreement rates and their bounds
+
+Decompositions by bivariate redundancies and unique informations are complete for two sources. For more, only some redundancies are computed. The atoms they determine are exact. Others follow from self-redundancy and the monotonicity of redundancy on the lattice, provided the atoms so obtained are nonnegative, as monotonicity assumes. The remaining atoms are ``nan``. ``pid.complete`` tells whether every atom is known, and ``pid.consistent`` whether the known values satisfy the Möbius inversion; some unique informations, such as the secret key agreement rates and :math:`\Ira{\bullet}`, give inconsistent decompositions. Here the bivariate :math:`\Ido{\bullet}` leaves the redundancy of the three sources, and the atoms that depend on it, unknown:
+
+.. ipython::
+
+   In [52]: pid = PID_Do(trivariates['anddup'])
+
+   In [53]: pid.get_red(((0,), (1,), (2,))), pid.get_pi(((1,),)), pid.complete
+
+Options of a measure are passed to its class, and an option the measure does not take is an error.
 
 
 :math:`\Imin{\bullet}`
@@ -592,7 +663,7 @@ Venkatesh, Gurushankar & Schamberg :cite:`venkatesh2023capturing` introduce a La
 
    \delta_{\lambda}(Y : X_0 \setminus X_1) = \inf_{P(X_0'|X_1 Y)} \mathbb{E}_{Y}\!\left[\DKL{P(X_0|Y) \;\|\; P(X_0'|Y)}\right] + \lambda \, \I{Y : X_0' | X_1}
 
-As :math:`\lambda \to \infty` the measure recovers :math:`\Idelta{\bullet}`; as :math:`\lambda \to 0` it recovers :math:`\Ibroja{\bullet}`.
+As :math:`\lambda \to \infty` the measure recovers :math:`\Idelta{\bullet}`. As :math:`\lambda \to 0`, :math:`\delta_\lambda / \lambda` tends to the unique information of :math:`\Ibroja{\bullet}`; :math:`\delta_\lambda` itself vanishes, so the redundancy tends to that of :math:`\Immi{\bullet}`.
 
 .. autoclass:: PID_DeltaLambda
    :no-index:
@@ -622,7 +693,7 @@ Unlike the Blackwell order it is not transitive: :math:`Q - X_1 - Y` does not im
 :math:`\Iig{\bullet}`
 ---------------------
 
-Niu & Quinn :cite:`niu2019measure` propose an information-geometric PID: the synergy is defined as the KL divergence from the true joint distribution to the nearest distribution satisfying :math:`X_0 - X_1 - Y` or :math:`X_1 - X_0 - Y` Markov chains, minimized over a convex mixture of the two.
+Niu & Quinn :cite:`niu2019measure` propose an information-geometric PID: the synergy is defined as the KL divergence from the true joint distribution to the nearest distribution satisfying :math:`X_0 - X_1 - Y` or :math:`X_1 - X_0 - Y` Markov chains, minimized along the geodesic :math:`q_\lambda \propto p(x_0, x_1)\, p(y \mid x_0)^\lambda p(y \mid x_1)^{1 - \lambda}` between them; the minimizing :math:`\lambda` need not lie in :math:`[0, 1]`.
 
 .. autoclass:: PID_IG
    :no-index:
@@ -685,11 +756,13 @@ No bound on :math:`|Q|` is known; it defaults to the largest source alphabet.
 :math:`\Imes{\bullet}`
 ----------------------
 
-:math:`\Imes{\bullet}` is a maximum-entropy PID inspired by BROJA's "``*``" marginal-consistency assumption.
+:math:`\Imes{\bullet}` is a maximum-entropy PID inspired by BROJA's "``*``" marginal-consistency assumption: the redundancy is the coinformation of the sources and the target under the maximum entropy distribution with the same source-target marginals,
 
-.. note::
+.. math::
 
-   TODO: reference. No canonical publication has been identified for :math:`\Imes{\bullet}` in the ``dit`` source; the measure is described only as "inspired by BROJA's ``*`` assumption".
+   q(x_0, \ldots, x_{n-1}, y) = p(y) \prod_i p(x_i \mid y).
+
+The sources are independent given the target under :math:`q`, so for two sources the redundancy is :math:`I_q(X_0 : X_1)`, the same as that of :math:`\Ido{\bullet}`. James, Emenheiser & Crutchfield :cite:`james2019unique` discuss this distribution as the maximum entropy reading of assumption ``*``, and Liardi et al. :cite:`liardi2026landscape` attribute the measure to them; it was not proposed as a complete decomposition, and it does not satisfy subset equality.
 
 .. autoclass:: PID_MES
    :no-index:
@@ -812,6 +885,61 @@ Two-Way Communication
    :no-index:
 
 .. autoclass:: PID_SKAR_tw
+   :no-index:
+
+
+Experimental Measures
+---------------------
+
+Three variants of :math:`\Idep{\bullet}` take the unique information of a source from the dependency lattice of all the sources and the target, rather than of the source, the other sources together, and the target. With two sources :class:`PID_dep_a` is :math:`\Idep{\bullet}`; :class:`PID_dep_b` only considers the edges that never constrain the sources among themselves, and gives inconsistent decompositions; :class:`PID_dep_c` only those that keep the joint distribution of the sources. No publication describes them, and their lattices grow quickly with the number of sources.
+
+.. autoclass:: PID_dep_a
+   :no-index:
+
+.. autoclass:: PID_dep_b
+   :no-index:
+
+.. autoclass:: PID_dep_c
+   :no-index:
+
+
+Conditional and Contextual Decompositions
+=========================================
+
+When some variables are already known, the information the sources provide about the target beyond them can be decomposed in two ways :cite:`gutknecht2026partial`. The *conditional* decomposition decomposes the sources under each conditional distribution given the known variables, and averages:
+
+.. math::
+
+   \Ipart{\alpha : Y | Z} = \sum_z p(z) \, \Ipart{\alpha : Y}_{p(\cdot | Z = z)}
+
+When the known variables are some of the sources, the *context*, the *contextual* decomposition instead regroups the atoms of the decomposition of all the sources: the atoms the context provides by itself are dropped, and the others are grouped by the remaining sources that give access to them once the context is known. Its redundancies are
+
+.. math::
+
+   \Icap{\mathcal{A}_1, \ldots, \mathcal{A}_k : Y \setminus C} = \Icap{\mathcal{A}_1 C, \ldots, \mathcal{A}_k C : Y} - \I{C : Y}
+
+Both decompose :math:`\I{\mathcal{A} : Y | C}`, and they agree atom by atom exactly when the measure satisfies the source chain rule. On the distribution where a third source decides which of the first two copies the target, :math:`\Imin{\bullet}` gives half a bit of contextual redundancy and no conditional redundancy, while :math:`\Isx{\bullet}`, which satisfies the rule, gives the same decomposition both ways:
+
+.. ipython::
+
+   In [54]: from dit.pid import ConditionalPID, ContextualPID
+
+   In [55]: d = trivariates['max min']
+
+   In [56]: print(ContextualPID(PID_WB(d), context=[2]))
+
+   In [57]: print(ConditionalPID(PID_WB, d, [[0], [1]], [3], crvs=[2]))
+
+   @doctest
+   In [58]: ContextualPID(PID_SX(d), context=[2]) == ConditionalPID(PID_SX, d, [[0], [1]], [3], crvs=[2])
+   Out[58]: True
+
+``crvs`` need not be sources: conditioning on any other variables gives the decomposition of a conditional mutual information, such as a transfer entropy.
+
+.. autoclass:: ConditionalPID
+   :no-index:
+
+.. autoclass:: ContextualPID
    :no-index:
 
 
