@@ -9,12 +9,10 @@ Concrete PED measures subclass ``BasePED`` and provide ``_name`` and
 ``_measure``.
 """
 
-from lattices.lattices import free_distributive_lattice
-
 from ..helpers import as_linear
 from ..multivariate import entropy
 from ..utils import build_table
-from .pid import BasePID, _transform, _unit_scale, _validate_sources, sort_key
+from .pid import BasePID, _descendants, _lattice_of, _unit_scale, _validate_sources, sort_key
 
 __all__ = (
     "BasePED",
@@ -56,7 +54,7 @@ class BasePED(BasePID):
         self._sources = tuple(map(tuple, sources))
         _validate_sources(dist, self._sources)
         self._target = None
-        self._lattice = _transform(free_distributive_lattice(self._sources))
+        self._lattice = _lattice_of(self._sources)
         self._total = self._scaled(entropy(self._dist, rvs=self._sources))
         self._reds = {}
         self._pis = {}
@@ -107,7 +105,7 @@ class PointwisePED(BasePED):
         for node in reversed(list(self._lattice)):
             pw_pi = {}
             for o in outcomes:
-                desc_sum = sum(self._pw_pis[n][o] for n in self._lattice.descendants(node))
+                desc_sum = sum(self._pw_pis[n][o] for n in _descendants(self._lattice, node))
                 pw_pi[o] = self._pw_reds[node].get(o, 0.0) - desc_sum
             self._pw_pis[node] = pw_pi
 
