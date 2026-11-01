@@ -4,6 +4,7 @@ The I_mmi measure, briefly looked at by the BROJA team.
 
 from ...multivariate import coinformation
 from ..pid import BasePID
+from .imin import _specific_informations
 
 __all__ = ("PID_MMI",)
 
@@ -37,9 +38,12 @@ class PID_MMI(BasePID):
         immi : float
             The value of I_mmi.
         """
-        mis = [coinformation(d, [source, target]) for source in sources]
         if d.is_symbolic():
             from ...symbolic import symbolic_min
 
-            return symbolic_min(mis)
-        return min(mis)
+            return symbolic_min([coinformation(d, [source, target]) for source in sources])
+        mis = []
+        for source in sources:
+            p_t, specific = _specific_informations(d, source, target)
+            mis.append(sum(p * specific[t] for t, p in p_t.items()))
+        return float(min(mis))
