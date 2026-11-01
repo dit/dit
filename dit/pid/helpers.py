@@ -5,6 +5,7 @@ Helper functions related to partial information decompositions.
 import numpy as np
 
 from ..utils import build_table
+from ._utils import _label
 from .measures import __all_pids
 from .pid import sort_key
 from .properties import PROPERTIES, _resolve, claims_for
@@ -83,7 +84,7 @@ def compare_measures(dist, pids=__all_pids, inputs=None, output=None, name="", d
     for name in names:
         table.float_format[name] = f" {digits + 2}.{digits}"
     nodes = sorted(pids[0]._lattice, key=sort_key(pids[0]._lattice))
-    stringify = lambda node: "".join("{{{}}}".format(":".join(map(str, n))) for n in node)
+    stringify = _label
     for node in nodes:
         vals = [pid[node] for pid in pids]
         vals = [0.0 if np.isclose(0, val, atol=1e-5, rtol=1e-5) else val for val in vals]
@@ -121,7 +122,7 @@ def pointwise_pid_table(dist, sources=None, target=None, pid_class=None, digits=
     has_parts = bool(pid._pw_pis_plus)
 
     nodes = sorted(pid._lattice, key=sort_key(pid._lattice))
-    node_labels = ["".join("{{{}}}".format(":".join(map(str, n))) for n in node) for node in nodes]
+    node_labels = [_label(node) for node in nodes]
 
     node_columns = []
     for label in node_labels:
