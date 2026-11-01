@@ -182,6 +182,20 @@ def test_minent_projection_drops_entries_driven_negative():
     np.testing.assert_allclose(projected, greedy, rtol=0, atol=1e-14)
 
 
+def test_minent_projection_leaves_nonfinite_vectors_alone():
+    """
+    A NaN entry can never pass the nonnegativity check, so the projection used to retry
+    forever. Such a vector is now returned unchanged.
+    """
+    d, _ = _dirichlet_product(0)
+    meo = MinEntOptimizer(d, [[0], [1]])
+    x = meo._greedy_coupling()[meo._free].copy()
+    x[0] = np.nan
+    projected = meo._project_onto_marginals(x)
+    assert np.isnan(projected[0])
+    np.testing.assert_array_equal(projected[1:], x[1:])
+
+
 @pytest.mark.parametrize(
     "Optimizer",
     [

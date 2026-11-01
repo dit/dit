@@ -441,7 +441,8 @@ class MinEntOptimizer(BaseDistOptimizer, BaseNonConvexOptimizer):
         optimum can miss the marginals by about 1e-7. A vector short of mass has a lower
         computed entropy, which is enough to beat the exact vertex it approximates. The
         least-squares correction on the support keeps zeros at zero, and is exact when
-        the support contains that of a vertex, as it does near one.
+        the support contains that of a vertex, as it does near one. A vector with a
+        non-finite entry is returned unchanged, since no correction could repair it.
 
         Parameters
         ----------
@@ -455,6 +456,8 @@ class MinEntOptimizer(BaseDistOptimizer, BaseNonConvexOptimizer):
         """
         A, b = self._marginal_system()
         x = np.clip(np.asarray(x, dtype=float), 0, None)
+        if not np.isfinite(x).all():
+            return x
         while True:  # each retry zeroes an entry, and zeros stay zero
             support = x > 0
             x[support] += np.linalg.lstsq(A[:, support], b - A @ x, rcond=None)[0]
