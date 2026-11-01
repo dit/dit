@@ -379,8 +379,8 @@ class ContextualPID(_DerivedPID):
         self._crvs = tuple(chain(*(pid._sources[j] for j in positions)))
         self._name = f"{pid._name}\\{_label([self._crvs])}"
         self._lattice = _lattice_of(self._sources)
-        self._mi = pid._scaled(coinformation(pid._dist, [list(self._crvs), list(self._target)]))
-        self._total = pid._total - self._mi
+        self._mi = float(pid._scaled(coinformation(pid._dist, [list(self._crvs), list(self._target)])))
+        self._total = float(pid._total) - self._mi
 
         context_set = set(positions)
         self._atoms = {node: [] for node in self._lattice}
