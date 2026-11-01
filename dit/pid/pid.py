@@ -168,16 +168,26 @@ def _check_kwargs(cls, kwargs):
     Raises
     ------
     TypeError
-        If `cls._measure` does not accept `kwargs`.
+        If `cls._measure` (for pointwise decompositions, `cls._pointwise_measure`) does not
+        accept `kwargs`.
     """
+    measure = cls._pointwise_measure if issubclass(cls, BasePointwisePID) else cls._measure
     try:
-        signature = inspect.signature(cls._measure, follow_wrapped=False)
+        signature = inspect.signature(measure, follow_wrapped=False)
     except (TypeError, ValueError):  # pragma: no cover
         return
     try:
-        signature.bind(None, None, None, **kwargs)
+        bound = signature.bind(None, None, None, **kwargs)
     except TypeError as exc:
         raise TypeError(f"{cls.__name__}: {exc}") from None
+    extra = getattr(cls, "_extra_options", None)
+    if extra is not None:
+        for name, param in signature.parameters.items():
+            if param.kind is param.VAR_KEYWORD:
+                unknown = sorted(set(bound.arguments.get(name, {})) - set(extra))
+                if unknown:
+                    msg = f"{cls.__name__}: unknown options {unknown}; the other options are {sorted(extra)}"
+                    raise TypeError(msg)
 
 
 def _unit_scale(dist):

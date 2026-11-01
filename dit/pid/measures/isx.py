@@ -71,7 +71,7 @@ class PID_SX(BasePointwisePID):
     _name = "I_sx"
 
     @staticmethod
-    def _pointwise_measure(dist, sources, target, **kwargs):
+    def _pointwise_measure(dist, sources, target):
         """
         Per joint-outcome pointwise shared information:
         i^sx(t : sources) = i^sx+(s) - i^sx-(s, t)
@@ -85,7 +85,7 @@ class PID_SX(BasePointwisePID):
         return {outcome: plus[outcome] - minus[outcome] for outcome in plus}
 
     @staticmethod
-    def _pointwise_measure_parts(dist, sources, target, **kwargs):
+    def _pointwise_measure_parts(dist, sources, target):
         """
         Informative (+) and misinformative (-) components of the pointwise
         shared information:

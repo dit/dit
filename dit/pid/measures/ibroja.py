@@ -4,7 +4,7 @@ The I_BROJA unique measure, as proposed by the BROJA team.
 
 from itertools import chain
 
-from ...algorithms.broja_method import broja_solve_bivariate
+from ...algorithms.broja_method import ECOS_OPTIONS, broja_solve_bivariate
 from ..pid import BaseUniquePID
 
 __all__ = ("PID_BROJA",)
@@ -32,6 +32,7 @@ class PID_BROJA(BaseUniquePID):
     """
 
     _name = "I_broja"
+    _extra_options = ECOS_OPTIONS
 
     @staticmethod
     def _measure(d, sources, target, maxiter=1000, method="auto", rng=None, **ecos_kwargs):

@@ -44,7 +44,7 @@ from dit.pid import (
     PID_SKAR_owb,
     PID_SKAR_tw,
 )
-from dit.pid.distributions import bivariates
+from dit.pid.distributions import bivariates, trivariates
 from dit.pid.measures import __all_pids
 from dit.pid.pid import BaseIncompletePID
 
@@ -255,12 +255,13 @@ def test_malformed_sources(sources, target, match):
         PID_WB(bivariates["and"], sources, target)
 
 
-def test_unknown_option():
+@pytest.mark.parametrize("measure", MEASURES)
+def test_unknown_option(measure):
     """
     An option the measure does not take is an error, rather than silently ignored.
     """
-    with pytest.raises(TypeError, match="PID_GH"):
-        PID_GH(bivariates["and"], methd="exact")
+    with pytest.raises(TypeError, match=measure.__name__):
+        measure(bivariates["and"], methd="exact", **OPTIONS.get(measure, {}))
 
 
 def test_node_outside_lattice():
@@ -366,3 +367,35 @@ def test_measures_registry():
         PID_Do,
         PID_CI,
     } <= set(__all_pids)
+
+
+@pytest.mark.parametrize("measure", [PID_Do, PID_MES])
+def test_incomplete_lattice_is_consistent(measure):
+    """
+    Atoms are filled only as far as the computed redundancies determine them. The earlier
+    search filled the lattice of three sources with atoms contradicting the computed
+    redundancies (by 0.23 bits for I({0, 2} : T) here).
+    """
+    pid = measure(trivariates["anddup"])
+    assert pid.consistent
+    for node in pid._lattice:
+        if len(node) == 1:
+            computed = coinformation(pid._dist, [node[0], pid._target])
+        elif len(node) == 2:
+            computed = measure._measure(pid._dist, node, pid._target)
+        else:
+            continue
+        parts = [pid.get_pi(n) for n in pid._lattice.descendants(node, include=True)]
+        if not any(np.isnan(parts)):
+            assert sum(parts) == pytest.approx(computed, abs=1e-9)
+
+
+def test_incomplete_lattice_exact_atom():
+    """
+    The unique information of a source with a single child in the lattice is the difference
+    of two computed redundancies.
+    """
+    d = trivariates["anddup"]
+    pid = PID_MES(d)
+    expected = PID_MES._measure(d, ((1,),), (3,)) - PID_MES._measure(d, ((1,), (0, 2)), (3,))
+    assert pid.get_pi(((1,),)) == pytest.approx(expected, abs=1e-12)
