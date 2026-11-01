@@ -67,7 +67,16 @@ INCONSISTENT = {PID_SKAR_nw, PID_SKAR_owa, PID_SKAR_owb, PID_SKAR_tw, PID_RA, PI
 # they fail subset equality (I_do, and I_ME* which equals it)
 NOT_SUBSET_EQUAL = {PID_Do, PID_MES}
 
-ATOL = {PID_MC: 1e-3, PID_LN: 1e-3, PID_IPID: 1e-3, PID_DeltaLambda: 1e-3, PID_Delta: 1e-4, PID_dep: 1e-4}
+# without ECOS (as on CI) BROJA is computed by admUI, whose last iterate is accurate to ~1e-5
+ATOL = {
+    PID_MC: 1e-3,
+    PID_LN: 1e-3,
+    PID_IPID: 1e-3,
+    PID_DeltaLambda: 1e-3,
+    PID_Delta: 1e-4,
+    PID_dep: 1e-4,
+    PID_BROJA: 1e-5,
+}
 
 
 def _from_table(table):
