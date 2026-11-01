@@ -199,9 +199,10 @@ class _BrojaConeSolver:
                 -self.sol_lambda[xy_idx] - self.sol_lambda[xz_idx] - mu_yz[(y, z)] - math.log(-self.sol_lambda[i]) - 1,
             )
 
+        # the primal optimum is -H(X | Y, Z); like the dual objective, it is in nats
         condent = self._condentropy()
         dual_val = -float(np.dot(self.sol_lambda, self.b_vec))
-        gap = max(-condent * _LN2 - dual_val, 0.0)
+        gap = max(-condent - dual_val, 0.0)
         return primal_infeas, dual_infeas, gap
 
     def _condentropy(self):
@@ -311,9 +312,11 @@ def broja_cone_solve(dist, sources, target, **ecos_kwargs):
 
     Returns
     -------
-    result : dict
-        ``q_dist``, ``converged``, ``primal_infeas``, ``dual_infeas``, ``gap``,
-        ``ui_source0``, ``ui_source1`` (in bits).
+    q_dist : Distribution
+        The optimal joint distribution.
+    meta : dict
+        ``converged``, ``primal_infeas``, ``dual_infeas``, ``gap`` (the duality gap of
+        the cone program, in nats), and ``ui_source0``, ``ui_source1`` (in bits).
     """
     d = broja_prepare_dist(dist, sources, target)
     marg_xy, marg_xz, shape = _marginals_for_cone(d)
