@@ -8,8 +8,12 @@ Defines the generalized deficiency as:
 
 As lambda -> infinity, this recovers the delta-PID (enforces Markov chain
 M--Y--X', measures KL departure from copy).
-As lambda -> 0, this recovers the BROJA/tilde-PID (enforces copy, measures
-departure from Markov chain).
+As lambda -> 0, the KL term enforces the copy, P(X'|M) = P(X|M), and the
+remaining term measures the departure from the Markov chain, so that
+delta_lambda / lambda tends to the BROJA/tilde-PID unique information. The
+deficiency itself vanishes in that limit, so the redundancy below tends to
+min{I(M;X), I(M;Y)}, the MMI redundancy; Venkatesh et al. state the limit
+informally as recovering the tilde-PID.
 
 Redundancy is min-symmetrized:
     RI_lambda(M : X; Y) = min{ I(M;X) - delta_lambda(M:X\\Y),
@@ -61,7 +65,7 @@ class DeltaLambdaOptimizer(BaseConvexOptimizer, BaseAuxVarOptimizer):
         lam : float
             Lagrange multiplier. Large values enforce the Markov chain
             (approaching delta-PID), small values enforce the copy
-            (approaching BROJA).
+            (the deficiency over lam approaching the BROJA unique information).
         bound : int, None
             Bound on |X'|. Defaults to |X|.
         """
@@ -214,7 +218,8 @@ class PID_DeltaLambda(BaseBivariatePID):
     ----------
     lam : float
         Lagrange multiplier (default 1.0). Large values approach the
-        delta-PID; small values approach the BROJA PID.
+        delta-PID. As lam tends to 0, the deficiency divided by lam tends to the
+        BROJA unique information, while the redundancy tends to that of the MMI.
     bound : int, None
         Bound on auxiliary variable cardinality.
     niter : int, None
@@ -224,7 +229,7 @@ class PID_DeltaLambda(BaseBivariatePID):
     _name = "I_\u03b4\u03bb"
 
     @staticmethod
-    def _measure(d, sources, target, lam=1.0, bound=None, niter=None):
+    def _measure(d, sources, target, lam=1.0, bound=None, niter=None, rng=0):
         """
         Compute the delta-lambda PID redundancy for a pair of sources.
 
@@ -242,6 +247,9 @@ class PID_DeltaLambda(BaseBivariatePID):
             Bound on auxiliary variable cardinality.
         niter : int, None
             Number of optimization restarts.
+        rng : np.random.Generator, int, None
+            The randomness of the optimizations (0 by default, so that results are
+            reproducible).
 
         Returns
         -------
@@ -258,7 +266,7 @@ class PID_DeltaLambda(BaseBivariatePID):
             src, oth = args
             return _delta_lambda(d, src, oth, target, lam=lam, bound=bound, niter=niter, rng=rng)
 
-        delta_ab, delta_ba = parallel_sweep(_run, [(source_a, source_b), (source_b, source_a)])
+        delta_ab, delta_ba = parallel_sweep(_run, [(source_a, source_b), (source_b, source_a)], base_seed=rng)
 
         mi_a = coinformation(d, [source_a, target])
         mi_b = coinformation(d, [source_b, target])

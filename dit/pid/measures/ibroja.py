@@ -2,83 +2,12 @@
 The I_BROJA unique measure, as proposed by the BROJA team.
 """
 
-from ...algorithms import BaseConvexOptimizer
+from itertools import chain
+
 from ...algorithms.broja_method import broja_solve_bivariate
-from ...algorithms.broja_util import optimized_pmf
-from ...algorithms.distribution_optimizers import BaseDistOptimizer
-from ...algorithms.optimization import parallel_sweep
 from ..pid import BaseUniquePID
 
 __all__ = ("PID_BROJA",)
-
-
-class BROJAOptimizer(BaseDistOptimizer, BaseConvexOptimizer):
-    """
-    Optimizer for computing the max mutual information between
-    inputs and outputs. In the bivariate case, this corresponds to
-    maximizing the coinformation.
-    """
-
-    def __init__(self, dist, source, others, target):
-        """
-        Initialize the optimizer.
-
-        Parameters
-        ----------
-        dist : Distribution
-            The distribution to base the optimization on.
-        source : iterable
-            Variable to treat as the source.
-        others : iterable of iterables
-            The other source variables.
-        target : iterable
-            The target variable.
-        """
-        dist = dist.coalesce((source,) + (sum(others, ()),) + (target,))
-        constraints = [[0, 2], [1, 2]]
-        super().__init__(dist, marginals=constraints)
-        self._source = {0}
-        self._others = {1}
-        self._target = {2}
-
-    def _objective_gradient(self):
-        """Gradient of the ``I[source : target | others]`` objective w.r.t. the joint."""
-        return self._conditional_mutual_information_grad(self._source, self._target, self._others)
-
-    def _objective(self):
-        """
-        Minimize I(source:target|others).
-
-        Parameters
-        ----------
-        x : np.ndarray
-            Optimization vector.
-
-        Returns
-        -------
-        obj : func
-            The objective.
-        """
-        cmi = self._conditional_mutual_information(self._source, self._target, self._others)
-
-        def objective(self, x):
-            """
-            Compute I[source : target | others]
-
-            Parameters
-            ----------
-            x : np.ndarray
-                An optimization vector.
-
-            Returns
-            -------
-            obj : float
-                The value of the objective.
-            """
-            pmf = self.construct_joint(x)
-            return cmi(pmf)
-
-        return objective
 
 
 class PID_BROJA(BaseUniquePID):
@@ -96,6 +25,10 @@ class PID_BROJA(BaseUniquePID):
     - ``'admui'`` — alternating divergence minimization (:cite:`banerjee2017computing`)
     - ``'cone'`` — exponential cone program via ECOS (:cite:`makkeh2018broja`)
     - ``'auto'`` — ``'cone'`` if ECOS is installed and ``'admui'`` otherwise, with fallbacks
+
+    With more than two sources, the unique information of each source is its unique
+    information in the bivariate decomposition of it and the union of the other sources,
+    computed by the same solver.
     """
 
     _name = "I_broja"
@@ -128,30 +61,14 @@ class PID_BROJA(BaseUniquePID):
         ibroja : dict
             The value of I_broja for each individual source.
         """
+        options = {"maxiter": maxiter, "method": method, "rng": rng, **ecos_kwargs}
         if len(sources) == 2:
-            uniques, _meta = broja_solve_bivariate(
-                d,
-                sources,
-                target,
-                maxiter=maxiter,
-                method=method,
-                rng=rng,
-                **ecos_kwargs,
-            )
+            uniques, _meta = broja_solve_bivariate(d, sources, target, **options)
             return uniques
 
         uniques = {}
-
-        def _run(source, rng):
-            others = sum((i for i in sources if i != source), ())
-            dm = d.coalesce([source, others, target])
-            broja = BROJAOptimizer(dm, (0,), ((1,),), (2,))
-            broja.optimize(niter=1, maxiter=maxiter, rng=rng)
-            pmf = optimized_pmf(broja)
-            cmi = broja._conditional_mutual_information(broja._source, broja._target, broja._others)
-            return float(cmi(pmf))
-
-        for source, value in zip(sources, parallel_sweep(_run, sources), strict=True):
-            uniques[source] = value
-
+        for source in sources:
+            rest = tuple(dict.fromkeys(chain(*(other for other in sources if other != source))))
+            pair, _meta = broja_solve_bivariate(d, (source, rest), target, **options)
+            uniques[source] = pair[source]
         return uniques

@@ -5,152 +5,77 @@ The I_proj measure as proposed by Harder et al.
 import numpy as np
 from scipy.optimize import minimize
 
-from ...algorithms.optimization import parallel_sweep
-from ...distribution import Distribution
-from ...divergences.pmf import relative_entropy
 from ...exceptions import ditException
 from ..pid import BaseBivariatePID
 
 __all__ = ("PID_Proj",)
 
 
-class MinDKLOptimizer:
+def _reverse_projection(p, domain, tol=1e-12):
     """
-    An optimizer to find the minimum D_KL(p||q) given p and a
-    restriction on the domain of q.
-    """
+    The distribution in the convex hull of the rows of `domain` closest to `p`:
+    :math:`\\arg\\min_{q \\in C_{cl}(\\text{domain})} D(p \\| q)`.
 
-    def __init__(self, dist, domain):
-        """
-        Initialize the optimizer.
-
-        Parameters
-        ----------
-        dist : Distribution
-            The distribution `p`.
-        domain : list of lists
-            The pmfs defining the domain over which `q` is optimized.
-        """
-        self._dist = dist
-        self._p = dist.pmf
-        self._domain = np.stack(domain)
-        self._domain_inv = np.linalg.pinv(self._domain)
-
-    def _q(self, x):
-        """
-        Transform `x` into a distribution.
-
-        Parameters
-        ----------
-        x : np.ndarray
-            Optimization vector
-
-        Returns
-        -------
-        q : np.ndarray
-            The distribution resulting from `x`.
-        """
-        q = np.dot(x, self._domain)
-        q /= q.sum()
-        return q
-
-    def objective(self, x):
-        """
-        The objective to minimize, D(p||q).
-
-        Parameters
-        ----------
-        x : np.ndarray
-            The optimization vector.
-
-        Returns
-        -------
-        dkl : float
-            The Kullback-Leibler divergence.
-        """
-        q = self._q(x)
-        dkl = relative_entropy(self._p, q)
-        return dkl
-
-    def optimize(self):
-        """
-        Perform the optimization.
-
-        Notes
-        -----
-        The optimization is convex, so we use sp.optimize.minimize.
-        """
-        x0 = np.dot(self._p, self._domain_inv)
-
-        bounds = [(0, 1)] * x0.size
-
-        res = minimize(
-            fun=self.objective,
-            x0=x0,
-            method="L-BFGS-B",
-            bounds=bounds,
-            options={
-                "maxiter": 1000,
-                "ftol": 1e-7,
-                "eps": 1.4901161193847656e-08,
-            },
-        )
-
-        if not res.success:  # pragma: no cover
-            msg = f"Optimization failed: {res.message}"
-            raise ditException(msg)
-
-        self._optima = res.x
-
-    def construct_dist(self, q=None):
-        """
-        Construct a distribution from a vector.
-
-        Parameters
-        ----------
-        q : np.ndarray, None
-            The vector to turn in to a distribution. If None, use self._optima.
-
-        Returns
-        -------
-        dist : Distribution
-            The distribution of `q`.
-        """
-        if q is None:  # pragma: no cover
-            q = self._q(self._optima)
-
-        dist = Distribution(self._dist.outcomes, q)
-
-        return dist
-
-
-def min_dkl(dist, domain):
-    """
-    Given a distribution and a domain, find the minimum :math:`D(p||q)` where
-    p is `dist` and q is in `domain`.
+    The divergence is convex in the weights w of q = w @ domain, with gradient -c, where
+    c_j = sum_z p(z) domain[j, z] / q(z). It is minimized by SLSQP from a few steps of the
+    EM fixed point w_j <- w_j c_j, and then polished by that fixed point, which never
+    increases it. Since sum_j w_j c_j = 1, convexity bounds the excess divergence by
+    max_j c_j - 1. The EM fixed point alone converges slowly when the minimum lies on a
+    face of the hull that some other row touches tangentially.
 
     Parameters
     ----------
-    dist : Distribution
-        The distribution for p.
-    domain : list of lists
-        The set of points whose closure q must live in.
+    p : np.ndarray
+        The distribution to project.
+    domain : np.ndarray
+        The distributions spanning the convex hull, one per row.
+    tol : float
+        The bound on the excess divergence, in nats, at which to stop polishing.
 
     Returns
     -------
-    dkl : float
-        The minimum :math:`D(p||q)` with q restricted to `domain`.
+    q : np.ndarray
+        The projection of `p`.
     """
-    dist = dist.copy()
-    dist.make_dense()
-    optimizer = MinDKLOptimizer(dist, domain)
-    optimizer.optimize()
-    return optimizer.construct_dist()
+    support = p > 0
+    p_s, domain_s = p[support], domain[:, support]
+
+    def divergence(w):
+        return -np.sum(p_s * np.log(w @ domain_s))
+
+    def gradient(w):
+        return -(domain_s @ (p_s / (w @ domain_s)))
+
+    def em(w, steps):
+        for _ in range(steps):
+            ratios = domain_s @ (p_s / (w @ domain_s))
+            if ratios.max() - 1 <= tol:
+                break
+            w = w * ratios
+            w /= w.sum()
+        return w
+
+    start = em(np.full(len(domain), 1 / len(domain)), 20)
+    res = minimize(
+        divergence,
+        start,
+        jac=gradient,
+        method="SLSQP",
+        bounds=[(0, 1)] * len(domain),
+        constraints=[{"type": "eq", "fun": lambda w: w.sum() - 1, "jac": lambda w: np.ones_like(w)}],
+        options={"ftol": 1e-16, "maxiter": 500},
+    )
+    weights = np.clip(res.x, 0, None)
+    weights = weights / weights.sum() if weights.sum() > 0 else start
+    if not np.isfinite(divergence(weights)) or divergence(weights) > divergence(start):
+        weights = start
+    weights = em(weights, 2000)
+    return weights @ domain
 
 
 def projected_information(dist, X, Y, Z):
     """
-    :math:`I_Z^pi(X \\searrow Y)`
+    :math:`I_Z^\\pi(X \\searrow Y)`
 
     Paramters
     ---------
@@ -168,23 +93,20 @@ def projected_information(dist, X, Y, Z):
     pi : float
         The projected information.
     """
-    p_z_ys = dist.condition_on(rvs=Z, crvs=Y)[1]
-    for d in p_z_ys:
-        d.make_dense()
-    domain = [d.pmf for d in p_z_ys]
-    p_xz = dist.coalesce((X, Z))  # can't use marginal, order is important
-    p_z = dist.marginal(Z)
-    p_x, p_z_xs = dist.condition_on(rvs=Z, crvs=X)
+    d = dist.coalesce([X, Y, Z])
+    d.make_dense()
+    p = np.asarray(d.pmf, dtype=float).reshape([len(a) for a in d.alphabet])
+    p_xz, p_yz = p.sum(axis=1), p.sum(axis=0)
+    p_x, p_y, p_z = p_xz.sum(axis=1), p_yz.sum(axis=1), p_xz.sum(axis=0)
+    domain = p_yz[p_y > 0] / p_y[p_y > 0, None]
 
-    projections = parallel_sweep(lambda p_z_x, rng: min_dkl(p_z_x, domain), p_z_xs)
-
-    vals = []
-    for x, p_proj_z in zip(p_x.outcomes, projections, strict=True):
-        for z in p_z.outcomes:
-            vals.append(p_xz[(x, z)] * np.log2(p_proj_z[z] / p_z[z]))
-    val = np.nansum(vals)
-
-    return val
+    value = 0.0
+    for p_xz_x, p_x_x in zip(p_xz, p_x, strict=True):
+        if p_x_x > 0:
+            projection = _reverse_projection(p_xz_x / p_x_x, domain)
+            mask = p_xz_x > 0
+            value += np.sum(p_xz_x[mask] * np.log2(projection[mask] / p_z[mask]))
+    return float(value)
 
 
 class PID_Proj(BaseBivariatePID):
