@@ -161,3 +161,106 @@ Sibson's capacity of order :math:`\alpha`. The latter is the maximum over inputs
 
 .. autofunction:: dit.algorithms.sibson_capacity
    :no-index:
+
+Commitment capacity
+===================
+
+In bit commitment, Alice commits to a message by sending Bob information about it, and
+reveals the message later. The commitment must be *concealing*, so that Bob learns almost
+nothing about the message before it is revealed, and *binding*, so that Alice cannot reveal
+a different message. Without computational assumptions this is impossible over noiseless
+channels, but noisy channels allow it. The commitment capacity of a discrete memoryless
+channel is the largest rate at which messages can be committed to with vanishing errors,
+even with unlimited noiseless two-way communication on the side
+:cite:`winter2003commitment`.
+
+An input is *redundant* when its output distribution :math:`P_x` is a convex combination of
+the other inputs' output distributions. Alice can then simulate it by randomizing over the
+others without Bob noticing, so it cannot bind her. Removing every redundant input leaves
+one input for each vertex of the convex hull of the :math:`P_x`, the *non-redundant*
+channel :math:`\tilde{P}`. Winter, Nascimento and Imai show that the commitment capacity
+is the maximal equivocation of the non-redundant channel (:cite:`winter2003commitment`,
+Theorem 2):
+
+.. math::
+
+   C_{\mathrm{com}} = \max_{p(x)} \H{X | Y}, \qquad p(y \mid x) = \tilde{P}(y \mid x).
+
+It is zero exactly when the output of the non-redundant channel determines its input, so
+every other channel allows bit commitment. It is also a lower bound on the rate at which the
+channel allows coin tossing. :func:`~dit.algorithms.nonredundant_inputs` finds the
+remaining inputs with one linear program per input, and
+:func:`~dit.algorithms.maximal_equivocation` maximizes the equivocation of any channel.
+Without the reduction, the maximal equivocation is the secrecy capacity of a wiretap
+channel :cite:`wyner1975wire` whose legitimate receiver sees the input noiselessly and
+whose eavesdropper sees it through the channel.
+
+The equivocation is concave in the input. With :math:`q = rP` and
+:math:`D_x = D(P_x \| q)` as above, its gradient is :math:`g_x = -\log_2 r(x) - D_x`, and
+:math:`\sum_x r(x) g_x = \H{X | Y}`. So
+
+.. math::
+
+   \H{X | Y} \leq \max_{p(x)} \H{X | Y} \leq \max_x g_x,
+
+the counterpart of Blahut's bounds, and the iteration again stops once they meet. Its
+update :math:`r(x) \propto 2^{-D_x}` maximizes :math:`\H{X} - \sum_x r(x) D(P_x \| q)` with
+:math:`q` held fixed. That function equals :math:`\H{X | Y} - D(rP \| q)`, so the
+equivocation never decreases. Inputs whose output supports overlap are solved together,
+and separately from the others: the output reveals which of these blocks was used, so
+all the probability goes to the best block.
+
+The paper's examples follow. The binary symmetric channel's commitment capacity is
+:math:`H_b(p)`, so the noise that hurts transmission helps commitment:
+
+.. ipython::
+
+   In [1]: from dit.algorithms import commitment_capacity, maximal_equivocation, nonredundant_inputs
+
+   In [2]: commitment_capacity(bsc)
+
+In the next channel, the first input is the average of the other two, which form a noiseless
+channel. Mixing it in gives one bit of equivocation, but the commitment capacity is zero:
+
+.. ipython::
+
+   In [3]: import numpy as np
+
+   In [4]: P = np.array([[1 / 2, 1 / 2], [1, 0], [0, 1]])
+
+   In [5]: maximal_equivocation(P)
+
+   In [6]: nonredundant_inputs(P)
+
+   In [7]: commitment_capacity(P)
+
+Transmission and commitment can favour very different inputs. On the Z-channel with
+``p = 1/2`` together they exceed the one bit of input entropy:
+
+.. ipython::
+
+   In [8]: from dit.example_channels import z_channel
+
+   In [9]: z = z_channel(0.5)
+
+   In [10]: channel_capacity(z)
+
+   In [11]: commitment_capacity(z)
+
+.. note::
+
+   The commitment capacity is not continuous in the channel. As the crossover probability
+   of the binary symmetric channel tends to one half, its commitment capacity tends to one
+   bit, but at one half both inputs have the same output distribution, one of them is
+   redundant, and the capacity is zero. Inputs whose output distributions lie within
+   ``redundancy_tol`` (in :math:`\ell_1`) of the convex hull of the others' count as
+   redundant.
+
+.. autofunction:: dit.algorithms.commitment_capacity
+   :no-index:
+
+.. autofunction:: dit.algorithms.maximal_equivocation
+   :no-index:
+
+.. autofunction:: dit.algorithms.nonredundant_inputs
+   :no-index:
