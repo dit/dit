@@ -57,24 +57,6 @@ jobs:
       - name: Pin Python version for uv
         run: echo '${{ matrix.python-version }}' > .python-version
 
-      - name: Install cddlib (Ubuntu)
-        if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libcdd-dev
-
-      - name: Install cddlib (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          brew install cddlib
-          echo "CFLAGS=-I$(brew --prefix)/include" >> $GITHUB_ENV
-          echo "LDFLAGS=-L$(brew --prefix)/lib" >> $GITHUB_ENV
-
-      - name: Install cddlib (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          vcpkg install cddlib:x64-windows
-          echo "INCLUDE=$env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\include;$env:INCLUDE" >> $env:GITHUB_ENV
-          echo "LIB=$env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\lib;$env:LIB" >> $env:GITHUB_ENV
-
       # ECOS (the broja extra) enables BROJA's exact cone solver, which builds from source
       # where ecos has no wheel (Python 3.13+). Windows runs without it, so the admUI
       # fallback that installs without ECOS use stays tested end to end. sympy (the symbolic
@@ -114,9 +96,6 @@ jobs:
       - name: Install Python
         run: uv python install 3.12
 
-      - name: Install cddlib
-        run: sudo apt-get update && sudo apt-get install -y libcdd-dev
-
       - name: Install package
         run: uv sync --extra dev
 
@@ -138,9 +117,6 @@ jobs:
 
       - name: Install Python
         run: uv python install 3.12
-
-      - name: Install cddlib
-        run: sudo apt-get update && sudo apt-get install -y libcdd-dev
 
       - name: Install package
         run: uv sync --extra dev
