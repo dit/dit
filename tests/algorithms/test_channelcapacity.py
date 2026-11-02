@@ -19,9 +19,19 @@ from dit.algorithms.channelcapacity import (
     channel_capacity,
     channel_capacity_cost,
     channel_capacity_joint,
+    commitment_capacity,
+    maximal_equivocation,
+    nonredundant_inputs,
     sibson_capacity,
 )
 from dit.cdisthelpers import cdist_array
+from dit.example_channels import (
+    binary_erasure_channel,
+    binary_symmetric_channel,
+    noisy_typewriter,
+    q_ary_symmetric_channel,
+    z_channel,
+)
 from dit.exceptions import ditException
 from dit.other.sibson_mutual_information import sibson_mutual_information_pmf
 
@@ -547,3 +557,224 @@ def test_active_set_with_cost_offset():
     assert r.sum() == pytest.approx(1.0)
     mutual_information, _ = capacity_bounds(P, r)
     assert lower / np.log(2) == pytest.approx(mutual_information - s * (r @ cost), abs=1e-11)
+
+
+# ── Maximal equivocation and commitment capacity ───────────────────────
+
+
+def equivocation(P, pmf):
+    """
+    ``H[X | Y]`` in bits for the input ``pmf`` to the channel ``P``.
+    """
+    joint = pmf[:, np.newaxis] * P
+    q = joint.sum(axis=0)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        return float(-np.where(joint > 0, joint * np.log2(joint / q), 0).sum())
+
+
+@pytest.mark.parametrize("p", [0.05, 0.11, 0.3, 0.7, 0.95])
+def test_commitment_capacity_bsc(p):
+    """
+    Example 1 of Winter, Nascimento and Imai: the commitment capacity of the binary
+    symmetric channel is H_b(p), so the noisier the channel the better.
+    """
+    cc, pmf = commitment_capacity(binary_symmetric_channel(p), atol=1e-12, rtol=0)
+    assert cc == pytest.approx(binary_entropy(p), abs=1e-12)
+    assert np.allclose(pmf, [0.5, 0.5])
+
+
+@pytest.mark.parametrize("p", [0, 0.5, 1])
+def test_commitment_capacity_bsc_trivial(p):
+    """
+    At p = 0 and p = 1 the output reveals the input; at p = 1/2 the two inputs coincide.
+    """
+    assert commitment_capacity(binary_symmetric_channel(p))[0] == 0
+
+
+def test_commitment_capacity_discontinuous():
+    """
+    Inputs within ``redundancy_tol`` of each other count as one, so the commitment capacity
+    drops to zero next to p = 1/2, where the maximal equivocation is one bit.
+    """
+    bsc = binary_symmetric_channel(0.5 - 1e-11)
+    assert commitment_capacity(bsc)[0] == 0
+    assert commitment_capacity(bsc, redundancy_tol=1e-12)[0] == pytest.approx(1)
+    assert maximal_equivocation(binary_symmetric_channel(0.5))[0] == pytest.approx(1)
+
+
+def test_trivial_channel():
+    """
+    Example 2: the first input is the average of the other two, which form a noiseless
+    channel. Using it, the equivocation reaches one bit at (1/2, 1/4, 1/4), the wiretap
+    capacity the paper states, but the commitment capacity is zero.
+    """
+    P = np.array([[1 / 2, 1 / 2], [1, 0], [0, 1]])
+    value, pmf = maximal_equivocation(P, atol=1e-12, rtol=0)
+    assert value == pytest.approx(1, abs=1e-12)
+    assert np.allclose(pmf, [1 / 2, 1 / 4, 1 / 4])
+    assert list(nonredundant_inputs(P)) == [1, 2]
+    cc, pmf = commitment_capacity(P)
+    assert cc == 0
+    assert pmf[0] == 0
+
+
+def test_z_channel():
+    """
+    Example 3: transmission and commitment favour different inputs. Commitment gives the
+    noisy input probability a = 1 - 1/sqrt(5), and C + C_com exceeds the one bit of input
+    entropy.
+    """
+    channel = z_channel(0.5)
+    cc, pmf = commitment_capacity(channel, atol=1e-12, rtol=0)
+    a = 1 - 1 / np.sqrt(5)
+    assert cc == pytest.approx(binary_entropy(a) + a - binary_entropy(a / 2), abs=1e-12)
+    assert np.allclose(pmf, [1 - a, a])
+    capacity = channel_capacity(channel)[0]
+    assert capacity == pytest.approx(np.log2(5 / 4))
+    assert capacity + cc > 1
+
+
+@pytest.mark.parametrize("n", [3, 4, 26])
+def test_noisy_typewriter(n):
+    """
+    The single-use scheme of Remark 6 runs over the noisy typewriter on four letters. For
+    any n >= 3 the uniform input leaves one bit of equivocation.
+    """
+    cc, pmf = commitment_capacity(noisy_typewriter(n), atol=1e-12, rtol=0)
+    assert cc == pytest.approx(1, abs=1e-12)
+    assert np.allclose(pmf, 1 / n)
+
+
+def test_noisy_typewriter_two_letters():
+    """
+    On two letters both inputs give the uniform output.
+    """
+    assert commitment_capacity(noisy_typewriter(2))[0] == 0
+
+
+@pytest.mark.parametrize("epsilon", [0, 0.2, 0.9, 1])
+def test_commitment_capacity_erasure(epsilon):
+    expected = epsilon if epsilon < 1 else 0
+    cc, _ = commitment_capacity(binary_erasure_channel(epsilon), atol=1e-12, rtol=0)
+    assert cc == pytest.approx(expected, abs=1e-12)
+
+
+def test_commitment_capacity_q_ary_symmetric():
+    """
+    The uniform input maximizes the equivocation of a symmetric channel.
+    """
+    cc, _ = commitment_capacity(q_ary_symmetric_channel(3, 0.2), atol=1e-12, rtol=0)
+    assert cc == pytest.approx(binary_entropy(0.2) + 0.2 * np.log2(2), abs=1e-12)
+
+
+def test_redundant_inputs_removed():
+    """
+    Copies and mixtures of other inputs are removed, the first copy is kept, and the
+    removed inputs get no probability. Outputs that never occur are ignored.
+    """
+    bsc = np.array([[0.9, 0.0, 0.1], [0.1, 0.0, 0.9]])
+    P = np.vstack([bsc[0], bsc[0], [0.5, 0.0, 0.5], bsc[1], [0.3, 0.0, 0.7], bsc[1]])
+    assert list(nonredundant_inputs(P)) == [0, 3]
+    cc, pmf = commitment_capacity(P, atol=1e-12, rtol=0)
+    assert cc == pytest.approx(binary_entropy(0.1), abs=1e-12)
+    assert np.allclose(pmf, [0.5, 0, 0, 0.5, 0, 0])
+
+
+def test_disjoint_blocks():
+    """
+    The output reveals which block of inputs was used, so the best block takes all the
+    probability. An input whose outputs no other input produces adds no equivocation.
+    """
+    P = np.zeros((5, 5))
+    P[0, 0] = 1
+    P[1:3, 1:3] = [[0.7, 0.3], [0.3, 0.7]]
+    P[3:5, 3:5] = [[0.89, 0.11], [0.11, 0.89]]
+    for function in (maximal_equivocation, commitment_capacity):
+        value, pmf = function(P, atol=1e-12, rtol=0)
+        assert value == pytest.approx(binary_entropy(0.3), abs=1e-12)
+        assert np.allclose(pmf, [0, 0.5, 0.5, 0, 0])
+
+
+def test_commitment_capacity_single_input():
+    """
+    Empty rows are not inputs, and a single input leaves nothing to hide.
+    """
+    P = np.array([[0.0, 0.0], [0.3, 0.7]])
+    assert list(nonredundant_inputs(P)) == [1]
+    for function in (maximal_equivocation, commitment_capacity):
+        value, pmf = function(P)
+        assert value == 0
+        assert list(pmf) == [0, 1]
+
+
+def test_commitment_capacity_input_forms():
+    """
+    An array, a list of conditional distributions and a conditional Distribution agree.
+    """
+    cdists = [Distribution(["0", "1"], [1, 0]), Distribution(["0", "1"], [1 / 2, 1 / 2])]
+    values = [
+        commitment_capacity(channel, atol=1e-12, rtol=0)[0]
+        for channel in (np.array([[1, 0], [1 / 2, 1 / 2]]), cdists, z_channel(0.5))
+    ]
+    assert values == pytest.approx([values[0]] * 3, abs=1e-12)
+    assert list(nonredundant_inputs(cdists)) == [0, 1]
+
+
+def test_equivocation_matches_brute_force():
+    P = STOPS_EARLY
+    value, pmf = maximal_equivocation(P, atol=1e-11, rtol=0)
+    assert equivocation(P, pmf) == pytest.approx(value, abs=1e-9)
+    assert commitment_capacity(P, atol=1e-11, rtol=0)[0] == pytest.approx(value, abs=1e-9)
+
+    def objective(z):
+        w = np.exp(z - z.max())
+        return -equivocation(P, w / w.sum())
+
+    best = -minimize(
+        objective, np.zeros(len(P)), method="Nelder-Mead", options={"xatol": 1e-10, "fatol": 1e-13, "maxiter": 20_000}
+    ).fun
+    assert value >= best - 1e-9
+    assert value == pytest.approx(best, abs=1e-6)
+
+
+@settings(max_examples=60, deadline=None)
+@given(P=channels())
+def test_equivocation_properties(P):
+    n = len(P)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        value, pmf = maximal_equivocation(P, atol=1e-9, rtol=0)
+        cc, cc_pmf = commitment_capacity(P, atol=1e-9, rtol=0)
+    assert equivocation(P, pmf) == pytest.approx(value, abs=1e-9)
+    assert equivocation(P, cc_pmf) == pytest.approx(cc, abs=1e-9)
+    assert -1e-12 <= cc <= value + 1e-9
+    assert value <= np.log2(n) + 1e-9
+
+    keep = nonredundant_inputs(P)
+    assert np.all(cc_pmf[np.setdiff1d(np.arange(n), keep)] == 0)
+    rng = np.random.default_rng(0)
+    for r in rng.dirichlet(np.ones(n), size=20):
+        assert equivocation(P, r) <= value + 1e-9
+        restricted = np.zeros(n)
+        restricted[keep] = r[keep] / r[keep].sum()
+        assert equivocation(P, restricted) <= cc + 1e-9
+
+    permutation = rng.permutation(n)
+    assert maximal_equivocation(P[permutation], atol=1e-9, rtol=0)[0] == pytest.approx(value, abs=2e-9)
+    assert commitment_capacity(P[permutation], atol=1e-9, rtol=0)[0] == pytest.approx(cc, abs=2e-9)
+
+
+@pytest.mark.parametrize("function", [maximal_equivocation, commitment_capacity])
+def test_equivocation_maxiter_warns(function):
+    """
+    Stopped early, the iteration warns with an interval containing the value, and returns
+    the equivocation of the input it reached.
+    """
+    channel = z_channel(0.5)
+    true, _ = function(channel, atol=1e-12, rtol=0)
+    with pytest.warns(RuntimeWarning, match=f"{function.__name__} did not reach tolerance in 1 iterations") as record:
+        value, pmf = function(channel, atol=1e-12, rtol=0, maxiter=1)
+    lower, upper = reported_interval(record.pop(RuntimeWarning))
+    assert value == pytest.approx(lower, abs=1e-15)
+    assert lower < true < upper
+    assert equivocation(np.array([[1, 0], [1 / 2, 1 / 2]]), pmf) == pytest.approx(value, abs=1e-12)

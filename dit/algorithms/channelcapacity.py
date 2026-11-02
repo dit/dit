@@ -8,6 +8,9 @@ gives the certified bounds
     I(r) = sum_x r(x) D(P_x || rP)  <=  C  <=  max_x D(P_x || rP),
 
 so the loop stops once the gap between them is below tolerance.
+
+The maximal equivocation ``max_p H[X | Y]`` and the commitment capacity
+:cite:`winter2003commitment` are certified the same way.
 """
 
 import warnings
@@ -24,6 +27,9 @@ from ..utils.deprecation import renamed_kwarg
 __all__ = (
     "channel_capacity",
     "channel_capacity_cost",
+    "commitment_capacity",
+    "maximal_equivocation",
+    "nonredundant_inputs",
     "sibson_capacity",
 )
 
@@ -629,3 +635,252 @@ def sibson_capacity(cdists, order, rtol=None, atol=None, maxiter=100_000):
     if upper - lower > tol(lower):
         _warn_unconverged("sibson_capacity", maxiter, lower / _LN2, upper / _LN2)
     return lower / _LN2, np.exp(logr)
+
+
+def _valid_inputs(P):
+    """
+    Indices of the rows of ``P`` that are probability distributions, not empty or NaN.
+    """
+    return np.flatnonzero(np.isfinite(P).all(axis=1) & (P.sum(axis=1) > 0))
+
+
+def _hull_distance(target, rows):
+    """
+    The l1 distance from ``target`` to the convex hull of ``rows``.
+
+    A linear program finds the closest mixture of ``rows``. Its weights are clipped and
+    renormalized before measuring, so the distance returned is attained by a mixture.
+    """
+    from scipy.optimize import linprog
+
+    k, m = rows.shape
+    # Variables: the weights w (k) and the per-output slacks t (m).
+    #   min sum(t)  s.t.  |w @ rows - target| <= t,  sum(w) = 1,  w, t >= 0.
+    c = np.concatenate([np.zeros(k), np.ones(m)])
+    A_ub = np.block([[rows.T, -np.eye(m)], [-rows.T, -np.eye(m)]])
+    b_ub = np.concatenate([target, -target])
+    A_eq = np.concatenate([np.ones(k), np.zeros(m)])[np.newaxis]
+    res = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=[1.0], bounds=(0, None), method="highs")
+    w = np.clip(res.x[:k], 0, None)
+    return float(np.abs(w @ rows / w.sum() - target).sum())
+
+
+def _nonredundant(P, atol):
+    """
+    Indices of the inputs of ``P`` that remain once its redundant inputs are removed.
+
+    Inputs are tested from last to first, each against the inputs still present. So of
+    several inputs with the same output distribution the first remains, and no input that
+    remains is within ``atol`` of the convex hull of the others.
+    """
+    valid = _valid_inputs(P)
+    remaining = list(valid)
+    for i in valid[::-1]:
+        others = [j for j in remaining if j != i]
+        if others and _hull_distance(P[i], P[others]) <= atol:
+            remaining.remove(i)
+    return np.array(remaining, dtype=int)
+
+
+def _equivocation_iteration(P, tol, maxiter):
+    """
+    Maximize the equivocation ``H[X | Y]`` over the inputs of the channel ``P``.
+
+    With ``q = rP`` and ``D_x = D(P_x || q)``, the gradient of the equivocation is
+    ``g_x = -ln r(x) - D_x``, and ``sum_x r(x) g_x = H[X | Y]``. The equivocation is
+    concave in ``r``, so ``H[X | Y] <= max_r H[X | Y] <= max_x g_x``.
+
+    The step ``r(x) ∝ exp(-D_x)`` maximizes ``H(r) - sum_x r(x) D(P_x || q)`` with ``q``
+    held fixed. That function equals ``H[X | Y] - D(rP || q)``, so the step never
+    decreases the equivocation.
+
+    Parameters
+    ----------
+    P : np.ndarray
+        Row-stochastic channel matrix.
+    tol : callable
+        Maps the current lower bound (nats) to the allowed bound gap (nats).
+    maxiter : int
+        Maximum number of iterations.
+
+    Returns
+    -------
+    r : np.ndarray
+        Final input distribution.
+    lower, upper : float
+        Bounds on the maximal equivocation, in nats.
+    iters : int
+        Iterations used.
+    """
+    plogp = _row_plogp(P)
+    logr, r = _normalize_log(np.zeros(len(P)))
+    iters = 0
+    while True:
+        D = _divergences(P, plogp, r @ P)
+        g = -logr - D
+        lower, upper = float(r @ g), float(g.max())
+        if upper - lower <= tol(lower) or iters >= maxiter:
+            return r, lower, upper, iters
+        iters += 1
+        logr, r = _normalize_log(-D)
+
+
+def _maximal_equivocation(P, tol, maxiter, name):
+    """
+    The maximal equivocation (bits) of the channel ``P`` and an input attaining it.
+
+    Inputs are linked when their output supports overlap. Within each connected block the
+    optimal input uses every symbol. The output reveals the block, so ``H[X | Y]`` is the
+    average of the blocks' equivocations, and its maximum is the largest block maximum.
+    Solving the blocks separately spares the iteration from slowly draining the
+    probability of every block but the best. A block with a single input contributes
+    nothing.
+    """
+    from scipy.sparse.csgraph import connected_components
+
+    n = len(P)
+    support = (P > 0).astype(float)
+    _, labels = connected_components(support @ support.T > 0, directed=False)
+    pmf = np.full(n, 1 / n)
+    best = upper = 0.0
+    iters = 0
+    for label in np.unique(labels):
+        rows = np.flatnonzero(labels == label)
+        if len(rows) < 2:
+            continue
+        block = P[rows][:, support[rows].any(axis=0)]
+        r, lower, block_upper, used = _equivocation_iteration(block, tol, maxiter - iters)
+        iters += used
+        upper = max(upper, block_upper)
+        if lower > best:
+            best = lower
+            pmf = np.zeros(n)
+            pmf[rows] = r
+    if upper - best > tol(best):
+        _warn_unconverged(name, maxiter, best / _LN2, upper / _LN2)
+    return float(best / _LN2), pmf
+
+
+def nonredundant_inputs(cdists, atol=1e-9):
+    """
+    The inputs of the non-redundant version of a channel :cite:`winter2003commitment`.
+
+    An input is redundant when its output distribution is a convex combination of the
+    other inputs' output distributions, since it can then be simulated by randomizing over
+    them. Removing every redundant input leaves one input for each vertex of the convex
+    hull of the output distributions. Of several inputs with the same output distribution,
+    the first is kept.
+
+    Each input is tested with a linear program for the l1 distance from its output
+    distribution to the convex hull of the others', from the last input to the first and
+    against the inputs still present.
+
+    Parameters
+    ----------
+    cdists : list, ndarray, Distribution
+        The channel, in any form accepted by :func:`channel_capacity`.
+    atol : float
+        An input counts as redundant when its output distribution is within this l1
+        distance of the convex hull of the others'.
+
+    Returns
+    -------
+    inputs : np.ndarray
+        The indices of the remaining inputs, in increasing order.
+    """
+    P, _ = _channel_array(cdists)
+    return _nonredundant(np.asarray(P, dtype=float), atol)
+
+
+def maximal_equivocation(cdists, rtol=None, atol=None, maxiter=100_000):
+    """
+    The maximal equivocation of a channel, ``max_p H[X | Y]``.
+
+    The equivocation is concave in the input. For an input ``r`` with output ``q = rP``,
+    its gradient is ``g_x = -log2 r(x) - D(P_x || q)``, and the ``r``-average of ``g`` is
+    ``H[X | Y]``. So every input certifies ``H[X | Y] <= max_p H[X | Y] <= max_x g_x``,
+    and the iteration ``r(x) ∝ 2^(-D(P_x || q))``, an alternating maximization in the
+    style of Blahut-Arimoto, stops once the two bounds agree to within
+    ``max(atol, rtol * value)`` bits. It never decreases the equivocation. Inputs whose
+    output supports overlap are solved together, and separately from the others.
+
+    This is the secrecy capacity of a wiretap channel :cite:`wyner1975wire` whose
+    legitimate receiver sees the input noiselessly and whose eavesdropper sees it through
+    the channel. Unlike :func:`commitment_capacity`, it counts redundant inputs.
+
+    Parameters
+    ----------
+    cdists : list, ndarray, Distribution
+        The channel, in any form accepted by :func:`channel_capacity`.
+    rtol : float or None
+        Relative tolerance. Defaults to ditParams['rtol'].
+    atol : float or None
+        Absolute tolerance in bits. Defaults to ditParams['atol'].
+    maxiter : int
+        Maximum number of iterations. A ``RuntimeWarning`` is raised if the bounds have
+        not met by then.
+
+    Returns
+    -------
+    value : float
+        The maximal equivocation, in bits.
+    pmf : np.ndarray
+        An input distribution attaining it.
+    """
+    P, _ = _channel_array(cdists)
+    P = np.asarray(P, dtype=float)
+    valid = _valid_inputs(P)
+    value, sub = _maximal_equivocation(P[valid], _tolerance(rtol, atol), maxiter, "maximal_equivocation")
+    pmf = np.zeros(len(P))
+    pmf[valid] = sub
+    return value, pmf
+
+
+def commitment_capacity(cdists, rtol=None, atol=None, maxiter=100_000, redundancy_tol=1e-9):
+    """
+    The commitment capacity of a discrete memoryless channel :cite:`winter2003commitment`.
+
+    This is the largest rate at which Alice can commit to a message through the channel:
+    Bob learns almost nothing about it until she reveals it, and she cannot reveal a
+    different message, except with vanishing probability. Unlimited noiseless two-way
+    communication is allowed on the side. Winter, Nascimento and Imai show that it is the
+    maximal equivocation of the channel once its redundant inputs are removed:
+
+        C_com = max_p H[X | Y],  with p ranging over inputs of the non-redundant channel.
+
+    See :func:`nonredundant_inputs` and :func:`maximal_equivocation`. The commitment
+    capacity is zero exactly when the output of the non-redundant channel determines its
+    input; every other channel allows bit commitment. It is also a lower bound on the rate
+    at which the channel allows coin tossing.
+
+    Parameters
+    ----------
+    cdists : list, ndarray, Distribution
+        The channel, in any form accepted by :func:`channel_capacity`.
+    rtol : float or None
+        Relative tolerance. Defaults to ditParams['rtol'].
+    atol : float or None
+        Absolute tolerance in bits. Defaults to ditParams['atol'].
+    maxiter : int
+        Maximum number of iterations. A ``RuntimeWarning`` is raised if the bounds have
+        not met by then.
+    redundancy_tol : float
+        Passed to :func:`nonredundant_inputs` as ``atol``. The commitment capacity is not
+        continuous in the channel: inputs closer than this count as one. For instance, the
+        binary symmetric channel's commitment capacity ``H_b(p)`` tends to one bit as
+        ``p`` tends to ``1/2``, but at ``p = 1/2`` its two inputs coincide and it is zero.
+
+    Returns
+    -------
+    cc : float
+        The commitment capacity, in bits.
+    pmf : np.ndarray
+        An optimal input distribution. It is zero on redundant inputs.
+    """
+    P, _ = _channel_array(cdists)
+    P = np.asarray(P, dtype=float)
+    keep = _nonredundant(P, redundancy_tol)
+    cc, sub = _maximal_equivocation(P[keep], _tolerance(rtol, atol), maxiter, "commitment_capacity")
+    pmf = np.zeros(len(P))
+    pmf[keep] = sub
+    return cc, pmf
