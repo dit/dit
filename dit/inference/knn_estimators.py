@@ -329,6 +329,7 @@ def mutual_information_mixed_ksg(x, y, k=5):
     return mi / np.log(2)
 
 
+@renamed_kwarg("prng", "rng")
 def _total_correlation_ksg_scipy(data, rvs, crvs=None, k=4, noise=1e-10, rng=None):
     """
     Compute the total correlation from observations. The total correlation is computed between the columns
@@ -406,6 +407,7 @@ def _total_correlation_ksg_scipy(data, rvs, crvs=None, k=4, noise=1e-10, rng=Non
     return tc / log_2
 
 
+@renamed_kwarg("prng", "rng")
 def _total_correlation_ksg_sklearn(data, rvs, crvs=None, k=4, noise=1e-10, rng=None):
     """
     Compute the total correlation from observations. The total correlation is computed between the columns

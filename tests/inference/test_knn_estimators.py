@@ -127,3 +127,18 @@ def test_cmi_ksg_high_dimensional_condition(estimator):
     data = np.column_stack([x, y, z])
     cmi = estimator(data, [[0], [1]], [2, 3, 4, 5], k=4, rng=0)
     assert cmi == pytest.approx(0.5, abs=0.05)
+
+
+@pytest.mark.parametrize(
+    "estimator", [_total_correlation_ksg_scipy, _total_correlation_ksg_sklearn, total_correlation_ksg]
+)
+def test_total_correlation_ksg_prng_keyword_is_deprecated(estimator):
+    """
+    The old ``prng`` keyword still works, with a deprecation warning.
+    """
+    if estimator is _total_correlation_ksg_sklearn:
+        pytest.importorskip("sklearn")
+    data = np.random.default_rng(0).normal(size=(200, 2))
+    with pytest.warns(DeprecationWarning):
+        old = estimator(data, [[0], [1]], prng=np.random.default_rng(1))
+    assert old == pytest.approx(estimator(data, [[0], [1]], rng=np.random.default_rng(1)))
