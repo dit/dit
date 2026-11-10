@@ -2,7 +2,10 @@
 Tests for dit.pid.ibroja.
 """
 
+import numpy as np
 import pytest
+from hypothesis import assume, given, settings
+from hypothesis.strategies import booleans, composite, floats, lists, one_of
 
 from dit import Distribution
 from dit.algorithms import broja_method
@@ -10,9 +13,23 @@ from dit.algorithms.distribution_optimizers import BROJABivariateOptimizer
 from dit.pid.distributions import bivariates, trivariates
 from dit.pid.measures.ibroja import PID_BROJA
 from dit.pid.measures.iproj import PID_Proj
+from dit.utils.testing import distributions
 
 # AND with its sources made independent given the target: p(y) p(x0 | y) p(x1 | y)
 AND_COUPLING = Distribution(["000", "010", "100", "110", "111"], [1 / 3, 1 / 6, 1 / 6, 1 / 12, 1 / 4])
+
+
+def _coupling(d):
+    """
+    p(y) p(x0 | y) p(x1 | y), which has the source-target marginals of ``d``.
+    """
+    alphabets = [sorted(a) for a in d.alphabet]
+    p = np.zeros([len(a) for a in alphabets])
+    for outcome, prob in d.zipped():
+        p[tuple(a.index(x) for a, x in zip(alphabets, outcome, strict=True))] = prob
+    py = p.sum(axis=(0, 1))
+    q = p.sum(axis=1)[:, None, :] * p.sum(axis=0)[None, :, :] / np.where(py > 0, py, 1)[None, None, :]
+    return Distribution.from_ndarray(q)
 
 
 @pytest.mark.flaky(reruns=5)
@@ -102,6 +119,80 @@ def test_pid_broja_coupling(method):
     pid = PID_BROJA(AND_COUPLING, method=method)
     assert pid[((0,),)] == pytest.approx(0.0, abs=1e-4)
     assert pid[((1,),)] == pytest.approx(0.0, abs=1e-4)
+
+
+def test_broja_optimizer_free_entries_w():
+    """
+    On W the target value 1 determines both sources, at the first outcome of positive
+    probability, 001. Indexing the dense pmf by that position fixed 000 instead, which
+    left no freedom given Y = 0, so SLSQP returned W itself.
+    """
+    opt = BROJABivariateOptimizer(bivariates["w"], [[0], [1]], [2])
+    outcomes = list(opt.dist.outcomes)
+    assert sorted(outcomes[i] for i in opt._free) == [
+        (("0",), ("0",), ("0",)),
+        (("0",), ("1",), ("0",)),
+        (("1",), ("0",), ("0",)),
+        (("1",), ("1",), ("0",)),
+    ]
+
+
+@pytest.mark.flaky(reruns=5)
+@pytest.mark.parametrize("method", ["scipy", "admui", "auto"])
+def test_pid_broja_w(method):
+    """
+    W has no unique information: given Y = 0 the sources can be coupled to agree, which
+    makes each source's information about Y redundant. The old SLSQP result was
+    U = 0.667 and a redundancy of -0.415.
+    """
+    pid = PID_BROJA(bivariates["w"], method=method)
+    assert pid[((0,),)] == pytest.approx(0.0, abs=1e-4)
+    assert pid[((1,),)] == pytest.approx(0.0, abs=1e-4)
+    assert pid[((0,), (1,))] == pytest.approx(0.25162916738782287, abs=1e-4)
+    assert pid[((0, 1),)] == pytest.approx(2 / 3, abs=1e-4)
+
+
+@pytest.mark.parametrize("name", sorted(bivariates))
+def test_pid_broja_bivariates_nonnegative(name):
+    """
+    BROJA is nonnegative and consistent on every bivariate example.
+    """
+    pid = PID_BROJA(bivariates[name])
+    assert pid.nonnegative
+    assert pid.consistent
+
+
+@composite
+def sparse_distributions(draw):
+    """
+    Distributions on three bits with a random support, so that some target values
+    determine both sources, as Y = 1 does in W.
+    """
+    mask = np.array(draw(lists(booleans(), min_size=8, max_size=8))).reshape(2, 2, 2)
+    assume(mask.sum() >= 3)
+    weights = np.array(draw(lists(floats(0.05, 1.0), min_size=8, max_size=8))).reshape(2, 2, 2)
+    pmf = mask * weights
+    return Distribution.from_ndarray(pmf / pmf.sum())
+
+
+@pytest.mark.flaky(reruns=2)
+@pytest.mark.parametrize("method", ["scipy", "admui", "auto"])
+@settings(max_examples=40, deadline=None)
+@given(dist=one_of(distributions(alphabets=(2, 2, 2), nondegenerate=True), sparse_distributions()))
+def test_pid_broja_depends_on_marginals(method, dist):
+    """
+    BROJA depends only on the source-target marginals, so a distribution and its
+    coupling p(y) p(x0 | y) p(x1 | y) have the same unique informations, and neither
+    has negative atoms. SLSQP can stop a few millibits short of the minimum, so its
+    tolerance is looser; the indexing bug it guards against was off by tenths of a bit.
+    """
+    pid = PID_BROJA(dist, method=method)
+    coupled = PID_BROJA(_coupling(dist), method=method)
+    tol = 1e-2 if method == "scipy" else 1e-4
+    for atom in [((0,),), ((1,),)]:
+        assert pid[atom] == pytest.approx(coupled[atom], abs=tol)
+    assert pid.nonnegative
+    assert coupled.nonnegative
 
 
 def test_pid_broja_default_solver():

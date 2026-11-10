@@ -21,6 +21,8 @@ KNOWN_UNIQUES = {
     "unique 1": (0.0, 1.0),  # Y = X1
     "cat": (1.0, 1.0),  # Y = (X0, X1)
     "diff": (0.18872187554086706, 0.18872187554086706),
+    "and": (0.0, 0.0),
+    "w": (0.0, 0.0),  # one-hot of three; Y = 1 determines both sources
 }
 
 
