@@ -209,15 +209,20 @@ def test_pid_broja_default_solver():
 
 
 def test_broja_unconverged_admui(monkeypatch):
-    """An admUI iterate that has not converged is kept, not replaced by SLSQP."""
+    """
+    An admUI iterate that has not converged is kept, not replaced by SLSQP, as long as it
+    is a possible solution: here a redundancy of 0.261 bits, between the certified bounds
+    0.082 and 0.311 of AND.
+    """
 
     def unconverged(d, sources, target, maxiter):
-        return {sources[0]: 0.5, sources[1]: 0.25}, {"converged": False, "method": "admui"}
+        return {sources[0]: 0.05, sources[1]: 0.05}, {"converged": False, "method": "admui"}
 
     monkeypatch.setattr(broja_method, "_solve_admui", unconverged)
     uniques, meta = broja_method.broja_solve_bivariate(bivariates["and"], [(0,), (1,)], (2,), method="admui")
     assert meta["method"] == "admui"
-    assert uniques[(0,)] == 0.5
+    assert meta["guard"] == "ok"
+    assert uniques[(0,)] == 0.05
 
 
 def test_pid_broja_three_sources_without_ecos(monkeypatch):
@@ -255,3 +260,55 @@ def test_pid_broja_unknown_option():
         PID_BROJA(bivariates["and"], feastl=1e-10)
     with pytest.raises(TypeError, match="unknown options"):
         broja_method.broja_solve_bivariate(bivariates["and"], [(0,), (1,)], (2,), feastl=1e-10)
+
+
+def test_broja_guard_lifts_suboptimal_result(monkeypatch):
+    """
+    A result below the certified lower bound is lifted to it. On AND the bound is
+    I_q(X0 : X1) = 0.082 bits for q = p(y) p(x0|y) p(x1|y), above the co-information.
+    """
+
+    def suboptimal(d, sources, target, maxiter):
+        # the unique informations of p itself, whose redundancy is the co-information
+        return {sources[0]: 0.5, sources[1]: 0.5}, {"converged": True, "method": "admui"}
+
+    monkeypatch.setattr(broja_method, "_solve_admui", suboptimal)
+    uniques, meta = broja_method.broja_solve_bivariate(bivariates["and"], [(0,), (1,)], (2,), method="admui")
+    assert meta["method"] == "admui"
+    assert meta["guard"] == "lifted"
+    assert uniques[(0,)] == pytest.approx(0.311278124459133 - 0.081704165945510, abs=1e-9)
+    assert uniques[(1,)] == pytest.approx(uniques[(0,)])
+
+
+@pytest.mark.parametrize(
+    "uniques",
+    [
+        {(0,): -0.1, (1,): -0.1},  # redundancy above min_i I(X_i : Y)
+        {(0,): 0.5, (1,): 0.25},  # different redundancies for the two sources
+    ],
+)
+def test_broja_guard_rejects_impossible_result(monkeypatch, uniques):
+    """An impossible result is a solver failure, so the next solver is tried."""
+    calls = []
+
+    def impossible(d, sources, target, maxiter):
+        calls.append("admui")
+        return dict(uniques), {"converged": True, "method": "admui"}
+
+    monkeypatch.setattr(broja_method, "_solve_admui", impossible)
+    result, meta = broja_method.broja_solve_bivariate(bivariates["and"], [(0,), (1,)], (2,), method="admui")
+    assert calls == ["admui"]
+    assert meta["method"] != "admui"
+    assert result[(0,)] == pytest.approx(0.0, abs=1e-3)
+
+
+@pytest.mark.parametrize("seed", range(6))
+def test_broja_within_certified_bounds(seed):
+    """BROJA's redundancy lies between the co-informations of p and q and min_i I(X_i : Y)."""
+    from dit.algorithms.pid_references import source_target_bounds
+
+    rng = np.random.default_rng(seed)
+    d = Distribution.from_ndarray(rng.dirichlet(np.ones(12)).reshape((2, 3, 2)))
+    lower, upper, _ = source_target_bounds(d, [(0,), (1,)], (2,))
+    red = PID_BROJA(d)[((0,), (1,))]
+    assert lower - 1e-9 <= red <= upper + 1e-5

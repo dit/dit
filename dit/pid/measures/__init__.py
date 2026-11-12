@@ -12,6 +12,7 @@ from .ideltalambda import PID_DeltaLambda
 from .idep import PID_RA, PID_dep, PID_dep_a, PID_dep_b, PID_dep_c
 from .ido import PID_Do
 from .igh import PID_GH
+from .ihifi import PID_HiFi
 from .iig import PID_IG
 from .iipid import PID_IPID
 from .iln import PID_LN
@@ -44,6 +45,7 @@ __all__ = (
     "PID_Do",
     "PID_GH",
     "PID_GK",
+    "PID_HiFi",
     "PID_IG",
     "PID_IPID",
     "PID_LN",
@@ -96,6 +98,7 @@ __all_pids = [
     PID_LN,
     PID_Do,
     PID_CI,
+    PID_HiFi,
     # experimental
     PID_dep_a,
     PID_dep_b,

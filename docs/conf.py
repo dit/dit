@@ -183,6 +183,7 @@ _MACROS = {
     "Irav": [r"\op{I_{RAV}}{#1}", 1],
     "Irr": [r"\op{I_{RR}}{#1}", 1],
     "Ira": [r"\op{I_{RA}}{#1}", 1],
+    "Ihf": [r"\op{I_{HF}}{#1}", 1],
     "Iskara": [r"\op{I_{:}}{#1}", 1],
     "Iskarb": [r"\op{I_{\rightarrow}}{#1}", 1],
     "Iskarc": [r"\op{I_{\leftarrow}}{#1}", 1],

@@ -25,6 +25,7 @@ from dit.pid import (
     PID_Deg,
     PID_Delta,
     PID_Do,
+    PID_HiFi,
     PID_Prec,
     PID_Proj,
 )
@@ -453,7 +454,9 @@ def test_claims_cover_known_measures_and_properties():
         assert set(claims) <= set(PROPERTIES)
 
 
-@pytest.mark.parametrize("pid", [PID_WB, PID_MMI, PID_GK, PID_SX, PID_PM, PID_CCS, PID_Deg, PID_Prec, PID_RDR, PID_GH])
+@pytest.mark.parametrize(
+    "pid", [PID_WB, PID_MMI, PID_GK, PID_SX, PID_PM, PID_CCS, PID_Deg, PID_Prec, PID_RDR, PID_GH, PID_HiFi]
+)
 def test_claims_agree_with_checks(pid):
     """
     No claim made without caveat is contradicted on small examples.

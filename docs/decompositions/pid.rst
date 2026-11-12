@@ -342,6 +342,8 @@ For bivariate sources (two inputs), ``PID_BROJA`` accepts a ``method`` keyword s
 * ``'cone'`` — exponential cone program solved with ECOS :cite:`makkeh2018broja` (requires ``pip install dit[broja]``).
 * ``'auto'`` (the default) — picks ``cone`` if ECOS is installed and ``admui`` otherwise, falling back to the other methods if a solver fails.
 
+Every result is checked against bounds that each BROJA solution satisfies. The distribution itself and :math:`q = p(y)\,p(x_0|y)\,p(x_1|y)` share its source-target marginals, so the larger of their co-informations bounds the redundancy from below :cite:`vansanten2026between`; a result below it is raised to it. A redundancy above :math:`\min_i \I{X_i : Y}`, or one that differs between the two sources, is treated as a failure of that solver, and the next one is tried.
+
 .. note::
 
    In the bivariate case, Griffith independently suggested the same decomposition but from the viewpoint of synergy :cite:`griffith2014quantifying`.
@@ -573,6 +575,31 @@ In order to combine :math:`\Immi{\bullet}` with the coinformation, Goodwell and 
    ╚════════╧════════╧════════╝
 
 .. autoclass:: PID_RR
+   :no-index:
+
+
+:math:`\Ihf{\bullet}`
+---------------------
+
+Hi-Fi :cite:`ontiveroortega2025assessing` decomposes the dependence of a target on a driver :math:`X_i` by conditioning on subsets :math:`W` of the other variables. In its information-theoretic form :cite:`lazic2026information`, the unique part is :math:`\min_W \I{X_i : Y | W}`, which is the optimally conditioned transfer entropy of :cite:`korenek2025higher`. The redundant part is the drop from :math:`\I{X_i : Y}` to that minimum, and the synergistic part is the largest rise above it. For two sources this is a decomposition, the zero-overlap end of the segment described in `Overlap and Bounds`_ :cite:`vansanten2026between`:
+
+.. math::
+
+   \Ihf{X_0 : X_1 : Y} = \max\{0, \I{X_0 : X_1 : Y}\}, \qquad
+   S = \max\{0, -\I{X_0 : X_1 : Y}\}, \qquad
+   U_i = \min\{\I{X_i : Y}, \I{X_i : Y | X_j}\}.
+
+It has the smallest redundancy and synergy, and the largest unique informations, of any nonnegative decomposition; :cite:`goodwell2017temporal` gave these bounds as :math:`R_{\text{min}}`. It is symmetric, satisfies self-redundancy, monotonicity, and the identity property, and vanishes for independent sources. Its redundancy and synergy do not depend on which variable is the target. It depends on more than the source-target marginals and lacks the Blackwell property. On ``bivariates['rdn xor']`` it reports neither redundancy nor synergy: one bit of each cancels in the co-information.
+
+.. ipython::
+
+   In [25]: print(PID_HiFi(bivariates['and']))
+
+.. warning::
+
+   With more than two sources Hi-Fi is not a decomposition. Like other two-source measures, :class:`PID_HiFi` computes the redundancy of every pair of disjoint groups of sources, so every such pair has zero overlap, and fills in the lattice from those values. Zero overlap on all pairs at once is often impossible :cite:`vansanten2026between`. For :math:`X_0 = (a, b)`, :math:`X_1 = a`, :math:`X_2 = c` and :math:`Y = (a, b \oplus c)`, every nonnegative decomposition has a bit of overlap between :math:`X_0` and :math:`(X_1, X_2)`, so :class:`PID_HiFi` has a negative atom. For more sources use :func:`hifi`, which gives Hi-Fi's bounds for each source.
+
+.. autoclass:: PID_HiFi
    :no-index:
 
 
@@ -1280,6 +1307,49 @@ contextual, and entropy decompositions are not supported.
    :no-index:
 
 .. autoclass:: PIDOverlap
+   :no-index:
+
+Hi-Fi for each source
+---------------------
+
+With any number of sources, :func:`hifi` decomposes the dependence of the target on each source by exhaustive search over the groups of other sources it is conditioned on :cite:`lazic2026information`. Its unique information :math:`U_i` bounds that of every nonnegative decomposition from above, and one nonnegative decomposition attains all of these bounds at once. Its redundancy :math:`R_i` and synergy :math:`S_i` bound, from below, the redundancy and synergy between the source and the group attaining them :cite:`vansanten2026between`, Theorem 1. The two are generally attained with different groups, so they are not parts of one decomposition. A greedy search over partners can miss a whole bit: no single partner reveals the parity of three bits.
+
+.. ipython::
+
+   In [75]: from dit import Distribution
+
+   In [76]: from dit.pid import hifi
+
+   In [77]: parity = Distribution(['0000', '0011', '0101', '0110', '1001', '1010', '1100', '1111'], [1/8]*8)
+
+   @doctest
+   In [78]: hifi(parity)[(0,)].synergy_partners
+   Out[78]: ((1,), (2,))
+
+.. autofunction:: hifi
+   :no-index:
+
+.. autoclass:: HiFi
+   :no-index:
+
+.. autoclass:: HiFiDriver
+   :no-index:
+
+Triplet report
+--------------
+
+For two sources :cite:`vansanten2026between` recommend reporting the co-information :math:`C`, its split :math:`C = C^{(2)} - I^{(3)}` into the co-information of the pairwise maximum-entropy model and the third-order connected information :cite:`Amari2001,Schneidman2003`, and :math:`\delta_{\max}`. These give the Hi-Fi and pairwise-reference decompositions and the range of every nonnegative one. :func:`triplet_report` computes them, together with the decomposition of :math:`\Idep{\bullet}`:
+
+.. ipython::
+
+   In [79]: from dit.pid import triplet_report
+
+   In [80]: print(triplet_report(bivariates['rdn xor']))
+
+.. autofunction:: triplet_report
+   :no-index:
+
+.. autoclass:: TripletReport
    :no-index:
 
 
