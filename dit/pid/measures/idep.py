@@ -2,6 +2,7 @@
 The dependency-decomposition based unique measure partial information decomposition.
 """
 
+from ...algorithms.pid_references import reference_coinformations
 from ...multivariate import coinformation
 from ...profiles import DependencyDecomposition
 from ..pid import BaseUniquePID
@@ -15,9 +16,66 @@ __all__ = (
 )
 
 
-class PID_dep(BaseUniquePID):
+def _closed_form_uniques(d, sources, target, redundancy, maxiter=None):
     """
-    The dependency partial information decomposition, as defined by James at al.
+    Unique informations from the closed-form redundancy of a source and the other sources.
+
+    Each of these measures takes the unique information of a source from the dependency
+    lattice of three variables: that source, the other sources together, and the target.
+    On that lattice, the measure's redundancy is a function of the co-informations of the
+    reference distributions :cite:`vansanten2026between`, so no lattice is built.
+
+    Parameters
+    ----------
+    d : Distribution
+        The distribution.
+    sources : tuple of tuples
+        The source variables.
+    target : tuple
+        The target variable.
+    redundancy : callable
+        Maps a :class:`~dit.algorithms.pid_references.ReferenceCoinformations` to the
+        redundancy of the triplet.
+    maxiter : int, None
+        The iteration limit of the maximum entropy fit.
+
+    Returns
+    -------
+    uniques : dict
+        The unique information of each source.
+    """
+    if len(sources) == 2:
+        references = reference_coinformations(d, sources, target, maxiter=maxiter)
+        red = redundancy(references)
+        return {source: mi - red for source, mi in zip(sources, references.mutual_informations, strict=True)}
+
+    uniques = {}
+    for source in sources:
+        others = sum((i for i in sources if i != source), ())
+        references = reference_coinformations(d, (source, others), target, maxiter=maxiter)
+        uniques[source] = references.mutual_informations[0] - redundancy(references)
+    return uniques
+
+
+class PID_dep(BaseUniquePID):
+    r"""
+    The dependency PID of James et al. :cite:`james2017unique`.
+
+    The unique information of a source is the least change in I(sources : target) along
+    the edges of the dependency lattice that add the constraint of the source and the
+    target. For two sources this four-edge minimum is equivalently
+    :cite:`vansanten2026between`, Appendix A,
+
+    .. math::
+
+        R_{\mathrm{dep}} = \max\{C(P^{(2)}), I_{Q_{\mathrm{CI}}}(X_0;X_1)\},
+
+    where :math:`P^{(2)}` matches all three pairwise marginals and
+    :math:`Q_{\mathrm{CI}}(x_0,x_1,y)=p(y)p(x_0|y)p(x_1|y)`. The two terms are the
+    redundancies of :class:`PID_RA` and :class:`PID_MES`, so this one is the larger of
+    them. Only one pairwise maximum-entropy fit is needed. With more sources, each source
+    is paired with the union of the other sources, and the same formula gives its unique
+    information.
     """
 
     _name = "I_dep"
@@ -36,38 +94,29 @@ class PID_dep(BaseUniquePID):
             The source variables.
         target : iterable
             The target variable.
+        maxiter : int, None
+            The iteration limit forwarded to the maximum-entropy optimizer.
 
         Returns
         -------
         idep : dict
             The value of I_dep for each individual source.
         """
-        uniques = {}
-        measure = {"I": lambda d: coinformation(d, [[0, 1], [2]])}
-        source_0_target = frozenset((frozenset((0, 2)),))
-        source_1_target = frozenset((frozenset((1, 2)),))
-        if len(sources) == 2:
-            dm = d.coalesce(sources + (target,))  # put it into [0, 1], [2] order
-            dd = DependencyDecomposition(dm, measures=measure, maxiter=maxiter)
-            u_0 = min(dd.delta(edge, "I") for edge in dd.edges(source_0_target))
-            u_1 = min(dd.delta(edge, "I") for edge in dd.edges(source_1_target))
-            uniques[sources[0]] = u_0
-            uniques[sources[1]] = u_1
-        else:
-            for source in sources:
-                others = sum((i for i in sources if i != source), ())
-                dm = d.coalesce([source, others, target])
-                dd = DependencyDecomposition(dm, measures=measure, maxiter=maxiter)
-                u = min(dd.delta(edge, "I") for edge in dd.edges(source_0_target))
-                uniques[source] = u
-
-        return uniques
+        return _closed_form_uniques(d, sources, target, lambda r: max(r.pairwise, r.independent), maxiter=maxiter)
 
 
 class PID_RA(BaseUniquePID):
     """
-    The "reproducibility analysis" partial information decomposition, derived
-    from the work of Zwick.
+    The "reconstructability analysis" partial information decomposition, derived
+    from the work of Zwick :cite:`zwick2004overview`.
+
+    The unique information of a source is the change in I(sources : target) when the
+    constraint of the source and the target is added to the other two pairwise
+    constraints. With two sources, the redundancy is therefore the co-information of the
+    pairwise maximum-entropy model, and the synergy is the third-order connected
+    information :cite:`vansanten2026between`. Redundancy can be negative;
+    :class:`PID_dep_c` is the nonnegative, clipped version for two sources. With more
+    sources, each source is paired with the union of the other sources.
     """
 
     _name = "I_RA"
@@ -86,33 +135,15 @@ class PID_RA(BaseUniquePID):
             The source variables.
         target : iterable
             The target variable.
+        maxiter : int, None
+            The iteration limit forwarded to the maximum-entropy optimizer.
 
         Returns
         -------
         ira : dict
             The value of I_RA for each individual source.
         """
-        uniques = {}
-        measure = {"I": lambda d: coinformation(d, [[0, 1], [2]])}
-        source_0_target = frozenset([frozenset((0, 2))])
-        source_1_target = frozenset([frozenset((1, 2))])
-        all_pairs = frozenset([frozenset((0, 1))]) | source_0_target | source_1_target
-        if len(sources) == 2:
-            dm = d.coalesce(sources + (target,))
-            dd = DependencyDecomposition(dm, measures=measure, maxiter=maxiter)
-            u_0 = dd.delta((all_pairs, all_pairs - source_0_target), "I")
-            u_1 = dd.delta((all_pairs, all_pairs - source_1_target), "I")
-            uniques[sources[0]] = u_0
-            uniques[sources[1]] = u_1
-        else:
-            for source in sources:
-                others = sum((i for i in sources if i != source), ())
-                dm = d.coalesce([source, others, target])
-                dd = DependencyDecomposition(dm, measures=measure, maxiter=maxiter)
-                u = dd.delta((all_pairs, all_pairs - source_0_target), "I")
-                uniques[source] = u
-
-        return uniques
+        return _closed_form_uniques(d, sources, target, lambda r: r.pairwise, maxiter=maxiter)
 
 
 def _full_dependency_decomposition(d, sources, target, maxiter=None):
@@ -221,16 +252,34 @@ class PID_dep_b(BaseUniquePID):
 
 
 class PID_dep_c(BaseUniquePID):
-    """
-    An experimental, reduced variant of the dependency decomposition PID of James et al.
+    r"""
+    A reduced dependency-lattice PID; pairwise-reference PID for two sources.
 
     As :class:`PID_dep_a`, but only over the edges whose constraints include the joint
     distribution of all the sources, so that the dependencies among the sources are always
     kept.
 
+    For two sources this is the pairwise-reference PID of
+    :cite:`vansanten2026between`, Definition 2. If :math:`P^{(2)}` is the
+    maximum-entropy distribution matching all three pairwise marginals,
+    :math:`C^{(2)}` its co-information, and
+    :math:`I^{(3)}=H(P^{(2)})-H(P)`, then
+
+    .. math::
+
+        R = [C^{(2)}]_+, \qquad
+        S = I^{(3)} + [-C^{(2)}]_+, \qquad
+        U_i = I(X_i;Y) - R.
+
+    Thus the bivariate decomposition is nonnegative and is the positive-part
+    repair of :class:`PID_RA`, not a distinct maximum-entropy optimization; it is
+    computed from one pairwise maximum-entropy fit.
+
     Notes
     -----
-    Experimental: this decomposition can result in subadditive redundancy.
+    With more than two sources this is an experimental full dependency-lattice
+    extension. The bivariate equivalence and nonnegativity guarantee do not
+    apply; the extension can give inconsistent decompositions.
     """
 
     _name = "I_dep_c"
@@ -256,6 +305,8 @@ class PID_dep_c(BaseUniquePID):
         idepc : dict
             The value of I_dep_c for each individual source.
         """
+        if len(sources) == 2:
+            return _closed_form_uniques(d, sources, target, lambda r: max(r.pairwise, 0.0), maxiter=maxiter)
         dd, n = _full_dependency_decomposition(d, sources, target, maxiter=maxiter)
         sources_joint = frozenset(range(n))
         return {

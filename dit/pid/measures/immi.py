@@ -13,8 +13,13 @@ class PID_MMI(BasePID):
     """
     The minimum mutual information partial information decomposition.
 
-    This measure is known to be accurate for gaussian random variables. It was also
-    briefly and tangentially studied by the BROJA team.
+    For jointly Gaussian sources and a univariate target it coincides with every
+    decomposition satisfying BROJA's assumption (*), such as BROJA and I_min
+    :cite:`barrett2015exploration`. It is also the largest redundancy of any nonnegative
+    decomposition, attaining the bound that monotonicity places on every node at once
+    :cite:`vansanten2026between`, so its synergy is the largest and its unique
+    informations the smallest of any nonnegative decomposition. It was also briefly
+    and tangentially studied by the BROJA team.
     """
 
     _name = "I_mmi"
