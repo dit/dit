@@ -8,9 +8,19 @@ import numpy as np
 from ..algorithms.pid_references import reference_coinformations
 from ..helpers import as_linear
 from ..multivariate import coinformation
+from ._utils import _canonical, _group_node, _source_pairs
 from .pid import BasePID, _unit_scale, _validate_sources
 
-__all__ = ("HiFi", "HiFiDriver", "PIDOverlap", "TripletReport", "hifi", "pid_overlap", "triplet_report")
+__all__ = (
+    "HiFi",
+    "HiFiDriver",
+    "PIDOverlap",
+    "TripletReport",
+    "hifi",
+    "pid_overlap",
+    "pid_overlaps",
+    "triplet_report",
+)
 
 
 @dataclass(frozen=True)
@@ -52,7 +62,7 @@ class PIDOverlap:
     unique_bounds: tuple[tuple[float, float], tuple[float, float]]
 
 
-def pid_overlap(pid, atol=1e-9):
+def pid_overlap(pid, atol=1e-9, pair=None):
     r"""
     Report the overlap of a consistent, numeric two-source PID and its sharp bounds.
 
@@ -71,6 +81,13 @@ def pid_overlap(pid, atol=1e-9):
     :cite:`vansanten2026between`, Proposition 1 and Corollary 1. The endpoint
     bounds were given by :cite:`goodwell2017temporal`.
 
+    With more sources, merging two disjoint groups :math:`A` and :math:`B` of them
+    gives a two-source decomposition, with redundancy
+    :math:`R_{A,B} = I_\cap(\{A\}\{B\})` and synergy :math:`R_{A,B} - C_{A,B}`;
+    `pair` selects it. Each pair of a nonnegative decomposition lies on its segment,
+    but with three or more sources the converse fails: the pairs share atoms, so
+    a decomposition can have negative atoms with every pair on its segment.
+
     Parameters
     ----------
     pid : BasePID
@@ -81,6 +98,10 @@ def pid_overlap(pid, atol=1e-9):
         Nonnegative finite absolute tolerance, in the PID's information units.
         The normalized position is undefined (``nan``) if ``delta_max <= atol``;
         neither the overlap nor the bounds are clipped to this tolerance.
+    pair : iterable of iterables, None
+        Two disjoint groups of variables, each a union of sources, as the lattice
+        node they form, e.g. ``((0,), (1, 2))``. Required with more than two sources;
+        with two, the default is the two sources.
 
     Returns
     -------
@@ -94,8 +115,9 @@ def pid_overlap(pid, atol=1e-9):
     TypeError
         If `pid` is not a PID with a target.
     ValueError
-        If there are not exactly two sources, the PID is inconsistent or has
-        nonfinite atoms, the log base is below one, or `atol` is invalid.
+        If there are not exactly two sources and no `pair`, `pair` is not two
+        disjoint groups of sources, the PID is inconsistent or has nonfinite atoms,
+        the log base is below one, or `atol` is invalid.
     NotImplementedError
         If the distribution is symbolic.
 
@@ -116,14 +138,16 @@ def pid_overlap(pid, atol=1e-9):
     """
     if not isinstance(pid, BasePID) or pid._target is None:
         raise TypeError("pid_overlap requires a PID with a target.")
-    if len(pid._sources) != 2:
-        raise ValueError("pid_overlap requires exactly two sources.")
+    if pair is None and len(pid._sources) != 2:
+        raise ValueError("pid_overlap requires exactly two sources, or a pair of groups of sources.")
     if pid._dist.is_symbolic():
         raise NotImplementedError("Overlap diagnostics do not support symbolic distributions.")
     if pid._unit_scale <= 0:
         raise ValueError("Overlap bounds require a logarithmic base greater than one (or linear probabilities).")
     if not np.isfinite(atol) or atol < 0:
         raise ValueError("atol must be finite and nonnegative.")
+    if pair is not None:
+        return _pair_overlap(pid, pair, atol)
 
     pid._ensure_computed()
     red = float(pid.get_pi(pid._lattice.bottom))
@@ -135,7 +159,38 @@ def pid_overlap(pid, atol=1e-9):
         raise ValueError("Overlap diagnostics require a consistent PID.")
 
     mis = [float(pid._scaled(float(coinformation(pid._dist, [source, pid._target])))) for source in pid._sources]
-    c = sum(mis) - float(pid._total)
+    return _overlap(sum(mis) - float(pid._total), red, syn, mis, atol)
+
+
+def _pair_overlap(pid, pair, atol):
+    """
+    The overlap of the two-source decomposition that `pid` induces on two disjoint groups
+    of sources; see :func:`pid_overlap`.
+    """
+    node = _canonical(pair)
+    if len(node) != 2 or set(node[0]) & set(node[1]) or node not in pid._lattice:
+        msg = f"{pair} is not a pair of disjoint groups of the sources {pid._sources}."
+        raise ValueError(msg)
+    pid._ensure_computed()
+    red = float(pid.get_red(node))
+    if not np.isfinite(red):
+        raise ValueError("Overlap diagnostics require a finite redundancy of the pair.")
+    if not pid.consistent:
+        raise ValueError("Overlap diagnostics require a consistent PID.")
+
+    def information(variables):
+        return float(pid._scaled(float(coinformation(pid._dist, [list(variables), pid._target]))))
+
+    mis = [information(group) for group in node]
+    c = sum(mis) - information(sorted(set(node[0]) | set(node[1])))
+    return _overlap(c, red, red - c, mis, atol)
+
+
+def _overlap(c, red, syn, mis, atol):
+    """
+    The overlap of a two-source decomposition and its bounds, from its co-information,
+    redundancy, synergy and mutual informations.
+    """
     r_min = max(0.0, c)
     s_min = max(0.0, -c)
     delta_max = max(0.0, min(mis) - r_min)
@@ -151,6 +206,45 @@ def pid_overlap(pid, atol=1e-9):
         synergy_bounds=(s_min, s_min + delta_max),
         unique_bounds=(unique_bounds[0], unique_bounds[1]),
     )
+
+
+def pid_overlaps(pid, pairs="hifi", atol=1e-9):
+    """
+    The overlap of every pair of groups of sources that Hi-Fi examines, or of every pair.
+
+    Parameters
+    ----------
+    pid : BasePID
+        A consistent decomposition with a target.
+    pairs : str
+        ``'hifi'`` for the pairs with a single source on one side, or ``'all'`` for every
+        pair of disjoint groups.
+    atol : float
+        As for :func:`pid_overlap`.
+
+    Returns
+    -------
+    overlaps : dict
+        Maps each pair, as the lattice node of its two groups, to its :class:`PIDOverlap`.
+
+    Examples
+    --------
+    :math:`\\Immi{\bullet}` has the largest overlap on every pair at once
+    :cite:`vansanten2026between`, Theorem 1(i):
+
+    >>> from dit.pid import PID_MMI, pid_overlaps
+    >>> from dit.pid.distributions import trivariates
+    >>> overlaps = pid_overlaps(PID_MMI(trivariates['anddup']))
+    >>> all(o.delta_max == 0 or abs(o.position - 1) < 1e-9 for o in overlaps.values())
+    True
+    """
+    if not isinstance(pid, BasePID) or pid._target is None:
+        raise TypeError("pid_overlaps requires a PID with a target.")
+    sources = pid._sources
+    return {
+        _group_node(sources, pair): pid_overlap(pid, atol, pair=_group_node(sources, pair))
+        for pair in _source_pairs(len(sources), pairs)
+    }
 
 
 def _sources_and_target(dist, sources, target):

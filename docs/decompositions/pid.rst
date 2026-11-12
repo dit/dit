@@ -1352,6 +1352,76 @@ For two sources :cite:`vansanten2026between` recommend reporting the co-informat
 .. autoclass:: TripletReport
    :no-index:
 
+Bounds on every nonnegative decomposition
+-----------------------------------------
+
+The Shannon equations fix the mutual information :math:`\I{X_A : Y}` of each group of sources. With two sources they leave one free parameter, the overlap above; with three they leave 11, with four 151 and with five 7548. Local positivity, :math:`\pi \geq 0`, turns this space into a polytope of nonnegative decompositions. :class:`PIDBounds` reports the range of every atom and every redundancy over it, without choosing a redundancy measure :cite:`vansanten2026between`. Each interval is a projection. Different intervals generally reach their ends at different decompositions, so not every combination of values within them is possible.
+
+.. ipython::
+
+   In [81]: from dit.pid import PIDBounds
+
+   In [82]: print(PIDBounds(trivariates['anddup']))
+
+The upper end of every redundancy is that of :math:`\Immi{\bullet}`, and the upper end of every unique information is Hi-Fi's :math:`U_i`. In each case one decomposition attains every bound at once. :meth:`PIDBounds.positions` locates a decomposition's atoms within their intervals. The ``fixed`` and ``zero_overlap`` arguments add constraints, such as the pairwise redundancies of a two-source measure or Hi-Fi's zero overlaps. Each interval takes up to two linear programs, so five sources, with 7579 atoms, are evaluated one node at a time. For more sources, see the layer cake below.
+
+.. autoclass:: PIDBounds
+   :no-index:
+
+.. autoclass:: Interval
+   :no-index:
+
+Forced overlap
+--------------
+
+Merging two disjoint groups of sources gives a two-source decomposition with its own overlap :math:`\delta_{A,B}`. Hi-Fi takes every such overlap to be zero. The pairs share atoms, though, so with three or more sources this is often impossible :cite:`vansanten2026between`.
+
+Take a copy and a partner: :math:`X_0 = (a, b)`, :math:`X_1 = a`, :math:`X_2 = c` and :math:`Y = (a, b \oplus c)`. Redundancy with the copy and synergy with the partner cancel against :math:`(X_1, X_2)`, so every nonnegative decomposition has a bit of overlap there. :func:`forced_overlap` finds the least total overlap by linear programming, and returns a minimal-overlap decomposition as a witness. :func:`zero_overlap_conditions` lists the conditions (M) and (S) that rule out zero overlap; for three sources they decide it exactly.
+
+.. ipython::
+
+   In [83]: from dit.pid import forced_overlap, zero_overlap_conditions
+
+   @doctest
+   In [84]: round(forced_overlap(trivariates['copy partner']).total, 6)
+   Out[84]: 1.0
+
+   In [85]: zero_overlap_conditions(trivariates['copy partner'])
+
+On Rauh et al.'s distribution, ``trivariates['xor cat']``, condition (S) forces the overlaps of three pairs to add up to a bit. :func:`pid_overlaps` reports a decomposition's overlap on each pair.
+
+.. autofunction:: forced_overlap
+   :no-index:
+
+.. autoclass:: ForcedOverlap
+   :no-index:
+
+.. autofunction:: zero_overlap_conditions
+   :no-index:
+
+.. autoclass:: OverlapCondition
+   :no-index:
+
+.. autofunction:: pid_overlaps
+   :no-index:
+
+Layer cake
+----------
+
+The redundancy :math:`\min_{B \in \beta} g(B)` of a nondecreasing set function :math:`g` has nonnegative atoms, all on one chain of nodes :cite:`vansanten2026between`, Lemma 2. With :math:`g(A) = \I{X_A : Y}` it is :math:`\Immi{\bullet}`, and :func:`mmi_atoms` returns its nonzero atoms. :func:`max_unique_atoms` gives every source Hi-Fi's largest unique information :math:`U_i`, then fills in the rest with the layer cake of :math:`\I{X_A : Y} - \sum_{i \in A} U_i`. Both need only the :math:`2^n - 1` mutual informations, not the lattice, so they handle more sources than :class:`PIDBounds`.
+
+.. ipython::
+
+   In [86]: from dit.pid import mmi_atoms
+
+   In [87]: {node: round(atom, 4) for node, atom in mmi_atoms(trivariates['sum']).items()}
+
+.. autofunction:: mmi_atoms
+   :no-index:
+
+.. autofunction:: max_unique_atoms
+   :no-index:
+
 
 Checking Properties
 ===================

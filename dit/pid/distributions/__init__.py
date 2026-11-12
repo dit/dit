@@ -53,4 +53,5 @@ trivariates = {
     "giant xor": trivariate.giant_xor,
     "dbl xor": trivariate.dblxor,
     "max min": trivariate.max_min,
+    "copy partner": trivariate.copy_partner,
 }

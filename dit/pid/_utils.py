@@ -29,6 +29,51 @@ def _canonical(elements):
     return tuple(sorted(minimal, key=lambda e: (len(e), e)))
 
 
+def _group_variables(sources, group):
+    """
+    The sorted variables of the sources in `group`, a bitmask of positions in `sources`.
+    """
+    return tuple(sorted({v for i, source in enumerate(sources) if group >> i & 1 for v in source}))
+
+
+def _group_node(sources, groups):
+    """
+    The lattice node whose elements are the given groups of sources (bitmasks of positions
+    in `sources`), labelled as in the lattice.
+    """
+    return tuple(sorted((_group_variables(sources, group) for group in groups), key=lambda e: (len(e), e)))
+
+
+def _source_pairs(n, kind="all"):
+    """
+    The unordered pairs of disjoint nonempty groups of `n` sources, as pairs of bitmasks.
+
+    Parameters
+    ----------
+    n : int
+        The number of sources.
+    kind : str
+        ``'all'`` for every pair, or ``'hifi'`` for those that Hi-Fi examines, which have a
+        single source on one side.
+
+    Returns
+    -------
+    pairs : list of tuples of int
+    """
+    if kind not in ("all", "hifi"):
+        msg = f"Unknown kind of pairs {kind!r}; expected 'all' or 'hifi'."
+        raise ValueError(msg)
+    pairs = []
+    for first in range(1, 1 << n):
+        for second in range(first + 1, 1 << n):
+            if first & second:
+                continue
+            if kind == "hifi" and first.bit_count() > 1 and second.bit_count() > 1:
+                continue
+            pairs.append((first, second))
+    return pairs
+
+
 def _positions(node, sources):
     """
     The antichain `node` as a set of groups of positions in `sources`.
