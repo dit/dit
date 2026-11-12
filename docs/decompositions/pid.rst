@@ -270,7 +270,9 @@ One potential measure of redundancy is the *minimum mutual information* :cite:`b
 
    \Immi{X_{0:n} : Y} = \min_{i} \I{X_i : Y}
 
-This measure, though crude, is known to be correct for multivariate gaussian variables :cite:`olbrich2015information`.
+This measure, though crude, coincides with every decomposition satisfying BROJA's assumption ``*``, such as :math:`\Ibroja{\bullet}` and :math:`\Imin{\bullet}`, for jointly Gaussian sources and a univariate target :cite:`barrett2015exploration,olbrich2015information`.
+
+It is also the largest redundancy of any nonnegative decomposition: monotonicity bounds the redundancy of every collection by its smallest mutual information, and :math:`\Immi{\bullet}` attains that bound at every node at once :cite:`vansanten2026between`, Theorem 1. Its synergy and its overlap of redundancy and synergy (see `Overlap and Bounds`_) are therefore the largest, and its unique informations the smallest, of any nonnegative decomposition: an upper bound, not a conservative estimate. Its atoms have closed forms: the synergy is :math:`\min_i \I{X_i : Y | X_{\text{rest}}}`, and the unique information of :math:`X_i` is :math:`\max\{0, \I{X_i : Y} - \I{X_{\text{rest}} : Y}\}`, where :math:`X_{\text{rest}}` are the other sources.
 
 .. autoclass:: PID_MMI
    :no-index:
@@ -419,6 +421,27 @@ This decomposition also displays an interesting phenomena, that of *subadditive 
 
 James et al :cite:`james2017unique` have developed a method of quantifying unique information based on the :ref:`Dependency Decomposition`. Unique information from variable :math:`X_i` is evaluated as the least change in sources-target mutual information when adding the constraint :math:`X_i Y`.
 
+For two sources this four-edge minimum has the equivalent reference-family form
+:cite:`vansanten2026between`, Appendix A:
+
+.. math::
+
+   R_{\mathrm{dep}} = \max\{C^{(2)}, I_{Q_{\mathrm{CI}}}(X_0;X_1)\},
+   \qquad U_i=\I{X_i:Y}-R_{\mathrm{dep}}.
+
+Here :math:`P^{(2)}` is the maximum-entropy joint matching all three pairwise
+marginals, :math:`C^{(2)}` is its co-information, and
+:math:`Q_{\mathrm{CI}}(x_0,x_1,y)=p(y)p(x_0|y)p(x_1|y)` makes the sources
+conditionally independent given the target. The second term is the redundancy
+of :class:`PID_MES` (equivalently :class:`PID_Do`), and the first is that of
+:class:`PID_RA`, so for two sources :math:`\Idep{\bullet}` is the larger of the
+redundancies of :math:`\Ira{\bullet}` and :math:`\Imes{\bullet}`. ``dit`` uses this
+form to avoid constructing the dependency lattice: only one pairwise
+maximum-entropy fit is required. Composite source groups and the target are
+coalesced before fitting. With more than two sources, each source is paired with
+the union of the other sources, and the same formula gives its unique
+information.
+
 .. ipython::
 
    In [21]: PID_dep(bivariates['not two'])
@@ -501,9 +524,7 @@ Taking a functional perspective as in :math:`\Iwedge{\bullet}`, :math:`\Irav{\bu
 
 This measure is designed to exploit the conflation of synergy and redundancy in the three variable coinformation: :math:`\I{X_0\!:\!X_1\!:\!Y} = R - S`.
 
-.. note::
-
-   TODO: reference. No canonical publication for :math:`\Irav{\bullet}` has been identified in the ``dit`` source; a citation should be added if/when the origin paper is confirmed.
+The measure was contributed to ``dit`` by J. Emenheiser and has not been published separately :cite:`vansanten2026between`. For two sources its redundancy lies between :math:`\max\{0, \I{X_0 : X_1 : Y}\}` and that of :math:`\Ibroja{\bullet}`, so it is a nonnegative decomposition with no more overlap than :math:`\Ibroja{\bullet}` (:cite:`vansanten2026between`, Proposition 10; see `Overlap and Bounds`_).
 
 .. ipython::
 
@@ -530,11 +551,13 @@ In order to combine :math:`\Immi{\bullet}` with the coinformation, Goodwell and 
 
 .. math::
 
-   \Irr{X_0 : X_1} = R_{\text{min}} + I_{S} (\Immi{X_{0:2} : Y} - R_{\text{min}}
+   \Irr{X_0 : X_1} = R_{\text{min}} + I_{S} (\Immi{X_{0:2} : Y} - R_{\text{min}})
 
    R_{\text{min}} = \max\{ 0, \I{X_0 : X_1 : Y} \}
 
    I_{S} = \frac{\I{X_0 : X_1}}{\min\{ \H{X_0}, \H{X_1} \}}
+
+:math:`R_{\text{min}}` and :math:`\Immi{\bullet}` are the two ends of the segment of nonnegative bivariate decompositions, so :math:`I_S` is the position of :math:`\Irr{\bullet}` on it (see `Overlap and Bounds`_) :cite:`vansanten2026between`: it moves from the zero-overlap end for independent sources to :math:`\Immi{\bullet}` when one source is a function of the other.
 
 .. ipython::
 
@@ -556,13 +579,57 @@ In order to combine :math:`\Immi{\bullet}` with the coinformation, Goodwell and 
 :math:`\Ira{\bullet}`
 ---------------------
 
-Drawing from the reconstructability analysis work of Zwick :cite:`zwick2004overview`, we can define :math:`Ira{\bullet}` as a restricted form of :math:`\Idep{\bullet}`.
+Drawing from the reconstructability analysis work of Zwick :cite:`zwick2004overview`, we can define :math:`\Ira{\bullet}` as a restricted form of :math:`\Idep{\bullet}`. It keeps only the edge of the dependency lattice that adds the source-target constraint to the other two pairwise constraints. For two sources its redundancy is therefore the co-information :math:`C^{(2)}` of the maximum-entropy distribution with the three pairwise marginals, and its synergy is the third-order connected information :math:`I^{(3)}` :cite:`vansanten2026between` (see `Pairwise-reference PID`_).
 
 .. warning::
 
    This measure can result in a negative PID.
 
 .. autoclass:: PID_RA
+   :no-index:
+
+
+Pairwise-reference PID
+----------------------
+
+For **two sources**, :class:`PID_dep_c` is the pairwise-reference PID of
+:cite:`vansanten2026between`, Definition 2, rather than a separate numerical
+construction. Let :math:`P^{(2)}` be the maximum-entropy joint with the three
+pairwise marginals of :math:`P`, and write
+
+.. math::
+
+   C^{(2)}=\operatorname{coI}(P^{(2)}), \qquad
+   I^{(3)}=H(P^{(2)})-H(P)=D_{\mathrm{KL}}(P\|P^{(2)}).
+
+All terms except the joint entropy agree in the co-information expansion, so
+:math:`C=C^{(2)}-I^{(3)}`. The pairwise-reference atoms are
+
+.. math::
+
+   R=[C^{(2)}]_+, \qquad U_i=\I{X_i:Y}-R, \qquad
+   S=I^{(3)}+[-C^{(2)}]_+,
+
+where :math:`[x]_+=\max(0,x)`. They form a nonnegative bivariate PID. In
+contrast, :class:`PID_RA` uses the unclipped :math:`R=C^{(2)}` and
+:math:`S=I^{(3)}`, and can have negative redundancy.
+
+This separates pairwise-generated net synergy from the third-order connected
+information without erasing coexisting redundancy and synergy. On AND,
+:math:`I^{(3)}=0` and :class:`PID_dep_c` has zero redundancy and about 0.189 bits
+of synergy. On ``bivariates['rdn xor']``, :math:`C=0` but
+:math:`C^{(2)}=I^{(3)}=1`: it retains one bit each of redundancy and synergy,
+whereas the zero-overlap endpoint reports neither.
+
+.. warning::
+
+   The equivalence and nonnegativity guarantee concern two source groups,
+   each of which may itself contain several variables. The full
+   dependency-lattice extension of :class:`PID_dep_c` to more sources remains
+   experimental and can be inconsistent. Connected information characterizes
+   an observed distribution, not an identified causal mechanism.
+
+.. autoclass:: PID_dep_c
    :no-index:
 
 
@@ -764,6 +831,10 @@ No bound on :math:`|Q|` is known; it defaults to the largest source alphabet.
 
 The sources are independent given the target under :math:`q`, so for two sources the redundancy is :math:`I_q(X_0 : X_1)`, the same as that of :math:`\Ido{\bullet}`. James, Emenheiser & Crutchfield :cite:`james2019unique` discuss this distribution as the maximum entropy reading of assumption ``*``, and Liardi et al. :cite:`liardi2026landscape` attribute the measure to them; it was not proposed as a complete decomposition, and it does not satisfy subset equality.
 
+.. warning::
+
+   This measure can result in a negative PID. The distribution :math:`p` itself is not among the reference distributions, so the synergy, :math:`I_q(X_0 : X_1)` minus the co-information of :math:`p`, is negative whenever the latter is larger :cite:`vansanten2026between`. For example, two identical sources and a target copying them through a binary symmetric channel with crossover 0.1 give redundancy 0.320 bits and synergy -0.211 bits.
+
 .. autoclass:: PID_MES
    :no-index:
 
@@ -797,6 +868,10 @@ Lyu, Clark & Raviv :cite:`lyu2024explicit` give an explicit bivariate redundancy
    p(X'_i, X_j, Y) = p(X_j)\, p(Y \mid X_j)\, p(X_i \mid Y)
 
 and the redundancy is :math:`I(X'_1 : X_2) = I(X'_2 : X_1)`. Only defined for two sources.
+
+.. warning::
+
+   This measure can result in a negative PID. For two sources its redundancy is that of :math:`\Imes{\bullet}`, so the example given there has negative synergy here as well :cite:`vansanten2026between`.
 
 .. ipython::
 
@@ -891,15 +966,12 @@ Two-Way Communication
 Experimental Measures
 ---------------------
 
-Three variants of :math:`\Idep{\bullet}` take the unique information of a source from the dependency lattice of all the sources and the target, rather than of the source, the other sources together, and the target. With two sources :class:`PID_dep_a` is :math:`\Idep{\bullet}`; :class:`PID_dep_b` only considers the edges that never constrain the sources among themselves, and gives inconsistent decompositions; :class:`PID_dep_c` only those that keep the joint distribution of the sources. No publication describes them, and their lattices grow quickly with the number of sources.
+Three variants of :math:`\Idep{\bullet}` take the unique information of a source from the dependency lattice of all the sources and the target, rather than of the source, the other sources together, and the target. With two sources :class:`PID_dep_a` is :math:`\Idep{\bullet}`; :class:`PID_dep_b` only considers the edges that never constrain the sources among themselves, and gives inconsistent decompositions; :class:`PID_dep_c` only those that keep the joint distribution of the sources. The bivariate case of :class:`PID_dep_c` is the `Pairwise-reference PID`_ described above. Their full dependency-lattice extensions beyond two sources remain experimental, and their lattices grow quickly with the number of sources.
 
 .. autoclass:: PID_dep_a
    :no-index:
 
 .. autoclass:: PID_dep_b
-   :no-index:
-
-.. autoclass:: PID_dep_c
    :no-index:
 
 
@@ -1125,9 +1197,90 @@ pointwise measure such as :math:`\Isx{\bullet}`:
 
    In [44]: pointwise_pid_table(bivariates['and'], pid_class=PID_SX)
 
+For two sources, ``overlap=True`` appends each decomposition's overlap of redundancy
+and synergy and its position on the segment of nonnegative decompositions (see
+`Overlap and Bounds`_):
+
+.. ipython::
+
+   In [45]: compare_measures(bivariates['and'], pids=[PID_WB, PID_dep, PID_CCS, PID_RA], overlap=True)
+
 .. autofunction:: dit.pid.helpers.compare_measures
 
 .. autofunction:: dit.pid.helpers.pointwise_pid_table
+
+
+Overlap and Bounds
+==================
+
+For two sources the Shannon equations leave one degree of freedom. If
+:math:`I_i=\I{X_i:Y}` and :math:`C=I_0+I_1-\I{X_0,X_1:Y}`, every consistent
+PID, including a signed one, has the form :cite:`vansanten2026between`
+
+.. math::
+
+   R=[C]_+ + \delta, \qquad S=[-C]_+ + \delta, \qquad
+   U_i=I_i-[C]_+-\delta.
+
+The *overlap* :math:`\delta=\min(R,S)` is the common excess of redundancy and
+synergy above their net balance. The four atoms are nonnegative exactly on
+
+.. math::
+
+   0\leq\delta\leq\delta_{\max}, \qquad
+   \delta_{\max}=\min(I_0,I_1)-[C]_+.
+
+The lower endpoint is the information-theoretic Hi-Fi decomposition, the upper
+endpoint MMI; the corresponding sharp atom bounds were given by
+:cite:`goodwell2017temporal`. :func:`pid_overlap` reports this segment and a
+measure's position :math:`\lambda=\delta/\delta_{\max}` without performing any
+additional maximum-entropy optimization:
+
+.. ipython::
+
+   In [70]: from dit.pid import pid_overlap
+
+   In [71]: overlap = pid_overlap(PID_MMI(bivariates['and']))
+
+   @doctest
+   In [72]: round(overlap.delta, 6), round(overlap.position, 6)
+   Out[72]: (0.311278, 1.0)
+
+   @doctest
+   In [73]: tuple(round(x, 6) for x in overlap.synergy_bounds)
+   Out[73]: (0.188722, 0.5)
+
+   @doctest
+   In [74]: pid_overlap(PID_PM(bivariates['and'])).position > 1
+   Out[74]: True
+
+A signed PID may leave the segment: negative redundancy or synergy gives
+:math:`\delta<0`, and negative unique information can give
+:math:`\delta>\delta_{\max}`. These values are **not clipped**. If the segment
+collapses within ``atol``, ``position`` is ``nan`` rather than an arbitrarily
+chosen endpoint. All information values are plain numbers in the PID's
+logarithmic units; ``position`` is dimensionless. ``unique_bounds`` follows the
+supplied source order.
+
+The nested reference families also give useful checks for these particular
+bivariate measures:
+
+.. math::
+
+   R_{\mathrm{HF}}\leq R_{\mathrm{pairwise}}\leq R_{\mathrm{dep}}
+   \leq R_{\mathrm{BROJA}}\leq R_{\mathrm{MMI}}.
+
+This is not an ordering of every PID, and neither endpoint is universally
+preferred. The bounds concern **nonnegative** PIDs, not constraints on signed
+measures. With more sources, pairwise overlap choices need not be jointly
+feasible, so this helper deliberately accepts only two-source PIDs. Conditional,
+contextual, and entropy decompositions are not supported.
+
+.. autofunction:: pid_overlap
+   :no-index:
+
+.. autoclass:: PIDOverlap
+   :no-index:
 
 
 Checking Properties

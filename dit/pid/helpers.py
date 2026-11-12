@@ -6,6 +6,7 @@ import numpy as np
 
 from ..utils import build_table
 from ._utils import _label
+from .diagnostics import pid_overlap
 from .measures import __all_pids
 from .pid import sort_key
 from .properties import PROPERTIES, _resolve, claims_for
@@ -52,7 +53,7 @@ def representational_complexity(decomposition, comparator=min):
     return float(atoms @ degrees / atoms.sum())
 
 
-def compare_measures(dist, pids=__all_pids, inputs=None, output=None, name="", digits=5):
+def compare_measures(dist, pids=__all_pids, inputs=None, output=None, name="", digits=5, overlap=False):
     """
     Print the results of several partial information decompositions.
 
@@ -75,8 +76,22 @@ def compare_measures(dist, pids=__all_pids, inputs=None, output=None, name="", d
 
     digits : int
         The number of digits of precision to print.
+
+    overlap : bool
+        For two sources, also print each decomposition's overlap of redundancy and
+        synergy and its position on the segment of nonnegative decompositions
+        :cite:`vansanten2026between`, as computed by :func:`~dit.pid.pid_overlap`. The
+        position is ``nan`` when the segment collapses, and both are ``nan`` for an
+        inconsistent or incomplete decomposition.
+
+    Raises
+    ------
+    ValueError
+        If `overlap` is requested for other than two sources.
     """
     pids = [pid(dist.copy(), inputs, output) for pid in pids]
+    if overlap and len(pids[0]._sources) != 2:
+        raise ValueError("The overlap is defined for two sources.")
     names = [pid.name for pid in pids]
     dist_name = getattr(dist, "name", "")
     title = f"PID Comparison | {dist_name}" if dist_name else "PID Comparison"
@@ -89,7 +104,22 @@ def compare_measures(dist, pids=__all_pids, inputs=None, output=None, name="", d
         vals = [pid[node] for pid in pids]
         vals = [0.0 if np.isclose(0, val, atol=1e-5, rtol=1e-5) else val for val in vals]
         table.add_row([stringify(node)] + vals)
+    if overlap:
+        overlaps = [_overlap_or_nan(pid) for pid in pids]
+        table.add_row(["delta"] + [delta for delta, _ in overlaps])
+        table.add_row(["lambda"] + [position for _, position in overlaps])
     print(table.get_string())
+
+
+def _overlap_or_nan(pid):
+    """
+    The overlap and normalized position of a two-source PID, or nans if it has none.
+    """
+    try:
+        result = pid_overlap(pid)
+    except ValueError:
+        return float("nan"), float("nan")
+    return result.delta, result.position
 
 
 def pointwise_pid_table(dist, sources=None, target=None, pid_class=None, digits=4):

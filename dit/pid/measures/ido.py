@@ -102,6 +102,13 @@ class PID_Do(BaseBivariatePID):
     -----
     Bivariate only.  The paper explicitly notes that I_do only fully
     determines the PID for n = 2 sources.
+
+    The redundancy is the co-information of q = p(y) p(x_0|y) p(x_1|y), as for
+    :class:`~dit.pid.PID_MES`. The distribution itself is not among the reference
+    distributions, so the synergy, the redundancy minus the co-information of p, can be
+    negative :cite:`vansanten2026between`. For example, two identical sources and a
+    target copying them through a binary symmetric channel with crossover 0.1 give
+    redundancy 0.320 and synergy -0.211 bits.
     """
 
     _name = "I_do"
