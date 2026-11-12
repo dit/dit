@@ -37,6 +37,7 @@ from dit.pid import (
     PID_dep,
     PID_dep_b,
     PID_Do,
+    PID_HiFi,
     PID_Prec,
     PID_Proj,
     PID_SKAR_nw,
@@ -375,6 +376,7 @@ def test_measures_registry():
         PID_LN,
         PID_Do,
         PID_CI,
+        PID_HiFi,
     } <= set(__all_pids)
 
 

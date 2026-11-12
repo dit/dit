@@ -31,6 +31,7 @@ __all__ = (
     "conditionally_independent",
     "pairwise_maxent",
     "reference_coinformations",
+    "source_target_bounds",
 )
 
 
@@ -156,3 +157,41 @@ def reference_coinformations(dist, sources, target, maxiter=None):
         connected=float(entropy(pairwise) - entropy(triplet)),
         independent=float(coinformation(independent, [[0], [1]])),
     )
+
+
+def source_target_bounds(dist, sources, target):
+    """
+    Bounds on the largest co-information over the distributions with the source-target
+    marginals of `dist`, the redundancy of BROJA.
+
+    The distribution itself and :math:`Q_{\\mathrm{CI}}` have those marginals, so the
+    larger of their co-informations is a lower bound. Every such distribution has the
+    mutual informations :math:`I(X_i : Y)` of `dist` and nonnegative conditional mutual
+    informations, so its co-information is at most :math:`\\min_i I(X_i : Y)`.
+
+    Parameters
+    ----------
+    dist : Distribution
+        The distribution.
+    sources : pair of iterables
+        The two source groups; each is coalesced into one variable.
+    target : iterable
+        The target variables, coalesced into one variable.
+
+    Returns
+    -------
+    lower : float
+        The lower bound, in bits.
+    upper : float
+        The upper bound, in bits.
+    mutual_informations : tuple of float
+        :math:`I(X_0 : Y)` and :math:`I(X_1 : Y)`, in bits.
+    """
+    triplet = dist.coalesce([*sources, target])
+    mutual_informations = (
+        float(coinformation(triplet, [[0], [2]])),
+        float(coinformation(triplet, [[1], [2]])),
+    )
+    independent = float(coinformation(conditionally_independent(triplet, [[0], [1]], [2]), [[0], [1]]))
+    lower = max(float(coinformation(triplet)), independent)
+    return lower, min(mutual_informations), mutual_informations

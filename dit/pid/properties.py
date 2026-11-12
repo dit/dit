@@ -1119,6 +1119,33 @@ def _source_chain_rule_claims():
     }
 
 
+def _hifi_claims():
+    """
+    The properties of the information-theoretic Hi-Fi decomposition (Proposition 2 of
+    :cite:`vansanten2026between`).
+    """
+    source = "vansanten2026between"
+    two = "only for two sources"
+    return {
+        "SR": Claim(True, source=source),
+        "S0": Claim(True, source=source),
+        "M0": Claim(True, "†", two, source),
+        "GP": Claim(True, source=source),
+        "LP0": Claim(True, source=source),
+        "LP1": Claim(
+            False,
+            caveat="zero overlap on every pair of groups of sources is often impossible, e.g. for a copy and a"
+            " partner (Example 1)",
+            source=source,
+        ),
+        "IID": Claim(True, source=source),
+        "ID": Claim(True, source=source),
+        "S1": Claim(True, "†", two + "; redundancy and synergy do not depend on which variable is the target", source),
+        "*": Claim(False, source=source),
+        "BP": Claim(False, source=source),
+    }
+
+
 def _local_positivity_claim(lp0, lp1):
     """
     LP is LP0 and LP1 together.
@@ -1153,6 +1180,7 @@ def _build_claims():
     # PID_Deg is the degradation redundancy of Gomes & Figueiredo, which is Kolchinsky's
     # Blackwell redundancy, the measure of PID_Prec.
     claims["PID_Deg"] = _same_measure_claims(claims["PID_Prec"], "as for I_prec, the same measure")
+    claims["PID_HiFi"] = _hifi_claims()
     for table in claims.values():
         table["LP"] = _local_positivity_claim(table["LP0"], table["LP1"])
     for measure, claim in _source_chain_rule_claims().items():

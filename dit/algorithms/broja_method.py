@@ -14,6 +14,10 @@ __all__ = (
 
 _BROJA_METHODS = frozenset({"scipy", "admui", "cone", "auto"})
 
+# how far, in bits, a solver's redundancy may exceed its upper bound, or differ between
+# the two sources, before the result counts as a failure (admUI is accurate to ~1e-5)
+_GUARD_TOLERANCE = 1e-5
+
 
 def ecos_available() -> bool:
     try:
@@ -55,6 +59,47 @@ def _uniques_from_optimizer(broja, pmf, sources):
     u0 = float(broja._conditional_mutual_information({0}, {2}, {1})(pmf))
     u1 = float(broja._conditional_mutual_information({1}, {2}, {0})(pmf))
     return {sources[0]: u0, sources[1]: u1}
+
+
+def _guard(d, sources, target, uniques):
+    """
+    Check a solver's unique informations against bounds that every BROJA solution satisfies.
+
+    The redundancy I(X_i : Y) - U_i is the co-information of the solver's distribution: the
+    same for both sources, and at most min_i I(X_i : Y). Distributions known in closed form
+    to share the source-target marginals, p and q = p(y) p(x_0|y) p(x_1|y), bound it from
+    below :cite:`vansanten2026between`. A result below that bound is lifted to it, a
+    certified improvement. One above the upper bound, or with different redundancies for
+    the two sources, is a failure of the solver.
+
+    Parameters
+    ----------
+    d : Distribution
+        The distribution.
+    sources : pair of iterables
+        The two sources.
+    target : iterable
+        The target.
+    uniques : dict
+        The solver's unique information of each source.
+
+    Returns
+    -------
+    uniques : dict, None
+        The unique informations, lifted if need be; None if the solver failed.
+    status : str
+        ``'ok'``, ``'lifted'`` or ``'failed'``.
+    """
+    from .pid_references import source_target_bounds
+
+    lower, upper, mutual_informations = source_target_bounds(d, sources, target)
+    pairs = list(zip(sources, mutual_informations, strict=True))
+    reds = [mi - uniques[source] for source, mi in pairs]
+    if abs(reds[0] - reds[1]) > _GUARD_TOLERANCE or max(reds) > upper + _GUARD_TOLERANCE:
+        return None, "failed"
+    if max(reds) < lower:
+        return {source: mi - lower for source, mi in pairs}, "lifted"
+    return uniques, "ok"
 
 
 def _solve_scipy(d, sources, target, maxiter, rng):
@@ -126,12 +171,18 @@ def broja_solve_bivariate(d, sources, target, *, maxiter=1000, method="auto", rn
     iterate, which matches the marginals, even if it has not converged within
     `maxiter` iterations.
 
+    Every result is checked against bounds that each BROJA solution satisfies (see
+    `_guard`): a redundancy below the larger co-information of p and of
+    q = p(y) p(x_0|y) p(x_1|y) is lifted to it, and one above min_i I(X_i : Y), or
+    inconsistent between the sources, makes the next solver be tried.
+
     Returns
     -------
     uniques : dict
         Unique information per source.
     meta : dict
-        Solver metadata including the method actually used.
+        Solver metadata including the method actually used, and ``'guard'``: ``'ok'``,
+        or ``'lifted'`` if the result was raised to the certified lower bound.
     """
     from .pid_broja import prepare_dist as broja_prepare_dist
 
@@ -163,7 +214,11 @@ def broja_solve_bivariate(d, sources, target, *, maxiter=1000, method="auto", rn
             errors.append((meth, exc))
             continue
 
-        return uniques, meta
+        guarded, status = _guard(d, sources, target, uniques)
+        if guarded is None:
+            errors.append((meth, OptimizationException("the result violates the bounds of every BROJA solution")))
+            continue
+        return guarded, {**meta, "guard": status}
 
     msg = "All BROJA solvers failed: " + "; ".join(f"{m}: {e}" for m, e in errors)
     raise OptimizationException(msg)

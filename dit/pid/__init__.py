@@ -3,7 +3,7 @@ Partial information decompositions, and related decompositions.
 """
 
 from .conditional import ConditionalPID, ContextualPID
-from .diagnostics import PIDOverlap, pid_overlap
+from .diagnostics import HiFi, HiFiDriver, PIDOverlap, TripletReport, hifi, pid_overlap, triplet_report
 from .distributions import bivariates, trivariates
 from .gid import GID
 from .hcs import PED_CS
@@ -20,8 +20,13 @@ __all__ = (
     "PED_CS",
     "PED_MOS",
     "PED_SX",
+    "HiFi",
+    "HiFiDriver",
     "PIDOverlap",
+    "TripletReport",
+    "hifi",
     "pid_overlap",
+    "triplet_report",
     "Claim",
     "ConditionalPID",
     "ContextualPID",
