@@ -219,8 +219,9 @@ class Distribution:
         pmf : sequence of float, optional
             Probability values corresponding to *data* when *data* is a
             sequence of outcomes. Ignored when *data* is a DataArray or dict.
-        rv_names : list of str, optional
-            Names for each random variable. Only used when *data* is
+        rv_names : sequence of str, optional
+            Names for each random variable; a string gives one name per
+            character, as in :meth:`set_rv_names`. Only used when *data* is
             outcomes or a dict. Defaults to ``'X0'``, ``'X1'``, ...
         free_vars : set-like of str, optional
             Names of the free (joint) variables. If *both* ``free_vars``
@@ -332,8 +333,7 @@ class Distribution:
             except TypeError:
                 outcomes = [(o,) for o in outcomes]
                 n = 1
-            if rv_names is None:
-                rv_names = [f"X{i}" for i in range(n)]
+            rv_names = [f"X{i}" for i in range(n)] if rv_names is None else list(rv_names)
             if len(rv_names) != n:
                 raise ValueError(f"Expected {n} rv_names, got {len(rv_names)}")
 

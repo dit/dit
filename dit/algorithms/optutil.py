@@ -280,7 +280,14 @@ class Bunch(_Bunch):
 
 
 def prepare_dist(dist):
-    if not isinstance(dist._sample_space, dit.samplespace.CartesianProduct):
+    """
+    Return a dense copy of `dist` with linear probabilities over a Cartesian sample space.
+
+    The input distribution is not modified.
+    """
+    if isinstance(dist._sample_space, dit.samplespace.CartesianProduct):
+        dist = dist.copy()
+    else:
         dist = dit.expanded_samplespace(dist, union=True)
 
     if not dist.is_dense():
