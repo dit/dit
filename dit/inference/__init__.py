@@ -23,6 +23,7 @@ from .estimators import (
     weighted_permutation_entropy,
 )
 from .gaussian_copula import copula_normalize, gaussian_copula_mutual_information
+from .interaction import ConnectedInformationTest, connected_information_test
 from .knn_estimators import (
     cross_entropy_knn,
     differential_entropy_knn,

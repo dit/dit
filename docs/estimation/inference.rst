@@ -236,6 +236,35 @@ true order; all methods return longer histories as the sample grows.
    In [15]: select_markov_order(x, max_order=4, rng=0)
    Out[15]: 1
 
+Interaction among all variables
+===============================
+
+The :math:`k`-th order connected information of :math:`k` variables,
+:math:`I^{(k)} = H(P^{(k-1)}) - H(P)`, is the entropy the maximum entropy
+distribution with every :math:`(k-1)`-variable marginal has beyond the
+distribution itself :cite:`Amari2001,Schneidman2003`: the dependence that needs a
+:math:`k`-way interaction. For three variables the co-information splits as
+:math:`C^{(2)} - I^{(3)}`, so :math:`I^{(3)} > 0` is synergy that pairwise
+structure cannot produce :cite:`vansanten2026between`. Its plug-in estimate is
+positive in every finite sample, so it needs a test.
+:func:`connected_information_test` gives the likelihood-ratio test of the
+log-linear model without a :math:`k`-way term,
+:math:`G^2 = 2 N \ln 2 \, \hat{I}^{(k)}`, against its chi-squared limit, or
+against a parametric bootstrap from the fitted null for sparse tables
+:cite:`bishop1975discrete`.
+
+.. ipython::
+
+   In [16]: from dit.inference import connected_information_test
+
+   In [17]: x = rng.integers(0, 2, size=(500, 2))
+
+   @doctest
+   In [18]: connected_information_test(np.column_stack([x, x[:, 0] ^ x[:, 1]])).pvalue < 1e-10
+   Out[18]: True
+
+   In [19]: connected_information_test(rng.integers(0, 2, size=(500, 3))).pvalue
+
 Conditional mutual information and resampling
 =============================================
 
@@ -357,6 +386,12 @@ API
    :no-index:
 
 .. autofunction:: select_markov_order
+   :no-index:
+
+.. autofunction:: connected_information_test
+   :no-index:
+
+.. autoclass:: ConnectedInformationTest
    :no-index:
 
 .. autofunction:: whittle_count
