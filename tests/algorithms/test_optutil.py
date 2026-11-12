@@ -5,7 +5,7 @@ Tests for dit.algorithms.optutil.
 import numpy as np
 import pytest
 
-from dit.algorithms import degrees_of_freedom, ipf_dist, marginal_maxent_dists
+from dit.algorithms import degrees_of_freedom, ipf_dist, marginal_maxent_dists, pruned_samplespace
 from dit.algorithms.distribution_optimizers import MaxEntOptimizer, MinEntOptimizer
 from dit.algorithms.maxentropy import MarginalMaximumEntropy
 from dit.algorithms.optutil import prepare_dist
@@ -34,6 +34,18 @@ def test_prepare_dist_returns_dense_linear_copy():
     assert pd.is_dense()
     np.testing.assert_allclose(pd.pmf, [1 / 4, 0, 0, 1 / 4, 0, 1 / 4, 1 / 4, 0])
     assert _state(d) == before
+
+
+def test_prepare_dist_expands_a_pruned_sample_space():
+    """A non-Cartesian sample space is expanded on the copy, not on the input."""
+    d = pruned_samplespace(Xor())
+    sample_space = d._sample_space
+    before = _state(d)
+    pd = prepare_dist(d)
+    assert pd.is_dense()
+    np.testing.assert_allclose(pd.pmf, [1 / 4, 0, 0, 1 / 4, 0, 1 / 4, 1 / 4, 0])
+    assert _state(d) == before
+    assert d._sample_space is sample_space
 
 
 @pytest.mark.parametrize(
