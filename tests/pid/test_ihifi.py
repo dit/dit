@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 
 from dit import Distribution, ditParams
+from dit.exceptions import ditException
 from dit.multivariate import coinformation
 from dit.pid import (
     PID_BROJA,
@@ -83,6 +84,26 @@ def test_pair_nodes(n, count):
     nodes = _pair_nodes(tuple((i,) for i in range(n)))
     assert len(nodes) == count
     assert all(not set(first) & set(second) for first, second in nodes)
+
+
+def test_lazy_redundancy():
+    """Without precomputation, a pair node is computed on request, and a single source has
+    its mutual information with the target."""
+    d = bivariates["and"]
+    pid = PID_HiFi(d, compute=False)
+    assert pid.get_red(((0,), (1,))) == pytest.approx(0.0, abs=1e-12)
+    assert pid.get_red(((0,),)) == pytest.approx(coinformation(d, [[0], [2]]))
+
+
+def test_given_redundancy():
+    """A redundancy supplied for a pair node is kept rather than recomputed."""
+    pid = PID_HiFi(bivariates["and"], reds={((0,), (1,)): 0.1})
+    assert pid.get_red(((0,), (1,))) == pytest.approx(0.1)
+
+
+def test_measure_needs_two_sources():
+    with pytest.raises(ditException, match="two sources"):
+        PID_HiFi._measure(PARITY, [[0], [1], [2]], [3])
 
 
 def test_more_sources_forced_overlap():
@@ -162,6 +183,16 @@ def test_hifi_bounds_unique_atoms(seed):
             assert pid.get_pi((source,)) <= result[source].unique + 1e-9
 
 
+def test_explicit_sources_and_target():
+    """Sources and target can be given explicitly, in any order of the variables."""
+    default = hifi(COPY_PARTNER)
+    explicit = hifi(COPY_PARTNER, sources=[[1], [0], [2]], target=[3])
+    for source in ((0,), (1,), (2,)):
+        assert explicit[source] == default[source]
+    report = triplet_report(bivariates["and"], [[1], [2]], [0])
+    assert report.coinformation == pytest.approx(triplet_report(bivariates["and"]).coinformation)
+
+
 def test_hifi_coinformation_table():
     """Each source is paired with every nonempty group of the others."""
     result = hifi(PARITY)
@@ -179,6 +210,14 @@ def test_hifi_units(units, monkeypatch):
     assert actual.unique == pytest.approx(reference.unique / np.log2(10))
     assert actual.synergy == pytest.approx(reference.synergy / np.log2(10))
     assert isinstance(actual.unique, float)
+
+
+def test_log_base_below_one():
+    """The bounds assume information units with a positive conversion from bits."""
+    with pytest.raises(ValueError, match="base"):
+        hifi(bivariates["and"].copy(base=0.5))
+    with pytest.raises(ValueError, match="base"):
+        triplet_report(bivariates["and"].copy(base=0.5))
 
 
 def test_hifi_symbolic():
