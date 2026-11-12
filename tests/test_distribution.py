@@ -136,6 +136,13 @@ class TestOutcomesPmfConstruction:
         with pytest.raises(ValueError, match="Expected 2"):
             Distribution(["00", "01"], [0.5, 0.5], rv_names=["X"])
 
+    def test_rv_names_string(self):
+        """A string gives one name per character, as in set_rv_names."""
+        xrd = Distribution(["000", "011", "101", "110"], [0.25] * 4, rv_names="XYZ")
+        assert xrd.dims == ("X", "Y", "Z")
+        assert xrd.free_vars == frozenset({"X", "Y", "Z"})
+        assert Distribution({"00": 0.5, "11": 0.5}, rv_names="XY").dims == ("X", "Y")
+
     def test_mismatched_lengths(self):
         with pytest.raises(ValueError, match="same length"):
             Distribution(["00", "01", "10"], [0.5, 0.5])
