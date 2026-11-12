@@ -10,6 +10,7 @@ from ...example_dists import jeff
 __all__ = (
     "anddup",
     "cat",
+    "copy_partner",
     "dblxor",
     "giant_xor",
     "jeff_3",
@@ -88,3 +89,8 @@ dblxor = uniform(["0000", "0011", "0103", "0112", "1002", "1013", "1101", "1110"
 # the context S2 = C decides which of S0 = max(C, T), S1 = min(C, T) copies the
 # target; the source chain rule and local positivity disagree here (gutknecht2026partial)
 max_min = uniform(["0000", "1001", "1010", "1111"])
+
+# a copy and a partner: X0 = (a, b), X1 = a, X2 = c, Y = (a, b xor c) for independent bits.
+# Redundancy with the copy and synergy with the partner cancel against (X1, X2), so every
+# nonnegative PID has a bit of overlap there (vansanten2026between, Example 1)
+copy_partner = uniform(f"{2 * a + b}{a}{c}{2 * a + (b ^ c)}" for a, b, c in product((0, 1), repeat=3))

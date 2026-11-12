@@ -3,20 +3,12 @@ The information-theoretic Hi-Fi decomposition, the zero-overlap end of the segme
 nonnegative two-source decompositions.
 """
 
-from itertools import chain, combinations
-
 from ...exceptions import ditException
 from ...multivariate import coinformation
+from .._utils import _group_node, _source_pairs
 from ..pid import BaseBivariatePID, BaseIncompletePID
 
 __all__ = ("PID_HiFi",)
-
-
-def _groups(n):
-    """
-    The nonempty subsets of ``range(n)``, smallest first.
-    """
-    return [group for size in range(1, n + 1) for group in combinations(range(n), size)]
 
 
 def _pair_nodes(sources):
@@ -34,15 +26,7 @@ def _pair_nodes(sources):
         The nodes, labelled like those of the redundancy lattice: each group of sources
         becomes the sorted tuple of its variables.
     """
-
-    def variables(group):
-        return tuple(sorted(set(chain.from_iterable(sources[i] for i in group))))
-
-    nodes = set()
-    for first, second in combinations(_groups(len(sources)), 2):
-        if not set(first) & set(second):
-            nodes.add(tuple(sorted((variables(first), variables(second)), key=lambda tup: (len(tup), tup))))
-    return frozenset(nodes)
+    return frozenset(_group_node(sources, pair) for pair in _source_pairs(len(sources)))
 
 
 class PID_HiFi(BaseBivariatePID):
