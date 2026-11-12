@@ -648,6 +648,13 @@ of synergy. On ``bivariates['rdn xor']``, :math:`C=0` but
 :math:`C^{(2)}=I^{(3)}=1`: it retains one bit each of redundancy and synergy,
 whereas the zero-overlap endpoint reports neither.
 
+For two sources it is symmetric, satisfies self-redundancy and the identity
+property, and its redundancy and synergy do not depend on which variable is
+the target. Its redundancy depends on more than the source-target marginals
+:cite:`vansanten2026between`, Proposition 6. These properties are recorded in
+:meth:`~dit.pid.pid.BasePID.claims`, marked where they are shown only for two
+sources.
+
 .. warning::
 
    The equivalence and nonnegativity guarantee concern two source groups,

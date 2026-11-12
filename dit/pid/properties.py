@@ -1146,6 +1146,26 @@ def _hifi_claims():
     }
 
 
+def _pairwise_reference_claims():
+    """
+    The properties of the pairwise-reference decomposition, which is :class:`PID_dep_c` for
+    two sources (Proposition 6 of :cite:`vansanten2026between`). The extension to more
+    sources is experimental, so nothing is claimed for it.
+    """
+    source = "vansanten2026between"
+    two = "only for two sources; the extension to more sources is experimental"
+    return {
+        "SR": Claim(True, "†", two, source),
+        "S0": Claim(True, "†", two, source),
+        "GP": Claim(True, "†", two + "; it is a nonnegative decomposition", source),
+        "LP0": Claim(True, source=source),
+        "IID": Claim(True, caveat="by the identity property", source=source),
+        "ID": Claim(True, source=source),
+        "S1": Claim(True, "†", two + "; redundancy and synergy do not depend on which variable is the target", source),
+        "*": Claim(False, source=source),
+    }
+
+
 def _local_positivity_claim(lp0, lp1):
     """
     LP is LP0 and LP1 together.
@@ -1181,8 +1201,11 @@ def _build_claims():
     # Blackwell redundancy, the measure of PID_Prec.
     claims["PID_Deg"] = _same_measure_claims(claims["PID_Prec"], "as for I_prec, the same measure")
     claims["PID_HiFi"] = _hifi_claims()
+    claims["PID_dep_c"] = _pairwise_reference_claims()
     for table in claims.values():
-        table["LP"] = _local_positivity_claim(table["LP0"], table["LP1"])
+        # without a claim for three or more sources, local positivity as a whole is unknown
+        if "LP0" in table and "LP1" in table:
+            table["LP"] = _local_positivity_claim(table["LP0"], table["LP1"])
     for measure, claim in _source_chain_rule_claims().items():
         claims[measure]["SCR"] = claim
     return {measure: {key: table[key] for key in PROPERTIES if key in table} for measure, table in claims.items()}
