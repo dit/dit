@@ -62,6 +62,15 @@ Measures of shared information that do *not* reduce to the mutual information
 in the bivariate case (Gács–Körner, Wyner, exact, …) are collected on the
 :ref:`common informations` page.
 
+Pointwise Forms
+===============
+Each measure that is a signed sum of entropies also has a pointwise (local) form, which assigns a value to every outcome.
+
+.. toctree::
+   :maxdepth: 1
+
+   pointwise
+
 Others
 ======
 These measures quantify other aspects of a joint distribution.
