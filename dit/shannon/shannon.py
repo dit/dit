@@ -126,6 +126,10 @@ def conditional_entropy(dist, rvs_X, rvs_Y):
         # instead of 1e-12 or something smaller.
         return 0.0
 
+    if len(rvs_Y) == 0:
+        # H[X|] = H[X]: one marginal entropy, rather than the four of H[X] - I[X:].
+        return entropy(dist, rvs_X)
+
     MI_XY = mutual_information(dist, rvs_X, rvs_Y)
     H_X = entropy(dist, rvs_X)
     H_XgY = H_X - MI_XY

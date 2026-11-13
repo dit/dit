@@ -3,6 +3,7 @@ Classes implementing the partial information decomposition.
 """
 
 import inspect
+import sys
 from abc import ABCMeta, abstractmethod
 from copy import copy
 from functools import cache, lru_cache
@@ -14,8 +15,8 @@ from lattices.lattices import free_distributive_lattice
 
 from ..exceptions import ditException
 from ..helpers import as_linear
-from ..multivariate import coinformation
 from ..params import ditParams
+from ..shannon import mutual_information
 from ..utils import build_table, flatten, powerset
 from ._utils import _label
 
@@ -34,12 +35,11 @@ def _pid_coerce(value):
 
     Numeric distributions yield floats (unchanged behaviour); symbolic
     distributions yield sympy expressions that must not be cast to float.
+    A sympy value can exist only once sympy has been imported, so this looks it
+    up in ``sys.modules`` rather than attempting the (optional) import at every call.
     """
-    try:
-        from sympy import Basic
-    except ImportError:  # pragma: no cover
-        return float(value)
-    if isinstance(value, Basic):
+    sympy = sys.modules.get("sympy")
+    if sympy is not None and isinstance(value, sympy.Basic):
         return value
     return float(value)
 
@@ -348,7 +348,7 @@ class BasePID(metaclass=ABCMeta):
         self._kwargs = kwargs
 
         self._lattice = _lattice_of(self._sources)
-        self._total = self._scaled(coinformation(self._dist, [list(flatten(self._sources)), self._target]))
+        self._total = self._scaled(mutual_information(self._dist, list(flatten(self._sources)), self._target))
 
         self._reds = {} if reds is None else dict(reds)
         self._pis = {} if pis is None else dict(pis)
@@ -1053,7 +1053,7 @@ class BaseIncompletePID(BasePID):
         any other node is found by filling in the whole lattice.
         """
         if len(node) == 1 and self.SELF_REDUNDANCY:
-            return self._scaled(coinformation(self._dist, [node[0], self._target]))
+            return self._scaled(mutual_information(self._dist, node[0], self._target))
         self._ensure_computed()
         return self._reds[node]
 
@@ -1259,7 +1259,7 @@ class BaseIncompletePID(BasePID):
         if self.SELF_REDUNDANCY:  # pragma: no branch
             for node in self._lattice:
                 if len(node) == 1:
-                    self._reds[node] = self._scaled(coinformation(self._dist, [node[0], self._target]))
+                    self._reds[node] = self._scaled(mutual_information(self._dist, node[0], self._target))
 
         if self.LATTICE_MONOTONICITY:  # pragma: no branch
             self._compute_lattice_monotonicity(below, above)
@@ -1320,7 +1320,7 @@ class BaseIncompletePID(BasePID):
             for node in self._lattice:
                 if len(node) == 1:
                     red = self.get_red(node)
-                    mi = self._scaled(coinformation(self._dist, [node[0], self._target]))
+                    mi = self._scaled(mutual_information(self._dist, node[0], self._target))
                     if not np.isclose(red, mi, atol=1e-5, rtol=1e-5):  # pragma: no cover
                         return False
 
@@ -1428,7 +1428,7 @@ class BaseSynergyPID(BaseIncompletePID):
         """
         key = tuple(sorted(tuple(source) for source in node))
         if key not in self._unions:
-            whole = coinformation(self._dist, [list(flatten(key)), self._target])
+            whole = mutual_information(self._dist, list(flatten(key)), self._target)
             syn = self._measure(self._dist, key, self._target, **self._kwargs)
             self._unions[key] = _pid_coerce(self._scaled(whole - syn))
         return self._unions[key]
