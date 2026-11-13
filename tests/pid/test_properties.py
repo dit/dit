@@ -24,6 +24,7 @@ from dit.pid import (
     PID_WB,
     PID_Deg,
     PID_Delta,
+    PID_dep_c,
     PID_Do,
     PID_HiFi,
     PID_Prec,
@@ -455,7 +456,7 @@ def test_claims_cover_known_measures_and_properties():
 
 
 @pytest.mark.parametrize(
-    "pid", [PID_WB, PID_MMI, PID_GK, PID_SX, PID_PM, PID_CCS, PID_Deg, PID_Prec, PID_RDR, PID_GH, PID_HiFi]
+    "pid", [PID_WB, PID_MMI, PID_GK, PID_SX, PID_PM, PID_CCS, PID_Deg, PID_Prec, PID_RDR, PID_GH, PID_HiFi, PID_dep_c]
 )
 def test_claims_agree_with_checks(pid):
     """
@@ -467,6 +468,26 @@ def test_claims_agree_with_checks(pid):
             claim = claims.get(check.key)
             if claim is not None and claim.holds and not claim.mark:
                 assert check.holds is not False, str(check)
+
+
+def test_pairwise_reference_claims():
+    """
+    The claims for two-source PID_dep_c (Proposition 6 of van Santen et al.), including those
+    marked as holding only for two sources, agree with the checks on two-source examples.
+    Nothing is claimed for more sources, so local positivity as a whole is unknown.
+    """
+    claims = PID_dep_c.claims()
+    assert {key for key, claim in claims.items() if claim.holds} == {"SR", "S0", "GP", "LP0", "IID", "ID", "S1"}
+    assert claims["*"].holds is False
+    assert "LP" not in claims
+    assert "LP1" not in claims
+    for d in (bivariates["and"], bivariates["rdn xor"], bivariates["pnt. unq."], SAME):
+        for check in PID_dep_c(d).check_properties():
+            claim = claims.get(check.key)
+            if claim is not None and claim.holds:
+                assert check.holds is not False, str(check)
+    star = {check.key: check.holds for check in PID_dep_c(bivariates["and"]).check_properties()}["*"]
+    assert star is False
 
 
 def test_property_table(capsys):
