@@ -2,12 +2,14 @@
 Properties of partial information decompositions.
 
 A property can be checked on a computed decomposition (does this PID, on this
-distribution, satisfy it?) or claimed for a measure in the literature. The
-checks cover every property catalogued by :cite:`liardi2026landscape` that can
-be tested on a single distribution, plus the source chain rule of
-:cite:`gutknecht2026partial`. The claims transcribe Table 5 of
-:cite:`liardi2026landscape` and the source chain rule results of
-:cite:`gutknecht2026partial`.
+distribution, satisfy it?) or claimed for a measure. The checks cover every
+property catalogued by :cite:`liardi2026landscape` that can be tested on a single
+distribution, plus the source chain rule of :cite:`gutknecht2026partial`. The
+claims transcribe Table 5 of :cite:`liardi2026landscape`, with corrections, and
+the source chain rule results of :cite:`gutknecht2026partial`. They also record
+properties that the literature leaves open, determined here: each failure rests
+on a counterexample that `check_property` reproduces, and each success on the
+argument stated with it.
 """
 
 from collections import defaultdict
@@ -18,6 +20,7 @@ from itertools import chain, combinations, permutations, product
 import numpy as np
 
 from ..distribution import Distribution
+from ..exceptions import ditException
 from ..helpers import as_linear
 from ..multivariate import coinformation
 from ..params import ditParams
@@ -151,7 +154,7 @@ _STATUS = {True: "✓", False: "✗", None: "?"}
 class PropertyReport:
     """
     The results of checking several properties on one decomposition, next to
-    the properties claimed for its measure in the literature.
+    the properties claimed for its measure.
     """
 
     def __init__(self, title, checks, claims):
@@ -360,7 +363,8 @@ def _redundancy(pid, dist, node, target):
     the others decompose the antichain's elements as sources, as
     `BaseIncompletePID` does for nodes of smaller decompositions. Two-source
     measures give nan for antichains of three or more elements, which they do
-    not define.
+    not define, and so does any measure for an antichain whose elements overlap
+    so much that their own lattice is degenerate.
     """
     target = tuple(target)
     if not isinstance(pid, BaseIncompletePID):
@@ -369,7 +373,12 @@ def _redundancy(pid, dist, node, target):
         return _mi(pid, dist, node[0], target)
     if len(node) > 2 and isinstance(pid, (BaseBivariatePID, BaseUniquePID)):
         return np.nan
-    return _red(pid, _same_measure(pid, dist, node, target), node)
+    try:
+        sub = _same_measure(pid, dist, node, target)
+    except ditException:
+        # the elements overlap so much that their own lattice is degenerate
+        return np.nan
+    return _red(pid, sub, node)
 
 
 # ---------------------------------------------------------------------------
@@ -966,7 +975,7 @@ def check_properties(pid, props=None, atol=1e-5):
 @dataclass(frozen=True)
 class Claim:
     """
-    Whether the literature shows that a measure satisfies a property.
+    Whether a measure satisfies a property.
 
     Attributes
     ----------
@@ -976,9 +985,11 @@ class Claim:
         The footnote mark of the source table, if any, or '!' for an entry
         that corrects the source.
     caveat : str
-        Qualifications of the claim.
+        Qualifications of the claim, or its evidence.
     source : str
-        The bibliography key of the source.
+        The bibliography key of the source, or '' for a property determined
+        here: a failure is then shown by the counterexample in the caveat, and
+        a success by the argument there.
     """
 
     holds: bool | None
@@ -1092,6 +1103,56 @@ _TABLE5_CORRECTIONS = {
         "Table 5 marks the property, but it implies M0 (Theo. 6), which fails",
         "liardi2026landscape",
     ),
+    ("PID_IG", "GP"): Claim(
+        False,
+        "!",
+        "Table 5 follows Theorem 4.2 of Niu & Quinn, but its full proof (Theorem 3.4.3 of Niu's thesis) stops at a"
+        " stationary point of a functional that is unbounded below: on 'w', I_IG = log2(1 + sqrt(2)) - 4/3 = -0.062,"
+        " and on 0.99 'w' + 0.01 uniform, which has full support, I_IG = -0.011",
+        "liardi2026landscape",
+    ),
+    ("PID_IG", "LP0"): Claim(False, "!", "the redundancy can be negative (see GP)", "liardi2026landscape"),
+    ("PID_IG", "LB"): Claim(
+        False,
+        "!",
+        "a constant is a function of both sources, and the redundancy can be negative (see GP)",
+        "liardi2026landscape",
+    ),
+    ("PID_CT", "M0"): Claim(
+        False,
+        "!",
+        "Table 5 holds the property by definition, and it holds for two sources, but the argument covers adding a"
+        " source, not enlarging one: on 'max min', I_CT({0}{1}) = 0.027, but I_CT({0}{1:2}) = 0, whichever paths are"
+        " left out",
+        "liardi2026landscape",
+    ),
+    ("PID_CT", "TE"): Claim(
+        False,
+        "!",
+        "Table 5 holds that paths through the target are not considered, but a copy of the target added as a source"
+        " is a source like the others, through which every path must pass: on 'prob. 1', I_CT({0}{1}) and"
+        " I_CT({0}{1}{T}) differ by 0.017; it holds for a single source and the target",
+        "liardi2026landscape",
+    ),
+    ("PID_CT", "M1"): Claim(
+        False, "!", "Table 5 marks the property, but it implies M0 and TE (Theo. 6), which fail", "liardi2026landscape"
+    ),
+    ("PID_CCS", "SE"): Claim(
+        False,
+        "!",
+        "Table 5 holds the property satisfied by definition, but the sign condition drops outcomes where a"
+        " source and a function of it disagree in sign: for X0 = a, X1 = (a, b) and T = a and b, with a and b"
+        " independent fair bits, I_ccs({0}{1}) = 0.458, but I(X0 : T) = 0.311",
+        "liardi2026landscape",
+    ),
+}
+
+# Caveats of Table 5 entries made precise.
+_TABLE5_CAVEATS = {
+    ("PID_RAV", "TE"): "only for a single source and the target (Prop. 37): on 'uniform', I_RAV({0}{1}) = 0, but"
+    " adding the target as a third source gives 1",
+    ("PID_RAV", "M1"): "only for two sources, from M0 and TE (Theo. 6), where TE needs a single source: adding the"
+    " target to both sources fails (see TE)",
 }
 
 
@@ -1109,6 +1170,9 @@ def _source_chain_rule_claims():
     fails = "fails for three or more sources"
     implied = fails + "; implied by its local positivity (Liardi et al., Table 5) and Thm. 4.3"
     source = "gutknecht2026partial"
+    max_min = (
+        "on 'max min', the counterexample of Gutknecht, I_cap({0:2}{1:2}) = 1/2, but I(X2 : T) + I_cap({0}{1} | X2) = 0"
+    )
     return {
         "PID_WB": Claim(False, caveat=fails, source=source),
         "PID_MMI": Claim(False, caveat=implied, source=source),
@@ -1116,6 +1180,12 @@ def _source_chain_rule_claims():
         "PID_SX": Claim(True, caveat="pointwise, Prop. 5.1", source=source),
         "PID_PM": Claim(True, caveat="pointwise, Prop. 5.1", source=source),
         "PID_GK": Claim(True, caveat="Prop. 5.2", source=source),
+        "PID_Prec": Claim(False, caveat=max_min),
+        "PID_Deg": Claim(False, caveat=max_min + "; as for I_prec, the same measure"),
+        "PID_CCS": Claim(
+            False, caveat="on 'anddup', I_cap({0:1}{0:2}) = 0.458, but I(X0 : T) + I_cap({1}{2} | X0) = 0.311"
+        ),
+        "PID_CI": Claim(False, caveat="on 'dbl xor', I_cap({0:1}{0:2}) = 1, but I(X0 : T) + I_cap({1}{2} | X0) = 0"),
     }
 
 
@@ -1149,8 +1219,9 @@ def _hifi_claims():
 def _pairwise_reference_claims():
     """
     The properties of the pairwise-reference decomposition, :class:`PID_PR`, for two
-    sources (Proposition 6 of :cite:`vansanten2026between`). The extension to more
-    sources is experimental, so nothing is claimed for it.
+    sources (Proposition 6 of :cite:`vansanten2026between`). It is defined for two
+    sources; dit's extension to more sources is experimental, so nothing is claimed
+    for it.
     """
     source = "vansanten2026between"
     two = "only for two sources; the extension to more sources is experimental"
@@ -1159,6 +1230,9 @@ def _pairwise_reference_claims():
         "S0": Claim(True, "†", two, source),
         "GP": Claim(True, "†", two + "; it is a nonnegative decomposition", source),
         "LP0": Claim(True, source=source),
+        "LP1": Claim(
+            None, caveat="defined only for two sources; the extension to more sources is experimental", source=source
+        ),
         "IID": Claim(True, caveat="by the identity property", source=source),
         "ID": Claim(True, source=source),
         "S1": Claim(True, "†", two + "; redundancy and synergy do not depend on which variable is the target", source),
@@ -1166,14 +1240,267 @@ def _pairwise_reference_claims():
     }
 
 
+# ---------------------------------------------------------------------------
+# Claims determined here
+# ---------------------------------------------------------------------------
+
+_SINGLE_SOURCE = "by construction: the redundancy of a single source is its mutual information with the target"
+_LABELS = "by definition: it depends on the probabilities, not on the labels of the outcomes"
+_TWO_SOURCES = "defined only for two sources"
+# bits equal with probability 0.8, and a target pairing their disjunction and their parity
+_OR_XOR = "for bits equal with probability 0.8 and T = (X0 or X1, X0 xor X1)"
+# independent fair bits, and a target pairing their conjunction and their parity
+_AND_XOR = "for independent fair bits and T = (X0 and X1, X0 xor X1)"
+# independent fair bits, and a target pairing the first with their disjunction
+_COPY_OR = "for independent fair bits and T = (X0, X0 or X1), the redundancy is 0, but {} about X0 or X1"
+# independent fair bits X0, X1, N, and a target pairing the parity with a noisy copy of X1
+_XOR_AND = (
+    "for independent fair bits X0, X1, N and T = (X0 xor X1, X1 and N), the redundancy is 0, but the chain rule gives"
+)
+
+
+def _holds(caveat, source=""):
+    return Claim(True, caveat=caveat, source=source)
+
+
+def _fails(caveat, source=""):
+    return Claim(False, caveat=caveat, source=source)
+
+
+def _determined_claims():
+    """
+    Properties of measures that the literature leaves open, determined for dit's
+    implementations. Each failure rests on the counterexample in its caveat, which
+    `check_property` reproduces; each success on the argument there. The claims for a
+    measure defined for two sources concern two sources.
+    """
+    single, labels, two = _holds(_SINGLE_SOURCE), _holds(_LABELS), Claim(None, caveat=_TWO_SOURCES)
+    fixed = "the pairwise maximum-entropy distribution P2 is P"
+    pairwise = {
+        "SE": _holds(f"if X1 is a function of X0, {fixed}, so the redundancy is I(X1 : T)"),
+        "TE": _holds(f"with a copy of T as a source, {fixed}, so the redundancy is I(X0 : T)"),
+        "M1": _holds(f"M0 holds, and if T is a function of X1, {fixed}, so the redundancy is I(X0 : T)"),
+        "EI": labels,
+    }
+    blackwell_sum = "on 'sum', the sources are Blackwell equivalent, yet each has {} bit of unique information"
+    symmetric = _holds("the redundancy is the smaller of two terms that the sources exchange")
+    swapped = _fails(
+        "on 'sum', the sources are Blackwell equivalent, so the redundancy is I(X0 : T) = 1/2, but with T"
+        " exchanged for X0 it is at most I(X1 : X0) = 0"
+    )
+    inconsistent = "the unique informations are inconsistent, and the redundancy follows that of one source"
+    skar_m0 = _fails(f"on 'prob. 1', the redundancy 0.171 exceeds I(X1 : T) = 0.020; {inconsistent}")
+    skar_star = _fails("on 'simple', 0.311, but 0.082 under p(t) p(x0 | t) p(x1 | t)")
+    claims = {
+        # C2, the co-information of the pairwise maximum-entropy distribution P2
+        "PID_RA": {
+            "SR": single,
+            "S0": _holds("C2 is symmetric in the sources"),
+            "M0": _holds(
+                "C2 = I(X0 : T) + I(X1 : T) - I_P2(X0 X1 : T) is at most each I(Xi : T), as I_P2(X0 X1 : T) is at"
+                f" least each I_P2(Xi : T) = I(Xi : T); and if X1 is a function of X0, {fixed}, so C2 = I(X1 : T)"
+            ),
+            "GP": _fails("on 'sum', I_RA = -1/2"),
+            "LP0": _fails("on 'sum', the redundancy is -1/2"),
+            "LP1": two,
+            "IID": _holds("by the identity property"),
+            "ID": _holds(f"if T = (X0, X1), {fixed}, so C2 = I(X0 : X1) - I(X0 : X1 | T) = I(X0 : X1)"),
+            "TM": _fails(f"{_AND_XOR}, I_RA = -1/2, but 0 about X0 xor X1"),
+            "TC": _fails(f"{_XOR_AND} 0.311"),
+            "LB": _fails("a constant is a function of both sources, and on 'sum' I_RA = -1/2"),
+            "S1": _fails("on 'sum', exchanging T with X0 changes the redundancy from -1/2 to 0"),
+            "*": _fails("on 'sum', I_RA = -1/2, but 0.189 under p(t) p(x0 | t) p(x1 | t)"),
+            "BP": _fails(blackwell_sum.format(1)),
+            "AD": _holds("P2 of two independent systems is the product of theirs, so C2 adds"),
+            **pairwise,
+        },
+        "PID_PR": {
+            "M0": _holds(
+                f"its atoms are nonnegative, and if X1 is a function of X0, {fixed}, so the redundancy is I(X1 : T)"
+            ),
+            "TM": _fails(f"{_OR_XOR}, I_PR = 0.078, but 0.249 about X0 or X1"),
+            "TC": _fails(f"{_OR_XOR}, I_PR = 0.078, but the chain rule gives 0.249"),
+            "LB": _fails("on 'gband', the sources share a bit that carries 1 bit about T, but I_PR = 0.811"),
+            "BP": _fails(
+                "on 'gband', the sources are Blackwell equivalent, yet each has 1/2 bit of unique information"
+            ),
+            "AD": _fails(
+                "C2 adds over independent systems, but its positive part need not: 'boom' and 'sum' have I_PR 0.208"
+                " and 0, the two together 0"
+            ),
+            **pairwise,
+        },
+        "PID_HiFi": {
+            "TM": _fails(f"{_OR_XOR}, I_HF = 0.078, but 0.249 about X0 or X1"),
+            "TC": _fails(f"{_OR_XOR}, I_HF = 0.078, but the chain rule gives 0.249"),
+            "SE": _holds("if X1 is a function of X0, the co-information is I(X1 : T)"),
+            "LB": _fails("on 'rdn xor', the sources share a bit that carries 1 bit about T, but I_HF = 0"),
+            "TE": _holds("the co-information of X0, a copy of T, and T is I(X0 : T)"),
+            "M1": _holds("M0 holds, and if T is a function of X1, the co-information is I(X0 : T)"),
+            "AD": _fails(
+                "co-information adds over independent systems, but its positive part need not: 'redundant' and"
+                " 'synergy' have I_HF 1 and 0, the two together 0"
+            ),
+            "EI": labels,
+        },
+        "PID_IPID": {
+            "SR": single,
+            "S0": symmetric,
+            "LP1": two,
+            "TM": _fails(_COPY_OR.format("0.311")),
+            "TC": _fails(f"{_XOR_AND} 0.311"),
+            "S1": swapped,
+            "EI": labels,
+        },
+        "PID_Delta": {
+            "SR": single,
+            "S0": symmetric,
+            "LP1": two,
+            "TM": _fails(_COPY_OR.format("0.311")),
+            "TC": _fails(f"{_XOR_AND} 0.311"),
+            "S1": swapped,
+            "AD": _fails(
+                "for 'prob. 1' and a copy of it with the sources exchanged, the smaller term of each is the other's"
+                " larger one, so the pair has 0.058, more than twice the 0.020 of each"
+            ),
+            "EI": labels,
+        },
+        "PID_DeltaLambda": {
+            "SR": single,
+            "S0": symmetric,
+            "LP1": two,
+            "IID": _fails(
+                "for independent fair bits copied into the target, mixing X0 with noise keeps the deficiency below"
+                " 1 bit, so the redundancy is 0.402 rather than 0"
+            ),
+            "ID": _fails("it fails on independent sources (see IID)"),
+            "TC": _fails("for independent fair bits copied into the target, I_δλ = 0.402, but the chain rule gives 0"),
+            "EI": labels,
+        },
+        "PID_SKAR_nw": {
+            "SR": single,
+            "S0": _fails(f"{inconsistent}: on 'wb 2' it is 1/2 or 0, depending on the order of the sources"),
+            "M0": skar_m0,
+            "LP1": two,
+            "M1": _fails("it fails M0"),
+            "EI": labels,
+        },
+        "PID_SKAR_owa": {
+            "SR": single,
+            "S0": _fails(f"{inconsistent}: on 'prob. 2' it is 0.311 or 0, depending on the order of the sources"),
+            "M0": skar_m0,
+            "LP1": two,
+            "M1": _fails("it fails M0"),
+            "*": skar_star,
+            "BP": _fails(blackwell_sum.format("1/2")),
+            "EI": labels,
+        },
+        "PID_SKAR_owb": {"SR": single, "LP1": two, "EI": labels},
+        "PID_SKAR_tw": {
+            "SR": single,
+            "LP1": two,
+            "*": skar_star,
+            "BP": _fails(blackwell_sum.format("1/2")),
+            "EI": labels,
+        },
+        "PID_CI": {
+            "SR": _holds("self-redundancy of the union information (Theorem 1)", "gomes2024measure"),
+            "S0": _holds("symmetry of the union information (Theorem 1)", "gomes2024measure"),
+            "M0": _fails(
+                "monotone for two sources, but on 'anddup' I_cap({0}{1}) = 0.082 exceeds I_cap({1}{0:2}) = -0.058"
+            ),
+            "GP": _fails("nonnegative for two sources, but on 'xor cat' I_cap({0}{1}{2}) = -1"),
+            "LP0": _holds(
+                "for two sources, each a single variable, the union information lies between each I(Xi : T) and"
+                " I(X0 X1 : T), and the redundancy is at least I_q(X0 : X1) >= 0 for the q of the definition"
+            ),
+            "LP1": _fails("on 'xor cat', the atom of {0}{1}{2} is -1"),
+            "IID": _holds("by the identity property"),
+            "ID": _holds(
+                "if T = (X0, X1), the channels p(x_i | t) are deterministic, so q = p, the union information is"
+                " H(X0 X1), and the redundancy is I(X0 : X1)"
+            ),
+            "TM": _fails(_COPY_OR.format("0.082")),
+            "TC": _fails(f"{_AND_XOR}, I_cap = 0.189, but the chain rule gives 0.115"),
+            "SE": _holds(
+                "a source that is a function of another is left out of their union, so in the inclusion-exclusion"
+                " sum the sub-collections with the source it determines cancel those without"
+            ),
+            "LB": _fails("on 'xor cat', I_cap({0}{1}{2}) = -1, less than the 0 of a constant"),
+            "TE": _holds(
+                "with a copy of T as a source, every union information involving it is H(T), and these cancel in"
+                " the inclusion-exclusion sum"
+            ),
+            "M1": _fails("it fails M0"),
+            "S1": _fails("on 'pnt. unq.', exchanging T with X0 changes the redundancy from 1/4 to 0"),
+            "*": _fails("on 'simple', 0.311, but 0.082 under p(t) p(x0 | t) p(x1 | t)"),
+            "BP": _fails(blackwell_sum.format("0.311")),
+            "EI": labels,
+        },
+        "PID_dep_a": {
+            "SR": single,
+            "LP1": two,
+            "TM": _fails(_COPY_OR.format("0.082")),
+            "TC": _fails(f"{_AND_XOR}, the redundancy is 0.189, but the chain rule gives 0.115"),
+            "S1": _fails("on 'pnt. unq.', exchanging T with X0 changes the redundancy from 1/4 to 0"),
+            "*": skar_star,
+            "BP": _fails(blackwell_sum.format("0.311")),
+            "EI": labels,
+        },
+        "PID_dep_b": {
+            "SR": single,
+            "LP0": _fails("on 'erase', the synergy is -0.078"),
+            "LP1": two,
+            "TM": _fails(_COPY_OR.format("0.082")),
+            "TC": _fails(f"{_AND_XOR}, the redundancy is 0.189, but the chain rule gives 0.115"),
+            "S1": _fails("on 'pnt. unq.', exchanging T with X0 changes the redundancy from 1/4 to 0"),
+            "BP": _fails(blackwell_sum.format("0.311")),
+            "EI": labels,
+        },
+    }
+    for name, less in (("PID_MC", "less capable than"), ("PID_LN", "noisier than")):
+        claims[name] = {
+            "SR": Claim(True, source="gomes2023orders"),
+            "S0": Claim(True, source="gomes2023orders"),
+            "M0": Claim(True, source="gomes2023orders"),
+            "GP": _holds(f"a constant channel is {less} every source"),
+            "LP0": _fails(
+                f"on 'wb 1', the sources indicate different values of T, so a channel {less} both is constant: the"
+                " redundancy is 0, and the synergy -0.252"
+            ),
+            "IID": _holds(
+                f"if T copies independent sources, a channel {less} both conveys nothing once either source is"
+                " fixed, so it is constant"
+            ),
+            "ID": _fails(
+                "if T copies bits equal with probability 0.8, the redundancy is 0, as for independent sources, not"
+                " I(X0 : X1) = 0.278"
+            ),
+            "SE": _holds(f"a function of a source is {less} it, and the order is transitive"),
+            "LB": _holds(f"a function of every source is {less} each of them"),
+            "TE": _holds(f"every channel is {less} the target itself"),
+            "M1": _holds(f"M0 holds, and every channel is {less} a source that determines the target"),
+            "*": _holds("by definition: it depends only on p(t) and the channels p(x_i | t)"),
+            "EI": labels,
+        }
+    claims["PID_LN"]["ID"] = _fails(
+        "for T = (X0, X1) it is the Gács-Körner common information (Theorem 3), which is 0 for bits equal with"
+        " probability 0.8, not I(X0 : X1) = 0.278",
+        "gomes2023orders",
+    )
+    return claims
+
+
 def _local_positivity_claim(lp0, lp1):
     """
-    LP is LP0 and LP1 together.
+    LP is LP0 and LP1 together: it fails if either does, and is unknown unless both
+    are claimed.
     """
-    if lp0.holds is False:
-        return lp0
-    if lp1.holds is False:
-        return lp1
+    for part in (lp0, lp1):
+        if part is not None and part.holds is False:
+            return part
+    if lp0 is None or lp1 is None:
+        return None
     if lp1.holds is None:
         return Claim(lp0.holds, lp0.mark, lp1.caveat, lp0.source)
     return Claim(True, source=lp0.source)
@@ -1197,15 +1524,22 @@ def _build_claims():
                 claims[measure][key] = _table5_claim(entry, key)
     for (measure, key), claim in _TABLE5_CORRECTIONS.items():
         claims[measure][key] = claim
+    for (measure, key), caveat in _TABLE5_CAVEATS.items():
+        claim = claims[measure][key]
+        claims[measure][key] = Claim(claim.holds, claim.mark, caveat, claim.source)
     # PID_Deg is the degradation redundancy of Gomes & Figueiredo, which is Kolchinsky's
     # Blackwell redundancy, the measure of PID_Prec.
     claims["PID_Deg"] = _same_measure_claims(claims["PID_Prec"], "as for I_prec, the same measure")
     claims["PID_HiFi"] = _hifi_claims()
     claims["PID_PR"] = _pairwise_reference_claims()
+    # what the literature leaves open
+    for measure, table in _determined_claims().items():
+        for key, claim in table.items():
+            claims[measure].setdefault(key, claim)
     for table in claims.values():
-        # without a claim for three or more sources, local positivity as a whole is unknown
-        if "LP0" in table and "LP1" in table:
-            table["LP"] = _local_positivity_claim(table["LP0"], table["LP1"])
+        local = _local_positivity_claim(table.get("LP0"), table.get("LP1"))
+        if local is not None:
+            table["LP"] = local
     for measure, claim in _source_chain_rule_claims().items():
         claims[measure]["SCR"] = claim
     return {measure: {key: table[key] for key in PROPERTIES if key in table} for measure, table in claims.items()}
@@ -1216,7 +1550,9 @@ _CLAIMS = _build_claims()
 
 def claims_for(measure):
     """
-    The properties claimed for a measure in the literature.
+    The properties claimed for a measure: those shown in the literature, and those
+    determined here, which have no source and carry their evidence in the caveat.
+    The claims for a measure defined for two sources concern two sources.
 
     Parameters
     ----------

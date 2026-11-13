@@ -185,11 +185,11 @@ def pointwise_pid_table(dist, sources=None, target=None, pid_class=None, digits=
 
 def property_table(pids=None, props=None):
     """
-    Print the properties claimed for PID measures in the literature.
+    Print the properties claimed for PID measures.
 
     Rows are properties and columns are measures: ✓ if the property is shown to
-    hold, ✗ if it is shown to fail, n.a. if it does not apply, and ? if the
-    literature is silent. Marks are the footnotes of Table 5 of
+    hold, ✗ if it is shown to fail, n.a. if it does not apply, and ? if it is
+    undetermined. Marks are the footnotes of Table 5 of
     :cite:`liardi2026landscape`, and ! flags a corrected entry; see
     `BasePID.claims` for the caveats.
 

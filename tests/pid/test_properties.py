@@ -2,6 +2,8 @@
 Tests for dit.pid.properties.
 """
 
+from itertools import product
+
 import numpy as np
 import pytest
 
@@ -9,7 +11,6 @@ from dit import Distribution
 from dit.pid import (
     PID_BROJA,
     PID_CCS,
-    PID_CI,
     PID_CT,
     PID_GH,
     PID_GK,
@@ -24,12 +25,13 @@ from dit.pid import (
     PID_SX,
     PID_WB,
     PID_Deg,
-    PID_Delta,
+    PID_dep,
     PID_Do,
     PID_HiFi,
     PID_Prec,
     PID_Proj,
 )
+from dit.pid import measures as pid_measures
 from dit.pid.distributions import bivariates, trivariates
 from dit.pid.helpers import property_table
 from dit.pid.measures import __all_pids
@@ -127,13 +129,14 @@ def test_report_two_source_claims():
 
 def test_report_two_source_measure():
     """
-    I_△ is defined for two sources, and dit fills a lattice of three from the redundancies
-    of pairs of collections. That is not monotone on 'max min', but Table 5's monotonicity
-    concerns two sources.
+    I_dep is defined for two sources, and dit fills a lattice of three from its unique
+    informations. That is not monotone on 'max min', but Table 5's monotonicity concerns
+    two sources.
     """
-    report = PID_CT(MAX_MIN).check_properties(props=["M0"])
+    report = PID_dep(MAX_MIN).check_properties(props=["M0"])
     assert not report["M0"]
     assert "claims concern two sources" in report.title
+    assert "claims concern two sources" not in PID_CT(MAX_MIN).check_properties(props=["SR"]).title
     assert "claims concern two sources" not in PID_Prec(MAX_MIN).check_properties(props=["SR"]).title
 
 
@@ -440,10 +443,196 @@ def test_claims_local_positivity():
 
 def test_claims_uncovered():
     """
-    Measures the literature does not cover have no claims.
+    Every measure has claims; an unknown name has none.
     """
-    assert PID_Delta.claims() == {}
-    assert PID_CI.claims() == {}
+    assert claims_for("PID_not_a_measure") == {}
+    assert {pid.__name__ for pid in __all_pids} <= set(_CLAIMS)
+
+
+def test_claims_determined():
+    """
+    Properties the literature leaves open are determined, without a source: failures by
+    counterexamples and successes by arguments, both given in the caveat.
+    """
+    ra = claims_for("PID_RA")
+    assert ra["GP"].holds is False
+    assert ra["GP"].source == ""
+    assert "'sum'" in ra["GP"].caveat
+    assert ra["AD"].holds is True
+    assert ra["LP"].holds is False
+    assert claims_for("PID_CI")["SR"].source == "gomes2024measure"
+    assert claims_for("PID_LN")["ID"].source == "gomes2023orders"
+    # the literature comes first: Hi-Fi's claims from van Santen et al. are kept
+    assert PID_HiFi.claims()["M0"].source == "vansanten2026between"
+    assert PID_HiFi.claims()["AD"].source == ""
+
+
+def test_claims_corrections_niu_quinn_and_ince():
+    """
+    Theorem 4.2 of Niu & Quinn does not hold, even at full support, and the sign condition
+    of I_ccs breaks subset equality; Table 5 is corrected accordingly.
+    """
+    for key in ("GP", "LP0", "LP", "LB"):
+        assert str(PID_IG.claims()[key]) == "✗!"
+    assert str(PID_CCS.claims()["SE"]) == "✗!"
+    outcomes = ["".join(o) for o in product("01", repeat=3)]
+    pmf = [0.01 / 8 + (0.99 / 3 if o in ("001", "010", "100") else 0.0) for o in outcomes]
+    full = PID_IG(Distribution(outcomes, pmf))
+    assert full.get_red(((0,), (1,))) == pytest.approx(-0.0108, abs=1e-4)
+    assert "Prop. 37" in PID_RAV.claims()["TE"].caveat
+
+
+def _distribution(outcomes, pmf=None):
+    """
+    A distribution of string outcomes, merging repeated outcomes.
+    """
+    pmf = [1 / len(outcomes)] * len(outcomes) if pmf is None else pmf
+    merged = {}
+    for outcome, p in zip(outcomes, pmf, strict=True):
+        outcome = tuple(str(x) for x in outcome)
+        merged[outcome] = merged.get(outcome, 0.0) + p
+    return Distribution(list(merged), list(merged.values()))
+
+
+BITS = [(a, b) for a in (0, 1) for b in (0, 1)]
+EQUAL = [0.4, 0.1, 0.1, 0.4]  # bits equal with probability 0.8
+# bits equal with probability 0.8, and the target (X0 or X1, X0 xor X1)
+OR_XOR = _distribution([(a, b, a | b, a ^ b) for a, b in BITS], EQUAL)
+# independent fair bits X0, X1, N, and the target (X0 xor X1, X1 and N)
+XOR_AND_NOISE = _distribution([(a, b, a ^ b, b & n) for a, b in BITS for n in (0, 1)])
+# independent fair bits, and the target (X0, X0 or X1)
+COPY_OR = _distribution([(a, b, a, a | b) for a, b in BITS])
+# independent fair bits, copied into the target
+INDEPENDENT_COPY = _distribution([(a, b, a, b) for a, b in BITS])
+# X0 = a, X1 = (a, b), and T = a and b, for independent fair bits a, b
+SUBSOURCE_AND = _distribution([(a, f"{a}{b}", a & b) for a, b in BITS])
+TWO = ([[0], [1]], [2, 3])
+
+
+def _swapped(dist):
+    """
+    `dist` with its two sources exchanged.
+    """
+    return Distribution([(o[1], o[0], o[2]) for o in dist.outcomes], dist.pmf)
+
+
+# The counterexample behind each failure claimed without a source and each corrected
+# entry: the distribution, its sources and target if not the default, and the keyword
+# arguments of the check.
+COUNTEREXAMPLES = {
+    ("PID_GK", "*"): (SAME, None, {}),
+    ("PID_RR", "LB"): (bivariates["rdn xor"], None, {}),
+    ("PID_RDR", "BP"): (COPY, TWO, {}),
+    ("PID_GH", "M0"): (MAX_MIN, None, {}),
+    ("PID_GH", "M1"): (MAX_MIN, None, {}),
+    ("PID_CT", "M0"): (MAX_MIN, None, {}),
+    ("PID_CT", "TE"): (bivariates["prob. 1"], None, {}),
+    ("PID_CT", "M1"): (bivariates["prob. 1"], None, {}),
+    ("PID_IG", "GP"): (bivariates["w"], None, {}),
+    ("PID_IG", "LP0"): (bivariates["w"], None, {}),
+    ("PID_IG", "LP"): (bivariates["w"], None, {}),
+    ("PID_IG", "LB"): (bivariates["w"], None, {}),
+    ("PID_CCS", "SE"): (SUBSOURCE_AND, None, {}),
+    ("PID_CCS", "SCR"): (trivariates["anddup"], None, {}),
+    ("PID_Prec", "SCR"): (MAX_MIN, None, {}),
+    ("PID_Deg", "SCR"): (MAX_MIN, None, {}),
+    ("PID_RA", "GP"): (bivariates["sum"], None, {}),
+    ("PID_RA", "LP0"): (bivariates["sum"], None, {}),
+    ("PID_RA", "LP"): (bivariates["sum"], None, {}),
+    ("PID_RA", "TM"): (AND_XOR, TWO, {}),
+    ("PID_RA", "TC"): (XOR_AND_NOISE, TWO, {}),
+    ("PID_RA", "LB"): (bivariates["sum"], None, {}),
+    ("PID_RA", "S1"): (bivariates["sum"], None, {}),
+    ("PID_RA", "*"): (bivariates["sum"], None, {}),
+    ("PID_RA", "BP"): (bivariates["sum"], None, {}),
+    ("PID_PR", "TM"): (OR_XOR, TWO, {}),
+    ("PID_PR", "TC"): (OR_XOR, TWO, {}),
+    ("PID_PR", "LB"): (bivariates["gband"], None, {}),
+    ("PID_PR", "BP"): (bivariates["gband"], None, {}),
+    ("PID_PR", "AD"): (bivariates["boom"], None, {"other": bivariates["sum"]}),
+    ("PID_HiFi", "TM"): (OR_XOR, TWO, {}),
+    ("PID_HiFi", "TC"): (OR_XOR, TWO, {}),
+    ("PID_HiFi", "LB"): (bivariates["rdn xor"], None, {}),
+    ("PID_HiFi", "AD"): (bivariates["redundant"], None, {"other": bivariates["synergy"]}),
+    ("PID_IPID", "TM"): (COPY_OR, TWO, {}),
+    ("PID_IPID", "TC"): (XOR_AND_NOISE, TWO, {}),
+    ("PID_IPID", "S1"): (bivariates["sum"], None, {}),
+    ("PID_Delta", "TM"): (COPY_OR, TWO, {}),
+    ("PID_Delta", "TC"): (XOR_AND_NOISE, TWO, {}),
+    ("PID_Delta", "S1"): (bivariates["sum"], None, {}),
+    ("PID_Delta", "AD"): (bivariates["prob. 1"], None, {"other": _swapped(bivariates["prob. 1"])}),
+    ("PID_DeltaLambda", "IID"): (bivariates["and"], None, {}),
+    ("PID_DeltaLambda", "ID"): (bivariates["and"], None, {}),
+    ("PID_DeltaLambda", "TC"): (INDEPENDENT_COPY, TWO, {}),
+    ("PID_SKAR_nw", "S0"): (bivariates["wb 2"], None, {}),
+    ("PID_SKAR_nw", "M0"): (bivariates["prob. 1"], None, {}),
+    ("PID_SKAR_nw", "M1"): (bivariates["prob. 1"], None, {}),
+    ("PID_SKAR_owa", "S0"): (bivariates["prob. 2"], None, {}),
+    ("PID_SKAR_owa", "M0"): (bivariates["prob. 1"], None, {}),
+    ("PID_SKAR_owa", "M1"): (bivariates["prob. 1"], None, {}),
+    ("PID_SKAR_owa", "*"): (bivariates["simple"], None, {}),
+    ("PID_SKAR_owa", "BP"): (bivariates["sum"], None, {}),
+    ("PID_SKAR_tw", "*"): (bivariates["simple"], None, {}),
+    ("PID_SKAR_tw", "BP"): (bivariates["sum"], None, {}),
+    ("PID_CI", "M0"): (trivariates["anddup"], None, {}),
+    ("PID_CI", "GP"): (trivariates["xor cat"], None, {}),
+    ("PID_CI", "LP1"): (trivariates["xor cat"], None, {}),
+    ("PID_CI", "LP"): (trivariates["xor cat"], None, {}),
+    ("PID_CI", "TM"): (COPY_OR, TWO, {}),
+    ("PID_CI", "TC"): (AND_XOR, TWO, {}),
+    ("PID_CI", "LB"): (trivariates["xor cat"], None, {}),
+    ("PID_CI", "M1"): (trivariates["anddup"], None, {}),
+    ("PID_CI", "S1"): (bivariates["pnt. unq."], None, {}),
+    ("PID_CI", "*"): (bivariates["simple"], None, {}),
+    ("PID_CI", "BP"): (bivariates["sum"], None, {}),
+    ("PID_CI", "SCR"): (trivariates["dbl xor"], None, {}),
+    ("PID_dep_a", "TM"): (COPY_OR, TWO, {}),
+    ("PID_dep_a", "TC"): (AND_XOR, TWO, {}),
+    ("PID_dep_a", "S1"): (bivariates["pnt. unq."], None, {}),
+    ("PID_dep_a", "*"): (bivariates["simple"], None, {}),
+    ("PID_dep_a", "BP"): (bivariates["sum"], None, {}),
+    ("PID_dep_b", "LP0"): (bivariates["erase"], None, {}),
+    ("PID_dep_b", "LP"): (bivariates["erase"], None, {}),
+    ("PID_dep_b", "TM"): (COPY_OR, TWO, {}),
+    ("PID_dep_b", "TC"): (AND_XOR, TWO, {}),
+    ("PID_dep_b", "S1"): (bivariates["pnt. unq."], None, {}),
+    ("PID_dep_b", "BP"): (bivariates["sum"], None, {}),
+    ("PID_MC", "LP0"): (bivariates["wb 1"], None, {}),
+    ("PID_MC", "LP"): (bivariates["wb 1"], None, {}),
+    ("PID_MC", "ID"): (bivariates["and"], None, {}),
+    ("PID_LN", "LP0"): (bivariates["wb 1"], None, {}),
+    ("PID_LN", "LP"): (bivariates["wb 1"], None, {}),
+    ("PID_LN", "ID"): (bivariates["and"], None, {}),
+}
+# measures too slow to recompute in the default run
+SLOW = {"PID_SKAR_nw", "PID_SKAR_owa", "PID_SKAR_tw", "PID_MC", "PID_LN", "PID_IPID", "PID_Delta", "PID_DeltaLambda"}
+
+
+def test_counterexamples_complete():
+    """
+    Every failure claimed without a source, and every corrected failure, has its
+    counterexample listed.
+    """
+    listed = set(COUNTEREXAMPLES)
+    for measure, claims in _CLAIMS.items():
+        for key, claim in claims.items():
+            if claim.holds is False and (claim.source == "" or claim.mark == "!"):
+                assert (measure, key) in listed, (measure, key)
+
+
+@pytest.mark.parametrize(
+    ("measure", "key"),
+    [pytest.param(*k, marks=pytest.mark.slow) if k[0] in SLOW else k for k in COUNTEREXAMPLES],
+)
+def test_counterexamples(measure, key):
+    """
+    Each listed counterexample fails its property, and the claim says so.
+    """
+    assert claims_for(measure)[key].holds is False
+    dist, layout, kwargs = COUNTEREXAMPLES[measure, key]
+    pid_class = getattr(pid_measures, measure)
+    pid = pid_class(dist) if layout is None else pid_class(dist, *layout)
+    assert pid.check(key, **kwargs).holds is False
 
 
 def test_claims_cover_known_measures_and_properties():
@@ -456,31 +645,36 @@ def test_claims_cover_known_measures_and_properties():
 
 
 @pytest.mark.parametrize(
-    "pid", [PID_WB, PID_MMI, PID_GK, PID_SX, PID_PM, PID_CCS, PID_Deg, PID_Prec, PID_RDR, PID_GH, PID_HiFi, PID_PR]
+    "pid",
+    [pytest.param(p, marks=pytest.mark.slow) if p.__name__ in SLOW | {"PID_RAV", "PID_GH"} else p for p in __all_pids],
 )
 def test_claims_agree_with_checks(pid):
     """
-    No claim made without caveat is contradicted on small examples.
+    No property claimed to hold without a mark fails on small examples of two sources.
     """
-    claims = pid.claims()
+    keys = [key for key, claim in pid.claims().items() if claim.holds and not claim.mark and PROPERTIES[key].check]
     for d in (bivariates["and"], bivariates["rdn xor"], SAME):
-        for check in pid(d).check_properties():
-            claim = claims.get(check.key)
-            if claim is not None and claim.holds and not claim.mark:
-                assert check.holds is not False, str(check)
+        decomposition = pid(d)
+        for key in keys:
+            check = decomposition.check(key)
+            assert check.holds is not False, str(check)
 
 
 def test_pairwise_reference_claims():
     """
-    The claims for two-source PID_PR (Proposition 6 of van Santen et al.), including those
-    marked as holding only for two sources, agree with the checks on two-source examples.
-    Nothing is claimed for more sources, so local positivity as a whole is unknown.
+    The claims for two-source PID_PR: Proposition 6 of van Santen et al., including those
+    marked as holding only for two sources, and those determined here, agree with the
+    checks on two-source examples. It is defined for two sources, so local positivity is
+    that of two sources.
     """
     claims = PID_PR.claims()
-    assert {key for key, claim in claims.items() if claim.holds} == {"SR", "S0", "GP", "LP0", "IID", "ID", "S1"}
+    paper = {key for key, claim in claims.items() if claim.holds and claim.source == "vansanten2026between"}
+    assert paper == {"SR", "S0", "GP", "LP0", "LP", "IID", "ID", "S1"}
     assert claims["*"].holds is False
-    assert "LP" not in claims
-    assert "LP1" not in claims
+    assert claims["LP1"].holds is None
+    assert claims["LP"].holds is True
+    assert claims["M0"].holds is True
+    assert claims["AD"].holds is False
     for d in (bivariates["and"], bivariates["rdn xor"], bivariates["pnt. unq."], SAME):
         for check in PID_PR(d).check_properties():
             claim = claims.get(check.key)
