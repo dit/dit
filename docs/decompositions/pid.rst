@@ -653,7 +653,11 @@ property, and its redundancy and synergy do not depend on which variable is
 the target. Its redundancy depends on more than the source-target marginals
 :cite:`vansanten2026between`, Proposition 6. These properties are recorded in
 :meth:`~dit.pid.pid.BasePID.claims`, marked where they are shown only for two
-sources.
+sources, together with those the paper leaves open. Whenever one source is a
+function of the other, or of the target, or is a copy of the target, the pairwise
+maximum-entropy distribution is the distribution itself, so subset equality,
+target equality and strong monotonicity hold; target monotonicity, the target
+chain rule, the lower bound, the Blackwell property and additivity fail.
 
 .. warning::
 
@@ -720,7 +724,7 @@ Gomes & Figueiredo :cite:`gomes2024measure` define a *union* information rather 
 
    \Ici{A_0, \ldots, A_{m-1} \to Y} = \min\left\{ \I{A : Y},\; \max_{q} \I{A : Y}_q \right\}
 
-Synergy is the information lost by assuming the sources are conditionally independent given the target, :math:`S^{CI} = \I{A : Y} - \Ici{A_0, \ldots, A_{m-1} \to Y} \geq 0`. Sources contained in, or a deterministic function of, other sources are removed first.
+Synergy is the information lost by assuming the sources are conditionally independent given the target, :math:`S^{CI} = \I{A : Y} - \Ici{A_0, \ldots, A_{m-1} \to Y} \geq 0`. Sources contained in another source, or a deterministic function of another source, are removed first. Each source is tested against the others one at a time: a source that only several others determine together, such as :math:`X_0 = (X_1, X_2)` in ``trivariates['xor shared']``, is kept, which keeps the union information monotone and independent of the order of the sources.
 
 ``PID_CI`` is built on ``BaseSynergyPID``, which turns a synergy (equivalently, union information) into redundancies by inclusion-exclusion over sub-collections of each antichain, as in the parthood formulation of Gutknecht et al. :cite:`gutknecht2021bits`:
 
@@ -1447,7 +1451,7 @@ Liardi et al. :cite:`liardi2026landscape` catalogue the properties proposed for 
    In [48]: bool(PID_SX(d).check('SCR'))
    Out[48]: True
 
-:meth:`~dit.pid.pid.BasePID.check_properties` checks every property, next to what the literature claims for the measure; :meth:`~dit.pid.pid.BasePID.claims` returns just the claims, and :func:`~dit.pid.helpers.property_table` prints those of several measures:
+:meth:`~dit.pid.pid.BasePID.check_properties` checks every property, next to the properties claimed for the measure; :meth:`~dit.pid.pid.BasePID.claims` returns just the claims, and :func:`~dit.pid.helpers.property_table` prints those of several measures:
 
 .. ipython::
 
@@ -1526,7 +1530,9 @@ Properties are named by the keys of :cite:`liardi2026landscape`, or by name (e.g
 
 Comparisons use the absolute tolerance ``atol`` (1e-5 by default); measures computed by numerical optimization may need a looser one. Checks that recompute the decomposition run the measure again, several times; additivity squares every alphabet, which is prohibitive for measures that search exhaustively or optimize large auxiliary variables, and slow for :math:`\Iprec{\bullet}` and :math:`\Ideg{\bullet}` with three or more sources, whose cones of common degradations then have very many extreme rays, so leave it out of ``props`` for them. Two-source measures do not define the redundancy of three or more collections, so comparisons that need one are undetermined, and their claims concern two sources only.
 
-The claims transcribe Table 5 of :cite:`liardi2026landscape`, whose footnote marks they keep († two sources only, § full support only, ‡ the pointwise version holds, ∥ global, \* supported by simulations), and the source chain rule results of :cite:`gutknecht2026partial`. :math:`\Ideg{\bullet}` is the same measure as :math:`\Iprec{\bullet}`, so it takes that column. Entries marked ! correct Table 5: by its own appendix, :math:`I_{\prec}` satisfies (\*); identical sources show that :math:`\Iwedge{\bullet}` violates (\*); 'rdn xor' shows that :math:`\Irr{\bullet}` violates the lower bound; the correlated two-bit copy shows that :math:`I_{rdr}` satisfies only one direction of the Blackwell property; and 'max min' shows that :math:`\Igh{\bullet}` violates weak monotonicity, and so strong monotonicity, since its order :math:`Q - X - Y` is not transitive.
+The claims transcribe Table 5 of :cite:`liardi2026landscape`, whose footnote marks they keep († two sources only, § full support only, ‡ the pointwise version holds, ∥ global, \* supported by simulations), and the source chain rule results of :cite:`gutknecht2026partial`. :math:`\Ideg{\bullet}` is the same measure as :math:`\Iprec{\bullet}`, so it takes that column. Entries marked ! correct Table 5: by its own appendix, :math:`I_{\prec}` satisfies (\*); identical sources show that :math:`\Iwedge{\bullet}` violates (\*); 'rdn xor' shows that :math:`\Irr{\bullet}` violates the lower bound; the correlated two-bit copy shows that :math:`I_{rdr}` satisfies only one direction of the Blackwell property; and 'max min' shows that :math:`\Igh{\bullet}` violates weak monotonicity, and so strong monotonicity, since its order :math:`Q - X - Y` is not transitive. Theorem 4.2 of Niu & Quinn, which Table 5 follows for :math:`I_{IG}`, does not hold: its redundancy is -0.062 on 'w', and -0.011 on a mixture of 'w' with a uniform distribution, which has full support; so :math:`I_{IG}` violates global and weak local positivity and the lower bound. The sign condition of :math:`\Iccs{\bullet}` drops outcomes where a source and a function of it disagree in sign, so it violates subset equality: for :math:`X_0 = a`, :math:`X_1 = (a, b)` and :math:`T = a \wedge b`, its redundancy is 0.458, while :math:`\I{X_0 : T} = 0.311`. Table 5's target equality for :math:`\Irav{\bullet}` concerns a single source and the target (its Proposition 37); with two sources it fails, as on 'uniform'.
+
+The properties the literature leaves open, for the measures it does not cover and the source chain rule for those it does, are determined here; such claims have no source. Each failure rests on a counterexample, which its caveat names and :func:`~dit.pid.properties.check_property` reproduces, and each success on a short argument, which its caveat gives. For example, the redundancy of :class:`PID_RA` is the co-information of the pairwise maximum-entropy distribution, which is the distribution itself when one variable is a function of another, so it satisfies subset equality, and it is additive, since the maximum-entropy distribution of two independent systems is the product of theirs; and since every channel is less capable than the target itself, :math:`\Imc{\bullet}` satisfies target equality.
 
 .. autoclass:: dit.pid.properties.PropertyCheck
    :no-index:

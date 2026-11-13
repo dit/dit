@@ -121,6 +121,22 @@ def test_overlapping_sources_kept():
     assert union_ci(d, sources, [3]) == pytest.approx(0.0, abs=1e-9)
 
 
+def test_source_determined_by_several_sources_kept():
+    """
+    A source that only several other sources determine together, as X0 = (X1, X2) is in
+    'xor shared', is kept, while X1 and X2, functions of X0, are dropped. The union is then
+    monotone and does not depend on the order of the sources, and the redundancy of all
+    three vanishes rather than being -1.
+    """
+    d = trivariates["xor shared"]
+    assert _prune_sources(d, [[0], [1], [2]]) == _prune_sources(d, [[2], [1], [0]]) == [(0,)]
+    assert union_ci(d, [[0], [1], [2]], [3]) == pytest.approx(union_ci(d, [[0], [1]], [3])) == pytest.approx(1.0)
+    pid = PID_CI(d)
+    assert pid.get_red(((0,), (1,), (2,))) == pytest.approx(0.0, abs=1e-9)
+    assert pid.check("S0")
+    assert pid.check("LP")
+
+
 def test_target_monotonicity_fails():
     """Paper Table 5: I_∪(Y1,Y2 -> T) = 0.91 > 0.90 = I_∪(Y1,Y2 -> (T,Z))."""
     outcomes = [(0, 0, 1, 0), (1, 1, 2, 1), (2, 1, 3, 0), (0, 0, 3, 1), (2, 2, 4, 4)]

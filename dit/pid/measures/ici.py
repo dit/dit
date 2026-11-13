@@ -36,8 +36,13 @@ __all__ = (
 def _prune_sources(d, sources, tol=1e-9):
     """
     Remove sources which are subsets of other sources, then sources which are a
-    deterministic function of the variables of the other sources that they do
-    not themselves contain.
+    deterministic function of another source.
+
+    Each source is tested against the others one at a time, as the stronger
+    monotonicity of Section 4.2.1 of :cite:`gomes2024measure` asks: testing it
+    against all of them together would drop (Y1, Y2) beside Y1 and Y2, which
+    makes the union information depend on the order of the sources and lowers
+    it when a source is added.
 
     Parameters
     ----------
@@ -62,8 +67,7 @@ def _prune_sources(d, sources, tol=1e-9):
         kept.append(src)
 
     for src in list(kept):
-        rest = sorted(set(flatten(s for s in kept if s != src)) - set(src))
-        if rest and conditional_entropy(d, list(src), rest) < tol:
+        if any(conditional_entropy(d, list(src), list(other)) < tol for other in kept if other != src):
             kept.remove(src)
 
     return kept
@@ -163,8 +167,7 @@ def union_ci(d, sources, target):
     -----
     Following Definition 1 of :cite:`gomes2024measure`, sources contained in
     another source are dropped, as are sources which are a deterministic function
-    of the other sources. For overlapping sources, a source is only dropped if it
-    is determined by the variables of the other sources that it does not contain.
+    of another source.
     """
     sources = _prune_sources(d, sources)
     variables = tuple(sorted(set(flatten(sources))))

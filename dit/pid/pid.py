@@ -738,7 +738,8 @@ class BasePID(metaclass=ABCMeta):
     @classmethod
     def claims(cls):
         """
-        The properties claimed for this measure in the literature.
+        The properties claimed for this measure: those shown in the literature,
+        and those determined in dit, which carry their evidence in the caveat.
 
         Returns
         -------
