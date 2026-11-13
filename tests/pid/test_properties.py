@@ -25,6 +25,7 @@ from dit.pid import (
     PID_SX,
     PID_WB,
     PID_Deg,
+    PID_dep,
     PID_Do,
     PID_HiFi,
     PID_Prec,
@@ -128,13 +129,14 @@ def test_report_two_source_claims():
 
 def test_report_two_source_measure():
     """
-    I_△ is defined for two sources, and dit fills a lattice of three from the redundancies
-    of pairs of collections. That is not monotone on 'max min', but Table 5's monotonicity
-    concerns two sources.
+    I_dep is defined for two sources, and dit fills a lattice of three from its unique
+    informations. That is not monotone on 'max min', but Table 5's monotonicity concerns
+    two sources.
     """
-    report = PID_CT(MAX_MIN).check_properties(props=["M0"])
+    report = PID_dep(MAX_MIN).check_properties(props=["M0"])
     assert not report["M0"]
     assert "claims concern two sources" in report.title
+    assert "claims concern two sources" not in PID_CT(MAX_MIN).check_properties(props=["SR"]).title
     assert "claims concern two sources" not in PID_Prec(MAX_MIN).check_properties(props=["SR"]).title
 
 
@@ -523,6 +525,9 @@ COUNTEREXAMPLES = {
     ("PID_RDR", "BP"): (COPY, TWO, {}),
     ("PID_GH", "M0"): (MAX_MIN, None, {}),
     ("PID_GH", "M1"): (MAX_MIN, None, {}),
+    ("PID_CT", "M0"): (MAX_MIN, None, {}),
+    ("PID_CT", "TE"): (bivariates["prob. 1"], None, {}),
+    ("PID_CT", "M1"): (bivariates["prob. 1"], None, {}),
     ("PID_IG", "GP"): (bivariates["w"], None, {}),
     ("PID_IG", "LP0"): (bivariates["w"], None, {}),
     ("PID_IG", "LP"): (bivariates["w"], None, {}),

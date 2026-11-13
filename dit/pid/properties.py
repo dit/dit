@@ -1106,8 +1106,9 @@ _TABLE5_CORRECTIONS = {
     ("PID_IG", "GP"): Claim(
         False,
         "!",
-        "Table 5 follows Theorem 4.2 of Niu & Quinn, whose proof is a sketch: on 'w', I_IG = -0.062, and on"
-        " 0.99 'w' + 0.01 uniform, which has full support, I_IG = -0.011",
+        "Table 5 follows Theorem 4.2 of Niu & Quinn, but its full proof (Theorem 3.4.3 of Niu's thesis) stops at a"
+        " stationary point of a functional that is unbounded below: on 'w', I_IG = log2(1 + sqrt(2)) - 4/3 = -0.062,"
+        " and on 0.99 'w' + 0.01 uniform, which has full support, I_IG = -0.011",
         "liardi2026landscape",
     ),
     ("PID_IG", "LP0"): Claim(False, "!", "the redundancy can be negative (see GP)", "liardi2026landscape"),
@@ -1116,6 +1117,25 @@ _TABLE5_CORRECTIONS = {
         "!",
         "a constant is a function of both sources, and the redundancy can be negative (see GP)",
         "liardi2026landscape",
+    ),
+    ("PID_CT", "M0"): Claim(
+        False,
+        "!",
+        "Table 5 holds the property by definition, and it holds for two sources, but the argument covers adding a"
+        " source, not enlarging one: on 'max min', I_CT({0}{1}) = 0.027, but I_CT({0}{1:2}) = 0, whichever paths are"
+        " left out",
+        "liardi2026landscape",
+    ),
+    ("PID_CT", "TE"): Claim(
+        False,
+        "!",
+        "Table 5 holds that paths through the target are not considered, but a copy of the target added as a source"
+        " is a source like the others, through which every path must pass: on 'prob. 1', I_CT({0}{1}) and"
+        " I_CT({0}{1}{T}) differ by 0.017; it holds for a single source and the target",
+        "liardi2026landscape",
+    ),
+    ("PID_CT", "M1"): Claim(
+        False, "!", "Table 5 marks the property, but it implies M0 and TE (Theo. 6), which fail", "liardi2026landscape"
     ),
     ("PID_CCS", "SE"): Claim(
         False,
