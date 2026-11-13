@@ -87,3 +87,12 @@ def test_CH1():
     assert CH(d, [0], [1, 2]) == pytest.approx(0.0)
     assert CH(d, [0, 1], [2]) == pytest.approx(1.0)
     assert CH(d, [0], [0]) == pytest.approx(0.0)
+
+
+def test_CH_empty_condition():
+    """Conditioning on no variables gives the entropy, by index or by name"""
+    d = D(["000", "011", "102", "110"], [1 / 2, 1 / 4, 1 / 8, 1 / 8])
+    d.set_rv_names("XYZ")
+    for rvs in (["X"], ["Y", "Z"], ["X", "Y", "Z"]):
+        assert CH(d, rvs, []) == pytest.approx(H(d, rvs))
+    assert CH(d, [], []) == 0.0
