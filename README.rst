@@ -70,7 +70,7 @@ Dependencies
    * `loguru <https://loguru.readthedocs.io>`_
    * `networkx <https://networkx.org/>`_
    * `numpy <https://numpy.org/>`_
-   * `PLTable <https://github.com/platomav/PLTable>`_
+   * `prettytable <https://github.com/prettytable/prettytable>`_
    * `scipy <https://scipy.org/>`_
    * `xarray <https://docs.xarray.dev/>`_
 
@@ -99,9 +99,11 @@ Optional features are grouped into extras:
 Extra           Provides
 =============== ===========================================================================
 ``optional``    matplotlib (plots), plotly (interactive plots), colorama (colored PID
-                tables), numdifftools (numerical gradients/Hessians), pint (units),
-                pycddlib-standalone + pypoman (polytope vertex enumeration), scikit-learn
-                (fast nearest-neighbor estimators)
+                tables), PLTable (double- instead of single-line table borders when
+                ``dit.ditParams['text.font'] = 'linechar'``), numdifftools (numerical
+                gradients/Hessians), pint (units), pycddlib-standalone + pypoman
+                (polytope vertex enumeration), scikit-learn (fast nearest-neighbor
+                estimators)
 ``jax``         JAX optimization backend with autodiff (jax, jaxlib, optimistix, slsqp-jax)
 ``torch``       PyTorch optimization backend with autodiff and GPU support
 ``pytensor``    PyTensor optimization backend with autodiff
