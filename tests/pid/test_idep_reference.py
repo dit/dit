@@ -9,7 +9,7 @@ from dit import Distribution
 from dit.algorithms import maxent_dist
 from dit.example_dists import dyadic, triadic
 from dit.multivariate import coinformation
-from dit.pid import PID_BROJA, PID_MMI, PID_RA, PID_WB, PID_dep, PID_dep_a, PID_dep_c
+from dit.pid import PID_BROJA, PID_MMI, PID_PR, PID_RA, PID_WB, PID_dep, PID_dep_a
 from dit.pid.distributions import bivariates, trivariates
 from dit.profiles import DependencyDecomposition
 from dit.shannon import entropy
@@ -126,7 +126,7 @@ def test_pairwise_reference_equivalence(d):
     p2 = maxent_dist(d, [[0, 1], [0, 2], [1, 2]])
     c2 = coinformation(p2)
     i3 = entropy(p2) - entropy(d)
-    reference = PID_dep_c(d)
+    reference = PID_PR(d)
     ra = PID_RA(d)
     assert ra.get_red(RED) == pytest.approx(c2, abs=1e-5)
     assert reference.get_red(RED) == pytest.approx(max(c2, 0.0), abs=1e-5)
@@ -140,7 +140,7 @@ def test_reference_family_ordering(name):
     """The nested reference families order these nonnegative bivariate PIDs."""
     d = bivariates[name]
     low = max(0.0, coinformation(d))
-    pairwise = PID_dep_c(d).get_red(RED)
+    pairwise = PID_PR(d).get_red(RED)
     dep = PID_dep(d).get_red(RED)
     broja = PID_BROJA(d).get_red(RED)
     mmi = PID_MMI(d).get_red(RED)
@@ -168,7 +168,7 @@ def _lattice_uniques(d, sources, target, kind):
             uniques[source] = min(dd.delta(edge, "I") for edge in dd.edges(added))
         elif kind == "ra":
             uniques[source] = dd.delta((all_pairs, all_pairs - added), "I")
-        else:  # dep_c keeps only the edges whose upper node constrains the sources jointly
+        else:  # the pairwise reference keeps only the edges whose upper node constrains the sources jointly
             uniques[source] = min(
                 dd.delta(edge, "I") for edge in dd.edges(added) if any(sources_joint <= c for c in edge[0])
             )
@@ -200,7 +200,7 @@ THREE_SOURCE = {
 }
 
 
-@pytest.mark.parametrize("measure,kind", [(PID_dep, "dep"), (PID_RA, "ra"), (PID_dep_c, "dep_c")])
+@pytest.mark.parametrize("measure,kind", [(PID_dep, "dep"), (PID_RA, "ra"), (PID_PR, "pr")])
 @pytest.mark.parametrize("name", sorted(TWO_SOURCE))
 def test_closed_form_matches_lattice_two_sources(measure, kind, name):
     """The closed forms reproduce the original dependency-lattice definitions."""

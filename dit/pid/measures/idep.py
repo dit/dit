@@ -8,11 +8,11 @@ from ...profiles import DependencyDecomposition
 from ..pid import BaseUniquePID
 
 __all__ = (
+    "PID_PR",
     "PID_RA",
     "PID_dep",
     "PID_dep_a",
     "PID_dep_b",
-    "PID_dep_c",
 )
 
 
@@ -115,7 +115,8 @@ class PID_RA(BaseUniquePID):
     constraints. With two sources, the redundancy is therefore the co-information of the
     pairwise maximum-entropy model, and the synergy is the third-order connected
     information :cite:`vansanten2026between`. Redundancy can be negative;
-    :class:`PID_dep_c` is the nonnegative, clipped version for two sources. With more
+    :class:`PID_PR`, the pairwise-reference PID, is its nonnegative, clipped version for two
+    sources. With more
     sources, each source is paired with the union of the other sources.
     """
 
@@ -251,16 +252,12 @@ class PID_dep_b(BaseUniquePID):
         }
 
 
-class PID_dep_c(BaseUniquePID):
+class PID_PR(BaseUniquePID):
     r"""
-    A reduced dependency-lattice PID; pairwise-reference PID for two sources.
+    The pairwise-reference PID of :cite:`vansanten2026between`, Definition 2. Formerly
+    ``PID_dep_c``.
 
-    As :class:`PID_dep_a`, but only over the edges whose constraints include the joint
-    distribution of all the sources, so that the dependencies among the sources are always
-    kept.
-
-    For two sources this is the pairwise-reference PID of
-    :cite:`vansanten2026between`, Definition 2. If :math:`P^{(2)}` is the
+    For two sources, if :math:`P^{(2)}` is the
     maximum-entropy distribution matching all three pairwise marginals,
     :math:`C^{(2)}` its co-information, and
     :math:`I^{(3)}=H(P^{(2)})-H(P)`, then
@@ -277,12 +274,15 @@ class PID_dep_c(BaseUniquePID):
 
     Notes
     -----
-    With more than two sources this is an experimental full dependency-lattice
-    extension. The bivariate equivalence and nonnegativity guarantee do not
-    apply; the extension can give inconsistent decompositions.
+    With more than two sources this is an experimental extension, which the paper does not
+    define: as :class:`PID_dep_a`, but only over the edges of the dependency lattice whose
+    constraints include the joint distribution of all the sources, so that the dependencies
+    among the sources are always kept. For two sources it reduces to the decomposition
+    above. The nonnegativity guarantee does not apply to it, and it can give inconsistent
+    decompositions.
     """
 
-    _name = "I_dep_c"
+    _name = "I_PR"
 
     @staticmethod
     def _measure(d, sources, target, maxiter=None):
@@ -292,7 +292,7 @@ class PID_dep_c(BaseUniquePID):
         Parameters
         ----------
         d : Distribution
-            The distribution to compute i_dep_c for.
+            The distribution.
         sources : iterable of iterables
             The source variables.
         target : iterable
@@ -302,8 +302,8 @@ class PID_dep_c(BaseUniquePID):
 
         Returns
         -------
-        idepc : dict
-            The value of I_dep_c for each individual source.
+        uniques : dict
+            The unique information of each source.
         """
         if len(sources) == 2:
             return _closed_form_uniques(d, sources, target, lambda r: max(r.pairwise, 0.0), maxiter=maxiter)

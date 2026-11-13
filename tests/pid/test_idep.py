@@ -6,7 +6,7 @@ import pytest
 
 from dit.pid.distributions import bivariates, trivariates
 from dit.pid.measures.ibroja import PID_BROJA
-from dit.pid.measures.idep import PID_RA, PID_dep, PID_dep_a, PID_dep_b, PID_dep_c
+from dit.pid.measures.idep import PID_PR, PID_RA, PID_dep, PID_dep_a, PID_dep_b
 
 
 def test_pid_dep1():
@@ -101,17 +101,17 @@ def test_pid_dep_b_inconsistent():
 
 
 @pytest.mark.parametrize("name, red", [("diff", 0.122556), ("and", 0.0), ("boom", 0.207519), ("erase", 0.130376)])
-def test_pid_dep_c(name, red):
+def test_pid_pr(name, red):
     """
-    I_dep_c keeps the dependencies among the sources on every edge it considers.
+    I_PR keeps the dependencies among the sources on every edge it considers.
     """
-    pid = PID_dep_c(bivariates[name])
+    pid = PID_PR(bivariates[name])
     assert pid.get_red(((0,), (1,))) == pytest.approx(red, abs=1e-4)
     assert pid.consistent
     assert pid.nonnegative
 
 
-@pytest.mark.parametrize("measure", [PID_dep_a, PID_dep_b, PID_dep_c])
+@pytest.mark.parametrize("measure", [PID_dep_a, PID_dep_b, PID_PR])
 def test_pid_dep_variants_three_sources(measure):
     """
     The variants handle three sources (and a target of several variables).

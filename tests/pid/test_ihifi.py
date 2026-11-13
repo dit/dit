@@ -13,10 +13,10 @@ from dit.multivariate import coinformation
 from dit.pid import (
     PID_BROJA,
     PID_MMI,
+    PID_PR,
     PID_WB,
     HiFi,
     PID_dep,
-    PID_dep_c,
     PID_HiFi,
     TripletReport,
     hifi,
@@ -247,12 +247,12 @@ def test_triplet_report_rdn_xor():
 
 @pytest.mark.parametrize("name", ["and", "sum", "cat", "pnt. unq.", "imp. rdn", "boom"])
 def test_triplet_report_matches_measures(name):
-    """The report's decompositions are those of PID_HiFi, PID_dep_c and PID_dep."""
+    """The report's decompositions are those of PID_HiFi, PID_PR and PID_dep."""
     d = bivariates[name]
     report = triplet_report(d)
     for decomposition, measure in (
         (report.hifi, PID_HiFi),
-        (report.pairwise_reference, PID_dep_c),
+        (report.pairwise_reference, PID_PR),
         (report.dependency, PID_dep),
     ):
         pid = measure(d)
