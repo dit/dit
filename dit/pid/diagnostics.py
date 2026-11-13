@@ -457,7 +457,7 @@ class TripletReport:
     hifi : tuple
         The zero-overlap decomposition, :class:`PID_HiFi`.
     pairwise_reference : tuple
-        The pairwise-reference decomposition, :class:`PID_dep_c`.
+        The pairwise-reference decomposition, :class:`PID_PR`.
     dependency : tuple
         The decomposition of :class:`PID_dep`.
     """

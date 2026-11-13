@@ -12,11 +12,11 @@ from dit.pid import (
     PID_CCS,
     PID_MMI,
     PID_PM,
+    PID_PR,
     PID_RA,
     PID_WB,
     PID_dep,
     PID_dep_b,
-    PID_dep_c,
     PIDOverlap,
     pid_overlap,
 )
@@ -42,8 +42,8 @@ def test_mmi_endpoint():
 
 def test_pairwise_reference_endpoint():
     """The pairwise-reference PID is at Hi-Fi on AND, but not on RdnXor."""
-    assert pid_overlap(PID_dep_c(bivariates["and"])).position == pytest.approx(0.0, abs=1e-8)
-    result = pid_overlap(PID_dep_c(bivariates["rdn xor"]))
+    assert pid_overlap(PID_PR(bivariates["and"])).position == pytest.approx(0.0, abs=1e-8)
+    result = pid_overlap(PID_PR(bivariates["rdn xor"]))
     assert result.coinformation == pytest.approx(0.0)
     assert result.delta == pytest.approx(1.0)
     assert result.position == pytest.approx(1.0)
@@ -69,7 +69,7 @@ def test_signed_positions_not_clipped():
     assert above.position > 1.0
 
 
-@pytest.mark.parametrize("measure", [PID_MMI, PID_WB, PID_dep, PID_dep_c, PID_PM, PID_RA])
+@pytest.mark.parametrize("measure", [PID_MMI, PID_WB, PID_dep, PID_PR, PID_PM, PID_RA])
 @pytest.mark.parametrize("name", ["and", "sum", "cat", "rdn xor", "pnt. unq."])
 def test_overlap_reconstructs_atoms(measure, name):
     """Every consistent signed or nonnegative PID has the same one-parameter form."""

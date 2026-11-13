@@ -619,10 +619,10 @@ Drawing from the reconstructability analysis work of Zwick :cite:`zwick2004overv
 Pairwise-reference PID
 ----------------------
 
-For **two sources**, :class:`PID_dep_c` is the pairwise-reference PID of
-:cite:`vansanten2026between`, Definition 2, rather than a separate numerical
-construction. Let :math:`P^{(2)}` be the maximum-entropy joint with the three
-pairwise marginals of :math:`P`, and write
+:class:`PID_PR` (formerly ``PID_dep_c``) is the pairwise-reference PID of
+:cite:`vansanten2026between`, Definition 2, for **two sources**. Let
+:math:`P^{(2)}` be the maximum-entropy joint with the three pairwise marginals
+of :math:`P`, and write
 
 .. math::
 
@@ -643,7 +643,7 @@ contrast, :class:`PID_RA` uses the unclipped :math:`R=C^{(2)}` and
 
 This separates pairwise-generated net synergy from the third-order connected
 information without erasing coexisting redundancy and synergy. On AND,
-:math:`I^{(3)}=0` and :class:`PID_dep_c` has zero redundancy and about 0.189 bits
+:math:`I^{(3)}=0` and :class:`PID_PR` has zero redundancy and about 0.189 bits
 of synergy. On ``bivariates['rdn xor']``, :math:`C=0` but
 :math:`C^{(2)}=I^{(3)}=1`: it retains one bit each of redundancy and synergy,
 whereas the zero-overlap endpoint reports neither.
@@ -659,11 +659,11 @@ sources.
 
    The equivalence and nonnegativity guarantee concern two source groups,
    each of which may itself contain several variables. The full
-   dependency-lattice extension of :class:`PID_dep_c` to more sources remains
+   dependency-lattice extension of :class:`PID_PR` to more sources remains
    experimental and can be inconsistent. Connected information characterizes
    an observed distribution, not an identified causal mechanism.
 
-.. autoclass:: PID_dep_c
+.. autoclass:: PID_PR
    :no-index:
 
 
@@ -1000,7 +1000,7 @@ Two-Way Communication
 Experimental Measures
 ---------------------
 
-Three variants of :math:`\Idep{\bullet}` take the unique information of a source from the dependency lattice of all the sources and the target, rather than of the source, the other sources together, and the target. With two sources :class:`PID_dep_a` is :math:`\Idep{\bullet}`; :class:`PID_dep_b` only considers the edges that never constrain the sources among themselves, and gives inconsistent decompositions; :class:`PID_dep_c` only those that keep the joint distribution of the sources. The bivariate case of :class:`PID_dep_c` is the `Pairwise-reference PID`_ described above. Their full dependency-lattice extensions beyond two sources remain experimental, and their lattices grow quickly with the number of sources.
+Three variants of :math:`\Idep{\bullet}` take the unique information of a source from the dependency lattice of all the sources and the target, rather than of the source, the other sources together, and the target. With two sources :class:`PID_dep_a` is :math:`\Idep{\bullet}`, and :class:`PID_dep_b` only considers the edges that never constrain the sources among themselves, and gives inconsistent decompositions. The third only considers the edges that keep the joint distribution of the sources; it is the extension of :class:`PID_PR` to more sources, whose two-source case is the `Pairwise-reference PID`_ described above. These full dependency-lattice extensions remain experimental, and their lattices grow quickly with the number of sources.
 
 .. autoclass:: PID_dep_a
    :no-index:

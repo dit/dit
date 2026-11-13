@@ -1148,8 +1148,8 @@ def _hifi_claims():
 
 def _pairwise_reference_claims():
     """
-    The properties of the pairwise-reference decomposition, which is :class:`PID_dep_c` for
-    two sources (Proposition 6 of :cite:`vansanten2026between`). The extension to more
+    The properties of the pairwise-reference decomposition, :class:`PID_PR`, for two
+    sources (Proposition 6 of :cite:`vansanten2026between`). The extension to more
     sources is experimental, so nothing is claimed for it.
     """
     source = "vansanten2026between"
@@ -1201,7 +1201,7 @@ def _build_claims():
     # Blackwell redundancy, the measure of PID_Prec.
     claims["PID_Deg"] = _same_measure_claims(claims["PID_Prec"], "as for I_prec, the same measure")
     claims["PID_HiFi"] = _hifi_claims()
-    claims["PID_dep_c"] = _pairwise_reference_claims()
+    claims["PID_PR"] = _pairwise_reference_claims()
     for table in claims.values():
         # without a claim for three or more sources, local positivity as a whole is unknown
         if "LP0" in table and "LP1" in table:

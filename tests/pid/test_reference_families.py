@@ -20,11 +20,11 @@ from dit.pid import (
     PID_MES,
     PID_MMI,
     PID_PM,
+    PID_PR,
     PID_RA,
     PID_RAV,
     PID_WB,
     PID_dep,
-    PID_dep_c,
     PID_Do,
     PID_Proj,
 )
@@ -81,7 +81,7 @@ def _correlated_copy(p_equal):
 
 
 # Table II of arXiv:2611.08131 (bits): C, C2, I3, delta_max, the redundancies of Hi-Fi,
-# the pairwise reference (PID_dep_c), I_dep, BROJA and MMI, and the positions of
+# the pairwise reference (PID_PR), I_dep, BROJA and MMI, and the positions of
 # I_min, I_ccs and I_pm (None where delta_max = 0).
 TABLE_II = {
     "XOR": (bivariates["synergy"], -1.0, 0.0, 1.0, 0.0, (0, 0, 0, 0, 0), None),
@@ -131,7 +131,7 @@ def test_table_ii(name):
     assert pairwise == pytest.approx(c2, abs=6e-4)
     assert pairwise - coinformation(d) == pytest.approx(i3, abs=6e-4)
     hifi = max(0.0, coinformation(d))
-    actual = [hifi] + [measure(d).get_red(RED) for measure in (PID_dep_c, PID_dep, PID_BROJA, PID_MMI)]
+    actual = [hifi] + [measure(d).get_red(RED) for measure in (PID_PR, PID_dep, PID_BROJA, PID_MMI)]
     assert actual == pytest.approx(reds, abs=6e-3)
     if positions is not None:
         actual = [(measure(d).get_red(RED) - hifi) / segment for measure in (PID_WB, PID_CCS, PID_PM)]
@@ -161,7 +161,7 @@ RANDOM = {
 def test_reference_family_order(name):
     """Hi-Fi <= pairwise reference <= I_dep <= BROJA <= MMI (Proposition 4)."""
     d = RANDOM[name]
-    reds = [max(0.0, coinformation(d))] + [m(d).get_red(RED) for m in (PID_dep_c, PID_dep, PID_BROJA, PID_MMI)]
+    reds = [max(0.0, coinformation(d))] + [m(d).get_red(RED) for m in (PID_PR, PID_dep, PID_BROJA, PID_MMI)]
     for lower, upper in zip(reds, reds[1:], strict=False):
         assert lower <= upper + ATOL
 
