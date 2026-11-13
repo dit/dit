@@ -2,6 +2,7 @@
 Tests for dit.util.information_partitions.
 """
 
+import re
 from itertools import islice, product
 
 import numpy as np
@@ -22,6 +23,14 @@ from dit.profiles.information_partitions import (
 )
 from dit.shannon import entropy
 from dit.utils import partitions, powerset
+
+
+def _squeeze(table):
+    """Collapse runs of spaces and dashes, so a comparison ignores column widths.
+
+    PLTable pads a table to fit a wide title differently from prettytable.
+    """
+    return re.sub(r" +", " ", re.sub(r"-+", "-", table))
 
 
 def all_info_measures(rvs):
@@ -77,7 +86,7 @@ def test_sp4():
 |  I[1:2|0] |   1.000 |
 |  I[0:1:2] |  -1.000 |
 +-----------+---------+"""
-    assert str(ip) == string
+    assert _squeeze(str(ip)) == _squeeze(string)
 
 
 def test_ep1():
@@ -100,7 +109,7 @@ def test_ep1():
 |  X[1:2|0] |   0.245 |
 |  X[0:1:2] |   0.510 |
 +-----------+---------+"""
-    assert str(ep) == string
+    assert _squeeze(str(ep)) == _squeeze(string)
 
 
 def test_dd1():
@@ -289,7 +298,7 @@ def test_shapley_table():
 |      0       |  -0.119 |
 |      1       |  -0.029 |
 +--------------+---------+"""
-    assert str(ShapleyDecomposition(d)) == string
+    assert _squeeze(str(ShapleyDecomposition(d))) == _squeeze(string)
 
 
 def test_shapley_values_are_efficient():

@@ -33,7 +33,7 @@ dependencies = [
     "loguru",
     "networkx>=2.6",
     "numpy>=1.22",
-    "PLTable",
+    "prettytable>=3.12",
     "scipy>=1.9",
     "xarray",
 ]
@@ -77,6 +77,7 @@ optional = [
     "numdifftools",
     "pint",
     "plotly>=5",
+    "PLTable",
     "pycddlib-standalone",
     "pypoman",
     "scikit-learn",
@@ -284,7 +285,7 @@ allowed-unresolved-imports = [
     "sklearn.**",
     "pint.**",
     "colorama.**",
-    "prettytable.**",
+    "pltable.**",
     # Cython compiled extensions (may not be built)
     "dit.inference.pycounts.**",
     "dit.math._samplediscrete.**",
