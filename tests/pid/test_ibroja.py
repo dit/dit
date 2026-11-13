@@ -13,6 +13,7 @@ from dit.algorithms.distribution_optimizers import BROJABivariateOptimizer
 from dit.pid.distributions import bivariates, trivariates
 from dit.pid.measures.ibroja import PID_BROJA
 from dit.pid.measures.iproj import PID_Proj
+from dit.shannon import mutual_information
 from dit.utils.testing import distributions
 
 # AND with its sources made independent given the target: p(y) p(x0 | y) p(x1 | y)
@@ -260,6 +261,22 @@ def test_pid_broja_unknown_option():
         PID_BROJA(bivariates["and"], feastl=1e-10)
     with pytest.raises(TypeError, match="unknown options"):
         broja_method.broja_solve_bivariate(bivariates["and"], [(0,), (1,)], (2,), feastl=1e-10)
+
+
+@pytest.mark.parametrize("method", ["admui", "scipy"])
+def test_broja_keeps_small_probabilities(method):
+    """
+    The 1.7e-6 outcome 001 splits into two 8e-7 entries of the optimal distribution.
+    Zeroing entries below 1e-6 put U_0 3e-5 bits above I(X_0 : Y), so the guard rejected
+    both solvers, and without ECOS nothing was left. Found by
+    test_pid_broja_depends_on_marginals.
+    """
+    pmf = np.array([1, 1e-5, 1, 1, 1, 1, 1])
+    d = Distribution(["000", "001", "010", "100", "101", "110", "111"], pmf / pmf.sum())
+    uniques, meta = broja_method.broja_solve_bivariate(d, [(0,), (1,)], (2,), method=method, rng=0)
+    assert meta["method"] == method  # not rescued by another solver, such as the cone program
+    # the redundancy lies between 1e-12 and 4e-12, so U_0 = I(X_0 : Y)
+    assert uniques[(0,)] == pytest.approx(mutual_information(d, [0], [2]), abs=1e-6)
 
 
 def test_broja_guard_lifts_suboptimal_result(monkeypatch):
