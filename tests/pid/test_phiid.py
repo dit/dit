@@ -10,8 +10,8 @@ import pytest
 from hypothesis import given, settings
 
 from dit import Distribution as D
-from dit.multivariate import coinformation
-from dit.pid import PID_GK, PID_IG, PhiID
+from dit.multivariate import coinformation, m_information, w_information
+from dit.pid import PID_BROJA, PID_GK, PID_IG, PhiID
 from dit.utils.testing import distributions
 
 RR = (((0,), (1,)), ((2,), (3,)))
@@ -416,3 +416,105 @@ def test_ig_errors():
         PhiID(d, measure="ig", pointwise=True)
     with pytest.raises(ValueError, match="two sources and two targets"):
         PhiID(d, sources=[[0], [1], [2]], targets=[[3]], measure="ig")
+
+
+# A random system on which BROJA-PhiID's persistent redundancy exceeds min_ij I(X_i : Y_j).
+NEGATIVE = [
+    0.0431418, 0.107054, 0.348822, 0.118509, 0.00573257, 0.0915011, 1.91999e-05, 0.0025662,
+    0.00195293, 3.15418e-06, 0.00025354, 0.214063, 0.000962015, 0.00329858, 0.00405979, 0.0580611,
+]  # fmt: skip
+
+
+@pytest.mark.parametrize("name", GATES)
+def test_broja_gates(name):
+    """
+    BROJA-PhiID also puts each gate's bits in their own atoms, and nothing in the others.
+    """
+    dist, atoms = GATES[name]
+    phiid = PhiID(dist, measure="broja", rng=0)
+    expected = {(SRC[alpha], TGT[beta]) for alpha, beta in atoms}
+    for node in phiid.nodes:
+        assert phiid[node] == pytest.approx(1.0 if node in expected else 0.0, abs=1e-4)
+
+
+def test_broja_matches_linear_system():
+    """
+    The atoms solve the 16 equations of Liardi et al.: nine mutual informations, six BROJA
+    redundancies, and the nine atoms without synergy summing to the W-information.
+    """
+    d = _random_system()
+    phiid = PhiID(d, measure="broja", rng=0)
+    nodes = phiid.nodes
+    index = {node: k for k, node in enumerate(nodes)}
+
+    def below(alpha, beta):
+        return [index[n] for n in nodes if n == (alpha, beta) or n in phiid._descendants((alpha, beta))]
+
+    def redundancy(sources, target):
+        pid = PID_BROJA(d, sources, target)
+        return pid.get_red(pid._lattice.bottom)
+
+    rows, values = [], []
+    groups_x, groups_y = {"U0": [0], "U1": [1], "S": [0, 1]}, {"U0": [2], "U1": [3], "S": [2, 3]}
+    for alpha, x in groups_x.items():
+        for beta, y in groups_y.items():
+            rows.append(below(SRC[alpha], TGT[beta]))
+            values.append(coinformation(d, [x, y]))
+    for beta, y in groups_y.items():
+        rows.append(below(SRC["R"], TGT[beta]))
+        values.append(redundancy([[0], [1]], y))
+    for alpha, x in groups_x.items():
+        rows.append(below(SRC[alpha], TGT["R"]))
+        values.append(redundancy([[2], [3]], x))
+    rows.append([index[(SRC[a], TGT[b])] for a in ("R", "U0", "U1") for b in ("R", "U0", "U1")])
+    values.append(w_information(d, rng=0))
+    matrix = np.zeros((16, 16))
+    for k, row in enumerate(rows):
+        matrix[k, row] = 1
+    assert np.linalg.matrix_rank(matrix) == 16
+    atoms = np.linalg.solve(matrix, values)
+    for node in nodes:
+        assert phiid[node] == pytest.approx(atoms[index[node]], abs=1e-6)
+
+
+def test_broja_synergy_is_m_information():
+    """
+    The seven atoms with synergy on either side sum to the M-information.
+    """
+    d = _random_system()
+    phiid = PhiID(d, measure="broja", rng=0)
+    synergy = sum(phiid[node] for node in phiid.nodes if SRC["S"] in node or TGT["S"] in node)
+    assert synergy == pytest.approx(m_information(d, rng=0), abs=1e-6)
+
+
+def test_broja_negative_atoms():
+    """
+    The persistent redundancy is not bounded by min_ij I(X_i : Y_j), so the atom of
+    information redundant in the sources and unique to one target can be negative.
+    """
+    outcomes = ["".join(map(str, s)) for s in product((0, 1), repeat=4)]
+    d = D(outcomes, np.array(NEGATIVE) / sum(NEGATIVE))
+    phiid = PhiID(d, measure="broja", rng=0)
+    pairs = min(coinformation(d, [[i], [j]]) for i in (0, 1) for j in (2, 3))
+    persistent = (SRC["R"], TGT["R"])
+    assert phiid[persistent] == pytest.approx(0.31446, abs=1e-4)
+    assert phiid[persistent] > pairs
+    assert phiid[(SRC["R"], TGT["U0"])] == pytest.approx(-0.27615, abs=1e-4)
+    assert sum(phiid[node] for node in phiid.nodes) == pytest.approx(coinformation(d, [[0, 1], [2, 3]]))
+
+
+def test_broja_source_order():
+    d = _random_system()
+    phiid = PhiID(d, measure="broja", rng=0)
+    reordered = PhiID(d, sources=[[1], [0]], targets=[[3], [2]], measure="broja", rng=0)
+    assert all(phiid[n] == pytest.approx(reordered[n], abs=1e-5) for n in phiid.nodes)
+
+
+def test_broja_errors():
+    d = D(["".join(map(str, s)) for s in product((0, 1), repeat=6)], [1 / 64] * 64)
+    with pytest.raises(ValueError):
+        PhiID(d, sources=[[0], [1], [2]], targets=[[3], [4]], measure="broja")
+    with pytest.raises(ValueError):
+        PhiID(_random_system(), measure="broja", pointwise=True)
+    with pytest.raises(ValueError):
+        PhiID(_random_system(), sources=[[0], [1]], targets=[[1], [2]], measure="broja")
