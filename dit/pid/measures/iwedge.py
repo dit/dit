@@ -11,14 +11,78 @@ from ..pid import BasePID
 __all__ = ("PID_GK",)
 
 
+def _meet_labels(d, groups):
+    """
+    The component of the Gács-Körner meet of `groups` holding each outcome of `d`.
+
+    Outcomes are joined when some group takes the same value in both. Union-find
+    over the support finds the components without building sigma-algebras. The
+    meet of a single group is the group itself.
+
+    Parameters
+    ----------
+    d : Distribution
+        The distribution.
+    groups : iterable of iterables
+        The groups of variables.
+
+    Returns
+    -------
+    labels : list
+        A label of the component of each outcome of positive probability, in order.
+    """
+    parent = {}
+
+    def find(key):
+        while parent[key] != key:
+            parent[key] = parent[parent[key]]
+            key = parent[key]
+        return key
+
+    firsts = []
+    for outcome, p in zip(d.outcomes, d.pmf, strict=True):
+        if p == 0:
+            continue
+        keys = [(i, tuple(outcome[c] for c in group)) for i, group in enumerate(groups)]
+        for key in keys:
+            parent.setdefault(key, key)
+        root = find(keys[0])
+        for key in keys[1:]:
+            other = find(key)
+            if other != root:
+                parent[other] = root
+        firsts.append(keys[0])
+    return [find(key) for key in firsts]
+
+
+def _meets(d, *sides):
+    """
+    The joint distribution of the Gács-Körner meets of `sides`, one variable per side.
+
+    Parameters
+    ----------
+    d : Distribution
+        The distribution.
+    *sides : iterables of iterables
+        Each a collection of groups of variables.
+
+    Returns
+    -------
+    meets : Distribution
+        The distribution of the components of the meets.
+    """
+    labels = [_meet_labels(d, groups) for groups in sides]
+    ids = [{} for _ in sides]
+    joint = defaultdict(int)
+    probs = [p for p in d.pmf if p != 0]
+    for p, *roots in zip(probs, *labels, strict=True):
+        joint[tuple(i.setdefault(r, len(i)) for i, r in zip(ids, roots, strict=True))] += p
+    return Distribution(list(joint), list(joint.values()))
+
+
 def _meet_information(d, sources, target):
     """
     Compute I(meet(sources) : target).
-
-    The Gács-Körner meet of the sources labels each outcome by its connected
-    component, outcomes being joined when some source takes the same value in
-    both. Union-find over the support finds the components without building
-    sigma-algebras.
 
     Parameters
     ----------
@@ -34,34 +98,7 @@ def _meet_information(d, sources, target):
     info : float
         The mutual information between the meet and the target.
     """
-    parent = {}
-
-    def find(key):
-        while parent[key] != key:
-            parent[key] = parent[parent[key]]
-            key = parent[key]
-        return key
-
-    rows = []
-    for outcome, p in zip(d.outcomes, d.pmf, strict=True):
-        if p == 0:
-            continue
-        keys = [(i, tuple(outcome[c] for c in source)) for i, source in enumerate(sources)]
-        for key in keys:
-            parent.setdefault(key, key)
-        root = find(keys[0])
-        for key in keys[1:]:
-            other = find(key)
-            if other != root:
-                parent[other] = root
-        rows.append((keys[0], tuple(outcome[c] for c in target), p))
-
-    labels = {}
-    joint = defaultdict(int)
-    for key, t, p in rows:
-        joint[(labels.setdefault(find(key), len(labels)), *t)] += p
-    meet = Distribution(list(joint), list(joint.values()))
-    return coinformation(meet, [[0], list(range(1, len(target) + 1))])
+    return coinformation(_meets(d, sources, [target]), [[0], [1]])
 
 
 class PID_GK(BasePID):

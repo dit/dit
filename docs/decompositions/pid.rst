@@ -1180,11 +1180,12 @@ Integrated Information Decomposition
 
 The integrated information decomposition (:math:`\Phi\mathrm{ID}`) :cite:`mediano2019beyond,mediano2025toward` decomposes the mutual information between a set of sources (typically a system's past) and a set of targets (its future) over the *product* of the two redundancy lattices. An atom :math:`\alpha \to \beta` is information carried by the sources in the mode :math:`\alpha` and by the targets in the mode :math:`\beta`. For two sources and two targets there are 16 atoms, including persistent redundancy :math:`\{0\}\{1\} \to \{2\}\{3\}`, information transfer :math:`\{0\} \to \{3\}`, and downward causation :math:`\{0:1\} \to \{2\}`.
 
-The atoms are the Mobius inversion of a *double redundancy* :math:`I_\partial(\alpha \to \beta)`. :class:`PhiID` provides three:
+The atoms are the Mobius inversion of a *double redundancy* :math:`I_\partial(\alpha \to \beta)`. :class:`PhiID` provides four:
 
 * ``measure='mmi'``: :math:`\min_{i,j} \I{A_i : B_j}` :cite:`mediano2019beyond`.
 * ``measure='pm'``: the expectation of :math:`\min_i h(a_i) + \min_j h(b_j) - \min_{i,j} h(a_i, b_j)`, after :cite:`finn2020generalised`.
 * ``measure='sx'``: the expectation of :math:`h_{\mathrm{sx}}(\alpha) + h_{\mathrm{sx}}(\beta) - h_{\mathrm{sx}}(\{A_i \cup B_j\})` :cite:`varley2023decomposing`.
+* ``measure='gk'``: :math:`\I{\wedge_i A_i : \wedge_j B_j}`, the mutual information between the Gács–Körner common parts of the two sides, extending :math:`\Iwedge{\bullet}` :cite:`griffith2014intersection`. Two independent bits copied forward give only the atoms :math:`\{0\} \to \{2\}` and :math:`\{1\} \to \{3\}`. But groups with full joint support share no common part, so on noisy data there is no redundancy between disjoint groups.
 
 The atoms always sum to :math:`\I{X : Y}`, but individual atoms can be negative.
 
