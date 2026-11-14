@@ -11,7 +11,7 @@ redundancy :math:`\\{1\\}\\{2\\} \\to \\{1\\}\\{2\\}` and downward causation
 :math:`\\{12\\} \\to \\{1\\}`.
 
 The atoms are obtained by Mobius inversion of a *double-redundancy* function
-:math:`I_\\partial(\\alpha \\to \\beta)` on the product lattice. Three are
+:math:`I_\\partial(\\alpha \\to \\beta)` on the product lattice. Four are
 provided:
 
 * ``'mmi'`` — :math:`\\min_{i,j} I[A_i : B_j]` :cite:`mediano2019beyond`.
@@ -21,6 +21,11 @@ provided:
 * ``'sx'`` — the expectation of
   :math:`h_{sx}(\\alpha) + h_{sx}(\\beta) - h_{sx}(\\{A_i \\cup B_j\\})`, using
   shared probability mass exclusions :cite:`varley2023decomposing`.
+* ``'gk'`` — :math:`I[\\wedge_i A_i : \\wedge_j B_j]`, the mutual information
+  between the Gács–Körner common parts of the two sides, extending Griffith et
+  al.'s :math:`I_\\wedge` :cite:`griffith2014intersection`. It vanishes whenever
+  a side has two or more groups with full joint support, since they then share
+  no common part.
 """
 
 from itertools import product
@@ -33,6 +38,7 @@ from ..utils import build_table, flatten
 from ._utils import _label
 from .hmos import h_mos_pw
 from .hsx import h_sx_pw
+from .measures.iwedge import _meets
 from .pid import _descendants, _lattice_of, _unit_scale, sort_key
 
 __all__ = ("PhiID",)
@@ -57,16 +63,16 @@ class PhiID:
             The source (past) and target (future) variables. If both are None,
             the first half of `dist.rvs` are the sources and the second half
             the targets.
-        measure : {'mmi', 'pm', 'sx'}
+        measure : {'mmi', 'pm', 'sx', 'gk'}
             The double-redundancy function.
         pointwise : bool
             For the local measures (``'pm'`` and ``'sx'``), also keep the
             per-outcome double redundancies and atoms.
         """
-        if measure not in {"mmi", "pm", "sx"}:
-            raise ValueError(f"Unknown double-redundancy {measure!r}; choose from 'mmi', 'pm', 'sx'.")
-        if pointwise and measure == "mmi":
-            raise ValueError("The 'mmi' double redundancy has no pointwise form.")
+        if measure not in {"mmi", "pm", "sx", "gk"}:
+            raise ValueError(f"Unknown double-redundancy {measure!r}; choose from 'mmi', 'pm', 'sx', 'gk'.")
+        if pointwise and measure in {"mmi", "gk"}:
+            raise ValueError(f"The {measure!r} double redundancy has no pointwise form.")
         self._unit_scale = _unit_scale(dist)
         self._dist = dist = as_linear(dist)
         if sources is None and targets is None:
@@ -115,6 +121,8 @@ class PhiID:
         if self._measure == "mmi":
             alpha, beta = node
             return min(self._mi(a, b) for a in alpha for b in beta)
+        if self._measure == "gk":
+            return coinformation(_meets(self._dist, *node), [[0], [1]])
         pw = self._pw_reds.get(node) or self._pw_double_red(node)
         return sum(self._dist[o] * v for o, v in pw.items())
 
