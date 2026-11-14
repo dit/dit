@@ -6,6 +6,7 @@ from .bounds import ForcedOverlap, Interval, OverlapCondition, PIDBounds, forced
 from .conditional import ConditionalPID, ContextualPID
 from .diagnostics import HiFi, HiFiDriver, PIDOverlap, TripletReport, hifi, pid_overlap, pid_overlaps, triplet_report
 from .distributions import bivariates, trivariates
+from .emergence import emergence_delta, emergence_gamma, emergence_psi
 from .gid import GID
 from .hcs import PED_CS
 from .hmos import PED_MOS
@@ -47,6 +48,9 @@ __all__ = (
     "PropertyReport",
     "SynDisc",
     "bivariates",
+    "emergence_delta",
+    "emergence_gamma",
+    "emergence_psi",
     "trivariates",
     *_measures,
 )

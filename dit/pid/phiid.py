@@ -193,6 +193,125 @@ class PhiID:
         """
         return list(self._nodes)
 
+    @property
+    def phi_wms(self):
+        """
+        The whole-minus-sum integrated information :math:`\\Phi_{WMS}`.
+
+        :math:`\\Phi_{WMS} = I[X : Y] - \\sum_i I[X_i : Y_i]`
+        :cite:`balduzzi2008integrated,barrett2011practical`, pairing the i-th source
+        with the i-th target. For two sources it is the transfer and synergy atoms
+        less the persistent redundancy, so it is negative for highly redundant
+        systems :cite:`mediano2025toward`.
+
+        Raises
+        ------
+        ValueError
+            If there are not as many targets as sources.
+        """
+        if len(self._sources) != len(self._targets):
+            raise ValueError("Phi_WMS pairs each source with a target, so they must be equally many.")
+        parts = sum(self._mi(a, b) for a, b in zip(self._sources, self._targets, strict=True))
+        return self._total - self._scaled(parts)
+
+    @property
+    def phi_r(self):
+        """
+        The revised integrated information :math:`\\Phi_R` of two sources and two targets.
+
+        It adds back to :attr:`phi_wms` the persistent redundancy (the bottom atom),
+        which :math:`\\Phi_{WMS}` subtracts once too often, leaving the transfer and
+        synergy atoms :cite:`mediano2025toward`.
+
+        Raises
+        ------
+        ValueError
+            If there are not two sources and two targets.
+        """
+        if len(self._sources) != 2 or len(self._targets) != 2:
+            raise ValueError("Phi_R is defined for two sources and two targets.")
+        return self.phi_wms + self.get_pi((self._source_lattice.bottom, self._target_lattice.bottom))
+
+    @staticmethod
+    def _synergistic(node, parts, k):
+        """
+        Whether every group of `node` holds more than `k` of the `parts`.
+        """
+        return all(sum(set(part) <= set(group) for part in parts) > k for group in node)
+
+    def _emergence(self, k):
+        """
+        The causal decoupling and downward causation of order `k`.
+        """
+        decoupling = downward = 0.0
+        for alpha, beta in self._nodes:
+            if self._synergistic(alpha, self._sources, k):
+                if self._synergistic(beta, self._targets, k):
+                    decoupling += self.get_pi((alpha, beta))
+                else:
+                    downward += self.get_pi((alpha, beta))
+        return decoupling, downward
+
+    def emergence_capacity(self, k=1):
+        """
+        The emergence capacity :math:`\\mathrm{Syn}^{(k)}` :cite:`rosas2020reconciling`.
+
+        This is the sum of the atoms :math:`\\alpha \\to \\beta` whose sources are
+        synergistic of order `k`, meaning every group of :math:`\\alpha` holds more
+        than `k` sources. In Rosas et al.'s theory, a system has causally emergent
+        features of order `k` when this is positive. It is the sum of
+        :meth:`causal_decoupling` and :meth:`downward_causation`. With these double
+        redundancies, the atoms can be negative, and so can these sums.
+
+        Parameters
+        ----------
+        k : int
+            The order of emergence.
+
+        Returns
+        -------
+        capacity : float
+        """
+        return sum(self._emergence(k))
+
+    def downward_causation(self, k=1):
+        """
+        The downward causation index :math:`\\mathcal{D}^{(k)}` :cite:`rosas2020reconciling`.
+
+        This is the part of :meth:`emergence_capacity` in atoms whose targets are not
+        synergistic of order `k`: synergy among the sources that reaches groups of at
+        most `k` targets.
+
+        Parameters
+        ----------
+        k : int
+            The order of emergence.
+
+        Returns
+        -------
+        downward : float
+        """
+        return self._emergence(k)[1]
+
+    def causal_decoupling(self, k=1):
+        """
+        The causal decoupling index :math:`\\mathcal{G}^{(k)}` :cite:`rosas2020reconciling`.
+
+        This is the part of :meth:`emergence_capacity` in atoms whose targets are also
+        synergistic of order `k`: synergy among the sources that only synergy among
+        the targets carries.
+
+        Parameters
+        ----------
+        k : int
+            The order of emergence.
+
+        Returns
+        -------
+        decoupling : float
+        """
+        return self._emergence(k)[0]
+
     def to_string(self, digits=4):
         """
         A table of the double redundancies and atoms.

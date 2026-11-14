@@ -1200,7 +1200,65 @@ The atoms always sum to :math:`\I{X : Y}`, but individual atoms can be negative.
 
 .. autoclass:: PhiID
    :no-index:
-   :members: get_pi, get_red, get_pw_pi, get_pw_red, nodes, to_string
+   :members: get_pi, get_red, get_pw_pi, get_pw_red, nodes, phi_wms, phi_r, emergence_capacity, downward_causation, causal_decoupling, to_string
+
+Integrated information and causal emergence
+-------------------------------------------
+
+Several dynamical quantities are sums of :math:`\Phi\mathrm{ID}` atoms. The whole-minus-sum integrated information :math:`\Phi_{WMS} = \I{X : Y} - \sum_i \I{X_i : Y_i}` :cite:`balduzzi2008integrated,barrett2011practical` subtracts the persistent redundancy once too often, so a redundant system can have negative :math:`\Phi_{WMS}`. The revised :math:`\Phi_R` :cite:`mediano2025toward` adds it back:
+
+.. ipython::
+
+   In [88]: phiid = PhiID(dit.Distribution(['0000', '1111'], [1/2, 1/2]))
+
+   @doctest float
+   In [89]: phiid.phi_wms
+   Out[89]: -1.0
+
+   @doctest float
+   In [90]: phiid.phi_r
+   Out[90]: 0.0
+
+Rosas et al. :cite:`rosas2020reconciling` call a feature of a system causally emergent when it predicts the system's future beyond what its parts do. A system has such features when its emergence capacity is positive: the atoms whose sources are synergistic, in which every group holds more than :math:`k` sources. The capacity splits into downward causation, synergy that reaches groups of at most :math:`k` future parts, and causal decoupling, synergy that only future synergy carries. Here the future's parity is the past's parity, and nothing else about it is predictable:
+
+.. ipython::
+
+   In [91]: from itertools import product
+
+   In [92]: d = dit.Distribution([(a, b, c, a ^ b ^ c) for a, b, c in product([0, 1], repeat=3)], [1/8] * 8)
+
+   @doctest float
+   In [93]: PhiID(d).causal_decoupling()
+   Out[93]: 1.0
+
+For a candidate feature :math:`V`, three criteria built from mutual informations alone give sufficient conditions :cite:`rosas2020reconciling`. :math:`\Psi > 0` suffices for :math:`V` to be causally emergent, :math:`\Delta > 0` for downward causation, and :math:`\Psi > 0` with :math:`\Gamma = 0` for causal decoupling. Their size is not an amount of emergence, and :math:`\Psi > 0` need not mean the parts interact: it also holds for statistically autonomous coarse-grainings of independent parts :cite:`liardi2025simple`. Below, two independent bits are each copied forward through a binary symmetric channel. Their parity (variables 4 and 5) is causally decoupled although the bits never interact:
+
+.. ipython::
+
+   In [94]: from dit.pid import emergence_gamma, emergence_psi
+
+   In [95]: states = list(product([0, 1], repeat=4))
+
+   In [96]: outcomes = [(a, b, a ^ e, b ^ f, a ^ b, a ^ b ^ e ^ f) for a, b, e, f in states]
+
+   In [97]: d = dit.Distribution(outcomes, [0.9 ** (2 - e - f) * 0.1 ** (e + f) / 4 for a, b, e, f in states])
+
+   @doctest float
+   In [98]: emergence_psi(d, [[0], [1]], [4], [5])
+   Out[98]: 0.31992295427172035
+
+   @doctest float
+   In [99]: emergence_gamma(d, [[2], [3]], [4])
+   Out[99]: 0.0
+
+.. autofunction:: emergence_psi
+   :no-index:
+
+.. autofunction:: emergence_delta
+   :no-index:
+
+.. autofunction:: emergence_gamma
+   :no-index:
 
 
 Representational Complexity
