@@ -1184,14 +1184,21 @@ Integrated Information Decomposition
 
 The integrated information decomposition (:math:`\Phi\mathrm{ID}`) :cite:`mediano2019beyond,mediano2025toward` decomposes the mutual information between a set of sources (typically a system's past) and a set of targets (its future) over the *product* of the two redundancy lattices. An atom :math:`\alpha \to \beta` is information carried by the sources in the mode :math:`\alpha` and by the targets in the mode :math:`\beta`. For two sources and two targets there are 16 atoms, including persistent redundancy :math:`\{0\}\{1\} \to \{2\}\{3\}`, information transfer :math:`\{0\} \to \{3\}`, and downward causation :math:`\{0:1\} \to \{2\}`.
 
-The atoms are the Mobius inversion of a *double redundancy* :math:`I_\partial(\alpha \to \beta)`. :class:`PhiID` provides four:
+The atoms are the Mobius inversion of a *double redundancy* :math:`I_\partial(\alpha \to \beta)`. :class:`PhiID` provides five:
 
 * ``measure='mmi'``: :math:`\min_{i,j} \I{A_i : B_j}` :cite:`mediano2019beyond`.
 * ``measure='pm'``: the expectation of :math:`\min_i h(a_i) + \min_j h(b_j) - \min_{i,j} h(a_i, b_j)`, after :cite:`finn2020generalised`.
 * ``measure='sx'``: the expectation of :math:`h_{\mathrm{sx}}(\alpha) + h_{\mathrm{sx}}(\beta) - h_{\mathrm{sx}}(\{A_i \cup B_j\})` :cite:`varley2023decomposing`.
 * ``measure='gk'``: :math:`\I{\wedge_i A_i : \wedge_j B_j}`, the mutual information between the Gács–Körner common parts of the two sides, extending :math:`\Iwedge{\bullet}` :cite:`griffith2014intersection`. Two independent bits copied forward give only the atoms :math:`\{0\} \to \{2\}` and :math:`\{1\} \to \{3\}`. But groups with full joint support share no common part, so on noisy data there is no redundancy between disjoint groups.
+* ``measure='broja'``: the BROJA-:math:`\Phi\mathrm{ID}` of Liardi et al. :cite:`liardi2025scalable`, for two sources :math:`X_0, X_1` and two targets :math:`Y_0, Y_1`. A node with a single collection on one side gets the mutual information, or the :math:`\Ibroja{\bullet}` redundancy of the two variables on the other side about that collection. The persistent redundancy makes the nine atoms without synergy on either side sum to the :ref:`W-information <w_information>`:
 
-``measure='ig'`` is the information-geometric decomposition of Liardi, Blackburne & Mediano :cite:`liardi2026information`, for two sources and two targets. Instead of a double redundancy it uses seven synergies, each a sum of atoms. Six are :math:`\Iig{\bullet}` synergies: of the sources about each target and about both, and of the targets about each source and about both. For instance, the synergy of the sources about :math:`X_2` is :math:`\{0{:}1\} \to \{2\}\{3\}` plus :math:`\{0{:}1\} \to \{2\}`. The seventh is :math:`\{0{:}1\} \to \{2{:}3\}` alone: the divergence from the distribution to the :math:`e`-affine hull of the four projections :math:`p(x_0, x_1, x_j)\, p(x_i, x_2, x_3) / p(x_i, x_j)`, for :math:`i \in \{0, 1\}` and :math:`j \in \{2, 3\}`, each of which makes one source independent of one target given the other two variables. With the nine mutual informations between groups of sources and of targets, they fix all 16 atoms. On each of the ten logic gates of :cite:`liardi2026information`, ``'ig'`` puts one bit in the atom the gate was built for (in two atoms for the three copy-like gates) and nothing elsewhere, as does ``'gk'``; ``'mmi'``, ``'pm'`` and ``'sx'`` put information in other atoms for 3, 6 and 9 of them. Like :math:`\Iig{\bullet}`, the decomposition is sensitive to noise near copies, and its atoms are often negative: on random distributions, the persistent redundancy :math:`\{0\}\{1\} \to \{2\}\{3\}` is more often negative than not.
+  .. math::
+
+     I_\partial(\{0\}\{1\} \to \{2\}\{3\}) = \mathcal{W}(X : Y) - \sum_{i, j} \I{X_i : Y_j} + \sum_j \Ibroja{X_0, X_1 : Y_j} + \sum_i \Ibroja{Y_0, Y_1 : X_i}.
+
+  The seven atoms with synergy on either side then sum to the M-information. This double redundancy is not bounded by :math:`\min_{i,j} \I{X_i : Y_j}`: on random distributions of four bits, the atoms :math:`\{0\}\{1\} \to \{2\}` and :math:`\{0\} \to \{2\}\{3\}` are negative about four times in five.
+
+``measure='ig'`` is the information-geometric decomposition of Liardi, Blackburne & Mediano :cite:`liardi2026information`, for two sources and two targets. Instead of a double redundancy it uses seven synergies, each a sum of atoms. Six are :math:`\Iig{\bullet}` synergies: of the sources about each target and about both, and of the targets about each source and about both. For instance, the synergy of the sources about :math:`X_2` is :math:`\{0{:}1\} \to \{2\}\{3\}` plus :math:`\{0{:}1\} \to \{2\}`. The seventh is :math:`\{0{:}1\} \to \{2{:}3\}` alone: the divergence from the distribution to the :math:`e`-affine hull of the four projections :math:`p(x_0, x_1, x_j)\, p(x_i, x_2, x_3) / p(x_i, x_j)`, for :math:`i \in \{0, 1\}` and :math:`j \in \{2, 3\}`, each of which makes one source independent of one target given the other two variables. With the nine mutual informations between groups of sources and of targets, they fix all 16 atoms. On each of the ten logic gates of :cite:`liardi2026information`, ``'ig'`` puts one bit in the atom the gate was built for (in two atoms for the three copy-like gates) and nothing elsewhere, as do ``'gk'`` and ``'broja'``; ``'mmi'``, ``'pm'`` and ``'sx'`` put information in other atoms for 3, 6 and 9 of them. Like :math:`\Iig{\bullet}`, the decomposition is sensitive to noise near copies, and its atoms are often negative: on random distributions, the persistent redundancy :math:`\{0\}\{1\} \to \{2\}\{3\}` is more often negative than not.
 
 The atoms always sum to :math:`\I{X : Y}`, but individual atoms can be negative.
 
@@ -1205,7 +1212,7 @@ The atoms always sum to :math:`\I{X : Y}`, but individual atoms can be negative.
    In [39]: PhiID(d)[(((0,), (1,)), ((2,), (3,)))]
    Out[39]: 1.0
 
-On a copy of two independent bits, the double redundancy ``'mmi'`` puts two bits in the synergistic atom (offset by negative atoms), while ``'ig'``, like ``'gk'``, puts one bit in each of :math:`\{0\} \to \{2\}` and :math:`\{1\} \to \{3\}`, and nothing elsewhere:
+On a copy of two independent bits, the double redundancy ``'mmi'`` puts two bits in the synergistic atom (offset by negative atoms), while ``'ig'``, like ``'gk'`` and ``'broja'``, puts one bit in each of :math:`\{0\} \to \{2\}` and :math:`\{1\} \to \{3\}`, and nothing elsewhere:
 
 .. ipython::
 

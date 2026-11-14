@@ -36,6 +36,7 @@ These measures all reduce to the standard Shannon :ref:`mutual_information` for 
    deweese
    higher_order_common_information
    union_information
+   w_information
    quax_synergy
    synergistic_disclosure
    logarithmic_decomposition

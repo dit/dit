@@ -28,3 +28,4 @@ from .total_correlation import *
 from .transmission import *
 from .tse_complexity import *
 from .union_information import *
+from .w_information import *

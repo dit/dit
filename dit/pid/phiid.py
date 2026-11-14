@@ -11,7 +11,7 @@ redundancy :math:`\\{1\\}\\{2\\} \\to \\{1\\}\\{2\\}` and downward causation
 :math:`\\{12\\} \\to \\{1\\}`.
 
 The atoms are obtained by Mobius inversion of a *double-redundancy* function
-:math:`I_\\partial(\\alpha \\to \\beta)` on the product lattice. Four are
+:math:`I_\\partial(\\alpha \\to \\beta)` on the product lattice. Five are
 provided:
 
 * ``'mmi'`` — :math:`\\min_{i,j} I[A_i : B_j]` :cite:`mediano2019beyond`.
@@ -26,6 +26,10 @@ provided:
   al.'s :math:`I_\\wedge` :cite:`griffith2014intersection`. It vanishes whenever
   a side has two or more groups with full joint support, since they then share
   no common part.
+* ``'broja'`` — for two sources and two targets, the BROJA-PhiID of Liardi et al.
+  :cite:`liardi2025scalable`: the BROJA redundancy of the sources about each target
+  collection (and of the targets about each source collection), and the W-information
+  for the persistent redundancy (see :class:`PhiID`).
 
 The information-geometric decomposition ``'ig'`` of Liardi, Blackburne & Mediano
 :cite:`liardi2026information` uses no double redundancy. For two sources and two
@@ -40,10 +44,12 @@ import numpy as np
 
 from ..helpers import as_linear
 from ..multivariate import coinformation
+from ..multivariate.w_information import _groups, _joint, _w_information
 from ..utils import build_table, flatten
 from ._utils import _label
 from .hmos import h_mos_pw
 from .hsx import h_sx_pw
+from .measures.ibroja import PID_BROJA
 from .measures.iig import ig_double_synergy, ig_synergy
 from .measures.iwedge import _meets
 from .pid import _descendants, _lattice_of, _unit_scale, sort_key
@@ -55,12 +61,32 @@ class PhiID:
     """
     The Integrated Information Decomposition of :math:`I[X : Y]` for sources
     :math:`X` and targets :math:`Y`.
+
+    Notes
+    -----
+    With ``measure='broja'`` (two sources :math:`X_0, X_1` and two targets
+    :math:`Y_0, Y_1`), the double redundancy of a node with a single collection on
+    one side is a mutual information, or the BROJA redundancy of the two variables
+    on the other side about that collection. The persistent redundancy is fixed by
+    requiring the nine atoms without synergy on either side to sum to the
+    W-information :math:`\\mathcal{W}` (:func:`~dit.multivariate.w_information`)
+    :cite:`liardi2025scalable`, which gives
+
+    .. math::
+
+       I_\\partial(\\{0\\}\\{1\\} \\to \\{2\\}\\{3\\}) = \\mathcal{W}
+       - \\sum_{i, j} I[X_i : Y_j] + \\sum_j I^{BROJA}_\\cap(X_0, X_1 : Y_j)
+       + \\sum_i I^{BROJA}_\\cap(Y_0, Y_1 : X_i).
+
+    The seven atoms with synergy on either side then sum to the M-information. The
+    double redundancy is not bounded by :math:`\\min_{i,j} I[X_i : Y_j]`, so atoms
+    such as :math:`\\{0\\}\\{1\\} \\to \\{2\\}` are often negative.
     """
 
     _red_string = "I_dd"
     _pi_string = "phi"
 
-    def __init__(self, dist, sources=None, targets=None, measure="mmi", pointwise=False):
+    def __init__(self, dist, sources=None, targets=None, measure="mmi", pointwise=False, rng=None):
         """
         Parameters
         ----------
@@ -70,16 +96,22 @@ class PhiID:
             The source (past) and target (future) variables. If both are None,
             the first half of `dist.rvs` are the sources and the second half
             the targets.
-        measure : {'mmi', 'pm', 'sx', 'gk', 'ig'}
+        measure : {'mmi', 'pm', 'sx', 'gk', 'broja', 'ig'}
             The double-redundancy function, or ``'ig'`` for the information-geometric
-            decomposition, which needs exactly two sources and two targets.
+            decomposition. ``'broja'`` and ``'ig'`` need exactly two sources and two
+            targets.
         pointwise : bool
             For the local measures (``'pm'`` and ``'sx'``), also keep the
             per-outcome double redundancies and atoms.
+        rng : np.random.Generator, int, None
+            The random generator (or seed) for the restarts of the W-information
+            minimization that ``'broja'`` needs.
         """
-        if measure not in {"mmi", "pm", "sx", "gk", "ig"}:
-            raise ValueError(f"Unknown double-redundancy {measure!r}; choose from 'mmi', 'pm', 'sx', 'gk', 'ig'.")
-        if pointwise and measure in {"mmi", "gk", "ig"}:
+        if measure not in {"mmi", "pm", "sx", "gk", "broja", "ig"}:
+            raise ValueError(
+                f"Unknown double-redundancy {measure!r}; choose from 'mmi', 'pm', 'sx', 'gk', 'broja', 'ig'."
+            )
+        if pointwise and measure in {"mmi", "gk", "broja", "ig"}:
             raise ValueError(f"The {measure!r} double redundancy has no pointwise form.")
         self._unit_scale = _unit_scale(dist)
         self._dist = dist = as_linear(dist)
@@ -92,7 +124,14 @@ class PhiID:
             raise ValueError("Specify both `sources` and `targets`, or neither.")
         self._sources = tuple(map(tuple, sources))
         self._targets = tuple(map(tuple, targets))
+        if measure == "broja":
+            if len(self._sources) != 2 or len(self._targets) != 2:
+                raise ValueError("The 'broja' double redundancy needs two sources and two targets.")
+            # the W-information needs disjoint groups
+            _groups(dist, self._sources, self._targets)
         self._measure = measure
+        self._rng = rng
+        self._broja_reds = {}
         self._source_lattice = _lattice_of(self._sources)
         self._target_lattice = _lattice_of(self._targets)
         self._nodes = list(product(self._source_lattice, self._target_lattice))
@@ -190,8 +229,40 @@ class PhiID:
             return min(self._mi(a, b) for a in alpha for b in beta)
         if self._measure == "gk":
             return coinformation(_meets(self._dist, *node), [[0], [1]])
+        if self._measure == "broja":
+            return self._broja_double_red(node)
         pw = self._pw_reds.get(node) or self._pw_double_red(node)
         return sum(self._dist[o] * v for o, v in pw.items())
+
+    def _broja_red(self, collection, target):
+        """
+        The BROJA redundancy of the two groups in `collection` about `target`, in bits.
+        """
+        key = (frozenset(collection), target)
+        if key not in self._broja_reds:
+            pid = PID_BROJA(self._dist, [list(group) for group in collection], list(target))
+            self._broja_reds[key] = pid.get_red(pid._lattice.bottom)
+        return self._broja_reds[key]
+
+    def _broja_double_red(self, node):
+        """
+        The BROJA-PhiID double redundancy of `node` :cite:`liardi2025scalable`, in bits.
+        """
+        alpha, beta = node
+        if len(alpha) == 1 and len(beta) == 1:
+            return self._mi(alpha[0], beta[0])
+        if len(beta) == 1:
+            return self._broja_red(alpha, beta[0])
+        if len(alpha) == 1:
+            return self._broja_red(beta, alpha[0])
+        groups = list(self._sources) + list(self._targets)
+        w = _w_information(_joint(self._dist, groups), len(self._sources), rng=self._rng)
+        return (
+            w
+            - sum(self._mi(a, b) for a in self._sources for b in self._targets)
+            + sum(self._broja_red(self._sources, b) for b in self._targets)
+            + sum(self._broja_red(self._targets, a) for a in self._sources)
+        )
 
     def _descendants(self, node):
         """
