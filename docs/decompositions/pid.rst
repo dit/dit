@@ -800,6 +800,10 @@ Unlike the Blackwell order it is not transitive: :math:`Q - X_1 - Y` does not im
 
 Niu & Quinn :cite:`niu2019measure` propose an information-geometric PID: the synergy is defined as the KL divergence from the true joint distribution to the nearest distribution satisfying :math:`X_0 - X_1 - Y` or :math:`X_1 - X_0 - Y` Markov chains, minimized along the geodesic :math:`q_\lambda \propto p(x_0, x_1)\, p(y \mid x_0)^\lambda p(y \mid x_1)^{1 - \lambda}` between them; the minimizing :math:`\lambda` need not lie in :math:`[0, 1]`.
 
+Where the two Markov-chain distributions have different supports, :math:`q_\lambda` is finite only for :math:`\lambda` in :math:`[0, 1]` (or a half-line), and then lives on their common support; the minimum is taken over that interval. This is the limit of adding a vanishing constant to every probability. A fixed constant, such as the :math:`10^{-100}` dit used to add, approaches it only logarithmically: for :math:`p(011) = 3/5`, :math:`p(101) = 3/10` and :math:`p(110) = 1/10`, the minimum is at :math:`\lambda = 1`, and the synergy is :math:`1/5 + 3/10 \log_2(4/3) + \log_2(37/40) = 0.2120` bits, while a constant of :math:`10^{-100}` gives 0.2134.
+
+The measure is sensitive to noise near copies. For :math:`Y = (X_0, X_1)` mixed with a uniform distribution of weight :math:`\eta`, the synergy is about :math:`\sqrt{2 \eta}` nats, or :math:`2.04 \sqrt{\eta}` bits: 0.16 bits at :math:`\eta = 0.01`, where :math:`\Ibroja{\bullet}` gives 0.015.
+
 .. autoclass:: PID_IG
    :no-index:
 
@@ -1187,6 +1191,8 @@ The atoms are the Mobius inversion of a *double redundancy* :math:`I_\partial(\a
 * ``measure='sx'``: the expectation of :math:`h_{\mathrm{sx}}(\alpha) + h_{\mathrm{sx}}(\beta) - h_{\mathrm{sx}}(\{A_i \cup B_j\})` :cite:`varley2023decomposing`.
 * ``measure='gk'``: :math:`\I{\wedge_i A_i : \wedge_j B_j}`, the mutual information between the Gács–Körner common parts of the two sides, extending :math:`\Iwedge{\bullet}` :cite:`griffith2014intersection`. Two independent bits copied forward give only the atoms :math:`\{0\} \to \{2\}` and :math:`\{1\} \to \{3\}`. But groups with full joint support share no common part, so on noisy data there is no redundancy between disjoint groups.
 
+``measure='ig'`` is the information-geometric decomposition of Liardi, Blackburne & Mediano :cite:`liardi2026information`, for two sources and two targets. Instead of a double redundancy it uses seven synergies, each a sum of atoms. Six are :math:`\Iig{\bullet}` synergies: of the sources about each target and about both, and of the targets about each source and about both. For instance, the synergy of the sources about :math:`X_2` is :math:`\{0{:}1\} \to \{2\}\{3\}` plus :math:`\{0{:}1\} \to \{2\}`. The seventh is :math:`\{0{:}1\} \to \{2{:}3\}` alone: the divergence from the distribution to the :math:`e`-affine hull of the four projections :math:`p(x_0, x_1, x_j)\, p(x_i, x_2, x_3) / p(x_i, x_j)`, for :math:`i \in \{0, 1\}` and :math:`j \in \{2, 3\}`, each of which makes one source independent of one target given the other two variables. With the nine mutual informations between groups of sources and of targets, they fix all 16 atoms. On each of the ten logic gates of :cite:`liardi2026information`, ``'ig'`` puts one bit in the atom the gate was built for (in two atoms for the three copy-like gates) and nothing elsewhere, as does ``'gk'``; ``'mmi'``, ``'pm'`` and ``'sx'`` put information in other atoms for 3, 6 and 9 of them. Like :math:`\Iig{\bullet}`, the decomposition is sensitive to noise near copies, and its atoms are often negative: on random distributions, the persistent redundancy :math:`\{0\}\{1\} \to \{2\}\{3\}` is more often negative than not.
+
 The atoms always sum to :math:`\I{X : Y}`, but individual atoms can be negative.
 
 .. ipython::
@@ -1198,6 +1204,18 @@ The atoms always sum to :math:`\I{X : Y}`, but individual atoms can be negative.
    @doctest float
    In [39]: PhiID(d)[(((0,), (1,)), ((2,), (3,)))]
    Out[39]: 1.0
+
+On a copy of two independent bits, the double redundancy ``'mmi'`` puts two bits in the synergistic atom (offset by negative atoms), while ``'ig'``, like ``'gk'``, puts one bit in each of :math:`\{0\} \to \{2\}` and :math:`\{1\} \to \{3\}`, and nothing elsewhere:
+
+.. ipython::
+
+   In [40]: copy = dit.Distribution(['0000', '0101', '1010', '1111'], [1/4] * 4)
+
+   @doctest float
+   In [41]: PhiID(copy, measure='mmi')[(((0, 1),), ((2, 3),))]
+   Out[41]: 2.0
+
+   In [42]: print(PhiID(copy, measure='ig'))
 
 .. autoclass:: PhiID
    :no-index:

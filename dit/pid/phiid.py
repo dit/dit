@@ -26,6 +26,12 @@ provided:
   al.'s :math:`I_\\wedge` :cite:`griffith2014intersection`. It vanishes whenever
   a side has two or more groups with full joint support, since they then share
   no common part.
+
+The information-geometric decomposition ``'ig'`` of Liardi, Blackburne & Mediano
+:cite:`liardi2026information` uses no double redundancy. For two sources and two
+targets it fixes the 16 atoms with the nine mutual informations between groups of
+sources and of targets, and seven synergies of the kind of :class:`~dit.pid.PID_IG`;
+the double redundancies are then sums of atoms.
 """
 
 from itertools import product
@@ -38,6 +44,7 @@ from ..utils import build_table, flatten
 from ._utils import _label
 from .hmos import h_mos_pw
 from .hsx import h_sx_pw
+from .measures.iig import ig_double_synergy, ig_synergy
 from .measures.iwedge import _meets
 from .pid import _descendants, _lattice_of, _unit_scale, sort_key
 
@@ -63,15 +70,16 @@ class PhiID:
             The source (past) and target (future) variables. If both are None,
             the first half of `dist.rvs` are the sources and the second half
             the targets.
-        measure : {'mmi', 'pm', 'sx', 'gk'}
-            The double-redundancy function.
+        measure : {'mmi', 'pm', 'sx', 'gk', 'ig'}
+            The double-redundancy function, or ``'ig'`` for the information-geometric
+            decomposition, which needs exactly two sources and two targets.
         pointwise : bool
             For the local measures (``'pm'`` and ``'sx'``), also keep the
             per-outcome double redundancies and atoms.
         """
-        if measure not in {"mmi", "pm", "sx", "gk"}:
-            raise ValueError(f"Unknown double-redundancy {measure!r}; choose from 'mmi', 'pm', 'sx', 'gk'.")
-        if pointwise and measure in {"mmi", "gk"}:
+        if measure not in {"mmi", "pm", "sx", "gk", "ig"}:
+            raise ValueError(f"Unknown double-redundancy {measure!r}; choose from 'mmi', 'pm', 'sx', 'gk', 'ig'.")
+        if pointwise and measure in {"mmi", "gk", "ig"}:
             raise ValueError(f"The {measure!r} double redundancy has no pointwise form.")
         self._unit_scale = _unit_scale(dist)
         self._dist = dist = as_linear(dist)
@@ -92,6 +100,10 @@ class PhiID:
             coinformation(self._dist, [list(flatten(self._sources)), list(flatten(self._targets))])
         )
         self._mi_cache = {}
+        if measure == "ig":
+            if len(self._sources) != 2 or len(self._targets) != 2:
+                raise ValueError("The 'ig' measure needs exactly two sources and two targets.")
+            self._ig = self._ig_atoms()
         self._reds = {}
         self._pis = {}
         self._pw_reds = {}
@@ -117,7 +129,62 @@ class PhiID:
         ha, hb, hab = (pw(self._dist, n) for n in (alpha, beta, joint))
         return {o: ha[o] + hb[o] - hab[o] for o in ha}
 
+    def _ig_atoms(self):
+        """
+        The atoms of the information-geometric decomposition :cite:`liardi2026information`,
+        in bits.
+
+        The atoms solve 16 linear equations. Nine equate the mutual information between a
+        group of sources and a group of targets with the sum of the atoms below the pair.
+        Seven equate synergies with sums of atoms whose source or target mode is
+        synergistic (S); each is the synergy of ``ig_synergy`` on a marginal or with grouped
+        variables, except that S -> S is ``ig_double_synergy``.
+
+        Returns
+        -------
+        atoms : dict
+            The atom of each node.
+        """
+        (a, b), (c, d) = self._sources, self._targets
+        ab, cd = tuple(sorted(set(a) | set(b))), tuple(sorted(set(c) | set(d)))
+        # The modes: redundant, unique to the first or the second group, and synergistic.
+        src = {"R": self._source_lattice.bottom, "U0": (tuple(sorted(a)),), "U1": (tuple(sorted(b)),)}
+        src["S"] = self._source_lattice.top
+        tgt = {"R": self._target_lattice.bottom, "U0": (tuple(sorted(c)),), "U1": (tuple(sorted(d)),)}
+        tgt["S"] = self._target_lattice.top
+        index = {node: i for i, node in enumerate(self._nodes)}
+
+        rows, values = [], []
+        for x, alpha in ((a, "U0"), (b, "U1"), (ab, "S")):
+            for y, beta in ((c, "U0"), (d, "U1"), (cd, "S")):
+                below_a = _descendants(self._source_lattice, src[alpha], include=True)
+                below_b = _descendants(self._target_lattice, tgt[beta], include=True)
+                row = np.zeros(len(index))
+                row[[index[n] for n in product(below_a, below_b)]] = 1
+                rows.append(row)
+                values.append(self._mi(x, y))
+
+        dist = self._dist
+        synergies = [
+            (ig_synergy(dist, [a, b], c), [("S", "R"), ("S", "U0")]),
+            (ig_synergy(dist, [a, b], d), [("S", "R"), ("S", "U1")]),
+            (ig_synergy(dist, [c, d], a), [("R", "S"), ("U0", "S")]),
+            (ig_synergy(dist, [c, d], b), [("R", "S"), ("U1", "S")]),
+            (ig_synergy(dist, [a, b], cd), [("S", mode) for mode in tgt]),
+            (ig_synergy(dist, [c, d], ab), [(mode, "S") for mode in src]),
+            (ig_double_synergy(dist, [a, b], [c, d]), [("S", "S")]),
+        ]
+        for value, atoms in synergies:
+            row = np.zeros(len(index))
+            row[[index[(src[alpha], tgt[beta])] for alpha, beta in atoms]] = 1
+            rows.append(row)
+            values.append(value)
+
+        return dict(zip(self._nodes, np.linalg.solve(np.array(rows), np.array(values)), strict=True))
+
     def _double_red(self, node):
+        if self._measure == "ig":
+            return sum(self._ig[n] for n in (node, *self._descendants(node)))
         if self._measure == "mmi":
             alpha, beta = node
             return min(self._mi(a, b) for a in alpha for b in beta)
