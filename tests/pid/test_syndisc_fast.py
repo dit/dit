@@ -111,7 +111,7 @@ def test_syndisc_real_compute_s_alpha(monkeypatch):
         self._optima = self.construct_random_initial()
 
     monkeypatch.setattr(SyndiscOptimizer, "optimize", fake_optimize)
-    sd = SynDisc(Xor())
+    sd = SynDisc(Xor(), method="optimize")
     for node in sd._lattice:
         assert np.isfinite(sd.get_synergy(node))
 

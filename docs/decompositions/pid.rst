@@ -928,7 +928,7 @@ and the redundancy is :math:`I(X'_1 : X_2) = I(X'_2 : X_1)`. Only defined for tw
 Synergistic Disclosure
 ----------------------
 
-Rosas, Mediano, Rassouli & Barrett :cite:`rosas2020operational` decompose :math:`I(X;Y)` via :math:`\alpha`-synergistic channels (see also :doc:`/measures/multivariate/synergistic_disclosure`). :class:`~dit.pid.SynDisc` inverts on the extended constraint lattice; :class:`~dit.pid.ModifiedSynDisc` is the backbone coarse-graining.
+Rosas, Mediano, Rassouli & Barrett :cite:`rosas2020operational` decompose :math:`I(X;Y)` via :math:`\alpha`-synergistic channels (see also :doc:`/measures/multivariate/synergistic_disclosure`). :class:`~dit.pid.SynDisc` inverts on the extended constraint lattice, and :meth:`~dit.pid.SynDisc.get_backbone` gives the backbone coarse-graining. :class:`~dit.pid.ModifiedSynDisc` is the modification of Gutknecht, Makkeh & Wibral ("From Babel to Boole"), which replaces the :math:`\alpha`-synergy of each node with a single constraint by a conditional mutual information, so that, for every collection of sources, the atoms attributed to it add up to its mutual information with the target. By default (``method="auto"``), both compute each :math:`\alpha`-synergy exactly, by a linear program over the extreme rays of a cone, when the sources take few joint values, and by numerical optimization otherwise; ``method="exact"`` and ``method="optimize"`` force one or the other.
 
 .. autoclass:: ModifiedSynDisc
    :no-index:

@@ -18,6 +18,7 @@ decomposition that scales linearly with system size.
 """
 
 from copy import deepcopy
+from fractions import Fraction
 from itertools import combinations
 
 import networkx as nx
@@ -31,6 +32,7 @@ from ..helpers import as_linear
 from ..math import prod
 from ..multivariate import coinformation
 from ..utils import build_table, flatten
+from .measures.ideg import _double_description, _integer_row, _ray_program, _verified_cdd_rays
 from .pid import _descendants, _unit_scale
 
 __all__ = ("ModifiedSynDisc", "SynDisc")
@@ -227,6 +229,124 @@ class SyndiscOptimizer(BaseAuxVarOptimizer):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Exact alpha-synergy
+# ─────────────────────────────────────────────────────────────────────────────
+
+# "auto" computes S_alpha exactly when the sources take at most this many joint values with
+# positive probability: with cddlib, every node of such a lattice took at most about 15 s in
+# our tests; without it, the pure-Python double description is slower, hence the lower limit.
+_EXACT_MAX_OUTCOMES = 27
+_EXACT_MAX_OUTCOMES_WITHOUT_CDD = 16
+
+
+def _exact_limit():
+    """The largest number of joint source values for which "auto" is exact."""
+    try:
+        import cdd  # noqa: F401
+    except ImportError:
+        return _EXACT_MAX_OUTCOMES_WITHOUT_CDD
+    return _EXACT_MAX_OUTCOMES
+
+
+def _choose_method(dist, sources, method):
+    """
+    Resolve `method` ("auto", "exact" or "optimize") to "exact" or "optimize".
+
+    "auto" is exact when the sources take at most :func:`_exact_limit` joint values with
+    positive probability.
+    """
+    if method not in ("auto", "exact", "optimize"):
+        msg = f"method must be 'auto', 'exact' or 'optimize', not {method!r}"
+        raise ValueError(msg)
+    if method == "auto":
+        n_outcomes = sum(1 for _, p in dist.coalesce(sources).zipped() if p > 0)
+        method = "exact" if n_outcomes <= _exact_limit() else "optimize"
+    return method
+
+
+def _alpha_synergy_exact(dist, sources, target, alpha):
+    """
+    Compute S_alpha(X -> Y) exactly, by a linear program over the extreme rays of a cone.
+
+    A channel p(v | x) is alpha-synergistic when p(v | x_a) does not depend on x_a for each
+    group a in alpha, which is linear in p(v | x). For one outcome v, the vector
+    u(x) = p(v | x) therefore lies in the cone C = {u >= 0 : p(v | x_a) is the same for
+    every value of x_a, for each a}, and the channel is a collection of such vectors that
+    add up to the all-ones vector. I(V; Y) is a sum over the outcomes of V of a convex,
+    positively homogeneous function of u, so splitting a vector along the extreme rays of
+    C never lowers it, and the maximum over all alpha-synergistic channels (with no bound
+    on the size of V) is a linear program over the extreme rays, as for the degradation
+    intersection information (see :mod:`dit.pid.measures.ideg`).
+
+    Parameters
+    ----------
+    dist : Distribution
+        The joint distribution, with linear probabilities.
+    sources : list of lists
+        The indices of each source variable.
+    target : list
+        The indices of the target variable.
+    alpha : tuple of tuples
+        Indices into `sources` of the groups that V must be independent of.
+
+    Returns
+    -------
+    s_alpha : float
+        The alpha-synergy, in bits.
+    """
+    d = dist.coalesce([*sources, target])
+    pmf = {}
+    for outcome, p in d.zipped():
+        if p > 0:
+            pmf[outcome] = pmf.get(outcome, 0) + p
+    xs = sorted({outcome[:-1] for outcome in pmf}, key=repr)
+    ts = sorted({outcome[-1] for outcome in pmf}, key=repr)
+    x_index = {x: i for i, x in enumerate(xs)}
+    t_index = {t: j for j, t in enumerate(ts)}
+    joint = np.zeros((len(xs), len(ts)))
+    exact_joint = [[Fraction(0)] * len(ts) for _ in xs]
+    for outcome, p in pmf.items():
+        i, j = x_index[outcome[:-1]], t_index[outcome[-1]]
+        joint[i, j] += p
+        exact_joint[i][j] += Fraction(p)
+    p_x = [sum(row) for row in exact_joint]
+    pi_t = joint.sum(axis=0)
+
+    # one equality row per group a and per value of x_a other than the first
+    equalities = []
+    for group in alpha:
+        cells = {}
+        for x, i in x_index.items():
+            cells.setdefault(tuple(x[k] for k in group), []).append(i)
+        blocks = list(cells.values())
+        mass = [sum(p_x[i] for i in block) for block in blocks]
+        for block, m in zip(blocks[1:], mass[1:], strict=True):
+            row = [Fraction(0)] * len(xs)
+            for i in block:
+                row[i] += p_x[i] / m
+            for i in blocks[0]:
+                row[i] -= p_x[i] / mass[0]
+            equalities.append(row)
+
+    dim = len(xs)
+    rows = np.array([[float(x) for x in row] for row in equalities], dtype=float).reshape(-1, dim)
+    columns_of = joint / pi_t
+
+    def solve(rays):
+        rays = np.clip(rays, 0.0, None)
+        return _ray_program(rays, rays @ columns_of, pi_t)
+
+    rays = _verified_cdd_rays(rows, dim)
+    res = solve(rays) if rays is not None else None
+    if res is None or res.status != 0:
+        res = solve(_double_description([_integer_row(row) for row in equalities], dim))
+    if res.status != 0:  # pragma: no cover
+        msg = f"The linear program for S_alpha failed: {res.message}"
+        raise OptimizationException(msg)
+    return max(0.0, -res.fun)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Full decomposition class
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -281,14 +401,21 @@ class SynDisc:
     target : iter, None
         The target variable. If None, the last variable is used.
     niter : int, None
-        Number of basin-hopping restarts per lattice node.
+        Number of basin-hopping restarts per lattice node (optimizer only).
     bound : int, None
-        Cardinality bound on the auxiliary variable V.
+        Cardinality bound on the auxiliary variable V (optimizer only).
+    method : str
+        How S_alpha is computed: "exact" by a linear program over the extreme rays of a cone
+        (:func:`_alpha_synergy_exact`), "optimize" by numerical optimization over channels
+        with ``bound`` outcomes, or "auto" (default), which is exact when the sources take at
+        most ``_EXACT_MAX_OUTCOMES`` joint values with positive probability and optimizes
+        otherwise (16 if cddlib is not installed). The number of extreme rays, and so the time
+        of the exact method, can grow quickly with the number of joint values of the sources.
     """
 
     _name = "S_disc"
 
-    def __init__(self, dist, sources=None, target=None, niter=None, bound=None):
+    def __init__(self, dist, sources=None, target=None, niter=None, bound=None, method="auto"):
         self._unit_scale = _unit_scale(dist)
         self._dist = dist = as_linear(dist)
 
@@ -301,6 +428,7 @@ class SynDisc:
         self._target = tuple(target)
         self._niter = niter
         self._bound = bound
+        self._method = _choose_method(dist, self._sources, method)
 
         self._lattice = _transform_constraint(_build_constraint_lattice(self._sources))
 
@@ -344,6 +472,8 @@ class SynDisc:
             return 0.0
 
         flat_sources = [list(src) for src in self._sources]
+        if self._method == "exact":
+            return _alpha_synergy_exact(self._dist, flat_sources, list(self._target), alpha)
         try:
             opt = SyndiscOptimizer(
                 self._dist,
@@ -564,9 +694,11 @@ class ModifiedSynDisc(SynDisc):
     target : iter, None
         The target variable. If None, the last variable is used.
     niter : int, None
-        Number of basin-hopping restarts per lattice node.
+        Number of basin-hopping restarts per lattice node (optimizer only).
     bound : int, None
-        Cardinality bound on the auxiliary variable V.
+        Cardinality bound on the auxiliary variable V (optimizer only).
+    method : str
+        "auto", "exact" or "optimize"; see :class:`SynDisc`.
     """
 
     _name = "S_msd"
