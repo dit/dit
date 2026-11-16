@@ -56,6 +56,19 @@ def test_caekl_psp_near_deterministic():
     assert caekl_mutual_information_psp(dist, rvs, None) == pytest.approx(_caekl_by_partitions(dist, rvs, None))
 
 
+def test_caekl_psp_tiny_probability():
+    """
+    A distribution with a probability of about 7e-11, found by the Hypothesis test above, on which
+    minimum_norm_base used to stagnate and raise instead of converging.
+    """
+    dist = D(
+        [(0, 0, 0, 0, 1), (0, 0, 1, 0, 0), (0, 0, 1, 1, 1)],
+        [0.3333333333111111, 0.6666666666222222, 6.666666666222223e-11],
+    )
+    rvs = [[i] for i in range(5)]
+    assert caekl_mutual_information_psp(dist, rvs, None) == pytest.approx(_caekl_by_partitions(dist, rvs, None))
+
+
 def test_caekl_uses_psp():
     d = random_distribution(5, 4, alpha=(0.5,) * 4**5)
     rvs = [[i] for i in range(5)]
