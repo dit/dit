@@ -22,6 +22,7 @@ from .maximum_correlation import (
 )
 from .variational_distance import (
     bhattacharyya_coefficient_pmf as bhattacharyya_coefficient,
+    bhattacharyya_distance_pmf as bhattacharyya_distance,
 )
 from .variational_distance import (
     chernoff_information_pmf as chernoff_information,
@@ -35,6 +36,7 @@ from .variational_distance import (
 
 __all__ = (
     "bhattacharyya_coefficient",
+    "bhattacharyya_distance",
     "chernoff_information",
     "conditional_maximum_correlation",
     "cross_entropy",
