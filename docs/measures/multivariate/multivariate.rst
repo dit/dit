@@ -29,6 +29,9 @@ These measures all reduce to the standard Shannon :ref:`mutual_information` for 
    cohesion
    o_information
    caekl_mutual_information
+   renyi_total_correlation
+   renyi_dual_total_correlation
+   renyi_caekl_mutual_information
    kirkwood
    frustration
    interaction_information

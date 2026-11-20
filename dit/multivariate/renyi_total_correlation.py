@@ -52,8 +52,14 @@ def renyi_total_correlation(dist, order, rvs=None, crvs=None):
 
     References
     ----------
-    Hu, G. (2014). Rényi Information Measures for Multi-terminal Systems.
-    arXiv:1403.5731.
+    Watanabe, S. (1960). Information theoretical analysis of multivariate
+    correlation. IBM Journal of Research and Development, 4(1), 66-82.
+
+    The Rényi form substitutes H_alpha into the Shannon definition, following
+    the general prescription for Rényi generalizations of information measures
+    that are linear combinations of entropies: Berta, M., Seshadreesan, K. P.,
+    & Wilde, M. M. (2015). Rényi generalizations of quantum information
+    measures. Physical Review A, 91(2), 022333. arXiv:1502.07977.
     """
     rvs, crvs = normalize_rvs(dist, rvs, crvs)
     if crvs:
