@@ -57,6 +57,33 @@ with equality if and only if :math:`p = q`. This makes it a `premetric
 <http://en.wikipedia.org/wiki/Metric_(mathematics)#Premetrics>`_.
 
 
+The Jeffreys Divergence
+=======================
+
+The asymmetry can be removed by adding both directions together, giving the
+Jeffreys divergence :cite:`jeffreys1946invariant`:
+
+.. math::
+
+   J(p, q) = \DKL{p || q} + \DKL{q || p}
+
+.. ipython::
+
+   In [5]: from dit.divergences import jeffreys_divergence
+
+   @doctest float
+   In [6]: jeffreys_divergence(p, q)
+   Out[6]: 0.39624062518028913
+
+This is symmetric and still vanishes only when :math:`p = q`, but it is not a
+metric either: it does not obey the triangle inequality. It is also infinite
+unless the two distributions share a support, since each direction separately
+requires absolute continuity. For a symmetric alternative that stays finite,
+see the :doc:`/measures/divergences/jensen_shannon_divergence`; for symmetric
+quantities that *are* metrics, see
+:doc:`/measures/divergences/variational_distance`.
+
+
 API
 ===
 
@@ -64,4 +91,7 @@ API
 :py:func:`kullback_leibler_divergence`.
 
 .. autofunction:: kullback_leibler_divergence
+   :no-index:
+
+.. autofunction:: jeffreys_divergence
    :no-index:

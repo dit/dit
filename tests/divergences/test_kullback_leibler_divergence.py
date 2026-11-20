@@ -4,10 +4,12 @@ Tests for dit.divergences.kullback_leibler_divergence.
 
 import numpy as np
 import pytest
+from hypothesis import given
 
 from dit import Distribution
-from dit.divergences import kullback_leibler_divergence
+from dit.divergences import jeffreys_divergence, kullback_leibler_divergence
 from dit.exceptions import ditException
+from dit.utils.testing import distributions
 
 d1 = Distribution(["0", "1"], [1 / 2, 1 / 2])
 d2 = Distribution(["0", "2"], [1 / 2, 1 / 2])
@@ -67,3 +69,52 @@ def test_dkl_3(args):
     first, second, rvs, crvs = args
     with pytest.raises(ditException):
         kullback_leibler_divergence(first, second, rvs, crvs)
+
+
+@pytest.mark.parametrize(
+    ("args", "expected"),
+    [
+        ([d4, d5], 0.029049405545331419 + 0.0294468445267841),
+        ([d4, d5, [0], [1]], 0),
+        # d3 has support d1 lacks, so the reverse direction diverges.
+        ([d1, d3], np.inf),
+        ([d1, d2], np.inf),
+    ],
+)
+def test_jeffreys_known(args, expected):
+    """
+    The Jeffreys divergence is the sum of the two Kullback-Leibler divergences.
+    """
+    assert jeffreys_divergence(*args) == pytest.approx(expected)
+
+
+def test_jeffreys_identical():
+    """
+    The Jeffreys divergence is zero for identical distributions.
+    """
+    assert jeffreys_divergence(d1, d1) == pytest.approx(0.0)
+
+
+@given(dist1=distributions(alphabets=(4,)), dist2=distributions(alphabets=(4,)))
+def test_jeffreys_symmetry(dist1, dist2):
+    """
+    Unlike the Kullback-Leibler divergence, the Jeffreys divergence is symmetric.
+    """
+    assert jeffreys_divergence(dist1, dist2) == pytest.approx(jeffreys_divergence(dist2, dist1))
+
+
+@given(dist1=distributions(alphabets=(4,), zeros=False), dist2=distributions(alphabets=(4,), zeros=False))
+def test_jeffreys_is_sum_of_kls(dist1, dist2):
+    """
+    The Jeffreys divergence decomposes into the two Kullback-Leibler divergences.
+    """
+    expected = kullback_leibler_divergence(dist1, dist2) + kullback_leibler_divergence(dist2, dist1)
+    assert jeffreys_divergence(dist1, dist2) == pytest.approx(expected)
+
+
+@given(dist1=distributions(alphabets=(4,)), dist2=distributions(alphabets=(4,)))
+def test_jeffreys_nonnegative(dist1, dist2):
+    """
+    The Jeffreys divergence is non-negative.
+    """
+    assert jeffreys_divergence(dist1, dist2) >= -1e-9
