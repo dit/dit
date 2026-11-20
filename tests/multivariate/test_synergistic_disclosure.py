@@ -2,6 +2,7 @@
 Tests for the standalone synergistic disclosure scalar functions.
 """
 
+import numpy as np
 import pytest
 
 from dit.distconst import uniform
@@ -126,7 +127,7 @@ def test_synergistic_disclosure_smoke(monkeypatch):
     """The optimizer-backed path runs and clamps to a non-negative value."""
     _stub_optimize(monkeypatch)
     d = bivariates["synergy"]
-    val = synergistic_disclosure(d, [[0], [1]], [2], alpha=[[0], [1]])
+    val = synergistic_disclosure(d, [[0], [1]], [2], alpha=[[0], [1]], method="optimize")
     assert val >= 0.0
 
 
@@ -139,7 +140,7 @@ def test_synergistic_disclosure_exception_returns_zero(monkeypatch):
 
     monkeypatch.setattr(syndisc_module.SyndiscOptimizer, "optimize", boom)
     d = bivariates["synergy"]
-    val = synergistic_disclosure(d, [[0], [1]], [2], alpha=[[0], [1]])
+    val = synergistic_disclosure(d, [[0], [1]], [2], alpha=[[0], [1]], method="optimize")
     assert val == 0.0
 
 
@@ -152,14 +153,14 @@ def test_synergistic_disclosure_other_errors_propagate(monkeypatch):
     monkeypatch.setattr(syndisc_module.SyndiscOptimizer, "optimize", boom)
     d = bivariates["synergy"]
     with pytest.raises(RuntimeError):
-        synergistic_disclosure(d, [[0], [1]], [2], alpha=[[0], [1]])
+        synergistic_disclosure(d, [[0], [1]], [2], alpha=[[0], [1]], method="optimize")
 
 
 def test_modified_synergistic_disclosure_multi_alpha_smoke(monkeypatch):
     """A multi-element alpha falls through to the optimizer-backed path."""
     _stub_optimize(monkeypatch)
     d = bivariates["synergy"]
-    val = modified_synergistic_disclosure(d, [[0], [1]], [2], alpha=[[0], [1]])
+    val = modified_synergistic_disclosure(d, [[0], [1]], [2], alpha=[[0], [1]], method="optimize")
     assert val >= 0.0
 
 
@@ -167,7 +168,7 @@ def test_self_synergy_smoke(monkeypatch):
     """Self-synergy runs end-to-end with the optimizer stubbed."""
     _stub_optimize(monkeypatch)
     d = uniform(["00", "01", "10", "11"])
-    val = self_synergy(d, sources=[[0], [1]])
+    val = self_synergy(d, sources=[[0], [1]], method="optimize")
     assert val >= 0.0
 
 
@@ -175,7 +176,7 @@ def test_self_synergy_default_sources_smoke(monkeypatch):
     """sources=None uses dist.rvs and alpha=None builds singleton constraints."""
     _stub_optimize(monkeypatch)
     d = uniform(["00", "01", "10", "11"])
-    val = self_synergy(d)
+    val = self_synergy(d, method="optimize")
     assert val >= 0.0
 
 
@@ -185,3 +186,45 @@ def test_backbone_disclosure_smoke(monkeypatch):
     d = bivariates["synergy"]
     bb = backbone_disclosure(d)
     assert set(bb) == {1, 2}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Exact method
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def test_synergistic_disclosure_exact_matches_syndisc():
+    """The scalar function and the decomposition give the same exact alpha-synergies."""
+    from dit.pid.distributions import trivariates
+    from dit.pid.syndisc import SynDisc
+
+    d = trivariates["anddup"]
+    sources = [[0], [1], [2]]
+    sd = SynDisc(d, method="exact")
+    for alpha in [[[0], [2]], [[0], [1], [2]], [[1, 2]], [[2], [0, 1]]]:
+        node = tuple(tuple(a) for a in alpha)
+        value = synergistic_disclosure(d, sources, [3], alpha, method="exact")
+        assert value == pytest.approx(sd.get_synergy(node), abs=1e-12)
+
+
+def test_modified_synergistic_disclosure_exact():
+    d = bivariates["and"]
+    assert modified_synergistic_disclosure(d, [[0], [1]], [2], [[0], [1]], method="exact") == pytest.approx(
+        1.5 - 0.75 * np.log2(3), abs=1e-12
+    )
+
+
+def test_self_synergy_two_coins_exact():
+    """V = X0 xor X1 is independent of each coin and reveals one bit about the pair."""
+    d = uniform(["00", "01", "10", "11"])
+    assert self_synergy(d, sources=[[0], [1]], method="exact") == pytest.approx(1.0, abs=1e-12)
+
+
+def test_backbone_disclosure_exact_sums_to_mutual_information():
+    from dit.multivariate import coinformation
+    from dit.pid.distributions import trivariates
+
+    d = trivariates["anddup"]
+    bb = backbone_disclosure(d, method="exact")
+    assert all(v >= -1e-12 for v in bb.values())
+    assert sum(bb.values()) == pytest.approx(coinformation(d, [[0, 1, 2], [3]]), abs=1e-12)

@@ -23,7 +23,7 @@ __all__ = (
 
 
 @unitful
-def synergistic_disclosure(dist, sources, target, alpha, niter=None, bound=None):
+def synergistic_disclosure(dist, sources, target, alpha, niter=None, bound=None, method="auto"):
     """
     Compute S_alpha(X -> Y) for a single constraint set alpha.
 
@@ -43,16 +43,18 @@ def synergistic_disclosure(dist, sources, target, alpha, niter=None, bound=None)
         Each inner list gives source-list indices (0-based) specifying
         which sources form each constraint subgroup.
     niter : int, None
-        Number of basin-hopping restarts.
+        Number of basin-hopping restarts (optimizer only).
     bound : int, None
-        Cardinality bound on V.
+        Cardinality bound on V (optimizer only).
+    method : str
+        "auto" (default), "exact" or "optimize"; see :class:`~dit.pid.syndisc.SynDisc`.
 
     Returns
     -------
     s_alpha : float
         The synergistic disclosure, in bits.
     """
-    from ..pid.syndisc import SyndiscOptimizer
+    from ..pid.syndisc import SyndiscOptimizer, _alpha_synergy_exact, _choose_method
 
     alpha_tuples = tuple(tuple(a) for a in alpha)
 
@@ -62,6 +64,8 @@ def synergistic_disclosure(dist, sources, target, alpha, niter=None, bound=None)
         return coinformation(dist, [list(flatten(sources)), list(target)])
 
     flat_sources = [list(s) for s in sources]
+    if _choose_method(dist, flat_sources, method) == "exact":
+        return _alpha_synergy_exact(dist, flat_sources, list(target), alpha_tuples)
     try:
         opt = SyndiscOptimizer(
             dist,
@@ -77,7 +81,7 @@ def synergistic_disclosure(dist, sources, target, alpha, niter=None, bound=None)
         return 0.0
 
 
-def backbone_disclosure(dist, sources=None, target=None, niter=None, bound=None):
+def backbone_disclosure(dist, sources=None, target=None, niter=None, bound=None, method="auto"):
     """
     Compute the full backbone decomposition of I(X; Y).
 
@@ -94,9 +98,11 @@ def backbone_disclosure(dist, sources=None, target=None, niter=None, bound=None)
     target : iter, None
         The target variable. If None, the last variable is used.
     niter : int, None
-        Number of basin-hopping restarts per lattice node.
+        Number of basin-hopping restarts per lattice node (optimizer only).
     bound : int, None
-        Cardinality bound on V.
+        Cardinality bound on V (optimizer only).
+    method : str
+        "auto" (default), "exact" or "optimize"; see :class:`~dit.pid.syndisc.SynDisc`.
 
     Returns
     -------
@@ -106,13 +112,13 @@ def backbone_disclosure(dist, sources=None, target=None, niter=None, bound=None)
     """
     from ..pid.syndisc import SynDisc
 
-    sd = SynDisc(dist, sources=sources, target=target, niter=niter, bound=bound)
+    sd = SynDisc(dist, sources=sources, target=target, niter=niter, bound=bound, method=method)
     n = len(sd._sources)
     return {m: sd.get_backbone_atom(m) for m in range(1, n + 1)}
 
 
 @unitful
-def modified_synergistic_disclosure(dist, sources, target, alpha, niter=None, bound=None):
+def modified_synergistic_disclosure(dist, sources, target, alpha, niter=None, bound=None, method="auto"):
     """
     Compute the modified synergistic disclosure for a single constraint alpha.
 
@@ -138,6 +144,9 @@ def modified_synergistic_disclosure(dist, sources, target, alpha, niter=None, bo
         Number of basin-hopping restarts (used only for ``|alpha| >= 2``).
     bound : int, None
         Cardinality bound on V (used only for ``|alpha| >= 2``).
+    method : str
+        "auto" (default), "exact" or "optimize" (used only for ``|alpha| >= 2``); see
+        :class:`~dit.pid.syndisc.SynDisc`.
 
     Returns
     -------
@@ -167,11 +176,12 @@ def modified_synergistic_disclosure(dist, sources, target, alpha, niter=None, bo
         alpha,
         niter=niter,
         bound=bound,
+        method=method,
     )
 
 
 @unitful
-def self_synergy(dist, sources=None, alpha=None, niter=None, bound=None):
+def self_synergy(dist, sources=None, alpha=None, niter=None, bound=None, method="auto"):
     """
     Compute S_alpha(X -> X), the self-synergy of sources X.
 
@@ -188,9 +198,11 @@ def self_synergy(dist, sources=None, alpha=None, niter=None, bound=None):
         Constraint subgroups (source-list indices). If None, each individual
         source is constrained.
     niter : int, None
-        Number of basin-hopping restarts.
+        Number of basin-hopping restarts (optimizer only).
     bound : int, None
-        Cardinality bound on V.
+        Cardinality bound on V (optimizer only).
+    method : str
+        "auto" (default), "exact" or "optimize"; see :class:`~dit.pid.syndisc.SynDisc`.
 
     Returns
     -------
@@ -203,9 +215,12 @@ def self_synergy(dist, sources=None, alpha=None, niter=None, bound=None):
     flat_sources = [list(s) for s in sources]
     target = list(flatten(flat_sources))
 
-    from ..pid.syndisc import SyndiscOptimizer
+    from ..pid.syndisc import SyndiscOptimizer, _alpha_synergy_exact, _choose_method
 
     alpha = tuple((i,) for i in range(len(flat_sources))) if alpha is None else tuple(tuple(a) for a in alpha)
+
+    if _choose_method(dist, flat_sources, method) == "exact":
+        return _alpha_synergy_exact(dist, flat_sources, target, alpha)
 
     opt = SyndiscOptimizer(
         dist,
