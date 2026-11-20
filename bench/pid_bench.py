@@ -58,7 +58,7 @@ MEASURES = {
 
 # measures too slow, or undefined, for some numbers of sources
 SKIP = {
-    3: {"PID_RAV", "PID_Proj", "PID_IPID", "PID_DeltaLambda", "PID_MC"},
+    3: {"PID_Proj", "PID_IPID", "PID_DeltaLambda", "PID_MC"},
     4: {
         "PID_RAV",
         "PID_Proj",
@@ -82,8 +82,9 @@ SKIP = {
 }
 
 
-# I_RAV searches the partitions of the outcomes, too many for three ternary variables
-SKIP_CASES = {("PID_RAV", "random 3x3x3")}
+# no case is skipped at present (I_RAV searches the partitions of the joint outcomes of the
+# sources: 21147 for "random 3x3x3", 4140 for three binary sources, about 1e10 for four)
+SKIP_CASES = set()
 
 
 def _cases(n_sources):
