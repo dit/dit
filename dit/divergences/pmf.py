@@ -21,6 +21,9 @@ from .maximum_correlation import (
     maximum_correlation_pmf as maximum_correlation,
 )
 from .variational_distance import (
+    bhattacharyya_angle_pmf as bhattacharyya_angle,
+)
+from .variational_distance import (
     bhattacharyya_coefficient_pmf as bhattacharyya_coefficient,
 )
 from .variational_distance import (
@@ -30,20 +33,29 @@ from .variational_distance import (
     chernoff_information_pmf as chernoff_information,
 )
 from .variational_distance import (
+    fisher_rao_distance_pmf as fisher_rao_distance,
+)
+from .variational_distance import (
     hellinger_distance_pmf as hellinger_distance,
+)
+from .variational_distance import (
+    matusita_distance_pmf as matusita_distance,
 )
 from .variational_distance import (
     variational_distance_pmf as variational_distance,
 )
 
 __all__ = (
+    "bhattacharyya_angle",
     "bhattacharyya_coefficient",
     "bhattacharyya_distance",
     "chernoff_information",
     "conditional_maximum_correlation",
     "cross_entropy",
     "earth_movers_distance",
+    "fisher_rao_distance",
     "hellinger_distance",
+    "matusita_distance",
     "jensen_shannon_divergence",
     "jensen_shannon_divergence2",
     "maximum_correlation",

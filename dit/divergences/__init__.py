@@ -37,6 +37,7 @@ from .jensen_shannon_divergence import (
     jensen_shannon_divergence,
 )
 from .kullback_leibler_divergence import (
+    jeffreys_divergence,
     kullback_leibler_divergence,
     relative_entropy,
 )
@@ -47,9 +48,12 @@ from .maximum_correlation import (
     maximum_correlation,
 )
 from .variational_distance import (
+    bhattacharyya_angle,
     bhattacharyya_coefficient,
     bhattacharyya_distance,
     chernoff_information,
+    fisher_rao_distance,
     hellinger_distance,
+    matusita_distance,
     variational_distance,
 )

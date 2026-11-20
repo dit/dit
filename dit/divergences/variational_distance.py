@@ -10,14 +10,20 @@ from ..helpers import normalize_pmfs
 from ..utils import unitful
 
 __all__ = (
+    "bhattacharyya_angle",
+    "bhattacharyya_angle_pmf",
     "bhattacharyya_coefficient",
     "bhattacharyya_coefficient_pmf",
     "bhattacharyya_distance",
     "bhattacharyya_distance_pmf",
     "chernoff_information",
     "chernoff_information_pmf",
+    "fisher_rao_distance",
+    "fisher_rao_distance_pmf",
     "hellinger_distance",
     "hellinger_distance_pmf",
+    "matusita_distance",
+    "matusita_distance_pmf",
     "variational_distance",
     "variational_distance_pmf",
 )
@@ -165,6 +171,114 @@ def bhattacharyya_distance(dist1, dist2):
     return bd
 
 
+def bhattacharyya_angle_pmf(p, q):
+    """
+    Compute the Bhattacharyya angle.
+
+    Parameters
+    ----------
+    p : np.ndarray
+        The first pmf.
+    q : np.ndarray
+        The second pmf.
+
+    Returns
+    -------
+    ba : float
+        The Bhattacharyya angle (in radians).
+
+    Notes
+    -----
+    `p` and `q` are assumed to be 1-to-1 with regards to events.
+    """
+    bc = bhattacharyya_coefficient_pmf(p, q)
+    return np.arccos(np.clip(bc, 0.0, 1.0))
+
+
+def bhattacharyya_angle(dist1, dist2):
+    """
+    Compute the Bhattacharyya angle.
+
+    The Bhattacharyya angle is the angle between the two distributions once
+    they are mapped to the unit sphere by the square root of their pmfs:
+
+        theta(P, Q) = arccos( sum_x sqrt(P(x) Q(x)) ) = arccos( BC(P, Q) )
+
+    Unlike the Bhattacharyya distance it is a true metric, satisfying the
+    triangle inequality. It ranges from 0, when P = Q, to pi/2, when P and Q
+    have disjoint support.
+
+    Parameters
+    ----------
+    dist1 : Distribution
+        The first distribution.
+    dist2 : Distribution
+        The second distribution.
+
+    Returns
+    -------
+    ba : float
+        The Bhattacharyya angle (in radians).
+    """
+    p, q = normalize_pmfs(dist1, dist2)
+    ba = bhattacharyya_angle_pmf(p, q)
+    return ba
+
+
+def fisher_rao_distance_pmf(p, q):
+    """
+    Compute the Fisher-Rao distance.
+
+    Parameters
+    ----------
+    p : np.ndarray
+        The first pmf.
+    q : np.ndarray
+        The second pmf.
+
+    Returns
+    -------
+    frd : float
+        The Fisher-Rao distance (in radians).
+
+    Notes
+    -----
+    `p` and `q` are assumed to be 1-to-1 with regards to events.
+    """
+    return 2 * bhattacharyya_angle_pmf(p, q)
+
+
+def fisher_rao_distance(dist1, dist2):
+    """
+    Compute the Fisher-Rao distance.
+
+    The square roots of the pmfs of all distributions over a fixed alphabet lie
+    on the positive orthant of the unit sphere, and the Fisher information
+    metric there is the round metric. The Fisher-Rao distance is the resulting
+    geodesic distance, which is twice the Bhattacharyya angle:
+
+        d_FR(P, Q) = 2 arccos( sum_x sqrt(P(x) Q(x)) )
+
+    It is a true metric, ranging from 0, when P = Q, to pi, when P and Q have
+    disjoint support.
+
+    Parameters
+    ----------
+    dist1 : Distribution
+        The first distribution.
+    dist2 : Distribution
+        The second distribution.
+
+    Returns
+    -------
+    frd : float
+        The Fisher-Rao distance (in radians).
+    """
+    p, q = normalize_pmfs(dist1, dist2)
+    frd = fisher_rao_distance_pmf(p, q)
+    return frd
+
+
 def hellinger_distance_pmf(p, q):
     """
     Compute the Hellinger distance.
@@ -206,6 +320,60 @@ def hellinger_distance(dist1, dist2):
     p, q = normalize_pmfs(dist1, dist2)
     hd = hellinger_distance_pmf(p, q)
     return hd
+
+
+def matusita_distance_pmf(p, q):
+    """
+    Compute the Matusita distance.
+
+    Parameters
+    ----------
+    p : np.ndarray
+        The first pmf.
+    q : np.ndarray
+        The second pmf.
+
+    Returns
+    -------
+    md : float
+        The Matusita distance.
+
+    Notes
+    -----
+    `p` and `q` are assumed to be 1-to-1 with regards to events.
+    """
+    return np.sqrt(2) * hellinger_distance_pmf(p, q)
+
+
+def matusita_distance(dist1, dist2):
+    """
+    Compute the Matusita distance.
+
+    The Matusita distance is the Euclidean distance between the square roots of
+    the two pmfs:
+
+        d_M(P, Q) = sqrt( sum_x ( sqrt(P(x)) - sqrt(Q(x)) )^2 )
+                  = sqrt( 2 ( 1 - BC(P, Q) ) )
+
+    It is a true metric, and is the ``dit`` Hellinger distance scaled by
+    sqrt(2); it ranges from 0, when P = Q, to sqrt(2), when P and Q have
+    disjoint support.
+
+    Parameters
+    ----------
+    dist1 : Distribution
+        The first distribution.
+    dist2 : Distribution
+        The second distribution.
+
+    Returns
+    -------
+    md : float
+        The Matusita distance.
+    """
+    p, q = normalize_pmfs(dist1, dist2)
+    md = matusita_distance_pmf(p, q)
+    return md
 
 
 def chernoff_information_pmf(p, q):
