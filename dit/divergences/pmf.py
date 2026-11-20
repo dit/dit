@@ -22,6 +22,8 @@ from .maximum_correlation import (
 )
 from .variational_distance import (
     bhattacharyya_coefficient_pmf as bhattacharyya_coefficient,
+)
+from .variational_distance import (
     bhattacharyya_distance_pmf as bhattacharyya_distance,
 )
 from .variational_distance import (

@@ -82,4 +82,3 @@ def test_bd_pmf():
     q = np.array([0.25, 0.75])
     bd = bd_pmf(p, q)
     assert bd == pytest.approx(-np.log2(np.sqrt(0.5 * 0.25) + np.sqrt(0.5 * 0.75)))
-
