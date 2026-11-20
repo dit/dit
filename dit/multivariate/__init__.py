@@ -21,6 +21,7 @@ from .logarithmic_decomposition import *
 from .o_information import *
 from .pointwise import *
 from .quax_synergy import *
+from .renyi_total_correlation import *
 from .s_information import *
 from .secret_key_agreement import *
 from .synergistic_disclosure import *

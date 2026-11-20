@@ -12,6 +12,8 @@ from ..utils import unitful
 __all__ = (
     "bhattacharyya_coefficient",
     "bhattacharyya_coefficient_pmf",
+    "bhattacharyya_distance",
+    "bhattacharyya_distance_pmf",
     "chernoff_information",
     "chernoff_information_pmf",
     "hellinger_distance",
@@ -103,6 +105,64 @@ def bhattacharyya_coefficient(dist1, dist2):
     p, q = normalize_pmfs(dist1, dist2)
     bc = bhattacharyya_coefficient_pmf(p, q)
     return bc
+
+
+def bhattacharyya_distance_pmf(p, q):
+    """
+    Compute the Bhattacharyya distance.
+
+    Parameters
+    ----------
+    p : np.ndarray
+        The first pmf.
+    q : np.ndarray
+        The second pmf.
+
+    Returns
+    -------
+    bd : float
+        The Bhattacharyya distance (in bits).
+
+    Notes
+    -----
+    `p` and `q` are assumed to be 1-to-1 with regards to events.
+    """
+    bc = bhattacharyya_coefficient_pmf(p, q)
+    bc = np.clip(bc, 0.0, 1.0)
+    if bc == 0.0:
+        return np.inf
+    return -np.log2(bc)
+
+
+@unitful
+def bhattacharyya_distance(dist1, dist2):
+    """
+    Compute the Bhattacharyya distance.
+
+    The Bhattacharyya distance is defined as:
+
+        D_B(P, Q) = -log_2( sum_x sqrt(P(x) Q(x)) ) = -log_2( BC(P, Q) )
+
+    It is a non-negative quantity that equals zero if and only if P = Q.
+    While it does not satisfy the triangle inequality, it is closely related
+    to the Hellinger distance and Chernoff bound, and is widely used in
+    feature selection and statistical signal detection.
+
+    Parameters
+    ----------
+    dist1 : Distribution
+        The first distribution.
+    dist2 : Distribution
+        The second distribution.
+
+    Returns
+    -------
+    bd : float
+        The Bhattacharyya distance (in bits).
+    """
+    p, q = normalize_pmfs(dist1, dist2)
+    bd = bhattacharyya_distance_pmf(p, q)
+    return bd
 
 
 def hellinger_distance_pmf(p, q):

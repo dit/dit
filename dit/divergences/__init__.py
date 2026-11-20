@@ -48,6 +48,7 @@ from .maximum_correlation import (
 )
 from .variational_distance import (
     bhattacharyya_coefficient,
+    bhattacharyya_distance,
     chernoff_information,
     hellinger_distance,
     variational_distance,
