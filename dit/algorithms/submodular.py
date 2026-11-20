@@ -126,6 +126,7 @@ def minimum_norm_base(
         if float(np.dot(x, x)) <= float(np.dot(x, q)) + tol:
             break
 
+        x_previous = x.copy()
         vertices.append(q)
         lambdas = np.append(lambdas, 0.0)
 
@@ -158,6 +159,14 @@ def minimum_norm_base(
         else:
             msg = f"minimum_norm_base minor cycle did not converge within {max_minor_iters} iterations"
             raise RuntimeError(msg)
+
+        # In exact arithmetic every major cycle strictly decreases |x|. When the new vertex is
+        # numerically indistinguishable from the corral, the minor cycle can drop it again and
+        # return to the same point, so the next major cycle adds it again, forever. A cycle that
+        # does not decrease |x| has stagnated in floating point: keep the previous iterate.
+        if float(np.dot(x, x)) >= float(np.dot(x_previous, x_previous)):
+            x = x_previous
+            break
     else:
         msg = f"minimum_norm_base did not converge within {max_iters} iterations"
         raise RuntimeError(msg)
