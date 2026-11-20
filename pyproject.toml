@@ -293,13 +293,19 @@ allowed-unresolved-imports = [
 
 [tool.ty.rules]
 # ── Errors (these catch real bugs) ──
-unresolved-import = "error"
+import-not-found = "error"
 # ── Warnings (noisy in an untyped codebase, but good to surface) ──
-unresolved-attribute = "warn"
-call-non-callable = "warn"
+missing-attribute = "warn"
+missing-union-attribute = "warn"
+invalid-attribute-access = "warn"
+missing-module-member = "warn"
+not-callable = "warn"
 invalid-argument-type = "warn"
 not-subscriptable = "warn"
-invalid-method-override = "warn"
+incompatible-method-override = "warn"
+incompatible-attribute-override = "warn"
+lost-keyword-for-regular-parameter = "warn"
+abstract-class-instantiation = "warn"
 missing-argument = "warn"
 invalid-assignment = "warn"
 unsupported-operator = "warn"
@@ -317,7 +323,8 @@ include = ["dit/", "tests/"]
 include = ["tests/**"]
 
 [tool.ty.overrides.rules]
-unresolved-attribute = "ignore"
+missing-attribute = "ignore"
+missing-union-attribute = "ignore"
 invalid-argument-type = "ignore"
 missing-argument = "ignore"
 not-iterable = "ignore"
