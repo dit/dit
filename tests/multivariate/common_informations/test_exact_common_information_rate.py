@@ -105,7 +105,8 @@ def test_block_length():
 @pytest.mark.slow
 def test_block_length_dsbs():
     """
-    For the doubly symmetric binary source nothing beats the single-letter bound.
+    The Yu-Tan functional is additive (Yu 2026), so two copies of the doubly
+    symmetric binary source give exactly the single-letter rate.
     """
     assert exact_common_information_rate(dsbs(0.2), block_length=2) == pytest.approx(dsbs_rate(0.2), abs=1e-4)
 
