@@ -61,7 +61,7 @@ If the decoder must reproduce the joint distribution exactly rather than approxi
    \qquad
    \Gamma_U = -\H{X, Y | U} + \sum_u p(u) \mathbb{H}(p_{X|u}, p_{Y|u} \| p_{XY}),
 
-is achievable, where :math:`\mathbb{H}` is the :doc:`/measures/divergences/maximal_cross_entropy`; :math:`\Gamma_U \geq \I{X, Y : U}`, so this rate is at least the approximate one. Without common randomness it is the upper bound on the :doc:`exact_common_information_rate`, and once :math:`R_0 \geq \H{Y | X}` both rates equal :math:`\I{X : Y}`. For the doubly symmetric binary source this rate is the exact synthesis rate, strictly above the approximate rate for small :math:`R_0`:
+is achievable, where :math:`\mathbb{H}` is the :doc:`/measures/divergences/maximal_cross_entropy`, and Yu :cite:`yu2026exact` shows that no smaller rate is: it is the exact synthesis rate of every pair of variables with finite alphabets. Since :math:`\Gamma_U \geq \I{X, Y : U}`, this rate is at least the approximate one. Without common randomness it is the :doc:`exact_common_information_rate`, and once :math:`R_0 \geq \H{Y | X}` both rates equal :math:`\I{X : Y}`. For the doubly symmetric binary source it is strictly above the approximate rate for small :math:`R_0`:
 
 .. ipython::
    :verbatim:

@@ -35,10 +35,12 @@ with itself,
    \Gamma^{(o)}[X : Y] = \min_{X - W - Y} -\H{X, Y | W}
      + \min_{q \in \mathcal{C}(p_W, p_W)} \sum_{w, w'} q(w, w') \mathbb{H}(p_{X|w}, p_{Y|w'} \| p_{XY}).
 
-The upper bound is achievable by any feasible :math:`W`, satisfies
-:math:`\C{X : Y} \leq \Gamma[X : Y] \leq \G{X : Y}`, and is tight for the doubly
-symmetric binary source. Applied to :math:`n` i.i.d. copies it gives upper bounds
-:math:`\Gamma[X^n : Y^n] / n` that decrease to :math:`\bar{G}` as :math:`n` grows.
+The upper bound is achievable by any feasible :math:`W` and satisfies
+:math:`\C{X : Y} \leq \Gamma[X : Y] \leq \G{X : Y}`. Yu and Tan also show that
+:math:`\bar{G}[X : Y] = \lim_n \Gamma[X^n : Y^n] / n`, and Yu :cite:`yu2026exact`
+proves that :math:`\Gamma` is additive over independent pairs, so
+:math:`\Gamma[X^n : Y^n] = n \Gamma[X : Y]` and the upper bound is the rate
+itself: :math:`\bar{G}[X : Y] = \Gamma[X : Y]`.
 """
 
 import threading
@@ -220,9 +222,9 @@ def _outer_sum_rate(joint, cost, zero):
 class ExactCommonInformationRate(MarkovVarOptimizer):
     """
     Minimize the Yu-Tan sum rate over auxiliary variables W that render two
-    groups of variables conditionally independent: the upper bound on the exact
-    common information rate, or with ``outer=True`` the lower bound. With an
-    ``input_weight`` :math:`\\lambda`, minimize
+    groups of variables conditionally independent: the exact common information
+    rate :math:`\\Gamma`, or with ``outer=True`` the lower bound
+    :math:`\\Gamma^{(o)}`. With an ``input_weight`` :math:`\\lambda`, minimize
     :math:`(1 - \\lambda) \\Gamma_W + \\lambda I[X : W]` instead, whose minima trace
     the boundary of the exact channel synthesis region.
     """
@@ -801,7 +803,7 @@ def _rate_bounds(dist, rvs, block_length, niter, maxiter, polish, bound, lower):
 
 def _exact_channel_synthesis_rate(dist, rvs, common_randomness, niter, maxiter, polish, bound, rounds=5):
     r"""
-    The Yu-Tan achievable rate for exact channel synthesis, in bits,
+    The exact channel synthesis rate, in bits,
 
     .. math::
 
@@ -850,29 +852,31 @@ def _base(dist):
 
 def exact_common_information_rate(dist, rvs=None, block_length=1, niter=None, maxiter=1000, polish=1e-6, bound=None):
     r"""
-    An upper bound on the exact common information rate :cite:`kumar2014exact`,
-    from Yu and Tan :cite:`yu2020exact2,yu2020exact1`:
+    The exact common information rate :cite:`kumar2014exact`, which Yu
+    :cite:`yu2026exact` shows equals the single-letter functional of Yu and Tan
+    :cite:`yu2020exact2,yu2020exact1`:
 
     .. math::
 
-       \bar{G}[X : Y] \leq \Gamma[X : Y]
+       \bar{G}[X : Y] = \Gamma[X : Y]
          = \min_{X - W - Y} -\H{X, Y | W} + \sum_w p(w) \mathbb{H}(p_{X|w}, p_{Y|w} \| p_{XY}),
 
     where :math:`\mathbb{H}` is the :func:`~dit.divergences.maximal_cross_entropy`.
-    Every feasible :math:`W` achieves its value, so the result is a valid upper
-    bound even when the optimizer misses the minimum. It lies between the Wyner
-    common information and the one-shot :func:`exact_common_information`,
-    equals the Wyner common information exactly when some :math:`W` attaining
-    the Wyner common information makes :math:`p_{XY}` a product distribution on
-    each :math:`\operatorname{supp} p_{X|w} \times \operatorname{supp} p_{Y|w}`
+    Every feasible :math:`W` achieves its value, so the result is an upper bound
+    on the rate even when the optimizer misses the minimum. It lies between the
+    Wyner common information and the one-shot :func:`exact_common_information`,
+    and equals the Wyner common information exactly when some :math:`W`
+    attaining the Wyner common information makes :math:`p_{XY}` a product
+    distribution on each
+    :math:`\operatorname{supp} p_{X|w} \times \operatorname{supp} p_{Y|w}`
     (for instance when one of :math:`p_{X|w}, p_{Y|w}` is deterministic for
-    every :math:`w`, as for the erasure channel), and equals :math:`\bar{G}` for
-    the doubly symmetric binary source.
+    every :math:`w`, as for the erasure channel).
 
-    With ``block_length=N`` the bound is also applied to :math:`n` i.i.d. copies
-    of the pair, returning :math:`\min_{n \leq N} \Gamma[X^n : Y^n] / n`, which
-    decreases to :math:`\bar{G}` as :math:`N` grows. The work grows
-    exponentially in :math:`N`; beyond small alphabets, pass `bound`.
+    With ``block_length=N`` the minimization is also applied to :math:`n` i.i.d.
+    copies of the pair, returning :math:`\min_{n \leq N} \Gamma[X^n : Y^n] / n`.
+    :math:`\Gamma` is additive, so every term equals :math:`\Gamma[X : Y]`, and a
+    longer block helps only if the single-letter search misses the minimum. The
+    work grows exponentially in :math:`N`; beyond small alphabets, pass `bound`.
 
     Parameters
     ----------
@@ -882,7 +886,7 @@ def exact_common_information_rate(dist, rvs=None, block_length=1, niter=None, ma
         Two lists of indexes, the variables of :math:`X` and of :math:`Y`. If
         None, the distribution must have exactly two variables.
     block_length : int
-        The largest number of i.i.d. copies to bound. Defaults to 1.
+        The largest number of i.i.d. copies to optimize over. Defaults to 1.
     niter : int > 0
         Number of basin hoppings to perform during each optimization.
     maxiter : int > 0
@@ -898,7 +902,8 @@ def exact_common_information_rate(dist, rvs=None, block_length=1, niter=None, ma
     Returns
     -------
     rate : float
-        The upper bound on the exact common information rate.
+        The exact common information rate, or an upper bound on it if the
+        optimizer misses the minimum.
 
     Raises
     ------
@@ -916,8 +921,9 @@ def exact_common_information_rate_bounds(
     Lower and upper bounds on the exact common information rate
     :math:`\bar{G}[X : Y]` :cite:`kumar2014exact`.
 
-    The upper bound is :func:`exact_common_information_rate`. The lower bound is
-    the larger of the Wyner common information and the Yu-Tan bound
+    The upper bound is :func:`exact_common_information_rate`, which is the rate
+    itself when the optimizer finds the minimum :cite:`yu2026exact`. The lower
+    bound is the larger of the Wyner common information and the Yu-Tan bound
     :cite:`yu2020exact2,yu2020exact1`
 
     .. math::

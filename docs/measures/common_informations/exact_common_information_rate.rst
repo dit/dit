@@ -26,10 +26,10 @@ Yu and Tan :cite:`yu2020exact2` show that fixed-length codes reach the same rate
 
 and it equals :math:`\bar{G}[X : Y]`. The synthesized distribution may fall short of the target anywhere, but it may overshoot it only by a vanishing factor. Putting the relative entropy, which never exceeds :math:`D_\infty`, in place of :math:`D_\infty` gives back the Wyner common information.
 
-Bounds
-======
+Single-Letter Formula
+=====================
 
-No single-letter formula for :math:`\bar{G}` is known. Yu and Tan :cite:`yu2020exact2,yu2020exact1` bound it using the :doc:`/measures/divergences/maximal_cross_entropy` :math:`\mathbb{H}`:
+Yu and Tan :cite:`yu2020exact2,yu2020exact1` bound the rate using the :doc:`/measures/divergences/maximal_cross_entropy` :math:`\mathbb{H}`:
 
 .. math::
 
@@ -43,13 +43,21 @@ where the lower bound replaces the pairing of :math:`p_{X|w}` with :math:`p_{Y|w
    \Gamma^{(o)}[X : Y] = \min_{X - W - Y} -\H{X, Y | W}
      + \min_{q \in \mathcal{C}(p_W, p_W)} \sum_{w, w'} q(w, w') \mathbb{H}(p_{X|w}, p_{Y|w'} \| p_{XY}).
 
+They also show that :math:`\bar{G}[X : Y] = \lim_{n \to \infty} \Gamma[X^n : Y^n] / n`. Yu :cite:`yu2026exact` proves that :math:`\Gamma` is additive over independent pairs, so :math:`\Gamma[X^n : Y^n] = n \Gamma[X : Y]` and the upper bound is the rate itself:
+
+.. math::
+
+   \bar{G}[X : Y] = \Gamma[X : Y].
+
+This holds for every pair of variables with finite alphabets, and the :math:`\infty`-Rényi common information has the same formula.
+
 For a single auxiliary variable, write :math:`\Gamma_W` for the minimized expression and :math:`Q_w = p_{X|w} p_{Y|w}`. Each maximal cross entropy, less the entropies of :math:`p_{X|w}` and :math:`p_{Y|w}`, is the largest :math:`\mathbb{E}_r \log_2 (Q_w / p_{XY})` over couplings :math:`r` of :math:`p_{X|w}` and :math:`p_{Y|w}`. The product coupling :math:`r = Q_w` bounds it below and the largest single ratio bounds it above, so
 
 .. math::
 
    \I{X, Y : W} = \sum_w p(w) D(Q_w \| p_{XY}) \leq \Gamma_W \leq \sum_w p(w) D_\infty(Q_w \| p_{XY}) \leq \H{W},
 
-where the last step holds because :math:`p(w) Q_w \leq p_{XY}`. Hence :math:`\C{X : Y} \leq \Gamma[X : Y] \leq \G{X : Y}`. The upper bound equals the Wyner common information exactly when some :math:`W` attaining the Wyner common information makes :math:`p_{XY}` a product distribution on each :math:`\operatorname{supp} p_{X|w} \times \operatorname{supp} p_{Y|w}` :cite:`yu2020exact2`; for instance, when one of :math:`p_{X|w}, p_{Y|w}` is deterministic for every :math:`w`, as for the erasure channel. For the doubly symmetric binary source with crossover :math:`p` the bounds meet:
+where the last step holds because :math:`p(w) Q_w \leq p_{XY}`. Hence :math:`\C{X : Y} \leq \Gamma[X : Y] \leq \G{X : Y}`. Yu and Tan :cite:`yu2020exact2` show that :math:`\Gamma` equals the Wyner common information exactly when some :math:`W` attaining the Wyner common information makes :math:`p_{XY}` a product distribution on each :math:`\operatorname{supp} p_{X|w} \times \operatorname{supp} p_{Y|w}`, which is therefore exactly when :math:`\bar{G}[X : Y] = \C{X : Y}`; for instance, when one of :math:`p_{X|w}, p_{Y|w}` is deterministic for every :math:`w`, as for the erasure channel. For the doubly symmetric binary source with crossover :math:`p` the two bounds meet:
 
 .. math::
 
@@ -82,11 +90,11 @@ The distribution Kumar **et. al.** used to show that :math:`\G{X : Y}` is subadd
 Computation
 ===========
 
-:func:`exact_common_information_rate` minimizes :math:`\Gamma`, starting from the optima of the Wyner and one-shot exact common informations. With the conditionals :math:`p_{X|w}, p_{Y|w}` fixed, the objective and the constraint that the auxiliary variable reproduces :math:`p(x, y)` are both linear in :math:`p(w)`, so the result is the best mixture of every state the optimizer visits, found by a linear program. Every auxiliary variable reproducing the distribution achieves its value of :math:`\Gamma`, so the result is a valid upper bound even when the optimizer misses the minimum. With ``block_length=n`` it also bounds :math:`n` i.i.d. copies of the pair and returns the smallest :math:`\Gamma[X^k : Y^k] / k` for :math:`k \leq n`, which decreases to :math:`\bar{G}`; the cost grows exponentially in :math:`n`, so pass ``bound`` beyond small alphabets.
+:func:`exact_common_information_rate` minimizes :math:`\Gamma`, starting from the optima of the Wyner and one-shot exact common informations. With the conditionals :math:`p_{X|w}, p_{Y|w}` fixed, the objective and the constraint that the auxiliary variable reproduces :math:`p(x, y)` are both linear in :math:`p(w)`, so the result is the best mixture of every state the optimizer visits, found by a linear program. Every auxiliary variable reproducing the distribution achieves its value of :math:`\Gamma`, so the result is the rate when the optimizer finds the global minimum and a valid upper bound on it otherwise. With ``block_length=n`` it also minimizes :math:`\Gamma[X^k : Y^k]` for :math:`k \leq n` i.i.d. copies of the pair and returns the smallest :math:`\Gamma[X^k : Y^k] / k`. These all equal :math:`\Gamma[X : Y]`, so a longer block can only reveal that the single-letter search missed the minimum; the cost grows exponentially in :math:`n`, so pass ``bound`` beyond small alphabets.
 
 :func:`exact_common_information_rate_bounds` also returns the larger of the Wyner common information and :math:`\Gamma^{(o)}` as a lower bound. A lower bound holds only at a global minimum over auxiliary variables (here with at most ``bound`` states), which local optimization cannot certify, so treat it as an estimate.
 
-The rate of exact channel synthesis generalizes the upper bound to common randomness shared by the encoder and decoder; see :doc:`channel_synthesis`.
+The rate of exact channel synthesis generalizes :math:`\Gamma` to common randomness shared by the encoder and decoder; see :doc:`channel_synthesis`.
 
 API
 ===

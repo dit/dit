@@ -264,12 +264,12 @@ def channel_synthesis_rate(
        \Gamma_U = -\H{X, Y | U} + \sum_u p(u) \mathbb{H}(p_{X|u}, p_{Y|u} \| p_{XY}),
 
     is achievable, where :math:`\mathbb{H}` is the
-    :func:`~dit.divergences.maximal_cross_entropy`. It is at least the
-    approximate rate, equals it once :math:`R_0 \ge \H{Y | X}`, is the exact
-    synthesis rate of the doubly symmetric binary source, and without common
-    randomness is :func:`exact_common_information_rate`. Every auxiliary variable
-    found reproduces the distribution exactly, so the result is achievable even
-    when the optimizer misses the minimum.
+    :func:`~dit.divergences.maximal_cross_entropy`, and Yu :cite:`yu2026exact`
+    shows that it is the exact synthesis rate. It is at least the approximate
+    rate, equals it once :math:`R_0 \ge \H{Y | X}`, and without common randomness
+    is :func:`exact_common_information_rate`. Every auxiliary variable found
+    reproduces the distribution exactly, so the result is achievable even when
+    the optimizer misses the minimum.
 
     Parameters
     ----------
@@ -309,8 +309,7 @@ def channel_synthesis_rate(
     Returns
     -------
     rate : float
-        The minimal communication rate, or with ``exact=True`` the Yu-Tan
-        achievable rate.
+        The minimal communication rate, for exact synthesis if `exact` is True.
 
     Raises
     ------
