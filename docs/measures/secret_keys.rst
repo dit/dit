@@ -478,6 +478,42 @@ Helpers can create key where none existed. If Alice and Bob hold independent uni
 .. autofunction:: omniscience_rate
    :no-index:
 
+Partition Bound
+---------------
+
+The dual of this linear program optimizes over fractional partitions of the terminals; restricting it to ordinary partitions gives an upper bound on the capacity :cite:`csiszar2004secrecy`:
+
+.. math::
+
+   C_{SK}^{\mathcal{A}} \leq \min_{\mathcal{P}} \frac{1}{|\mathcal{P}| - 1} \left( \sum_{C \in \mathcal{P}} \H{X_C} - \H{X_\mathcal{M}} \right)
+
+where the minimum is over partitions :math:`\mathcal{P}` of :math:`\mathcal{M}` into at least two blocks, each containing a key terminal.
+When :math:`\mathcal{A} = \mathcal{M}`, this is the partition formula of the :ref:`caekl_mutual_information`, and it holds with equality :cite:`chan2015multivariate`.
+With helpers, it holds with equality for every source exactly when :math:`|\mathcal{A}| \in \{2, |\mathcal{M}| - 2, |\mathcal{M}| - 1, |\mathcal{M}|\}` :cite:`pathegama2026tightness`, and so always when there are at most five terminals.
+In particular, two key terminals :math:`a` and :math:`b` can agree on as much key as the least mutual information across a cut separating them, however many helpers there are:
+
+.. math::
+
+   C_{SK}^{\{a, b\}} = \min_{a \in \mathcal{B},\ b \notin \mathcal{B}} \I{X_\mathcal{B} : X_{\mathcal{B}^c}}
+
+For other key sets the bound can be strict, which is why ``dit`` solves the linear program rather than searching partitions.
+In Chan's example :cite:`chan2008tightness`, four independent uniform bits sit on the vertices of a tetrahedron, and each of six terminals observes the ``xor`` of the bits at the two ends of one edge.
+When the key terminals are the three edges of a triangle (the first three below), every such partition gives at least one bit, but the capacity is :math:`3/4` of a bit:
+
+.. ipython::
+
+   In [22]: from itertools import product
+
+   In [23]: edges = [(0, 2), (0, 3), (2, 3), (1, 2), (1, 3), (0, 1)]
+
+   In [24]: outcomes = sorted({''.join(str(y[u] ^ y[v]) for u, v in edges) for y in product([0, 1], repeat=4)})
+
+   In [25]: chan = dit.Distribution(outcomes, [1/8] * 8)
+
+   @doctest float
+   In [26]: secret_key_capacity(chan, key_terminals=[0, 1, 2])
+   Out[26]: 0.75
+
 
 Secret Key Cost
 ===============
