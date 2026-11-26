@@ -73,6 +73,43 @@ exists), and the optimizer class that handles it. Note that the
 
    RDCurve(d, distortion=residual_entropy)
 
+.. _functional_rate_distortion:
+
+Functional Rate-Distortion
+--------------------------
+
+The rate-distortion function is the least rate of a long block code. For a single source symbol compressed with a variable-length code, the encoder may also use private randomness. The least entropy :math:`R_O(D)` of a reproduction :math:`Y` with :math:`\langle d(x, y) \rangle \leq D` is then characterized instead by the functional rate-distortion function :cite:`flamich2026functional`
+
+.. math::
+
+   R_F(D) = \min_{q(y|x), \langle d(x, y) \rangle \leq D} I_F(X \to Y),
+
+where :math:`I_F` is the :doc:`functional information </measures/other/functional_information>`:
+
+.. math::
+
+   R_F(D) \leq R_O(D) \leq R_F(D) + \log_2 e + 1.
+
+Since :math:`I_F \geq \I{X : Y}`, :math:`R_F(D) \geq R(D)`. On finite alphabets :math:`R_F` is convex and piecewise linear in :math:`D`. ``functional_rate_distortion`` computes it exactly:
+
+* :math:`I_F` is a sum over :math:`y` of the Lovász extension of the submodular set function :math:`A \mapsto \eta(P_X(A))`, with :math:`\eta(s) = -s \log_2 s`, evaluated at the column :math:`q(y | \cdot)`.
+* So the minimization is a linear program.
+* It is solved by cutting planes, and sorting each column finds its most violated cut.
+
+For a biased coin under the Hamming distortion, :math:`R_F(D) = \H{p} \left(1 - D / \min(p, 1 - p)\right)`, a straight line above :math:`R(D) = \H{p} - \H{D}`:
+
+.. ipython::
+
+   In [4]: from dit.rate_distortion import functional_rate_distortion
+
+   In [5]: result, q_xy = functional_rate_distortion([0.75, 0.25], 0.1)
+
+   @doctest float
+   In [6]: result.rate
+   Out[6]: 0.4867668746754797
+
+The distortion is a matrix :math:`d(x, y)`, Hamming by default. Its entries may be infinite, to forbid a reproduction, and :math:`Y` may have a different alphabet than :math:`X`.
+
 Information Bottleneck
 ======================
 
@@ -327,6 +364,9 @@ APIs
 ====
 
 .. autoclass:: RDCurve
+   :no-index:
+
+.. autofunction:: functional_rate_distortion
    :no-index:
 
 .. autoclass:: IBCurve

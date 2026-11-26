@@ -10,7 +10,13 @@ from hypothesis import strategies as st
 import dit
 from dit.example_dists import erasure_channel
 from dit.exceptions import ditException
-from dit.rate_distortion import ExtensionProfile, excess_functional_information, korner_graph_entropy
+from dit.other import functional_information_pmf
+from dit.rate_distortion import (
+    ExtensionProfile,
+    excess_functional_information,
+    excess_functional_information_bounds,
+    korner_graph_entropy,
+)
 
 
 def _h(p):
@@ -99,6 +105,12 @@ def _layered(*pmfs):
 
 def _dsbs_pmf(c):
     return np.array([[1 - c, c], [c, 1 - c]]) / 2
+
+
+def _cyclic(eps, p_x=(1 / 3, 1 / 3, 1 / 3)):
+    """p(x, y) for the cyclic channel of Proposition 8 of Flamich et al."""
+    channel = np.array([[1 - eps, 0, eps], [eps, 1 - eps, 0], [0, eps, 1 - eps]])
+    return np.asarray(p_x)[:, None] * channel
 
 
 @settings(max_examples=40, deadline=None)
@@ -344,12 +356,71 @@ def independent_pair():
 
 
 def test_excess_functional_information_gives_up_beyond_max_functions():
-    """A binary pair has 2**2 = 4 candidate functions: the program runs at max_functions=4 and gives up at 3."""
-    pxy = _dsbs_pmf(0.2)
-    _, height = excess_functional_information(pxy, max_functions=4)
-    assert height == pytest.approx(1 - 2 * 0.2, abs=1e-8)
+    """A 3 x 3 block has 3**3 = 27 candidate functions: the program runs at max_functions=27 and gives up at 26."""
+    pxy = _cyclic(0.2)
+    _, height = excess_functional_information(pxy, max_functions=27)
+    assert height == pytest.approx(functional_information_pmf(pxy), abs=1e-8)
     for reduce in (True, False):
-        assert excess_functional_information(pxy, max_functions=3, reduce=reduce) == (None, None)
+        assert excess_functional_information(pxy, max_functions=26, reduce=reduce) == (None, None)
+
+
+def test_excess_functional_information_binary_blocks_skip_the_program():
+    """A binary alphabet is solved in closed form at any max_functions; the raw program still gives up."""
+    pxy = _dsbs_pmf(0.2)
+    assert excess_functional_information(pxy, max_functions=0)[1] == pytest.approx(1 - 2 * 0.2)
+    assert excess_functional_information(pxy, max_functions=3, reduce=False) == (None, None)
+    # A binary X with six outputs, which the raw program needs 6**2 = 36 functions for.
+    pxy = np.array([[0.2, 0.1, 0.05, 0.1, 0.05, 0.0], [0.0, 0.05, 0.15, 0.1, 0.1, 0.1]])
+    exact = excess_functional_information(pxy, reduce=False)
+    assert excess_functional_information(pxy, max_functions=0) == pytest.approx(exact, abs=1e-8)
+
+
+@pytest.mark.parametrize("eps", [0.2, 0.3, 0.4, 0.45])
+def test_excess_functional_information_meets_functional_information_iff_perfect(eps):
+    """
+    The cyclic channel has no perfect functional representation for 1/3 < eps < 1/2 (Proposition 8 of Flamich et
+    al.), so there inf H[Y|W] exceeds I_F. For eps <= 1/3 it is the mixture (1 - 3 eps) id + eps (M_0 + M_1 + M_2)
+    of admissible maps (Proposition 6), M_k sending input k to its eps-output and fixing the others, so the two agree.
+    """
+    pxy = _cyclic(eps)
+    fi = functional_information_pmf(pxy)
+    _, height = excess_functional_information(pxy)
+    if eps <= 1 / 3:
+        assert height == pytest.approx(fi, abs=1e-8)
+    else:
+        assert fi + 1e-3 < height <= fi + np.log2(np.e)
+
+
+def test_excess_functional_information_bounds_are_tight_when_exact():
+    for pxy in (_dsbs_pmf(0.1), _cyclic(0.4), _layered(np.diag([0.5, 0.5]), _dsbs_pmf(0.2))):
+        psi, _ = excess_functional_information(pxy)
+        assert excess_functional_information_bounds(pxy) == pytest.approx((psi, psi), abs=1e-8)
+
+
+def test_excess_functional_information_bounds_bracket_large_blocks():
+    """Past max_functions a block contributes [I_F, min(I_F + log2 e, H[Y])], which holds the exact value."""
+    pxy = _cyclic(0.4, p_x=(0.5, 0.3, 0.2))
+    psi, _ = excess_functional_information(pxy)
+    lower, upper = excess_functional_information_bounds(pxy, max_functions=26)
+    p_x, p_y = pxy.sum(1), pxy.sum(0)
+    mi = float((pxy[pxy > 0] * np.log2(pxy[pxy > 0] / np.outer(p_x, p_y)[pxy > 0])).sum())
+    fi = functional_information_pmf(pxy)
+    assert lower == pytest.approx(fi - mi)
+    assert upper == pytest.approx(min(fi + np.log2(np.e), -(p_y * np.log2(p_y)).sum()) - mi)
+    assert lower + 1e-3 < psi < upper
+
+
+def test_excess_functional_information_bounds_beyond_the_program():
+    """
+    The band around a 32-cycle defeats the program. Its channel is singular (p(y|x) / p(y) = 32/3 on the band), so
+    I_F = I and the bracket is [0, log2 e], since H[Y] - I = log2(3) is larger.
+    """
+    n = 32
+    pxy = np.zeros((n, n))
+    for x in range(n):
+        pxy[x, [(x - 1) % n, x, (x + 1) % n]] = 1 / (3 * n)
+    assert excess_functional_information(pxy) == (None, None)
+    assert excess_functional_information_bounds(pxy) == pytest.approx((0, np.log2(np.e)), abs=1e-9)
 
 
 def test_korner_graph_entropy_on_a_prime_graph():

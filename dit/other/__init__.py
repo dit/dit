@@ -6,6 +6,7 @@ measures.
 from .cumulative_residual_entropy import *
 from .disequilibrium import *
 from .extropy import extropy
+from .functional_information import functional_information, functional_information_pmf
 from .lautum_information import lautum_information
 from .negentropy import negentropy
 from .perplexity import perplexity

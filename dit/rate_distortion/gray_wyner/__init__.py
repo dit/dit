@@ -12,7 +12,12 @@ affine maps and `shape` the associated shape function.
 """
 
 from .curve import GrayWynerCurve
-from .extension import ExtensionProfile, excess_functional_information, korner_graph_entropy
+from .extension import (
+    ExtensionProfile,
+    excess_functional_information,
+    excess_functional_information_bounds,
+    korner_graph_entropy,
+)
 from .network import GrayWynerNetwork, lossy_wyner_common_information
 from .optimizer import GrayWynerOptimizer, GrayWynerPoint, hamming_matrix
 from .region import (
@@ -43,6 +48,7 @@ __all__ = (
     "TensionPoint",
     "asymmetric_private_interaction_information",
     "excess_functional_information",
+    "excess_functional_information_bounds",
     "extension_to_rates",
     "hamming_matrix",
     "korner_graph_entropy",

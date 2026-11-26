@@ -8,6 +8,9 @@ from ._kl_nonmerge import (
 from ._kl_nonmerge import (
     relative_entropy_pmf as relative_entropy,
 )
+from .channel_simulation_divergence import (
+    channel_simulation_divergence_pmf as channel_simulation_divergence,
+)
 from .earth_movers_distance import (
     earth_movers_distance_pmf as earth_movers_distance,
 )
@@ -49,6 +52,7 @@ __all__ = (
     "bhattacharyya_angle",
     "bhattacharyya_coefficient",
     "bhattacharyya_distance",
+    "channel_simulation_divergence",
     "chernoff_information",
     "conditional_maximum_correlation",
     "cross_entropy",

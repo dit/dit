@@ -13,6 +13,7 @@ Divergences are measures of comparison between distributions:
    cross_entropy
    maximal_cross_entropy
    kullback_leibler_divergence
+   channel_simulation_divergence
    jensen_shannon_divergence
    earth_movers_distance
    coupling_metrics
