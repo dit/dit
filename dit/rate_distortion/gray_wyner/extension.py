@@ -28,11 +28,13 @@ from scipy.spatial import ConvexHull, QhullError
 from scipy.special import softmax
 
 from ...exceptions import ditException
+from ...other.functional_information import functional_information_pmf
 from ...utils.deprecation import renamed_kwarg
 
 __all__ = (
     "ExtensionProfile",
     "excess_functional_information",
+    "excess_functional_information_bounds",
     "korner_graph_entropy",
 )
 
@@ -132,6 +134,33 @@ def _inf_h_given_independent(pxy, max_functions):
     return res.fun
 
 
+def _block_inf_h(pxy, max_functions):
+    """
+    inf_{W indep X} H[Y|W] for one reduced block: the functional information when either alphabet is binary, else
+    the random-function linear program (None if it is too large).
+    """
+    if min(pxy.shape) <= 2:
+        return functional_information_pmf(pxy)
+    return _inf_h_given_independent(pxy, max_functions)
+
+
+def _normalized_pair(pxy):
+    """pxy without impossible symbols, normalized, and its mutual information."""
+    pxy = np.asarray(pxy, dtype=float)
+    pxy = pxy[pxy.sum(1) > 0][:, pxy.sum(0) > 0]
+    pxy = pxy / pxy.sum()
+    return pxy, _h(pxy.sum(1)) + _h(pxy.sum(0)) - _h(pxy)
+
+
+def _reduced_blocks(pxy):
+    """The Gács-Körner blocks of pxy as (mass, reduced and normalized block) pairs."""
+    blocks = []
+    for xs, ys in _support_blocks(pxy):
+        block = pxy[np.ix_(xs, ys)]
+        blocks.append((block.sum(), _reduce_pair(block / block.sum())))
+    return blocks
+
+
 def excess_functional_information(pxy, max_functions=200_000, reduce=True):
     """
     The excess functional information :cite:`li2018strong`
@@ -160,14 +189,31 @@ def excess_functional_information(pxy, max_functions=200_000, reduce=True):
       is independent of :math:`X`, so :math:`W` can carry an independent draw of
       :math:`Y` for every class.
 
+    A reduced block with a binary alphabet needs no program: there the infimum is
+    the functional information :math:`I_F(X \\to Y)` :cite:`flamich2026functional`
+    (:func:`dit.other.functional_information`), a closed form. For a binary
+    :math:`Y` this is Proposition 7 of :cite:`flamich2026functional`, first shown in
+    Proposition 1 of :cite:`li2018strong`. For a binary :math:`X = \\{a, b\\}`, a
+    maximal coupling of :math:`p(y|a)` and :math:`p(y|b)` writes the channel as a
+    mixture of constant maps and of maps sending each input to an output it is the
+    likelier input for; these are admissible maps, so by Proposition 6 of
+    :cite:`flamich2026functional` a perfect functional representation exists. In
+    general :math:`I_F(X \\to Y) \\leq \\inf_{W \\perp X} H[Y|W] \\leq I_F(X \\to Y) +
+    \\log_2 e` (Theorem 1 of :cite:`flamich2026functional`), with a strict lower
+    inequality for, e.g., the cyclic channel of their Proposition 8.
+    :func:`excess_functional_information_bounds` returns that bracket for blocks
+    too large for the program.
+
     Parameters
     ----------
     pxy : np.ndarray
         The joint pmf p(x, y), shape ``(|X|, |Y|)``.
     max_functions : int
-        Give up (return None) if a reduced block still has more functions than this.
+        Give up (return None) if a reduced block with no binary alphabet still has
+        more functions than this.
     reduce : bool
-        Whether to apply the reductions (False solves the raw program, for testing).
+        Whether to apply the reductions and the binary closed form (False solves the
+        raw program, for testing).
 
     Returns
     -------
@@ -177,22 +223,67 @@ def excess_functional_information(pxy, max_functions=200_000, reduce=True):
         :math:`\\inf_{W \\perp X} H[Y|W] = I[X:Y] + \\Psi`, the height of the
         corner :math:`(H[X], I + \\Psi, I + \\Psi)` of the extension profile.
     """
-    pxy = np.asarray(pxy, dtype=float)
-    pxy = pxy[pxy.sum(1) > 0][:, pxy.sum(0) > 0]
-    pxy = pxy / pxy.sum()
-    mi = _h(pxy.sum(1)) + _h(pxy.sum(0)) - _h(pxy)
+    pxy, mi = _normalized_pair(pxy)
     if not reduce:
         inf_h = _inf_h_given_independent(pxy, max_functions)
         return (None, None) if inf_h is None else (inf_h - mi, inf_h)
-    blocks = _support_blocks(pxy)
-    masses = np.array([pxy[np.ix_(xs, ys)].sum() for xs, ys in blocks])
-    inf_h = _h(masses)
-    for (xs, ys), mass in zip(blocks, masses, strict=True):
-        h = _inf_h_given_independent(_reduce_pair(pxy[np.ix_(xs, ys)] / mass), max_functions)
+    blocks = _reduced_blocks(pxy)
+    inf_h = _h([mass for mass, _ in blocks])
+    for mass, block in blocks:
+        h = _block_inf_h(block, max_functions)
         if h is None:
             return None, None
         inf_h += mass * h
     return inf_h - mi, inf_h
+
+
+def excess_functional_information_bounds(pxy, max_functions=200_000):
+    """
+    Bounds on the excess functional information :cite:`li2018strong` at every
+    alphabet size.
+
+    Each Gács-Körner block that :func:`excess_functional_information` solves
+    exactly contributes its exact value. Each remaining block is bracketed by its
+    functional information (Theorem 1 of :cite:`flamich2026functional`, with the
+    constant :math:`W` for the second upper bound):
+
+    .. math::
+
+        I_F(X \\to Y) \\leq \\inf_{W \\perp X} H[Y|W]
+            \\leq \\min\\{I_F(X \\to Y) + \\log_2 e,\\ H[Y]\\},
+
+    so the bracket is never wider than :math:`\\log_2 e` bits.
+
+    Parameters
+    ----------
+    pxy : np.ndarray
+        The joint pmf p(x, y), shape ``(|X|, |Y|)``.
+    max_functions : int
+        Bracket, rather than solve, a reduced block with no binary alphabet that
+        has more functions than this.
+
+    Returns
+    -------
+    lower : float
+        A lower bound on :math:`\\Psi(X \\to Y)`.
+    upper : float
+        An upper bound on :math:`\\Psi(X \\to Y)`, equal to ``lower`` when every
+        block is solved exactly. Adding :math:`I[X:Y]` to either bounds
+        :math:`\\inf_{W \\perp X} H[Y|W]`.
+    """
+    pxy, mi = _normalized_pair(pxy)
+    blocks = _reduced_blocks(pxy)
+    lower = upper = _h([mass for mass, _ in blocks])
+    for mass, block in blocks:
+        h = _block_inf_h(block, max_functions)
+        if h is None:
+            h = functional_information_pmf(block)
+            lower += mass * h
+            upper += mass * min(h + np.log2(np.e), _h(block.sum(0)))
+        else:
+            lower += mass * h
+            upper += mass * h
+    return lower - mi, upper - mi
 
 
 def _prime_graph_entropy(graph, p, max_sets, iters):
@@ -695,7 +786,8 @@ class ExtensionProfile:
     def excess_functional_information(self):
         """
         The side corners ``(H[X], I + Psi, I + Psi)`` and mirror :cite:`li2018strong`, exact by
-        linear program (None for alphabets too large). Returns (points, {direction: Psi}).
+        linear program or, for binary blocks, in closed form (None for alphabets too large; see
+        `excess_functional_information_bounds`). Returns (points, {direction: Psi}).
         """
         points, values = [], {}
         for pxy, tag, swap in ((self.pxy, "X -> Y", False), (self.pxy.T, "Y -> X", True)):

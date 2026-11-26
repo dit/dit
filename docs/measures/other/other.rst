@@ -13,6 +13,7 @@ Other measures of information. These are generally based around alternatives to 
    cumulative_residual_entropy
    disequilibrium
    extropy
+   functional_information
    lautum_information
    negentropy
    perplexity

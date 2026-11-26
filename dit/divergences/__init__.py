@@ -4,6 +4,9 @@ necessarily true metrics, but some are.
 """
 
 from . import pmf
+from .channel_simulation_divergence import (
+    channel_simulation_divergence,
+)
 from .copy_mutual_information import (
     copy_mutual_information,
 )
