@@ -17,6 +17,7 @@ from dit.rate_distortion import (
     excess_functional_information_bounds,
     korner_graph_entropy,
 )
+from dit.rate_distortion.gray_wyner.extension import _certify_perfect, _inf_h_given_independent, _reduced_blocks
 
 
 def _h(p):
@@ -111,6 +112,28 @@ def _cyclic(eps, p_x=(1 / 3, 1 / 3, 1 / 3)):
     """p(x, y) for the cyclic channel of Proposition 8 of Flamich et al."""
     channel = np.array([[1 - eps, 0, eps], [eps, 1 - eps, 0], [0, eps, 1 - eps]])
     return np.asarray(p_x)[:, None] * channel
+
+
+def _symmetric(q, eps, p_x=None):
+    """p(x, y) for the q-ary symmetric channel with crossover probability eps."""
+    channel = np.full((q, q), eps / (q - 1))
+    np.fill_diagonal(channel, 1 - eps)
+    p_x = np.full(q, 1 / q) if p_x is None else np.asarray(p_x)
+    return p_x[:, None] * channel
+
+
+def _q_erasure(p_x, eps):
+    """p(x, y) for the erasure channel on len(p_x) inputs, its last output the erasure."""
+    channel = np.hstack([(1 - eps) * np.eye(len(p_x)), np.full((len(p_x), 1), eps)])
+    return np.asarray(p_x)[:, None] * channel
+
+
+def _band(n):
+    """p(x, y) for x uniform on an n-cycle and y uniform on x and its two neighbors."""
+    pxy = np.zeros((n, n))
+    for x in range(n):
+        pxy[x, [(x - 1) % n, x, (x + 1) % n]] = 1 / (3 * n)
+    return pxy
 
 
 @settings(max_examples=40, deadline=None)
@@ -356,12 +379,28 @@ def independent_pair():
 
 
 def test_excess_functional_information_gives_up_beyond_max_functions():
-    """A 3 x 3 block has 3**3 = 27 candidate functions: the program runs at max_functions=27 and gives up at 26."""
-    pxy = _cyclic(0.2)
+    """
+    A 3 x 3 block has 3**3 = 27 candidate functions: the program runs at max_functions=27 and gives up at 26. At
+    eps = 0.4 the cyclic channel has no perfect functional representation to fall back on.
+    """
+    pxy = _cyclic(0.4)
     _, height = excess_functional_information(pxy, max_functions=27)
-    assert height == pytest.approx(functional_information_pmf(pxy), abs=1e-8)
+    assert height == pytest.approx(excess_functional_information(pxy, reduce=False)[1], abs=1e-8)
     for reduce in (True, False):
         assert excess_functional_information(pxy, max_functions=26, reduce=reduce) == (None, None)
+
+
+def test_excess_functional_information_certifies_perfect_blocks():
+    """
+    At eps = 0.2 the cyclic channel is a mixture of four maps whose cells are upper level sets of p(y|x), so
+    Proposition 6 of Flamich et al. gives inf H[Y|W] = I_F without the 27-function program, which still gives up.
+    Finding the four maps takes more than three candidate cells.
+    """
+    pxy = _cyclic(0.2)
+    fi = functional_information_pmf(pxy)
+    assert excess_functional_information(pxy, max_functions=26)[1] == pytest.approx(fi, abs=1e-12)
+    assert excess_functional_information(pxy, max_functions=26, reduce=False) == (None, None)
+    assert excess_functional_information(pxy, max_functions=3) == (None, None)
 
 
 def test_excess_functional_information_binary_blocks_skip_the_program():
@@ -391,6 +430,66 @@ def test_excess_functional_information_meets_functional_information_iff_perfect(
         assert fi + 1e-3 < height <= fi + np.log2(np.e)
 
 
+@pytest.mark.parametrize("eps", [0.1, 0.5, 0.75, 0.9])
+def test_excess_functional_information_symmetric_channels(eps):
+    """
+    For eps <= (q - 1) / q the q-ary symmetric channel is the mixture (1 - q eps / (q - 1)) id + eps / (q - 1) (the
+    q constant maps), whose cells are upper level sets, so inf H[Y|W] = I_F. Past that, the only level set of column
+    y holding input y is all of X, so only the constant maps remain, and the bound is strict. At q = 7 the certificate
+    is exact where the program would need 7**7 functions; at q = 5 the program confirms both cases.
+    """
+    pxy = _symmetric(7, eps, p_x=np.arange(1, 8) / 28)
+    if eps <= 6 / 7:
+        psi, height = excess_functional_information(pxy)
+        assert height == pytest.approx(functional_information_pmf(pxy), abs=1e-12)
+        assert excess_functional_information_bounds(pxy) == pytest.approx((psi, psi), abs=1e-12)
+    else:
+        assert excess_functional_information(pxy) == (None, None)
+    pxy = _symmetric(5, eps)
+    gap = excess_functional_information(pxy, reduce=False)[1] - functional_information_pmf(pxy)
+    if eps <= 4 / 5:
+        assert gap == pytest.approx(0, abs=1e-7)
+    else:
+        assert gap > 1e-3
+
+
+@pytest.mark.parametrize("pxy", [_q_erasure(np.arange(1, 9) / 36, 0.3), _band(33)], ids=["erasure", "band"])
+def test_excess_functional_information_vanishes_on_perfect_singular_channels(pxy):
+    """
+    An 8-ary erasure channel, (1 - eps) id + eps (erase), and the band around a 33-cycle, the uniform mixture of its
+    three tilings by arcs of three (each input sent to the center of its arc), are mixtures of maps whose cells are
+    level sets. Each column of either channel is constant on its support, so I_F = I, and Psi = 0 exactly where the
+    program would need 9**8 or 33**33 functions.
+    """
+    assert excess_functional_information(pxy)[0] == pytest.approx(0, abs=1e-12)
+    assert excess_functional_information_bounds(pxy) == pytest.approx((0, 0), abs=1e-12)
+
+
+def test_perfect_certificate_matches_the_program():
+    """
+    The certificate holds exactly when the random-function program meets I_F, on the blocks of dense channels and of
+    sparse channels with ties. A column constant on its support (I_F = I) is not enough: with each output uniform on
+    two of three equiprobable inputs, the program gives h(1/3) > log2(3) - 1 = I.
+    """
+    pairs = np.array([[1, 0, 1], [1, 1, 0], [0, 1, 1]]) / 6
+    assert functional_information_pmf(pairs) == pytest.approx(np.log2(3) - 1, abs=1e-9)
+    assert _inf_h_given_independent(pairs, 27) == pytest.approx(_h(1 / 3), abs=1e-8)
+    assert not _certify_perfect(pairs, 10**6)
+    rng = np.random.default_rng(0)
+    seen = set()
+    for _ in range(30):
+        for weights in (rng.random((4, 4)), rng.choice([0, 0, 1, 1, 2, 3], size=(4, 4))):
+            weights = weights[weights.sum(1) > 0][:, weights.sum(0) > 0]
+            for _, block in _reduced_blocks(weights / weights.sum()):
+                if min(block.shape) <= 2:
+                    continue
+                perfect = _certify_perfect(block, 10**6)
+                gap = _inf_h_given_independent(block, 10**6) - functional_information_pmf(block)
+                assert perfect == (gap < 1e-7), block
+                seen.add(perfect)
+    assert seen == {True, False}
+
+
 def test_excess_functional_information_bounds_are_tight_when_exact():
     for pxy in (_dsbs_pmf(0.1), _cyclic(0.4), _layered(np.diag([0.5, 0.5]), _dsbs_pmf(0.2))):
         psi, _ = excess_functional_information(pxy)
@@ -413,12 +512,10 @@ def test_excess_functional_information_bounds_bracket_large_blocks():
 def test_excess_functional_information_bounds_beyond_the_program():
     """
     The band around a 32-cycle defeats the program. Its channel is singular (p(y|x) / p(y) = 32/3 on the band), so
-    I_F = I and the bracket is [0, log2 e], since H[Y] - I = log2(3) is larger.
+    I_F = I and the bracket is [0, log2 e], since H[Y] - I = log2(3) is larger. Its level sets, arcs of three, cannot
+    tile the 32-cycle, so there is no perfect functional representation to fall back on.
     """
-    n = 32
-    pxy = np.zeros((n, n))
-    for x in range(n):
-        pxy[x, [(x - 1) % n, x, (x + 1) % n]] = 1 / (3 * n)
+    pxy = _band(32)
     assert excess_functional_information(pxy) == (None, None)
     assert excess_functional_information_bounds(pxy) == pytest.approx((0, np.log2(np.e)), abs=1e-9)
 
@@ -439,8 +536,9 @@ def test_korner_graph_entropy_on_a_prime_graph():
 def test_profile_omits_points_beyond_exact_limits():
     """
     A band around the diagonal of a 32-cycle (x ~ y when |x - y| <= 1 mod 32) defeats both exact programs in both
-    directions: the random-function program needs 32**32 functions, and the characteristic graph, the square of the
-    cycle, has over 5000 maximal independent sets. The profile reports None and draws no point.
+    directions: the random-function program needs 32**32 functions, arcs of three cannot tile the 32-cycle into a
+    perfect functional representation, and the characteristic graph, the square of the cycle, has over 5000 maximal
+    independent sets. The profile reports None and draws no point.
     """
     n = 32
     outcomes = [(x, y % n) for x in range(n) for y in (x - 1, x, x + 1)]

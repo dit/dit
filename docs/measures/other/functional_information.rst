@@ -73,13 +73,13 @@ The least expected entropy :math:`\H{Y | Z}` over functional representations :ma
 
    I_F(X \to Y) \leq R^* \leq I_F(X \to Y) + \log_2 e.
 
-The lower bound holds with equality whenever :math:`Y` is binary (Proposition 7 of :cite:`flamich2026functional`). It also holds whenever :math:`X` is binary, because a maximal coupling of the two rows of :math:`p(y|x)` meets the condition of their Proposition 6. It is strict, for example, for the cyclic channel
+The lower bound holds with equality whenever :math:`Y` is binary (Proposition 7 of :cite:`flamich2026functional`). It also holds whenever :math:`X` is binary, because a maximal coupling of the two rows of :math:`p(y|x)` meets the condition of their Proposition 6. That condition decides equality in general: :math:`R^* = I_F(X \to Y)` iff :math:`p(y|x)` is a mixture of maps :math:`f` each of whose cells :math:`f^{-1}(y)` is empty or an upper level set :math:`\{x : p(y|x) \geq t\}` with :math:`t > 0`. These maps are usually few, and :func:`dit.rate_distortion.excess_functional_information` looks for such a mixture with a feasibility program before solving the larger one, so that, for instance, q-ary symmetric and erasure channels are exact at any size. The lower bound is strict, for example, for the cyclic channel
 
 .. math::
 
    p(y|x) = \begin{pmatrix} 1 - \epsilon & 0 & \epsilon \\ \epsilon & 1 - \epsilon & 0 \\ 0 & \epsilon & 1 - \epsilon \end{pmatrix}
 
-with :math:`1/3 < \epsilon < 1/2`. For channels too large for the linear program, :func:`dit.rate_distortion.excess_functional_information_bounds` returns this bracket. The :ref:`functional rate-distortion function <functional_rate_distortion>` is the analogous lossy compression quantity.
+with :math:`1/3 < \epsilon < 1/2`. For other channels too large for the linear program, :func:`dit.rate_distortion.excess_functional_information_bounds` returns this bracket. The :ref:`functional rate-distortion function <functional_rate_distortion>` is the analogous lossy compression quantity.
 
 Rényi Functional Information
 ============================
