@@ -111,10 +111,18 @@ def _support_blocks(pxy):
     return blocks
 
 
-def _inf_h_given_independent(pxy, max_functions):
-    """inf_{W indep X} H[Y|W] by the random-function linear program (no reductions)."""
+def _function_matrix(funcs, ny_):
+    """The matrix taking a pmf over the functions in the rows of funcs to the channel p(y|x) it induces, row-major."""
     from scipy.sparse import coo_matrix
 
+    nfuncs, nx_ = funcs.shape
+    rows = (np.arange(nx_) * ny_)[None, :] + funcs
+    cols = np.repeat(np.arange(nfuncs), nx_)
+    return coo_matrix((np.ones(rows.size), (rows.ravel(), cols)), shape=(nx_ * ny_, nfuncs)).tocsr()
+
+
+def _inf_h_given_independent(pxy, max_functions):
+    """inf_{W indep X} H[Y|W] by the random-function linear program (no reductions)."""
     px = pxy.sum(1)
     nx_, ny_ = pxy.shape
     if ny_ == 1 or nx_ == 1:
@@ -127,19 +135,82 @@ def _inf_h_given_independent(pxy, max_functions):
         masses[np.arange(len(funcs)), funcs[:, x]] += px[x]
     with np.errstate(divide="ignore", invalid="ignore"):
         cost = -np.where(masses > 0, masses * np.log2(masses), 0.0).sum(1)
-    rows = (np.arange(nx_) * ny_)[None, :] + funcs
-    cols = np.repeat(np.arange(len(funcs)), nx_)
-    a_eq = coo_matrix((np.ones(rows.size), (rows.ravel(), cols)), shape=(nx_ * ny_, len(funcs))).tocsr()
+    a_eq = _function_matrix(funcs, ny_)
     res = linprog(cost, A_eq=a_eq, b_eq=(pxy / px[:, None]).ravel(), bounds=(0, None), method="highs")
     return res.fun
 
 
+def _level_set_maps(channel, max_cells):
+    """
+    The maps f: X -> Y each of whose cells f^{-1}(y) is empty or an upper level set {x : p(y|x) >= t}, t > 0, of
+    the channel, as the rows of an integer array; None if finding them takes more than max_cells candidate cells. A
+    depth-first search gives the first uncovered input a cell from an output not used yet, and finds each map once.
+    """
+    nx_, ny_ = channel.shape
+    channel = np.round(channel, 12)
+    orders, ends, masks = [], [], []
+    first = [[] for _ in range(nx_)]  # (y, index of the smallest level set of column y holding x)
+    for y in range(ny_):
+        col = channel[:, y]
+        order = np.argsort(-col, kind="stable")
+        ends_y, masks_y, mask = [], [], 0
+        for i, x in enumerate(order):
+            if col[x] == 0:
+                break
+            mask |= 1 << int(x)
+            first[x].append((y, len(masks_y)))
+            if i + 1 == nx_ or col[order[i + 1]] < col[x]:
+                ends_y.append(i + 1)
+                masks_y.append(mask)
+        orders.append(order)
+        ends.append(ends_y)
+        masks.append(masks_y)
+    full, found, budget = (1 << nx_) - 1, [], max_cells
+    stack: list[tuple[int, int, tuple]] = [(0, 0, ())]  # (covered inputs, used outputs, (output, level) cells)
+    while stack:
+        covered, used, cells = stack.pop()
+        if covered == full:
+            found.append(cells)
+            continue
+        x = (~covered & (covered + 1)).bit_length() - 1
+        for y, level in first[x]:
+            if used >> y & 1:
+                continue
+            for j in range(level, len(masks[y])):
+                budget -= 1
+                if budget < 0:
+                    return None
+                if masks[y][j] & covered:  # the level sets are nested, so every later one meets covered too
+                    break
+                stack.append((covered | masks[y][j], used | 1 << y, (*cells, (y, j))))
+    funcs = np.empty((len(found), nx_), dtype=int)
+    for i, cells in enumerate(found):
+        for y, j in cells:
+            funcs[i, orders[y][: ends[y][j]]] = y
+    return funcs
+
+
+def _certify_perfect(pxy, max_cells):
+    """
+    Whether the block pxy has a perfect functional representation, inf_{W indep X} H[Y|W] = I_F(X -> Y): by
+    Proposition 6 of Flamich et al., whether its channel is a mixture of the maps of `_level_set_maps`. False if it
+    has none, or if finding them takes more than max_cells candidate cells.
+    """
+    channel = pxy / pxy.sum(1, keepdims=True)
+    funcs = _level_set_maps(channel, max_cells)
+    if funcs is None or len(funcs) == 0:
+        return False
+    a_eq = _function_matrix(funcs, pxy.shape[1])
+    res = linprog(np.zeros(len(funcs)), A_eq=a_eq, b_eq=channel.ravel(), bounds=(0, None), method="highs")
+    return res.status == 0
+
+
 def _block_inf_h(pxy, max_functions):
     """
-    inf_{W indep X} H[Y|W] for one reduced block: the functional information when either alphabet is binary, else
-    the random-function linear program (None if it is too large).
+    inf_{W indep X} H[Y|W] for one reduced block: the functional information when either alphabet is binary or the
+    block has a perfect functional representation, else the random-function linear program (None if it is too large).
     """
-    if min(pxy.shape) <= 2:
+    if min(pxy.shape) <= 2 or _certify_perfect(pxy, max_functions):
         return functional_information_pmf(pxy)
     return _inf_h_given_independent(pxy, max_functions)
 
@@ -197,8 +268,21 @@ def excess_functional_information(pxy, max_functions=200_000, reduce=True):
     maximal coupling of :math:`p(y|a)` and :math:`p(y|b)` writes the channel as a
     mixture of constant maps and of maps sending each input to an output it is the
     likelier input for; these are admissible maps, so by Proposition 6 of
-    :cite:`flamich2026functional` a perfect functional representation exists. In
-    general :math:`I_F(X \\to Y) \\leq \\inf_{W \\perp X} H[Y|W] \\leq I_F(X \\to Y) +
+    :cite:`flamich2026functional` a perfect functional representation exists.
+
+    Any other block with a perfect functional representation, one whose infimum is
+    :math:`I_F(X \\to Y)`, is also solved in closed form. By Proposition 6 of
+    :cite:`flamich2026functional`, a block has one iff its channel is a mixture of
+    maps :math:`f` each of whose cells :math:`f^{-1}(y)` is an initial segment of a
+    fixed ordering of :math:`\\mathcal{X}` by decreasing :math:`p(y|x)`, one ordering
+    per :math:`y`. The mixture gives each segment the drop in :math:`p(y|x)` across
+    its end as its weight, so a segment ending inside a tie gets none, and only
+    cells that are empty or upper level sets :math:`\\{x : p(y|x) \\geq t\\}` with
+    :math:`t > 0` matter, whichever orderings are fixed. Those maps are usually few,
+    and a feasibility program over them settles the question: q-ary symmetric and
+    erasure channels, for instance, are exact at any size.
+
+    In general :math:`I_F(X \\to Y) \\leq \\inf_{W \\perp X} H[Y|W] \\leq I_F(X \\to Y) +
     \\log_2 e` (Theorem 1 of :cite:`flamich2026functional`), with a strict lower
     inequality for, e.g., the cyclic channel of their Proposition 8.
     :func:`excess_functional_information_bounds` returns that bracket for blocks
@@ -209,11 +293,13 @@ def excess_functional_information(pxy, max_functions=200_000, reduce=True):
     pxy : np.ndarray
         The joint pmf p(x, y), shape ``(|X|, |Y|)``.
     max_functions : int
-        Give up (return None) if a reduced block with no binary alphabet still has
-        more functions than this.
+        Give up (return None) if a reduced block with no binary alphabet has more
+        functions than this, unless a search examining at most this many candidate
+        cells finds a perfect functional representation for it.
     reduce : bool
-        Whether to apply the reductions and the binary closed form (False solves the
-        raw program, for testing).
+        Whether to apply the reductions, the binary closed form, and the search for
+        perfect functional representations (False solves the raw program, for
+        testing).
 
     Returns
     -------
@@ -260,7 +346,8 @@ def excess_functional_information_bounds(pxy, max_functions=200_000):
         The joint pmf p(x, y), shape ``(|X|, |Y|)``.
     max_functions : int
         Bracket, rather than solve, a reduced block with no binary alphabet that
-        has more functions than this.
+        has more functions than this, unless a search examining at most this many
+        candidate cells finds a perfect functional representation for it.
 
     Returns
     -------
@@ -786,8 +873,9 @@ class ExtensionProfile:
     def excess_functional_information(self):
         """
         The side corners ``(H[X], I + Psi, I + Psi)`` and mirror :cite:`li2018strong`, exact by
-        linear program or, for binary blocks, in closed form (None for alphabets too large; see
-        `excess_functional_information_bounds`). Returns (points, {direction: Psi}).
+        linear program or, for binary blocks and blocks with a perfect functional representation,
+        in closed form (None for alphabets too large; see `excess_functional_information_bounds`).
+        Returns (points, {direction: Psi}).
         """
         points, values = [], {}
         for pxy, tag, swap in ((self.pxy, "X -> Y", False), (self.pxy.T, "Y -> X", True)):
